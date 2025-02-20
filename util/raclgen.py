@@ -20,57 +20,52 @@ REPO_TOP = Path(__file__).resolve().parent.parent
 
 def main():
     is_doc = "--doc" in sys.argv
-    parser = argparse.ArgumentParser(usage='''
+    parser = argparse.ArgumentParser(
+        usage="""
 %(prog)s --doc DOC
     Generates markdown documentation of the RACL configuration for a given top.
 
 %(prog)s --racl-config RACL_CONFIG --ip IP --mapping MAPPING [--if-name IF_NAME]
     Generates the RACL policy selection vector for the given IP, RACL mapping, and interface name.
-              ''')
+              """
+    )
 
-    parser.add_argument('--doc',
-                        '-d',
-                        help='Path to top_topname.gen.hjson.')
-
-    parser.add_argument('--racl-config',
-                        '-r',
-                        required=not is_doc,
-                        help='Path to RACL config hjson file.')
-
-    parser.add_argument('--ip',
-                        '-i',
-                        required=not is_doc,
-                        help='Path to IP block hjson file.')
-
-    parser.add_argument('--mapping',
-                        '-m',
-                        required=not is_doc,
-                        help='Path to RACL mapping hjson file.')
+    parser.add_argument("--doc", "-d", help="Path to top_topname.gen.hjson.")
 
     parser.add_argument(
-        '--if-name',
+        "--racl-config", "-r", required=not is_doc, help="Path to RACL config hjson file."
+    )
+
+    parser.add_argument("--ip", "-i", required=not is_doc, help="Path to IP block hjson file.")
+
+    parser.add_argument(
+        "--mapping", "-m", required=not is_doc, help="Path to RACL mapping hjson file."
+    )
+
+    parser.add_argument(
+        "--if-name",
         default=None,
-        help=
-        'TLUL path interface name. Required if multiple bus_interfaces exist.')
+        help="TLUL path interface name. Required if multiple bus_interfaces exist.",
+    )
 
     args = parser.parse_args()
 
     if args.doc:
         top = _read_hjson(args.doc)
-        if 'racl_ctrl' not in (module['name'] for module in top['module']):
-            raise SystemExit(f'No racl_ctrl module found in {args.doc}')
-        if 'racl' not in top:
+        if "racl_ctrl" not in (module["name"] for module in top["module"]):
+            raise SystemExit(f"No racl_ctrl module found in {args.doc}")
+        if "racl" not in top:
             raise SystemExit(f'Missing key "racl" in {args.doc}')
 
-        racl_config = top['racl']
+        racl_config = top["racl"]
         ips_with_racl = {}
 
         gen_md_header(racl_config)
 
-        for module in top['module']:
-            if 'racl_mappings' not in module:
+        for module in top["module"]:
+            if "racl_mappings" not in module:
                 continue
-            ip_name = module['type']
+            ip_name = module["type"]
             if ip_name not in ips_with_racl:
                 try:
                     ip_path = topgen_lib.get_ip_hjson_path(ip_name, top, REPO_TOP)
@@ -78,20 +73,22 @@ def main():
                 except ValueError as err:
                     raise SystemExit(f'Failed to parse IP block "{ip_name}". Error: {err}')
 
-            for if_name, racl_mappings in module['racl_mappings'].items():
-                if 'racl_group' not in racl_mappings:
+            for if_name, racl_mappings in module["racl_mappings"].items():
+                if "racl_group" not in racl_mappings:
                     raise SystemExit(f'racl_mappings of {module["name"]} is missing "racl_group".')
                 racl_mapping = {
-                    'if_name': if_name,
-                    'racl_group': racl_mappings['racl_group'],
-                    'register_mapping': racl_mappings.get('register_mapping', {}),
-                    'window_mapping': racl_mappings.get('window_mapping', {}),
-                    'range_mapping': racl_mappings.get('range_mapping', []),
+                    "if_name": if_name,
+                    "racl_group": racl_mappings["racl_group"],
+                    "register_mapping": racl_mappings.get("register_mapping", {}),
+                    "window_mapping": racl_mappings.get("window_mapping", {}),
+                    "range_mapping": racl_mappings.get("range_mapping", []),
                 }
-                gen_md(block=ips_with_racl[ip_name],
-                       racl_config=racl_config,
-                       racl_mapping=racl_mapping,
-                       module=module)
+                gen_md(
+                    block=ips_with_racl[ip_name],
+                    racl_config=racl_config,
+                    racl_mapping=racl_mapping,
+                    module=module,
+                )
 
         sys.exit(0)
 
@@ -103,11 +100,11 @@ def main():
     try:
         parsed_racl_config = parse_racl_config(args.racl_config)
     except ValueError as err:
-        raise SystemExit(
-            f'Failed to parse RACL config "{args.racl_config}". Error: {err}')
+        raise SystemExit(f'Failed to parse RACL config "{args.racl_config}". Error: {err}')
 
-    register_mapping, window_mapping, range_mapping, racl_group, policy_names\
-        = parse_racl_mapping(parsed_racl_config, args.mapping, args.if_name, ip_block)
+    register_mapping, window_mapping, range_mapping, racl_group, policy_names = parse_racl_mapping(
+        parsed_racl_config, args.mapping, args.if_name, ip_block
+    )
 
     template = """\
 <%doc>
@@ -171,15 +168,20 @@ policy: ${policy_names[range['policy']]} (Idx ${f"{range['policy']}".rjust(polic
     """
 
     print(
-        Template(template).render(m=ip_block,
-                                  if_name=args.if_name,
-                                  register_mapping=register_mapping,
-                                  window_mapping=window_mapping,
-                                  range_mapping=range_mapping,
-                                  policy_names=policy_names,
-                                  module_name=ip_block.name,
-                                  racl_group=racl_group).rstrip())
+        Template(template)
+        .render(
+            m=ip_block,
+            if_name=args.if_name,
+            register_mapping=register_mapping,
+            window_mapping=window_mapping,
+            range_mapping=range_mapping,
+            policy_names=policy_names,
+            module_name=ip_block.name,
+            racl_group=racl_group,
+        )
+        .rstrip()
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

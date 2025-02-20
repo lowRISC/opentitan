@@ -19,7 +19,7 @@ def parse_test_vectors(raw_data, hash_alg):
             logging.debug(f"Parsing tcId {test['tcId']}")
             test_vec = {
                 "vendor": "wycheproof",
-                "test_case_id": test['tcId'],
+                "test_case_id": test["tcId"],
                 "algorithm": "hmac",
                 "hash_alg": hash_alg,
                 "key": list(bytes.fromhex(test["key"])),
@@ -46,27 +46,16 @@ def parse_test_vectors(raw_data, hash_alg):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--src',
-        metavar='FILE',
-        type=argparse.FileType('r'),
-        help='Read test vectors from this JSON file.'
+        "--src",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help="Read test vectors from this JSON file.",
     )
     parser.add_argument(
-        '--dst',
-        metavar='FILE',
-        type=argparse.FileType('w'),
-        help='Write output to this file.'
+        "--dst", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
     )
-    parser.add_argument(
-        "--schema",
-        type = str,
-        help = "Test vector schema file"
-    )
-    parser.add_argument(
-        "--hash",
-        type = str,
-        help = "Hash algorithm to use"
-    )
+    parser.add_argument("--schema", type=str, help="Test vector schema file")
+    parser.add_argument("--hash", type=str, help="Hash algorithm to use")
     args = parser.parse_args()
 
     testvecs = parse_test_vectors(json.load(args.src), args.hash)
@@ -84,5 +73,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

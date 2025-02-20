@@ -18,7 +18,7 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class BadDeepLoop(SnippetGen):
-    '''A snippet generator that generates loops to overflow the stack'''
+    """A snippet generator that generates loops to overflow the stack"""
 
     ends_program = True
 
@@ -27,23 +27,18 @@ class BadDeepLoop(SnippetGen):
         self.jump_gen = Jump(cfg, insns_file)
         self.loop_gen = Loop(cfg, insns_file)
 
-    def pick_weight(self,
-                    model: Model,
-                    program: Program) -> float:
+    def pick_weight(self, model: Model, program: Program) -> float:
         # Only try this if we've got a reasonable amount of room.
         room = min(model.fuel, program.space)
         assert 0 < room
-        return (1.0 if room > 50 else 0.0)
+        return 1.0 if room > 50 else 0.0
 
-    def _pick_bodysize(self,
-                       insn: Insn,
-                       pc: int,
-                       program: Program) -> Tuple[int, int]:
-        '''Pick the size of the loop body.
+    def _pick_bodysize(self, insn: Insn, pc: int, program: Program) -> Tuple[int, int]:
+        """Pick the size of the loop body.
 
         Returns (enc_bodysize, end_addr).
 
-        '''
+        """
         # Pick some value for bodysize that either points at an existing
         # instruction or points above the top of memory. Rather than doing
         # something clever, we pick the address at random and "re-roll" if it
@@ -59,8 +54,10 @@ class BadDeepLoop(SnippetGen):
         for _ in range(50):
             guess = random.randint(bodysize_range[0], bodysize_range[1])
             last_insn_addr = pc + 4 * guess
-            if ((last_insn_addr >= program.imem_size or
-                 program.get_insn_space_at(last_insn_addr) == 0)):
+            if (
+                last_insn_addr >= program.imem_size
+                or program.get_insn_space_at(last_insn_addr) == 0
+            ):
                 bodysize = guess
                 break
 
@@ -72,9 +69,7 @@ class BadDeepLoop(SnippetGen):
     def _pick_loop_iterations(self, model: Model) -> Optional[int]:
         # This is like Loop._pick_loop_iterations, but doesn't try to weight
         # towards small counts (since we know we're only doing it once anyway)
-        poss_pairs = [(idx, value)
-                      for idx, value in model.regs_with_known_vals('gpr')
-                      if value > 0]
+        poss_pairs = [(idx, value) for idx, value in model.regs_with_known_vals("gpr") if value > 0]
         if not poss_pairs:
             return None
         return random.choice(poss_pairs)[0]
@@ -93,14 +88,12 @@ class BadDeepLoop(SnippetGen):
         assert enc_val is not None
         return enc_val
 
-    def _gen_loop_head(self,
-                       model: Model,
-                       program: Program) -> Tuple[ProgInsn, int]:
-        '''Generate a LOOP or LOOPI instruction
+    def _gen_loop_head(self, model: Model, program: Program) -> Tuple[ProgInsn, int]:
+        """Generate a LOOP or LOOPI instruction
 
         Returns (hd_insn, end_address).
 
-        '''
+        """
 
         # Pick an instruction (LOOP vs. LOOPI) and number of iterations
         # together. This means that if we've only got GPRs equal to zero (an
@@ -110,7 +103,7 @@ class BadDeepLoop(SnippetGen):
         iters_op_type = insn.operands[0].op_type
         enc_iters = None
         if isinstance(iters_op_type, RegOperandType):
-            assert iters_op_type.reg_type == 'gpr'
+            assert iters_op_type.reg_type == "gpr"
             enc_iters = self._pick_loop_iterations(model)
             if enc_iters is None:
                 insn = self.loop_gen.loopi
@@ -123,14 +116,12 @@ class BadDeepLoop(SnippetGen):
 
         return (ProgInsn(insn, [enc_iters, enc_bodysize], None), end_addr)
 
-    def _gen_loop_stack(self,
-                        model: Model,
-                        program: Program) -> Tuple[Snippet, Model]:
-        '''Generate stack of loop instructions, returning snippet and new model
+    def _gen_loop_stack(self, model: Model, program: Program) -> Tuple[Snippet, Model]:
+        """Generate stack of loop instructions, returning snippet and new model
 
         This also inserts the instructions into program.
 
-        '''
+        """
         space_here = program.get_insn_space_at(model.pc)
         # space_here should always be positive (otherwise we got stuck already)
         assert space_here >= 1
@@ -173,9 +164,9 @@ class BadDeepLoop(SnippetGen):
         if space_here <= 2:
             # If we've run out of space in front of us, jump somewhere else to
             # keep going. Firstly, pick a gap to jump into.
-            gap_starts = [gap_lo
-                          for (gap_lo, gap_hi) in program.imem_gaps()
-                          if 2 * 4 <= gap_hi - gap_lo]
+            gap_starts = [
+                gap_lo for (gap_lo, gap_hi) in program.imem_gaps() if 2 * 4 <= gap_hi - gap_lo
+            ]
             assert gap_starts
             gap_lo = random.choice(gap_starts)
 
@@ -191,15 +182,11 @@ class BadDeepLoop(SnippetGen):
         if body_snippet is None:
             body_snippet = real_body_snippet
         else:
-            body_snippet = Snippet.merge_list([body_snippet,
-                                               real_body_snippet])
+            body_snippet = Snippet.merge_list([body_snippet, real_body_snippet])
 
         return (LoopSnippet(hd_pc, hd_insn, body_snippet, None), model)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         space_here = program.get_insn_space_at(model.pc)
         # space_here should always be positive (otherwise we got stuck already)
         assert space_here > 0

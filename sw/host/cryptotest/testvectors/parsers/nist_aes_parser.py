@@ -59,32 +59,16 @@ def parse_testcases(args) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Parsing utility for AES testvectors.")
-    parser.add_argument(
-        "src",
-        help="Source file to import."
-    )
-    parser.add_argument(
-        "dst",
-        help="Destination of the output file."
-    )
+    parser = argparse.ArgumentParser(description="Parsing utility for AES testvectors.")
+    parser.add_argument("src", help="Source file to import.")
+    parser.add_argument("dst", help="Destination of the output file.")
     parser.add_argument(
         "mode",
-        choices = ["ecb", "ofb", "cbc", "cfb1", "cfb8", "cfb128"],
-        help = "Block cipher mode of operation."
+        choices=["ecb", "ofb", "cbc", "cfb1", "cfb8", "cfb128"],
+        help="Block cipher mode of operation.",
     )
-    parser.add_argument(
-        "key_len",
-        choices = [128, 192, 256],
-        type = int,
-        help = "Length of key in bits."
-    )
-    parser.add_argument(
-        "schema",
-        type = str,
-        help = "Testvector schema file"
-    )
+    parser.add_argument("key_len", choices=[128, 192, 256], type=int, help="Length of key in bits.")
+    parser.add_argument("schema", type=str, help="Testvector schema file")
     args = parser.parse_args()
     parse_testcases(args)
 

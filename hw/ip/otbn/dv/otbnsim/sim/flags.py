@@ -8,29 +8,23 @@ from .trace import Trace
 
 
 class TraceFlags(Trace):
-    def __init__(self, group: int, value: 'FlagReg'):
+    def __init__(self, group: int, value: "FlagReg"):
         self.group = group
         self.value = value
 
     def trace(self) -> str:
-        return ('fg{} = {{C: {}, M: {}, L: {}, Z: {}}}'
-                .format(self.group,
-                        int(self.value.C),
-                        int(self.value.M),
-                        int(self.value.L),
-                        int(self.value.Z)))
+        return "fg{} = {{C: {}, M: {}, L: {}, Z: {}}}".format(
+            self.group, int(self.value.C), int(self.value.M), int(self.value.L), int(self.value.Z)
+        )
 
     def rtl_trace(self) -> str:
-        return ('> FLAGS{}: {{C: {}, M: {}, L: {}, Z: {}}}'
-                .format(self.group,
-                        int(self.value.C),
-                        int(self.value.M),
-                        int(self.value.L),
-                        int(self.value.Z)))
+        return "> FLAGS{}: {{C: {}, M: {}, L: {}, Z: {}}}".format(
+            self.group, int(self.value.C), int(self.value.M), int(self.value.L), int(self.value.Z)
+        )
 
 
 class FlagReg:
-    FLAG_NAMES = ['C', 'M', 'L', 'Z']
+    FLAG_NAMES = ["C", "M", "L", "Z"]
 
     def __init__(self, C: bool, M: bool, L: bool, Z: bool):
         self.C = C
@@ -38,9 +32,9 @@ class FlagReg:
         self.L = L
         self.Z = Z
 
-        self._new_val: Optional['FlagReg'] = None
+        self._new_val: Optional["FlagReg"] = None
 
-    def set_flags(self, other: 'FlagReg') -> None:
+    def set_flags(self, other: "FlagReg") -> None:
         self._new_val = other
 
     def get_by_name(self, flag_name: str) -> bool:
@@ -53,8 +47,7 @@ class FlagReg:
         return self.get_by_name(flag_name)
 
     def changes(self, group: int) -> List[TraceFlags]:
-        return ([] if self._new_val is None
-                else [TraceFlags(group, self._new_val)])
+        return [] if self._new_val is None else [TraceFlags(group, self._new_val)]
 
     def commit(self) -> None:
         if self._new_val is not None:
@@ -66,32 +59,29 @@ class FlagReg:
         self._new_val = None
 
     def read_unsigned(self) -> int:
-        '''Return a 4-bit number with the flags as ZLMC'''
-        return ((int(self.Z) << 3) |
-                (int(self.L) << 2) |
-                (int(self.M) << 1) |
-                (int(self.C) << 0))
+        """Return a 4-bit number with the flags as ZLMC"""
+        return (int(self.Z) << 3) | (int(self.L) << 2) | (int(self.M) << 1) | (int(self.C) << 0)
 
     def write_unsigned(self, value: int) -> None:
-        '''Set flags using bottom 4 bits of the unsigned number, value'''
+        """Set flags using bottom 4 bits of the unsigned number, value"""
         assert 0 <= value
         self.set_flags(FlagReg.from_bits(value))
 
     @staticmethod
-    def mlz_for_result(C: bool, result: int) -> 'FlagReg':
-        '''Generate flags for the result of an operation.
+    def mlz_for_result(C: bool, result: int) -> "FlagReg":
+        """Generate flags for the result of an operation.
 
         C is the value for the C flag. result is the wide-side result value
         that is used to generate M, L and Z.
 
-        '''
+        """
         M = bool((result >> 255) & 1)
         L = bool(result & 1)
         Z = bool(result == 0)
         return FlagReg(C=C, M=M, L=L, Z=Z)
 
     @staticmethod
-    def from_bits(value: int) -> 'FlagReg':
+    def from_bits(value: int) -> "FlagReg":
         assert 0 <= value
         C = bool((value >> 0) & 1)
         M = bool((value >> 1) & 1)
@@ -102,8 +92,10 @@ class FlagReg:
 
 class FlagGroups:
     def __init__(self) -> None:
-        self._groups = {0: FlagReg(False, False, False, False),
-                        1: FlagReg(False, False, False, False)}
+        self._groups = {
+            0: FlagReg(False, False, False, False),
+            1: FlagReg(False, False, False, False),
+        }
         # Have any flags changed?
         self._dirty = False
 
@@ -132,20 +124,19 @@ class FlagGroups:
         self._dirty = False
 
     def read_unsigned(self) -> int:
-        '''Return the flag groups as an unsigned value (as seen by CSRs)
+        """Return the flag groups as an unsigned value (as seen by CSRs)
 
         Format is defined in FlagReg, with group 0 as LSB.
 
-        '''
-        return ((self._groups[1].read_unsigned() << 4) |
-                (self._groups[0].read_unsigned() << 0))
+        """
+        return (self._groups[1].read_unsigned() << 4) | (self._groups[0].read_unsigned() << 0)
 
     def write_unsigned(self, value: int) -> None:
-        '''Set the flag groups with an unsigned value, ignoring unused bits
+        """Set the flag groups with an unsigned value, ignoring unused bits
 
         Format is defined in FlagReg, with group 0 as LSB.
 
-        '''
+        """
         assert 0 <= value
         mask4 = (1 << 4) - 1
         self._dirty = True

@@ -15,22 +15,19 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class KnownWDR(SnippetGen):
-    '''A snippet generator that generates known values (all zeros or all ones
+    """A snippet generator that generates known values (all zeros or all ones
     for now) for WDRs.
 
-    '''
+    """
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
-        self.bn_xor = self._get_named_insn(insns_file, 'bn.xor')
-        self.bn_not = self._get_named_insn(insns_file, 'bn.not')
+        self.bn_xor = self._get_named_insn(insns_file, "bn.xor")
+        self.bn_not = self._get_named_insn(insns_file, "bn.not")
         self.imm_op_type = self.bn_xor.operands[4].op_type
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Return None if this one of the last two instructions in the current
         # gap because we need to either jump or do an ECALL to avoid getting
         # stuck after executing both bn.xor and bn.not
@@ -74,11 +71,9 @@ class KnownWDR(SnippetGen):
         if wrd_val_not is None:
             return None
 
-        op_vals_xor = [wrd_val_xor, wrs_val_xor, wrs_val_xor, shift_type,
-                       shift_bits, flg_group]
+        op_vals_xor = [wrd_val_xor, wrs_val_xor, wrs_val_xor, shift_type, shift_bits, flg_group]
 
-        op_vals_not = [wrd_val_not, wrs_val_xor,
-                       shift_type, shift_bits, flg_group]
+        op_vals_not = [wrd_val_not, wrs_val_xor, shift_type, shift_bits, flg_group]
 
         prog_bn_xor = ProgInsn(self.bn_xor, op_vals_xor, None)
         prog_bn_not = ProgInsn(self.bn_not, op_vals_not, None)

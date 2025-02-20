@@ -12,7 +12,7 @@ import sys
 # this in a library __init__ file can cause havoc with paths. *But* doing it
 # properly would either mean installing Python libraries or pasting the lines
 # below into every script that wanted to use the utility code.
-_OTBN_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), '../..'))
-_OT_DIR = os.path.normpath(os.path.join(_OTBN_DIR, '../../..'))
-_OT_UTIL_DIR = os.path.join(_OT_DIR, 'util')
+_OTBN_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "../.."))
+_OT_DIR = os.path.normpath(os.path.join(_OTBN_DIR, "../../.."))
+_OT_UTIL_DIR = os.path.join(_OT_DIR, "util")
 sys.path.append(_OT_UTIL_DIR)

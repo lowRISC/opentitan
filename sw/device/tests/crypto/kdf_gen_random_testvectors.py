@@ -9,10 +9,11 @@ import sys
 
 import hjson
 import kmac_gen_single_testvector
-'''
+
+"""
 Read in a JSON test vector file, convert the test vector to C constants, and
 generate a header file with these test vectors.
-'''
+"""
 
 
 def gen_random_test(idx):
@@ -31,19 +32,17 @@ def gen_random_test(idx):
     # allowed.
     digest_len = 32 * random_instance.randint(2, 16)
 
-    return kmac_gen_single_testvector.gen_random_test(idx, key_len, security_str,
-                                                      input_msg_len, cust_str_len, digest_len)
+    return kmac_gen_single_testvector.gen_random_test(
+        idx, key_len, security_str, input_msg_len, cust_str_len, digest_len
+    )
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('n',
-                        type=int,
-                        help='Number of random test vectors to generate.')
-    parser.add_argument('outfile',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
+    parser.add_argument("n", type=int, help="Number of random test vectors to generate.")
+    parser.add_argument(
+        "outfile", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
 
     args = parser.parse_args()
 
@@ -57,5 +56,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

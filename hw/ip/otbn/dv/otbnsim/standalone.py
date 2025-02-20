@@ -13,28 +13,33 @@ from sim.stats import ExecutionStatAnalyzer
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('elf')
-    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument("elf")
+    parser.add_argument("-v", "--verbose", action="store_true")
     parser.add_argument(
-        '--dump-dmem',
+        "--dump-dmem",
         metavar="FILE",
-        type=argparse.FileType('wb'),
-        help=("after execution, write the data memory contents to this file. "
-              "Use '-' to write to STDOUT.")
+        type=argparse.FileType("wb"),
+        help=(
+            "after execution, write the data memory contents to this file. "
+            "Use '-' to write to STDOUT."
+        ),
     )
     parser.add_argument(
-        '--dump-regs',
+        "--dump-regs",
         metavar="FILE",
-        type=argparse.FileType('w'),
-        help=("after execution, write the GPR and WDR contents to this file. "
-              "Use '-' to write to STDOUT.")
+        type=argparse.FileType("w"),
+        help=(
+            "after execution, write the GPR and WDR contents to this file. "
+            "Use '-' to write to STDOUT."
+        ),
     )
     parser.add_argument(
-        '--dump-stats',
+        "--dump-stats",
         metavar="FILE",
-        type=argparse.FileType('w'),
-        help=("after execution, write execution statistics to this file. "
-              "Use '-' to write to STDOUT.")
+        type=argparse.FileType("w"),
+        help=(
+            "after execution, write execution statistics to this file. Use '-' to write to STDOUT."
+        ),
     )
 
     args = parser.parse_args()
@@ -54,9 +59,12 @@ def main() -> int:
 
     if exp_end_addr is not None:
         if sim.state.pc != exp_end_addr:
-            print('Run stopped at PC {:#x}, but _expected_end_addr was {:#x}.'
-                  .format(sim.state.pc, exp_end_addr),
-                  file=sys.stderr)
+            print(
+                "Run stopped at PC {:#x}, but _expected_end_addr was {:#x}.".format(
+                    sim.state.pc, exp_end_addr
+                ),
+                file=sys.stderr,
+            )
             return 1
 
     if args.dump_dmem is not None:

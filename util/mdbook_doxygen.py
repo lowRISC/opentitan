@@ -7,6 +7,7 @@
 This overview holds links to the generated doxygen api documentation
 as well as the actual file.
 """
+
 import io
 import json
 import re
@@ -44,7 +45,7 @@ def main() -> None:
             "\tpreprocessor.reggen.dif-src-py-regex -- A regex for identifying dif files.\n"
         )
 
-    combined_xml = difgen.get_combined_xml(out_dir / 'api-xml')
+    combined_xml = difgen.get_combined_xml(out_dir / "api-xml")
 
     header_files = set()
     for chapter in md_utils.chapters(book["sections"]):
@@ -56,11 +57,9 @@ def main() -> None:
 
         buffer = io.StringIO()
         buffer.write(f"# {file_name}\n")
-        difgen.gen_listing_html(html_out_dir, combined_xml, str(book_root / src_path),
-                                buffer)
+        difgen.gen_listing_html(html_out_dir, combined_xml, str(book_root / src_path), buffer)
         buffer.write(
-            "\n<details><summary>\nGenerated from <a href=\"{}\">{}</a></summary>\n"
-            .format(
+            '\n<details><summary>\nGenerated from <a href="{}">{}</a></summary>\n'.format(
                 site_url / src_path,
                 file_name,
             ),

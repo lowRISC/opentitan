@@ -38,7 +38,8 @@ from .gens.untaken_branch import UntakenBranch
 
 
 class SnippetGens:
-    '''A collection of snippet generators'''
+    """A collection of snippet generators"""
+
     _CLASSES = [
         Branch,
         CallStackRW,
@@ -50,7 +51,6 @@ class SnippetGens:
         StraightLineInsn,
         KnownWDR,
         UntakenBranch,
-
         ECall,
         BadAtEnd,
         BadBNMovr,
@@ -62,7 +62,7 @@ class SnippetGens:
         BadLoadStore,
         BadZeroLoop,
         BadIspr,
-        MisalignedLoadStore
+        MisalignedLoadStore,
     ]
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
@@ -79,9 +79,9 @@ class SnippetGens:
             cls_name = cls.__name__
             weight = cfg.gen_weights.values.get(cls_name)
             if weight is None:
-                raise ValueError('No weight in config at {} '
-                                 'for generator {!r}.'
-                                 .format(cfg.path, cls_name))
+                raise ValueError(
+                    "No weight in config at {} for generator {!r}.".format(cfg.path, cls_name)
+                )
             gen = cls(cfg, insns_file)
             if isinstance(gen, ECall):
                 ecall = gen
@@ -91,8 +91,9 @@ class SnippetGens:
 
                 # It also shouldn't be disabled by a config
                 if weight == 0:
-                    raise ValueError(f'Config at {cfg.path} gives zero weight '
-                                     f'to the ECall generator.')
+                    raise ValueError(
+                        f"Config at {cfg.path} gives zero weight to the ECall generator."
+                    )
 
             assert cls_name not in used_names
             used_names.add(cls_name)
@@ -110,20 +111,18 @@ class SnippetGens:
         # Check that we used all the names in cfg.gen_weights
         unused_names = set(cfg.gen_weights.values.keys()) - used_names
         if unused_names:
-            raise ValueError('Config at {} gives weights to non-existent '
-                             'generators: {}.'
-                             .format(cfg.path,
-                                     ', '.join(sorted(unused_names))))
+            raise ValueError(
+                "Config at {} gives weights to non-existent generators: {}.".format(
+                    cfg.path, ", ".join(sorted(unused_names))
+                )
+            )
 
         assert ecall is not None
         assert isinstance(ecall, ECall)
         self.ecall = ecall
 
-    def gen(self,
-            model: Model,
-            program: Program,
-            end: bool) -> Optional[GenRet]:
-        '''Pick a snippet and update model, program with its contents.
+    def gen(self, model: Model, program: Program, end: bool) -> Optional[GenRet]:
+        """Pick a snippet and update model, program with its contents.
 
         This assumes that program.get_insn_space_at(model.pc) > 0.
 
@@ -131,7 +130,7 @@ class SnippetGens:
         If the chosen snippet would cause execution to halt but end is False,
         this instead returns None (and leaves model and program unchanged).
 
-        '''
+        """
         # If we've run out of fuel, stop immediately.
         if not model.fuel:
             return None
@@ -152,8 +151,7 @@ class SnippetGens:
 
         while num_pos_weights > 0:
             # Pick a generator based on the weights in real_weights.
-            idx = random.choices(range(len(generators)),
-                                 weights=real_weights)[0]
+            idx = random.choices(range(len(generators)), weights=real_weights)[0]
             generator, _ = generators[idx]
 
             # Note that there should always be at least one positive weight in
@@ -177,22 +175,19 @@ class SnippetGens:
         return None
 
     def _gen_ecall(self, pc: int, program: Program) -> Snippet:
-        '''Generate an ECALL instruction at pc, ignoring notions of fuel'''
+        """Generate an ECALL instruction at pc, ignoring notions of fuel"""
         assert program.get_insn_space_at(pc) > 0
         return self.ecall.gen_at(pc, program)
 
-    def _gens(self,
-              model: Model,
-              program: Program,
-              end: bool) -> Tuple[List[Snippet], Model]:
-        '''Generate some snippets to continue program.
+    def _gens(self, model: Model, program: Program, end: bool) -> Tuple[List[Snippet], Model]:
+        """Generate some snippets to continue program.
 
         This will try to run down model.fuel and program.size. If end is True,
         it will eventually generate an ECALL instruction or cause an error. If
         end is False then, instead of doing that, it will instead stop (leaving
         model.pc at the place where the next instruction should be inserted).
 
-        '''
+        """
         children: List[Snippet] = []
         while True:
             gen_ecall = False
@@ -229,32 +224,27 @@ class SnippetGens:
 
         return (children, model)
 
-    def gens(self,
-             model: Model,
-             program: Program,
-             end: bool) -> Tuple[Optional[Snippet], Model]:
-        '''Try to generate snippets to continue program
+    def gens(self, model: Model, program: Program, end: bool) -> Tuple[Optional[Snippet], Model]:
+        """Try to generate snippets to continue program
 
         This will try to run down model.fuel and program.size. When it runs out
         of one or the other, it stops and returns any snippet it generated plus
         the updated model. If end is true, the generated snippet should cause
         OTBN to stop.
 
-        '''
+        """
         snippets, next_model = self._gens(model, program, end)
         # If end was True, there must be at least one instruction
         assert snippets or not end
         snippet = Snippet.merge_list(snippets) if snippets else None
         return (snippet, next_model)
 
-    def gen_program(self,
-                    model: Model,
-                    program: Program) -> Tuple[Snippet, int]:
-        '''Generate an entire program
+    def gen_program(self, model: Model, program: Program) -> Tuple[Snippet, int]:
+        """Generate an entire program
 
         This is the top-level entry point used by gen_program in rig.py.
 
-        '''
+        """
         # The basic strategy is that we split the length of program execution
         # (given by model.fuel) into a head and a tail. We generate the "head
         # part", trying not to generate an ECALL or error. Following that, we

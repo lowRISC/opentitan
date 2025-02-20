@@ -10,7 +10,6 @@ from bazel_query import BazelQuery, BazelQueryRunner
 
 
 class TestBazelQuery(unittest.TestCase):
-
     def test_rule_exact(self):
         query = BazelQuery.rule_exact("foo", "bar")
         self.assertEqual(query, 'kind("^foo rule$", bar)')
@@ -21,7 +20,7 @@ class TestBazelQuery(unittest.TestCase):
 
     def test_regex_for_tag(self):
         regex = BazelQuery.regex_for_tag("foo")
-        self.assertEqual(regex, '[\\[ ]foo[,\\]]')
+        self.assertEqual(regex, "[\\[ ]foo[,\\]]")
 
         # Regex doesn't match lists without "foo".
         self.assertFalse(re.search(regex, "[]"))
@@ -41,7 +40,6 @@ class TestBazelQuery(unittest.TestCase):
 
 
 class TestFindTargetsWithBannedChars(unittest.TestCase):
-
     def test_no_test_suites(self):
         backend = Mock()
         backend.return_value = []
@@ -72,28 +70,31 @@ class TestFindTargetsWithBannedChars(unittest.TestCase):
         backend.return_value = ["!@#$", "^&*()", "\x01"]
         bazel = BazelQueryRunner(backend=backend)
         targets = bazel.find_targets_with_banned_chars()
-        self.assertCountEqual(list(targets), [
-            ("!@#$", set("!@#$")),
-            ("^&*()", set("^&*()")),
-            ("\x01", set("\x01")),
-        ])
+        self.assertCountEqual(
+            list(targets),
+            [
+                ("!@#$", set("!@#$")),
+                ("^&*()", set("^&*()")),
+                ("\x01", set("\x01")),
+            ],
+        )
 
     def test_mixed(self):
         backend = Mock()
-        backend.return_value = [
-            '!@#$', '\x01', '//foo:bar', '^&*()', '//bar_baz:foo'
-        ]
+        backend.return_value = ["!@#$", "\x01", "//foo:bar", "^&*()", "//bar_baz:foo"]
         bazel = BazelQueryRunner(backend=backend)
         targets = bazel.find_targets_with_banned_chars()
-        self.assertCountEqual(list(targets), [
-            ("!@#$", set("!@#$")),
-            ("\x01", set("\x01")),
-            ("^&*()", set("^&*()")),
-        ])
+        self.assertCountEqual(
+            list(targets),
+            [
+                ("!@#$", set("!@#$")),
+                ("\x01", set("\x01")),
+                ("^&*()", set("^&*()")),
+            ],
+        )
 
 
 class TestFindEmptyTestSuites(unittest.TestCase):
-
     def test_empty(self):
         backend = Mock()
         backend.return_value = []
@@ -116,9 +117,11 @@ class TestFindEmptyTestSuites(unittest.TestCase):
         self.assertEqual(query_result_sequence, [])
 
     def test_second_suite_empty(self):
-        query_result_sequence = [[
-            "//foo:some_test_suite", "//foo:another_test_suite"
-        ], ["//foo:test"], []]
+        query_result_sequence = [
+            ["//foo:some_test_suite", "//foo:another_test_suite"],
+            ["//foo:test"],
+            [],
+        ]
 
         def backend(_query):
             return query_result_sequence.pop(0)
@@ -130,7 +133,6 @@ class TestFindEmptyTestSuites(unittest.TestCase):
 
 
 class TestFindNonManualTestSuites(unittest.TestCase):
-
     def test_simple(self):
         backend = Mock()
         backend.return_value = ["//foo:bar"]
@@ -143,5 +145,5 @@ class TestFindNonManualTestSuites(unittest.TestCase):
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

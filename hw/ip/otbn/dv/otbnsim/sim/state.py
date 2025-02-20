@@ -25,7 +25,7 @@ _WIPE_CYCLES = 68
 
 
 class FsmState(IntEnum):
-    r'''State of the internal start/stop FSM
+    r"""State of the internal start/stop FSM
 
     The FSM diagram looks like:
 
@@ -59,7 +59,8 @@ class FsmState(IntEnum):
     PRE_EXEC is the period after starting OTBN where we're still waiting for an
     EDN value to seed URND. EXEC is the period where we start fetching and
     executing instructions.
-    '''
+    """
+
     PRE_WIPE = 0
     WIPING = 1
     IDLE = 2
@@ -78,7 +79,7 @@ class InitSecWipeState(IntEnum):
 class OTBNState:
     def __init__(self) -> None:
         self.gprs = GPRs()
-        self.wdrs = RegFile('w', 256, 32)
+        self.wdrs = RegFile("w", 256, 32)
 
         self.ext_regs = OTBNExtRegs()
         self.wsrs = WSRFile(self.ext_regs)
@@ -193,8 +194,8 @@ class OTBNState:
         return self.pc + 4
 
     def set_next_pc(self, next_pc: int) -> None:
-        '''Overwrite the next program counter, e.g. as result of a jump.'''
-        assert (self.is_pc_valid(next_pc))
+        """Overwrite the next program counter, e.g. as result of a jump."""
+        assert self.is_pc_valid(next_pc)
         self._pc_next_override = next_pc
 
     def edn_urnd_step(self, urnd_data: int) -> None:
@@ -212,7 +213,7 @@ class OTBNState:
             self._urnd_client.request()
 
     def rnd_completed(self) -> None:
-        '''Called when CDC completes for the EDN RND interface'''
+        """Called when CDC completes for the EDN RND interface"""
         # Set the RND WSR with the value, assuming the cache hadn't been
         # poisoned. This will be committed at the end of the next step on the
         # main clock.
@@ -256,7 +257,7 @@ class OTBNState:
             self.set_next_pc(back_pc)
 
     def in_loop(self) -> bool:
-        '''The processor is currently executing a loop.'''
+        """The processor is currently executing a loop."""
 
         # A loop is executed if the loop stack is not empty.
         return bool(self.loop_stack.stack)
@@ -277,9 +278,7 @@ class OTBNState:
         return c
 
     def executing(self) -> bool:
-        return self._fsm_state not in [FsmState.IDLE,
-                                       FsmState.LOCKED,
-                                       FsmState.MEM_SEC_WIPE]
+        return self._fsm_state not in [FsmState.IDLE, FsmState.LOCKED, FsmState.MEM_SEC_WIPE]
 
     def wiping(self) -> bool:
         return self._fsm_state == FsmState.WIPING
@@ -338,7 +337,7 @@ class OTBNState:
             self._pc_next_override = None
 
     def _abort(self) -> None:
-        '''Abort any pending state changes'''
+        """Abort any pending state changes"""
         self.gprs.abort()
         self._pc_next_override = None
         self.dmem.abort()
@@ -349,8 +348,8 @@ class OTBNState:
         self.wdrs.abort()
 
     def start(self) -> None:
-        '''Start running; perform state init'''
-        self.ext_regs.write('STATUS', Status.BUSY_EXECUTE, True)
+        """Start running; perform state init"""
+        self.ext_regs.write("STATUS", Status.BUSY_EXECUTE, True)
         self.pending_halt = False
         self._err_bits = 0
 
@@ -375,7 +374,7 @@ class OTBNState:
         self._urnd_client.request()
 
     def stop(self) -> None:
-        '''Set flags to stop the processor and maybe abort the instruction.
+        """Set flags to stop the processor and maybe abort the instruction.
 
         If the current instruction has caused an error (so self._err_bits is
         nonzero), abort all its pending changes, including changes to external
@@ -390,7 +389,7 @@ class OTBNState:
         It's possible that we are already doing a secure wipe. For example, we
         might have had an error escalation signal after starting the wipe. In
         this case, there's nothing to do except possibly to update ERR_BITS.
-        '''
+        """
 
         # If we were running an instruction and something went wrong then it
         # might have updated state (either registers, memory or
@@ -402,14 +401,16 @@ class OTBNState:
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
         # set) is the 'done' flag.
-        self.ext_regs.set_bits('INTR_STATE', 1 << 0)
+        self.ext_regs.set_bits("INTR_STATE", 1 << 0)
 
-        should_lock = (((self._err_bits >> 16) != 0) or
-                       ((self._err_bits >> 10) & 1 != 0) or
-                       (self._err_bits != 0 and self.software_errs_fatal) or
-                       self.rma_req == LcTx.ON)
+        should_lock = (
+            ((self._err_bits >> 16) != 0)
+            or ((self._err_bits >> 10) & 1 != 0)
+            or (self._err_bits != 0 and self.software_errs_fatal)
+            or self.rma_req == LcTx.ON
+        )
         # Make any error bits visible
-        self.ext_regs.write('ERR_BITS', self._err_bits, True)
+        self.ext_regs.write("ERR_BITS", self._err_bits, True)
 
         # Clear the "we should stop soon" flag
         self.pending_halt = False
@@ -417,7 +418,7 @@ class OTBNState:
         if self.lock_immediately:
             assert should_lock
             self.set_fsm_state(FsmState.LOCKED)
-            self.ext_regs.write('STATUS', Status.LOCKED, True)
+            self.ext_regs.write("STATUS", Status.LOCKED, True)
         else:
             # Set the WIPE_START flag if we were running. This is used to tell
             # the C++ model code that this is a good time to inspect DMEM and
@@ -427,10 +428,10 @@ class OTBNState:
                 # Make the final PC visible. This isn't currently in the RTL,
                 # but is useful in simulations that want to track whether we
                 # stopped where we expected to stop.
-                self.ext_regs.write('STOP_PC', self.pc, True)
+                self.ext_regs.write("STOP_PC", self.pc, True)
 
-                self.ext_regs.write('WIPE_START', 1, True)
-                self.ext_regs.regs['WIPE_START'].commit()
+                self.ext_regs.write("WIPE_START", 1, True)
+                self.ext_regs.regs["WIPE_START"].commit()
 
                 # Switch to the pre-wipe state
                 self.set_fsm_state(FsmState.PRE_WIPE)
@@ -448,7 +449,7 @@ class OTBNState:
                 assert should_lock
                 self._next_fsm_state = FsmState.LOCKED
                 next_status = Status.LOCKED
-                self.ext_regs.write('STATUS', next_status, True)
+                self.ext_regs.write("STATUS", next_status, True)
 
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
@@ -466,20 +467,19 @@ class OTBNState:
         self._next_fsm_state = new_state
 
     def set_flags(self, fg: int, flags: FlagReg) -> None:
-        '''Update flags for a flag group'''
+        """Update flags for a flag group"""
         self.csrs.flags[fg] = flags
 
     def set_mlz_flags(self, fg: int, result: int) -> None:
-        '''Update M, L, Z flags for a flag group using the given result'''
-        self.csrs.flags[fg] = \
-            FlagReg.mlz_for_result(self.csrs.flags[fg].C, result)
+        """Update M, L, Z flags for a flag group using the given result"""
+        self.csrs.flags[fg] = FlagReg.mlz_for_result(self.csrs.flags[fg].C, result)
 
     def pre_insn(self, insn_affects_control: bool) -> None:
-        '''Run before running an instruction'''
+        """Run before running an instruction"""
         self.loop_stack.check_insn(self.pc, insn_affects_control)
 
     def is_pc_valid(self, pc: int) -> bool:
-        '''Return whether pc is a valid program counter.'''
+        """Return whether pc is a valid program counter."""
         # The PC should always be non-negative since it's represented as an
         # unsigned value. (It's an error in the simulator if that's come
         # unstuck)
@@ -496,7 +496,7 @@ class OTBNState:
         return True
 
     def post_insn(self, loop_warps: Dict[int, int]) -> None:
-        '''Update state after running an instruction but before commit'''
+        """Update state after running an instruction but before commit"""
         self.ext_regs.increment_insn_cnt()
         self.loop_step(loop_warps)
         self.gprs.post_insn()
@@ -519,24 +519,24 @@ class OTBNState:
             self.pending_halt = True
 
     def read_csr(self, idx: int) -> int:
-        '''Read the CSR with index idx as an unsigned 32-bit number'''
+        """Read the CSR with index idx as an unsigned 32-bit number"""
         return self.csrs.read_unsigned(self.wsrs, idx)
 
     def write_csr(self, idx: int, value: int) -> None:
-        '''Write value (an unsigned 32-bit number) to the CSR with index idx'''
+        """Write value (an unsigned 32-bit number) to the CSR with index idx"""
         self.csrs.write_unsigned(self.wsrs, idx, value)
 
     def peek_call_stack(self) -> List[int]:
-        '''Return the current call stack, bottom-first'''
+        """Return the current call stack, bottom-first"""
         return self.gprs.peek_call_stack()
 
     def stop_at_end_of_cycle(self, err_bits: int) -> None:
-        '''Tell the simulation to stop at the end of the cycle
+        """Tell the simulation to stop at the end of the cycle
 
         Any bits set in err_bits will be set in the ERR_BITS register when
         we're done.
 
-        '''
+        """
         self._err_bits |= err_bits
         self.pending_halt = True
 
@@ -544,7 +544,7 @@ class OTBNState:
         self._time_to_imem_invalidation = 2
 
     def clear_imem_invalidation(self) -> None:
-        '''Clear any effective or pending IMEM invalidation'''
+        """Clear any effective or pending IMEM invalidation"""
         self._time_to_imem_invalidation = None
         self.invalidated_imem = False
 
@@ -555,7 +555,7 @@ class OTBNState:
         self.csrs.wipe()
 
     def take_injected_err_bits(self) -> None:
-        '''Apply any injected errors, stopping at the end of the cycle'''
+        """Apply any injected errors, stopping at the end of the cycle"""
         if self.injected_err_bits != 0:
             self.stop_at_end_of_cycle(self.injected_err_bits)
             self.injected_err_bits = 0

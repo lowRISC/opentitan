@@ -43,7 +43,7 @@ def generate_test_vectors(args):
             digest = SHA3_512.new(msg)
         else:
             raise ValueError("Unsupported hash algorithm " + args.hash_alg)
-        signer = DSS.new(key_pair, 'fips-186-3', randfunc=random)
+        signer = DSS.new(key_pair, "fips-186-3", randfunc=random)
         signature = signer.sign(digest)
 
         signature = list(signature)
@@ -61,61 +61,66 @@ def generate_test_vectors(args):
                 signature[math.floor(idx / 8)] ^= 1 << (idx % 8)
                 verify_result = False
 
-        r = signature[:int(len(signature) / 2)]
-        s = signature[int(len(signature) / 2):]
+        r = signature[: int(len(signature) / 2)]
+        s = signature[int(len(signature) / 2) :]
 
         d = hex(int(key_pair.d))[2:]
 
         # Create sign test vector (currently only SHA-2 is supported)
         if args.hash_alg.startswith("sha-"):
-            test_vectors.append({
+            test_vectors.append(
+                {
+                    "vendor": "random",
+                    "test_case_id": count,
+                    "algorithm": "ecdsa",
+                    "operation": "sign",
+                    "curve": args.curve,
+                    "hash_alg": args.hash_alg,
+                    "message": list(msg),
+                    # The [2:] removes the '0x' at the beginning of hex strings
+                    "qx": hex(int(public.x))[2:],
+                    "qy": hex(int(public.y))[2:],
+                    "d": d,
+                    "result": True,
+                }
+            )
+
+        # Create verify test vector
+        test_vectors.append(
+            {
                 "vendor": "random",
                 "test_case_id": count,
                 "algorithm": "ecdsa",
-                "operation": "sign",
+                "operation": "verify",
                 "curve": args.curve,
                 "hash_alg": args.hash_alg,
                 "message": list(msg),
                 # The [2:] removes the '0x' at the beginning of hex strings
                 "qx": hex(int(public.x))[2:],
                 "qy": hex(int(public.y))[2:],
-                "d": d,
-                "result": True,
-            })
-
-        # Create verify test vector
-        test_vectors.append({
-            "vendor": "random",
-            "test_case_id": count,
-            "algorithm": "ecdsa",
-            "operation": "verify",
-            "curve": args.curve,
-            "hash_alg": args.hash_alg,
-            "message": list(msg),
-            # The [2:] removes the '0x' at the beginning of hex strings
-            "qx": hex(int(public.x))[2:],
-            "qy": hex(int(public.y))[2:],
-            "r": bytes(r).hex(),
-            "s": bytes(s).hex(),
-            "result": verify_result,
-        })
+                "r": bytes(r).hex(),
+                "s": bytes(s).hex(),
+                "result": verify_result,
+            }
+        )
 
     return test_vectors
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--dst',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
-    parser.add_argument('--schema', type=str, help='Testvector schema file')
-    parser.add_argument('--count', type=int, help='Number of test vectors to generate')
-    parser.add_argument('--curve', type=str, help='Elliptic curve [p256, p384]')
-    parser.add_argument('--hash_alg',
-                        type=str,
-                        help='Hash algorithm \
-                        [sha-256, sha-384, sha-512, sha3-256, sha3-384, sha3-512]')
+    parser.add_argument(
+        "--dst", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
+    parser.add_argument("--schema", type=str, help="Testvector schema file")
+    parser.add_argument("--count", type=int, help="Number of test vectors to generate")
+    parser.add_argument("--curve", type=str, help="Elliptic curve [p256, p384]")
+    parser.add_argument(
+        "--hash_alg",
+        type=str,
+        help="Hash algorithm \
+                        [sha-256, sha-384, sha-512, sha3-256, sha3-384, sha3-512]",
+    )
     args = parser.parse_args()
 
     testvecs = generate_test_vectors(args)
@@ -132,5 +137,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

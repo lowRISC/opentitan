@@ -23,17 +23,17 @@ def gen_shake_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
     msg_len = random.randint(0, MSG_LEN_UBOUND)
     dst_squeeze = random.randint(1, DST_SQUEEZE_BOUND)
     msg = random.getrandbits(8 * msg_len)
-    dst_len_bytes = int.to_bytes(DST_LEN, byteorder='little', length=32)
-    msg_len_bytes = int.to_bytes(msg_len, byteorder='little', length=32)
-    msg_bytes = int.to_bytes(msg, byteorder='little', length=msg_len)
-    dst_squeeze_bytes = int.to_bytes(dst_squeeze, byteorder='little', length=32)
+    dst_len_bytes = int.to_bytes(DST_LEN, byteorder="little", length=32)
+    msg_len_bytes = int.to_bytes(msg_len, byteorder="little", length=32)
+    msg_bytes = int.to_bytes(msg, byteorder="little", length=msg_len)
+    dst_squeeze_bytes = int.to_bytes(dst_squeeze, byteorder="little", length=32)
 
     # Write input values.
     inputs = {
-        'dst_len': dst_len_bytes,
-        'msg': msg_bytes,
-        'msg_len': msg_len_bytes,
-        'dst_squeeze': dst_squeeze_bytes
+        "dst_len": dst_len_bytes,
+        "msg": msg_bytes,
+        "msg_len": msg_len_bytes,
+        "dst_squeeze": dst_squeeze_bytes,
     }
     write_test_data(inputs, data_file)
 
@@ -48,23 +48,26 @@ def gen_shake_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
 
     # Write expected output values.
     exp = {}
-    exp['w0'] = dst_ref.read(32)
+    exp["w0"] = dst_ref.read(32)
     write_test_exp(exp, exp_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed',
-                        type=int,
-                        required=False,
-                        help=('Seed value for pseudorandomness.'))
-    parser.add_argument('data',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for input DMEM values.'))
-    parser.add_argument('exp',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for expected register values.'))
+    parser.add_argument(
+        "-s", "--seed", type=int, required=False, help=("Seed value for pseudorandomness.")
+    )
+    parser.add_argument(
+        "data",
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help=("Output file for input DMEM values."),
+    )
+    parser.add_argument(
+        "exp",
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help=("Output file for expected register values."),
+    )
     args = parser.parse_args()
     gen_shake_test(args.seed, args.data, args.exp)

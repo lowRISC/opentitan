@@ -16,12 +16,12 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class MisalignedLoadStore(SnippetGen):
-    '''A snippet generator that generates random load/store instructions
+    """A snippet generator that generates random load/store instructions
 
     Generated instructions are misaligned, therefore they end the
     program.
 
-    '''
+    """
 
     ends_program = True
 
@@ -31,14 +31,14 @@ class MisalignedLoadStore(SnippetGen):
         self.insns = []
         self.weights = []
 
-        self.sw = self._get_named_insn(insns_file, 'sw')
-        self.lw = self._get_named_insn(insns_file, 'lw')
+        self.sw = self._get_named_insn(insns_file, "sw")
+        self.lw = self._get_named_insn(insns_file, "lw")
 
         # BN.LID Instruction Checks
-        self.bnlid = self._get_named_insn(insns_file, 'bn.lid')
+        self.bnlid = self._get_named_insn(insns_file, "bn.lid")
 
         # BN.SID Instruction Checks
-        self.bnsid = self._get_named_insn(insns_file, 'bn.sid')
+        self.bnsid = self._get_named_insn(insns_file, "bn.sid")
 
         for insn in [self.sw, self.bnsid, self.lw, self.bnlid]:
             weight = cfg.insn_weights.get(insn.mnemonic)
@@ -51,11 +51,7 @@ class MisalignedLoadStore(SnippetGen):
         if not self.weights:
             self.disabled = True
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         weights = self.weights
         prog_insn = None
         while prog_insn is None:
@@ -79,22 +75,19 @@ class MisalignedLoadStore(SnippetGen):
         return (snippet, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-        '''Try to pick one of BN.XID or XW instructions
-
-        '''
+        """Try to pick one of BN.XID or XW instructions"""
 
         # Special-case BN load/store instructions by mnemonic. These use
         # complicated indirect addressing, so it's probably more sensible to
         # give them special code.
-        if insn.mnemonic in ['bn.lid', 'bn.sid']:
+        if insn.mnemonic in ["bn.lid", "bn.sid"]:
             return self._fill_bn_xid(insn, model)
-        if insn.mnemonic in ['lw', 'sw']:
+        if insn.mnemonic in ["lw", "sw"]:
             return self._fill_xw(insn, model)
 
         return None
 
     def _fill_xw(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-
         grd_op_type = self.lw.operands[0].op_type
         imm_op_type = self.lw.operands[1].op_type
 
@@ -106,7 +99,7 @@ class MisalignedLoadStore(SnippetGen):
         min_offset, max_offset = offset_rng
 
         # Get known registers
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
 
         base = []
         for reg_idx, reg_val in known_regs:
@@ -139,7 +132,7 @@ class MisalignedLoadStore(SnippetGen):
         offset_val = imm_op_type.op_val_to_enc_val(imm_val, model.pc)
         assert offset_val is not None
 
-        if insn.mnemonic == 'lw':
+        if insn.mnemonic == "lw":
             # Pick grd randomly. Since we can write to any register (including
             # x0) this should always succeed.
             op_val_grd = model.pick_operand_value(grd_op_type)
@@ -147,17 +140,17 @@ class MisalignedLoadStore(SnippetGen):
 
             op_val = [op_val_grd, offset_val, op_val_grs1]
 
-        elif insn.mnemonic == 'sw':
+        elif insn.mnemonic == "sw":
             # Any known register is okay for grs2 operand since it will be
             # guaranteed to have a misaligned address to store the value from.
             op_val_grs2 = random.choice(known_regs)[0]
 
             op_val = [op_val_grs2, offset_val, op_val_grs1]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        return ProgInsn(insn, op_val, ("dmem", 4096))
 
     def _fill_bn_xid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-        '''Fill out a BN.LID or BN.SID instruction'''
+        """Fill out a BN.LID or BN.SID instruction"""
 
         bn_imm_op_type = self.bnlid.operands[2].op_type
 
@@ -169,15 +162,14 @@ class MisalignedLoadStore(SnippetGen):
         min_offset, max_offset = bn_offset_rng
 
         # Get known registers
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
 
         base = []
 
         # Get misaligned registers which can easily be in valid address range
         for reg_idx, reg_val in known_regs:
             val = reg_val - (1 << 32) if reg_val >> 31 else reg_val
-            if (((1 - max_offset <= val < model.dmem_size - min_offset) and
-                 val % 32)):
+            if (1 - max_offset <= val < model.dmem_size - min_offset) and val % 32:
                 base.append((reg_idx, val))
 
         if not base:
@@ -201,7 +193,7 @@ class MisalignedLoadStore(SnippetGen):
         op_val_grs1 = idx
         assert op_val_grs1 is not None
 
-        if insn.mnemonic == 'bn.lid':
+        if insn.mnemonic == "bn.lid":
             # Pick grd randomly. Since we can write to any register (including
             # x0) this should always succeed.
             op_val_grd = model.pick_operand_value(insn.operands[0].op_type)
@@ -209,7 +201,7 @@ class MisalignedLoadStore(SnippetGen):
 
             op_val = [op_val_grd, op_val_grs1, bn_offset_val, 0, 0]
 
-        elif insn.mnemonic == 'bn.sid':
+        elif insn.mnemonic == "bn.sid":
             # Any known register is okay for grs2 operand since it will be
             # guaranteed to have an out of bounds address to store the value
             # from.
@@ -218,4 +210,4 @@ class MisalignedLoadStore(SnippetGen):
 
             op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]
 
-        return ProgInsn(insn, op_val, ('dmem', 4096))
+        return ProgInsn(insn, op_val, ("dmem", 4096))

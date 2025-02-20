@@ -7,33 +7,34 @@ import argparse
 import re
 import sys
 
-parser = argparse.ArgumentParser(
-    description='Enum generator for pkcs11 constants')
+parser = argparse.ArgumentParser(description="Enum generator for pkcs11 constants")
 parser.add_argument(
-    '--binding',
-    nargs='+',
-    help='Path to cryptoki-sys/src/bindings/x86_64-unknown-linux-gnu.rs')
-parser.add_argument('-o', '--output', help='Name of output file')
-parser.add_argument('--serde',
-                    default=False,
-                    action=argparse.BooleanOptionalAction,
-                    help='Derive serde Serialize/Deserialize')
-parser.add_argument('--strum',
-                    default=False,
-                    action=argparse.BooleanOptionalAction,
-                    help='Derive string and u64 conversions with strum')
-parser.add_argument('--conv_data',
-                    default=False,
-                    action=argparse.BooleanOptionalAction,
-                    help='Generate AttrData conversions')
-parser.add_argument('prefix',
-                    metavar='PREFIX',
-                    help='A constant prefix like CKO or CKA')
+    "--binding", nargs="+", help="Path to cryptoki-sys/src/bindings/x86_64-unknown-linux-gnu.rs"
+)
+parser.add_argument("-o", "--output", help="Name of output file")
 parser.add_argument(
-    'rust_ki_type',
-    metavar='RUST_KI_TYPE',
-    help=
-    'Equivalent fully-qualified type in cryptoki (e.g. cryptoki::object::KeyType)'
+    "--serde",
+    default=False,
+    action=argparse.BooleanOptionalAction,
+    help="Derive serde Serialize/Deserialize",
+)
+parser.add_argument(
+    "--strum",
+    default=False,
+    action=argparse.BooleanOptionalAction,
+    help="Derive string and u64 conversions with strum",
+)
+parser.add_argument(
+    "--conv_data",
+    default=False,
+    action=argparse.BooleanOptionalAction,
+    help="Generate AttrData conversions",
+)
+parser.add_argument("prefix", metavar="PREFIX", help="A constant prefix like CKO or CKA")
+parser.add_argument(
+    "rust_ki_type",
+    metavar="RUST_KI_TYPE",
+    help="Equivalent fully-qualified type in cryptoki (e.g. cryptoki::object::KeyType)",
 )
 
 FILE_HEADER = """// Copyright lowRISC contributors (OpenTitan project).
@@ -46,29 +47,22 @@ FILE_HEADER = """// Copyright lowRISC contributors (OpenTitan project).
 
 # The following names are duplicates in the bindgen'ed constants.
 DUPLICATE_NAMES = [
-    'CKA_ECDSA_PARAMS',
-    'CKA_SUBPRIME_BITS',
-    'CKK_ECDSA',
-    'CKM_ECDSA_KEY_PAIR_GEN',
-    'CKM_SHA3_256_KEY_DERIVATION',         # Dupe of CKM_SHA3_256_KEY_DERIVE
-    'CKM_SHA3_224_KEY_DERIVATION',         # Dupe of CKM_SHA3_224_KEY_DERIVE
-    'CKM_SHA3_384_KEY_DERIVATION',         # Dupe of CKM_SHA3_384_KEY_DERIVE
-    'CKM_SHA3_512_KEY_DERIVATION',         # Dupe of CKM_SHA3_512_KEY_DERIVE
-    'CKM_SHAKE_128_KEY_DERIVATION',        # Dupe of KM_SHAKE_128_KEY_DERIVE
-    'CKM_SHAKE_256_KEY_DERIVATION',        # Dupe of CKM_SHAKE_256_KEY_DERIVE
-    'CKM_DSA_PROBABLISTIC_PARAMETER_GEN',  # Typo of CKM_DSA_PROBABILISTIC_PARAMETER_GEN
+    "CKA_ECDSA_PARAMS",
+    "CKA_SUBPRIME_BITS",
+    "CKK_ECDSA",
+    "CKM_ECDSA_KEY_PAIR_GEN",
+    "CKM_SHA3_256_KEY_DERIVATION",  # Dupe of CKM_SHA3_256_KEY_DERIVE
+    "CKM_SHA3_224_KEY_DERIVATION",  # Dupe of CKM_SHA3_224_KEY_DERIVE
+    "CKM_SHA3_384_KEY_DERIVATION",  # Dupe of CKM_SHA3_384_KEY_DERIVE
+    "CKM_SHA3_512_KEY_DERIVATION",  # Dupe of CKM_SHA3_512_KEY_DERIVE
+    "CKM_SHAKE_128_KEY_DERIVATION",  # Dupe of KM_SHAKE_128_KEY_DERIVE
+    "CKM_SHAKE_256_KEY_DERIVATION",  # Dupe of CKM_SHAKE_256_KEY_DERIVE
+    "CKM_DSA_PROBABLISTIC_PARAMETER_GEN",  # Typo of CKM_DSA_PROBABILISTIC_PARAMETER_GEN
 ]
 
 
 class EnumGen(object):
-
-    def __init__(self,
-                 bindings,
-                 prefix,
-                 ki_type,
-                 serde=False,
-                 strum=False,
-                 conv_data=False):
+    def __init__(self, bindings, prefix, ki_type, serde=False, strum=False, conv_data=False):
         """Create an EnumGen instance.
 
         Args:
@@ -87,7 +81,7 @@ class EnumGen(object):
         self.conv_data = conv_data
         self.output = []
 
-    def emit(self, v=''):
+    def emit(self, v=""):
         """Emit rust output.
 
         Args:
@@ -108,22 +102,21 @@ class EnumGen(object):
         tp = None
         # Match rust PKCS#11 constants with prefix `self.prefix`.  The constant
         # name goes into match group 1 and the type into match group 2.
-        rx = re.compile(r'pub const ({}_.*):\s+(.*)\s+=.*;'.format(
-            self.prefix))
+        rx = re.compile(r"pub const ({}_.*):\s+(.*)\s+=.*;".format(self.prefix))
         for binding in self.bindings:
-            with open(binding, 'rt') as f:
+            with open(binding, "rt") as f:
                 for line in f:
                     if m := rx.match(line):
                         name = m.group(1)
                         # Eliminate duplicated constants.
-                        if name in DUPLICATE_NAMES or 'CAST5' in name:
+                        if name in DUPLICATE_NAMES or "CAST5" in name:
                             continue
                         if not tp:
                             tp = m.group(2)
                         if m.group(2) != tp:
                             raise Exception(
-                                'Expected objects to all be of uniform type',
-                                name, tp, m.group(2))
+                                "Expected objects to all be of uniform type", name, tp, m.group(2)
+                            )
                         names.append(name)
         return (names, tp)
 
@@ -137,17 +130,17 @@ class EnumGen(object):
             The StudlyCaps form of the string.
         """
         words = []
-        prev = ''
-        for word in name.split('_'):
+        prev = ""
+        for word in name.split("_"):
             if word and word[0].isalpha():
                 word = word.capitalize()
                 prev = word
             else:
                 if prev.isdigit():
-                    word = '_' + word
+                    word = "_" + word
                 prev = word
             words.append(word)
-        return ''.join(words)
+        return "".join(words)
 
     def emit_enum(self, names):
         """Emit an enum.
@@ -157,22 +150,20 @@ class EnumGen(object):
         Args:
             names: List[str]; List of PKCS#11 constant names.
         """
-        typename = self.ki_type.split('::')[-1]
+        typename = self.ki_type.split("::")[-1]
         prefix = len(self.prefix) + 1
-        enumerators = map(lambda name: self.to_studlycaps(name[prefix:]),
-                          names)
-        traits = [
-            'Clone', 'Copy', 'Debug', 'PartialEq', 'Eq', 'Hash'
-        ]
+        enumerators = map(lambda name: self.to_studlycaps(name[prefix:]), names)
+        traits = ["Clone", "Copy", "Debug", "PartialEq", "Eq", "Hash"]
         if self.serde:
-            traits.extend(['serde::Serialize', 'serde::Deserialize'])
+            traits.extend(["serde::Serialize", "serde::Deserialize"])
         if self.strum:
             traits.extend(
-                ['strum::Display', 'strum::EnumString', 'strum::EnumIter', 'strum::FromRepr'])
-        self.emit(f'#[derive({", ".join(traits)})]')
-        self.emit('#[repr(u64)]')
-        self.emit(f'pub enum {typename} {{')
-        for (en, val) in zip(enumerators, names):
+                ["strum::Display", "strum::EnumString", "strum::EnumIter", "strum::FromRepr"]
+            )
+        self.emit(f"#[derive({', '.join(traits)})]")
+        self.emit("#[repr(u64)]")
+        self.emit(f"pub enum {typename} {{")
+        for en, val in zip(enumerators, names):
             snake_case = val[4:].lower()
             if self.serde:
                 self.emit(f'    #[serde(rename="{val}")]')
@@ -180,9 +171,9 @@ class EnumGen(object):
                 self.emit(
                     f'    #[strum(serialize="{val}", serialize="{en}", serialize="{snake_case}")]'
                 )
-            self.emit(f'    {en} = {val},')
-        self.emit(f'    Unknown{typename} = u64::MAX,')
-        self.emit('}')
+            self.emit(f"    {en} = {val},")
+        self.emit(f"    Unknown{typename} = u64::MAX,")
+        self.emit("}")
 
     def emit_conversions(self, reprtype):
         """Emit conversion functions.
@@ -190,7 +181,7 @@ class EnumGen(object):
         Args:
             reprtype: str; The low-level PKCS#11 representation type.
         """
-        typename = self.ki_type.split('::')[-1]
+        typename = self.ki_type.split("::")[-1]
         if self.strum:
             self.emit(f"""
 impl From<u64> for {typename} {{
@@ -248,26 +239,26 @@ impl From<{typename}> for AttrData {{
         (names, reprtype) = self.get_names()
         self.emit(FILE_HEADER)
 
-        self.emit('use std::convert::TryFrom;')
-        self.emit('use cryptoki_sys::*;')
+        self.emit("use std::convert::TryFrom;")
+        self.emit("use cryptoki_sys::*;")
         self.emit()
         if self.conv_data:
-            self.emit(
-                'use crate::util::attribute::{AttrData, AttributeError};')
+            self.emit("use crate::util::attribute::{AttrData, AttributeError};")
         self.emit()
         self.emit_enum(names)
         self.emit_conversions(reprtype)
-        return '\n'.join(self.output)
+        return "\n".join(self.output)
 
 
 def main(argv):
     args = parser.parse_args()
-    gen = EnumGen(args.binding, args.prefix, args.rust_ki_type, args.serde,
-                  args.strum, args.conv_data)
+    gen = EnumGen(
+        args.binding, args.prefix, args.rust_ki_type, args.serde, args.strum, args.conv_data
+    )
     out = gen.emit_file()
     print(out)
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main(sys.argv))

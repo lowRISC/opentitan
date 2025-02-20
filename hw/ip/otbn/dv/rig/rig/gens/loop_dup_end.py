@@ -16,16 +16,15 @@ from ..snippet_gen import GenCont, GenRet
 
 
 class LoopDupEndInner(Loop):
-    '''The generator used by LoopDupEnd to make the inner loop'''
+    """The generator used by LoopDupEnd to make the inner loop"""
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__(cfg, insns_file)
         self.loop_end_stack: List[int] = []
 
-    def gen_with_end(self,
-                     loop_end: int,
-                     cont: GenCont,
-                     model: Model,
-                     program: Program) -> Optional[GenRet]:
+    def gen_with_end(
+        self, loop_end: int, cont: GenCont, model: Model, program: Program
+    ) -> Optional[GenRet]:
         self.loop_end_stack.append(loop_end)
         try:
             return self.gen(cont, model, program)
@@ -33,13 +32,15 @@ class LoopDupEndInner(Loop):
             assert self.loop_end_stack[-1] == loop_end
             self.loop_end_stack.pop()
 
-    def _pick_loop_shape(self,
-                         op0_type: OperandType,
-                         op1_type: ImmOperandType,
-                         space_here: int,
-                         check: bool,
-                         model: Model,
-                         program: Program) -> Optional[Loop.Shape]:
+    def _pick_loop_shape(
+        self,
+        op0_type: OperandType,
+        op1_type: ImmOperandType,
+        space_here: int,
+        check: bool,
+        model: Model,
+        program: Program,
+    ) -> Optional[Loop.Shape]:
         assert self.loop_end_stack
         loop_end = self.loop_end_stack[-1]
 
@@ -57,7 +58,7 @@ class LoopDupEndInner(Loop):
 
 
 class LoopDupEnd(Loop):
-    '''A generator for two nested loops sharing an end address.
+    """A generator for two nested loops sharing an end address.
 
     This generator makes the outer loop, using an instance of LoopDupEndInner
     to make the inner one.
@@ -68,7 +69,8 @@ class LoopDupEnd(Loop):
     most "bad behaviour" generators, this doesn't set the ends_program flag:
     OTBN won't spot any error, we'll just use up some of the loop stack.
 
-    '''
+    """
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__(cfg, insns_file)
         self.inner_gen = LoopDupEndInner(cfg, insns_file)
@@ -76,35 +78,33 @@ class LoopDupEnd(Loop):
         # The stack of loop ends and continuations
         self.stack = []  # type: List[Tuple[int, GenCont]]
 
-    def pick_weight(self,
-                    model: Model,
-                    program: Program) -> float:
+    def pick_weight(self, model: Model, program: Program) -> float:
         # Pick a weight that decreases with current loop depth. Once the
         # generated code has run, we lose access to all existing loops, so we'd
         # probably rather not run it when deeply nested.
         return 1 / (1 << model.loop_stack.max_depth())
 
-    def _gen_body(self,
-                  bodysize: int,
-                  single_iter: bool,
-                  bogus_insn: ProgInsn,
-                  cont: GenCont,
-                  model: Model,
-                  program: Program) -> Optional[GenRet]:
+    def _gen_body(
+        self,
+        bodysize: int,
+        single_iter: bool,
+        bogus_insn: ProgInsn,
+        cont: GenCont,
+        model: Model,
+        program: Program,
+    ) -> Optional[GenRet]:
         loop_end = model.pc + 4 * (bodysize - 1)
         cont = cont
         self.stack.append((loop_end, cont))
         try:
-            return super()._gen_body(bodysize, single_iter,
-                                     bogus_insn, cont, model, program)
+            return super()._gen_body(bodysize, single_iter, bogus_insn, cont, model, program)
         finally:
             assert self.stack[-1] == (loop_end, cont)
             self.stack.pop()
 
-    def _gen_tail(self,
-                  num_insns: int,
-                  model: Model,
-                  program: Program) -> Optional[Tuple[Snippet, Model]]:
+    def _gen_tail(
+        self, num_insns: int, model: Model, program: Program
+    ) -> Optional[Tuple[Snippet, Model]]:
         # Overriden from base class. The Loop generator derives a loop body as
         # some (possibly empty) free-form "head" part, followed by a sled of
         # straight-line instructions. Here, we override the "sled generation"

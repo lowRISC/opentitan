@@ -52,14 +52,15 @@ def parse_test_vectors(raw_data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src',
-                        metavar='FILE',
-                        type=argparse.FileType('r'),
-                        help='Read test vectors from this JSON file.')
-    parser.add_argument('--dst',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
+    parser.add_argument(
+        "--src",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help="Read test vectors from this JSON file.",
+    )
+    parser.add_argument(
+        "--dst", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
     parser.add_argument("--schema", type=str, help="Testvector schema file")
     args = parser.parse_args()
 
@@ -77,5 +78,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

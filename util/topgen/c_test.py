@@ -29,6 +29,7 @@ class TestPeripheral:
     headers, rather than hard-coded constants. This is done to ensure that a
     single source of truth is referenced in all of the tests.
     """
+
     def __init__(self, name: str, inst_name: str, base_addr_name: str):
         self.name = name
         self.inst_name = inst_name
@@ -37,10 +38,20 @@ class TestPeripheral:
 
 class IrqTestPeripheral(TestPeripheral):
     """Captures a peripheral instance's attributes for use in IRQ test."""
-    def __init__(self, name: str, inst_name: str, base_addr_name: str,
-                 plic_name: str, start_irq: str, end_irq: str,
-                 plic_start_irq: str, status_type_mask: int,
-                 status_default_mask: int, addr_space: str):
+
+    def __init__(
+        self,
+        name: str,
+        inst_name: str,
+        base_addr_name: str,
+        plic_name: str,
+        start_irq: str,
+        end_irq: str,
+        plic_start_irq: str,
+        status_type_mask: int,
+        status_default_mask: int,
+        addr_space: str,
+    ):
         super().__init__(name, inst_name, base_addr_name)
         self.plic_name = plic_name
         self.start_irq = start_irq
@@ -54,9 +65,17 @@ class IrqTestPeripheral(TestPeripheral):
 
 class AlertTestPeripheral(TestPeripheral):
     """Captures a peripheral instance's attributes for use in IRQ test."""
-    def __init__(self, name: str, inst_name: str, base_addr_name: str,
-                 top_alert_name: str, dif_alert_name: str, num_alerts: int,
-                 addr_space: str):
+
+    def __init__(
+        self,
+        name: str,
+        inst_name: str,
+        base_addr_name: str,
+        top_alert_name: str,
+        dif_alert_name: str,
+        num_alerts: int,
+        addr_space: str,
+    ):
         super().__init__(name, inst_name, base_addr_name)
         self.top_alert_name = top_alert_name
         self.dif_alert_name = dif_alert_name
@@ -76,19 +95,19 @@ class TopGenCTest(TopGenC):
         # support for multiple "handler" instances in one design.
         # TODO: Don't require that the handler's module_instance_name be the
         # same as the template name.
-        self.alert_handler = find_module(self.top['module'], 'alert_handler')
-        self.rv_plic = find_module(self.top['module'], 'rv_plic')
+        self.alert_handler = find_module(self.top["module"], "alert_handler")
+        self.rv_plic = find_module(self.top["module"], "rv_plic")
 
         self.irq_peripherals = {
-            x['name']: self._get_irq_peripherals(self.rv_plic, x['name'])
-            for x in top_info['addr_spaces']
+            x["name"]: self._get_irq_peripherals(self.rv_plic, x["name"])
+            for x in top_info["addr_spaces"]
         }
 
         # Only generate alert_handler and mappings if there is an alert_handler
         if self.alert_handler is not None:
             self.alert_peripherals = {
-                x['name']: self._get_alert_peripherals(self.alert_handler, x['name'])
-                for x in top_info['addr_spaces']
+                x["name"]: self._get_alert_peripherals(self.alert_handler, x["name"])
+                for x in top_info["addr_spaces"]
             }
 
     def _get_irq_peripherals(self, rv_plic, addr_space):
@@ -103,7 +122,7 @@ class TopGenCTest(TopGenC):
         # orthogonal concept to address spaces. There may be multiple PLICs, for
         # example, in one address space. Or devices with core interfaces in
         # address spaces that are different from the CPU's and PLIC's.
-        rv_plic_addr_spaces = rv_plic['base_addrs'][None]
+        rv_plic_addr_spaces = rv_plic["base_addrs"][None]
         if addr_space not in rv_plic_addr_spaces:
             return irq_peripherals
 
@@ -112,14 +131,15 @@ class TopGenCTest(TopGenC):
         # address space. A host could still reach other devices via a bridge,
         # but bridges may not be transparent and may need setup code.
         direct_device_regions = device_regions[addr_space]
-        for entry in self.top['module']:
-            inst_name = entry['name']
+        for entry in self.top["module"]:
+            inst_name = entry["name"]
             if inst_name not in self.top["interrupt_module"]:
                 continue
 
-            name = entry['type']
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
-                         Name.from_snake_case(inst_name))
+            name = entry["type"]
+            plic_name = (
+                self._top_name + Name(["plic", "peripheral"]) + Name.from_snake_case(inst_name)
+            )
             plic_name = plic_name.as_c_enum()
 
             # Device regions may have multiple TL interfaces. Pick the region
@@ -127,7 +147,7 @@ class TopGenCTest(TopGenC):
             # TODO: Model interrupt domains with explicit connectivity. This
             # method of associating interrupts with a PLIC leads to inflexible
             # architectures that do not cover all use cases.
-            if_name = 'core'
+            if_name = "core"
             periph_addr_space = addr_space
             if inst_name in direct_device_regions:
                 if len(direct_device_regions[inst_name]) == 1:
@@ -135,8 +155,10 @@ class TopGenCTest(TopGenC):
                 try:
                     region = direct_device_regions[inst_name][if_name]
                 except KeyError:
-                    log.error(f"The 'base_addrs' dict for {name} needs to have "
-                              "one entry keyed with 'None' or 'core'.")
+                    log.error(
+                        f"The 'base_addrs' dict for {name} needs to have "
+                        "one entry keyed with 'None' or 'core'."
+                    )
                     sys.exit(1)
                 base_addr_name = region.base_addr_name().as_c_define()
             else:
@@ -154,18 +176,22 @@ class TopGenCTest(TopGenC):
                         break
 
                 if base_addr_name is None:
-                    log.error(f"The 'base_addrs' dict for {name} needs to have "
-                              "one entry keyed with 'None' or 'core'.")
+                    log.error(
+                        f"The 'base_addrs' dict for {name} needs to have "
+                        "one entry keyed with 'None' or 'core'."
+                    )
                     sys.exit(1)
 
-            plic_name = (self._top_name + Name(["plic", "peripheral"]) +
-                         Name.from_snake_case(inst_name))
+            plic_name = (
+                self._top_name + Name(["plic", "peripheral"]) + Name.from_snake_case(inst_name)
+            )
             plic_name = plic_name.as_c_enum()
 
             start_irq = self.device_irqs[inst_name][0]
             end_irq = self.device_irqs[inst_name][-1]
-            plic_start_irq = (self._top_name + Name(["plic", "irq", "id"]) +
-                              Name.from_snake_case(start_irq))
+            plic_start_irq = (
+                self._top_name + Name(["plic", "irq", "id"]) + Name.from_snake_case(start_irq)
+            )
             plic_start_irq = plic_start_irq.as_c_enum()
 
             # Get DIF compliant, instance-agnostic IRQ names.
@@ -183,17 +209,24 @@ class TopGenCTest(TopGenC):
             for irq in self.top["interrupt"]:
                 if irq["module_name"] == inst_name:
                     if irq["intr_type"] == IntrType.Status:
-                        setbit = (((1 << irq["width"]) - 1) << n)
+                        setbit = ((1 << irq["width"]) - 1) << n
                         status_type_mask |= setbit
                         if irq["default_val"] is True:
                             status_default_mask |= setbit
                     n += irq["width"]
 
-            irq_peripheral = IrqTestPeripheral(name, inst_name, base_addr_name,
-                                               plic_name, start_irq, end_irq,
-                                               plic_start_irq, status_type_mask,
-                                               status_default_mask,
-                                               periph_addr_space)
+            irq_peripheral = IrqTestPeripheral(
+                name,
+                inst_name,
+                base_addr_name,
+                plic_name,
+                start_irq,
+                end_irq,
+                plic_start_irq,
+                status_type_mask,
+                status_default_mask,
+                periph_addr_space,
+            )
             irq_peripherals.append(irq_peripheral)
 
         irq_peripherals.sort(key=lambda p: p.inst_name)
@@ -208,20 +241,20 @@ class TopGenCTest(TopGenC):
         """
         alert_peripherals = []
         # TODO: Model alert domains with explicit connectivity
-        alert_handler_addr_spaces = alert_handler['base_addrs'][None]
+        alert_handler_addr_spaces = alert_handler["base_addrs"][None]
         if addr_space not in alert_handler_addr_spaces:
             return alert_peripherals
         all_device_regions = self.all_device_regions()
         all_direct_regions = all_device_regions[addr_space]
-        for entry in self.top['module']:
-            inst_name = entry['name']
+        for entry in self.top["module"]:
+            inst_name = entry["name"]
             if inst_name not in self.top["alert_module"]:
                 continue
 
-            if not entry['generate_dif']:
+            if not entry["generate_dif"]:
                 continue
 
-            name = entry['type']
+            name = entry["type"]
             periph_addr_space = addr_space
             region = None
             # Prioritized list of interface names to try.
@@ -236,8 +269,7 @@ class TopGenCTest(TopGenC):
                         region = regions[if_name]
                         break
             if region is None:
-                all_inst_regions = {k: v for (k, v) in all_device_regions.items()
-                                    if inst_name in v}
+                all_inst_regions = {k: v for (k, v) in all_device_regions.items() if inst_name in v}
                 # Try other address spaces.
                 for region_addr_space, regions in all_inst_regions.items():
                     inst_regions = regions[inst_name]
@@ -249,30 +281,37 @@ class TopGenCTest(TopGenC):
                     if region is not None:
                         break
             if region is None:
-                log.error(f"Could not find supported reg interface for alerts "
-                          f"coming from module {name}")
+                log.error(
+                    f"Could not find supported reg interface for alerts coming from module {name}"
+                )
                 sys.exit(1)
             base_addr_name = region.base_addr_name().as_c_define()
 
             # If alerts are routed to the external interface, there is no need for DIFs, etc ...
-            if 'outgoing_alert' in entry:
+            if "outgoing_alert" in entry:
                 continue
 
             dif_alert_name = self.device_alerts[inst_name][0]
             num_alerts = len(self.device_alerts[inst_name])
 
-            top_alert_name = (self._top_name +
-                              Name(["Alert", "Id"]) +
-                              Name.from_snake_case(dif_alert_name))
+            top_alert_name = (
+                self._top_name + Name(["Alert", "Id"]) + Name.from_snake_case(dif_alert_name)
+            )
             top_alert_name = top_alert_name.as_c_enum()
 
             # Get DIF compliant, instance-agnostic alert names.
             dif_alert_name = dif_alert_name.replace(inst_name, f"dif_{name}_alert", 1)
             dif_alert_name = Name.from_snake_case(dif_alert_name).as_c_enum()
 
-            alert_peripheral = AlertTestPeripheral(name, inst_name, base_addr_name,
-                                                   top_alert_name, dif_alert_name,
-                                                   num_alerts, periph_addr_space)
+            alert_peripheral = AlertTestPeripheral(
+                name,
+                inst_name,
+                base_addr_name,
+                top_alert_name,
+                dif_alert_name,
+                num_alerts,
+                periph_addr_space,
+            )
             alert_peripherals.append(alert_peripheral)
 
         alert_peripherals.sort(key=lambda p: p.inst_name)

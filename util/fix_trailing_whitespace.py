@@ -20,15 +20,15 @@ from pathlib import Path
 REPO_TOP = Path(__file__).resolve().parent.parent
 
 IGNORED = {
-    Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.logs.txt'),
-    Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.rodata.txt'),
+    Path("sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.logs.txt"),
+    Path("sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.rodata.txt"),
 }
 
 
 def is_ignored(path):
     if path in IGNORED:
         return True
-    return subprocess.run(['git', 'check-ignore', path]).returncode == 0
+    return subprocess.run(["git", "check-ignore", path]).returncode == 0
 
 
 def walk_tree(paths=[REPO_TOP]):
@@ -36,10 +36,10 @@ def walk_tree(paths=[REPO_TOP]):
         if isinstance(path, str):
             path = Path(path)
 
-        if path.is_symlink() or is_ignored(path) or 'LICENSE' in path.parts:
+        if path.is_symlink() or is_ignored(path) or "LICENSE" in path.parts:
             continue
 
-        if path.is_dir() and 'vendor' not in path.parts:
+        if path.is_dir() and "vendor" not in path.parts:
             yield from walk_tree(path.iterdir())
         else:
             yield path
@@ -48,24 +48,17 @@ def walk_tree(paths=[REPO_TOP]):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--dry-run',
-        action='store_true',
-        help='report writes which would have happened')
-    parser.add_argument(
-        '--recursive', '-r',
-        action='store_true',
-        default=False,
-        help='traverse the entire tree modolo .gitignore'
+        "--dry-run", action="store_true", help="report writes which would have happened"
     )
     parser.add_argument(
-        '--verbose', '-v',
-        action='store_true',
-        help='verbose output')
-    parser.add_argument(
-        'files',
-        type=str,
-        nargs='*',
-        help='files to fix whitespace for')
+        "--recursive",
+        "-r",
+        action="store_true",
+        default=False,
+        help="traverse the entire tree modolo .gitignore",
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="verbose output")
+    parser.add_argument("files", type=str, nargs="*", help="files to fix whitespace for")
     args = parser.parse_args()
 
     files = args.files
@@ -77,7 +70,7 @@ def main():
         path = Path(path).resolve().relative_to(REPO_TOP)
         if not path.is_file() or path.is_symlink() or is_ignored(path):
             continue
-        if 'vendor' in path.parts or path.suffix in ['.patch', '.svg', '.tpl']:
+        if "vendor" in path.parts or path.suffix in [".patch", ".svg", ".tpl"]:
             continue
         if args.verbose:
             print(f'Checking: "{path}"')
@@ -96,12 +89,12 @@ def main():
                 path.write_text(new_text)
 
     if total_fixable:
-        verb = 'Would have fixed' if args.dry_run else 'Fixed'
-        print(f'{verb} {total_fixable} files.', file=sys.stderr)
+        verb = "Would have fixed" if args.dry_run else "Fixed"
+        print(f"{verb} {total_fixable} files.", file=sys.stderr)
 
     # Pass if we fixed everything or there was nothing to fix.
     return 1 if total_fixable > 0 else 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

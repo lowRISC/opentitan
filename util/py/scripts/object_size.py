@@ -26,20 +26,19 @@ log = ot_logging.log
 
 
 @app.command()
-def main(target: str,
-         configs: list[str] = [],
-         log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING,
-         force_color: bool = False) -> None:
+def main(
+    target: str,
+    configs: list[str] = [],
+    log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING,
+    force_color: bool = False,
+) -> None:
     ot_logging.init(log_level)
 
     bazel.try_escape_sandbox()
 
     # We use a `cc_binary` rule to produce ELF files and a `obj_transform` rule to
     # produce bin files.
-    deps = [
-        bazel.get_rule_deps_of_kind(target, kind)
-        for kind in ["cc_binary", "obj_transform"]
-    ]
+    deps = [bazel.get_rule_deps_of_kind(target, kind) for kind in ["cc_binary", "obj_transform"]]
     paths = []
     for dep in itertools.chain.from_iterable(deps):
         bazel.build_target(dep, configs)

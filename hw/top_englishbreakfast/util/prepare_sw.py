@@ -19,18 +19,18 @@ from pathlib import Path
 REPO_TOP = Path(__file__).resolve().parents[3]
 
 BINARIES = [
-    'sw/device/lib/testing/test_rom/test_rom_export_fpga_cw305',
-    'sw/device/sca/aes_serial_export_fpga_cw305',
-    'sw/device/lib/testing/test_rom/test_rom_export_sim_verilator',
-    'sw/device/tests/aes_smoketest_export_sim_verilator',
-    'sw/device/examples/hello_world/hello_world_export_sim_verilator',
+    "sw/device/lib/testing/test_rom/test_rom_export_fpga_cw305",
+    "sw/device/sca/aes_serial_export_fpga_cw305",
+    "sw/device/lib/testing/test_rom/test_rom_export_sim_verilator",
+    "sw/device/tests/aes_smoketest_export_sim_verilator",
+    "sw/device/examples/hello_world/hello_world_export_sim_verilator",
 ]
 
 BAZEL_BINARIES = [
-    '//sw/device/lib/testing/test_rom',
-    '//sw/device/sca:aes_serial',
-    '//sw/device/examples/hello_world',
-    '//sw/device/tests:aes_smoketest_sim_verilator',
+    "//sw/device/lib/testing/test_rom",
+    "//sw/device/sca:aes_serial",
+    "//sw/device/examples/hello_world",
+    "//sw/device/tests:aes_smoketest_sim_verilator",
 ]
 
 
@@ -52,7 +52,7 @@ def delete_path(path):
     """
     Deletes a path; will delete directories recursively.
     """
-    print(f'* Deleting: {path}')
+    print(f"* Deleting: {path}")
     if not path.exists():
         return
     if path.is_dir():
@@ -71,56 +71,59 @@ def main():
     parser = argparse.ArgumentParser(
         prog="prepare_sw",
         description="Script to prepare SW sources for English Breakfast",
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--build',
-                        '-b',
-                        default=False,
-                        action='store_true',
-                        help='Build ROM based on reduced design')
-    parser.add_argument(
-        '--delete-only',
-        '-d',
-        default=False,
-        action='store_true',
-        help='Delete previously generated auto-gen files without running topgen'
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument('--top',
-                        '-t',
-                        default='englishbreakfast',
-                        type=str,
-                        help='The alternative top to use')
+    parser.add_argument(
+        "--build",
+        "-b",
+        default=False,
+        action="store_true",
+        help="Build ROM based on reduced design",
+    )
+    parser.add_argument(
+        "--delete-only",
+        "-d",
+        default=False,
+        action="store_true",
+        help="Delete previously generated auto-gen files without running topgen",
+    )
+    parser.add_argument(
+        "--top", "-t", default="englishbreakfast", type=str, help="The alternative top to use"
+    )
     args = parser.parse_args()
     name = args.top
-    topname = f'top_{name}'
+    topname = f"top_{name}"
 
     # We start by removing any previously generated auto-gen files for the
     # selected non-earlgrey top. These might be stale and confuse topgen.
-    print('Purging previously generated auto-gen files')
-    for d in find_dirs(REPO_TOP / 'hw' / topname, ['autogen', 'ip_autogen']):
+    print("Purging previously generated auto-gen files")
+    for d in find_dirs(REPO_TOP / "hw" / topname, ["autogen", "ip_autogen"]):
         delete_path(d)
 
-    delete_path(REPO_TOP / 'build' / str(topname + '-autogen'))
-    delete_path(REPO_TOP / 'hw' / topname / 'data/autogen')
-    delete_path(REPO_TOP / 'hw' / topname / 'dv/autogen')
-    delete_path(REPO_TOP / 'hw' / topname / 'dv/env/autogen')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/ast/rtl')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/sensor_ctrl/rtl')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri')
-    delete_path(REPO_TOP / 'hw' / topname / 'rtl/autogen')
-    delete_path(REPO_TOP / 'hw' / topname / 'sw/autogen')
+    delete_path(REPO_TOP / "build" / str(topname + "-autogen"))
+    delete_path(REPO_TOP / "hw" / topname / "data/autogen")
+    delete_path(REPO_TOP / "hw" / topname / "dv/autogen")
+    delete_path(REPO_TOP / "hw" / topname / "dv/env/autogen")
+    delete_path(REPO_TOP / "hw" / topname / "ip/ast/rtl")
+    delete_path(REPO_TOP / "hw" / topname / "ip/sensor_ctrl/rtl")
+    delete_path(REPO_TOP / "hw" / topname / "ip/xbar_main")
+    delete_path(REPO_TOP / "hw" / topname / "ip/xbar_peri")
+    delete_path(REPO_TOP / "hw" / topname / "rtl/autogen")
+    delete_path(REPO_TOP / "hw" / topname / "sw/autogen")
 
     if args.delete_only:
         return
 
     # Next, we need to re-run topgen in order to create all auto-generated files.
-    shell_out([
-        REPO_TOP / 'util/topgen.py',
-        '-t',
-        REPO_TOP / 'hw' / topname / 'data' / f"{topname}.hjson",
-        '-o',
-        REPO_TOP / 'hw' / topname,
-    ])
+    shell_out(
+        [
+            REPO_TOP / "util/topgen.py",
+            "-t",
+            REPO_TOP / "hw" / topname / "data" / f"{topname}.hjson",
+            "-o",
+            REPO_TOP / "hw" / topname,
+        ]
+    )
 
     # We need to patch some files:
     # 1. Build system files need to be pointed to the proper auto-gen files.
@@ -136,31 +139,30 @@ def main():
     # Patch hjson files for Bazel
     print("Transplanting autogen-ed hjson files")
     REG_FILES = [
-        'ip/ast/data/ast.hjson',
-        'ip/sensor_ctrl/data/sensor_ctrl.hjson',
-        'ip_autogen/clkmgr/data/clkmgr.hjson',
-        'ip_autogen/flash_ctrl/data/flash_ctrl.hjson',
-        'ip_autogen/pinmux/data/pinmux.hjson',
-        'ip_autogen/pwrmgr/data/pwrmgr.hjson',
-        'ip_autogen/rstmgr/data/rstmgr.hjson',
-        'ip_autogen/rv_plic/data/rv_plic.hjson',
+        "ip/ast/data/ast.hjson",
+        "ip/sensor_ctrl/data/sensor_ctrl.hjson",
+        "ip_autogen/clkmgr/data/clkmgr.hjson",
+        "ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
+        "ip_autogen/pinmux/data/pinmux.hjson",
+        "ip_autogen/pwrmgr/data/pwrmgr.hjson",
+        "ip_autogen/rstmgr/data/rstmgr.hjson",
+        "ip_autogen/rv_plic/data/rv_plic.hjson",
     ]
     for reg_file in REG_FILES:
-        src = REPO_TOP / 'hw' / topname / reg_file
-        dst = REPO_TOP / 'hw' / 'top_earlgrey' / reg_file
+        src = REPO_TOP / "hw" / topname / reg_file
+        dst = REPO_TOP / "hw" / "top_earlgrey" / reg_file
         print(f"* Copying {src} -> {dst}")
         dst.write_text(src.read_text())
 
-    for suffix in ['.c', '.h', '_memory.h', '_memory.ld']:
-        old = REPO_TOP / 'hw' / topname / 'sw/autogen' / (topname + suffix)
-        new = REPO_TOP / 'hw/top_earlgrey/sw/autogen' / ('top_earlgrey' +
-                                                         suffix)
+    for suffix in [".c", ".h", "_memory.h", "_memory.ld"]:
+        old = REPO_TOP / "hw" / topname / "sw/autogen" / (topname + suffix)
+        new = REPO_TOP / "hw/top_earlgrey/sw/autogen" / ("top_earlgrey" + suffix)
         print(f"* {old} -> {new}")
 
         text = old.read_text()
-        text = text.replace(name, 'earlgrey')
-        text = text.replace(name.capitalize(), 'Earlgrey')
-        text = text.replace(name.upper(), 'EARLGREY')
+        text = text.replace(name, "earlgrey")
+        text = text.replace(name.capitalize(), "Earlgrey")
+        text = text.replace(name.upper(), "EARLGREY")
 
         # The SW build expects to find this file both in the top_earlgrey dir AND
         # in the top_englishbreakfast dir.
@@ -168,7 +170,7 @@ def main():
         (old.parent / new.name).write_text(text)
 
     # Hack to make bindgen generate less for English Breakfast.
-    new = REPO_TOP / 'sw/host/opentitanlib/bindgen/BUILD'
+    new = REPO_TOP / "sw/host/opentitanlib/bindgen/BUILD"
     text = new.read_text()
     text = text.replace('_TOPLEVEL = "earlgrey"', '_TOPLEVEL = "englishbreakfast"')
     new.write_text(text)
@@ -177,13 +179,16 @@ def main():
         return
 
     # Build the software including test_rom to enable the FPGA build.
-    shell_out([
-        REPO_TOP / 'bazelisk.sh',
-        'build',
-        '--features=-rv32_bitmanip',
-        '--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_',
-        '--define=DISABLE_VERILATOR_BUILD=true',
-    ] + BAZEL_BINARIES)
+    shell_out(
+        [
+            REPO_TOP / "bazelisk.sh",
+            "build",
+            "--features=-rv32_bitmanip",
+            "--copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_",
+            "--define=DISABLE_VERILATOR_BUILD=true",
+        ]
+        + BAZEL_BINARIES
+    )
 
 
 if __name__ == "__main__":

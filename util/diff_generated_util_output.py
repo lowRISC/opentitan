@@ -45,39 +45,33 @@ def generate_output(outdir, verbose):
         if t[1]:
             # in new tmpdir so the directory should never be there already
             os.mkdir(out)
-        errors_out = open(out + ".STDERR", 'w', encoding='UTF-8')
+        errors_out = open(out + ".STDERR", "w", encoding="UTF-8")
         with errors_out:
-            err = subprocess.call(t[2] + out + t[3],
-                                  stderr=errors_out,
-                                  shell=True)
+            err = subprocess.call(t[2] + out + t[3], stderr=errors_out, shell=True)
             # write a file so it pops up in the diff
             # if it is different
             # (i.e. won't mention any that always return same error)
             if err != 0:
-                rtn_out = open(out + ".RETURN", 'w', encoding='UTF-8')
+                rtn_out = open(out + ".RETURN", "w", encoding="UTF-8")
                 with rtn_out:
                     rtn_out.write("Non-Zero Return code " + str(err) + "\n")
 
     # useful for debug:
-    if (verbose):
+    if verbose:
         subprocess.call("ls -l " + outdir, shell=True)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("treeish",
-                        default="HEAD",
-                        nargs="?",
-                        help="git tree or commit to compare against")
-    parser.add_argument('--version',
-                        action='store_true',
-                        help='Show version and exit')
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='store_true',
-                        help='Verbose output: ls the output directories')
+        description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument(
+        "treeish", default="HEAD", nargs="?", help="git tree or commit to compare against"
+    )
+    parser.add_argument("--version", action="store_true", help="Show version and exit")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Verbose output: ls the output directories"
+    )
 
     args = parser.parse_args()
     if args.version:
@@ -88,7 +82,7 @@ def main():
     repo_root = os.path.abspath(os.path.join(util_path, os.pardir))
     os.chdir(repo_root)
 
-    if not os.path.isdir(os.path.join(repo_root, '.git')):
+    if not os.path.isdir(os.path.join(repo_root, ".git")):
         print("Script not in expected location in a git repo", file=sys.stderr)
         sys.exit(1)
 
@@ -104,9 +98,9 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmpdir_basename = os.path.basename(tmpdir)
-        subprocess.check_call("git archive " + args.treeish +
-                              " | tar -x -C util/" + tmpdir_basename,
-                              shell=True)
+        subprocess.check_call(
+            "git archive " + args.treeish + " | tar -x -C util/" + tmpdir_basename, shell=True
+        )
 
         # Execute commands for working tree, saving output
         os.chdir(util_path)
@@ -124,8 +118,7 @@ def main():
         os.chdir(tmpdir)
         # Don't use a checked call because the exit code indicates whether there
         # is a diff or not, rather than indicating error.
-        subprocess.call('git diff -p --stat --no-index oldout newout',
-                        shell=True)
+        subprocess.call("git diff -p --stat --no-index oldout newout", shell=True)
 
 
 if __name__ == "__main__":

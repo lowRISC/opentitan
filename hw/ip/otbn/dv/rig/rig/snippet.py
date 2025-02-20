@@ -11,99 +11,91 @@ from .program import ProgInsn, Program
 
 
 class Snippet:
-    '''A collection of instructions, generated as part of a random program.'''
+    """A collection of instructions, generated as part of a random program."""
+
     def insert_into_program(self, program: Program) -> None:
-        '''Insert this snippet into the given program
+        """Insert this snippet into the given program
 
         This assumes the parts of the snippet are disjoint from the existing
         instructions in the program.
 
-        '''
+        """
         raise NotImplementedError()
 
     def to_json(self) -> object:
-        '''Serialize to an object that can be written as JSON'''
+        """Serialize to an object that can be written as JSON"""
         raise NotImplementedError()
 
     @staticmethod
     def _addr_from_json(where: str, json: object) -> int:
-        '''Read an instruction address from a parsed json object'''
+        """Read an instruction address from a parsed json object"""
         if not isinstance(json, int):
-            raise ValueError('First coordinate of {} is not an integer.'
-                             .format(where))
+            raise ValueError("First coordinate of {} is not an integer.".format(where))
         if json < 0:
-            raise ValueError('Address of {} is {}, but should be non-negative.'
-                             .format(where, json))
+            raise ValueError("Address of {} is {}, but should be non-negative.".format(where, json))
         if json & 3:
-            raise ValueError('Address of {} is {}, '
-                             'but should be 4-byte aligned.'
-                             .format(where, json))
+            raise ValueError(
+                "Address of {} is {}, but should be 4-byte aligned.".format(where, json)
+            )
         return json
 
     @staticmethod
     def _nonneg_from_hjson(what: str, json: object) -> int:
-        '''Read a non-negative value from a parsed json object'''
+        """Read a non-negative value from a parsed json object"""
         if not isinstance(json, int):
-            raise ValueError('{} is not an integer.'
-                             .format(what))
+            raise ValueError("{} is not an integer.".format(what))
         if json < 0:
-            raise ValueError('{} is {}, but should be non-negative.'
-                             .format(what, json))
+            raise ValueError("{} is {}, but should be non-negative.".format(what, json))
         return json
 
     @staticmethod
-    def _from_json_lst(insns_file: InsnsFile,
-                       idx: List[int],
-                       json: List[object]) -> 'Snippet':
+    def _from_json_lst(insns_file: InsnsFile, idx: List[int], json: List[object]) -> "Snippet":
         raise NotImplementedError()
 
     @staticmethod
-    def from_json(insns_file: InsnsFile,
-                  idx: List[int],
-                  json: object) -> 'Snippet':
-        '''The inverse of to_json'''
+    def from_json(insns_file: InsnsFile, idx: List[int], json: object) -> "Snippet":
+        """The inverse of to_json"""
         if not (isinstance(json, list) and json):
-            raise ValueError('Snippet {} is not a nonempty list.'.format(idx))
+            raise ValueError("Snippet {} is not a nonempty list.".format(idx))
 
         key = json[0]
         if not isinstance(key, str):
-            raise ValueError('Key for snippet {} is not a string.'.format(idx))
+            raise ValueError("Key for snippet {} is not a string.".format(idx))
 
-        if key == 'BS':
+        if key == "BS":
             return BranchSnippet._from_json_lst(insns_file, idx, json[1:])
-        if key == 'LS':
+        if key == "LS":
             return LoopSnippet._from_json_lst(insns_file, idx, json[1:])
-        elif key == 'PS':
+        elif key == "PS":
             return ProgSnippet._from_json_lst(insns_file, idx, json[1:])
-        elif key == 'SS':
+        elif key == "SS":
             return SeqSnippet._from_json_lst(insns_file, idx, json[1:])
         else:
-            raise ValueError('Snippet {} has unknown key {!r}.'
-                             .format(idx, key))
+            raise ValueError("Snippet {} has unknown key {!r}.".format(idx, key))
 
-    def _merge(self, snippet: 'Snippet') -> bool:
-        '''Merge snippet after this one and return True if possible.
+    def _merge(self, snippet: "Snippet") -> bool:
+        """Merge snippet after this one and return True if possible.
 
         If not possible, leaves self unchanged and returns False.
 
-        '''
+        """
         return False
 
-    def merge(self, snippet: 'Snippet') -> 'Snippet':
-        '''Merge snippet after this one
+    def merge(self, snippet: "Snippet") -> "Snippet":
+        """Merge snippet after this one
 
         On a successful merge, this will alter and return self. If a merge
         isn't possible, this generates and returns a SeqSnippet.
 
-        '''
+        """
         if self._merge(snippet):
             return self
 
         return SeqSnippet([self, snippet])
 
     @staticmethod
-    def merge_list(snippets: List['Snippet']) -> 'Snippet':
-        '''Merge a non-empty list of snippets as much as possible'''
+    def merge_list(snippets: List["Snippet"]) -> "Snippet":
+        """Merge a non-empty list of snippets as much as possible"""
         assert snippets
         acc = []
         cur = snippets[0]
@@ -118,25 +110,26 @@ class Snippet:
         return SeqSnippet(acc)
 
     @staticmethod
-    def cons_option(snippet0: Optional['Snippet'],
-                    snippet1: 'Snippet') -> 'Snippet':
-        '''Cons together one or two snippets'''
+    def cons_option(snippet0: Optional["Snippet"], snippet1: "Snippet") -> "Snippet":
+        """Cons together one or two snippets"""
         return snippet1 if snippet0 is None else snippet0.merge(snippet1)
 
     def to_program(self) -> Program:
-        '''Write a series of disjoint snippets to make a program'''
+        """Write a series of disjoint snippets to make a program"""
         # Find the size of the memory that we can access. Both memories start
         # at address 0: a strict Harvard architecture. (mems[x][0] is the LMA
         # for memory x, not the VMA)
         mems = get_memory_layout()
-        program = Program(mems.imem_address, mems.imem_size_bytes,
-                          mems.dmem_address, mems.dmem_size_bytes)
+        program = Program(
+            mems.imem_address, mems.imem_size_bytes, mems.dmem_address, mems.dmem_size_bytes
+        )
         self.insert_into_program(program)
         return program
 
 
 class ProgSnippet(Snippet):
-    '''A sequence of instructions that are executed in order'''
+    """A sequence of instructions that are executed in order"""
+
     def __init__(self, addr: int, insns: List[ProgInsn]):
         assert addr >= 0
         assert addr & 3 == 0
@@ -148,32 +141,28 @@ class ProgSnippet(Snippet):
         program.add_insns(self.addr, self.insns)
 
     def to_json(self) -> object:
-        '''Serialize to an object that can be written as JSON'''
-        return ['PS', self.addr, [i.to_json() for i in self.insns]]
+        """Serialize to an object that can be written as JSON"""
+        return ["PS", self.addr, [i.to_json() for i in self.insns]]
 
     @staticmethod
-    def _from_json_lst(insns_file: InsnsFile,
-                       idx: List[int],
-                       json: List[object]) -> Snippet:
-        '''The inverse of to_json.'''
+    def _from_json_lst(insns_file: InsnsFile, idx: List[int], json: List[object]) -> Snippet:
+        """The inverse of to_json."""
         # Each element should be a pair: (addr, insns).
         if len(json) != 2:
-            raise ValueError('Snippet {} has {} arguments; '
-                             'expected 2 for a ProgSnippet.'
-                             .format(idx, len(json)))
+            raise ValueError(
+                "Snippet {} has {} arguments; expected 2 for a ProgSnippet.".format(idx, len(json))
+            )
         j_addr, j_insns = json
 
-        where = 'snippet {}'.format(idx)
+        where = "snippet {}".format(idx)
         addr = Snippet._addr_from_json(where, j_addr)
 
         if not isinstance(j_insns, list):
-            raise ValueError('Second coordinate of {} is not a list.'
-                             .format(where))
+            raise ValueError("Second coordinate of {} is not a list.".format(where))
 
         insns = []
         for insn_idx, insn_json in enumerate(j_insns):
-            pi_where = ('In snippet {}, instruction {}'
-                        .format(idx, insn_idx))
+            pi_where = "In snippet {}, instruction {}".format(idx, insn_idx)
             pi = ProgInsn.from_json(insns_file, pi_where, insn_json)
             insns.append(pi)
 
@@ -192,7 +181,8 @@ class ProgSnippet(Snippet):
 
 
 class SeqSnippet(Snippet):
-    '''A nonempty sequence of snippets that run one after another'''
+    """A nonempty sequence of snippets that run one after another"""
+
     def __init__(self, children: List[Snippet]):
         assert children
         self.children = children
@@ -202,16 +192,14 @@ class SeqSnippet(Snippet):
             child.insert_into_program(program)
 
     def to_json(self) -> object:
-        ret = ['SS']  # type: List[object]
+        ret = ["SS"]  # type: List[object]
         ret += [c.to_json() for c in self.children]
         return ret
 
     @staticmethod
-    def _from_json_lst(insns_file: InsnsFile,
-                       idx: List[int],
-                       json: List[object]) -> Snippet:
+    def _from_json_lst(insns_file: InsnsFile, idx: List[int], json: List[object]) -> Snippet:
         if len(json) == 0:
-            raise ValueError('List at {} for SeqSnippet is empty.'.format(idx))
+            raise ValueError("List at {} for SeqSnippet is empty.".format(idx))
 
         children = []
         for i, item in enumerate(json):
@@ -220,18 +208,21 @@ class SeqSnippet(Snippet):
 
 
 class BranchSnippet(Snippet):
-    '''A snippet representing a branch
+    """A snippet representing a branch
 
     branch_insn is the first instruction that runs, at address addr, then
     either snippet0 or snippet1 will run. The program will complete in either
     case.
 
-    '''
-    def __init__(self,
-                 addr: int,
-                 branch_insn: ProgInsn,
-                 snippet0: Optional[Snippet],
-                 snippet1: Optional[Snippet]):
+    """
+
+    def __init__(
+        self,
+        addr: int,
+        branch_insn: ProgInsn,
+        snippet0: Optional[Snippet],
+        snippet1: Optional[Snippet],
+    ):
         assert snippet0 is not None or snippet1 is not None
         self.addr = addr
         self.branch_insn = branch_insn
@@ -248,52 +239,45 @@ class BranchSnippet(Snippet):
     def to_json(self) -> object:
         js0 = None if self.snippet0 is None else self.snippet0.to_json()
         js1 = None if self.snippet1 is None else self.snippet1.to_json()
-        return ['BS',
-                self.addr,
-                self.branch_insn.to_json(),
-                js0,
-                js1]
+        return ["BS", self.addr, self.branch_insn.to_json(), js0, js1]
 
     @staticmethod
-    def _from_json_lst(insns_file: InsnsFile,
-                       idx: List[int],
-                       json: List[object]) -> Snippet:
+    def _from_json_lst(insns_file: InsnsFile, idx: List[int], json: List[object]) -> Snippet:
         if len(json) != 4:
-            raise ValueError('List for snippet {} is of the wrong '
-                             'length for a BranchSnippet ({}, not 4)'
-                             .format(idx, len(json)))
+            raise ValueError(
+                "List for snippet {} is of the wrong length for a BranchSnippet ({}, not 4)".format(
+                    idx, len(json)
+                )
+            )
 
         j_addr, j_branch_insn, j_snippet0, j_snippet1 = json
 
-        addr_where = 'address for snippet {}'.format(idx)
+        addr_where = "address for snippet {}".format(idx)
         addr = Snippet._addr_from_json(addr_where, j_addr)
 
-        bi_where = 'branch instruction for snippet {}'.format(idx)
+        bi_where = "branch instruction for snippet {}".format(idx)
         branch_insn = ProgInsn.from_json(insns_file, bi_where, j_branch_insn)
 
-        snippet0 = (None if j_snippet0 is None
-                    else Snippet.from_json(insns_file, idx + [0], j_snippet0))
-        snippet1 = (None if j_snippet1 is None
-                    else Snippet.from_json(insns_file, idx + [1], j_snippet1))
+        snippet0 = (
+            None if j_snippet0 is None else Snippet.from_json(insns_file, idx + [0], j_snippet0)
+        )
+        snippet1 = (
+            None if j_snippet1 is None else Snippet.from_json(insns_file, idx + [1], j_snippet1)
+        )
 
         if snippet0 is None and snippet1 is None:
-            raise ValueError('Both sides of branch snippet {} are None.'
-                             .format(idx))
+            raise ValueError("Both sides of branch snippet {} are None.".format(idx))
 
         return BranchSnippet(addr, branch_insn, snippet0, snippet1)
 
 
 class LoopSnippet(Snippet):
-    '''A snippet representing a loop'''
+    """A snippet representing a loop"""
 
     # A pair (from, to), giving a loop warp to apply at some address
     Warp = Tuple[int, int]
 
-    def __init__(self,
-                 addr: int,
-                 hd_insn: ProgInsn,
-                 body: Snippet,
-                 warp: Optional[Warp]):
+    def __init__(self, addr: int, hd_insn: ProgInsn, body: Snippet, warp: Optional[Warp]):
         self.addr = addr
         self.hd_insn = hd_insn
         self.body = body
@@ -307,27 +291,23 @@ class LoopSnippet(Snippet):
         self.body.insert_into_program(program)
 
     def to_json(self) -> object:
-        return ['LS',
-                self.addr,
-                self.hd_insn.to_json(),
-                self.body.to_json(),
-                self.warp]
+        return ["LS", self.addr, self.hd_insn.to_json(), self.body.to_json(), self.warp]
 
     @staticmethod
-    def _from_json_lst(insns_file: InsnsFile,
-                       idx: List[int],
-                       json: List[object]) -> Snippet:
+    def _from_json_lst(insns_file: InsnsFile, idx: List[int], json: List[object]) -> Snippet:
         if len(json) != 4:
-            raise ValueError('List for snippet {} is of the wrong '
-                             'length for a LoopSnippet ({}, not 4)'
-                             .format(idx, len(json)))
+            raise ValueError(
+                "List for snippet {} is of the wrong length for a LoopSnippet ({}, not 4)".format(
+                    idx, len(json)
+                )
+            )
 
         j_addr, j_hd_insn, j_body, j_warp = json
 
-        addr_where = 'address for snippet {}'.format(idx)
+        addr_where = "address for snippet {}".format(idx)
         addr = Snippet._addr_from_json(addr_where, j_addr)
 
-        hi_where = 'head instruction for snippet {}'.format(idx)
+        hi_where = "head instruction for snippet {}".format(idx)
         hd_insn = ProgInsn.from_json(insns_file, hi_where, j_hd_insn)
         body = Snippet.from_json(insns_file, idx + [0], j_body)
 
@@ -335,16 +315,14 @@ class LoopSnippet(Snippet):
             warp = None
         else:
             if not isinstance(j_warp, list) or len(j_warp) != 2:
-                raise ValueError(f'Loop warp for snippet {idx} is not a '
-                                 'length-2 list.')
+                raise ValueError(f"Loop warp for snippet {idx} is not a length-2 list.")
 
             j_warp_lo, j_warp_hi = j_warp
-            warp_what = f'Loop warp for snippet {idx}'
+            warp_what = f"Loop warp for snippet {idx}"
             warp_lo = Snippet._nonneg_from_hjson(warp_what, j_warp_lo)
             warp_hi = Snippet._nonneg_from_hjson(warp_what, j_warp_hi)
             if warp_lo >= warp_hi:
-                raise ValueError(f'{warp_what} goes from {warp_lo} to '
-                                 f'{warp_hi} (the wrong way!)')
+                raise ValueError(f"{warp_what} goes from {warp_lo} to {warp_hi} (the wrong way!)")
             warp = (warp_lo, warp_hi)
 
         return LoopSnippet(addr, hd_insn, body, warp)

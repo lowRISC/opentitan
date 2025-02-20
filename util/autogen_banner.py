@@ -7,10 +7,10 @@ from textwrap import fill
 LICENSE_BANNER = (
     "Copyright lowRISC contributors (OpenTitan project).\n"
     "Licensed under the Apache License, Version 2.0, see LICENSE for details.\n"
-    "SPDX-License-Identifier: Apache-2.0")
+    "SPDX-License-Identifier: Apache-2.0"
+)
 
-AUTOGEN_BANNER = (
-    "THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:\n{command}")
+AUTOGEN_BANNER = "THIS FILE HAS BEEN GENERATED, DO NOT EDIT MANUALLY. COMMAND:\n{command}"
 
 MAX_LEN = 70
 
@@ -22,10 +22,7 @@ def get_autogen_banner(command: str, comment: str = "") -> str:
     to auto-generate the source.
     comment is the style of comment supported by the file type.
     """
-    command = fill(command.strip(),
-                   width=MAX_LEN,
-                   break_long_words=False,
-                   break_on_hyphens=False)
+    command = fill(command.strip(), width=MAX_LEN, break_long_words=False, break_on_hyphens=False)
     text = AUTOGEN_BANNER.format(command=command)
     return apply_comment(text, comment)
 

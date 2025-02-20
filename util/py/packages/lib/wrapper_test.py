@@ -9,7 +9,6 @@ from util.py.packages.lib.wrapper import Wrapper
 
 
 class TestWrapper(unittest.TestCase):
-
     def test_not_initialized(self):
         w = Wrapper()
         with self.assertRaisesRegex(RuntimeError, "not initialized"):
@@ -18,9 +17,9 @@ class TestWrapper(unittest.TestCase):
     def test_replace_wrapped(self):
         w = Wrapper()
         w.replace_wrapped(5)
-        self.assertEqual(w.to_bytes(1, "little"), b'\x05')
+        self.assertEqual(w.to_bytes(1, "little"), b"\x05")
         w.replace_wrapped(7)
-        self.assertEqual(w.to_bytes(1, "little"), b'\x07')
+        self.assertEqual(w.to_bytes(1, "little"), b"\x07")
 
 
 if __name__ == "__main__":

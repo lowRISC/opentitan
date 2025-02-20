@@ -2,9 +2,8 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Command-line tool to validate and convert register hjson
+r"""Command-line tool to validate and convert register hjson"""
 
-"""
 import argparse
 import logging as log
 import re
@@ -12,8 +11,19 @@ import sys
 from pathlib import Path
 
 from reggen import (
-    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
-    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
+    gen_cfg_md,
+    gen_cheader,
+    gen_dv,
+    gen_fpv,
+    gen_md,
+    gen_html,
+    gen_json,
+    gen_rtl,
+    gen_rust,
+    gen_sec_cm_testplan,
+    gen_selfdoc,
+    gen_tock,
+    version,
 )
 from reggen.ip_block import IpBlock
 
@@ -21,12 +31,12 @@ import version_file
 
 DESC = """regtool, generate register info from Hjson source"""
 
-USAGE = '''
+USAGE = """
   regtool [options]
   regtool [options] <input>
   regtool (-h | --help)
   regtool (-V | --version)
-'''
+"""
 
 
 def main():
@@ -36,114 +46,92 @@ def main():
         prog="regtool",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         usage=USAGE,
-        description=DESC)
-    parser.add_argument('input',
-                        nargs='?',
-                        metavar='file',
-                        type=argparse.FileType('r'),
-                        default=sys.stdin,
-                        help='input file in Hjson type')
-    parser.add_argument('-d',
-                        action='store_true',
-                        help='Output register documentation (markdown)')
-    parser.add_argument('-a',
-                        '--alias',
-                        type=Path,
-                        default=None,
-                        help='Alias register file in Hjson type')
-    parser.add_argument('-S',
-                        '--scrub',
-                        default=False,
-                        action='store_true',
-                        help='Scrub alias register definition')
-    parser.add_argument('--cdefines',
-                        '-D',
-                        action='store_true',
-                        help='Output C defines header')
-    parser.add_argument('--rust',
-                        '-R',
-                        action='store_true',
-                        help='Output Rust constants')
-    parser.add_argument('--tock',
-                        action='store_true',
-                        help='Output Tock constants')
-    parser.add_argument('--interfaces',
-                        action='store_true',
-                        help='Output interfaces documentation (markdown)')
-    parser.add_argument('--doc-html-old',
-                        action='store_true',
-                        help='Output html documentation (depreciated)')
-    parser.add_argument('--doc',
-                        action='store_true',
-                        help='Output source file documentation (markdown)')
-    parser.add_argument('-j',
-                        action='store_true',
-                        help='Output as formatted JSON')
-    parser.add_argument('-c', action='store_true', help='Output as JSON')
-    parser.add_argument('-r',
-                        action='store_true',
-                        help='Output as SystemVerilog RTL')
-    parser.add_argument('--sec-cm-testplan',
-                        action='store_true',
-                        help='Generate security countermeasures testplan.')
-    parser.add_argument('-s',
-                        action='store_true',
-                        help='Output as UVM Register class')
-    parser.add_argument('-f',
-                        action='store_true',
-                        help='Output as FPV CSR rw assertion module')
-    parser.add_argument('--outdir',
-                        '-t',
-                        help='Target directory for generated RTL; '
-                        'tool uses ../rtl if blank.')
+        description=DESC,
+    )
     parser.add_argument(
-        '--dv-base-names',
+        "input",
+        nargs="?",
+        metavar="file",
+        type=argparse.FileType("r"),
+        default=sys.stdin,
+        help="input file in Hjson type",
+    )
+    parser.add_argument("-d", action="store_true", help="Output register documentation (markdown)")
+    parser.add_argument(
+        "-a", "--alias", type=Path, default=None, help="Alias register file in Hjson type"
+    )
+    parser.add_argument(
+        "-S", "--scrub", default=False, action="store_true", help="Scrub alias register definition"
+    )
+    parser.add_argument("--cdefines", "-D", action="store_true", help="Output C defines header")
+    parser.add_argument("--rust", "-R", action="store_true", help="Output Rust constants")
+    parser.add_argument("--tock", action="store_true", help="Output Tock constants")
+    parser.add_argument(
+        "--interfaces", action="store_true", help="Output interfaces documentation (markdown)"
+    )
+    parser.add_argument(
+        "--doc-html-old", action="store_true", help="Output html documentation (depreciated)"
+    )
+    parser.add_argument(
+        "--doc", action="store_true", help="Output source file documentation (markdown)"
+    )
+    parser.add_argument("-j", action="store_true", help="Output as formatted JSON")
+    parser.add_argument("-c", action="store_true", help="Output as JSON")
+    parser.add_argument("-r", action="store_true", help="Output as SystemVerilog RTL")
+    parser.add_argument(
+        "--sec-cm-testplan", action="store_true", help="Generate security countermeasures testplan."
+    )
+    parser.add_argument("-s", action="store_true", help="Output as UVM Register class")
+    parser.add_argument("-f", action="store_true", help="Output as FPV CSR rw assertion module")
+    parser.add_argument(
+        "--outdir", "-t", help="Target directory for generated RTL; tool uses ../rtl if blank."
+    )
+    parser.add_argument(
+        "--dv-base-names",
         nargs="+",
-        help='Names or prefix for the DV register classes from which '
-        'the register models are derived.')
-    parser.add_argument('--outfile',
-                        '-o',
-                        type=argparse.FileType('w'),
-                        default=sys.stdout,
-                        help='Target filename for json, html, gfm.')
-    parser.add_argument('--verbose',
-                        '-v',
-                        action='store_true',
-                        help='Verbose and run validate twice')
-    parser.add_argument('--quiet',
-                        '-q',
-                        action='store_true',
-                        help='Log only errors, not warnings')
-    parser.add_argument('--param',
-                        '-p',
-                        type=str,
-                        default="",
-                        help='''Change the Parameter values.
+        help="Names or prefix for the DV register classes from which "
+        "the register models are derived.",
+    )
+    parser.add_argument(
+        "--outfile",
+        "-o",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        help="Target filename for json, html, gfm.",
+    )
+    parser.add_argument(
+        "--verbose", "-v", action="store_true", help="Verbose and run validate twice"
+    )
+    parser.add_argument("--quiet", "-q", action="store_true", help="Log only errors, not warnings")
+    parser.add_argument(
+        "--param",
+        "-p",
+        type=str,
+        default="",
+        help="""Change the Parameter values.
                                 Only integer value is supported.
                                 You can add multiple param arguments.
 
                                   Format: ParamA=ValA;ParamB=ValB
-                                  ''')
-    parser.add_argument('--version',
-                        '-V',
-                        action='store_true',
-                        help='Show version')
-    parser.add_argument('--novalidate',
-                        action='store_true',
-                        help='Skip validate, just output json')
-    parser.add_argument('--node',
-                        '-n',
-                        type=str,
-                        default="",
-                        help='''Regblock node to generate.
-                                By default, generate for all nodes.
-                                ''')
+                                  """,
+    )
+    parser.add_argument("--version", "-V", action="store_true", help="Show version")
+    parser.add_argument("--novalidate", action="store_true", help="Skip validate, just output json")
     parser.add_argument(
-        '--version-stamp',
+        "--node",
+        "-n",
+        type=str,
+        default="",
+        help="""Regblock node to generate.
+                                By default, generate for all nodes.
+                                """,
+    )
+    parser.add_argument(
+        "--version-stamp",
         type=str,
         default=None,
-        help=
-        'If version stamping, the location of workspace version stamp file.')
+        help="If version stamping, the location of workspace version stamp file.",
+    )
 
     args = parser.parse_args()
 
@@ -164,37 +152,49 @@ def main():
     # name of the format. dirspec is None if the output is a single file; if
     # the output needs a directory, it is a default path relative to the source
     # file (used when --outdir is not given).
-    arg_to_format = [('j', ('json', None)), ('c', ('compact', None)),
-                     ('d', ('registers', None)), ('doc', ('doc', None)),
-                     ('r', ('rtl', 'rtl')), ('s', ('dv', 'dv')),
-                     ('f', ('fpv', 'fpv/vip')), ('cdefines', ('cdh', None)),
-                     ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
-                     ('rust', ('rs', None)), ('tock', ('trs', None)),
-                     ('interfaces', ('interfaces', None)),
-                     ('doc_html_old', ('doc_html_old', None))]
+    arg_to_format = [
+        ("j", ("json", None)),
+        ("c", ("compact", None)),
+        ("d", ("registers", None)),
+        ("doc", ("doc", None)),
+        ("r", ("rtl", "rtl")),
+        ("s", ("dv", "dv")),
+        ("f", ("fpv", "fpv/vip")),
+        ("cdefines", ("cdh", None)),
+        ("sec_cm_testplan", ("sec_cm_testplan", "data")),
+        ("rust", ("rs", None)),
+        ("tock", ("trs", None)),
+        ("interfaces", ("interfaces", None)),
+        ("doc_html_old", ("doc_html_old", None)),
+    ]
     fmt = None
     dirspec = None
     for arg_name, spec in arg_to_format:
         if getattr(args, arg_name):
             if fmt is not None:
-                log.error('Multiple output formats specified on '
-                          'command line ({} and {}).'.format(fmt, spec[0]))
+                log.error(
+                    "Multiple output formats specified on command line ({} and {}).".format(
+                        fmt, spec[0]
+                    )
+                )
                 sys.exit(1)
             fmt, dirspec = spec
     if fmt is None:
-        fmt = 'hjson'
+        fmt = "hjson"
 
     infile = args.input
 
     # Split parameters into key=value pairs.
-    raw_params = args.param.split(';') if args.param else []
+    raw_params = args.param.split(";") if args.param else []
     params = []
     for idx, raw_param in enumerate(raw_params):
-        tokens = raw_param.split('=')
+        tokens = raw_param.split("=")
         if len(tokens) != 2:
-            raise ValueError('Entry {} in list of parameter defaults to '
-                             'apply is {!r}, which is not of the form '
-                             'param=value.'.format(idx, raw_param))
+            raise ValueError(
+                "Entry {} in list of parameter defaults to "
+                "apply is {!r}, which is not of the form "
+                "param=value.".format(idx, raw_param)
+            )
         params.append((tokens[0], tokens[1]))
 
     # Define either outfile or outdir (but not both), depending on the output
@@ -203,15 +203,13 @@ def main():
     outdir = None
     if dirspec is None:
         if args.outdir is not None:
-            log.error('The {} format expects an output file, '
-                      'not an output directory.'.format(fmt))
+            log.error("The {} format expects an output file, not an output directory.".format(fmt))
             sys.exit(1)
 
         outfile = args.outfile
     else:
         if args.outfile is not sys.stdout:
-            log.error('The {} format expects an output directory, '
-                      'not an output file.'.format(fmt))
+            log.error("The {} format expects an output directory, not an output file.".format(fmt))
             sys.exit(1)
 
         if args.outdir is not None:
@@ -221,16 +219,16 @@ def main():
         else:
             # We're using sys.stdin, so can't infer an output directory name
             log.error(
-                'The {} format writes to an output directory, which '
-                'cannot be inferred automatically if the input comes '
-                'from stdin. Use --outdir to specify it manually.'.format(
-                    fmt))
+                "The {} format writes to an output directory, which "
+                "cannot be inferred automatically if the input comes "
+                "from stdin. Use --outdir to specify it manually.".format(fmt)
+            )
             sys.exit(1)
 
     # Extract version stamp from file
     version_stamp = version_file.VersionInformation(args.version_stamp)
 
-    if fmt == 'doc':
+    if fmt == "doc":
         with outfile:
             gen_selfdoc.document(outfile)
         exit(0)
@@ -254,29 +252,30 @@ def main():
             exit(1)
     else:
         if args.scrub:
-            raise ValueError('The --scrub argument is only meaningful in '
-                             'combination with the --alias argument')
+            raise ValueError(
+                "The --scrub argument is only meaningful in combination with the --alias argument"
+            )
 
     if args.novalidate:
         with outfile:
             gen_json.gen_json(obj, outfile, fmt)
-            outfile.write('\n')
+            outfile.write("\n")
     else:
-        if fmt == 'rtl':
+        if fmt == "rtl":
             return gen_rtl.gen_rtl(obj, outdir)
-        if fmt == 'sec_cm_testplan':
+        if fmt == "sec_cm_testplan":
             return gen_sec_cm_testplan.gen_sec_cm_testplan(obj, outdir)
-        if fmt == 'dv':
+        if fmt == "dv":
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
-        if fmt == 'fpv':
+        if fmt == "fpv":
             return gen_fpv.gen_fpv(obj, outdir)
         src_lic = None
-        src_copy = ''
+        src_copy = ""
         found_spdx = None
         found_lunder = None
-        copy = re.compile(r'.*(copyright.*)|(.*\(c\).*)', re.IGNORECASE)
-        spdx = re.compile(r'.*(SPDX-License-Identifier:.+)')
-        lunder = re.compile(r'.*(Licensed under.+)', re.IGNORECASE)
+        copy = re.compile(r".*(copyright.*)|(.*\(c\).*)", re.IGNORECASE)
+        spdx = re.compile(r".*(SPDX-License-Identifier:.+)")
+        lunder = re.compile(r".*(Licensed under.+)", re.IGNORECASE)
         for line in srcfull.splitlines():
             mat = copy.match(line)
             if mat is not None:
@@ -290,31 +289,31 @@ def main():
         if found_lunder:
             src_lic = found_lunder
         if found_spdx:
-            src_lic += '\n' + found_spdx
+            src_lic += "\n" + found_spdx
 
         with outfile:
-            if fmt == 'registers':
+            if fmt == "registers":
                 return gen_md.gen_md(obj, outfile)
-            elif fmt == 'interfaces':
+            elif fmt == "interfaces":
                 # Assumes the registers will be in a file called `registers.md`
                 # and within the same location as the output's destination.
                 # Exposing this as an option would nice to do.
                 return gen_cfg_md.gen_cfg_md(obj, outfile, "registers.md")
-            elif fmt == 'doc_html_old':
+            elif fmt == "doc_html_old":
                 return gen_html.gen_html(obj, outfile)
-            elif fmt == 'cdh':
-                return gen_cheader.gen_cdefines(obj, outfile, src_lic,
-                                                src_copy)
-            elif fmt == 'rs':
+            elif fmt == "cdh":
+                return gen_cheader.gen_cdefines(obj, outfile, src_lic, src_copy)
+            elif fmt == "rs":
                 return gen_rust.gen_rust(obj, outfile, src_lic, src_copy)
-            elif fmt == 'trs':
-                return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
-                                         src_copy, version_stamp)
+            elif fmt == "trs":
+                return gen_tock.gen_tock(
+                    obj, outfile, infile.name, src_lic, src_copy, version_stamp
+                )
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 
-            outfile.write('\n')
+            outfile.write("\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

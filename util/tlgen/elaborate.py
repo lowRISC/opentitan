@@ -14,8 +14,7 @@ def elaborate(xbar: Xbar) -> bool:
     """Read nodes/edges and create internal FIFOs & sockets."""
     # Condition check
     if len(xbar.nodes) <= 1 or len(xbar.edges) == 0:
-        log.error(
-            "# of Nodes is less than 2 or no Edge exists. Cannot proceed.")
+        log.error("# of Nodes is less than 2 or no Edge exists. Cannot proceed.")
         return False
 
     for host in xbar.hosts:
@@ -57,9 +56,7 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
     # If a node has different clock from main clock and not ASYNC_FIFO:
     if node.clocks[0] != xbar.clock and not isinstance(node, AsyncFifo):
         # (New Node) Create ASYNC_FIFO node
-        new_fifo = AsyncFifo(name="asf_" + str(len(xbar.nodes)),
-                             clock=xbar.clock,
-                             reset=xbar.reset)
+        new_fifo = AsyncFifo(name="asf_" + str(len(xbar.nodes)), clock=xbar.clock, reset=xbar.reset)
 
         # if node is HOST, host clock synchronizes into xbar domain
         # if node is DEVICE, xbar synchronizes into device clock domain
@@ -80,10 +77,12 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
     # If a node has multiple edges having it as a end node and not SOCKET_M1:
     elif len(node.us) > 1 and not isinstance(node, SocketM1):
         # (New node) Create SOCKET_M1 node
-        new_sm1 = SocketM1(hwidth=len(node.us),
-                           name="sm1_" + str(len(xbar.nodes)),
-                           clock=xbar.clock,
-                           reset=xbar.reset)
+        new_sm1 = SocketM1(
+            hwidth=len(node.us),
+            name="sm1_" + str(len(xbar.nodes)),
+            clock=xbar.clock,
+            reset=xbar.reset,
+        )
         # The SOCKET_M1 must support all the address spaces of downstream
         new_sm1.addr_spaces = node.addr_spaces
 
@@ -93,10 +92,12 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
     # If a node has multiple edges having it as a start node and not SOCKET_1N:
     elif len(node.ds) > 1 and not isinstance(node, Socket1N):
         # (New node) Create SOCKET_1N node
-        new_s1n = Socket1N(dwidth=len(node.ds),
-                           name="s1n_" + str(len(xbar.nodes)),
-                           clock=xbar.clock,
-                           reset=xbar.reset)
+        new_s1n = Socket1N(
+            dwidth=len(node.ds),
+            name="s1n_" + str(len(xbar.nodes)),
+            clock=xbar.clock,
+            reset=xbar.reset,
+        )
         # The SOCKET_1N only supports the address space from upstream.
         new_s1n.addr_spaces = node.addr_spaces
 
@@ -162,7 +163,9 @@ def process_pipeline(xbar: Xbar) -> None:
 
             log.info(
                 "Finished processing socket1n {}, req pass={}, rsp pass={}, depth={}".format(
-                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth))
+                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth
+                )
+            )
 
         elif isinstance(dnode, SocketM1):
             idx = dnode.us.index(host.ds[0])
@@ -186,7 +189,9 @@ def process_pipeline(xbar: Xbar) -> None:
 
             log.info(
                 "Finished processing socketm1 {}, req pass={}, rsp pass={}, depth={}".format(
-                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth))
+                    dnode.name, dnode.hreq_pass, dnode.hrsp_pass, dnode.hdepth
+                )
+            )
 
     for device in xbar.devices:
         # go upstream and set DReq/RspPass at the first instance.
@@ -239,8 +244,11 @@ def process_pipeline(xbar: Xbar) -> None:
                 unode.drsp_pass = unode.drsp_pass | (1 << idx)
                 unode.ddepth = unode.ddepth & ~(0xF << idx * 4)
 
-            log.info("Finished processing socket1n {}, req pass={:x}, req pass={:x} depth={:x}".
-                     format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
+            log.info(
+                "Finished processing socket1n {}, req pass={:x}, req pass={:x} depth={:x}".format(
+                    unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth
+                )
+            )
 
         elif isinstance(unode, SocketM1):
             if full_fifo:
@@ -259,5 +267,8 @@ def process_pipeline(xbar: Xbar) -> None:
                 unode.drsp_pass = 1
                 unode.ddepth = 0
 
-            log.info("Finished processing socketm1 {}, req pass={:x}, rsp pass={:x}, depth={:x}".
-                     format(unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth))
+            log.info(
+                "Finished processing socketm1 {}, req pass={:x}, rsp pass={:x}, depth={:x}".format(
+                    unode.name, unode.dreq_pass, unode.drsp_pass, unode.ddepth
+                )
+            )

@@ -6,13 +6,13 @@
 
 import binascii
 
-test_data = 0xdeadbeef
+test_data = 0xDEADBEEF
 crc = 0x0
 for i in range(2, 100):
-    print(f'{crc:08x}')
-    test_data_bytes = test_data.to_bytes(4, byteorder='little')
+    print(f"{crc:08x}")
+    test_data_bytes = test_data.to_bytes(4, byteorder="little")
     crc = binascii.crc32(test_data_bytes, crc)
-    test_count_bytes = i.to_bytes(1, byteorder='little')
+    test_count_bytes = i.to_bytes(1, byteorder="little")
     crc = binascii.crc32(test_count_bytes, crc)
     crc = binascii.crc32(test_count_bytes, crc)
     test_data += 1

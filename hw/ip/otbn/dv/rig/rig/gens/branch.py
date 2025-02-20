@@ -17,18 +17,19 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class Branch(SnippetGen):
-    '''A generator that makes a snippet with a BEQ or BNE branch'''
+    """A generator that makes a snippet with a BEQ or BNE branch"""
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
         self.jump_gen = Jump(cfg, insns_file)
-        self.beq = self._get_named_insn(insns_file, 'beq')
-        self.bne = self._get_named_insn(insns_file, 'bne')
+        self.beq = self._get_named_insn(insns_file, "beq")
+        self.bne = self._get_named_insn(insns_file, "bne")
 
         self.beq_prob = 0.5
 
-        beq_weight = cfg.insn_weights.get('beq')
-        bne_weight = cfg.insn_weights.get('bne')
+        beq_weight = cfg.insn_weights.get("beq")
+        bne_weight = cfg.insn_weights.get("bne")
         sum_weights = beq_weight + bne_weight
         if sum_weights == 0:
             self.disabled = True
@@ -40,16 +41,13 @@ class Branch(SnippetGen):
 
     @staticmethod
     def pick_from_weighted_ranges(r: Sequence[_WeightedFloatRng]) -> float:
-        ff0, ff1 = random.choices([rng for _, rng in r],
-                                  weights=[w for w, _ in r])[0]
+        ff0, ff1 = random.choices([rng for _, rng in r], weights=[w for w, _ in r])[0]
         return random.uniform(ff0, ff1)
 
-    def _pick_tgt_addr(self,
-                       pc: int,
-                       off_min: int,
-                       off_max: int,
-                       program: Program) -> Optional[int]:
-        '''Pick the target address for a branch'''
+    def _pick_tgt_addr(
+        self, pc: int, off_min: int, off_max: int, program: Program
+    ) -> Optional[int]:
+        """Pick the target address for a branch"""
         # Make sure we can cover the case where we branch conditionally to
         # PC+4, which is probably quite unlikely otherwise, by giving at 1%
         # chance.
@@ -62,13 +60,10 @@ class Branch(SnippetGen):
         else:
             fall_thru = random.random() < 0.01
 
-        return (pc + 4 if fall_thru else
-                program.pick_branch_target(pc, 1, off_min, off_max))
+        return pc + 4 if fall_thru else program.pick_branch_target(pc, 1, off_min, off_max)
 
-    def gen_head(self,
-                 model: Model,
-                 program: Program) -> Optional[Tuple[ProgInsn, int]]:
-        '''Generate the actual branch instruction'''
+    def gen_head(self, model: Model, program: Program) -> Optional[Tuple[ProgInsn, int]]:
+        """Generate the actual branch instruction"""
         # Decide whether to generate BEQ or BNE.
         is_beq = random.random() < self.beq_prob
 
@@ -100,10 +95,7 @@ class Branch(SnippetGen):
 
         return (ProgInsn(insn, [grs1, grs2, off_enc], None), tgt_addr)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck
         # (just like the StraightLineInsn generator)
@@ -129,9 +121,7 @@ class Branch(SnippetGen):
         # Decide how much of our remaining fuel to give the code below the
         # branch. Each side gets the same amount because only one side appears
         # in the instruction stream.
-        fuel_frac_ranges = [(1, (0, 0.1)),
-                            (10, (0.1, 0.5)),
-                            (1, (0.5, 1.0))]
+        fuel_frac_ranges = [(1, (0, 0.1)), (10, (0.1, 0.5)), (1, (0.5, 1.0))]
         fuel_frac = self.pick_from_weighted_ranges(fuel_frac_ranges)
         assert 0 <= fuel_frac <= 1
         assert 0 < model.fuel

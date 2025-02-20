@@ -119,7 +119,7 @@ def str_to_byte_array(s: str) -> list:
 
     byte_array = list()
     for i in range(0, len(s), 2):
-        byte_array.append(int(s[i:i + 2], 16))
+        byte_array.append(int(s[i : i + 2], 16))
     return byte_array
 
 
@@ -148,7 +148,7 @@ def rng() -> Callable[[int], bytes]:
     """
     Initializes the `random` module for generating random test vectors.
     """
-    seed = random.randrange(0, 2 ** 32)
+    seed = random.randrange(0, 2**32)
     # Log random seed for reproducability in CI runs
     print(f"RANDOM SEED = {seed}")
     random.seed(seed)

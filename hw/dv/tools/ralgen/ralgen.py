@@ -5,6 +5,7 @@
 r"""FuseSoc generator for UVM RAL package created with either regtool or
 topgen tools.
 """
+
 import os
 import shlex
 import subprocess
@@ -35,17 +36,19 @@ def main():
     util_path = Path(__file__).parent / REPO_ROOT / "util"
 
     # Retrieve the parameters from the yml.
-    root_dir = Path(gapi['files_root'])
-    name = gapi['parameters'].get('name')
-    alias_hjson = gapi['parameters'].get('alias_hjson')
-    ip_hjson = gapi['parameters'].get('ip_hjson')
-    top_hjson = gapi['parameters'].get('top_hjson')
-    dv_base_names = gapi['parameters'].get('dv_base_names')
-    hjson_path = gapi['parameters'].get('hjson_path')
+    root_dir = Path(gapi["files_root"])
+    name = gapi["parameters"].get("name")
+    alias_hjson = gapi["parameters"].get("alias_hjson")
+    ip_hjson = gapi["parameters"].get("ip_hjson")
+    top_hjson = gapi["parameters"].get("top_hjson")
+    dv_base_names = gapi["parameters"].get("dv_base_names")
+    hjson_path = gapi["parameters"].get("hjson_path")
 
     if not name or (bool(ip_hjson) == bool(top_hjson)):
-        print("Error: ralgen requires the \"name\" and exactly one of "
-              "{\"ip_hjson\" and \"top_hjson\"} parameters to be set.")
+        print(
+            'Error: ralgen requires the "name" and exactly one of '
+            '{"ip_hjson" and "top_hjson"} parameters to be set.'
+        )
         sys.exit(1)
 
     # Generate the RAL pkg.
@@ -68,7 +71,7 @@ def main():
     if dv_base_names:
         args += ["--dv-base-names"] + dv_base_names
 
-    cmd_str = ' '.join([shlex.quote(str(arg)) for arg in args])
+    cmd_str = " ".join([shlex.quote(str(arg)) for arg in args])
     print(f"Calling tool in ralgen.py: {cmd_str}")
     try:
         subprocess.run(args, check=True)
@@ -79,5 +82,5 @@ def main():
     print(f"RAL pkg for {name} written to {Path.cwd()}.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

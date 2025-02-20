@@ -65,8 +65,7 @@ class CommitJudgment(enum.Enum):
 
 
 class BisectLog:
-    """A container and parser for the results of `git bisect log`.
-    """
+    """A container and parser for the results of `git bisect log`."""
 
     class ParserBug(Exception):
         pass
@@ -78,25 +77,23 @@ class BisectLog:
         self.candidates = BisectLog._extract_candidates(lines)
 
     @staticmethod
-    def _extract_judgments(
-            lines: List[str]) -> List[Tuple[CommitHash, CommitJudgment]]:
+    def _extract_judgments(lines: List[str]) -> List[Tuple[CommitHash, CommitJudgment]]:
         out = []
         for line in lines:
-            if line == '' or line.startswith("#"):
+            if line == "" or line.startswith("#"):
                 continue
-            if line == 'git bisect start':
+            if line == "git bisect start":
                 continue
             match = re.match("^git bisect (good|bad|skip) ([0-9a-f]+)$", line)
             if match is None:
-                raise BisectLog.ParserBug(
-                    "Failed to parse line: '{}'".format(line))
+                raise BisectLog.ParserBug("Failed to parse line: '{}'".format(line))
             assert len(match.groups()) == 2
             judgment, commit = match.groups()
-            if judgment == 'good':
+            if judgment == "good":
                 out.append((CommitHash(commit), CommitJudgment.GOOD))
-            elif judgment == 'bad':
+            elif judgment == "bad":
                 out.append((CommitHash(commit), CommitJudgment.BAD))
-            elif judgment == 'skip':
+            elif judgment == "skip":
                 out.append((CommitHash(commit), CommitJudgment.SKIP))
             else:
                 raise BisectLog.ParserBug("Unreachable")
@@ -122,11 +119,10 @@ class BisectLog:
             # When only skipped commits remain, expect a sequence of "possible
             # first bad commit" lines.
             if line == LOG_LINE_ONLY_SKIPPED:
-                candidate_lines = lines[i + 1:]
+                candidate_lines = lines[i + 1 :]
                 break
 
-        re_possible_first_bad = re.compile(
-            r"^# possible first bad commit: \[([0-9a-f]+)\] .*$")
+        re_possible_first_bad = re.compile(r"^# possible first bad commit: \[([0-9a-f]+)\] .*$")
         candidates = []
         for line in candidate_lines:
             match = re_possible_first_bad.match(line)
@@ -195,8 +191,7 @@ class GitControllerABC(abc.ABC):
         return BisectLog(stdout)
 
     def bisect_view(self) -> List[Tuple[CommitHash, str]]:
-        stdout, _ = self._git_checked("bisect", "view", "--oneline",
-                                      "--no-abbrev-commit")
+        stdout, _ = self._git_checked("bisect", "view", "--oneline", "--no-abbrev-commit")
         out = []
         for line in stdout.splitlines():
             commit, tail = line.split(" ", 1)
@@ -217,31 +212,26 @@ class GitController(GitControllerABC):
 
     def _git(self, *args: str) -> Tuple[int, str, str]:
         command = [self._git_binary] + list(args)
-        proc = subprocess.run(command,
-                              stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE,
-                              env=self._env,
-                              encoding="utf-8")
+        proc = subprocess.run(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=self._env, encoding="utf-8"
+        )
         if self._verbose or proc.returncode != 0:
             print()
             command_str = " ".join(command)
             rich.print(
                 "Command [green]{}[/green] exited with status {}".format(
-                    rich.markup.escape(command_str), proc.returncode))
-            rich.print(
-                rich.panel.Panel(rich.markup.escape(proc.stdout),
-                                 title="git stdout"))
-            rich.print(
-                rich.panel.Panel(rich.markup.escape(proc.stderr),
-                                 title="git stderr"))
+                    rich.markup.escape(command_str), proc.returncode
+                )
+            )
+            rich.print(rich.panel.Panel(rich.markup.escape(proc.stdout), title="git stdout"))
+            rich.print(rich.panel.Panel(rich.markup.escape(proc.stderr), title="git stderr"))
         return (proc.returncode, proc.stdout, proc.stderr)
 
     def _git_no_capture_output(self, *args: str) -> int:
         command = [self._git_binary] + list(args)
         command_str = " ".join(command)
         command_str = rich.markup.escape(command_str)
-        self._console.rule(
-            "Streaming output from [bold]{}".format(command_str))
+        self._console.rule("Streaming output from [bold]{}".format(command_str))
         proc = subprocess.run(["git"] + list(args), env=self._env)
         self._console.rule("Git exited with status {}".format(proc.returncode))
         self._console.print()
@@ -249,21 +239,19 @@ class GitController(GitControllerABC):
 
 
 class BisectSession:
-
-    def __init__(self,
-                 git: GitControllerABC,
-                 cache_keys: Set[CommitHash],
-                 visualize: bool = False):
+    def __init__(self, git: GitControllerABC, cache_keys: Set[CommitHash], visualize: bool = False):
         self._git = git
         self._cache_keys: Set[CommitHash] = cache_keys
         self._console = rich.console.Console()
         self._visualize = visualize
 
-    def run(self,
-            good_commit: CommitHash,
-            bad_commit: CommitHash,
-            fast_command: List[str],
-            slow_command: Optional[List[str]] = None) -> BisectLog:
+    def run(
+        self,
+        good_commit: CommitHash,
+        bad_commit: CommitHash,
+        fast_command: List[str],
+        slow_command: Optional[List[str]] = None,
+    ) -> BisectLog:
         """Run an unattended bisect session in one or two phases.
 
         This method is conceptually equivalent to `git bisect run`. Unlike plain
@@ -340,29 +328,28 @@ class BisectSession:
         if not self._visualize:
             return
 
-        table = rich.table.Table(
-            title="Bitstream Bisect Status: [bold]{}".format(label))
+        table = rich.table.Table(title="Bitstream Bisect Status: [bold]{}".format(label))
         table.add_column("Commit")
         table.add_column("Description")
         table.add_column("Cached")
         table.add_column("Judgment")
 
         bisect_log = self._git.bisect_log()
-        judgment_dict: Dict[CommitHash,
-                            CommitJudgment] = dict(bisect_log.judgments)
+        judgment_dict: Dict[CommitHash, CommitJudgment] = dict(bisect_log.judgments)
 
         for commit, description in self._git.bisect_view():
             judgment = judgment_dict.get(commit)
-            table.add_row(commit, rich.markup.escape(description),
-                          "Cached" if commit in self._cache_keys else "",
-                          judgment.name if judgment else "")
+            table.add_row(
+                commit,
+                rich.markup.escape(description),
+                "Cached" if commit in self._cache_keys else "",
+                judgment.name if judgment else "",
+            )
 
         self._console.print(table)
 
 
-app = typer.Typer(pretty_exceptions_enable=False,
-                  rich_markup_mode="rich",
-                  add_completion=False)
+app = typer.Typer(pretty_exceptions_enable=False, rich_markup_mode="rich", add_completion=False)
 
 
 @app.command(help=__doc__)
@@ -370,16 +357,17 @@ def main(
     good: str = typer.Option(..., help="Commit-ish for known-good revision."),
     bad: str = typer.Option(..., help="Commit-ish for known-bad revision."),
     fast_command: str = typer.Option(
-        ..., help="Command for testing commits with cached bitstreams."),
+        ..., help="Command for testing commits with cached bitstreams."
+    ),
     slow_command: Optional[str] = typer.Option(
-        None, help="Command that tests remaining commits in second phase."),
+        None, help="Command that tests remaining commits in second phase."
+    ),
     git_binary: str = typer.Option("/usr/bin/git", help="Path to Git binary."),
-    verbose: bool = typer.Option(
-        False, help="Log stdout/stderr of every git command."),
+    verbose: bool = typer.Option(False, help="Log stdout/stderr of every git command."),
 ):
     # Escape the Bazel sandbox. Without this step, git would not find the .git/
     # directory. Note that this works nicely with git worktrees.
-    workspace_dir = os.environ['BUILD_WORKSPACE_DIRECTORY']
+    workspace_dir = os.environ["BUILD_WORKSPACE_DIRECTORY"]
     os.chdir(workspace_dir)
 
     # Create a Git controller capable of invoking the system's `git` binary. Use
@@ -398,16 +386,12 @@ def main(
     bitstream_cache_keys = set(bitstream_cache.available.keys())
 
     fast_command_pieces = shlex.split(fast_command)
-    slow_command_pieces = shlex.split(
-        slow_command) if slow_command is not None else None
+    slow_command_pieces = shlex.split(slow_command) if slow_command is not None else None
 
     session = BisectSession(git, bitstream_cache_keys, visualize=True)
-    session.run(good_commit,
-                bad_commit,
-                fast_command_pieces,
-                slow_command=slow_command_pieces)
+    session.run(good_commit, bad_commit, fast_command_pieces, slow_command=slow_command_pieces)
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app()

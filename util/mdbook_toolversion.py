@@ -11,7 +11,7 @@ import check_tool_requirements
 
 # We are looking to match on the following example strings
 # {{#tool-version verible }}
-TOOLVERSION_PATTERN = re.compile(r'\{\{#tool-version\s+(.+?)\s*\}\}')
+TOOLVERSION_PATTERN = re.compile(r"\{\{#tool-version\s+(.+?)\s*\}\}")
 
 
 def main() -> None:
@@ -24,9 +24,9 @@ def main() -> None:
 
     for chapter in md_utils.chapters(book["sections"]):
         # Add in the minimum tool version
-        chapter['content'] = TOOLVERSION_PATTERN.sub(
-            repl=lambda m: tool_requirements.get(m.group(1)).min_version,
-            string=chapter['content'])
+        chapter["content"] = TOOLVERSION_PATTERN.sub(
+            repl=lambda m: tool_requirements.get(m.group(1)).min_version, string=chapter["content"]
+        )
 
     # dump the book into stdout
     print(json.dumps(book))

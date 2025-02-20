@@ -15,11 +15,11 @@ from ..config import Config
 
 
 class BranchGen(SnippetGen):
-    ''' A snippet generator base class to generate bad or untaken BEQ and BNE.
+    """A snippet generator base class to generate bad or untaken BEQ and BNE.
 
     BadBranch and UntakenBranch inherit this class.
 
-    '''
+    """
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
@@ -27,13 +27,13 @@ class BranchGen(SnippetGen):
         self.insns = []
         self.weights = []
 
-        self.beq = self._get_named_insn(insns_file, 'beq')
-        self.bne = self._get_named_insn(insns_file, 'bne')
+        self.beq = self._get_named_insn(insns_file, "beq")
+        self.bne = self._get_named_insn(insns_file, "bne")
 
         self.imm_op_type = self.bne.operands[2].op_type
 
         for insn in insns_file.insns:
-            if insn.mnemonic in ['beq', 'bne']:
+            if insn.mnemonic in ["beq", "bne"]:
                 weight = cfg.insn_weights.get(insn.mnemonic)
                 if weight > 0:
                     self.weights.append(weight)
@@ -44,11 +44,7 @@ class BranchGen(SnippetGen):
         if not self.weights:
             self.disabled = True
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Pick maximum and minimum address range for the current PC.
         imm_rng = self.imm_op_type.get_op_val_range(model.pc)
         assert imm_rng is not None
@@ -57,7 +53,7 @@ class BranchGen(SnippetGen):
 
         # Get known registers. We always have x0.
         # So it should never fail.
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
         assert known_regs
 
         # Pick a random register among known registers.
@@ -96,19 +92,13 @@ class BranchGen(SnippetGen):
 
         return (snippet, model)
 
-    def pick_offset(self,
-                    min_addr: int,
-                    max_addr: int,
-                    model: Model,
-                    program: Program) -> int:
+    def pick_offset(self, min_addr: int, max_addr: int, model: Model, program: Program) -> int:
         raise NotImplementedError()
 
-    def pick_second_op(self,
-                       equals: List[int],
-                       not_equals: List[int]) -> Optional[Tuple[int, Insn]]:
+    def pick_second_op(
+        self, equals: List[int], not_equals: List[int]
+    ) -> Optional[Tuple[int, Insn]]:
         raise NotImplementedError()
 
-    def update_for_insn(self,
-                        model: Model,
-                        prog_insn: ProgInsn) -> None:
+    def update_for_insn(self, model: Model, prog_insn: ProgInsn) -> None:
         return None

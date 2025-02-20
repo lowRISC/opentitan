@@ -5,7 +5,7 @@
 
 
 class CheckResult:
-    '''A class to record the results of static checks.
+    """A class to record the results of static checks.
 
     Can record any number of errors and warnings. Combine two check results
     with +, e.g.:
@@ -17,33 +17,36 @@ class CheckResult:
 
         # prints warnings/errors from both checks and "A warning"
         print(out.report())
-    '''
+    """
+
     def __init__(self):
         self.errors = []
         self.warnings = []
-        self.prefix = ''
+        self.prefix = ""
 
     def warn(self, msg):
-        '''Add a warning.'''
+        """Add a warning."""
         self.warnings.append(msg)
 
     def err(self, msg):
-        '''Add an error.'''
+        """Add an error."""
         self.errors.append(msg)
 
     def __add__(self, other):
-        '''Combines both operands' errors/warnings in a new CheckResult.'''
+        """Combines both operands' errors/warnings in a new CheckResult."""
         if not isinstance(other, CheckResult):
             raise ValueError(
-                'Cannot add {} (of type {}) to {} (of type CheckResult)'.
-                format(other, type(other), self))
+                "Cannot add {} (of type {}) to {} (of type CheckResult)".format(
+                    other, type(other), self
+                )
+            )
         out = CheckResult()
         out.warnings = self.warnings + other.warnings
         out.errors = self.errors + other.errors
         return out
 
     def set_prefix(self, prefix):
-        '''Add a prefix to the printouts for this check.'''
+        """Add a prefix to the printouts for this check."""
         self.prefix = prefix
 
     def has_errors(self):
@@ -53,11 +56,9 @@ class CheckResult:
         return len(self.warnings) != 0
 
     def report(self):
-        '''Show a message to represent the results of the check.'''
+        """Show a message to represent the results of the check."""
         if not self.has_warnings() and not self.has_errors():
-            return '{}PASS'.format(self.prefix)
-        warn_strs = [
-            '{}WARN: {}'.format(self.prefix, w) for w in self.warnings
-        ]
-        err_strs = ['{}ERROR: {}'.format(self.prefix, e) for e in self.errors]
-        return '\n'.join(warn_strs + err_strs)
+            return "{}PASS".format(self.prefix)
+        warn_strs = ["{}WARN: {}".format(self.prefix, w) for w in self.warnings]
+        err_strs = ["{}ERROR: {}".format(self.prefix, e) for e in self.errors]
+        return "\n".join(warn_strs + err_strs)

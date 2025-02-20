@@ -1,8 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Generate SystemVerilog UVM agent extended freom our DV lib
-"""
+"""Generate SystemVerilog UVM agent extended freom our DV lib"""
 
 import os
 
@@ -41,24 +40,30 @@ def gen_agent(name, has_separate_host_device_driver, root_dir, vendor):
         src_suffix = tup[3]
 
         if has_separate_host_device_driver:
-            if src == "driver": continue
+            if src == "driver":
+                continue
         else:
-            if src == "host_driver": continue
-            if src == "device_driver": continue
+            if src == "host_driver":
+                continue
+            if src == "device_driver":
+                continue
 
-        ftpl = src + src_suffix + '.tpl'
+        ftpl = src + src_suffix + ".tpl"
         fname = src_prefix + src + src_suffix
 
         # read template
-        tpl = Template(filename=str(importlib.resources.files('uvmdvgen') / ftpl))
+        tpl = Template(filename=str(importlib.resources.files("uvmdvgen") / ftpl))
 
-        if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
-        with open(path_dir + "/" + fname, 'w') as fout:
+        if not os.path.exists(path_dir):
+            os.system("mkdir -p " + path_dir)
+        with open(path_dir + "/" + fname, "w") as fout:
             try:
                 fout.write(
-                    tpl.render(name=name,
-                               has_separate_host_device_driver=
-                               has_separate_host_device_driver,
-                               vendor=vendor))
+                    tpl.render(
+                        name=name,
+                        has_separate_host_device_driver=has_separate_host_device_driver,
+                        vendor=vendor,
+                    )
+                )
             except:
                 log.error(exceptions.text_error_template().render())

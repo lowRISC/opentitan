@@ -14,11 +14,11 @@ LINK_PATTERN = re.compile(LINK_PATTERN_STR)
 
 
 def change_link_ext(
-        file_list: Set[Path],
-        content: str,
-        new_suffix: str,
-        book_root: Path,
-        page_path: Path,
+    file_list: Set[Path],
+    content: str,
+    new_suffix: str,
+    book_root: Path,
+    page_path: Path,
 ) -> str:
     def suffix_swap(match: re.Match) -> str:
         """Swaps the extension of the file being linked to if it is a ip block config."""

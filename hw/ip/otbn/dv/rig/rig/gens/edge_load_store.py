@@ -16,18 +16,19 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class EdgeLoadStore(SnippetGen):
-    '''A snippet generator that generates random stores that try to
+    """A snippet generator that generates random stores that try to
     hit edge cases.
 
-    '''
+    """
+
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
         self.insns = []
         self.weights = []
 
-        self.sw = self._get_named_insn(insns_file, 'sw')
-        self.bnsid = self._get_named_insn(insns_file, 'bn.sid')
+        self.sw = self._get_named_insn(insns_file, "sw")
+        self.bnsid = self._get_named_insn(insns_file, "bn.sid")
 
         for insn in [self.sw, self.bnsid]:
             weight = cfg.insn_weights.get(insn.mnemonic)
@@ -40,11 +41,7 @@ class EdgeLoadStore(SnippetGen):
         if not self.weights:
             self.disabled = True
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
         if program.get_insn_space_at(model.pc) <= 1:
@@ -64,22 +61,19 @@ class EdgeLoadStore(SnippetGen):
         return (snippet, model)
 
     def fill_insn(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-        '''Try to pick one of BN.SID or SW instructions
-
-        '''
+        """Try to pick one of BN.SID or SW instructions"""
 
         # Special-case BN store instruction by mnemonic. These use
         # complicated indirect addressing, so it's probably more sensible to
         # give them special code.
-        if insn.mnemonic in ['bn.sid']:
+        if insn.mnemonic in ["bn.sid"]:
             return self._fill_bn_sid(insn, model)
-        if insn.mnemonic in ['sw']:
+        if insn.mnemonic in ["sw"]:
             return self._fill_sw(insn, model)
 
         return None
 
     def _fill_sw(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-
         imm_op_type = self.sw.operands[1].op_type
 
         # Determine the offset range for SW
@@ -90,7 +84,7 @@ class EdgeLoadStore(SnippetGen):
         min_offset, max_offset = offset_rng
 
         # Get known registers
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
 
         base = []
 
@@ -125,10 +119,10 @@ class EdgeLoadStore(SnippetGen):
 
         op_val = [op_val_grs2, offset_val, op_val_grs1]
 
-        return ProgInsn(insn, op_val, ('dmem', addr))
+        return ProgInsn(insn, op_val, ("dmem", addr))
 
     def _fill_bn_sid(self, insn: Insn, model: Model) -> Optional[ProgInsn]:
-        '''Fill out a BN.SID instruction'''
+        """Fill out a BN.SID instruction"""
 
         bn_imm_op_type = self.bnsid.operands[2].op_type
 
@@ -140,8 +134,8 @@ class EdgeLoadStore(SnippetGen):
         min_offset, max_offset = bn_offset_rng
 
         # Get known GPRs and the WDRs with an architecturally specified value
-        known_regs = model.regs_with_known_vals('gpr')
-        known_wdrs = set(model.regs_with_architectural_vals('wdr'))
+        known_regs = model.regs_with_known_vals("gpr")
+        known_wdrs = set(model.regs_with_architectural_vals("wdr"))
         if not known_wdrs:
             return None
 
@@ -152,8 +146,10 @@ class EdgeLoadStore(SnippetGen):
         # Also find a register for grs1 and grs2 operands
         for reg_idx, u_reg_val in known_regs:
             reg_val = u_reg_val - (1 << 32) if u_reg_val >> 31 else u_reg_val
-            if ((model.dmem_size - reg_val - 32
-                 in range(min_offset, max_offset + 1) and not reg_val % 32)):
+            if (
+                model.dmem_size - reg_val - 32 in range(min_offset, max_offset + 1)
+                and not reg_val % 32
+            ):
                 base.append((reg_idx, reg_val))
             if reg_val < 32 and reg_val in known_wdrs:
                 valid_grs2s.append(reg_idx)
@@ -184,4 +180,4 @@ class EdgeLoadStore(SnippetGen):
 
         op_val = [op_val_grs1, op_val_grs2, bn_offset_val, 0, 0]
 
-        return ProgInsn(insn, op_val, ('dmem', addr))
+        return ProgInsn(insn, op_val, ("dmem", addr))

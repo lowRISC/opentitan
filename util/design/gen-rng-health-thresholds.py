@@ -36,6 +36,7 @@ Notes:
 `--per-bit` must be set to reflect the `RNG_BIT_ENABLE` entropy src configuration.
 
 """
+
 import argparse
 import enum
 import math
@@ -47,13 +48,12 @@ _RNG_BUS_WIDTH = 4
 
 # List of test windows supported by this script.
 class _Test(enum.Enum):
-    ADAPTP = 'ADAPTP'
-    BUCKET = 'BUCKET'
-    MARKOV = 'MARKOV'
+    ADAPTP = "ADAPTP"
+    BUCKET = "BUCKET"
+    MARKOV = "MARKOV"
 
 
-def threshold_calc(test: str, window_size: int, sigma: float,
-                   per_bit: bool) -> bool:
+def threshold_calc(test: str, window_size: int, sigma: float, per_bit: bool) -> bool:
     """Calculates and prints high and low entropy health test thresholds.
 
     Args:
@@ -72,7 +72,7 @@ def threshold_calc(test: str, window_size: int, sigma: float,
     if test == _Test.ADAPTP:
         n = (window_size / _RNG_BUS_WIDTH) if per_bit else window_size
     elif test == _Test.BUCKET:
-        n = (window_size / _RNG_BUS_WIDTH)
+        n = window_size / _RNG_BUS_WIDTH
         p = 1.0 / float(1 << _RNG_BUS_WIDTH)
     elif test == _Test.MARKOV:
         half_window = window_size / 2
@@ -103,37 +103,33 @@ def main():
     parser = argparse.ArgumentParser(
         prog="gen-rng-health-thresholds",
         description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--window_size',
-                        '-w',
-                        type=int,
-                        default=2028,
-                        help='Window size in bits.')
-    parser.add_argument('--sigma',
-                        '-s',
-                        type=float,
-                        default=3.0,
-                        help='''
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--window_size", "-w", type=int, default=2028, help="Window size in bits.")
+    parser.add_argument(
+        "--sigma",
+        "-s",
+        type=float,
+        default=3.0,
+        help="""
                         Number of standard deviations to support in the test
                         window threshold.
-                        ''')
-    parser.add_argument('--per_bit',
-                        '-b',
-                        action='store_true',
-                        default=False,
-                        help='''
+                        """,
+    )
+    parser.add_argument(
+        "--per_bit",
+        "-b",
+        action="store_true",
+        default=False,
+        help="""
                         Set to true to make calculations assuming single bit
                         entropy.
-                        ''')
+                        """,
+    )
     args = parser.parse_args()
 
-    print(
-        f"Window size: {args.window_size:d}, per_bit: {args.per_bit}, sigma: {args.sigma:0.2f}"
-    )
-    results = [
-        threshold_calc(t, args.window_size, args.sigma, args.per_bit)
-        for t in _Test
-    ]
+    print(f"Window size: {args.window_size:d}, per_bit: {args.per_bit}, sigma: {args.sigma:0.2f}")
+    results = [threshold_calc(t, args.window_size, args.sigma, args.per_bit) for t in _Test]
     if not all(results):
         sys.exit("Failed to calculate one or more thresholds.")
 

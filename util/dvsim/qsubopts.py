@@ -16,49 +16,52 @@ to the command line or to a script file.
 import argparse
 
 
-class qsubOptions():
+class qsubOptions:
     "A data type meant to collect qsub options. See man qsub for information"
 
-    def __init__(self, optstring='', prog='qsub'):
+    def __init__(self, optstring="", prog="qsub"):
         # Which SGE command are we going to work with?
         self.prog = prog
-        sge_program_names = [
-            'qsub', 'qrsh', 'qsh', 'qlogin', 'qalter', 'qresub', 'qmake'
-        ]
-        assert self.prog in sge_program_names, 'Unsupported SGE command: ' + prog + \
-            'not one of ' + ', '.join(sge_program_names)
+        sge_program_names = ["qsub", "qrsh", "qsh", "qlogin", "qalter", "qresub", "qmake"]
+        assert self.prog in sge_program_names, (
+            "Unsupported SGE command: " + prog + "not one of " + ", ".join(sge_program_names)
+        )
 
-        if prog == 'qmake' and '-pe' in optstring:
-            prog = 'qsub'
+        if prog == "qmake" and "-pe" in optstring:
+            prog = "qsub"
         else:
-            prog = 'qrsh'
+            prog = "qrsh"
 
         # SUPPRESS = If not specified, do not generate variable in namespace
         self.parser = argparse.ArgumentParser(
-            description='Options to pass to qsub',
+            description="Options to pass to qsub",
             formatter_class=argparse.RawTextHelpFormatter,
             argument_default=argparse.SUPPRESS,
             epilog="""The following is scraped from the qsub manpage for GE \
-            6.2u5 dated 2009/12/01 12:24:06""")
+            6.2u5 dated 2009/12/01 12:24:06""",
+        )
 
         # BEGIN SGE OPTION PARSER
         # BUG if help still begins with a line with -option, have cosmetic bug where
         # metavar cannot be specified correctly
 
-        yesno = ['y', 'yes', 'n', 'no']
+        yesno = ["y", "yes", "n", "no"]
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin']:
-            self.parser.add_argument('-@',
-                                     metavar='optionfile',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin"]:
+            self.parser.add_argument(
+                "-@",
+                metavar="optionfile",
+                help="""\
               Forces qsub, qrsh, qsh, or qlogin to use the options contained
               in optionfile. The indicated file may contain all
-              valid options. Comment lines must start with a "#" sign.""")
+              valid options. Comment lines must start with a "#" sign.""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-a',
-                                     metavar='date_time',
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-a",
+                metavar="date_time",
+                help="""\
               Available for qsub and qalter only.
 
               Defines or redefines the time and date at  which  a  job  is  eligible
@@ -68,13 +71,15 @@ class qsubOptions():
               If  this  option is used with qsub or if a corresponding value is specified
               in qmon then a parameter named a and the value in the format CCYYMMDDhhmm.SS
               will be passed to the defined JSV instances (see -jsv  option  below  or
-              find more information concerning JSV in jsv(1))""")
+              find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-ac',
-                                     metavar='variable[=value]',
-                                     action='append',
-                                     help=""" -ac variable[=value],...
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-ac",
+                metavar="variable[=value]",
+                action="append",
+                help=""" -ac variable[=value],...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Adds  the  given  name/value  pair(s)  to the job's context. Value may be omitted.
@@ -84,13 +89,14 @@ class qsubOptions():
               The  outcome  of  the  evaluation  of all -ac, -dc, and -sc options or
               corresponding values in qmon is passed to defined JSV instances as parameter
               with the name ac.  (see -jsv option below or find more information concerning
-              JSV in jsv(1)) QALTER allows changing this option even while the job executes."""
-                                     )
+              JSV in jsv(1)) QALTER allows changing this option even while the job executes.""",
+            )
 
-        if prog in ['qsub', 'qalter', 'qrsh', 'qsh', 'qlogin']:
-            self.parser.add_argument('-ar',
-                                     metavar='ar_id',
-                                     help="""\
+        if prog in ["qsub", "qalter", "qrsh", "qsh", "qlogin"]:
+            self.parser.add_argument(
+                "-ar",
+                metavar="ar_id",
+                help="""\
               Available for qsub, qalter, qrsh, qsh, or qlogin only.
 
               Assigns  the  submitted  job  to  be  a  part of an existing Advance Reservation.
@@ -106,12 +112,14 @@ class qsubOptions():
               If  this  option  or  a  corresponding  value in qmon is specified
               then this value will be passed to defined JSV instances as parameter
               with the name ar.  (see -jsv option below or find  more  information
-              concerning  JSV in jsv(1))""")
+              concerning  JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-A',
-                                     metavar='account_string',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-A",
+                metavar="account_string",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Identifies the account to which the resource consumption of the
@@ -123,14 +131,14 @@ class qsubOptions():
 
               If  this  option  or  a  corresponding  value in qmon is specified
               then this value will be passed to defined JSV instances as parameter with the name A.
-              (see -jsv option below or  find  more  information  concerning  JSV  in jsv(1))"""
-                                     )
+              (see -jsv option below or  find  more  information  concerning  JSV  in jsv(1))""",
+            )
 
-        self.parser.add_argument('-binding',
-                                 nargs='+',
-                                 metavar=('binding_instance',
-                                          'binding_strategy'),
-                                 help="""\
+        self.parser.add_argument(
+            "-binding",
+            nargs="+",
+            metavar=("binding_instance", "binding_strategy"),
+            help="""\
        -binding [ binding_instance ] binding_strategy
 
               A  job  can  request a specific processor core binding (processor affinity)
@@ -236,12 +244,14 @@ class qsubOptions():
               reported for the striding binding and all binding_exp_* values will passed to
               JSV if explicit binding was speci‐
               fied.  (see -jsv  option  below or find more information concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+        )
 
-        if prog in ['qsub', 'qrsh']:
-            self.parser.add_argument('-b',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub", "qrsh"]:
+            self.parser.add_argument(
+                "-b",
+                choices=yesno,
+                help="""\
               Available for qsub, qrsh only. Qalter does not allow changing this option.
               This option cannot be embedded in the script file itself.
 
@@ -281,12 +291,14 @@ class qsubOptions():
               - spooled in execd
               - removed from spooling both in execd and qmaster once the job is done
               If job scripts are available on the execution nodes, e.g. via NFS, binary
-              submission can be the better choice.""")
+              submission can be the better choice.""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-c',
-                                     metavar='occasion_specifier',
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-c",
+                metavar="occasion_specifier",
+                help="""\
               Available for qsub and qalter only.
 
               Defines or redefines whether the job should be checkpointed, and if so,
@@ -318,12 +330,14 @@ class qsubOptions():
               Please note that if you change c_occasion via
               JSV then the last setting of c_interval will be overwritten and vice versa.
               (see -jsv option below or find more
-              information concerning JSV in jsv(1))""")
+              information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-ckpt',
-                                     metavar='ckpt_name',
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-ckpt",
+                metavar="ckpt_name",
+                help="""\
               Available for qsub and qalter only.
 
               Selects  the  checkpointing  environment (see checkpoint(5)) to be used
@@ -332,22 +346,26 @@ class qsubOptions():
               If this option or a corresponding value in qmon is specified then this
               value  will  be  passed  to  defined  JSV
               instances  as  parameter  with the name ckpt.  (see -jsv option below or
-              find more information concerning JSV in jsv(1))""")
+              find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin']:
-            self.parser.add_argument('-clear',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin"]:
+            self.parser.add_argument(
+                "-clear",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh, and qlogin only.
 
               Causes all elements of the job to be reset to the initial default
               status prior to applying any modifications (if
-              any) appearing in this specific command.""")
+              any) appearing in this specific command.""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qalter']:
-            self.parser.add_argument('-cwd',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "-cwd",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh and qalter only.
 
               Execute  the  job  from  the  current  working directory.
@@ -371,12 +389,14 @@ class qsubOptions():
               value  of this parameter to an empty string.
               As a result the job behaves as if -cwd was not specified during job
               submission.  (see -jsv option below or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh']:
-            self.parser.add_argument('-C',
-                                     metavar='prefix_string',
-                                     help="""\
+        if prog in ["qsub", "qrsh"]:
+            self.parser.add_argument(
+                "-C",
+                metavar="prefix_string",
+                help="""\
               Available for qsub and qrsh with script submission (-b n).
 
               Prefix_string defines the prefix that declares a directive in the  job's  command.
@@ -392,14 +412,15 @@ class qsubOptions():
               the script file contains anything other than a "#" character in the first byte
               position of the line,  the  shell
               processor for the job will reject the line and may exit the job prematurely.
-              If the -C option is present in the script file, it is ignored."""
-                                     )
+              If the -C option is present in the script file, it is ignored.""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-dc',
-                                     action='append',
-                                     metavar='variable',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-dc",
+                action="append",
+                metavar="variable",
+                help="""\
        -dc variable,...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -412,12 +433,14 @@ class qsubOptions():
               values  in  qmon  is  passed  to
               defined JSV instances as parameter with the name ac.  (see -jsv option below or
               find more information concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsh', 'qrsh']:
-            self.parser.add_argument('-display',
-                                     metavar='display_specifier',
-                                     help="""\
+        if prog in ["qsh", "qrsh"]:
+            self.parser.add_argument(
+                "-display",
+                metavar="display_specifier",
+                help="""\
               Available for qsh and qrsh.
 
               Directs xterm(1) to use display_specifier in order to contact the X server.
@@ -434,12 +457,14 @@ class qsubOptions():
               in  the  job  environment  which
               might  optionally  be  passed to JSV scripts. The variable name will be DISPLAY.
               (see -jsv option below or find
-              more information concerning JSV in jsv(1))""")
+              more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-dl',
-                                     metavar='date_time',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-dl",
+                metavar="date_time",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Specifies the deadline initiation time in [[CC]YY]MMDDhhmm[.SS] format (see -a
@@ -456,12 +481,14 @@ class qsubOptions():
               value will be passed to defined JSV
               instances as parameter with the name dl. The format for the date_time value
               is CCYYMMDDhhmm.SS (see -jsv  option
-              below or find more information concerning JSV in jsv(1))""")
+              below or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-e',
-                                     metavar='path',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-e",
+                metavar="path",
+                help="""\
           -e [[hostname]:]path,...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -514,12 +541,14 @@ class qsubOptions():
               will  be  passed  to  defined  JSV
               instances  as  parameter  with  the  name  e.  (see -jsv option below or
               find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-hard',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-hard",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Signifies that all -q and -l resource requirements following in the command
@@ -543,14 +572,16 @@ class qsubOptions():
               q_hard and l_hard. Find for informa‐
               tion in the sections describing -q and -l.  (see -jsv option below or find
               more information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter', 'qresub']:
+        if prog in ["qsub", "qrsh", "qalter", "qresub"]:
             # NOTE in SGE this is -h, here I have renamed it to -hold
             # TODO check if multiple holds are parsed correctly
-            self.parser.add_argument('-hold',
-                                     choices='usonUOS',
-                                     help="""\
+            self.parser.add_argument(
+                "-hold",
+                choices="usonUOS",
+                help="""\
               NOTE: Originally defined as -h, but changed to -hold here.
 
               Available for qsub (only -h), qrsh, qalter and qresub (hold state is
@@ -597,13 +628,15 @@ class qsubOptions():
               value u will be passed to the defined JSV instances indicating that
               the job will be in user hold after the  sub‐
               mission finishes.  (see -jsv option below or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter']:
-            self.parser.add_argument('-hold_jid',
-                                     nargs='+',
-                                     metavar='wc_job_list',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "-hold_jid",
+                nargs="+",
+                metavar="wc_job_list",
+                help="""\
               Available for qsub, qrsh, and qalter only. See sge_types(1).
               for wc_job_list definition.
 
@@ -631,13 +664,15 @@ class qsubOptions():
               then this value will be passed to defined JSV
               instances as parameter with the name hold_jid.
               (see -jsv option below or find more information  concerning  JSV
-              in jsv(1))""")
+              in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter']:
-            self.parser.add_argument('-hold_jid_ad',
-                                     nargs='+',
-                                     metavar='wc_job_list',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "-hold_jid_ad",
+                nargs="+",
+                metavar="wc_job_list",
+                help="""\
               Available for qsub, qrsh, and qalter only. See sge_types(1).
               for wc_job_list definition.
 
@@ -672,12 +707,14 @@ class qsubOptions():
               specified then this value will be passed to defined JSV
               instances as parameter with the name hold_jid_ad.
               (see -jsv option below or find  more  information  concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-i',
-                                     metavar='file',
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-i",
+                metavar="file",
+                help="""\
        -i [[hostname]:]file,...
               Available for qsub, and qalter only.
 
@@ -708,12 +745,14 @@ class qsubOptions():
               this value  will  be  passed  to  defined  JSV
               instances  as  parameter  with  the  name  i.
               (see -jsv option below or find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qrsh', 'qmake']:
-            self.parser.add_argument('-inherit',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qrsh", "qmake"]:
+            self.parser.add_argument(
+                "-inherit",
+                action="store_true",
+                help="""\
               Available only for qrsh and qmake(1).
 
               qrsh allows the user to start a task in an already scheduled parallel job.
@@ -746,12 +785,14 @@ class qsubOptions():
 
               This parameter is not available in the JSV context.
               (see -jsv option below or find more information  concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-j',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-j",
+                choices=yesno,
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Specifies whether or not the standard error stream of the job
@@ -770,14 +811,16 @@ class qsubOptions():
               The value will be y also when then long
               form yes was specified during submission.
               (see -jsv option below or find more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-js',
-                                     nargs='?',
-                                     type=int,
-                                     metavar='job_share',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-js",
+                nargs="?",
+                type=int,
+                metavar="job_share",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Defines  or  redefines the job share of the job relative to other jobs.
@@ -815,12 +858,14 @@ class qsubOptions():
               then this value will be passed to defined JSV
               instances as parameter with the name js.  (see -jsv option below or
               find  more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin']:
-            self.parser.add_argument('-jsv',
-                                     metavar='jsv_url',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin"]:
+            self.parser.add_argument(
+                "-jsv",
+                metavar="jsv_url",
+                help="""\
               Available for qsub, qsh, qrsh and qlogin only.
 
               Defines  a  client JSV instance which will be executed to
@@ -839,12 +884,14 @@ class qsubOptions():
               be triggered to check the job. Find more details
               in man page jsv(1) and sge_request(5).
 
-              The syntax of the jsv_url is specified in sge_types(1).()""")
+              The syntax of the jsv_url is specified in sge_types(1).()""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-l',
-                                     metavar='keywords',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-l",
+                metavar="keywords",
+                help="""\
        -l resource=value,...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -875,14 +922,16 @@ class qsubOptions():
               used  for  resource requests, then these expressions will
               be passed as they are. Also shortcut names will not be
               expanded.  (see -jsv option above or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
             # TODO check if multiple arguments are parsed correctly
-            self.parser.add_argument('-m',
-                                     nargs='+',
-                                     choices='beasn',
-                                     help="""\
+            self.parser.add_argument(
+                "-m",
+                nargs="+",
+                choices="beasn",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Defines or redefines under which circumstances mail
@@ -907,12 +956,14 @@ class qsubOptions():
               If this option or a corresponding value in qmon is
               specified then this value  will  be  passed  to  defined  JSV
               instances as parameter with the name m.  (see -jsv option
-              above or find more information concerning JSV in""")
+              above or find more information concerning JSV in""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-M',
-                                     metavar='user[@host]',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-M",
+                metavar="user[@host]",
+                help="""\
        -M user[@host],...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -926,13 +977,15 @@ class qsubOptions():
               this value  will  be  passed  to  defined  JSV
               instances  as  parameter  with  the  name  M.  (see -jsv option above or
               find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-masterq',
-                                     nargs='+',
-                                     metavar='wc_queue_list',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-masterq",
+                nargs="+",
+                metavar="wc_queue_list",
+                help="""\
               Available for qsub, qrsh, qsh, qlogin and qalter.  Only meaningful
               for parallel jobs, i.e. together with the -pe option.
 
@@ -957,12 +1010,14 @@ class qsubOptions():
               the this hard resource requirement will  be  passed
               to  defined  JSV  instances as parameter with the name masterq.
               (see -jsv option above or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter']:
-            self.parser.add_argument('-notify',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "-notify",
+                action="store_true",
+                help="""\
               Available for qsub, qrsh (with command) and qalter only.
 
               This flag, when set causes Grid Engine to send "warning" signals
@@ -987,12 +1042,14 @@ class qsubOptions():
               Only if this option is used the parameter named notify with
               the value y will be passed to defined JSV instances.
               (see -jsv option above or find more information concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin']:
-            self.parser.add_argument('-now',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin"]:
+            self.parser.add_argument(
+                "-now",
+                choices=yesno,
+                help="""\
               Available for qsub, qsh, qlogin and qrsh.
 
               -now y tries to start the job immediately or not at all.
@@ -1012,12 +1069,14 @@ class qsubOptions():
               parameter will be now. The value will be y also when then
               long form yes was specified during submission.
               (see -jsv option above or find more information  concerning  JSV
-              in jsv(1))""")
+              in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-N',
-                                     metavar='name',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-N",
+                metavar="name",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               The  name  of  the job. The name should follow the "name"
@@ -1046,12 +1105,14 @@ class qsubOptions():
               specified in qmon will be passed to defined  JSV
               instances  as  parameter  with  the  name  N.  (see -jsv
               option above or find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qrsh']:
-            self.parser.add_argument('-noshell',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qrsh"]:
+            self.parser.add_argument(
+                "-noshell",
+                action="store_true",
+                help="""\
               Available only for qrsh with a command line.
 
               Do not start the command line given to qrsh in a user's login shell,
@@ -1071,24 +1132,28 @@ class qsubOptions():
               Example:
               qrsh echo '$HOSTNAME'
               Alternative call with the -noshell option
-              qrsh -noshell /bin/tcsh -f -c 'echo $HOSTNAME'""")
+              qrsh -noshell /bin/tcsh -f -c 'echo $HOSTNAME'""",
+            )
 
-        if prog in ['qrsh']:
-            self.parser.add_argument('-nostdin',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qrsh"]:
+            self.parser.add_argument(
+                "-nostdin",
+                action="store_true",
+                help="""\
               Available only for qrsh.
 
               Suppress the input stream STDIN - qrsh will pass the option -n
               to the rsh(1) command. This is especially useful,
               if  multiple tasks are executed in parallel using qrsh, e.g.
               in a make(1) process - it would be undefined, which
-              process would get the input.""")
+              process would get the input.""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-o',
-                                     metavar='path',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-o",
+                metavar="path",
+                help="""\
        -o [[hostname]:]path,...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -1108,21 +1173,25 @@ class qsubOptions():
               specified then this value will be passed to defined JSV
               instances as parameter with the name o.  (see -jsv option
               above or  find  more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qalter']:
-            self.parser.add_argument('-ot',
-                                     metavar='override_tickets',
-                                     help="""\
+        if prog in ["qalter"]:
+            self.parser.add_argument(
+                "-ot",
+                metavar="override_tickets",
+                help="""\
               Available for qalter only.
 
               Changes the number of override tickets for the specified job.
-              Requires manager/operator privileges.""")
+              Requires manager/operator privileges.""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-P',
-                                     metavar='project_name',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-P",
+                metavar="project_name",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Specifies  the  project  to which this job is assigned.
@@ -1133,12 +1202,14 @@ class qsubOptions():
               this value  will  be  passed  to  defined  JSV
               instances  as  parameter  with  the  name ot.  (see -jsv option
               above or find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-p',
-                                     metavar='priority',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-p",
+                metavar="priority",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Defines or redefines the priority of the job relative to other jobs.
@@ -1155,12 +1226,14 @@ class qsubOptions():
               the priority is not 0 then this value will be
               passed to defined JSV instances as parameter with the name p.
               (see -jsv option above or find  more  information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-slot',
-                                     metavar='slot',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-slot",
+                metavar="slot",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Defines or redefines the priority of the job relative to other jobs.
@@ -1177,13 +1250,15 @@ class qsubOptions():
               the priority is not 0 then this value will be
               passed to defined JSV instances as parameter with the name p.
               (see -jsv option above or find  more  information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qrsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-pe',
-                                     nargs=2,
-                                     metavar=('parallel_environment', 'n'),
-                                     help="""\
+        if prog in ["qsub", "qsh", "qrsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-pe",
+                nargs=2,
+                metavar=("parallel_environment", "n"),
+                help="""\
        -pe parallel_environment n[-[m]]|[-]m,...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -1202,13 +1277,14 @@ class qsubOptions():
               provided with the -pe option. A missing  specifi‐
               cation  of  m  will be expanded as value 9999999 in JSV scripts
               and it represents the value infinity.  (see -jsv
-              option above or find more information concerning JSV in jsv(1))"""
-                                     )
+              option above or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qrsh', 'qlogin']:
-            self.parser.add_argument('-pty',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qrsh", "qlogin"]:
+            self.parser.add_argument(
+                "-pty",
+                choices=yesno,
+                help="""\
               Available for qrsh and qlogin only.
 
               -pty yes enforces the job to be started in a pseudo terminal (pty).
@@ -1219,13 +1295,15 @@ class qsubOptions():
 
               This parameter is not available in the JSV context.
               (see -jsv option above or find more information  concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-q',
-                                     nargs='+',
-                                     metavar='wc_queue_list',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-q",
+                nargs="+",
+                metavar="wc_queue_list",
+                help="""\
               Available for qsub, qrsh, qsh, qlogin and qalter.
 
               Defines  or  redefines  a  list of cluster queues,
@@ -1246,12 +1324,14 @@ class qsubOptions():
               be used for resource requests, then these expressions will
               be passed as they are. Also shortcut names  will  not
               be expanded.  (see -jsv option above or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-R',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-R",
+                choices=yesno,
+                help="""\
               Available for qsub, qrsh, qsh, qlogin and qalter.
 
               Indicates  whether a reservation for this job should be done.
@@ -1270,12 +1350,14 @@ class qsubOptions():
               The value will be y also when then long
               form yes was specified during submission.
               (see -jsv option above or find more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-r',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-r",
+                choices=yesno,
+                help="""\
               Available for qsub and qalter only.
 
               Identifies  the  ability of a job to be rerun or not.
@@ -1294,13 +1376,15 @@ class qsubOptions():
               The value will be y also when then long
               form  yes  was  specified  during submission.  (see -jsv option above or
               find more information concerning JSV in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-sc',
-                                     action='append',
-                                     metavar='variable[=value]',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-sc",
+                action="append",
+                metavar="variable[=value]",
+                help="""\
        -sc variable[=value],...
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
@@ -1320,12 +1404,14 @@ class qsubOptions():
               or corresponding values in qmon is passed to
               defined JSV instances as parameter with the name ac.
               (see -jsv option above or find more information concerning
-              JSV in jsv(1))""")
+              JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub']:
-            self.parser.add_argument('-shell',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub"]:
+            self.parser.add_argument(
+                "-shell",
+                choices=yesno,
+                help="""\
               Available only for qsub.
 
               -shell  n causes qsub to execute the command line directly,
@@ -1359,12 +1445,14 @@ class qsubOptions():
               will be shell. The value will be y also when  then
               long  form  yes was specified during submission.
               (see -jsv option above or find more information concerning JSV
-              in jsv(1))""")
+              in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-soft',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-soft",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter only.
 
               Signifies that all resource requirements following in the command
@@ -1388,12 +1476,14 @@ class qsubOptions():
               with the names q_soft and l_soft. Find for informa‐
               tion in the sections describing -q and -l.  (see -jsv option
               above or find more information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub']:
-            self.parser.add_argument('-sync',
-                                     choices=yesno,
-                                     help="""\
+        if prog in ["qsub"]:
+            self.parser.add_argument(
+                "-sync",
+                choices=yesno,
+                help="""\
               Available for qsub.
 
               -sync  y  causes qsub to wait for the job to complete before exiting.
@@ -1424,13 +1514,14 @@ class qsubOptions():
 
               Information  that  this  switch  was specified during
               submission is not available in the JSV context.  (see -jsv
-              option above or find more information concerning JSV in jsv(1))"""
-                                     )
+              option above or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qsh', 'qalter']:
-            self.parser.add_argument('-S',
-                                     metavar='pathname',
-                                     help="""\
+        if prog in ["qsub", "qsh", "qalter"]:
+            self.parser.add_argument(
+                "-S",
+                metavar="pathname",
+                help="""\
        -S [[hostname]:]pathname,...
               Available for qsub, qsh and qalter.
 
@@ -1458,12 +1549,14 @@ class qsubOptions():
               specified then this value will be passed to defined JSV
               instances as parameter with the name S.  (see -jsv option
               above or  find  more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if True or prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-t',
-                                     metavar='n[-m[:s]]',
-                                     help="""\
+        if True or prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-t",
+                metavar="n[-m[:s]]",
+                help="""\
               Available for qsub and qalter only.
 
               Submits a so called Array Job, i.e. an array of identical
@@ -1524,24 +1617,28 @@ class qsubOptions():
               then this value will be passed to defined JSV
               instances as parameters with the name t_min, t_max and t_step
               (see -jsv option above or  find  more  information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qalter']:
-            self.parser.add_argument('-tc',
-                                     type=int,
-                                     metavar='max_running_tasks',
-                                     help="""\
+        if prog in ["qsub", "qalter"]:
+            self.parser.add_argument(
+                "-tc",
+                type=int,
+                metavar="max_running_tasks",
+                help="""\
               -allow  users to limit concurrent array job task
               execution. Parameter max_running_tasks specifies maximum number
               of simultaneously running tasks.  For example we have
               running SGE with 10 free slots. We call qsub -t 1-100  -tc
               2 jobscript. Then only 2 tasks will be scheduled to run even
-              when 8 slots are free.""")
+              when 8 slots are free.""",
+            )
 
-        if prog in ['qsub']:
-            self.parser.add_argument('-terse',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub"]:
+            self.parser.add_argument(
+                "-terse",
+                action="store_true",
+                help="""\
               Available for qsub only.
 
               -terse  causes  the qsub to display only the job-id of the
@@ -1551,13 +1648,14 @@ class qsubOptions():
 
               Information that this switch was specified during submission
               is not available in the  JSV  context.   (see  -jsv
-              option above or find more information concerning JSV in jsv(1))"""
-                                     )
+              option above or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qalter']:
-            self.parser.add_argument('-u',
-                                     metavar='username',
-                                     help="""\
+        if prog in ["qalter"]:
+            self.parser.add_argument(
+                "-u",
+                metavar="username",
+                help="""\
        -u username,...
               Available  for  qalter  only. Changes are only made
               on those jobs which were submitted by users specified in the
@@ -1566,12 +1664,14 @@ class qsubOptions():
               users.
 
               If you use the -u switch it is not permitted to
-              specify an additional wc_job_range_list.""")
+              specify an additional wc_job_range_list.""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter']:
-            self.parser.add_argument('-v',
-                                     metavar='variable[=value]',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "-v",
+                metavar="variable[=value]",
+                help="""\
        -v variable[=value],...
               Available for qsub, qrsh (with command argument) and qalter.
 
@@ -1589,13 +1689,14 @@ class qsubOptions():
               DISPLAY variable provided with -display will be  exported
               to the defined JSV instances only optionally when this is
               requested explicitly during the job submission verifi‐
-              cation.  (see -jsv option above or find more information concerning JSV in jsv(1))"""
-                                     )
+              cation.  (see -jsv option above or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qrsh', 'qmake']:
-            self.parser.add_argument('-verbose',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qrsh", "qmake"]:
+            self.parser.add_argument(
+                "-verbose",
+                action="store_true",
+                help="""\
               Available only for qrsh and qmake(1).
 
               Unlike qsh and qlogin, qrsh does not output any
@@ -1603,24 +1704,28 @@ class qsubOptions():
               with  the  standard rsh(1) and rlogin(1) system calls.
               If the option -verbose is set, qrsh behaves like the qsh
               and qlogin commands, printing information about the
-              process of establishing the rsh(1) or rlogin(1) session.""")
+              process of establishing the rsh(1) or rlogin(1) session.""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-verify',
-                                     action='store_true',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-verify",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter.
 
               Instead of submitting a job, prints detailed information
               about the would-be job as though qstat(1) -j were used,
               including the effects of command-line parameters and
-              the external environment.""")
+              the external environment.""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
             # TODO parse acceptability of qrsh argument properly
-            self.parser.add_argument('-V',
-                                     action='store_true',
-                                     help="""\
+            self.parser.add_argument(
+                "-V",
+                action="store_true",
+                help="""\
               Available for qsub, qsh, qrsh with command and qalter.
 
               Specifies that all environment variables active within
@@ -1631,12 +1736,14 @@ class qsubOptions():
               to the defined JSV instances only optionally when this is
               requested explicitly during the job submission verifi‐
               cation.  (see -jsv option above or find more information
-              concerning JSV in jsv(1))""")
+              concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qlogin', 'qalter']:
-            self.parser.add_argument('-w',
-                                     choices='ewnpv',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qlogin", "qalter"]:
+            self.parser.add_argument(
+                "-w",
+                choices="ewnpv",
+                help="""\
               Available for qsub, qsh, qrsh, qlogin and qalter.
 
               Specifies  a validation level applied to the job to be submitted
@@ -1669,12 +1776,14 @@ class qsubOptions():
               be too volatile. To cause -w e verification to be passed
               at submission time, it  is  possible  to  specify  non-
               volatile values (non-consumables) or maximum values
-              (consumables) in complex_values.""")
+              (consumables) in complex_values.""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qsh', 'qalter']:
-            self.parser.add_argument('-wd',
-                                     metavar='working_dir',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qsh", "qalter"]:
+            self.parser.add_argument(
+                "-wd",
+                metavar="working_dir",
+                help="""\
               Available for qsub, qsh, qrsh and qalter only.
 
               Execute  the  job  from  the  directory  specified in working_dir.
@@ -1688,11 +1797,13 @@ class qsubOptions():
               The parameter value will be available in defined JSV
               instances as parameter with the name cwd (see -cwd switch above or
               find  more  information  concerning  JSV  in
-              jsv(1))""")
+              jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh']:
-            self.parser.add_argument('command',
-                                     help="""\
+        if prog in ["qsub", "qrsh"]:
+            self.parser.add_argument(
+                "command",
+                help="""\
               Available for qsub and qrsh only.
 
               The job's scriptfile or binary.  If not present or if the operand
@@ -1701,12 +1812,14 @@ class qsubOptions():
 
               The command will be available in defined JSV instances as parameter
               with the name CMDNAME (see -jsv option above
-              or find more information concerning JSV in jsv(1))""")
+              or find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsub', 'qrsh', 'qalter']:
-            self.parser.add_argument('command_args',
-                                     nargs='*',
-                                     help="""\
+        if prog in ["qsub", "qrsh", "qalter"]:
+            self.parser.add_argument(
+                "command_args",
+                nargs="*",
+                help="""\
               Available for qsub, qrsh and qalter only.
 
               Arguments to the job. Not valid if the script is entered from standard input.
@@ -1720,12 +1833,14 @@ class qsubOptions():
               the  argument  values can by accessed. Argument names
               have the format CMDARG<number> where <number> is a integer
               between 0 and CMDARGS - 1.  (see -jsv option above or
-              find more information concerning JSV in jsv(1))""")
+              find more information concerning JSV in jsv(1))""",
+            )
 
-        if prog in ['qsh']:
-            self.parser.add_argument('xterm_args',
-                                     nargs='*',
-                                     help="""\
+        if prog in ["qsh"]:
+            self.parser.add_argument(
+                "xterm_args",
+                nargs="*",
+                help="""\
               Available for qsh only.
 
               Arguments to the xterm(1) executable, as defined in the configuration.
@@ -1735,14 +1850,15 @@ class qsubOptions():
               parameters  with  the  name  CMDARGS  and
               CMDARG<number>. Find more information above in section command_args.
               (see -jsv option above or find more infor‐
-              mation concerning JSV in jsv(1))""")
+              mation concerning JSV in jsv(1))""",
+            )
 
         # END SGE OPTION PARSER
 
         # Initialize with defaults
-        self.parse('-cwd -V -j y -terse -pe lammpi 1 echo')
+        self.parse("-cwd -V -j y -terse -pe lammpi 1 echo")
 
-    def parse(self, inputstring=''):
+    def parse(self, inputstring=""):
         """Helper method: parses a string"""
         return self.parse_args(inputstring.split())
 
@@ -1762,33 +1878,33 @@ class qsubOptions():
         echo    : echo contents of script to stdout. Default: False
         """
 
-        buf = ['#!/usr/bin/env qsub', '# Written using SGE module']
+        buf = ["#!/usr/bin/env qsub", "# Written using SGE module"]
 
         for option, value in self.args.__dict__.items():
             if value is True:
-                value = ''
+                value = ""
 
-            if option not in ['command', 'command_args', 'xterm_args']:
+            if option not in ["command", "command_args", "xterm_args"]:
                 if isinstance(value, list):
-                    val = ' '.join(value)
+                    val = " ".join(value)
                 else:
                     val = str(value)
 
-                buf.append(' '.join(['#', '-' + option, val]))
+                buf.append(" ".join(["#", "-" + option, val]))
 
-        args = getattr(self.args, 'command_args', [])
-        args = getattr(self.args, 'xterm_args', args)
+        args = getattr(self.args, "command_args", [])
+        args = getattr(self.args, "xterm_args", args)
 
-        buf.append(' '.join([self.args.command] + args))
+        buf.append(" ".join([self.args.command] + args))
 
         if echo:
-            print('\n'.join(buf))
+            print("\n".join(buf))
 
-        f = open(filename, 'w')
-        f.write('\n'.join(buf))
+        f = open(filename, "w")
+        f.write("\n".join(buf))
         f.close()
 
-    def execute(self, mode='local', path=''):
+    def execute(self, mode="local", path=""):
         """
         Executes qsub
 
@@ -1801,70 +1917,72 @@ class qsubOptions():
         # Form execution string
 
         import random
-        test_id = ''
+
+        test_id = ""
         if "build.log" in self.args.o:
             test_id = self.args.o.split("/")[-2]
         elif "run.log" in self.args.o:
             test_id = self.args.o.split("/")[-3]
-        if test_id == '':
+        if test_id == "":
             test_id = str(random.randint(1, 9999))
 
         import os
+
         program = os.path.join(path, self.prog)
         options = []
 
         for option, value in self.args.__dict__.items():
             if value is True:
-                value = ''
+                value = ""
 
             if isinstance(value, list):
-                val = ' '.join(value)
+                val = " ".join(value)
             else:
                 val = str(value)
 
-            if option not in ['command', 'command_args', 'xterm_args']:
-                options.append('-' + option + ' ' + val)
+            if option not in ["command", "command_args", "xterm_args"]:
+                options.append("-" + option + " " + val)
 
-        args = getattr(self.args, 'command_args', [])
-        args = getattr(self.args, 'xterm_args', args)
+        args = getattr(self.args, "command_args", [])
+        args = getattr(self.args, "xterm_args", args)
         # ---------------- command file -------------
         cwd = os.getcwd()
-        command_file = cwd + '/command_file_' + str(os.getpid()) + '_' + test_id
+        command_file = cwd + "/command_file_" + str(os.getpid()) + "_" + test_id
         try:
-            with open(command_file, 'w') as f_command:
+            with open(command_file, "w") as f_command:
                 command_temp = str(self.args.command)
-                command_temp = command_temp.replace('"', '')
+                command_temp = command_temp.replace('"', "")
                 f_command.write(command_temp + "\n/bin/rm -f " + command_file)
         except IOError:
-            error_msg = 'Error: problem with open File: ' + str(f_command)
+            error_msg = "Error: problem with open File: " + str(f_command)
             raise IOError(error_msg)
 
         os.chmod(command_file, 0o0777)
-        exestring = ' '.join([program] + options + [command_file] + args)
-        exestring = exestring.replace('-pe lammpi 1', '')
-        exestring = exestring.replace('-slot', '-pe make')
-        exestring = exestring.replace('-ll ', '-l ')
-        exestring = exestring.replace('-t 0', '')
+        exestring = " ".join([program] + options + [command_file] + args)
+        exestring = exestring.replace("-pe lammpi 1", "")
+        exestring = exestring.replace("-slot", "-pe make")
+        exestring = exestring.replace("-ll ", "-l ")
+        exestring = exestring.replace("-t 0", "")
         #        exestring = exestring.replace('-j y','')
-        print('INFO: sge command file = ' + command_file)
-        if mode == 'echo':
-            return (exestring)
-        elif mode == 'local':
+        print("INFO: sge command file = " + command_file)
+        if mode == "echo":
+            return exestring
+        elif mode == "local":
             import subprocess
-            p = subprocess.Popen(command_file,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.STDOUT,
-                                 shell=True)
+
+            p = subprocess.Popen(
+                command_file, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True
+            )
             print(p.stdout.read())
 
 
-if __name__ == '__main__':
-    print('Attempting to validate qsub arguments using argparse')
+if __name__ == "__main__":
+    print("Attempting to validate qsub arguments using argparse")
     o = qsubOptions()
     o.parse_args()
-    o.args.t = '1-1000'
-    print('I will now print the script')
-    o.write_qsub_script('/dev/null', echo=True)
-    print('*' * 70)
-    print('I will now print the command line')
-    o.execute(mode='echo')
+    o.args.t = "1-1000"
+    print("I will now print the script")
+    o.write_qsub_script("/dev/null", echo=True)
+    print("*" * 70)
+    print("I will now print the command line")
+    o.execute(mode="echo")

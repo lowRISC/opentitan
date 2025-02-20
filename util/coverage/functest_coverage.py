@@ -57,10 +57,21 @@ def handle_objs(merged_library: Path, obj_files: List[str]) -> None:
     # object files.
     # TODO(#16761): Try to remove these flags.
     fake_entry_point = "0x0"
-    run(LLD_TARGET, "--unresolved-symbols=ignore-all", "-e", fake_entry_point,
-        "--defsym", "__llvm_profile_register_names_function=0", "--defsym",
-        "__llvm_profile_register_function=0", "--defsym",
-        "__llvm_profile_runtime=0", "-o", str(merged_library), *obj_files)
+    run(
+        LLD_TARGET,
+        "--unresolved-symbols=ignore-all",
+        "-e",
+        fake_entry_point,
+        "--defsym",
+        "__llvm_profile_register_names_function=0",
+        "--defsym",
+        "__llvm_profile_register_function=0",
+        "--defsym",
+        "__llvm_profile_runtime=0",
+        "-o",
+        str(merged_library),
+        *obj_files,
+    )
 
 
 def handle_test_targets(test_targets: List[str]) -> List[str]:
@@ -81,15 +92,19 @@ def handle_test_targets(test_targets: List[str]) -> List[str]:
     # non-instrumented test ROM and skip bitstream loading during tests.
     run(BAZEL, "build", BITSTREAM_TARGET)
     [workspace] = run(BAZEL, "info", "workspace")
-    [bitstream] = run(BAZEL, "cquery", "--output=starlark", "--starlark:expr",
-                      "target.files.to_list()[0].path", BITSTREAM_TARGET)
+    [bitstream] = run(
+        BAZEL,
+        "cquery",
+        "--output=starlark",
+        "--starlark:expr",
+        "target.files.to_list()[0].path",
+        BITSTREAM_TARGET,
+    )
     bitstream_path = PurePath(workspace) / PurePath(bitstream)
-    run(BAZEL, "run", "//sw/host/opentitantool", "--", "fpga",
-        "load-bitstream", str(bitstream_path))
-    return [
-        t for t in test_targets
-        if "cw310_test_rom" in t and "wycheproof" not in t
-    ]
+    run(
+        BAZEL, "run", "//sw/host/opentitantool", "--", "fpga", "load-bitstream", str(bitstream_path)
+    )
+    return [t for t in test_targets if "cw310_test_rom" in t and "wycheproof" not in t]
 
 
 def handle_test_log_dirs(test_log_dirs: List[Path]) -> List[Path]:
@@ -108,11 +123,11 @@ def handle_test_log_dirs(test_log_dirs: List[Path]) -> List[Path]:
     """
     raw_profiles = []
     for d in test_log_dirs:
-        with (Path(d) / "test.log").open("rb") as test_log, (
-                Path(d) / "prof.raw").open("wb") as raw_profile:
-            raw_profile.write(
-                extract_profile_data(test_log.read().decode("ascii",
-                                                            "ignore")))
+        with (
+            (Path(d) / "test.log").open("rb") as test_log,
+            (Path(d) / "prof.raw").open("wb") as raw_profile,
+        ):
+            raw_profile.write(extract_profile_data(test_log.read().decode("ascii", "ignore")))
             raw_profiles += [Path(raw_profile.name)]
     logging.info(f"raw profiles: {pformat(raw_profiles)}")
     return raw_profiles

@@ -2,8 +2,8 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Converts mubi mako templates
-"""
+r"""Converts mubi mako templates"""
+
 from mubi import prim_mubi
 from secded_gen import format_c_files
 

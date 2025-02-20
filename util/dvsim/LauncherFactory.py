@@ -14,6 +14,7 @@ from NcLauncher import NcLauncher
 
 try:
     from edacloudlauncher.EdaCloudLauncher import EdaCloudLauncher
+
     EDACLOUD_LAUNCHER_EXISTS = True
 except ImportError:
     EDACLOUD_LAUNCHER_EXISTS = False
@@ -23,14 +24,14 @@ _LAUNCHER_CLS = None
 
 
 def set_launcher_type(is_local=False):
-    '''Sets the launcher type that will be used to launch the jobs.
+    """Sets the launcher type that will be used to launch the jobs.
 
     The env variable `DVSIM_LAUNCHER` is used to identify what launcher system
     to use. This variable is specific to the user's work site. It is meant to
     be set externally before invoking DVSim. Valid values are [local, lsf,
     edacloud]. If --local arg is supplied then the local launcher takes
     precedence.
-    '''
+    """
 
     launcher = os.environ.get("DVSIM_LAUNCHER", "local")
     if is_local:
@@ -59,23 +60,25 @@ def set_launcher_type(is_local=False):
         _LAUNCHER_CLS = EdaCloudLauncher
 
     else:
-        log.error("Launcher {} set using DVSIM_LAUNCHER env var does not "
-                  "exist. Using local launcher instead.".format(launcher))
+        log.error(
+            "Launcher {} set using DVSIM_LAUNCHER env var does not "
+            "exist. Using local launcher instead.".format(launcher)
+        )
         _LAUNCHER_CLS = LocalLauncher
 
 
 def get_launcher_cls():
-    '''Returns the chosen launcher class.'''
+    """Returns the chosen launcher class."""
 
     assert _LAUNCHER_CLS is not None
     return _LAUNCHER_CLS
 
 
 def get_launcher(deploy):
-    '''Returns an instance of a launcher.
+    """Returns an instance of a launcher.
 
     'deploy' is an instance of the deploy class to with the launcher is paired.
-    '''
+    """
 
     assert _LAUNCHER_CLS is not None
     return _LAUNCHER_CLS(deploy)

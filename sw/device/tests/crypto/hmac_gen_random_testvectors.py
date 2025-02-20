@@ -9,15 +9,17 @@ import sys
 
 import hjson
 import hmac_gen_single_testvector
-'''
+
+"""
 Generate multiple test vectos
-'''
+"""
 
 
 def gen_random_test(idx):
     random_instance = random.Random(idx)
-    operation = random_instance.choice(["SHA256", "HMAC256", "SHA384", "HMAC384",
-                                        "SHA512", "HMAC512"])
+    operation = random_instance.choice(
+        ["SHA256", "HMAC256", "SHA384", "HMAC384", "SHA512", "HMAC512"]
+    )
     input_msg_len = 8 * random_instance.randint(0, 1000)
     # Ensure that the key length is larger or equal to security parameter.
     # Also, KMAC HWIP only supports a discrete set of key lengths.
@@ -31,13 +33,10 @@ def gen_random_test(idx):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('n',
-                        type=int,
-                        help='Number of random test vectors to generate.')
-    parser.add_argument('outfile',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
+    parser.add_argument("n", type=int, help="Number of random test vectors to generate.")
+    parser.add_argument(
+        "outfile", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
 
     args = parser.parse_args()
 
@@ -51,5 +50,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -15,7 +15,7 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class BadInsn(SnippetGen):
-    '''A simple snippet generator that generates one invalid instruction'''
+    """A simple snippet generator that generates one invalid instruction"""
 
     ends_program = True
 
@@ -39,22 +39,15 @@ class BadInsn(SnippetGen):
         # assert that it doesn't happen.
         assert 0
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         prog_insn = DummyProgInsn(self._get_badbits())
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
         return (snippet, model)
 
-    def pick_weight(self,
-                    model: Model,
-                    program: Program) -> float:
+    def pick_weight(self, model: Model, program: Program) -> float:
         # Choose small weights when we've got lots of room and large ones when
         # we haven't.
         room = min(model.fuel, program.space)
         assert 0 < room
-        return (1e-10 if room > 5
-                else 0.1 if room > 1
-                else 1e10)
+        return 1e-10 if room > 5 else 0.1 if room > 1 else 1e10

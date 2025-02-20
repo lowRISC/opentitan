@@ -21,12 +21,12 @@ def gen_sha3_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
         random.seed(seed)
     msg_len = random.randint(0, MSG_LEN_UBOUND)
     msg = random.getrandbits(8 * msg_len)
-    dst_len_bytes = int.to_bytes(DST_LEN, byteorder='little', length=32)
-    msg_len_bytes = int.to_bytes(msg_len, byteorder='little', length=32)
-    msg_bytes = int.to_bytes(msg, byteorder='little', length=msg_len)
+    dst_len_bytes = int.to_bytes(DST_LEN, byteorder="little", length=32)
+    msg_len_bytes = int.to_bytes(msg_len, byteorder="little", length=32)
+    msg_bytes = int.to_bytes(msg, byteorder="little", length=msg_len)
 
     # Write input values.
-    inputs = {'dst_len': dst_len_bytes, 'msg': msg_bytes, 'msg_len': msg_len_bytes}
+    inputs = {"dst_len": dst_len_bytes, "msg": msg_bytes, "msg_len": msg_len_bytes}
     write_test_data(inputs, data_file)
 
     # Compute SHA3-{DST_LEN}.
@@ -43,23 +43,26 @@ def gen_sha3_test(seed: Optional[int], data_file: TextIO, exp_file: TextIO):
     # Write expected output values.
     exp = {}
     for i in range(2):
-        exp[f'w{i}'] = dst_ref.digest()[32 * i: 32 * (i + 1)]
+        exp[f"w{i}"] = dst_ref.digest()[32 * i : 32 * (i + 1)]
     write_test_exp(exp, exp_file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--seed',
-                        type=int,
-                        required=False,
-                        help=('Seed value for pseudorandomness.'))
-    parser.add_argument('data',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for input DMEM values.'))
-    parser.add_argument('exp',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help=('Output file for expected register values.'))
+    parser.add_argument(
+        "-s", "--seed", type=int, required=False, help=("Seed value for pseudorandomness.")
+    )
+    parser.add_argument(
+        "data",
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help=("Output file for input DMEM values."),
+    )
+    parser.add_argument(
+        "exp",
+        metavar="FILE",
+        type=argparse.FileType("w"),
+        help=("Output file for expected register values."),
+    )
     args = parser.parse_args()
     gen_sha3_test(args.seed, args.data, args.exp)

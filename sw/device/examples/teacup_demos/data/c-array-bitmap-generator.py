@@ -15,8 +15,7 @@ MAX_HEIGHT = 64
 def main(argv):
     parser = argparse.ArgumentParser(
         prog="PNG image to C array bitmap converter.",
-        description=
-        "This tool converts a .png image to a C array bitmap for driving a screen",
+        description="This tool converts a .png image to a C array bitmap for driving a screen",
     )
     parser.add_argument("--png", required=True, type=str)
     parser.add_argument("--outfile", required=True, type=str)
@@ -42,21 +41,20 @@ def main(argv):
     # Load the PNG image and convert it to a RGB565 bitmap C array.
     print(f"const size_t kBitmapCols = {image_width};", file=outfile)
     print(f"const size_t kBitmapRows = {image_height};", file=outfile)
-    print(f"const uint16_t kBitmap[{image_height}][{image_width}] = {{",
-          file=outfile)
+    print(f"const uint16_t kBitmap[{image_height}][{image_width}] = {{", file=outfile)
     pixels = im.load()
     for h in range(image_height):
-        print("{", file=outfile, end='')
+        print("{", file=outfile, end="")
         for w in range(image_width):
             r = pixels[w, h][0] >> 3
             g = pixels[w, h][1] >> 2
             b = pixels[w, h][2] >> 3
             rgb = (r << 11) | (g << 5) | b
-            print("0x%04x," % (rgb), file=outfile, end='')
+            print("0x%04x," % (rgb), file=outfile, end="")
         print("},", file=outfile)
     print("};", file=outfile)
     outfile.close()
-    print("PNG file \"%s\"" % args.png, "converted to \"%s\"" % args.outfile)
+    print('PNG file "%s"' % args.png, 'converted to "%s"' % args.outfile)
 
 
 if __name__ == "__main__":

@@ -7,17 +7,14 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 def is_pow2(v: Any) -> bool:
-    """Return true if value is power of two
-    """
+    """Return true if value is power of two"""
     if not isinstance(v, int):
         log.warning("is_pow2 received non-integer value {}".format(v))
         return False
     return (v > 0) and (v & (v - 1) == 0)
 
 
-def simplify_addr(dev: Dict[Any, Any],
-                  xbar: Dict[Any, Any],
-                  asid: int) -> List[Dict[Any, Any]]:
+def simplify_addr(dev: Dict[Any, Any], xbar: Dict[Any, Any], asid: int) -> List[Dict[Any, Any]]:
     """Make smaller entries by combining them
 
     This is intended for xbar-to-xbar connections, which should only ever
@@ -35,7 +32,7 @@ def simplify_addr(dev: Dict[Any, Any],
 
     addrs = dev["addr_range"]
     # Sort based on the base addr
-    newlist = sorted(addrs, key=lambda k: int(k['base_addrs'][asid], 0))
+    newlist = sorted(addrs, key=lambda k: int(k["base_addrs"][asid], 0))
     # check if overlap or contiguous
     result: List[Dict[Any, Any]] = []
     for e in newlist:
@@ -44,20 +41,23 @@ def simplify_addr(dev: Dict[Any, Any],
             continue
         # if contiguous
         if int(e["base_addrs"][asid], 0) == int(result[-1]["base_addrs"][asid], 0) + int(
-                result[-1]["size_byte"], 0):
+            result[-1]["size_byte"], 0
+        ):
             # update previous entry size
             result[-1]["size_byte"] = "0x{:x}".format(
-                int(result[-1]["size_byte"], 0) + int(e["size_byte"], 0))
+                int(result[-1]["size_byte"], 0) + int(e["size_byte"], 0)
+            )
             continue
 
         if no_device_in_range(xbar, dev["name"], result[-1], e, asid):
             # Determine if size can be power of 2 value
-            next_value = (get_next_base_addr(e["base_addrs"], xbar,
-                                             dev["name"], asid) or
-                          0x100000000)
+            next_value = get_next_base_addr(e["base_addrs"], xbar, dev["name"], asid) or 0x100000000
 
-            calc_size = int(e["base_addrs"][asid], 0) + int(e["size_byte"], 0) - int(
-                result[-1]["base_addrs"][asid], 0)
+            calc_size = (
+                int(e["base_addrs"][asid], 0)
+                + int(e["size_byte"], 0)
+                - int(result[-1]["base_addrs"][asid], 0)
+            )
 
             # find power of 2 if possible
             size_byte = find_pow2_size(result[-1]["base_addrs"][asid], calc_size, next_value)
@@ -74,24 +74,17 @@ def simplify_addr(dev: Dict[Any, Any],
     return result
 
 
-def no_device_in_range(xbar: Dict[Any, Any],
-                       name: str,
-                       f: Dict[Any, Any],
-                       t: Dict[Any, Any],
-                       asid: int) -> bool:
-    """Check if other devices doesn't overlap with the range 'from <= x < to'
-    """
+def no_device_in_range(
+    xbar: Dict[Any, Any], name: str, f: Dict[Any, Any], t: Dict[Any, Any], asid: int
+) -> bool:
+    """Check if other devices doesn't overlap with the range 'from <= x < to'"""
     from_addr = int(f["base_addrs"][asid], 0) + int(f["size_byte"], 0)
     to_addr = int(t["base_addrs"][asid], 0)
 
-    for node in [
-            x for x in xbar["nodes"]
-            if x["type"] == "device" and not x["name"] == name
-    ]:
+    for node in [x for x in xbar["nodes"] if x["type"] == "device" and not x["name"] == name]:
         if "addr_range" not in node:
             # Xbar?
-            log.info("Xbar type node cannot be compared in this version.",
-                     "Please use in caution")
+            log.info("Xbar type node cannot be compared in this version.", "Please use in caution")
             continue
         assert isinstance(node["addr_range"], list)
 
@@ -106,29 +99,24 @@ def no_device_in_range(xbar: Dict[Any, Any],
     return True
 
 
-def get_next_base_addr(addr: Union[str, int],
-                       xbar: Dict[Any, Any],
-                       name: str,
-                       asid: int) -> Optional[int]:
-    """Return the least value of base_addr of the IP greater than addr
-
-    """
+def get_next_base_addr(
+    addr: Union[str, int], xbar: Dict[Any, Any], name: str, asid: int
+) -> Optional[int]:
+    """Return the least value of base_addr of the IP greater than addr"""
     if isinstance(addr[asid], str):
         value = int(addr[asid], 0)
     else:
         assert isinstance(addr[asid], int)
         value = addr[asid]
 
-    device_list = [
-        x for x in xbar["nodes"]
-        if x["type"] == "device" and not x["name"] == name
-    ]
+    device_list = [x for x in xbar["nodes"] if x["type"] == "device" and not x["name"] == name]
 
     try:
         addrs = [a for r in device_list for a in r["addr_range"]]
     except KeyError:
-        log.error("Address range is wrong.\n {}".format(
-            [x for x in device_list if "addr_range" not in x]))
+        log.error(
+            "Address range is wrong.\n {}".format([x for x in device_list if "addr_range" not in x])
+        )
         raise SystemExit()
 
     sorted_list = sorted(addrs, key=lambda k: int(k["base_addrs"][asid], 0))
@@ -141,9 +129,7 @@ def get_next_base_addr(addr: Union[str, int],
     return int(list(gte_list[0]["base_addrs"].values())[0], 0)
 
 
-def find_pow2_size(addr: str,
-                   min_size: int,
-                   next_value: int) -> int:
+def find_pow2_size(addr: str, min_size: int, next_value: int) -> int:
     """Find smallest power of 2 value greater than min_size by given addr.
 
     For instance, {addr:0x4000_0000, min_size:0x21000} and `next_value` as
@@ -187,9 +173,10 @@ def find_pow2_size(addr: str,
     return i
 
 
-def get_toggle_excl_bits(addr_ranges: List[List[int]],
-                         addr_width: int = 32) -> List[Tuple[int, int]]:
-    """ Input addr_ranges is a list of (start_addr, end_addr)
+def get_toggle_excl_bits(
+    addr_ranges: List[List[int]], addr_width: int = 32
+) -> List[Tuple[int, int]]:
+    """Input addr_ranges is a list of (start_addr, end_addr)
     From given addr_ranges, will calculate what address bits can't be toggled as
     only the address in the ranges can pass through the xbar to the device
     """

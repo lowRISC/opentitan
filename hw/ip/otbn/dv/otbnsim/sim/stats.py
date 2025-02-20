@@ -33,29 +33,27 @@ class ExecutionStats:
         self._current_ext_basic_block_len = 0
 
     def get_insn_count(self) -> int:
-        '''Get the number of executed instructions.'''
+        """Get the number of executed instructions."""
         return sum(self.insn_histo.values())
 
     def record_stall(self) -> None:
-        '''Record a single stall cycle.'''
+        """Record a single stall cycle."""
         self.stall_count += 1
 
     def _insn_at_addr(self, addr: int) -> Optional[OTBNInsn]:
-        '''Get the instruction at a given address.'''
+        """Get the instruction at a given address."""
         assert addr % 4 == 0
         assert addr >= 0
         word_addr = addr >> 2
         return self.program[word_addr]
 
-    def record_insn(self,
-                    insn: OTBNInsn,
-                    state_bc: OTBNState) -> None:
-        '''Record the execution of an instruction.
+    def record_insn(self, insn: OTBNInsn, state_bc: OTBNState) -> None:
+        """Record the execution of an instruction.
 
         insn is the currently executed instruction. state_bc is the state of
         OTBN before the instruction is committed.
 
-        '''
+        """
         pc = state_bc.pc
 
         is_jump = isinstance(insn, JAL) or isinstance(insn, JALR)
@@ -74,21 +72,25 @@ class ExecutionStats:
             else:
                 caller_func = 0  # (start address)
 
-            self.func_calls.append({
-                'call_site': pc,
-                'caller_func': caller_func,
-                'callee_func': state_bc.get_next_pc(),
-            })
+            self.func_calls.append(
+                {
+                    "call_site": pc,
+                    "caller_func": caller_func,
+                    "callee_func": state_bc.get_next_pc(),
+                }
+            )
 
         # Loops
         if isinstance(insn, LOOP) or isinstance(insn, LOOPI):
             assert state_bc.in_loop()
             iterations = state_bc.loop_stack.stack[-1].loop_count
-            self.loops.append({
-                'loop_addr': pc,
-                'loop_len': insn.bodysize,
-                'iterations': iterations,
-            })
+            self.loops.append(
+                {
+                    "loop_addr": pc,
+                    "loop_len": insn.bodysize,
+                    "iterations": iterations,
+                }
+            )
 
         last_in_loop_body = state_bc.loop_stack.is_last_insn_in_loop_body(pc)
 
@@ -100,9 +102,7 @@ class ExecutionStats:
         # length of the basic block equals the number of instructions within
         # the basic block.
         self._current_basic_block_len += 1
-        if (is_jump or is_branch or last_in_loop_body or
-                isinstance(insn, ECALL)):
-
+        if is_jump or is_branch or last_in_loop_body or isinstance(insn, ECALL):
             self.basic_block_histo[self._current_basic_block_len] += 1
             self._current_basic_block_len = 0
 
@@ -127,8 +127,7 @@ class ExecutionStats:
             self._current_ext_basic_block_len = 0
 
 
-def _dwarf_decode_file_line(dwarf_info: DWARFInfo,
-                            address: int) -> Optional[Tuple[str, int]]:
+def _dwarf_decode_file_line(dwarf_info: DWARFInfo, address: int) -> Optional[Tuple[str, int]]:
     # Go over all the line programs in the DWARF information, looking for
     # one that describes the given address.
     for CU in dwarf_info.iter_CUs():
@@ -145,10 +144,9 @@ def _dwarf_decode_file_line(dwarf_info: DWARFInfo,
                 continue
             # Looking for a range of addresses in two consecutive states that
             # contain the required address.
-            if ((prevstate and
-                 prevstate.address <= address < entry.state.address)):
-                raw_name = lineprog['file_entry'][prevstate.file - 1].name
-                filename = raw_name.decode('utf-8')
+            if prevstate and prevstate.address <= address < entry.state.address:
+                raw_name = lineprog["file_entry"][prevstate.file - 1].name
+                filename = raw_name.decode("utf-8")
                 line = prevstate.line
                 return filename, line
             prevstate = entry.state
@@ -156,7 +154,7 @@ def _dwarf_decode_file_line(dwarf_info: DWARFInfo,
 
 
 def _get_addr_symbol_map(elf_file: ELFFile) -> Dict[int, str]:
-    section = elf_file.get_section_by_name('.symtab')
+    section = elf_file.get_section_by_name(".symtab")
 
     if not isinstance(section, SymbolTableSection):
         return {}
@@ -169,7 +167,7 @@ class ExecutionStatAnalyzer:
     FREQ_MHZ = 100
 
     def __init__(self, stats: ExecutionStats, elf_file_path: str):
-        self._elf_file = ELFFile(open(elf_file_path, 'rb'))
+        self._elf_file = ELFFile(open(elf_file_path, "rb"))
         self._stats = stats
         self._addr_symbol_map = _get_addr_symbol_map(self._elf_file)
 
@@ -200,7 +198,7 @@ class ExecutionStatAnalyzer:
 
         str = f"{address:#x}"
         if add_info:
-            str += ' (' + ' '.join(add_info) + ')'
+            str += " (" + " ".join(add_info) + ")"
         return str
 
     def dump(self) -> str:
@@ -246,22 +244,30 @@ class ExecutionStatAnalyzer:
         return out
 
     def _dump_insn_histo(self) -> str:
-        return tabulate(self._stats.insn_histo.most_common(),
-                        headers=['instruction', 'count']) + "\n"
+        return (
+            tabulate(self._stats.insn_histo.most_common(), headers=["instruction", "count"]) + "\n"
+        )
 
     def _dump_basic_block_stats(self) -> str:
         out = []
         out += ["", "Number of instructions within a basic block", ""]
-        out += [tabulate(sorted(self._stats.basic_block_histo.items()),
-                         headers=['# of instr.', 'frequency'])]
-        out += ['', '']
+        out += [
+            tabulate(
+                sorted(self._stats.basic_block_histo.items()), headers=["# of instr.", "frequency"]
+            )
+        ]
+        out += ["", ""]
         out += ["Number of instructions within an extended basic block", ""]
-        out.append(tabulate(sorted(self._stats.ext_basic_block_histo.items()),
-                   headers=['# of instr.', 'frequency']))
-        return '\n'.join(out)
+        out.append(
+            tabulate(
+                sorted(self._stats.ext_basic_block_histo.items()),
+                headers=["# of instr.", "frequency"],
+            )
+        )
+        return "\n".join(out)
 
     def _dump_function_call_stats(self) -> str:
-        '''Dump function call statistics'''
+        """Dump function call statistics"""
 
         if not self._stats.func_calls:
             return "No functions were called.\n"
@@ -278,17 +284,17 @@ class ExecutionStatAnalyzer:
         rev_callgraph: Dict[int, Counter[int]] = {}
         rev_callsites: Dict[int, Counter[int]] = {}
         for c in self._stats.func_calls:
-            if c['caller_func'] not in callgraph:
-                callgraph[c['caller_func']] = Counter()
-            callgraph[c['caller_func']][c['callee_func']] += 1
+            if c["caller_func"] not in callgraph:
+                callgraph[c["caller_func"]] = Counter()
+            callgraph[c["caller_func"]][c["callee_func"]] += 1
 
-            if c['callee_func'] not in rev_callgraph:
-                rev_callgraph[c['callee_func']] = Counter()
-            rev_callgraph[c['callee_func']][c['caller_func']] += 1
+            if c["callee_func"] not in rev_callgraph:
+                rev_callgraph[c["callee_func"]] = Counter()
+            rev_callgraph[c["callee_func"]][c["caller_func"]] += 1
 
-            if c['callee_func'] not in rev_callsites:
-                rev_callsites[c['callee_func']] = Counter()
-            rev_callsites[c['callee_func']][c['call_site']] += 1
+            if c["callee_func"] not in rev_callsites:
+                rev_callsites[c["callee_func"]] = Counter()
+            rev_callsites[c["callee_func"]][c["call_site"]] += 1
 
         total_leaf_calls = 0
         total_calls_to_funcs_with_one_callsite = 0
@@ -325,24 +331,27 @@ class ExecutionStatAnalyzer:
             out += "\n"
 
             if has_one_callsite:
-                total_calls_to_funcs_with_one_callsite += (
-                    rev_caller_funcs.most_common()[0][1])
+                total_calls_to_funcs_with_one_callsite += rev_caller_funcs.most_common()[0][1]
 
             total_func_calls += sum(rev_caller_funcs.values())
         out += "\n"
 
         # Function call statistics
-        total_calls_req_call = (total_func_calls - total_leaf_calls -
-                                total_calls_to_funcs_with_one_callsite)
+        total_calls_req_call = (
+            total_func_calls - total_leaf_calls - total_calls_to_funcs_with_one_callsite
+        )
         out += f"Of a total of {total_func_calls} function calls, there were\n"
-        out += (f"  {total_calls_to_funcs_with_one_callsite} function calls "
-                f"to a function with only one call site (call/ret can be "
-                f"replaced with static jumps)\n")
-        out += (f"  {total_leaf_calls} leaf function calls "
-                f"(no function prologue/epilogue needed)\n")
-        out += (f"Overall, {total_calls_req_call} of {total_func_calls} "
-                f"({(total_calls_req_call / total_func_calls * 100):.02f} "
-                f"percent) calls need full function call semantics.\n")
+        out += (
+            f"  {total_calls_to_funcs_with_one_callsite} function calls "
+            f"to a function with only one call site (call/ret can be "
+            f"replaced with static jumps)\n"
+        )
+        out += f"  {total_leaf_calls} leaf function calls (no function prologue/epilogue needed)\n"
+        out += (
+            f"Overall, {total_calls_req_call} of {total_func_calls} "
+            f"({(total_calls_req_call / total_func_calls * 100):.02f} "
+            f"percent) calls need full function call semantics.\n"
+        )
 
         return out
 
@@ -353,12 +362,12 @@ class ExecutionStatAnalyzer:
         out = f"Loops: {loop_cnt}\n"
 
         if loop_cnt != 0:
-            loop_len_values = [loop['loop_len'] for loop in loops]
+            loop_len_values = [loop["loop_len"] for loop in loops]
             loop_len_min = min(loop_len_values)
             loop_len_max = max(loop_len_values)
             loop_len_avg = sum(loop_len_values) / loop_cnt
 
-            loop_iterations_values = [loop['iterations'] for loop in loops]
+            loop_iterations_values = [loop["iterations"] for loop in loops]
             loop_iterations_min = min(loop_iterations_values)
             loop_iterations_max = max(loop_iterations_values)
             loop_iterations_avg = sum(loop_iterations_values) / loop_cnt

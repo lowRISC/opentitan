@@ -16,32 +16,28 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class BadBNMovr(SnippetGen):
-    '''A snippet generator that generates program ending BN.MOVR instructions.
+    """A snippet generator that generates program ending BN.MOVR instructions.
 
     This includes incrementing both GPRs or having *grd or *grs > 31
 
-    '''
+    """
 
     ends_program = True
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
-        self.insn = self._get_named_insn(insns_file, 'bn.movr')
+        self.insn = self._get_named_insn(insns_file, "bn.movr")
         self.weight = cfg.insn_weights.get(self.insn.mnemonic)
 
         # Check that the instruction has a positive weight
         if not self.weight:
             self.disabled = True
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Get known registers and split them up as "good" or "bad" depending on
         # whether their values are valid register indices.
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
         bad_regs = []
         good_regs = []
         for reg_idx, reg_val in known_regs:

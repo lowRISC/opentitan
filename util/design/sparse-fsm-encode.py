@@ -19,6 +19,7 @@ The custom seed s can be used to make subsequent runs of the script
 deterministic. If not specified, the script randomly picks a seed.
 
 """
+
 import argparse
 import logging as log
 import math
@@ -56,10 +57,15 @@ RUST_INSTRUCTIONS = """
 
 
 class EncodingGenerator:
-
-    def __init__(self, min_hd: int, num_states: int, encoding_len: int,
-                 seed: int, language: str,
-                 avoid_zero: bool) -> "EncodingGenerator":
+    def __init__(
+        self,
+        min_hd: int,
+        num_states: int,
+        encoding_len: int,
+        seed: int,
+        language: str,
+        avoid_zero: bool,
+    ) -> "EncodingGenerator":
         self.encodings = []
         self.num_states = num_states
         self.encoding_len = encoding_len
@@ -72,7 +78,7 @@ class EncodingGenerator:
     def _check_candidate(self, cand: str) -> bool:
         """Check that a candidate integer satisfies the requirements."""
         # disallow all-zero and all-one states
-        pop_cnt = cand.count('1')
+        pop_cnt = cand.count("1")
         if pop_cnt >= self.encoding_len or pop_cnt < self.min_popcnt:
             return False
         for k in self.encodings:
@@ -115,18 +121,18 @@ class EncodingGenerator:
             # if we restarted for too many times, abort.
             if num_restarts >= MAX_RESTARTS:
                 log.error(
-                    f'Did not find a solution after restarting {num_restarts} times. '
-                    'This is an indicator that not many (or even no) solutions exist for '
-                    'the current parameterization. Rerun the script and/or adjust '
-                    'the d/m/n parameters. E.g. make the state space more sparse by '
-                    'increasing n, or lower the minimum Hamming distance threshold d.'
+                    f"Did not find a solution after restarting {num_restarts} times. "
+                    "This is an indicator that not many (or even no) solutions exist for "
+                    "the current parameterization. Rerun the script and/or adjust "
+                    "the d/m/n parameters. E.g. make the state space more sparse by "
+                    "increasing n, or lower the minimum Hamming distance threshold d."
                 )
                 sys.exit(1)
             num_draws += 1
             # draw a candidate and check whether it fulfills the minimum
             # distance requirement with respect to other encodings.
             rnd = rand.getrandbits(self.encoding_len)
-            cand = format(rnd, '0' + str(self.encoding_len) + 'b')
+            cand = format(rnd, "0" + str(self.encoding_len) + "b")
             if self._check_candidate(cand):
                 self.encodings.append(cand)
 
@@ -154,14 +160,17 @@ class EncodingGenerator:
             f"{comment}     -s {self.seed} --language={self.language}\n"
             f"{comment}\n"
             f"{comment} Hamming distance histogram:\n"
-            f"{comment}")
-        for hist_bar in self.stats['bars']:
+            f"{comment}"
+        )
+        for hist_bar in self.stats["bars"]:
             print(f"{comment} " + hist_bar)
-        print(f"{comment}\n"
-              f"{comment} Minimum Hamming distance: {self.stats['min_hd']}\n"
-              f"{comment} Maximum Hamming distance: {self.stats['max_hd']}\n"
-              f"{comment} Minimum Hamming weight: {self.stats['min_hw']}\n"
-              f"{comment} Maximum Hamming weight: {self.stats['max_hw']}")
+        print(
+            f"{comment}\n"
+            f"{comment} Minimum Hamming distance: {self.stats['min_hd']}\n"
+            f"{comment} Maximum Hamming distance: {self.stats['max_hd']}\n"
+            f"{comment} Minimum Hamming weight: {self.stats['min_hw']}\n"
+            f"{comment} Maximum Hamming weight: {self.stats['max_hw']}"
+        )
 
         # Print comment footer
         if self.language == "c":
@@ -172,8 +181,10 @@ class EncodingGenerator:
             print("//")
 
     def _print_sv(self):
-        print(f"localparam int StateWidth = {self.encoding_len};\n"
-              "typedef enum logic [StateWidth-1:0] {")
+        print(
+            f"localparam int StateWidth = {self.encoding_len};\n"
+            "typedef enum logic [StateWidth-1:0] {"
+        )
         fmt_str = "  State{} {}= {}'b{}"
         state_str = ""
         for j, k in enumerate(self.encodings):
@@ -201,8 +212,7 @@ class EncodingGenerator:
 
     def _print_c(self):
         print("typedef enum my_state {")
-        fmt_str = "  kMyState{0:} {1:}= 0x{3:0" + str(
-            math.ceil(self.encoding_len / 4)) + "x},"
+        fmt_str = "  kMyState{0:} {1:}= 0x{3:0" + str(math.ceil(self.encoding_len / 4)) + "x},"
         for j, k in enumerate(self.encodings):
             pad = " " * (len(str(self.num_states)) - len(str(j)))
             print(fmt_str.format(j, pad, self.encoding_len, int(k, 2)))
@@ -211,13 +221,18 @@ class EncodingGenerator:
         print("} my_state_t;")
 
     def _print_rust(self):
-        print("#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
-              "#[repr(transparent)]\n"
-              f"struct MyState(u{self.encoding_len});\n"
-              "\n"
-              "impl MyState {")
-        fmt_str = "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0" + str(
-            math.ceil(self.encoding_len / 4)) + "x});"
+        print(
+            "#[derive(Clone,Copy,Eq,PartialEq,Ord,ParitalOrd,Hash,Debug)]\n"
+            "#[repr(transparent)]\n"
+            f"struct MyState(u{self.encoding_len});\n"
+            "\n"
+            "impl MyState {"
+        )
+        fmt_str = (
+            "  const MY_STATE{0:}: MyState {1:}= MyState(0x{3:0"
+            + str(math.ceil(self.encoding_len / 4))
+            + "x});"
+        )
         for j, k in enumerate(self.encodings):
             pad = " " * (len(str(self.num_states)) - len(str(j)))
             print(fmt_str.format(j, pad, self.encoding_len, int(k, 2)))
@@ -229,7 +244,7 @@ class EncodingGenerator:
             self._print_sv()
         elif self.language == "c":
             self._print_c()
-        elif self.language == 'rust':
+        elif self.language == "rust":
             self._print_rust()
 
 
@@ -239,68 +254,68 @@ def main():
     parser = argparse.ArgumentParser(
         prog="sparse-fsm-encode",
         description=wrapped_docstring(),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument(
-        '-d',
+        "-d",
         type=int,
         default=5,
-        metavar='<minimum HD>',
-        help='Minimum Hamming distance between encoded states.')
-    parser.add_argument('-m',
-                        type=int,
-                        default=7,
-                        metavar='<#states>',
-                        help='Number of states to encode.')
-    parser.add_argument('-n',
-                        type=int,
-                        default=10,
-                        metavar='<#nbits>',
-                        help='Encoding length [bit].')
-    parser.add_argument('-s',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG.')
-    parser.add_argument('--language',
-                        choices=['sv', 'c', 'rust'],
-                        default='sv',
-                        help='Choose the language of the generated enum.')
-    parser.add_argument('--avoid-zero',
-                        action='store_true',
-                        help=('Also enforce a minimum hamming '
-                              'distance from the zero word.'))
+        metavar="<minimum HD>",
+        help="Minimum Hamming distance between encoded states.",
+    )
+    parser.add_argument(
+        "-m", type=int, default=7, metavar="<#states>", help="Number of states to encode."
+    )
+    parser.add_argument(
+        "-n", type=int, default=10, metavar="<#nbits>", help="Encoding length [bit]."
+    )
+    parser.add_argument("-s", type=int, metavar="<seed>", help="Custom seed for RNG.")
+    parser.add_argument(
+        "--language",
+        choices=["sv", "c", "rust"],
+        default="sv",
+        help="Choose the language of the generated enum.",
+    )
+    parser.add_argument(
+        "--avoid-zero",
+        action="store_true",
+        help=("Also enforce a minimum hamming distance from the zero word."),
+    )
 
     args = parser.parse_args()
 
-    if args.language in ['c', 'rust']:
+    if args.language in ["c", "rust"]:
         if args.n not in [8, 16, 32]:
-            log.error("When using C or Rust, widths must be a power-of-two "
-                      f"at least a byte (8 bits) wide. You chose {args.n}.")
+            log.error(
+                "When using C or Rust, widths must be a power-of-two "
+                f"at least a byte (8 bits) wide. You chose {args.n}."
+            )
             sys.exit(1)
 
     if args.m < 2:
-        log.error('Number of states (m) must be at least 2.')
+        log.error("Number of states (m) must be at least 2.")
         sys.exit(1)
 
     if args.m > 2**args.n:
-        log.error(
-            f'Statespace 2^{args.n} not large enough to accommodate {args.m} states.'
-        )
+        log.error(f"Statespace 2^{args.n} not large enough to accommodate {args.m} states.")
         sys.exit(1)
 
     if (args.d >= args.n) and not (args.d == args.n and args.m == 2):
         log.error(
-            f'State is only {args.n} bits wide, which is not enough to fulfill a '
-            f'minimum Hamming distance constraint of {args.d}.')
+            f"State is only {args.n} bits wide, which is not enough to fulfill a "
+            f"minimum Hamming distance constraint of {args.d}."
+        )
         sys.exit(1)
 
     if args.d <= 0:
-        log.error('Hamming distance must be > 0.')
+        log.error("Hamming distance must be > 0.")
         sys.exit(1)
 
     if args.d < 3:
         log.warning(
-            'A value of 4-5 is recommended for the minimum Hamming distance '
-            'constraint. At a minimum, this should be set to 3.')
+            "A value of 4-5 is recommended for the minimum Hamming distance "
+            "constraint. At a minimum, this should be set to 3."
+        )
 
     # If no seed has been provided, we choose a seed and print it
     # into the generated output later on such that this run can be
@@ -309,12 +324,14 @@ def main():
         random.seed()
         args.s = random.getrandbits(32)
 
-    generator = EncodingGenerator(min_hd=args.d,
-                                  num_states=args.m,
-                                  encoding_len=args.n,
-                                  seed=args.s,
-                                  language=args.language,
-                                  avoid_zero=args.avoid_zero)
+    generator = EncodingGenerator(
+        min_hd=args.d,
+        num_states=args.m,
+        encoding_len=args.n,
+        seed=args.s,
+        language=args.language,
+        avoid_zero=args.avoid_zero,
+    )
     generator.generate()
     generator.print_code()
 

@@ -26,8 +26,7 @@ class Alert:
     def __init__(self, alert: OrderedDict) -> None:
         self.name_snake = alert["name"]
         self.name_upper = self.name_snake.upper()
-        self.name_camel = "".join(
-            [word.capitalize() for word in self.name_snake.split("_")])
+        self.name_camel = "".join([word.capitalize() for word in self.name_snake.split("_")])
         _multiline_description = alert["desc"][0].upper() + alert["desc"][1:]
         self.description = _multiline_description.replace("\n", " ")
 
@@ -46,8 +45,7 @@ class Irq:
     def __init__(self, irq: OrderedDict) -> None:
         self.name_snake = irq["name"]
         self.name_upper = self.name_snake.upper()
-        self.name_camel = "".join(
-            [word.capitalize() for word in self.name_snake.split("_")])
+        self.name_camel = "".join([word.capitalize() for word in self.name_snake.split("_")])
         _multiline_description = irq["desc"][0].upper() + irq["desc"][1:]
         self.description = _multiline_description.replace("\n", " ")
         self.width = irq["width"] if "width" in irq else 1
@@ -83,8 +81,7 @@ class Ip:
 
     """
 
-    def __init__(self, name_snake: str, name_long_lower: str,
-                 hjson_file: Path) -> None:
+    def __init__(self, name_snake: str, name_long_lower: str, hjson_file: Path) -> None:
         """Mines metadata to populate this Ip object.
 
         Args:
@@ -96,14 +93,12 @@ class Ip:
         # Generate various IP name formats.
         self.name_snake = name_snake
         self.name_upper = self.name_snake.upper()
-        self.name_camel = "".join(
-            [word.capitalize() for word in self.name_snake.split("_")])
+        self.name_camel = "".join([word.capitalize() for word in self.name_snake.split("_")])
         self.name_long_lower = name_long_lower
         # We just want to set the first character to title case. In particular,
         # .capitalize() does not do the right thing, since it would convert
         # UART to Uart.
-        self.name_long_upper = (self.name_long_lower[0].upper() +
-                                self.name_long_lower[1:])
+        self.name_long_upper = self.name_long_lower[0].upper() + self.name_long_lower[1:]
 
         with hjson_file.open("r") as f:
             _hjson_str = f.read()
@@ -116,8 +111,7 @@ class Ip:
         self.parameters = self._load_parameters()
 
     def _load_alerts(self):
-        assert (self._hjson_data and
-                "ERROR: must load IP HJSON before loading Alerts")
+        assert self._hjson_data and "ERROR: must load IP HJSON before loading Alerts"
         alerts = []
         if "alert_list" in self._hjson_data:
             for alert in self._hjson_data["alert_list"]:
@@ -125,8 +119,7 @@ class Ip:
         return alerts
 
     def _load_irqs(self):
-        assert (self._hjson_data and
-                "ERROR: must load IP HJSON before loading IRQs")
+        assert self._hjson_data and "ERROR: must load IP HJSON before loading IRQs"
         irqs = []
         if "interrupt_list" in self._hjson_data:
             for irq in self._hjson_data["interrupt_list"]:
@@ -134,8 +127,7 @@ class Ip:
         return irqs
 
     def _load_parameters(self):
-        assert (self._hjson_data and
-                "ERROR: must load IP HJSON before loarding Parameters")
+        assert self._hjson_data and "ERROR: must load IP HJSON before loarding Parameters"
         parameters = {}
         if "param_list" in self._hjson_data:
             for parameter in self._hjson_data["param_list"]:

@@ -13,8 +13,7 @@ from rich.table import Column, Padding, Table
 
 from util.py.packages.impl.object_size.elf import parse_elf_file
 from util.py.packages.impl.object_size.memory import parse_memory_file
-from util.py.packages.impl.object_size.types import (Address, Alignment,
-                                                     Memory, Section, Size)
+from util.py.packages.impl.object_size.types import Address, Alignment, Memory, Section, Size
 from util.py.packages.lib.ot_logging import log
 
 
@@ -22,22 +21,19 @@ def print_utilization_report(memories) -> None:
     rprint(Padding("[bold]Memory utilization overview:[/bold]", (1, 0, 0, 2)))
     for m in memories.values():
         used = functools.reduce(lambda acc, sym: acc + sym.size, m.symbols, 0)
-        bar = Progress(TextColumn(f"[progress.description]{m.name:20}"),
-                       BarColumn(complete_style="bold cyan"),
-                       TaskProgressColumn(),
-                       f"Available: {Size(m.size - used)}, Used: {Size(used)} of {Size.__str__(m)}")
+        bar = Progress(
+            TextColumn(f"[progress.description]{m.name:20}"),
+            BarColumn(complete_style="bold cyan"),
+            TaskProgressColumn(),
+            f"Available: {Size(m.size - used)}, Used: {Size(used)} of {Size.__str__(m)}",
+        )
         task = bar.add_task("")
         bar.advance(task, used * 100 // m.size)
         rprint(Padding(bar.get_renderable(), (0, 0, 0, 4)))
 
 
 def my_table(*args, **kwargs):
-    return Table(
-        *args, **{
-            "highlight": True,
-            "row_styles": ["on bright_black", ""],
-            **kwargs
-        })
+    return Table(*args, **{"highlight": True, "row_styles": ["on bright_black", ""], **kwargs})
 
 
 def print_section_report(sections: list[Section]) -> None:
@@ -53,14 +49,21 @@ def print_section_report(sections: list[Section]) -> None:
     )
 
     for s in sorted(sections.values(), key=lambda s: s.vma):
-        table.add_row(s.name, ', '.join(s.memories), Size.__str__(s),
-                      Address.__str__(s), Alignment.__str__(s), s.type_,
-                      s.flags)
+        table.add_row(
+            s.name,
+            ", ".join(s.memories),
+            Size.__str__(s),
+            Address.__str__(s),
+            Alignment.__str__(s),
+            s.type_,
+            s.flags,
+        )
     rprint(Padding(table, (2, 0, 0, 2)))
 
 
-def print_symbol_table(container: Union[Memory, Section], key_fn: Callable,
-                       key_name: str, reverse: bool) -> None:
+def print_symbol_table(
+    container: Union[Memory, Section], key_fn: Callable, key_name: str, reverse: bool
+) -> None:
     symbols = container.symbols
     if not symbols:
         log.info(f"{container.name} has no symbols")
@@ -74,34 +77,36 @@ def print_symbol_table(container: Union[Memory, Section], key_fn: Callable,
         Column("Binding", justify="center"),
         Column("Visibility", justify="center"),
         title=f"[bold]Symbols in [white]{container.name}[/white] "
-        f"{'DESCENDING' if reverse else 'ASCENDING'} by {key_name.upper()}:[/bold]"
+        f"{'DESCENDING' if reverse else 'ASCENDING'} by {key_name.upper()}:[/bold]",
     )
     symbols = sorted(symbols, key=key_fn, reverse=reverse)
     for s in symbols:
-        table.add_row(s.name, f"{Size.__str__(s)}", s.section,
-                      f"{Address.__str__(s)}", s.type_, s.binding,
-                      s.visibility)
+        table.add_row(
+            s.name,
+            f"{Size.__str__(s)}",
+            s.section,
+            f"{Address.__str__(s)}",
+            s.type_,
+            s.binding,
+            s.visibility,
+        )
         total += s.size
     rprint(Padding(table, (2, 0, 0, 2)))
     rprint(Padding(f"[bold white]TOTAL: {Size(total)}[/]", (0, 0, 0, 6)))
 
 
-def print_symbols_report(memories: list[Memory],
-                         sections: list[Section]) -> None:
-
+def print_symbols_report(memories: list[Memory], sections: list[Section]) -> None:
     def size(s):
         return s.size
 
     def vma(s):
         return s.vma
 
-    rprint(
-        Padding(Rule("[bold]Symbols Grouped by Memory[/bold]"), (1, 0, 0, 2)))
+    rprint(Padding(Rule("[bold]Symbols Grouped by Memory[/bold]"), (1, 0, 0, 2)))
     for m in memories.values():
         print_symbol_table(m, size, "size", True)
         print_symbol_table(m, vma, "vma", False)
-    rprint(
-        Padding(Rule("[bold]Symbols Grouped by Section[/bold]"), (1, 0, 0, 2)))
+    rprint(Padding(Rule("[bold]Symbols Grouped by Section[/bold]"), (1, 0, 0, 2)))
     for s in sections.values():
         print_symbol_table(s, size, "size", True)
         print_symbol_table(s, vma, "vma", False)
@@ -128,12 +133,12 @@ def print_alignment_overhead_report(memories: list[Memory]) -> None:
             Column("Expected VMA", justify="center"),
             Column("Actual VMA", justify="center"),
             title=f"[bold][white]{m.name.upper()}[/white] "
-            "Alignment Overhead (Includes False Positives)[/bold]")
-        for (s, expected_start, overhead) in sorted(rows,
-                                                    key=lambda r: r[2],
-                                                    reverse=True):
-            table.add_row(f"{s.name}", f"{Size(overhead)}",
-                          f"0x{expected_start:08x}", f"0x{s.vma:08x}")
+            "Alignment Overhead (Includes False Positives)[/bold]",
+        )
+        for s, expected_start, overhead in sorted(rows, key=lambda r: r[2], reverse=True):
+            table.add_row(
+                f"{s.name}", f"{Size(overhead)}", f"0x{expected_start:08x}", f"0x{s.vma:08x}"
+            )
         rprint(Padding(table, (2, 0, 0, 2)))
         rprint(Padding(f"[bold white]TOTAL:[/] {Size(total)}", (0, 0, 0, 6)))
 
@@ -146,7 +151,7 @@ def print_report(path: Path, force_color: bool = False) -> None:
     rprint(Padding(f"{path}", (0, 0, 0, 4)))
     rprint(Padding("[bold]File size:[/bold]", (1, 0, 0, 2)))
     rprint(Padding(f"{Size(path.stat().st_size)}", (0, 0, 0, 4)))
-    if (path.suffixes[-1] == ".elf"):
+    if path.suffixes[-1] == ".elf":
         memories = parse_memory_file()
         sections = parse_elf_file(path, memories)
         print_utilization_report(memories)

@@ -14,13 +14,13 @@ from mdbook import utils as md_utils
 
 # We are looking to match on the following example strings
 # {{#dashboard comportable }}
-DASHBOARD_PATTERN = re.compile(r'\{\{#dashboard\s+?(.+?)\s*\}\}')
-IP_CFG_PATTERN = re.compile(r'.+/data/(?!.+(_testplan|example)).+\.hjson')
+DASHBOARD_PATTERN = re.compile(r"\{\{#dashboard\s+?(.+?)\s*\}\}")
+IP_CFG_PATTERN = re.compile(r".+/data/(?!.+(_testplan|example)).+\.hjson")
 REPO_TOP = Path(__file__).resolve().parents[1]
 
 # FIXME: This should be generated via topgen.
 DASHBOARDS: Dict[str, List[Path]] = {
-    'comportable': [
+    "comportable": [
         REPO_TOP / "hw/ip/aes/data/aes.hjson",
         REPO_TOP / "hw/ip/aon_timer/data/aon_timer.hjson",
         REPO_TOP / "hw/ip/entropy_src/data/entropy_src.hjson",
@@ -47,7 +47,7 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/ip/uart/data/uart.hjson",
         REPO_TOP / "hw/ip/usbdev/data/usbdev.hjson",
     ],
-    'top_earlgrey': [
+    "top_earlgrey": [
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
@@ -97,9 +97,7 @@ def main() -> None:
 
     for chapter in md_utils.chapters(book["sections"]):
         # Add in the generated dashboard html
-        chapter['content'] = DASHBOARD_PATTERN.sub(
-            replace_with_dashboard,
-            chapter['content'])
+        chapter["content"] = DASHBOARD_PATTERN.sub(replace_with_dashboard, chapter["content"])
 
     # dump the book into stdout
     print(json.dumps(book))

@@ -17,9 +17,9 @@ def generate_selfdocs(tool: str, fout: TextIO):
     if tool == "reggen":
         reggen_selfdoc.document(fout)
     elif tool == "tlgen":
-        fout.write(tlgen.selfdoc(heading=3, cmd='tlgen.py --doc'))
+        fout.write(tlgen.selfdoc(heading=3, cmd="tlgen.py --doc"))
     else:
-        sys.exit(f"unknown tool \"{tool}\"")
+        sys.exit(f'unknown tool "{tool}"')
 
 
 if __name__ == "__main__":

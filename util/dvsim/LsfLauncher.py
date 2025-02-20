@@ -14,7 +14,6 @@ from utils import VERBOSE, clean_odirs
 
 
 class LsfLauncher(Launcher):
-
     # A hidden directory specific to a cfg, where we put individual 'job'
     # scripts.
     jobs_dir = {}
@@ -51,9 +50,8 @@ class LsfLauncher(Launcher):
             stem = stem[:-4]
         path = Path(args.scratch_root, stem)
         if not path.is_dir():
-            log.info("[prepare_workspace]: [pyvenv]: Extracting %s",
-                     Launcher.pyvenv)
-            with tarfile.open(Launcher.pyvenv, mode='r') as tar:
+            log.info("[prepare_workspace]: [pyvenv]: Extracting %s", Launcher.pyvenv)
+            with tarfile.open(Launcher.pyvenv, mode="r") as tar:
                 tar.extractall(args.scratch_root)
             log.info("[prepare_workspace]: [pyvenv]: Done: %s", path)
         Launcher.pyvenv = path
@@ -61,8 +59,7 @@ class LsfLauncher(Launcher):
     @staticmethod
     def prepare_workspace_for_cfg(cfg):
         # Create the job dir.
-        LsfLauncher.jobs_dir[cfg] = Path(cfg.scratch_path, "lsf",
-                                         cfg.timestamp)
+        LsfLauncher.jobs_dir[cfg] = Path(cfg.scratch_path, "lsf", cfg.timestamp)
         clean_odirs(odir=LsfLauncher.jobs_dir[cfg], max_odirs=2)
         os.makedirs(Path(LsfLauncher.jobs_dir[cfg]), exist_ok=True)
 
@@ -91,22 +88,17 @@ class LsfLauncher(Launcher):
         lines += ["case $1 in\n"]
         for job in LsfLauncher.jobs[cfg][job_name]:
             # Redirect the job's stdout and stderr to its log file.
-            cmd = "{} > {} 2>&1".format(job.deploy.cmd,
-                                        job.deploy.get_log_path())
+            cmd = "{} > {} 2>&1".format(job.deploy.cmd, job.deploy.get_log_path())
             lines += ["  {})\n".format(job.index), "    {};;\n".format(cmd)]
 
         # Throw error as a sanity check if the job index is invalid.
-        lines += [
-            "  *)\n",
-            "    echo \"ERROR: Illegal job index: $1\" 1>&2; exit 1;;\n",
-            "esac\n"
-        ]
+        lines += ["  *)\n", '    echo "ERROR: Illegal job index: $1" 1>&2; exit 1;;\n', "esac\n"]
         if Launcher.pyvenv:
             lines += ["deactivate\n"]
 
         job_script = Path(LsfLauncher.jobs_dir[cfg], job_name)
         try:
-            with open(job_script, "w", encoding='utf-8') as f:
+            with open(job_script, "w", encoding="utf-8") as f:
                 f.writelines(lines)
         except IOError as e:
             err_msg = "ERROR: Failed to write {}:\n{}".format(job_script, e)
@@ -167,8 +159,8 @@ class LsfLauncher(Launcher):
         # level to the next. Here, self.cmd is a call to Make but it's
         # logically a top-level invocation: we don't want to pollute the flow's
         # Makefile with Make variables from any wrapper that called dvsim.
-        if 'MAKEFLAGS' in exports:
-            del exports['MAKEFLAGS']
+        if "MAKEFLAGS" in exports:
+            del exports["MAKEFLAGS"]
 
         self._dump_env_vars(exports)
 
@@ -179,10 +171,10 @@ class LsfLauncher(Launcher):
 
         # TODO: This needs to be moved to a HJson.
         if self.deploy.sim_cfg.tool == "vcs":
-            job_rusage = "\'rusage[vcssim=1,vcssim_dynamic=1:duration=1]\'"
+            job_rusage = "'rusage[vcssim=1,vcssim_dynamic=1:duration=1]'"
 
         elif self.deploy.sim_cfg.tool == "xcelium":
-            job_rusage = "\'rusage[xcelium=1,xcelium_dynamic=1:duration=1]\'"
+            job_rusage = "'rusage[xcelium=1,xcelium_dynamic=1:duration=1]'"
 
         else:
             job_rusage = None
@@ -198,7 +190,7 @@ class LsfLauncher(Launcher):
             "-oo",
             "{}.%I.out".format(job_script),
             "-eo",
-            "{}.%I.out".format(job_script)
+            "{}.%I.out".format(job_script),
         ]
         if self.deploy.get_timeout_mins():
             cmd += ["-c", self.deploy.get_timeout_mins()]
@@ -209,12 +201,14 @@ class LsfLauncher(Launcher):
         cmd += ["/usr/bin/bash {} $LSB_JOBINDEX".format(job_script)]
 
         try:
-            p = subprocess.run(cmd,
-                               check=True,
-                               timeout=60,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               env=exports)
+            p = subprocess.run(
+                cmd,
+                check=True,
+                timeout=60,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=exports,
+            )
         except subprocess.CalledProcessError as e:
             # Need to mark all jobs in this range with this fail pattern.
             err_msg = e.stderr.decode("utf-8").strip()
@@ -223,7 +217,7 @@ class LsfLauncher(Launcher):
 
         # Extract the job ID.
         result = p.stdout.decode("utf-8").strip()
-        job_id = result.split('Job <')[1].split('>')[0]
+        job_id = result.split("Job <")[1].split(">")[0]
         if not job_id:
             self._post_finish_job_array(cfg, job_name, "Job ID not found!")
             raise LauncherError(err_msg)
@@ -241,7 +235,7 @@ class LsfLauncher(Launcher):
         if not self.bsub_out_fd:
             # If job id is not set, the bsub command has not been sent yet.
             if not self.job_id:
-                return 'D'
+                return "D"
 
             # We redirect the job's output to the log file, so the job script
             # output remains empty until the point it finishes. This is a very
@@ -263,9 +257,10 @@ class LsfLauncher(Launcher):
                     "F",
                     ErrorMessage(
                         line_number=None,
-                        message="ERROR: Failed to open {}\n{}.".format(
-                            self.bsub_out, e),
-                        context=[e]))
+                        message="ERROR: Failed to open {}\n{}.".format(self.bsub_out, e),
+                        context=[e],
+                    ),
+                )
                 return "F"
 
         # Now that the job has completed, we need to determine its status.
@@ -300,9 +295,9 @@ class LsfLauncher(Launcher):
             status, err_msg = self._check_status()
             # Prioritize error messages from bsub over the job's log file.
             if self.bsub_out_err_msg:
-                err_msg = ErrorMessage(line_number=None,
-                                       message=self.bsub_out_err_msg,
-                                       context=[self.bsub_out_err_msg])
+                err_msg = ErrorMessage(
+                    line_number=None, message=self.bsub_out_err_msg, context=[self.bsub_out_err_msg]
+                )
             self._post_finish(status, err_msg)
             return status
 
@@ -311,15 +306,17 @@ class LsfLauncher(Launcher):
             # Fail the test if we have reached the max polling retries.
             if self.num_poll_retries == LsfLauncher.max_poll_retries:
                 self._post_finish(
-                    "F", "ERROR: Reached max retries while "
+                    "F",
+                    "ERROR: Reached max retries while "
                     "reading job script output {} to determine"
-                    " the outcome.".format(self.bsub_out))
+                    " the outcome.".format(self.bsub_out),
+                )
                 return "F"
 
         return "D"
 
     def _get_job_exit_code(self):
-        '''Read the job script output to retrieve the exit code.
+        """Read the job script output to retrieve the exit code.
 
         Also read the error message if any, which will appear at the beginning
         of the log file followed by bsub's standard 'email' format output. It
@@ -342,7 +339,7 @@ class LsfLauncher(Launcher):
         is used to return the exit code.
 
         Returns the exit code if found, else None.
-        '''
+        """
 
         # Job script output must have been opened already.
         assert self.bsub_out_fd
@@ -352,8 +349,7 @@ class LsfLauncher(Launcher):
                 m = re.match("^Sender", line)
                 if m:
                     # Pop the line before the sender line.
-                    self.bsub_out_err_msg = "\n".join(
-                        self.bsub_out_err_msg[:-1])
+                    self.bsub_out_err_msg = "\n".join(self.bsub_out_err_msg[:-1])
                     self.bsub_out_err_msg_found = True
                 else:
                     self.bsub_out_err_msg.append(line.strip())
@@ -372,33 +368,33 @@ class LsfLauncher(Launcher):
     def kill(self):
         if self.job_id:
             try:
-                subprocess.run(["bkill", "-s", "SIGTERM", self.job_id],
-                               check=True,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
+                subprocess.run(
+                    ["bkill", "-s", "SIGTERM", self.job_id],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
             except subprocess.CalledProcessError as e:
-                log.error("Failed to kill job: {}".format(
-                    e.stderr.decode("utf-8").strip()))
+                log.error("Failed to kill job: {}".format(e.stderr.decode("utf-8").strip()))
         else:
             log.error("Job ID for %s not found", self.deploy.full_name)
 
-        self._post_finish('K', "Job killed!")
+        self._post_finish("K", "Job killed!")
 
     def _post_finish(self, status, err_msg):
         if self.bsub_out_fd:
             self.bsub_out_fd.close()
         if self.exit_code is None:
-            self.exit_code = 0 if status == 'P' else 1
+            self.exit_code = 0 if status == "P" else 1
         super()._post_finish(status, err_msg)
 
     @staticmethod
     def _post_finish_job_array(cfg, job_name, err_msg):
-        '''On LSF error, mark all jobs in this array as killed.
+        """On LSF error, mark all jobs in this array as killed.
 
-        err_msg is the error message indicating the cause of failure.'''
+        err_msg is the error message indicating the cause of failure."""
 
         for job in LsfLauncher.jobs[cfg][job_name]:
             job._post_finish(
-                'F', ErrorMessage(line_number=None,
-                                  message=err_msg,
-                                  context=[err_msg]))
+                "F", ErrorMessage(line_number=None, message=err_msg, context=[err_msg])
+            )

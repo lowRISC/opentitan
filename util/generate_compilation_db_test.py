@@ -4,102 +4,98 @@
 
 import unittest
 
-from generate_compilation_db import (BazelAqueryAction, BazelAqueryResults,
-                                     PathBuilder)
+from generate_compilation_db import BazelAqueryAction, BazelAqueryResults, PathBuilder
 
 
 class TestGenerateCompilationDb(unittest.TestCase):
-
     def test_bazel_aquery_results(self):
         results = BazelAqueryResults(BAZEL_AQUERY_RESULTS_SMALL)
 
         # There should be a single "CppCompile" action.
-        matching_actions = [
-            a for a in results.actions if a.mnemonic == 'CppCompile'
-        ]
+        matching_actions = [a for a in results.actions if a.mnemonic == "CppCompile"]
         self.assertEqual(len(matching_actions), 1)
         action = matching_actions[0]
 
-        self.assertEqual(action.arguments, [
-            '/usr/bin/gcc', '-Wall', '-iquote', '.', '-isystem',
-            'external/googletest/googlemock', '-fno-canonical-system-headers',
-            '-c', 'sw/device/lib/crypto/otbn_util.c', '-o',
-            'bazel-out/k8-fastbuild/bin/sw/device/' +
-            'lib/crypto/_objs/otbn_util/otbn_util.pic.o'
-        ])
+        self.assertEqual(
+            action.arguments,
+            [
+                "/usr/bin/gcc",
+                "-Wall",
+                "-iquote",
+                ".",
+                "-isystem",
+                "external/googletest/googlemock",
+                "-fno-canonical-system-headers",
+                "-c",
+                "sw/device/lib/crypto/otbn_util.c",
+                "-o",
+                "bazel-out/k8-fastbuild/bin/sw/device/"
+                + "lib/crypto/_objs/otbn_util/otbn_util.pic.o",
+            ],
+        )
         self.assertEqual(action.input_dep_set_ids, [2])
 
-        self.assertEqual(results.reconstruct_path(6),
-                         'sw/device/lib/crypto/otbn_util.h')
+        self.assertEqual(results.reconstruct_path(6), "sw/device/lib/crypto/otbn_util.h")
 
-        self.assertEqual(list(results.iter_artifacts_for_dep_sets([2])), [
-            'sw/device/lib/crypto/otbn_util.c',
-        ])
+        self.assertEqual(
+            list(results.iter_artifacts_for_dep_sets([2])),
+            [
+                "sw/device/lib/crypto/otbn_util.c",
+            ],
+        )
 
 
 class TestBazelAqueryAction(unittest.TestCase):
-
     def test_transform_arguments_for_clangd(self):
         # Empty arguments is a no-op.
-        action = BazelAqueryAction({'arguments': []})
+        action = BazelAqueryAction({"arguments": []})
         self.assertEqual(action.transform_arguments_for_clangd(), [])
 
         # No-op when compiler doesn't look like it targets RISC-V.
-        action = BazelAqueryAction({'arguments': ['foo']})
-        self.assertEqual(action.transform_arguments_for_clangd(), ['foo'])
+        action = BazelAqueryAction({"arguments": ["foo"]})
+        self.assertEqual(action.transform_arguments_for_clangd(), ["foo"])
 
         # Same, but with more flags.
-        action = BazelAqueryAction({
-            'arguments':
-            ['foo', '-march=rv32imc', 'bar', '-mabi=ilp32', 'baz']
-        })
+        action = BazelAqueryAction(
+            {"arguments": ["foo", "-march=rv32imc", "bar", "-mabi=ilp32", "baz"]}
+        )
         self.assertEqual(
             action.transform_arguments_for_clangd(),
-            ['foo', '-march=rv32imc', 'bar', '-mabi=ilp32', 'baz'])
+            ["foo", "-march=rv32imc", "bar", "-mabi=ilp32", "baz"],
+        )
 
         # Insert `--target` flag when the compiler looks like it targets RISC-V.
-        action = BazelAqueryAction({
-            'arguments': [
-                'path/lowrisc_rv32imcb/compiler', '-march=rv32imc',
-                '-mabi=ilp32'
-            ]
-        })
-        self.assertEqual(action.transform_arguments_for_clangd(), [
-            'path/lowrisc_rv32imcb/compiler', '--target=riscv32',
-            '-march=rv32imc', '-mabi=ilp32'
-        ])
+        action = BazelAqueryAction(
+            {"arguments": ["path/lowrisc_rv32imcb/compiler", "-march=rv32imc", "-mabi=ilp32"]}
+        )
+        self.assertEqual(
+            action.transform_arguments_for_clangd(),
+            ["path/lowrisc_rv32imcb/compiler", "--target=riscv32", "-march=rv32imc", "-mabi=ilp32"],
+        )
 
 
 class TestPathBuilder(unittest.TestCase):
-
     def test_normal_checkout(self):
         paths = PathBuilder("/foo/bar/opentitan-repo/util/source.py")
         self.assertEqual(paths.top_dir, "/foo/bar/opentitan-repo")
-        self.assertEqual(paths.bazelisk_script,
-                         "/foo/bar/opentitan-repo/bazelisk.sh")
-        self.assertEqual(paths.bazel_exec_root,
-                         "/foo/bar/opentitan-repo/bazel-opentitan-repo")
+        self.assertEqual(paths.bazelisk_script, "/foo/bar/opentitan-repo/bazelisk.sh")
+        self.assertEqual(paths.bazel_exec_root, "/foo/bar/opentitan-repo/bazel-opentitan-repo")
 
     def test_worktree(self):
-        paths = PathBuilder(
-            "/foo/bar/opentitan-repo/some-worktree/util/source.py")
-        self.assertEqual(paths.top_dir,
-                         "/foo/bar/opentitan-repo/some-worktree")
-        self.assertEqual(paths.bazelisk_script,
-                         "/foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
+        paths = PathBuilder("/foo/bar/opentitan-repo/some-worktree/util/source.py")
+        self.assertEqual(paths.top_dir, "/foo/bar/opentitan-repo/some-worktree")
+        self.assertEqual(paths.bazelisk_script, "/foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
         self.assertEqual(
-            paths.bazel_exec_root,
-            "/foo/bar/opentitan-repo/some-worktree/bazel-some-worktree")
+            paths.bazel_exec_root, "/foo/bar/opentitan-repo/some-worktree/bazel-some-worktree"
+        )
 
     def test_relative_path(self):
-        paths = PathBuilder(
-            "foo/bar/opentitan-repo/some-worktree/util/source.py")
+        paths = PathBuilder("foo/bar/opentitan-repo/some-worktree/util/source.py")
         self.assertEqual(paths.top_dir, "foo/bar/opentitan-repo/some-worktree")
-        self.assertEqual(paths.bazelisk_script,
-                         "foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
+        self.assertEqual(paths.bazelisk_script, "foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
         self.assertEqual(
-            paths.bazel_exec_root,
-            "foo/bar/opentitan-repo/some-worktree/bazel-some-worktree")
+            paths.bazel_exec_root, "foo/bar/opentitan-repo/some-worktree/bazel-some-worktree"
+        )
 
     def test_relative_path_short(self):
         paths = PathBuilder("foo/util/source.py")
@@ -330,5 +326,5 @@ BAZEL_AQUERY_RESULTS_SMALL = r"""
 }
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -9,4 +9,8 @@ ignore =
   # Don't complain about line breaks before or after operators. The
   # recomendations on this have changed in 2016, so leave out the explicit
   # checks: https://www.flake8rules.com/rules/W503.html
-  W503, W504
+  W503, W504,
+  # Don't complain about spaces before ':'. Auto-formatters insert these
+  # when used in complex slice ranges (e.g. `[0 : some_longer_bound()]`).
+  # Our other linter (Ruff) will still pick up cases like `if x :`.
+  E203

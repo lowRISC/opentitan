@@ -37,7 +37,6 @@ class BazelQuery:
 
 
 class BazelQueryRunner:
-
     def __init__(self, backend: Callable[[str], List[str]] = None):
         self._backend = backend
 
@@ -57,7 +56,7 @@ class BazelQueryRunner:
           set of characters that must be removed from the target's name.
 
         """
-        allowed_chars = set(string.ascii_letters + string.digits + '/:_-.')
+        allowed_chars = set(string.ascii_letters + string.digits + "/:_-.")
         for target in self.query("//..."):
             if bad_chars := set(target) - allowed_chars:
                 yield (target, bad_chars)
@@ -111,7 +110,8 @@ class BazelQueryRunner:
             ["./bazelisk.sh", "query", "--output=label", query],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            encoding='utf-8',
-            check=True)
-        stdout_lines = bazel.stdout.split('\n')
+            encoding="utf-8",
+            check=True,
+        )
+        stdout_lines = bazel.stdout.split("\n")
         return [s for s in stdout_lines if s != ""]

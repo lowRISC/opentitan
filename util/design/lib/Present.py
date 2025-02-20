@@ -29,7 +29,7 @@
 # THE SOFTWARE.
 # =============================================================================
 
-""" PRESENT block cipher implementation
+"""PRESENT block cipher implementation
 
 USAGE EXAMPLE:
 ---------------
@@ -63,33 +63,31 @@ Encrypting with a 128-bit key:
 
 fully based on standard specifications: http://www.crypto.ruhr-uni-bochum.de/imperia/md/content/texte/publications/conferences/present_ches2007.pdf
 test vectors: http://www.crypto.ruhr-uni-bochum.de/imperia/md/content/texte/publications/conferences/slides/present_testvectors.zip
-""" # noqa: E501 E261
+"""  # noqa: E501 E261
 
 
 class Present:
     def __init__(self, key, rounds=32, keylen=128):
         """Create a PRESENT cipher object
 
-                key:    the key as an integer
-                rounds: the number of rounds as an integer, 32 by default
-                keylen: length of the key in bits
-                """
+        key:    the key as an integer
+        rounds: the number of rounds as an integer, 32 by default
+        keylen: length of the key in bits
+        """
         self.rounds = rounds
         if keylen == 80 and key < 2**80:
-            self.roundkeys = generateRoundkeys80(key,
-                                                 self.rounds)
+            self.roundkeys = generateRoundkeys80(key, self.rounds)
         elif keylen == 128 and key < 2**128:
-            self.roundkeys = generateRoundkeys128(key,
-                                                  self.rounds)
+            self.roundkeys = generateRoundkeys128(key, self.rounds)
         else:
             raise ValueError("keylen be 80 or 128")
 
     def encrypt(self, block):
         """Encrypt 1 block (8 bytes)
 
-                Input:  plaintext block as raw string
-                Output: ciphertext block as raw string
-                """
+        Input:  plaintext block as raw string
+        Output: ciphertext block as raw string
+        """
         state = block
         for i in range(self.rounds - 1):
             state = addRoundKey(state, self.roundkeys[i])
@@ -101,9 +99,9 @@ class Present:
     def decrypt(self, block):
         """Decrypt 1 block (8 bytes)
 
-                Input:  ciphertext block as raw string
-                Output: plaintext block as raw string
-                """
+        Input:  ciphertext block as raw string
+        Output: plaintext block as raw string
+        """
         state = block
         for i in range(self.rounds - 1):
             state = addRoundKey(state, self.roundkeys[-i - 1])
@@ -117,16 +115,73 @@ class Present:
 
 
 #        0   1   2   3   4   5   6   7   8   9   a   b   c   d   e   f
-Sbox = [
-    0xc, 0x5, 0x6, 0xb, 0x9, 0x0, 0xa, 0xd, 0x3, 0xe, 0xf, 0x8, 0x4, 0x7, 0x1,
-    0x2
-]
+Sbox = [0xC, 0x5, 0x6, 0xB, 0x9, 0x0, 0xA, 0xD, 0x3, 0xE, 0xF, 0x8, 0x4, 0x7, 0x1, 0x2]
 Sbox_inv = [Sbox.index(x) for x in range(16)]
 PBox = [
-    0, 16, 32, 48, 1, 17, 33, 49, 2, 18, 34, 50, 3, 19, 35, 51, 4, 20, 36, 52,
-    5, 21, 37, 53, 6, 22, 38, 54, 7, 23, 39, 55, 8, 24, 40, 56, 9, 25, 41, 57,
-    10, 26, 42, 58, 11, 27, 43, 59, 12, 28, 44, 60, 13, 29, 45, 61, 14, 30, 46,
-    62, 15, 31, 47, 63
+    0,
+    16,
+    32,
+    48,
+    1,
+    17,
+    33,
+    49,
+    2,
+    18,
+    34,
+    50,
+    3,
+    19,
+    35,
+    51,
+    4,
+    20,
+    36,
+    52,
+    5,
+    21,
+    37,
+    53,
+    6,
+    22,
+    38,
+    54,
+    7,
+    23,
+    39,
+    55,
+    8,
+    24,
+    40,
+    56,
+    9,
+    25,
+    41,
+    57,
+    10,
+    26,
+    42,
+    58,
+    11,
+    27,
+    43,
+    59,
+    12,
+    28,
+    44,
+    60,
+    13,
+    29,
+    45,
+    61,
+    14,
+    30,
+    46,
+    62,
+    15,
+    31,
+    47,
+    63,
 ]
 PBox_inv = [PBox.index(x) for x in range(64)]
 
@@ -134,10 +189,10 @@ PBox_inv = [PBox.index(x) for x in range(64)]
 def generateRoundkeys80(key, rounds):
     """Generate the roundkeys for a 80-bit key
 
-        Input:
-                key:    the key as a 80-bit integer
-                rounds: the number of rounds as an integer
-        Output: list of 64-bit roundkeys as integers"""
+    Input:
+            key:    the key as a 80-bit integer
+            rounds: the number of rounds as an integer
+    Output: list of 64-bit roundkeys as integers"""
     roundkeys = []
     for i in range(1, rounds + 1):  # (K1 ... K32)
         # rawkey: used in comments to show what happens at bitlevel
@@ -158,10 +213,10 @@ def generateRoundkeys80(key, rounds):
 def generateRoundkeys128(key, rounds):
     """Generate the roundkeys for a 128-bit key
 
-        Input:
-                key:    the key as a 128-bit integer
-                rounds: the number of rounds as an integer
-        Output: list of 64-bit roundkeys as integers"""
+    Input:
+            key:    the key as a 128-bit integer
+            rounds: the number of rounds as an integer
+    Output: list of 64-bit roundkeys as integers"""
     roundkeys = []
     for i in range(1, rounds + 1):  # (K1 ... K32)
         # rawkey: used in comments to show what happens at bitlevel
@@ -169,8 +224,7 @@ def generateRoundkeys128(key, rounds):
         # 1. Shift
         key = ((key & (2**67 - 1)) << 61) + (key >> 67)
         # 2. SBox
-        key = (Sbox[key >> 124] << 124) + (Sbox[
-            (key >> 120) & 0xF] << 120) + (key & (2**120 - 1))
+        key = (Sbox[key >> 124] << 124) + (Sbox[(key >> 120) & 0xF] << 120) + (key & (2**120 - 1))
         # 3. Salt
         # rawKey[62:67] ^ i
         key ^= i << 62
@@ -184,8 +238,8 @@ def addRoundKey(state, roundkey):
 def sBoxLayer(state):
     """SBox function for encryption
 
-        Input:  64-bit integer
-        Output: 64-bit integer"""
+    Input:  64-bit integer
+    Output: 64-bit integer"""
 
     output = 0
     for i in range(16):
@@ -196,8 +250,8 @@ def sBoxLayer(state):
 def sBoxLayer_dec(state):
     """Inverse SBox function for decryption
 
-        Input:  64-bit integer
-        Output: 64-bit integer"""
+    Input:  64-bit integer
+    Output: 64-bit integer"""
     output = 0
     for i in range(16):
         output += Sbox_inv[(state >> (i * 4)) & 0xF] << (i * 4)
@@ -207,8 +261,8 @@ def sBoxLayer_dec(state):
 def pLayer(state):
     """Permutation layer for encryption
 
-        Input:  64-bit integer
-        Output: 64-bit integer"""
+    Input:  64-bit integer
+    Output: 64-bit integer"""
     output = 0
     for i in range(64):
         output += ((state >> i) & 0x01) << PBox[i]
@@ -218,8 +272,8 @@ def pLayer(state):
 def pLayer_dec(state):
     """Permutation layer for decryption
 
-        Input:  64-bit integer
-        Output: 64-bit integer"""
+    Input:  64-bit integer
+    Output: 64-bit integer"""
     output = 0
     for i in range(64):
         output += ((state >> i) & 0x01) << PBox_inv[i]
@@ -228,6 +282,7 @@ def pLayer_dec(state):
 
 def _test():
     import doctest
+
     doctest.testmod()
 
 

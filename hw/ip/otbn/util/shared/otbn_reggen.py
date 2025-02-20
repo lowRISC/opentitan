@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''A wrapper around reggen for otbn.hjson'''
+"""A wrapper around reggen for otbn.hjson"""
 
 import os
 from typing import Optional, Tuple
@@ -13,23 +13,22 @@ _LR_RETVAL: Optional[Tuple[int, object]] = None
 
 
 def load_registers() -> Tuple[int, object]:
-    '''Load otbn.hjson with reggen
+    """Load otbn.hjson with reggen
 
     Returns (width, regs) where width is the register width and regs is a
     list of Register, MultiRegister or Window objects. Memoized.
 
-    '''
+    """
     global _LR_RETVAL
     if _LR_RETVAL is not None:
         return _LR_RETVAL
 
-    path = os.path.join(os.path.dirname(__file__),
-                        '..', '..', 'data', 'otbn.hjson')
+    path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "otbn.hjson")
 
     try:
         obj = ip_block.IpBlock.from_path(path, [])
     except ValueError as err:
-        raise RuntimeError('Failed to parse {!r}: {}'.format(path, err))
+        raise RuntimeError("Failed to parse {!r}: {}".format(path, err))
 
     reg_bit_width = obj.regwidth
     assert isinstance(reg_bit_width, int) and reg_bit_width >= 0

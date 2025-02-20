@@ -17,10 +17,7 @@ MockParams = namedtuple("MockParams", ["foo"])
 
 
 class TestExtractProfileData(unittest.TestCase):
-
-    @patch.dict("coverage.PARAMS",
-                {common.CoverageType.UNITTEST: MockParams("bar")},
-                clear=True)
+    @patch.dict("coverage.PARAMS", {common.CoverageType.UNITTEST: MockParams("bar")}, clear=True)
     @patch("coverage.measure")
     def test_measure(self, mock_measure_coverage):
         coverage_type = common.CoverageType.UNITTEST
@@ -30,9 +27,9 @@ class TestExtractProfileData(unittest.TestCase):
 
         coverage.measure(coverage_type, out_dir, log_level, print_text_report)
 
-        mock_measure_coverage.assert_called_once_with(coverage_type, out_dir,
-                                                      log_level,
-                                                      print_text_report)
+        mock_measure_coverage.assert_called_once_with(
+            coverage_type, out_dir, log_level, print_text_report
+        )
 
 
 if __name__ == "__main__":

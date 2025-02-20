@@ -23,11 +23,11 @@ ASSET_PREFIXES = {
     "gcc-only": "lowrisc-toolchain-gcc-rv32imcb-",
 }
 ASSET_SUFFIX = ".tar.xz"
-RELEASES_URL_BASE = 'https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases'
+RELEASES_URL_BASE = "https://api.github.com/repos/lowRISC/lowrisc-toolchains/releases"
 
-INSTALL_DIR = '/tools/riscv'
-TOOLCHAIN_VERSION = 'latest'
-TOOLCHAIN_KIND = 'combined'
+INSTALL_DIR = "/tools/riscv"
+TOOLCHAIN_VERSION = "latest"
+TOOLCHAIN_KIND = "combined"
 
 FILE_PATTERNS_TO_REWRITE = [
     "riscv32-unknown-elf-*.cmake",
@@ -38,43 +38,42 @@ FILE_PATTERNS_TO_REWRITE = [
 def get_available_toolchain_info(version, kind):
     assert kind in ASSET_PREFIXES
 
-    if version == 'latest':
-        releases_url = '%s/%s' % (RELEASES_URL_BASE, version)
+    if version == "latest":
+        releases_url = "%s/%s" % (RELEASES_URL_BASE, version)
     else:
-        releases_url = '%s/tags/%s' % (RELEASES_URL_BASE, version)
+        releases_url = "%s/tags/%s" % (RELEASES_URL_BASE, version)
 
     with urlopen(releases_url) as f:
-        release_info = json.loads(f.read().decode('utf-8'))
+        release_info = json.loads(f.read().decode("utf-8"))
 
     for asset in release_info["assets"]:
-        if (asset["name"].startswith(ASSET_PREFIXES[kind]) and
-                asset["name"].endswith(ASSET_SUFFIX)):
+        if asset["name"].startswith(ASSET_PREFIXES[kind]) and asset["name"].endswith(ASSET_SUFFIX):
             return {
-                'download_url': asset['browser_download_url'],
-                'name': asset['name'],
-                'version': release_info['tag_name'],
-                'kind': kind
+                "download_url": asset["browser_download_url"],
+                "name": asset["name"],
+                "version": release_info["tag_name"],
+                "kind": kind,
             }
 
     # No matching asset found for the toolchain kind requested
-    log.error("No available downloads found for %s toolchain version: %s",
-              kind, release_info['tag_name'])
+    log.error(
+        "No available downloads found for %s toolchain version: %s", kind, release_info["tag_name"]
+    )
     raise SystemExit(1)
 
 
 def get_installed_toolchain_info(unpack_dir):
-
     # Try new-style buildinfo.json first
     try:
         buildinfo = {}
-        with open(str(unpack_dir / 'buildinfo.json'), 'r') as f:
+        with open(str(unpack_dir / "buildinfo.json"), "r") as f:
             buildinfo = json.loads(f.read())
 
         # Toolchains before 20200602-4 contained a `buildinfo.json` without a
         # 'kind' field. Setting it to 'unknown' will ensure we never skip
         # updating because we think it's the same as the existing toolchain.
-        if 'kind' not in buildinfo:
-            buildinfo['kind'] = 'unknown'
+        if "kind" not in buildinfo:
+            buildinfo["kind"] = "unknown"
 
         return buildinfo
     except Exception as e:
@@ -84,15 +83,14 @@ def get_installed_toolchain_info(unpack_dir):
 
     # If that wasn't successful, try old-style plaintext buildinfo
     version_re = r"(lowRISC toolchain version|Version):\s*\n?(?P<version>[^\n\s]+)"
-    buildinfo_txt_path = unpack_dir / 'buildinfo'
+    buildinfo_txt_path = unpack_dir / "buildinfo"
     try:
-        with open(str(buildinfo_txt_path), 'r') as f:
+        with open(str(buildinfo_txt_path), "r") as f:
             match = re.match(version_re, f.read(), re.M)
         if not match:
-            log.warning("Unable extract version from %s",
-                        str(buildinfo_txt_path))
+            log.warning("Unable extract version from %s", str(buildinfo_txt_path))
             return None
-        return {'version': match.group("version"), 'kind': 'unknown'}
+        return {"version": match.group("version"), "kind": "unknown"}
     except Exception as e:
         log.error("Unable to read %s: %s", str(buildinfo_txt_path), str(e))
         return None
@@ -110,12 +108,12 @@ def install(archive_file, unpack_dir):
     unpack_dir.mkdir(parents=True, exist_ok=True)
 
     cmd = [
-        'tar',
-        '-x',
-        '-f',
+        "tar",
+        "-x",
+        "-f",
         str(archive_file),
-        '--strip-components=1',
-        '-C',
+        "--strip-components=1",
+        "-C",
         str(unpack_dir),
     ]
     subprocess.run(cmd, check=True)
@@ -146,65 +144,80 @@ def postinstall_rewrite_configs(unpack_dir, install_dir):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--install-dir',
-                        '-i',
-                        required=False,
-                        default=INSTALL_DIR,
-                        help="Installation directory (default: %(default)s)")
-    parser.add_argument('--dest-dir',
-                        '-d',
-                        required=False,
-                        help="""Destination directory if performing a staged
-                        installation. This is the staging directory where the
-                        toolchain is unpacked.""")
-    parser.add_argument('--download-only',
-                        '-D',
-                        required=False,
-                        default=False,
-                        action='store_true',
-                        help="""Just download the archive, don't
-                        unpack or install it.  Will be stored in
-                        --dest-dir if specified or --install-dir
-                        otherwise""")
-    parser.add_argument('--release-version',
-                        '-r',
-                        required=False,
-                        default=TOOLCHAIN_VERSION,
-                        help="Toolchain version (default: %(default)s)")
-    parser.add_argument('--latest-available-version',
-                        '-l',
-                        required=False,
-                        default=False,
-                        action='store_true',
-                        help="Return the latest available toolchain version.")
-    parser.add_argument('--kind',
-                        required=False,
-                        default=TOOLCHAIN_KIND,
-                        choices=ASSET_PREFIXES.keys(),
-                        help="Toolchain kind (default: %(default)s)")
     parser.add_argument(
-        '--update',
-        '-u',
+        "--install-dir",
+        "-i",
+        required=False,
+        default=INSTALL_DIR,
+        help="Installation directory (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--dest-dir",
+        "-d",
+        required=False,
+        help="""Destination directory if performing a staged
+                        installation. This is the staging directory where the
+                        toolchain is unpacked.""",
+    )
+    parser.add_argument(
+        "--download-only",
+        "-D",
         required=False,
         default=False,
-        action='store_true',
-        help="Update to target version if needed (default: %(default)s)")
+        action="store_true",
+        help="""Just download the archive, don't
+                        unpack or install it.  Will be stored in
+                        --dest-dir if specified or --install-dir
+                        otherwise""",
+    )
+    parser.add_argument(
+        "--release-version",
+        "-r",
+        required=False,
+        default=TOOLCHAIN_VERSION,
+        help="Toolchain version (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--latest-available-version",
+        "-l",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Return the latest available toolchain version.",
+    )
+    parser.add_argument(
+        "--kind",
+        required=False,
+        default=TOOLCHAIN_KIND,
+        choices=ASSET_PREFIXES.keys(),
+        help="Toolchain kind (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--update",
+        "-u",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Update to target version if needed (default: %(default)s)",
+    )
     args = parser.parse_args()
 
-    available_toolchain = get_available_toolchain_info(args.release_version,
-                                                       args.kind)
+    available_toolchain = get_available_toolchain_info(args.release_version, args.kind)
 
     if args.download_only and args.update:
-        print('specify only one of --download-only and --update')
+        print("specify only one of --download-only and --update")
         sys.exit(1)
 
     if args.latest_available_version:
-        print(available_toolchain['version'])
+        print(available_toolchain["version"])
         sys.exit(0)
 
-    log.info("Found available %s toolchain version %s, %s",
-             available_toolchain['kind'], available_toolchain['version'],
-             available_toolchain['name'])
+    log.info(
+        "Found available %s toolchain version %s, %s",
+        available_toolchain["kind"],
+        available_toolchain["version"],
+        available_toolchain["name"],
+    )
 
     install_dir = Path(args.install_dir)
     if args.dest_dir is None:
@@ -215,45 +228,53 @@ def main():
     if args.update and unpack_dir.is_dir():
         installed_toolchain = get_installed_toolchain_info(unpack_dir)
         if installed_toolchain is None:
-            sys.exit('Unable to extract current toolchain version. '
-                     'Delete target directory %s and try again.' %
-                     str(unpack_dir))
+            sys.exit(
+                "Unable to extract current toolchain version. "
+                "Delete target directory %s and try again." % str(unpack_dir)
+            )
 
-        version_matches = available_toolchain[
-            'version'] == installed_toolchain['version']
-        kind_matches = available_toolchain['kind'] == installed_toolchain[
-            'kind']
+        version_matches = available_toolchain["version"] == installed_toolchain["version"]
+        kind_matches = available_toolchain["kind"] == installed_toolchain["kind"]
 
-        if installed_toolchain[
-                'kind'] != 'unknown' and version_matches and kind_matches:
+        if installed_toolchain["kind"] != "unknown" and version_matches and kind_matches:
             log.info(
-                'Downloaded %s toolchain is version %s, '
-                'same as the %s toolchain installed at %s (version %s).',
-                available_toolchain['kind'], available_toolchain['version'],
-                installed_toolchain['kind'], installed_toolchain['version'],
-                str(unpack_dir))
+                "Downloaded %s toolchain is version %s, "
+                "same as the %s toolchain installed at %s (version %s).",
+                available_toolchain["kind"],
+                available_toolchain["version"],
+                installed_toolchain["kind"],
+                installed_toolchain["version"],
+                str(unpack_dir),
+            )
             log.warning("Skipping install.")
             sys.exit(0)
 
         log.info(
-            "Found installed %s toolchain version %s, updating to %s toolchain "
-            "version %s.", installed_toolchain['kind'],
-            installed_toolchain['version'], available_toolchain['kind'],
-            available_toolchain['version'])
+            "Found installed %s toolchain version %s, updating to %s toolchain version %s.",
+            installed_toolchain["kind"],
+            installed_toolchain["version"],
+            available_toolchain["kind"],
+            available_toolchain["version"],
+        )
     else:
         if unpack_dir.exists():
-            sys.exit('Target directory %s already exists. '
-                     'Delete it first, or use --update.' % str(unpack_dir))
+            sys.exit(
+                "Target directory %s already exists. "
+                "Delete it first, or use --update." % str(unpack_dir)
+            )
 
     archive_file = None
     try:
-        archive_file = download(available_toolchain['download_url'])
+        archive_file = download(available_toolchain["download_url"])
         if args.download_only:
             unpack_dir.mkdir(parents=True, exist_ok=True)
             shutil.move(str(archive_file), str(unpack_dir))
-            log.info('Downloaded %s toolchain archive version %s to %s.',
-                     available_toolchain['kind'],
-                     available_toolchain['version'], str(unpack_dir))
+            log.info(
+                "Downloaded %s toolchain archive version %s to %s.",
+                available_toolchain["kind"],
+                available_toolchain["version"],
+                str(unpack_dir),
+            )
             return
 
         if args.update and unpack_dir.exists():
@@ -262,15 +283,17 @@ def main():
             shutil.rmtree(str(unpack_dir))
 
         install(archive_file, unpack_dir)
-        postinstall_rewrite_configs(unpack_dir.resolve(),
-                                    install_dir.resolve())
+        postinstall_rewrite_configs(unpack_dir.resolve(), install_dir.resolve())
     finally:
         if archive_file and not args.download_only:
             archive_file.unlink()
 
-    log.info('Installed %s toolchain version %s to %s.',
-             available_toolchain['kind'], available_toolchain['version'],
-             str(unpack_dir))
+    log.info(
+        "Installed %s toolchain version %s to %s.",
+        available_toolchain["kind"],
+        available_toolchain["version"],
+        str(unpack_dir),
+    )
 
 
 if __name__ == "__main__":

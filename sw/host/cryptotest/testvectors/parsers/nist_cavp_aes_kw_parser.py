@@ -3,9 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Parser for converting NIST AES-KWP testvectors to JSON.
-
-"""
+"""Parser for converting NIST AES-KWP testvectors to JSON."""
 
 import argparse
 import sys
@@ -48,45 +46,24 @@ def parse_testcases(args) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Parsing utility for AES-KWP testvectors.")
+    parser = argparse.ArgumentParser(description="Parsing utility for AES-KWP testvectors.")
 
+    parser.add_argument("--src", help="Source file to import.")
+    parser.add_argument("--dst", help="Destination of the output file.")
     parser.add_argument(
-        "--src",
-        help="Source file to import."
-    )
-    parser.add_argument(
-        "--dst",
-        help="Destination of the output file."
-    )
-    parser.add_argument(
-        "--operation",
-        choices = ["encrypt", "decrypt"],
-        type = str,
-        help="Type of operation."
+        "--operation", choices=["encrypt", "decrypt"], type=str, help="Type of operation."
     )
     parser.add_argument(
         "--transformation_mode",
-        choices = ["null", "inverse", "forward"],
-        type = str,
-        help="Cipher transformation mode used for encryption-decryption."
+        choices=["null", "inverse", "forward"],
+        type=str,
+        help="Cipher transformation mode used for encryption-decryption.",
     )
     parser.add_argument(
-        "--key_len",
-        choices = [128, 192, 256],
-        type = int,
-        help = "Length of key in bits."
+        "--key_len", choices=[128, 192, 256], type=int, help="Length of key in bits."
     )
-    parser.add_argument(
-        "--padding",
-        type = bool,
-        help = "Existence of padding."
-    )
-    parser.add_argument(
-        "--schema",
-        type = str,
-        help = "Testvector schema file."
-    )
+    parser.add_argument("--padding", type=bool, help="Existence of padding.")
+    parser.add_argument("--schema", type=str, help="Testvector schema file.")
     args = parser.parse_args()
     parse_testcases(args)
 

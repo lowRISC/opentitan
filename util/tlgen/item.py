@@ -14,7 +14,7 @@ class Edge:
     or a device port.
     """
 
-    def __init__(self, us: 'Node', ds: 'Node'):
+    def __init__(self, us: "Node", ds: "Node"):
         """Create an edge between us and ds."""
         self.us = us
         self.ds = ds
@@ -58,10 +58,7 @@ class Node:
     req_fifo_pass = True
     rsp_fifo_pass = True
 
-    def __init__(self,
-                 name: str,
-                 clock: str,
-                 reset: str):
+    def __init__(self, name: str, clock: str, reset: str):
         """Construct a node with the given name and main clock/reset."""
         self.name = name
         self.clocks = [clock]
@@ -72,14 +69,14 @@ class Node:
         self.addr_spaces = set()
 
     def esc_name(self) -> str:
-        '''Return an "escaped name" for this node
+        """Return an "escaped name" for this node
 
         This replaces '.' characters with '__'. Needed because the node name
         might be of the form inst_name.if_name (which isn't a valid symbol name
         in C or SystemVerilog)
 
-        '''
-        return self.name.replace('.', '__')
+        """
+        return self.name.replace(".", "__")
 
 
 class Host(Node):
@@ -107,23 +104,21 @@ class Socket(Node):
     dreq_pass: int
     drsp_pass: int
 
-    def __init__(self, hwidth: int, dwidth: int,
-                 name: str, clock: str, reset: str):
+    def __init__(self, hwidth: int, dwidth: int, name: str, clock: str, reset: str):
         """Construct a socket with given host/device width."""
         super().__init__(name, clock, reset)
         self.hdepth = 0
-        self.hreq_pass = 2 ** hwidth - 1
-        self.hrsp_pass = 2 ** hwidth - 1
+        self.hreq_pass = 2**hwidth - 1
+        self.hrsp_pass = 2**hwidth - 1
         self.ddepth = 0
-        self.dreq_pass = 2 ** dwidth - 1
-        self.drsp_pass = 2 ** dwidth - 1
+        self.dreq_pass = 2**dwidth - 1
+        self.drsp_pass = 2**dwidth - 1
 
 
 class Socket1N(Socket):
     """A 1N socket."""
 
-    def __init__(self, dwidth: int,
-                 name: str, clock: str, reset: str):
+    def __init__(self, dwidth: int, name: str, clock: str, reset: str):
         """Construct a 1N socket with given device width."""
         super().__init__(1, dwidth, name, clock, reset)
 
@@ -131,7 +126,6 @@ class Socket1N(Socket):
 class SocketM1(Socket):
     """An M1 socket."""
 
-    def __init__(self, hwidth: int,
-                 name: str, clock: str, reset: str):
+    def __init__(self, hwidth: int, name: str, clock: str, reset: str):
         """Construct a socket with given host width."""
         super().__init__(hwidth, 1, name, clock, reset)

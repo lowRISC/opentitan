@@ -23,13 +23,13 @@ class SingleFileSourceRange:
     Critically, we can be certain it does not contain any pointers to libclang
     objects.
     """
+
     path: str
     line_begin: int
     line_end: int
 
     @staticmethod
-    def from_source_range(
-            extent: clang.cindex.SourceRange) -> 'SingleFileSourceRange':
+    def from_source_range(extent: clang.cindex.SourceRange) -> "SingleFileSourceRange":
         start: clang.cindex.SourceLocation = extent.start
         end: clang.cindex.SourceLocation = extent.end
 
@@ -38,7 +38,9 @@ class SingleFileSourceRange:
             # spans files.
             raise Exception(
                 "SingleFileSourceRange cannot span files: {}, {}".format(
-                    start.file.name, end.file.name))
+                    start.file.name, end.file.name
+                )
+            )
         return SingleFileSourceRange(start.file.name, start.line, end.line)
 
     def __hash__(self):
@@ -51,10 +53,9 @@ class SingleFileSourceRange:
         with open(self.path) as f:
             lines = f.readlines()
         line_begin = max(0, self.line_begin - NUM_CONTEXT_LINES)
-        lines = lines[line_begin:self.line_end + NUM_CONTEXT_LINES + 1]
+        lines = lines[line_begin : self.line_end + NUM_CONTEXT_LINES + 1]
         preview_lines = [
-            f"{self.path}:{line_begin + i + 1}  {s.rstrip()}"
-            for i, s in enumerate(lines)
+            f"{self.path}:{line_begin + i + 1}  {s.rstrip()}" for i, s in enumerate(lines)
         ]
         return "\n".join(preview_lines)
 
@@ -69,26 +70,25 @@ class RegisterUsageReport:
       unparsed_callsites: Callsites where a register could not be automatically
         detected. These are included because they require human review.
     """
+
     function_name: str
     registers_to_callsites: dict[str, set[SingleFileSourceRange]]
     unparsed_callsites: set[SingleFileSourceRange]
 
     @staticmethod
-    def merge_reports(
-        reports: list['RegisterUsageReport']
-    ) -> Optional['RegisterUsageReport']:
+    def merge_reports(reports: list["RegisterUsageReport"]) -> Optional["RegisterUsageReport"]:
         if len(reports) == 0:
             return None
 
         functions = set(r.function_name for r in reports)
         if len(functions) != 1:
             raise Exception(
-                f"Reports unexpectly cover {len(functions)} functions: " +
-                f"{sorted(list(functions))}")
+                f"Reports unexpectly cover {len(functions)} functions: "
+                + f"{sorted(list(functions))}"
+            )
         function_name = functions.pop()
 
-        registers_to_callsites: dict[
-            str, set[SingleFileSourceRange]] = collections.defaultdict(set)
+        registers_to_callsites: dict[str, set[SingleFileSourceRange]] = collections.defaultdict(set)
         unparsed_callsites = set()
 
         for report in reports:
@@ -96,8 +96,7 @@ class RegisterUsageReport:
                 registers_to_callsites[register] |= callsites
             unparsed_callsites |= report.unparsed_callsites
 
-        return RegisterUsageReport(function_name, registers_to_callsites,
-                                   unparsed_callsites)
+        return RegisterUsageReport(function_name, registers_to_callsites, unparsed_callsites)
 
 
 @dataclasses.dataclass
@@ -105,9 +104,7 @@ class RegisterUsageReportGroup:
     reports: dict[str, RegisterUsageReport]
 
     @staticmethod
-    def merge(
-        groups: list['RegisterUsageReportGroup']
-    ) -> Optional['RegisterUsageReportGroup']:
+    def merge(groups: list["RegisterUsageReportGroup"]) -> Optional["RegisterUsageReportGroup"]:
         if len(groups) == 0:
             return None
         reports_by_function = collections.defaultdict(list)
@@ -118,10 +115,11 @@ class RegisterUsageReportGroup:
             reports={
                 function: RegisterUsageReport.merge_reports(reports)
                 for function, reports in reports_by_function.items()
-            })
+            }
+        )
 
     @staticmethod
-    def deserialize(data: bytes) -> Optional['RegisterUsageReportGroup']:
+    def deserialize(data: bytes) -> Optional["RegisterUsageReportGroup"]:
         try:
             out = pickle.loads(data)
         except Exception as e:
@@ -130,8 +128,7 @@ class RegisterUsageReportGroup:
         if out is None:
             return None
         if not isinstance(out, RegisterUsageReportGroup):
-            raise Exception(
-                f"Unpickled object has unexpected type: {type(out)}")
+            raise Exception(f"Unpickled object has unexpected type: {type(out)}")
         return out
 
     def serialize(self) -> bytes:
@@ -139,7 +136,6 @@ class RegisterUsageReportGroup:
 
 
 class RegisterTokenPattern:
-
     def __init__(self, pattern: list[str]):
         """Construct a TokenPattern from the given `pattern`.
 
@@ -174,14 +170,17 @@ class RegisterTokenPattern:
 
     @staticmethod
     def find_first_match(
-            patterns: list['RegisterTokenPattern'], tokens: list[str],
-            function_name: str,
-            call_site: clang.cindex.Cursor) -> Optional[RegisterUsageReport]:
+        patterns: list["RegisterTokenPattern"],
+        tokens: list[str],
+        function_name: str,
+        call_site: clang.cindex.Cursor,
+    ) -> Optional[RegisterUsageReport]:
         for pattern in patterns:
             report = RegisterUsageReport(
                 function_name=function_name,
                 registers_to_callsites=collections.defaultdict(set),
-                unparsed_callsites=set())
+                unparsed_callsites=set(),
+            )
 
             matches = pattern.find_matches(tokens)
             if matches is None:
@@ -199,14 +198,12 @@ class RegisterTokenPattern:
                 report.unparsed_callsites.add(extent)
             return report
 
-        print("No pattern matched tokens at call-site for " +
-              f"{call_site.displayname}: {tokens}")
+        print("No pattern matched tokens at call-site for " + f"{call_site.displayname}: {tokens}")
         return None
 
 
 @functools.cache
-def _walk_callsites(cursor: clang.cindex.Cursor,
-                    function_name: str) -> list[clang.cindex.Cursor]:
+def _walk_callsites(cursor: clang.cindex.Cursor, function_name: str) -> list[clang.cindex.Cursor]:
     """Preorder walk over `cursor` that selects call-sites of `function-name`.
 
     This is likely the most expensive operation in a program that uses
@@ -218,17 +215,19 @@ def _walk_callsites(cursor: clang.cindex.Cursor,
             continue
         if cursor.displayname != function_name:
             continue
-        print("Function call to '{}' found at {}:{}:{}".format(
-            cursor.spelling, cursor.location.file, cursor.location.line,
-            cursor.location.column))
+        print(
+            "Function call to '{}' found at {}:{}:{}".format(
+                cursor.spelling, cursor.location.file, cursor.location.line, cursor.location.column
+            )
+        )
         out.append(cursor)
     return out
 
 
 class CallSiteAnalyzer:
-
-    def __init__(self, function_name: str, arg_index: int,
-                 reg_token_patterns: list[RegisterTokenPattern]):
+    def __init__(
+        self, function_name: str, arg_index: int, reg_token_patterns: list[RegisterTokenPattern]
+    ):
         """Create a call-site analyzer for a given function.
 
         Token semantics:
@@ -262,8 +261,7 @@ class CallSiteAnalyzer:
         self._patterns = reg_token_patterns
         self._arg_index = arg_index
 
-    def run(self,
-            cursor: clang.cindex.Cursor) -> Optional[RegisterUsageReport]:
+    def run(self, cursor: clang.cindex.Cursor) -> Optional[RegisterUsageReport]:
         """Analyze all relevant call-sites under `cursor`.
 
         Returns the result of merging the reports generated for each call-site.
@@ -292,7 +290,8 @@ class CallSiteAnalyzer:
                 continue
 
             report = RegisterTokenPattern.find_first_match(
-                self._patterns, tokens, cursor.displayname, cursor)
+                self._patterns, tokens, cursor.displayname, cursor
+            )
             if report is not None:
                 reports.append(report)
 

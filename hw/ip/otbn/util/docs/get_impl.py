@@ -14,7 +14,8 @@ def make_aref(name: str, idx: cst.BaseExpression) -> cst.Subscript:
 
 
 class NBAssignTarget(cst.AssignTarget):
-    '''The target of a (delayed) state update'''
+    """The target of a (delayed) state update"""
+
     def _codegen_impl(self, state: CodegenState) -> None:
         with state.record_syntactic_position(self):
             self.target._codegen(state)
@@ -27,35 +28,31 @@ class NBAssignTarget(cst.AssignTarget):
 
 
 class NBAssign(cst.BaseSmallStatement):
-    '''An assignment statement that models a (delayed) state update'''
+    """An assignment statement that models a (delayed) state update"""
 
     def __init__(self, target: NBAssignTarget, value: cst.BaseExpression):
         super().__init__()
         self.target = target
         self.value = value
 
-    def _visit_and_replace_children(self,
-                                    visitor: cst.CSTVisitorT) -> "NBAssign":
+    def _visit_and_replace_children(self, visitor: cst.CSTVisitorT) -> "NBAssign":
         target = visit_required(self, "target", self.target, visitor)
         value = visit_required(self, "value", self.value, visitor)
         return NBAssign(target=target, value=value)
 
-    def _codegen_impl(self,
-                      state: CodegenState,
-                      default_semicolon: bool = False) -> None:
+    def _codegen_impl(self, state: CodegenState, default_semicolon: bool = False) -> None:
         with state.record_syntactic_position(self):
             self.target._codegen(state)
             self.value._codegen(state)
 
     @staticmethod
-    def make(lhs: cst.BaseAssignTargetExpression,
-             rhs: cst.BaseExpression) -> 'NBAssign':
-        return NBAssign(target=NBAssignTarget(target=lhs),
-                        value=rhs)
+    def make(lhs: cst.BaseAssignTargetExpression, rhs: cst.BaseExpression) -> "NBAssign":
+        return NBAssign(target=NBAssignTarget(target=lhs), value=rhs)
 
 
 class ImplTransformer(cst.CSTTransformer):
-    '''An AST visitor used to extract documentation from the ISS'''
+    """An AST visitor used to extract documentation from the ISS"""
+
     def __init__(self) -> None:
         self.impls: Dict[str, Sequence[cst.BaseStatement]] = {}
 
@@ -66,30 +63,26 @@ class ImplTransformer(cst.CSTTransformer):
         self.cur_class = node.name.value
         return None
 
-    def leave_ClassDef(self,
-                       orig: cst.ClassDef,
-                       updated: cst.ClassDef) -> cst.BaseStatement:
+    def leave_ClassDef(self, orig: cst.ClassDef, updated: cst.ClassDef) -> cst.BaseStatement:
         self.cur_class = None
         return updated
 
-    def leave_Attribute(self,
-                        orig: cst.Attribute,
-                        updated: cst.Attribute) -> cst.BaseExpression:
+    def leave_Attribute(self, orig: cst.Attribute, updated: cst.Attribute) -> cst.BaseExpression:
         if isinstance(updated.value, cst.Name):
             stem = updated.value.value
 
             # Strip out "self." references. In the ISS code, a field in the
             # instruction appears as self.field_name. In the documentation, we
             # can treat all the instruction fields as being in scope.
-            if stem == 'self':
+            if stem == "self":
                 return updated.attr
 
             # Replace state.dmem with DMEM. This is an object in the ISS code,
             # so you see things like state.dmem.load_u32(...). We keep the
             # "object-orientated" style (so DMEM.load_u32(...)) because we need
             # to distinguish between 32-bit and 256-bit loads.
-            if stem == 'state' and updated.attr.value == 'dmem':
-                return cst.Name(value='DMEM')
+            if stem == "state" and updated.attr.value == "dmem":
+                return cst.Name(value="DMEM")
 
         if isinstance(updated.value, cst.Attribute):
             # This attribute looks like A.B.C where B, C are names and A may be
@@ -105,17 +98,19 @@ class ImplTransformer(cst.CSTTransformer):
                 # stored in the CSRs in the ISS and the implementation, but
                 # logically exist somewhat separately, so we want named
                 # reads/writes from them to look different.
-                if (stem, attr_b, attr_c) == ('state', 'csrs', 'flags'):
-                    return cst.Name(value='FLAGs')
+                if (stem, attr_b, attr_c) == ("state", "csrs", "flags"):
+                    return cst.Name(value="FLAGs")
 
         return updated
 
-    def leave_FunctionDef(self,
-                          orig: cst.FunctionDef,
-                          updated: cst.FunctionDef) -> cst.BaseStatement:
-        if ((self.cur_class is None or
-             updated.name.value != 'execute' or
-             self.cur_class in self.impls)):
+    def leave_FunctionDef(
+        self, orig: cst.FunctionDef, updated: cst.FunctionDef
+    ) -> cst.BaseStatement:
+        if (
+            self.cur_class is None
+            or updated.name.value != "execute"
+            or self.cur_class in self.impls
+        ):
             return updated
 
         # The body of a function definition is always an IndentedBlock. Strip
@@ -126,11 +121,11 @@ class ImplTransformer(cst.CSTTransformer):
 
     @staticmethod
     def match_get_reg(call: cst.BaseExpression) -> Optional[cst.Subscript]:
-        '''Extract a RegRef from state.gprs.get_reg(foo)
+        """Extract a RegRef from state.gprs.get_reg(foo)
 
         Returns None if this isn't a match.
 
-        '''
+        """
         if not isinstance(call, cst.Call):
             return None
 
@@ -142,8 +137,7 @@ class ImplTransformer(cst.CSTTransformer):
 
         # All we need to do still is check that call.func is an
         # attribute representing state.gprs.get_reg or state.wdrs.get_reg.
-        if ((not isinstance(call.func, cst.Attribute) or
-             call.func.attr.value != 'get_reg')):
+        if not isinstance(call.func, cst.Attribute) or call.func.attr.value != "get_reg":
             return None
 
         state_dot_reg = call.func.value
@@ -151,15 +145,14 @@ class ImplTransformer(cst.CSTTransformer):
             return None
 
         # Finally, state_dot_reg should be either state.gprs or state.wdrs
-        if not (isinstance(state_dot_reg.value, cst.Name) and
-                state_dot_reg.value.value == 'state'):
+        if not (isinstance(state_dot_reg.value, cst.Name) and state_dot_reg.value.value == "state"):
             return None
 
         regfile_name = state_dot_reg.attr.value
-        if regfile_name == 'gprs':
-            regfile_uname = 'GPRs'
-        elif regfile_name == 'wdrs':
-            regfile_uname = 'WDRs'
+        if regfile_name == "gprs":
+            regfile_uname = "GPRs"
+        elif regfile_name == "wdrs":
+            regfile_uname = "WDRs"
         else:
             return None
 
@@ -188,9 +181,9 @@ class ImplTransformer(cst.CSTTransformer):
 
         # Now, check whether we're calling one of the functions we're
         # interested in.
-        if node.func.attr.value == 'read_signed':
+        if node.func.attr.value == "read_signed":
             signed = True
-        elif node.func.attr.value == 'read_unsigned':
+        elif node.func.attr.value == "read_unsigned":
             signed = False
         else:
             return None
@@ -204,8 +197,7 @@ class ImplTransformer(cst.CSTTransformer):
         if signed:
             # If this is a call to read_signed, we want to wrap the returned
             # value in a call to a fake sign decode function.
-            return cst.Call(func=cst.Name('from_2s_complement'),
-                            args=[cst.Arg(value=ret)])
+            return cst.Call(func=cst.Name("from_2s_complement"), args=[cst.Arg(value=ret)])
         else:
             return ret
 
@@ -224,13 +216,15 @@ class ImplTransformer(cst.CSTTransformer):
             return None
 
         # Check this is state.read_csr
-        if not (isinstance(node.func, cst.Attribute) and
-                isinstance(node.func.value, cst.Name) and
-                node.func.value.value == 'state' and
-                node.func.attr.value == 'read_csr'):
+        if not (
+            isinstance(node.func, cst.Attribute)
+            and isinstance(node.func.value, cst.Name)
+            and node.func.value.value == "state"
+            and node.func.attr.value == "read_csr"
+        ):
             return None
 
-        return make_aref('CSRs', node.args[0].value)
+        return make_aref("CSRs", node.args[0].value)
 
     @staticmethod
     def _spot_wsr_read_idx(node: cst.Call) -> Optional[cst.BaseExpression]:
@@ -247,15 +241,17 @@ class ImplTransformer(cst.CSTTransformer):
             return None
 
         # Check this is state.wsrs.read_at_idx
-        if not (isinstance(node.func, cst.Attribute) and
-                isinstance(node.func.value, cst.Attribute) and
-                isinstance(node.func.value.value, cst.Name) and
-                node.func.value.value.value == 'state' and
-                node.func.value.attr.value == 'wsrs' and
-                node.func.attr.value == 'read_at_idx'):
+        if not (
+            isinstance(node.func, cst.Attribute)
+            and isinstance(node.func.value, cst.Attribute)
+            and isinstance(node.func.value.value, cst.Name)
+            and node.func.value.value.value == "state"
+            and node.func.value.attr.value == "wsrs"
+            and node.func.attr.value == "read_at_idx"
+        ):
             return None
 
-        return make_aref('WSRs', node.args[0].value)
+        return make_aref("WSRs", node.args[0].value)
 
     @staticmethod
     def _spot_wsr_read_name(node: cst.Call) -> Optional[cst.BaseExpression]:
@@ -272,10 +268,12 @@ class ImplTransformer(cst.CSTTransformer):
             return None
 
         # Check this is A.B.C.D for names A, B, C, D.
-        if not (isinstance(node.func, cst.Attribute) and
-                isinstance(node.func.value, cst.Attribute) and
-                isinstance(node.func.value.value, cst.Attribute) and
-                isinstance(node.func.value.value.value, cst.Name)):
+        if not (
+            isinstance(node.func, cst.Attribute)
+            and isinstance(node.func.value, cst.Attribute)
+            and isinstance(node.func.value.value, cst.Attribute)
+            and isinstance(node.func.value.value.value, cst.Name)
+        ):
             return None
 
         a_name = node.func.value.value.value
@@ -283,16 +281,14 @@ class ImplTransformer(cst.CSTTransformer):
         c_name = node.func.value.attr
         d_name = node.func.attr
 
-        if not (a_name.value == 'state' and
-                b_name.value == 'wsrs' and
-                d_name.value == 'read_unsigned'):
+        if not (
+            a_name.value == "state" and b_name.value == "wsrs" and d_name.value == "read_unsigned"
+        ):
             return None
 
         return c_name
 
-    def leave_Call(self,
-                   orig: cst.Call,
-                   updated: cst.Call) -> cst.BaseExpression:
+    def leave_Call(self, orig: cst.Call, updated: cst.Call) -> cst.BaseExpression:
         # Handle:
         #
         #    state.gprs.get_reg(FOO).read_unsigned()
@@ -337,11 +333,10 @@ class ImplTransformer(cst.CSTTransformer):
 
         value = call.args[0].value
 
-        if call.func.attr.value == 'write_unsigned':
+        if call.func.attr.value == "write_unsigned":
             rhs = value
-        elif call.func.attr.value == 'write_signed':
-            rhs = cst.Call(func=cst.Name('to_2s_complement'),
-                           args=[cst.Arg(value=value)])
+        elif call.func.attr.value == "write_signed":
+            rhs = cst.Call(func=cst.Name("to_2s_complement"), args=[cst.Arg(value=value)])
         else:
             return None
 
@@ -370,15 +365,17 @@ class ImplTransformer(cst.CSTTransformer):
         if len(call.args) != 2 or not isinstance(call.func, cst.Attribute):
             return None
 
-        if not (isinstance(call.func.value, cst.Name) and
-                call.func.value.value == 'state' and
-                call.func.attr.value == 'write_csr'):
+        if not (
+            isinstance(call.func.value, cst.Name)
+            and call.func.value.value == "state"
+            and call.func.attr.value == "write_csr"
+        ):
             return None
 
         idx = call.args[0].value
         rhs = call.args[1].value
 
-        return NBAssign.make(make_aref('CSRs', idx), rhs)
+        return NBAssign.make(make_aref("CSRs", idx), rhs)
 
     @staticmethod
     def _spot_wsr_write_idx(node: cst.Expr) -> Optional[NBAssign]:
@@ -399,17 +396,19 @@ class ImplTransformer(cst.CSTTransformer):
 
         func = call.func
 
-        if not (isinstance(func.value, cst.Attribute) and
-                isinstance(func.value.value, cst.Name) and
-                func.value.value.value == 'state' and
-                func.value.attr.value == 'wsrs' and
-                func.attr.value == 'write_at_idx'):
+        if not (
+            isinstance(func.value, cst.Attribute)
+            and isinstance(func.value.value, cst.Name)
+            and func.value.value.value == "state"
+            and func.value.attr.value == "wsrs"
+            and func.attr.value == "write_at_idx"
+        ):
             return None
 
         idx = call.args[0].value
         rhs = call.args[1].value
 
-        return NBAssign.make(make_aref('WSRs', idx), rhs)
+        return NBAssign.make(make_aref("WSRs", idx), rhs)
 
     @staticmethod
     def _spot_wsr_write_name(node: cst.Expr) -> Optional[NBAssign]:
@@ -429,10 +428,12 @@ class ImplTransformer(cst.CSTTransformer):
             return None
 
         # Check this is A.B.C.D for names A, B, C, D.
-        if not (isinstance(call.func, cst.Attribute) and
-                isinstance(call.func.value, cst.Attribute) and
-                isinstance(call.func.value.value, cst.Attribute) and
-                isinstance(call.func.value.value.value, cst.Name)):
+        if not (
+            isinstance(call.func, cst.Attribute)
+            and isinstance(call.func.value, cst.Attribute)
+            and isinstance(call.func.value.value, cst.Attribute)
+            and isinstance(call.func.value.value.value, cst.Name)
+        ):
             return None
 
         a_name = call.func.value.value.value
@@ -440,9 +441,9 @@ class ImplTransformer(cst.CSTTransformer):
         c_name = call.func.value.attr
         d_name = call.func.attr
 
-        if not (a_name.value == 'state' and
-                b_name.value == 'wsrs' and
-                d_name.value == 'write_unsigned'):
+        if not (
+            a_name.value == "state" and b_name.value == "wsrs" and d_name.value == "write_unsigned"
+        ):
             return None
 
         rhs = call.args[0].value
@@ -466,15 +467,17 @@ class ImplTransformer(cst.CSTTransformer):
         if len(call.args) != 2 or not isinstance(call.func, cst.Attribute):
             return None
 
-        if not (isinstance(call.func.value, cst.Name) and
-                call.func.value.value == 'state' and
-                call.func.attr.value == 'set_flags'):
+        if not (
+            isinstance(call.func.value, cst.Name)
+            and call.func.value.value == "state"
+            and call.func.attr.value == "set_flags"
+        ):
             return None
 
         fg = call.args[0].value
         flags = call.args[1].value
 
-        return NBAssign.make(make_aref('FLAGs', fg), flags)
+        return NBAssign.make(make_aref("FLAGs", fg), flags)
 
     @staticmethod
     def _spot_set_next_pc(node: cst.Expr) -> Optional[NBAssign]:
@@ -493,18 +496,18 @@ class ImplTransformer(cst.CSTTransformer):
         if len(call.args) != 1 or not isinstance(call.func, cst.Attribute):
             return None
 
-        if not (isinstance(call.func.value, cst.Name) and
-                call.func.value.value == 'state' and
-                call.func.attr.value == 'set_next_pc'):
+        if not (
+            isinstance(call.func.value, cst.Name)
+            and call.func.value.value == "state"
+            and call.func.attr.value == "set_next_pc"
+        ):
             return None
 
         next_pc = call.args[0].value
 
-        return NBAssign.make(cst.Name(value='PC'), next_pc)
+        return NBAssign.make(cst.Name(value="PC"), next_pc)
 
-    def leave_Expr(self,
-                   orig: cst.Expr,
-                   updated: cst.Expr) -> cst.BaseSmallStatement:
+    def leave_Expr(self, orig: cst.Expr, updated: cst.Expr) -> cst.BaseSmallStatement:
         reg_write = ImplTransformer._spot_reg_write(updated)
         if reg_write is not None:
             return reg_write
@@ -533,14 +536,14 @@ class ImplTransformer(cst.CSTTransformer):
 
 
 def read_implementation(path: str) -> Dict[str, str]:
-    '''Read the implementation at path (probably insn.py)
+    """Read the implementation at path (probably insn.py)
 
     Returns a dictionary from instruction class name to its pseudo-code
     implementation. An instruction class name looks like ADDI (for addi) or
     BNADDM (for bn.addm).
 
-    '''
-    with open(path, 'r') as handle:
+    """
+    with open(path, "r") as handle:
         node = cst.parse_module(handle.read())
 
     # Extract the function bodies
@@ -548,5 +551,7 @@ def read_implementation(path: str) -> Dict[str, str]:
     node.visit(visitor)
 
     # Render the function bodies
-    return {cls: ''.join(node.code_for_node(stmt) for stmt in body)
-            for cls, body in visitor.impls.items()}
+    return {
+        cls: "".join(node.code_for_node(stmt) for stmt in body)
+        for cls, body in visitor.impls.items()
+    }

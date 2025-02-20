@@ -50,16 +50,11 @@ def main():
         default=[],
         help="path of an IP hjson file (if not specified, will be guessed by the tool).",
     )
-    parser.add_argument(
-        "--outdir",
-        "-o",
-        type=Path,
-        help="Output directory"
-    )
+    parser.add_argument("--outdir", "-o", type=Path, help="Output directory")
     parser.add_argument(
         "--clang-format",
         default=None,
-        help="Path to clang-format. If not provided, the tool will invoke it through bazelisk.sh"
+        help="Path to clang-format. If not provided, the tool will invoke it through bazelisk.sh",
     )
     args = parser.parse_args()
 
@@ -87,15 +82,17 @@ def main():
     # templates will take care of only generating ISR testutil functions for IPs
     # that can actually generate interrupts.
     ips = []
-    for ipname in list({m['type'] for m in topcfg['module']}):
+    for ipname in list({m["type"] for m in topcfg["module"]}):
         # If the IP's hjson path was not provided on the command line, guess
         # its location based on the type and top name.
         if ipname in ip_hjson:
             hjson_file = ip_hjson[ipname]
         else:
             hjson_file = topgen_lib.get_ip_hjson_path(ipname, topcfg, REPO_TOP)
-            logging.warning("IP hjson path for {} was not provided, ".format(ipname) +
-                            "guessed location: {}".format(hjson_file.relative_to(REPO_TOP)))
+            logging.warning(
+                "IP hjson path for {} was not provided, ".format(ipname)
+                + "guessed location: {}".format(hjson_file.relative_to(REPO_TOP))
+            )
 
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
@@ -115,12 +112,11 @@ def main():
                 with tempfile.NamedTemporaryFile() as tmpfile:
                     subprocess.check_call(
                         [args.clang_format, file],
-                        stdout = tmpfile,
+                        stdout=tmpfile,
                     )
                     shutil.copyfile(tmpfile.name, file)
     except subprocess.CalledProcessError:
-        logging.error(
-            f"failed to format {testutilses} with clang-format.")
+        logging.error(f"failed to format {testutilses} with clang-format.")
         sys.exit(1)
 
 

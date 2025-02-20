@@ -15,13 +15,13 @@ LIMB_SIZE = 64
 # Limbs per WDR.
 LIMBS_PER_WDR = WDR_SIZE // LIMB_SIZE
 # Assert that limb size divides data register size.
-assert (WDR_SIZE % LIMB_SIZE == 0)
+assert WDR_SIZE % LIMB_SIZE == 0
 
 
 class Line:
-    '''Represents a single line of a bn.mulqacc block.'''
-    def __init__(self, modifiers: List[str], dst: Optional[str], lhs: str,
-                 rhs: str, shift: int):
+    """Represents a single line of a bn.mulqacc block."""
+
+    def __init__(self, modifiers: List[str], dst: Optional[str], lhs: str, rhs: str, shift: int):
         self.modifiers = modifiers
         self.dst = dst
         self.lhs = lhs
@@ -29,74 +29,76 @@ class Line:
         self.shift = shift
 
     def insn_string(self) -> str:
-        '''Return the string representing the instruction.
+        """Return the string representing the instruction.
 
         Includes 2 spaces after the instruction, which is the minimum required
         padding.
-        '''
+        """
         # The empty string produces a leading '.' if modifiers exist.
-        modifiers_str = '.'.join([''] + self.modifiers)
-        return f'bn.mulqacc{modifiers_str}  '
+        modifiers_str = ".".join([""] + self.modifiers)
+        return f"bn.mulqacc{modifiers_str}  "
 
     def dst_string(self) -> str:
-        '''Return the string representing the writeback destination.
+        """Return the string representing the writeback destination.
 
         Includes a comma and one space of required padding, if self.dst exists.
-        '''
-        return (self.dst + ', ') if self.dst is not None else ''
+        """
+        return (self.dst + ", ") if self.dst is not None else ""
 
     def min_lhs_align(self) -> int:
-        '''Returns the minimum column at which the left operand can appear.'''
+        """Returns the minimum column at which the left operand can appear."""
         return len(self.insn_string()) + len(self.dst_string())
 
     def pretty(self, lhs_align: Optional[int] = None) -> str:
-        '''Stringify the line.
+        """Stringify the line.
 
         If `lhs_align` is provided, adds padding to align the left-hand operand
         at that index.
-        '''
+        """
         insn = self.insn_string()
         dst_str = self.dst_string()
         if lhs_align is not None and lhs_align < len(insn) + len(dst_str):
             raise ValueError(
-                f'Cannot align left-hand operand to the index {lhs_align}; '
-                f'need {len(insn) + len(dst_str)} characters for '
-                f'{insn + dst_str}')
+                f"Cannot align left-hand operand to the index {lhs_align}; "
+                f"need {len(insn) + len(dst_str)} characters for "
+                f"{insn + dst_str}"
+            )
         if lhs_align is None:
-            padding = ''
+            padding = ""
         else:
-            padding = ' ' * (lhs_align - len(insn) - len(dst_str))
-        return f'{insn}{padding}{dst_str}{self.lhs}, {self.rhs}, {self.shift}'
+            padding = " " * (lhs_align - len(insn) - len(dst_str))
+        return f"{insn}{padding}{dst_str}{self.lhs}, {self.rhs}, {self.shift}"
 
 
 def make_operand(regs: List[str], limb_index: int) -> str:
-    '''Get the string representing the requested limb of the bignum.
+    """Get the string representing the requested limb of the bignum.
 
     Assumes LIMB_SIZE-bit limbs and WDR_SIZE-bit registers.
-    '''
+    """
     reg = regs[limb_index // LIMBS_PER_WDR]
     index = limb_index % LIMBS_PER_WDR
-    return f'{reg}.{index}'
+    return f"{reg}.{index}"
 
 
 def make_half_word_writeback(regs: List[str], limb_index: int) -> str:
-    '''Get the string representing for the half-word of the result where the
-    given limb starts.'''
+    """Get the string representing for the half-word of the result where the
+    given limb starts."""
     reg = regs[limb_index // LIMBS_PER_WDR]
     index = limb_index % LIMBS_PER_WDR
     if index < LIMBS_PER_WDR / 2:
-        return f'{reg}.L'
-    return f'{reg}.U'
+        return f"{reg}.L"
+    return f"{reg}.U"
 
 
 def mask(n: int) -> int:
-    '''Return an n-bit mask.'''
+    """Return an n-bit mask."""
     return (1 << n) - 1
 
 
-def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
-               rhs_regs: List[str], result_regs: List[str]) -> List[Line]:
-    '''Print out the bn.mulqacc block for the bignum product.
+def make_block(
+    lhs_bits: int, lhs_regs: List[str], rhs_bits: int, rhs_regs: List[str], result_regs: List[str]
+) -> List[Line]:
+    """Print out the bn.mulqacc block for the bignum product.
 
     Requires that:
       - The `lhs_regs` list has enough registers to store `lhs_bits` bits
@@ -104,7 +106,7 @@ def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
       - The `result_regs` list has enough registers to store the result
 
     Returns the result as a list, each representing a single line of assembly.
-    '''
+    """
     # Determine the number of limbs for bn.mulqacc.
     lhs_nlimbs = math.ceil(lhs_bits / LIMB_SIZE)
     rhs_nlimbs = math.ceil(rhs_bits / LIMB_SIZE)
@@ -140,17 +142,23 @@ def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
                 partial_products.append((j, i - j))
         # Sanity check.
         if len(partial_products) == 0:
-            raise RuntimeError(f'No partial products for limb {i}!')
+            raise RuntimeError(f"No partial products for limb {i}!")
 
         for lhs_idx, rhs_idx in partial_products:
             lines.append(
-                Line([], None, make_operand(lhs_regs, lhs_idx),
-                     make_operand(rhs_regs, rhs_idx), shift_bits))
+                Line(
+                    [],
+                    None,
+                    make_operand(lhs_regs, lhs_idx),
+                    make_operand(rhs_regs, rhs_idx),
+                    shift_bits,
+                )
+            )
 
         # Every second limb (except for the final word), write back a half-word
         # of the result as part of the last instruction.
         if not is_final_word and i % 2 == 1:
-            lines[-1].modifiers.append('so')
+            lines[-1].modifiers.append("so")
             lines[-1].dst = make_half_word_writeback(result_regs, i)
 
     # It's possible that the last result term crosses a word boundary, so we
@@ -158,27 +166,27 @@ def make_block(lhs_bits: int, lhs_regs: List[str], rhs_bits: int,
     # instruction that just writes back the accumulator to the final word
     # without modifying it. We assume here that w31 = 0.
     if not is_final_word:
-        lines.append(Line([], None, 'w31.0', 'w31.0', 0))
+        lines.append(Line([], None, "w31.0", "w31.0", 0))
 
     # Write back the final word of the result by adding a `.wo` modifier to the
     # last instruction.
-    lines[-1].modifiers.append('wo')
+    lines[-1].modifiers.append("wo")
     lines[-1].dst = result_regs[result_nwords - 1]
 
     # Ensure that the first instruction zeroes the accumulator.
-    lines[0].modifiers.append('z')
+    lines[0].modifiers.append("z")
 
     return lines
 
 
 def format_block(lines: List[Line]) -> List[str]:
-    '''Format the lines so that the left-hand operands are all aligned.'''
+    """Format the lines so that the left-hand operands are all aligned."""
     align = max([line.min_lhs_align() for line in lines])
     return [line.pretty(align) for line in lines]
 
 
 def is_wdr(reg_name: str) -> bool:
-    if not reg_name.startswith('w'):
+    if not reg_name.startswith("w"):
         return False
     if len(reg_name) < 1:
         return False
@@ -190,48 +198,49 @@ def is_wdr(reg_name: str) -> bool:
 
 
 def check_regs(regs: List[str], bits: int) -> None:
-    '''Checks that register names are valid and there are enough registers to
-       store the given number of bits.'''
+    """Checks that register names are valid and there are enough registers to
+    store the given number of bits."""
     for reg_name in regs:
         if not is_wdr(reg_name):
-            raise ValueError(f'{reg_name} is not a valid wide data register.')
+            raise ValueError(f"{reg_name} is not a valid wide data register.")
     if len(regs) * WDR_SIZE < bits:
         raise ValueError(
-            f'Register list {regs} does not have enough space to store a '
-            f'{bits}-bit number.')
+            f"Register list {regs} does not have enough space to store a {bits}-bit number."
+        )
     return
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=(
-        'Print out a bn.mulqacc block for the given bignum product.'))
-    parser.add_argument('--lhs-bits',
-                        type=int,
-                        required=True,
-                        help='Number of bits in the left-hand operand.')
+    parser = argparse.ArgumentParser(
+        description=("Print out a bn.mulqacc block for the given bignum product.")
+    )
     parser.add_argument(
-        '--lhs-regs',
-        nargs='+',
+        "--lhs-bits", type=int, required=True, help="Number of bits in the left-hand operand."
+    )
+    parser.add_argument(
+        "--lhs-regs",
+        nargs="+",
         type=str,
         required=True,
-        help='Registers for left-hand operand (little-endian order).')
-    parser.add_argument('--rhs-bits',
-                        type=int,
-                        required=True,
-                        help='Number of bits in the right-hand operand.')
+        help="Registers for left-hand operand (little-endian order).",
+    )
     parser.add_argument(
-        '--rhs-regs',
-        nargs='+',
+        "--rhs-bits", type=int, required=True, help="Number of bits in the right-hand operand."
+    )
+    parser.add_argument(
+        "--rhs-regs",
+        nargs="+",
         type=str,
         required=True,
-        help='Registers for the right-hand operand (little-endian order).')
+        help="Registers for the right-hand operand (little-endian order).",
+    )
     parser.add_argument(
-        '--result-regs',
-        nargs='+',
+        "--result-regs",
+        nargs="+",
         type=str,
         required=True,
-        help=('Registers in which to store the result. Must not overlap with '
-              'operand registers.'))
+        help=("Registers in which to store the result. Must not overlap with operand registers."),
+    )
     args = parser.parse_args()
 
     check_regs(args.lhs_regs, args.lhs_bits)
@@ -241,15 +250,13 @@ def main() -> int:
     # Check that result registers don't overlap with operand registers.
     for reg in args.result_regs:
         if reg in args.lhs_regs or reg in args.rhs_regs:
-            raise ValueError(
-                f'Result register {reg} also appears in one of the operands.')
+            raise ValueError(f"Result register {reg} also appears in one of the operands.")
 
     # Check that neither operand is 0 bits.
     if args.lhs_bits == 0 or args.rhs_bits == 0:
-        raise ValueError('Both operands must have at least 1 bit.')
+        raise ValueError("Both operands must have at least 1 bit.")
 
-    block = make_block(args.lhs_bits, args.lhs_regs, args.rhs_bits,
-                       args.rhs_regs, args.result_regs)
+    block = make_block(args.lhs_bits, args.lhs_regs, args.rhs_bits, args.rhs_regs, args.result_regs)
     for line in format_block(block):
         print(line)
 

@@ -6,7 +6,6 @@ r"""Command-line tool to add the calling interpreter to fusesoc's PATH, so it
 is used for generators.
 """
 
-
 import os
 import sys
 from fusesoc.main import main

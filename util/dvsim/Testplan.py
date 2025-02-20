@@ -1,8 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Testpoint and Testplan classes for maintaining the testplan
-"""
+r"""Testpoint and Testplan classes for maintaining the testplan"""
 
 import os
 import re
@@ -17,14 +16,9 @@ from tabulate import tabulate
 
 
 class Result:
-    '''The results for a single test'''
+    """The results for a single test"""
 
-    def __init__(self,
-                 name,
-                 passing=0,
-                 total=0,
-                 job_runtime=None,
-                 simulated_time=None):
+    def __init__(self, name, passing=0, total=0, job_runtime=None, simulated_time=None):
         self.name = name
         self.passing = passing
         self.total = total
@@ -33,11 +27,12 @@ class Result:
         self.mapped = False
 
 
-class Element():
+class Element:
     """An element of the testplan.
 
     This is either a testpoint or a covergroup.
     """
+
     # Type of the testplan element. Must be set by the extended class.
     kind = "none"
 
@@ -56,9 +51,11 @@ class Element():
             try:
                 setattr(self, field, raw_dict.pop(field))
             except KeyError as e:
-                raise KeyError(f"Error: {self.kind} does not contain all of "
-                               f"the required fields:\n{raw_dict}\nRequired:\n"
-                               f"{self.fields}\n{e}")
+                raise KeyError(
+                    f"Error: {self.kind} does not contain all of "
+                    f"the required fields:\n{raw_dict}\nRequired:\n"
+                    f"{self.fields}\n{e}"
+                )
 
         # Set the remaining k-v pairs in raw_dict as instance attributes.
         for k, v in raw_dict.items():
@@ -69,16 +66,13 @@ class Element():
 
     def __str__(self):
         # Reindent the multiline desc with 4 spaces.
-        desc = "\n".join(
-            ["    " + line.lstrip() for line in self.desc.split("\n")])
-        return (f"  {self.kind.capitalize()}: {self.name}\n"
-                f"  Description:\n{desc}\n")
+        desc = "\n".join(["    " + line.lstrip() for line in self.desc.split("\n")])
+        return f"  {self.kind.capitalize()}: {self.name}\n  Description:\n{desc}\n"
 
     def _validate(self):
         """Runs some basic consistency checks."""
         if not self.name:
-            raise ValueError(f"Error: {self.kind.capitalize()} name cannot "
-                             f"be empty:\n{self}")
+            raise ValueError(f"Error: {self.kind.capitalize()} name cannot be empty:\n{self}")
 
         # "tags", if updated key must be list.
         if not isinstance(self.tags, list):
@@ -115,13 +109,13 @@ class Covergroup(Element):
     description describing what functionality is covered. It is recommended to
     include individual coverpoints and crosses in the description.
     """
+
     kind = "covergroup"
 
     def _validate(self):
         super()._validate()
         if not self.name.endswith("_cg"):
-            raise ValueError(f"Error: Covergroup name {self.name} needs to "
-                             "end with suffix \"_cg\".")
+            raise ValueError(f'Error: Covergroup name {self.name} needs to end with suffix "_cg".')
 
 
 class Testpoint(Element):
@@ -134,6 +128,7 @@ class Testpoint(Element):
     - the targeted stage
     - the list of actual developed tests that verify it
     """
+
     kind = "testpoint"
     fields = Element.fields + ["stage", "tests"]
 
@@ -154,29 +149,28 @@ class Testpoint(Element):
             self.not_mapped = True
 
     def __str__(self):
-        return super().__str__() + (f"  Stage: {self.stage}\n"
-                                    f"  Tests: {self.tests}\n")
+        return super().__str__() + (f"  Stage: {self.stage}\n  Tests: {self.tests}\n")
 
     def _validate(self):
         super()._validate()
         if self.stage not in Testpoint.stages:
-            raise ValueError(f"Testpoint stage {self.stage} is "
-                             f"invalid:\n{self}\nLegal values: "
-                             f"Testpoint.stages")
+            raise ValueError(
+                f"Testpoint stage {self.stage} is invalid:\n{self}\nLegal values: Testpoint.stages"
+            )
 
         # "tests" key must be list.
         if not isinstance(self.tests, list):
             raise ValueError(f"'tests' key in {self} is not a list.")
 
     def do_substitutions(self, substitutions):
-        '''Substitute {wildcards} in tests
+        """Substitute {wildcards} in tests
 
         If tests have {wildcards}, they are substituted with the 'correct'
         values using the key=value pairs provided by the substitutions arg.
         Wildcards with no substitution arg are replaced by an empty string.
 
         substitutions is a dictionary of wildcard-replacement pairs.
-        '''
+        """
         resolved_tests = []
         for test in self.tests:
             match = re.findall(r"{([A-Za-z0-9\_]+)}", test)
@@ -191,10 +185,7 @@ class Testpoint(Element):
             resolved = [test]
             for item, value in subst.items():
                 values = value if isinstance(value, list) else [value]
-                resolved = [
-                    t.replace(f"{{{item}}}", v) for t in resolved
-                    for v in values
-                ]
+                resolved = [t.replace(f"{{{item}}}", v) for t in resolved for v in values]
             resolved_tests.extend(resolved)
 
         self.tests = resolved_tests
@@ -239,13 +230,13 @@ class Testplan:
     """
 
     rsvd_keywords = ["import_testplans", "testpoints", "covergroups"]
-    element_cls = {'testpoint': Testpoint, 'covergroup': Covergroup}
+    element_cls = {"testpoint": Testpoint, "covergroup": Covergroup}
 
     @staticmethod
     def _parse_hjson(filename):
         """Parses an input file with HJson and returns a dict."""
         try:
-            return hjson.load(open(filename, 'r'))
+            return hjson.load(open(filename, "r"))
         except IOError as e:
             print(f"IO Error when opening file {filename}\n{e}")
         except hjson.scanner.HjsonDecodeError as e:
@@ -272,8 +263,7 @@ class Testplan:
                 sys.exit(1)
 
             if item.name in item_names:
-                print(f"Error: Duplicate {kind} item found with name: "
-                      f"{item.name}")
+                print(f"Error: Duplicate {kind} item found with name: {item.name}")
                 sys.exit(1)
 
             # Filter out the item by tags if provided.
@@ -293,20 +283,22 @@ class Testplan:
     @staticmethod
     def get_dv_style_css():
         """Returns text with HTML CSS style for a table."""
-        return ("<style>\n"
-                "table.dv {\n"
-                "    border: 1px solid black;\n"
-                "    border-collapse: collapse;\n"
-                "    width: 100%;\n"
-                "    text-align: left;\n"
-                "    vertical-align: middle;\n"
-                "    display: table;\n"
-                "    font-size: smaller;\n"
-                "}\n"
-                "table.dv th, td {\n"
-                "    border: 1px solid black;\n"
-                "}\n"
-                "</style>\n")
+        return (
+            "<style>\n"
+            "table.dv {\n"
+            "    border: 1px solid black;\n"
+            "    border-collapse: collapse;\n"
+            "    width: 100%;\n"
+            "    text-align: left;\n"
+            "    vertical-align: middle;\n"
+            "    display: table;\n"
+            "    font-size: smaller;\n"
+            "}\n"
+            "table.dv th, td {\n"
+            "    border: 1px solid black;\n"
+            "}\n"
+            "</style>\n"
+        )
 
     def __str__(self):
         lines = [f"Name: {self.name}\n"]
@@ -359,10 +351,10 @@ class Testplan:
             }
 
     @staticmethod
-    def _get_imported_testplan_paths(parent_testplan: Path,
-                                     imported_testplans: list,
-                                     repo_top: Path) -> list:
-        '''Parse imported testplans with correctly set paths.
+    def _get_imported_testplan_paths(
+        parent_testplan: Path, imported_testplans: list, repo_top: Path
+    ) -> list:
+        """Parse imported testplans with correctly set paths.
 
         Paths of the imported testplans can be set relative to repo_top
         or relative to the parent testplan importing it. Path anchored to
@@ -379,7 +371,7 @@ class Testplan:
         Returns a list of imported testplans with correctly set paths.
         Raises FileNotFoundError if the relative path to the testplan is
         not anchored to repo_top or the parent testplan.
-        '''
+        """
         result = []
         for testplan in imported_testplans:
             path = repo_top / testplan
@@ -399,20 +391,21 @@ class Testplan:
                 result.append(path)
                 continue
 
-            raise FileNotFoundError(f"Testplan {testplan} imported by "
-                                    f"{parent_testplan} does not exist.")
+            raise FileNotFoundError(
+                f"Testplan {testplan} imported by {parent_testplan} does not exist."
+            )
 
         return result
 
     def _parse_testplan(self, filename: Path, tags: set, repo_top=None):
-        '''Parse testplan Hjson file and create the testplan elements.
+        """Parse testplan Hjson file and create the testplan elements.
 
         It creates the list of testpoints and covergroups extracted from the
         file.
 
         filename is the path to the testplan file written in HJson format.
         repo_top is an optional argument indicating the path to repo top.
-        '''
+        """
         if repo_top is None:
             # Assume dvsim's original location: $REPO_TOP/util/dvsim.
             repo_top = Path(__file__).parent.parent.parent.resolve()
@@ -422,31 +415,34 @@ class Testplan:
         parsed = set()
         parent_testplan = Path(filename)
         imported_testplans = self._get_imported_testplan_paths(
-            parent_testplan, obj.get("import_testplans", []), repo_top)
+            parent_testplan, obj.get("import_testplans", []), repo_top
+        )
 
         while imported_testplans:
             testplan = imported_testplans.pop(0)
             if testplan in parsed:
-                print(f"Error: encountered the testplan {testplan} again, "
-                      "which was already parsed. Please check for circular "
-                      "dependencies.")
+                print(
+                    f"Error: encountered the testplan {testplan} again, "
+                    "which was already parsed. Please check for circular "
+                    "dependencies."
+                )
                 sys.exit(1)
             parsed.add(testplan)
             data = self._parse_hjson(os.path.join(repo_top, testplan))
             imported_testplans.extend(
                 self._get_imported_testplan_paths(
-                    testplan, data.get("import_testplans", []), repo_top))
+                    testplan, data.get("import_testplans", []), repo_top
+                )
+            )
             obj = _merge_dicts(obj, data)
 
         self.name = obj.get("name")
 
         testpoints = obj.get("testpoints", [])
-        self.testpoints = self._create_testplan_elements(
-            'testpoint', testpoints, tags)
+        self.testpoints = self._create_testplan_elements("testpoint", testpoints, tags)
 
         covergroups = obj.get("covergroups", [])
-        self.covergroups = self._create_testplan_elements(
-            'covergroup', covergroups, set())
+        self.covergroups = self._create_testplan_elements("covergroup", covergroups, set())
 
         if not testpoints and not covergroups:
             print(f"Error: No testpoints or covergroups found in {filename}")
@@ -454,10 +450,7 @@ class Testplan:
 
         # Any variable in the testplan that is not a recognized HJson field can
         # be used as a substitution variable.
-        substitutions = {
-            k: v
-            for k, v in obj.items() if k not in self.rsvd_keywords
-        }
+        substitutions = {k: v for k, v in obj.items() if k not in self.rsvd_keywords}
         for tp in self.testpoints:
             tp.do_substitutions(substitutions)
 
@@ -477,10 +470,7 @@ class Testplan:
                 regressions[tp.stage].update({t for t in tp.tests if t})
 
         # Build regressions dict into a hjson like data structure
-        return [{
-            "name": ms,
-            "tests": list(regressions[ms])
-        } for ms in regressions]
+        return [{"name": ms, "tests": list(regressions[ms])} for ms in regressions]
 
     def write_testplan_doc(self, output: TextIO) -> None:
         """Write testplan documentation in markdown from the hjson testplan."""
@@ -490,7 +480,7 @@ class Testplan:
             stages.setdefault(tp.stage, list()).append(tp)
 
         output.write("# Testplan\n\n## Testpoints\n\n")
-        for (stage, testpoints) in stages.items():
+        for stage, testpoints in stages.items():
             output.write(f"### Stage {stage} Testpoints\n\n")
             for tp in testpoints:
                 output.write(f"#### `{tp.name}`\n\n")
@@ -596,8 +586,7 @@ class Testplan:
                 self.progress.pop(ms)
                 continue
 
-            stat["progress"] = self._get_percentage(stat["passing"],
-                                                    stat["total"])
+            stat["progress"] = self._get_percentage(stat["passing"], stat["total"])
 
         self.test_results_mapped = True
 
@@ -634,10 +623,16 @@ class Testplan:
 
         assert self.test_results_mapped, "Have you invoked map_test_results()?"
         header = [
-            "Stage", "Name", "Tests", "Max Job Runtime", "Simulated Time",
-            "Passing", "Total", "Pass Rate"
+            "Stage",
+            "Name",
+            "Tests",
+            "Max Job Runtime",
+            "Simulated Time",
+            "Passing",
+            "Total",
+            "Pass Rate",
         ]
-        colalign = ('center', ) * 2 + ('left', ) + ('center', ) * 5
+        colalign = ("center",) * 2 + ("left",) + ("center",) * 5
         table = []
         for tp in self.testpoints:
             stage = "" if tp.stage == "N.A." else tp.stage
@@ -647,23 +642,26 @@ class Testplan:
                     continue
                 pass_rate = self._get_percentage(tr.passing, tr.total)
 
-                job_runtime = "" if tr.job_runtime is None else str(
-                    tr.job_runtime)
-                simulated_time = "" if tr.simulated_time is None else str(
-                    tr.simulated_time)
+                job_runtime = "" if tr.job_runtime is None else str(tr.job_runtime)
+                simulated_time = "" if tr.simulated_time is None else str(tr.simulated_time)
 
-                table.append([
-                    stage, tp_name, tr.name, job_runtime, simulated_time,
-                    tr.passing, tr.total, pass_rate
-                ])
+                table.append(
+                    [
+                        stage,
+                        tp_name,
+                        tr.name,
+                        job_runtime,
+                        simulated_time,
+                        tr.passing,
+                        tr.total,
+                        pass_rate,
+                    ]
+                )
                 stage = ""
                 tp_name = ""
 
         text = "\n### Test Results\n"
-        text += tabulate(table,
-                         headers=header,
-                         tablefmt="pipe",
-                         colalign=colalign)
+        text += tabulate(table, headers=header, tablefmt="pipe", colalign=colalign)
         text += "\n"
         return text
 
@@ -681,11 +679,8 @@ class Testplan:
             table.append([key] + values)
 
         text = "\n### Testplan Progress\n"
-        colalign = (("center", ) * len(header))
-        text += tabulate(table,
-                         headers=header,
-                         tablefmt="pipe",
-                         colalign=colalign)
+        colalign = ("center",) * len(header)
+        text += tabulate(table, headers=header, tablefmt="pipe", colalign=colalign)
         text += "\n"
         return text
 
@@ -706,12 +701,9 @@ class Testplan:
             print(f"Malformed cov_results:\n{cov_results}\n{e}")
             sys.exit(1)
 
-        colalign = (("center", ) * len(cov_header))
+        colalign = ("center",) * len(cov_header)
         text = "\n### Coverage Results\n"
-        text += tabulate([cov_values],
-                         headers=cov_header,
-                         tablefmt="pipe",
-                         colalign=colalign)
+        text += tabulate([cov_values], headers=cov_header, tablefmt="pipe", colalign=colalign)
         text += "\n"
         return text
 
@@ -768,12 +760,12 @@ class Testplan:
 
         if fmt == "html":
             text = self.get_dv_style_css() + mistletoe.markdown(text)
-            text = text.replace("<table>", "<table class=\"dv\">")
+            text = text.replace("<table>", '<table class="dv">')
         return text
 
 
 def _merge_dicts(list1, list2, use_list1_for_defaults=True):
-    '''Merge 2 dicts into one
+    """Merge 2 dicts into one
 
     This function takes 2 dicts as args list1 and list2. It recursively merges
     list2 into list1 and returns list1. The recursion happens when the
@@ -781,7 +773,7 @@ def _merge_dicts(list1, list2, use_list1_for_defaults=True):
     both lists (at the same tree level) are of dissimilar type, then there is a
     conflict and an error is thrown. If they are of the same scalar type, then
     the third arg "use_list1_for_defaults" is used to pick the final one.
-    '''
+    """
     for key, item2 in list2.items():
         item1 = list1.get(key)
         if item1 is None:
@@ -806,9 +798,10 @@ def _merge_dicts(list1, list2, use_list1_for_defaults=True):
             continue
 
         # Oh no! We can't merge this.
-        print("ERROR: Cannot merge dictionaries at key {!r} because items "
-              "have conflicting types ({} in 1st; {} in 2nd).".format(
-                  key, type(item1), type(item2)))
+        print(
+            "ERROR: Cannot merge dictionaries at key {!r} because items "
+            "have conflicting types ({} in 1st; {} in 2nd).".format(key, type(item1), type(item2))
+        )
         sys.exit(1)
 
     return list1

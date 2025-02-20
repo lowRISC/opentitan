@@ -7,12 +7,12 @@ from typing import List, Optional, Tuple
 
 
 def _extended_euclidean_algorithm(a: int, b: int) -> Tuple[int, int, int]:
-    '''The extended Euclidean algorithm.
+    """The extended Euclidean algorithm.
 
     Returns a tuple (r, s, t) so that gcd is the GCD of the two inputs and r =
     a s + b t.
 
-    '''
+    """
     r, r_nxt = a, b
     s, s_nxt = 1, 0
     t, t_nxt = 0, 1
@@ -26,15 +26,14 @@ def _extended_euclidean_algorithm(a: int, b: int) -> Tuple[int, int, int]:
     # If both inputs are non-positive, the result comes out negative and we
     # should flip all the signs.
     if r < 0:
-        r, s, t = - r, - s, - t
+        r, s, t = -r, -s, -t
 
     return (r, s, t)
 
 
-def _intersect_ranges(a: List[Tuple[int, int]],
-                      b: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+def _intersect_ranges(a: List[Tuple[int, int]], b: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
     ret = []
-    paired = ([(r, False) for r in a] + [(r, True) for r in b])
+    paired = [(r, False) for r in a] + [(r, True) for r in b]
     arng = None  # type: Optional[Tuple[int, int]]
     brng = None  # type: Optional[Tuple[int, int]]
     for (lo, hi), is_b in sorted(paired):
@@ -54,7 +53,8 @@ def _intersect_ranges(a: List[Tuple[int, int]],
 
 
 class KnownMem:
-    '''A representation of what memory/CSRs have architectural values'''
+    """A representation of what memory/CSRs have architectural values"""
+
     def __init__(self, size_bytes: int):
         assert size_bytes > 0
 
@@ -63,27 +63,26 @@ class KnownMem:
         # then each byte in the address range {lo..hi - 1} has a known value.
         self.known_ranges = []  # type: List[Tuple[int, int]]
 
-    def copy(self) -> 'KnownMem':
-        '''Return a shallow copy of the object'''
+    def copy(self) -> "KnownMem":
+        """Return a shallow copy of the object"""
         ret = KnownMem(self.size_bytes)
         ret.known_ranges = self.known_ranges.copy()
         return ret
 
-    def merge(self, other: 'KnownMem') -> None:
-        '''Merge in values from another KnownMem object'''
+    def merge(self, other: "KnownMem") -> None:
+        """Merge in values from another KnownMem object"""
         assert self.size_bytes == other.size_bytes
-        self.known_ranges = _intersect_ranges(self.known_ranges,
-                                              other.known_ranges)
+        self.known_ranges = _intersect_ranges(self.known_ranges, other.known_ranges)
 
     def touch_range(self, base: int, width: int) -> None:
-        '''Mark {base .. base + width - 1} as known'''
+        """Mark {base .. base + width - 1} as known"""
         assert 0 <= width
         assert 0 <= base <= self.size_bytes - width
         for off in range(width):
             self.touch_addr(base + off)
 
     def touch_addr(self, addr: int) -> None:
-        '''Mark word starting at addr as known'''
+        """Mark word starting at addr as known"""
         assert 0 <= addr < self.size_bytes
 
         # Find the index of the last range that starts below us, if there is
@@ -135,14 +134,16 @@ class KnownMem:
             assert addr < right_lo
 
             if addr == right_lo - 1:
-                self.known_ranges = (left + [(left_lo, right_hi)] +
-                                     self.known_ranges[first_idx_above + 1:])
+                self.known_ranges = (
+                    left + [(left_lo, right_hi)] + self.known_ranges[first_idx_above + 1 :]
+                )
                 return
 
             # Otherwise, we still extend the range by one (but have to put the
             # right hand list back too).
-            self.known_ranges = (left + [(left_lo, left_hi + 1)] +
-                                 self.known_ranges[first_idx_above:])
+            self.known_ranges = (
+                left + [(left_lo, left_hi + 1)] + self.known_ranges[first_idx_above:]
+            )
             return
 
         # We are miles above the left range. If there is no range above, we can
@@ -158,23 +159,25 @@ class KnownMem:
         assert addr < right_lo
 
         if addr == right_lo - 1:
-            self.known_ranges = (left_inc + [(right_lo - 1, right_hi)] +
-                                 self.known_ranges[first_idx_above + 1:])
+            self.known_ranges = (
+                left_inc + [(right_lo - 1, right_hi)] + self.known_ranges[first_idx_above + 1 :]
+            )
             return
 
         # If not, we just insert a 1-element range in between
-        self.known_ranges = (left_inc + [(addr, addr + 1)] +
-                             self.known_ranges[first_idx_above:])
+        self.known_ranges = left_inc + [(addr, addr + 1)] + self.known_ranges[first_idx_above:]
         return
 
-    def pick_lsu_target(self,
-                        loads_value: bool,
-                        base_addr: int,
-                        offset_range: Tuple[int, int],
-                        offset_align: int,
-                        width: int,
-                        addr_align: int) -> Optional[Tuple[int, int]]:
-        '''Try to pick an address with base and offset.
+    def pick_lsu_target(
+        self,
+        loads_value: bool,
+        base_addr: int,
+        offset_range: Tuple[int, int],
+        offset_align: int,
+        width: int,
+        addr_align: int,
+    ) -> Optional[Tuple[int, int]]:
+        """Try to pick an address with base and offset.
 
         If loads_value is true, the memory needs a known value for at least
         width bytes starting at that address. The address should be encodable
@@ -186,7 +189,7 @@ class KnownMem:
         is the chosen address and offset is the signed value that should be
         added to base_addr to get that address.
 
-        '''
+        """
         assert 0 <= base_addr < (1 << 32)
         assert offset_range[0] <= offset_range[1]
         assert 1 <= offset_align
@@ -276,10 +279,10 @@ class KnownMem:
         # that we can choose). Since b is negative, we negate top and bottom
         # when rounding up to allow the usual "(num + den - 1) // den" trick to
         # work properly.
-        bv = - offset_align * v
+        bv = -offset_align * v
         k_max = (-offset_range[1] + offset_align * i0) // bv
         k_min_num = -offset_range[0] + offset_align * i0
-        k_min = (- k_min_num + ((- bv) - 1)) // (- bv)
+        k_min = (-k_min_num + ((-bv) - 1)) // (-bv)
 
         # If k_min > k_max, this means b*v gives such big steps that none
         # landed in the range of allowed offsets
@@ -304,8 +307,7 @@ class KnownMem:
         # can use address endpoints to get (disjoint) ranges for k.
         k_ranges = []
         k_weights = []
-        byte_ranges = (self.known_ranges
-                       if loads_value else [(0, self.size_bytes - 1)])
+        byte_ranges = self.known_ranges if loads_value else [(0, self.size_bytes - 1)]
 
         for byte_lo, byte_top in byte_ranges:
             # Since we're doing an access of width bytes, we round byte_top
@@ -364,7 +366,7 @@ class KnownMem:
         return addr, offset
 
     def pick_bad_addr(self) -> Optional[int]:
-        '''Pick bad addresses from gaps present in known addresses.'''
+        """Pick bad addresses from gaps present in known addresses."""
 
         gap_list = []
         gap_vma = 0

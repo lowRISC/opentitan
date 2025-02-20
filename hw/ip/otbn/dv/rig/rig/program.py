@@ -9,7 +9,7 @@ from shared.insn_yaml import DummyInsn, Insn, InsnsFile
 
 
 class ProgInsn:
-    '''An object representing a single instruction in the generated program
+    """An object representing a single instruction in the generated program
 
     self.insn is the instruction (as defined in insns.yml).
 
@@ -22,11 +22,9 @@ class ProgInsn:
     LSU instruction (it's much easier to store it explicitly than to grovel
     around in the model to figure it out again from register values)
 
-    '''
-    def __init__(self,
-                 insn: Insn,
-                 operands: List[int],
-                 lsu_info: Optional[Tuple[str, int]]):
+    """
+
+    def __init__(self, insn: Insn, operands: List[int], lsu_info: Optional[Tuple[str, int]]):
         assert len(insn.operands) == len(operands)
         assert (lsu_info is None) is (insn.lsu is None)
         assert insn.syntax is not None
@@ -36,7 +34,7 @@ class ProgInsn:
         self.lsu_info = lsu_info
 
     def to_asm(self, cur_pc: int) -> str:
-        '''Return an assembly representation of the instruction'''
+        """Return an assembly representation of the instruction"""
         # Build a dictionary from operand name to value from self.operands,
         # which is a list of operand values in the same order as insn.operands.
         op_vals = {}
@@ -49,105 +47,99 @@ class ProgInsn:
         return self.insn.disassemble(cur_pc, op_vals)
 
     def to_json(self) -> object:
-        '''Serialize to an object that can be written as JSON'''
+        """Serialize to an object that can be written as JSON"""
         return (self.insn.mnemonic, self.operands, self.lsu_info)
 
     @staticmethod
-    def from_json(insns_file: InsnsFile,
-                  where: str,
-                  json: object) -> 'ProgInsn':
-        '''The inverse of to_json.
+    def from_json(insns_file: InsnsFile, where: str, json: object) -> "ProgInsn":
+        """The inverse of to_json.
 
         where is a textual description of where we are in the file, used in
         error messages.
 
-        '''
+        """
         if not isinstance(json, list):
-            raise ValueError(f'{where}, top-level data is not a list.')
+            raise ValueError(f"{where}, top-level data is not a list.")
 
         if len(json) == 2:
             # A 2-term entry is only valid if it's a dummy instruction.
             mnemonic, raw_val = json
-            if mnemonic != 'dummy-insn':
-                raise ValueError('{}, top-level data is a pair but the '
-                                 'mnemonic is {!r}, not "dummy-insn".'
-                                 .format(where, mnemonic))
+            if mnemonic != "dummy-insn":
+                raise ValueError(
+                    "{}, top-level data is a pair but the "
+                    'mnemonic is {!r}, not "dummy-insn".'.format(where, mnemonic)
+                )
 
             return DummyProgInsn.from_json(insns_file, where, raw_val)
 
         if len(json) != 3:
-            raise ValueError(f'{where}, top-level data is neither a pair nor '
-                             f'a triple.')
+            raise ValueError(f"{where}, top-level data is neither a pair nor a triple.")
 
         mnemonic, operands, json_lsu_info = json
 
         if not isinstance(mnemonic, str):
-            raise ValueError('{}, mnemonic is {!r}, not a string.'
-                             .format(where, mnemonic))
+            raise ValueError("{}, mnemonic is {!r}, not a string.".format(where, mnemonic))
 
         if not isinstance(operands, list):
-            raise ValueError('{}, operands are not represented by a list.'
-                             .format(where))
+            raise ValueError("{}, operands are not represented by a list.".format(where))
         op_vals = []
         for op_idx, operand in enumerate(operands):
             if not isinstance(operand, int):
-                raise ValueError('{}, operand {} is not an integer.'
-                                 .format(where, op_idx))
+                raise ValueError("{}, operand {} is not an integer.".format(where, op_idx))
             if operand < 0:
-                raise ValueError('{}, operand {} is {}, '
-                                 'but should be non-negative.'
-                                 .format(where, op_idx, operand))
+                raise ValueError(
+                    "{}, operand {} is {}, but should be non-negative.".format(
+                        where, op_idx, operand
+                    )
+                )
             op_vals.append(operand)
 
         lsu_info = None
         if json_lsu_info is not None:
-            if not (isinstance(json_lsu_info, list) and
-                    len(json_lsu_info) == 2):
-                raise ValueError('{}, non-None LSU info is not a pair.'
-                                 .format(where))
+            if not (isinstance(json_lsu_info, list) and len(json_lsu_info) == 2):
+                raise ValueError("{}, non-None LSU info is not a pair.".format(where))
             mem_type, addr = json_lsu_info
 
             if not isinstance(mem_type, str):
-                raise ValueError('{}, LSU info mem_type is not a string.'
-                                 .format(where))
+                raise ValueError("{}, LSU info mem_type is not a string.".format(where))
             # These are the memory types in Model._known_regs, but we can't
             # import that without a circular dependency. Rather than being
             # clever, we'll just duplicate them for now.
-            if mem_type not in ['dmem', 'csr', 'wsr']:
-                raise ValueError('{}, invalid LSU mem_type: {!r}.'
-                                 .format(where, mem_type))
+            if mem_type not in ["dmem", "csr", "wsr"]:
+                raise ValueError("{}, invalid LSU mem_type: {!r}.".format(where, mem_type))
 
             if not isinstance(addr, int):
-                raise ValueError('{}, LSU info target addr is not an integer.'
-                                 .format(where))
+                raise ValueError("{}, LSU info target addr is not an integer.".format(where))
             if addr < 0:
-                raise ValueError('{}, LSU info target addr is {}, '
-                                 'but should be non-negative.'
-                                 .format(where, addr))
+                raise ValueError(
+                    "{}, LSU info target addr is {}, but should be non-negative.".format(
+                        where, addr
+                    )
+                )
 
             lsu_info = (mem_type, addr)
 
         insn = insns_file.mnemonic_to_insn.get(mnemonic)
         if insn is None:
-            raise ValueError('{}, unknown instruction {!r}.'
-                             .format(where, mnemonic))
+            raise ValueError("{}, unknown instruction {!r}.".format(where, mnemonic))
 
         if (lsu_info is None) is not (insn.lsu is None):
-            raise ValueError('{}, LSU info is {}given, but the {} instruction '
-                             '{} it.'
-                             .format(where,
-                                     'not ' if lsu_info is None else '',
-                                     mnemonic,
-                                     ("doesn't expect"
-                                      if insn.lsu is None else "expects")))
+            raise ValueError(
+                "{}, LSU info is {}given, but the {} instruction {} it.".format(
+                    where,
+                    "not " if lsu_info is None else "",
+                    mnemonic,
+                    ("doesn't expect" if insn.lsu is None else "expects"),
+                )
+            )
         if len(insn.operands) != len(op_vals):
-            raise ValueError('{}, {} instruction has {} operands, but {} '
-                             'seen in JSON data.'
-                             .format(where, mnemonic,
-                                     len(insn.operands), len(op_vals)))
+            raise ValueError(
+                "{}, {} instruction has {} operands, but {} seen in JSON data.".format(
+                    where, mnemonic, len(insn.operands), len(op_vals)
+                )
+            )
         if insn.syntax is None:
-            raise ValueError('{}, {} instruction has no syntax defined.'
-                             .format(where, mnemonic))
+            raise ValueError("{}, {} instruction has no syntax defined.".format(where, mnemonic))
 
         return ProgInsn(insn, op_vals, lsu_info)
 
@@ -158,29 +150,27 @@ class DummyProgInsn(ProgInsn):
         self.raw = raw
 
     def to_asm(self, cur_pc: int) -> str:
-        return '.word {:#08x}'.format(self.raw)
+        return ".word {:#08x}".format(self.raw)
 
     def to_json(self) -> object:
-        return ('dummy-insn', self.raw)
+        return ("dummy-insn", self.raw)
 
     @staticmethod
-    def from_json(insns_file: InsnsFile,
-                  where: str,
-                  json: object) -> 'DummyProgInsn':
+    def from_json(insns_file: InsnsFile, where: str, json: object) -> "DummyProgInsn":
         if not isinstance(json, int):
-            raise ValueError(f'{where}, the raw data for a dummy instruction '
-                             f'is not an integer')
+            raise ValueError(f"{where}, the raw data for a dummy instruction is not an integer")
         if not (0 <= json < (1 << 32)):
-            raise ValueError(f'{where}, the raw data for a dummy instruction '
-                             f'is {json}, which is out of range for a 32-bit '
-                             f'unsigned integer.')
+            raise ValueError(
+                f"{where}, the raw data for a dummy instruction "
+                f"is {json}, which is out of range for a 32-bit "
+                f"unsigned integer."
+            )
         return DummyProgInsn(json)
 
 
 class Program:
-    '''An object representing the random program that is being generated.
+    """An object representing the random program that is being generated."""
 
-    '''
     # The data for a section we're currently adding to. The tuples are
     # (sec_vma, space_left, insns) where sec_vma is the address of the start of
     # the section, space_left is the number of instructions that can be added
@@ -188,9 +178,7 @@ class Program:
     # instructions for the section.
     _SecData = Tuple[int, int, List[ProgInsn]]
 
-    def __init__(self,
-                 imem_lma: int, imem_size: int,
-                 dmem_lma: int, dmem_size: int) -> None:
+    def __init__(self, imem_lma: int, imem_size: int, dmem_lma: int, dmem_size: int) -> None:
         assert imem_size & 3 == 0
         self.imem_lma = imem_lma
         self.imem_size = imem_size
@@ -211,22 +199,20 @@ class Program:
         # count.
         self.loop_warps = {}  # type: Dict[Tuple[int, int], int]
 
-    def copy(self) -> 'Program':
-        '''Return a shallow copy of the program
+    def copy(self) -> "Program":
+        """Return a shallow copy of the program
 
         This is a shallow copy, so shares ProgInsn instances, but it can be
         modified by adding instructions without affecting the original.
 
-        '''
-        ret = Program(self.imem_lma, self.imem_size,
-                      self.dmem_lma, self.dmem_size)
-        ret._sections = {base: section.copy()
-                         for base, section in self._sections.items()}
+        """
+        ret = Program(self.imem_lma, self.imem_size, self.dmem_lma, self.dmem_size)
+        ret._sections = {base: section.copy() for base, section in self._sections.items()}
         ret.space = self.space
         return ret
 
     def add_insns(self, addr: int, insns: List[ProgInsn]) -> None:
-        '''Add a sequence of instructions, starting at addr'''
+        """Add a sequence of instructions, starting at addr"""
         assert addr & 3 == 0
         assert addr <= self.imem_size
 
@@ -301,89 +287,93 @@ class Program:
         self.loop_warps[(addr, warp_lo)] = warp_hi
 
     @staticmethod
-    def _get_section_comment(idx: int,
-                             addr: int,
-                             insns: List[ProgInsn]) -> str:
-        return ('/* Text section {} ([{:#06x}..{:#06x}]) */'
-                .format(idx, addr, addr + 4 * len(insns) - 1))
+    def _get_section_comment(idx: int, addr: int, insns: List[ProgInsn]) -> str:
+        return "/* Text section {} ([{:#06x}..{:#06x}]) */".format(
+            idx, addr, addr + 4 * len(insns) - 1
+        )
 
     def dump_asm(self, out_file: TextIO, dsegs: Dict[int, List[int]]) -> None:
-        '''Write an assembly representation of the program to out_file'''
+        """Write an assembly representation of the program to out_file"""
         # Close any existing section, so that we can iterate over all the
         # instructions by iterating over self._sections.
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
             comment = Program._get_section_comment(idx, addr, insns)
-            out_file.write('{}{}\n'.format('\n' if idx else '', comment))
-            out_file.write('.section .text.sec{:04}\n'.format(idx))
+            out_file.write("{}{}\n".format("\n" if idx else "", comment))
+            out_file.write(".section .text.sec{:04}\n".format(idx))
             for insn_off, pi in enumerate(insns):
                 cur_pc = addr + 4 * insn_off
-                out_file.write(pi.to_asm(cur_pc) + '\n')
+                out_file.write(pi.to_asm(cur_pc) + "\n")
 
         # Generate data .words
         for idx, (addr, values) in enumerate(sorted(dsegs.items())):
-            out_file.write('\n/* Data section {} ({:#06x}-{:#06x}) */\n'
-                           .format(idx, addr, addr + 4 * len(values) - 1))
-            out_file.write('.section .data.sec{:04}\n'.format(idx))
+            out_file.write(
+                "\n/* Data section {} ({:#06x}-{:#06x}) */\n".format(
+                    idx, addr, addr + 4 * len(values) - 1
+                )
+            )
+            out_file.write(".section .data.sec{:04}\n".format(idx))
             for value in values:
-                out_file.write('.word {:#x}\n'.format(value))
+                out_file.write(".word {:#x}\n".format(value))
 
-    def dump_linker_script(self,
-                           out_file: TextIO,
-                           dsegs: Dict[int, List[int]],
-                           end_addr: int) -> None:
-        '''Write a linker script to link the program
+    def dump_linker_script(
+        self, out_file: TextIO, dsegs: Dict[int, List[int]], end_addr: int
+    ) -> None:
+        """Write a linker script to link the program
 
         This lays out the sections generated in dump_asm().
 
-        '''
+        """
         assert end_addr >= 0
 
         seg_descs = []
         for idx, (addr, values) in enumerate(sorted(dsegs.items())):
             top_addr = addr + 4 * len(values) - 1
-            seg_descs.append(('dseg{:04}'.format(idx),
-                              addr,
-                              addr + self.dmem_lma,
-                              '.data.sec{:04}'.format(idx),
-                              ('/* Data section {} ({:#06x}-{:#06x}) */'
-                               .format(idx, addr, top_addr))))
+            seg_descs.append(
+                (
+                    "dseg{:04}".format(idx),
+                    addr,
+                    addr + self.dmem_lma,
+                    ".data.sec{:04}".format(idx),
+                    ("/* Data section {} ({:#06x}-{:#06x}) */".format(idx, addr, top_addr)),
+                )
+            )
         for idx, (addr, insns) in enumerate(sorted(self._sections.items())):
-            seg_descs.append(('iseg{:04}'.format(idx),
-                              addr,
-                              addr + self.imem_lma,
-                              '.text.sec{:04}'.format(idx),
-                              Program._get_section_comment(idx, addr, insns)))
+            seg_descs.append(
+                (
+                    "iseg{:04}".format(idx),
+                    addr,
+                    addr + self.imem_lma,
+                    ".text.sec{:04}".format(idx),
+                    Program._get_section_comment(idx, addr, insns),
+                )
+            )
 
-        out_file.write('PHDRS\n'
-                       '{\n')
+        out_file.write("PHDRS\n{\n")
         for seg, vma, lma, sec, comment in seg_descs:
-            out_file.write('    {} PT_LOAD AT ( {:#x} );\n'.format(seg, lma))
-        out_file.write('}\n\n')
+            out_file.write("    {} PT_LOAD AT ( {:#x} );\n".format(seg, lma))
+        out_file.write("}\n\n")
 
-        out_file.write('_expected_end_addr = {:#x};\n'.format(end_addr))
+        out_file.write("_expected_end_addr = {:#x};\n".format(end_addr))
         for (lw_addr, lw_from), lw_to in self.loop_warps.items():
-            out_file.write('_loop_warp_{}_{}_at_{:#x} = {:#x};\n'
-                           .format(lw_from, lw_to, lw_addr, lw_addr))
-        out_file.write('\n')
+            out_file.write(
+                "_loop_warp_{}_{}_at_{:#x} = {:#x};\n".format(lw_from, lw_to, lw_addr, lw_addr)
+            )
+        out_file.write("\n")
 
-        out_file.write('SECTIONS\n'
-                       '{\n')
+        out_file.write("SECTIONS\n{\n")
         for idx, (seg, vma, lma, sec, comment) in enumerate(seg_descs):
-            out_file.write('{}    {}\n'.format('\n' if idx else '', comment))
-            out_file.write('    {} {:#x} : AT({:#x})\n'
-                           '    {{\n'
-                           '        *({})\n'
-                           '    }} : {}\n'
-                           .format(sec, vma, lma, sec, seg))
-        out_file.write('}\n')
+            out_file.write("{}    {}\n".format("\n" if idx else "", comment))
+            out_file.write(
+                "    {} {:#x} : AT({:#x})\n    {{\n        *({})\n    }} : {}\n".format(
+                    sec, vma, lma, sec, seg
+                )
+            )
+        out_file.write("}\n")
 
-    def pick_branch_targets(self,
-                            cur_pc: int,
-                            min_len: int,
-                            count: int,
-                            tgt_min: Optional[int],
-                            tgt_max: Optional[int]) -> Optional[List[int]]:
-        '''Pick count random targets for a branch destination
+    def pick_branch_targets(
+        self, cur_pc: int, min_len: int, count: int, tgt_min: Optional[int], tgt_max: Optional[int]
+    ) -> Optional[List[int]]:
+        """Pick count random targets for a branch destination
 
         As well as avoiding addresses that have program data, this also treats
         behaves as if there is an instruction at cur_pc (this is the
@@ -398,7 +388,7 @@ class Program:
 
         If we can't find space for the desired branch targets, returns None.
 
-        '''
+        """
 
         # Round tgt_min and tgt_max inwards to multiples of 4 (because
         # instructions always have to be word aligned)
@@ -411,8 +401,7 @@ class Program:
         # sections in which they should land. To do *that*, we start by making
         # a list of all the gaps between sections in ascending order of base
         # address.
-        section_list = [(base, len(insns))
-                        for base, insns in self._sections.items()]
+        section_list = [(base, len(insns)) for base, insns in self._sections.items()]
         section_list.append((cur_pc, 1))
         section_list.sort()
 
@@ -423,12 +412,12 @@ class Program:
 
             # We only count the gap if it isn't completely below tgt_min and
             # isn't completely above tgt_max.
-            if (((tgt_min is None or tgt_min < section_base) and
-                 (tgt_max is None or gap_vma <= tgt_max))):
+            if (tgt_min is None or tgt_min < section_base) and (
+                tgt_max is None or gap_vma <= tgt_max
+            ):
                 # The minimum address we can pick is gap_vma, but we might need
                 # to bump it up if tgt_min is specified.
-                gap_lo = (max(gap_vma, tgt_min)
-                          if tgt_min is not None else gap_vma)
+                gap_lo = max(gap_vma, tgt_min) if tgt_min is not None else gap_vma
 
                 # The maximum address we can pick needs space for min_len
                 # instructions before we get to section_base *and* must be at
@@ -445,8 +434,7 @@ class Program:
 
         # Deal with any final gap above all known sections in the same way as
         # the internal gaps.
-        gap_lo = (max(gap_vma, tgt_min)
-                  if tgt_min is not None else gap_vma)
+        gap_lo = max(gap_vma, tgt_min) if tgt_min is not None else gap_vma
         gap_hi = self.imem_size - 4 * min_len
         if tgt_max is not None:
             gap_hi = min(gap_hi, tgt_max)
@@ -455,7 +443,6 @@ class Program:
 
         ret = []
         for _ in range(count):
-
             # gap_list is an ordered list of pairs (addr, len), meaning "there
             # is a range of addresses that we can pick from, starting at
             # address addr and with length len bytes". If there are no gaps
@@ -469,7 +456,7 @@ class Program:
             gap_weights = []
             for _, gap_len in gap_list:
                 extra_len = gap_len - 4 * min_len
-                gap_weights.append(1 + extra_len ** gap_weight_pow)
+                gap_weights.append(1 + extra_len**gap_weight_pow)
 
             idx = random.choices(range(len(gap_list)), weights=gap_weights)[0]
 
@@ -496,18 +483,19 @@ class Program:
             # high and 1-D to the middle. Larger values of D mean we favour the
             # edges more.
             D = 0.5
-            endpts = [(0, max_insn_off // 10),
-                      (max_insn_off // 10, max_insn_off * 9 // 10),
-                      (max_insn_off * 9 // 10, max_insn_off)]
-            min_insn_off, max_insn_off = \
-                random.choices(endpts, weights=[D / 2, 1 - D, D / 2])[0]
+            endpts = [
+                (0, max_insn_off // 10),
+                (max_insn_off // 10, max_insn_off * 9 // 10),
+                (max_insn_off * 9 // 10, max_insn_off),
+            ]
+            min_insn_off, max_insn_off = random.choices(endpts, weights=[D / 2, 1 - D, D / 2])[0]
 
             assert min_insn_off <= max_insn_off
 
             # Now that we've picked a region, we choose an offset uniformly
             # from the range
             rng_len = max_insn_off - min_insn_off
-            insn_off = (min_insn_off + int(0.5 + random.random() * rng_len))
+            insn_off = min_insn_off + int(0.5 + random.random() * rng_len)
             assert min_insn_off <= insn_off <= max_insn_off
 
             assert 4 * insn_off <= gap_len
@@ -535,17 +523,15 @@ class Program:
         assert len(ret) == count
         return ret
 
-    def pick_branch_target(self,
-                           cur_pc: int,
-                           min_len: int,
-                           tgt_min: Optional[int],
-                           tgt_max: Optional[int]) -> Optional[int]:
-        '''Pick a single random target for a branch destination
+    def pick_branch_target(
+        self, cur_pc: int, min_len: int, tgt_min: Optional[int], tgt_max: Optional[int]
+    ) -> Optional[int]:
+        """Pick a single random target for a branch destination
 
         A simple wrapper around the more general pick_branch_targets
         function.
 
-        '''
+        """
         tgts = self.pick_branch_targets(cur_pc, min_len, 1, tgt_min, tgt_max)
         if tgts is None:
             return None
@@ -554,12 +540,12 @@ class Program:
         return tgts[0]
 
     def get_insn_space_at(self, addr: int) -> int:
-        '''Return how many instructions there is space for, starting at addr
+        """Return how many instructions there is space for, starting at addr
 
         Note that this doesn't take the global space constraint into
         account.
 
-        '''
+        """
         space = self.imem_size - addr
         if space <= 0:
             return 0
@@ -574,12 +560,12 @@ class Program:
         return max(0, space // 4)
 
     def imem_gaps(self) -> List[Tuple[int, int]]:
-        '''Return the list of gaps between sections in ascending order
+        """Return the list of gaps between sections in ascending order
 
         Each gap is represented as (addr0, addr1) where addr0 < addr1, meaning
         that all addresses addr0, addr0+1, ..., addr1 - 1 are available.
 
-        '''
+        """
         ret = []
         gap_start = 0
 
