@@ -725,6 +725,8 @@ bool test_main(void) {
 
   peripheral_init();
 
+  ret_sram_testutils_init();
+
   // Enable all interrupts used in this test.
   dt_plic_irq_id_t class_a_irq = dt_alert_handler_irq_to_plic_id(
       kDtAlertHandler, kDtAlertHandlerIrqClassa);

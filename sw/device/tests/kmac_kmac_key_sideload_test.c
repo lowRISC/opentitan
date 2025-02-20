@@ -191,6 +191,8 @@ bool test_main(void) {
       rstmgr_testutils_reason_get();
   size_t test_phase_cnt;
 
+  ret_sram_testutils_init();
+
   if (reset_info == kDifRstmgrResetInfoPor) {
     // Init counter to 0 after first power up.
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
