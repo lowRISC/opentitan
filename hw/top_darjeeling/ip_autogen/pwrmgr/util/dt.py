@@ -68,7 +68,7 @@ dt_pwrmgr_wakeup_src_t dt_pwrmgr_wakeup_src(dt_pwrmgr_t dt, size_t idx);
  * @param dt Instance of pwrmgr.
  * @return Number of reset requests.
  */
-size_t dt_pwrmgr_reset_request_count(dt_pwrmgr_t dt);
+size_t dt_pwrmgr_reset_request_src_count(dt_pwrmgr_t dt);
 
 /**
  * Get the description of a reset request.
@@ -80,7 +80,7 @@ size_t dt_pwrmgr_reset_request_count(dt_pwrmgr_t dt);
  *            `dt_pwrmgr_reset_request_count(dt)-1`.
  * @return Description of the reset.
  */
-dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request(dt_pwrmgr_t dt, size_t idx);
+dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request_src(dt_pwrmgr_t dt, size_t idx);
 """
 
 SOURCE_EXT_TEMPLATE = """
@@ -93,11 +93,11 @@ dt_pwrmgr_wakeup_src_t dt_pwrmgr_wakeup_src(dt_pwrmgr_t dt, size_t idx) {
   return TRY_GET_DT(dt, invalid)->ext.wakeup_src[idx];
 }
 
-size_t dt_pwrmgr_reset_request_count(dt_pwrmgr_t dt) {
+size_t dt_pwrmgr_reset_request_src_count(dt_pwrmgr_t dt) {
   return %(reset_reqs_count)d;
 }
 
-dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request(dt_pwrmgr_t dt, size_t idx) {
+dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request_src(dt_pwrmgr_t dt, size_t idx) {
   dt_pwrmgr_reset_req_src_t invalid = {.inst_id = kDtInstanceIdUnknown, .reset_req = 0};
   return TRY_GET_DT(dt, invalid)->ext.rst_reqs[idx];
 }
