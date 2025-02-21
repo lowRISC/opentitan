@@ -27,13 +27,6 @@ package pattgen_env_pkg;
     NumPattgenIntr = 2
   } pattgen_intr_e;
 
-  typedef enum bit[1:0] {
-    NoChannels   = 2'b00,
-    Channel0     = 2'b01,
-    Channel1     = 2'b10,
-    AllChannels  = 2'b11
-  } channel_select_e;
-
   typedef enum bit {
     Enable      = 1'b1,
     Disable     = 1'b0

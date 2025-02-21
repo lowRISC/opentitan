@@ -8,11 +8,14 @@
 // must be detected and dropped in scoreboard and agent_monitor
 class pattgen_error_vseq extends pattgen_base_vseq;
   `uvm_object_utils(pattgen_error_vseq)
-  `uvm_object_new
+
+  function new(string name="");
+    super.new(name);
+    error_injected_enb = 1'b1;
+  endfunction
 
   virtual task pre_start();
     super.pre_start();
-    cfg.seq_cfg.error_injected_enb = 1'b1;
     // in order to inject error, the generated patterns should be long enough because
     // completed interrupts can be triggerred before enable bit is unset in the last bit
     // which indicates a correct correct patterns
