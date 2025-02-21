@@ -15,7 +15,7 @@ package ac_range_check_reg_pkg;
   parameter int BlockAw = 10;
 
   // Number of registers for every interface
-  parameter int NumRegs = 167;
+  parameter int NumRegs = 168;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -100,6 +100,25 @@ package ac_range_check_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } counter_err;
+  } ac_range_check_hw2reg_alert_status_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic [7:0]  d;
       logic        de;
     } deny_cnt;
@@ -162,7 +181,8 @@ package ac_range_check_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [72:71]
+    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [80:79]
+    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [78:71]
     ac_range_check_hw2reg_log_status_reg_t log_status; // [70:33]
     ac_range_check_hw2reg_log_address_reg_t log_address; // [32:0]
   } ac_range_check_hw2reg_t;
@@ -172,169 +192,170 @@ package ac_range_check_reg_pkg;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_INTR_ENABLE_OFFSET = 10'h 4;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_INTR_TEST_OFFSET = 10'h 8;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_ALERT_TEST_OFFSET = 10'h c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_CONFIG_OFFSET = 10'h 10;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_STATUS_OFFSET = 10'h 14;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_ADDRESS_OFFSET = 10'h 18;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_0_OFFSET = 10'h 1c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_1_OFFSET = 10'h 20;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_2_OFFSET = 10'h 24;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_3_OFFSET = 10'h 28;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_4_OFFSET = 10'h 2c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_5_OFFSET = 10'h 30;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_6_OFFSET = 10'h 34;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_7_OFFSET = 10'h 38;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_8_OFFSET = 10'h 3c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_9_OFFSET = 10'h 40;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_10_OFFSET = 10'h 44;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_11_OFFSET = 10'h 48;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_12_OFFSET = 10'h 4c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_13_OFFSET = 10'h 50;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_14_OFFSET = 10'h 54;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_15_OFFSET = 10'h 58;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_16_OFFSET = 10'h 5c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_17_OFFSET = 10'h 60;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_18_OFFSET = 10'h 64;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_19_OFFSET = 10'h 68;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_20_OFFSET = 10'h 6c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_21_OFFSET = 10'h 70;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_22_OFFSET = 10'h 74;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_23_OFFSET = 10'h 78;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_24_OFFSET = 10'h 7c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_25_OFFSET = 10'h 80;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_26_OFFSET = 10'h 84;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_27_OFFSET = 10'h 88;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_28_OFFSET = 10'h 8c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_29_OFFSET = 10'h 90;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_30_OFFSET = 10'h 94;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_31_OFFSET = 10'h 98;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_0_OFFSET = 10'h 9c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_1_OFFSET = 10'h a0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_2_OFFSET = 10'h a4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_3_OFFSET = 10'h a8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_4_OFFSET = 10'h ac;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_5_OFFSET = 10'h b0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_6_OFFSET = 10'h b4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_7_OFFSET = 10'h b8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_8_OFFSET = 10'h bc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_9_OFFSET = 10'h c0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_10_OFFSET = 10'h c4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_11_OFFSET = 10'h c8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_12_OFFSET = 10'h cc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_13_OFFSET = 10'h d0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_14_OFFSET = 10'h d4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_15_OFFSET = 10'h d8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_16_OFFSET = 10'h dc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_17_OFFSET = 10'h e0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_18_OFFSET = 10'h e4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_19_OFFSET = 10'h e8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_20_OFFSET = 10'h ec;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_21_OFFSET = 10'h f0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_22_OFFSET = 10'h f4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_23_OFFSET = 10'h f8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_24_OFFSET = 10'h fc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_25_OFFSET = 10'h 100;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_26_OFFSET = 10'h 104;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_27_OFFSET = 10'h 108;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_28_OFFSET = 10'h 10c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_29_OFFSET = 10'h 110;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_30_OFFSET = 10'h 114;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_31_OFFSET = 10'h 118;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_0_OFFSET = 10'h 11c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_1_OFFSET = 10'h 120;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_2_OFFSET = 10'h 124;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_3_OFFSET = 10'h 128;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_4_OFFSET = 10'h 12c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_5_OFFSET = 10'h 130;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_6_OFFSET = 10'h 134;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_7_OFFSET = 10'h 138;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_8_OFFSET = 10'h 13c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_9_OFFSET = 10'h 140;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_10_OFFSET = 10'h 144;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_11_OFFSET = 10'h 148;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_12_OFFSET = 10'h 14c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_13_OFFSET = 10'h 150;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_14_OFFSET = 10'h 154;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_15_OFFSET = 10'h 158;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_16_OFFSET = 10'h 15c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_17_OFFSET = 10'h 160;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_18_OFFSET = 10'h 164;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_19_OFFSET = 10'h 168;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_20_OFFSET = 10'h 16c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_21_OFFSET = 10'h 170;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_22_OFFSET = 10'h 174;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_23_OFFSET = 10'h 178;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_24_OFFSET = 10'h 17c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_25_OFFSET = 10'h 180;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_26_OFFSET = 10'h 184;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_27_OFFSET = 10'h 188;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_28_OFFSET = 10'h 18c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_29_OFFSET = 10'h 190;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_30_OFFSET = 10'h 194;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_31_OFFSET = 10'h 198;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_0_OFFSET = 10'h 19c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_1_OFFSET = 10'h 1a0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_2_OFFSET = 10'h 1a4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_3_OFFSET = 10'h 1a8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_4_OFFSET = 10'h 1ac;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_5_OFFSET = 10'h 1b0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_6_OFFSET = 10'h 1b4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_7_OFFSET = 10'h 1b8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_8_OFFSET = 10'h 1bc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_9_OFFSET = 10'h 1c0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_10_OFFSET = 10'h 1c4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_11_OFFSET = 10'h 1c8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_12_OFFSET = 10'h 1cc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_13_OFFSET = 10'h 1d0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_14_OFFSET = 10'h 1d4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_15_OFFSET = 10'h 1d8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_16_OFFSET = 10'h 1dc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_17_OFFSET = 10'h 1e0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_18_OFFSET = 10'h 1e4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_19_OFFSET = 10'h 1e8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_20_OFFSET = 10'h 1ec;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_21_OFFSET = 10'h 1f0;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_22_OFFSET = 10'h 1f4;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_23_OFFSET = 10'h 1f8;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_24_OFFSET = 10'h 1fc;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_25_OFFSET = 10'h 200;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_26_OFFSET = 10'h 204;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_27_OFFSET = 10'h 208;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_28_OFFSET = 10'h 20c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_29_OFFSET = 10'h 210;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_30_OFFSET = 10'h 214;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_31_OFFSET = 10'h 218;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_0_OFFSET = 10'h 21c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_1_OFFSET = 10'h 220;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_2_OFFSET = 10'h 224;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_3_OFFSET = 10'h 228;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_4_OFFSET = 10'h 22c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_5_OFFSET = 10'h 230;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_6_OFFSET = 10'h 234;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_7_OFFSET = 10'h 238;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_8_OFFSET = 10'h 23c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_9_OFFSET = 10'h 240;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_10_OFFSET = 10'h 244;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_11_OFFSET = 10'h 248;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_12_OFFSET = 10'h 24c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_13_OFFSET = 10'h 250;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_14_OFFSET = 10'h 254;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_15_OFFSET = 10'h 258;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_16_OFFSET = 10'h 25c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_17_OFFSET = 10'h 260;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_18_OFFSET = 10'h 264;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_19_OFFSET = 10'h 268;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_20_OFFSET = 10'h 26c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_21_OFFSET = 10'h 270;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_22_OFFSET = 10'h 274;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_23_OFFSET = 10'h 278;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_24_OFFSET = 10'h 27c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_25_OFFSET = 10'h 280;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_26_OFFSET = 10'h 284;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_27_OFFSET = 10'h 288;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28_OFFSET = 10'h 28c;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29_OFFSET = 10'h 290;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30_OFFSET = 10'h 294;
-  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31_OFFSET = 10'h 298;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_ALERT_STATUS_OFFSET = 10'h 10;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_CONFIG_OFFSET = 10'h 14;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_STATUS_OFFSET = 10'h 18;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_LOG_ADDRESS_OFFSET = 10'h 1c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_0_OFFSET = 10'h 20;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_1_OFFSET = 10'h 24;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_2_OFFSET = 10'h 28;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_3_OFFSET = 10'h 2c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_4_OFFSET = 10'h 30;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_5_OFFSET = 10'h 34;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_6_OFFSET = 10'h 38;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_7_OFFSET = 10'h 3c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_8_OFFSET = 10'h 40;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_9_OFFSET = 10'h 44;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_10_OFFSET = 10'h 48;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_11_OFFSET = 10'h 4c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_12_OFFSET = 10'h 50;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_13_OFFSET = 10'h 54;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_14_OFFSET = 10'h 58;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_15_OFFSET = 10'h 5c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_16_OFFSET = 10'h 60;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_17_OFFSET = 10'h 64;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_18_OFFSET = 10'h 68;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_19_OFFSET = 10'h 6c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_20_OFFSET = 10'h 70;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_21_OFFSET = 10'h 74;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_22_OFFSET = 10'h 78;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_23_OFFSET = 10'h 7c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_24_OFFSET = 10'h 80;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_25_OFFSET = 10'h 84;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_26_OFFSET = 10'h 88;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_27_OFFSET = 10'h 8c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_28_OFFSET = 10'h 90;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_29_OFFSET = 10'h 94;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_30_OFFSET = 10'h 98;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_REGWEN_31_OFFSET = 10'h 9c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_0_OFFSET = 10'h a0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_1_OFFSET = 10'h a4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_2_OFFSET = 10'h a8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_3_OFFSET = 10'h ac;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_4_OFFSET = 10'h b0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_5_OFFSET = 10'h b4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_6_OFFSET = 10'h b8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_7_OFFSET = 10'h bc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_8_OFFSET = 10'h c0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_9_OFFSET = 10'h c4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_10_OFFSET = 10'h c8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_11_OFFSET = 10'h cc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_12_OFFSET = 10'h d0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_13_OFFSET = 10'h d4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_14_OFFSET = 10'h d8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_15_OFFSET = 10'h dc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_16_OFFSET = 10'h e0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_17_OFFSET = 10'h e4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_18_OFFSET = 10'h e8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_19_OFFSET = 10'h ec;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_20_OFFSET = 10'h f0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_21_OFFSET = 10'h f4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_22_OFFSET = 10'h f8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_23_OFFSET = 10'h fc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_24_OFFSET = 10'h 100;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_25_OFFSET = 10'h 104;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_26_OFFSET = 10'h 108;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_27_OFFSET = 10'h 10c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_28_OFFSET = 10'h 110;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_29_OFFSET = 10'h 114;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_30_OFFSET = 10'h 118;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_BASE_31_OFFSET = 10'h 11c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_0_OFFSET = 10'h 120;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_1_OFFSET = 10'h 124;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_2_OFFSET = 10'h 128;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_3_OFFSET = 10'h 12c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_4_OFFSET = 10'h 130;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_5_OFFSET = 10'h 134;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_6_OFFSET = 10'h 138;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_7_OFFSET = 10'h 13c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_8_OFFSET = 10'h 140;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_9_OFFSET = 10'h 144;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_10_OFFSET = 10'h 148;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_11_OFFSET = 10'h 14c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_12_OFFSET = 10'h 150;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_13_OFFSET = 10'h 154;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_14_OFFSET = 10'h 158;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_15_OFFSET = 10'h 15c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_16_OFFSET = 10'h 160;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_17_OFFSET = 10'h 164;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_18_OFFSET = 10'h 168;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_19_OFFSET = 10'h 16c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_20_OFFSET = 10'h 170;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_21_OFFSET = 10'h 174;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_22_OFFSET = 10'h 178;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_23_OFFSET = 10'h 17c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_24_OFFSET = 10'h 180;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_25_OFFSET = 10'h 184;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_26_OFFSET = 10'h 188;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_27_OFFSET = 10'h 18c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_28_OFFSET = 10'h 190;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_29_OFFSET = 10'h 194;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_30_OFFSET = 10'h 198;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_LIMIT_31_OFFSET = 10'h 19c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_0_OFFSET = 10'h 1a0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_1_OFFSET = 10'h 1a4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_2_OFFSET = 10'h 1a8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_3_OFFSET = 10'h 1ac;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_4_OFFSET = 10'h 1b0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_5_OFFSET = 10'h 1b4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_6_OFFSET = 10'h 1b8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_7_OFFSET = 10'h 1bc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_8_OFFSET = 10'h 1c0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_9_OFFSET = 10'h 1c4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_10_OFFSET = 10'h 1c8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_11_OFFSET = 10'h 1cc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_12_OFFSET = 10'h 1d0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_13_OFFSET = 10'h 1d4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_14_OFFSET = 10'h 1d8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_15_OFFSET = 10'h 1dc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_16_OFFSET = 10'h 1e0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_17_OFFSET = 10'h 1e4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_18_OFFSET = 10'h 1e8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_19_OFFSET = 10'h 1ec;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_20_OFFSET = 10'h 1f0;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_21_OFFSET = 10'h 1f4;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_22_OFFSET = 10'h 1f8;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_23_OFFSET = 10'h 1fc;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_24_OFFSET = 10'h 200;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_25_OFFSET = 10'h 204;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_26_OFFSET = 10'h 208;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_27_OFFSET = 10'h 20c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_28_OFFSET = 10'h 210;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_29_OFFSET = 10'h 214;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_30_OFFSET = 10'h 218;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_PERM_31_OFFSET = 10'h 21c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_0_OFFSET = 10'h 220;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_1_OFFSET = 10'h 224;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_2_OFFSET = 10'h 228;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_3_OFFSET = 10'h 22c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_4_OFFSET = 10'h 230;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_5_OFFSET = 10'h 234;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_6_OFFSET = 10'h 238;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_7_OFFSET = 10'h 23c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_8_OFFSET = 10'h 240;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_9_OFFSET = 10'h 244;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_10_OFFSET = 10'h 248;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_11_OFFSET = 10'h 24c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_12_OFFSET = 10'h 250;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_13_OFFSET = 10'h 254;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_14_OFFSET = 10'h 258;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_15_OFFSET = 10'h 25c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_16_OFFSET = 10'h 260;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_17_OFFSET = 10'h 264;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_18_OFFSET = 10'h 268;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_19_OFFSET = 10'h 26c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_20_OFFSET = 10'h 270;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_21_OFFSET = 10'h 274;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_22_OFFSET = 10'h 278;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_23_OFFSET = 10'h 27c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_24_OFFSET = 10'h 280;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_25_OFFSET = 10'h 284;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_26_OFFSET = 10'h 288;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_27_OFFSET = 10'h 28c;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28_OFFSET = 10'h 290;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29_OFFSET = 10'h 294;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30_OFFSET = 10'h 298;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31_OFFSET = 10'h 29c;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] AC_RANGE_CHECK_INTR_TEST_RESVAL = 1'h 0;
@@ -349,6 +370,7 @@ package ac_range_check_reg_pkg;
     AC_RANGE_CHECK_INTR_ENABLE,
     AC_RANGE_CHECK_INTR_TEST,
     AC_RANGE_CHECK_ALERT_TEST,
+    AC_RANGE_CHECK_ALERT_STATUS,
     AC_RANGE_CHECK_LOG_CONFIG,
     AC_RANGE_CHECK_LOG_STATUS,
     AC_RANGE_CHECK_LOG_ADDRESS,
@@ -515,174 +537,175 @@ package ac_range_check_reg_pkg;
   } ac_range_check_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AC_RANGE_CHECK_PERMIT [167] = '{
+  parameter logic [3:0] AC_RANGE_CHECK_PERMIT [168] = '{
     4'b 0001, // index[  0] AC_RANGE_CHECK_INTR_STATE
     4'b 0001, // index[  1] AC_RANGE_CHECK_INTR_ENABLE
     4'b 0001, // index[  2] AC_RANGE_CHECK_INTR_TEST
     4'b 0001, // index[  3] AC_RANGE_CHECK_ALERT_TEST
-    4'b 0011, // index[  4] AC_RANGE_CHECK_LOG_CONFIG
-    4'b 1111, // index[  5] AC_RANGE_CHECK_LOG_STATUS
-    4'b 1111, // index[  6] AC_RANGE_CHECK_LOG_ADDRESS
-    4'b 0001, // index[  7] AC_RANGE_CHECK_RANGE_REGWEN_0
-    4'b 0001, // index[  8] AC_RANGE_CHECK_RANGE_REGWEN_1
-    4'b 0001, // index[  9] AC_RANGE_CHECK_RANGE_REGWEN_2
-    4'b 0001, // index[ 10] AC_RANGE_CHECK_RANGE_REGWEN_3
-    4'b 0001, // index[ 11] AC_RANGE_CHECK_RANGE_REGWEN_4
-    4'b 0001, // index[ 12] AC_RANGE_CHECK_RANGE_REGWEN_5
-    4'b 0001, // index[ 13] AC_RANGE_CHECK_RANGE_REGWEN_6
-    4'b 0001, // index[ 14] AC_RANGE_CHECK_RANGE_REGWEN_7
-    4'b 0001, // index[ 15] AC_RANGE_CHECK_RANGE_REGWEN_8
-    4'b 0001, // index[ 16] AC_RANGE_CHECK_RANGE_REGWEN_9
-    4'b 0001, // index[ 17] AC_RANGE_CHECK_RANGE_REGWEN_10
-    4'b 0001, // index[ 18] AC_RANGE_CHECK_RANGE_REGWEN_11
-    4'b 0001, // index[ 19] AC_RANGE_CHECK_RANGE_REGWEN_12
-    4'b 0001, // index[ 20] AC_RANGE_CHECK_RANGE_REGWEN_13
-    4'b 0001, // index[ 21] AC_RANGE_CHECK_RANGE_REGWEN_14
-    4'b 0001, // index[ 22] AC_RANGE_CHECK_RANGE_REGWEN_15
-    4'b 0001, // index[ 23] AC_RANGE_CHECK_RANGE_REGWEN_16
-    4'b 0001, // index[ 24] AC_RANGE_CHECK_RANGE_REGWEN_17
-    4'b 0001, // index[ 25] AC_RANGE_CHECK_RANGE_REGWEN_18
-    4'b 0001, // index[ 26] AC_RANGE_CHECK_RANGE_REGWEN_19
-    4'b 0001, // index[ 27] AC_RANGE_CHECK_RANGE_REGWEN_20
-    4'b 0001, // index[ 28] AC_RANGE_CHECK_RANGE_REGWEN_21
-    4'b 0001, // index[ 29] AC_RANGE_CHECK_RANGE_REGWEN_22
-    4'b 0001, // index[ 30] AC_RANGE_CHECK_RANGE_REGWEN_23
-    4'b 0001, // index[ 31] AC_RANGE_CHECK_RANGE_REGWEN_24
-    4'b 0001, // index[ 32] AC_RANGE_CHECK_RANGE_REGWEN_25
-    4'b 0001, // index[ 33] AC_RANGE_CHECK_RANGE_REGWEN_26
-    4'b 0001, // index[ 34] AC_RANGE_CHECK_RANGE_REGWEN_27
-    4'b 0001, // index[ 35] AC_RANGE_CHECK_RANGE_REGWEN_28
-    4'b 0001, // index[ 36] AC_RANGE_CHECK_RANGE_REGWEN_29
-    4'b 0001, // index[ 37] AC_RANGE_CHECK_RANGE_REGWEN_30
-    4'b 0001, // index[ 38] AC_RANGE_CHECK_RANGE_REGWEN_31
-    4'b 1111, // index[ 39] AC_RANGE_CHECK_RANGE_BASE_0
-    4'b 1111, // index[ 40] AC_RANGE_CHECK_RANGE_BASE_1
-    4'b 1111, // index[ 41] AC_RANGE_CHECK_RANGE_BASE_2
-    4'b 1111, // index[ 42] AC_RANGE_CHECK_RANGE_BASE_3
-    4'b 1111, // index[ 43] AC_RANGE_CHECK_RANGE_BASE_4
-    4'b 1111, // index[ 44] AC_RANGE_CHECK_RANGE_BASE_5
-    4'b 1111, // index[ 45] AC_RANGE_CHECK_RANGE_BASE_6
-    4'b 1111, // index[ 46] AC_RANGE_CHECK_RANGE_BASE_7
-    4'b 1111, // index[ 47] AC_RANGE_CHECK_RANGE_BASE_8
-    4'b 1111, // index[ 48] AC_RANGE_CHECK_RANGE_BASE_9
-    4'b 1111, // index[ 49] AC_RANGE_CHECK_RANGE_BASE_10
-    4'b 1111, // index[ 50] AC_RANGE_CHECK_RANGE_BASE_11
-    4'b 1111, // index[ 51] AC_RANGE_CHECK_RANGE_BASE_12
-    4'b 1111, // index[ 52] AC_RANGE_CHECK_RANGE_BASE_13
-    4'b 1111, // index[ 53] AC_RANGE_CHECK_RANGE_BASE_14
-    4'b 1111, // index[ 54] AC_RANGE_CHECK_RANGE_BASE_15
-    4'b 1111, // index[ 55] AC_RANGE_CHECK_RANGE_BASE_16
-    4'b 1111, // index[ 56] AC_RANGE_CHECK_RANGE_BASE_17
-    4'b 1111, // index[ 57] AC_RANGE_CHECK_RANGE_BASE_18
-    4'b 1111, // index[ 58] AC_RANGE_CHECK_RANGE_BASE_19
-    4'b 1111, // index[ 59] AC_RANGE_CHECK_RANGE_BASE_20
-    4'b 1111, // index[ 60] AC_RANGE_CHECK_RANGE_BASE_21
-    4'b 1111, // index[ 61] AC_RANGE_CHECK_RANGE_BASE_22
-    4'b 1111, // index[ 62] AC_RANGE_CHECK_RANGE_BASE_23
-    4'b 1111, // index[ 63] AC_RANGE_CHECK_RANGE_BASE_24
-    4'b 1111, // index[ 64] AC_RANGE_CHECK_RANGE_BASE_25
-    4'b 1111, // index[ 65] AC_RANGE_CHECK_RANGE_BASE_26
-    4'b 1111, // index[ 66] AC_RANGE_CHECK_RANGE_BASE_27
-    4'b 1111, // index[ 67] AC_RANGE_CHECK_RANGE_BASE_28
-    4'b 1111, // index[ 68] AC_RANGE_CHECK_RANGE_BASE_29
-    4'b 1111, // index[ 69] AC_RANGE_CHECK_RANGE_BASE_30
-    4'b 1111, // index[ 70] AC_RANGE_CHECK_RANGE_BASE_31
-    4'b 1111, // index[ 71] AC_RANGE_CHECK_RANGE_LIMIT_0
-    4'b 1111, // index[ 72] AC_RANGE_CHECK_RANGE_LIMIT_1
-    4'b 1111, // index[ 73] AC_RANGE_CHECK_RANGE_LIMIT_2
-    4'b 1111, // index[ 74] AC_RANGE_CHECK_RANGE_LIMIT_3
-    4'b 1111, // index[ 75] AC_RANGE_CHECK_RANGE_LIMIT_4
-    4'b 1111, // index[ 76] AC_RANGE_CHECK_RANGE_LIMIT_5
-    4'b 1111, // index[ 77] AC_RANGE_CHECK_RANGE_LIMIT_6
-    4'b 1111, // index[ 78] AC_RANGE_CHECK_RANGE_LIMIT_7
-    4'b 1111, // index[ 79] AC_RANGE_CHECK_RANGE_LIMIT_8
-    4'b 1111, // index[ 80] AC_RANGE_CHECK_RANGE_LIMIT_9
-    4'b 1111, // index[ 81] AC_RANGE_CHECK_RANGE_LIMIT_10
-    4'b 1111, // index[ 82] AC_RANGE_CHECK_RANGE_LIMIT_11
-    4'b 1111, // index[ 83] AC_RANGE_CHECK_RANGE_LIMIT_12
-    4'b 1111, // index[ 84] AC_RANGE_CHECK_RANGE_LIMIT_13
-    4'b 1111, // index[ 85] AC_RANGE_CHECK_RANGE_LIMIT_14
-    4'b 1111, // index[ 86] AC_RANGE_CHECK_RANGE_LIMIT_15
-    4'b 1111, // index[ 87] AC_RANGE_CHECK_RANGE_LIMIT_16
-    4'b 1111, // index[ 88] AC_RANGE_CHECK_RANGE_LIMIT_17
-    4'b 1111, // index[ 89] AC_RANGE_CHECK_RANGE_LIMIT_18
-    4'b 1111, // index[ 90] AC_RANGE_CHECK_RANGE_LIMIT_19
-    4'b 1111, // index[ 91] AC_RANGE_CHECK_RANGE_LIMIT_20
-    4'b 1111, // index[ 92] AC_RANGE_CHECK_RANGE_LIMIT_21
-    4'b 1111, // index[ 93] AC_RANGE_CHECK_RANGE_LIMIT_22
-    4'b 1111, // index[ 94] AC_RANGE_CHECK_RANGE_LIMIT_23
-    4'b 1111, // index[ 95] AC_RANGE_CHECK_RANGE_LIMIT_24
-    4'b 1111, // index[ 96] AC_RANGE_CHECK_RANGE_LIMIT_25
-    4'b 1111, // index[ 97] AC_RANGE_CHECK_RANGE_LIMIT_26
-    4'b 1111, // index[ 98] AC_RANGE_CHECK_RANGE_LIMIT_27
-    4'b 1111, // index[ 99] AC_RANGE_CHECK_RANGE_LIMIT_28
-    4'b 1111, // index[100] AC_RANGE_CHECK_RANGE_LIMIT_29
-    4'b 1111, // index[101] AC_RANGE_CHECK_RANGE_LIMIT_30
-    4'b 1111, // index[102] AC_RANGE_CHECK_RANGE_LIMIT_31
-    4'b 0111, // index[103] AC_RANGE_CHECK_RANGE_PERM_0
-    4'b 0111, // index[104] AC_RANGE_CHECK_RANGE_PERM_1
-    4'b 0111, // index[105] AC_RANGE_CHECK_RANGE_PERM_2
-    4'b 0111, // index[106] AC_RANGE_CHECK_RANGE_PERM_3
-    4'b 0111, // index[107] AC_RANGE_CHECK_RANGE_PERM_4
-    4'b 0111, // index[108] AC_RANGE_CHECK_RANGE_PERM_5
-    4'b 0111, // index[109] AC_RANGE_CHECK_RANGE_PERM_6
-    4'b 0111, // index[110] AC_RANGE_CHECK_RANGE_PERM_7
-    4'b 0111, // index[111] AC_RANGE_CHECK_RANGE_PERM_8
-    4'b 0111, // index[112] AC_RANGE_CHECK_RANGE_PERM_9
-    4'b 0111, // index[113] AC_RANGE_CHECK_RANGE_PERM_10
-    4'b 0111, // index[114] AC_RANGE_CHECK_RANGE_PERM_11
-    4'b 0111, // index[115] AC_RANGE_CHECK_RANGE_PERM_12
-    4'b 0111, // index[116] AC_RANGE_CHECK_RANGE_PERM_13
-    4'b 0111, // index[117] AC_RANGE_CHECK_RANGE_PERM_14
-    4'b 0111, // index[118] AC_RANGE_CHECK_RANGE_PERM_15
-    4'b 0111, // index[119] AC_RANGE_CHECK_RANGE_PERM_16
-    4'b 0111, // index[120] AC_RANGE_CHECK_RANGE_PERM_17
-    4'b 0111, // index[121] AC_RANGE_CHECK_RANGE_PERM_18
-    4'b 0111, // index[122] AC_RANGE_CHECK_RANGE_PERM_19
-    4'b 0111, // index[123] AC_RANGE_CHECK_RANGE_PERM_20
-    4'b 0111, // index[124] AC_RANGE_CHECK_RANGE_PERM_21
-    4'b 0111, // index[125] AC_RANGE_CHECK_RANGE_PERM_22
-    4'b 0111, // index[126] AC_RANGE_CHECK_RANGE_PERM_23
-    4'b 0111, // index[127] AC_RANGE_CHECK_RANGE_PERM_24
-    4'b 0111, // index[128] AC_RANGE_CHECK_RANGE_PERM_25
-    4'b 0111, // index[129] AC_RANGE_CHECK_RANGE_PERM_26
-    4'b 0111, // index[130] AC_RANGE_CHECK_RANGE_PERM_27
-    4'b 0111, // index[131] AC_RANGE_CHECK_RANGE_PERM_28
-    4'b 0111, // index[132] AC_RANGE_CHECK_RANGE_PERM_29
-    4'b 0111, // index[133] AC_RANGE_CHECK_RANGE_PERM_30
-    4'b 0111, // index[134] AC_RANGE_CHECK_RANGE_PERM_31
-    4'b 1111, // index[135] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_0
-    4'b 1111, // index[136] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_1
-    4'b 1111, // index[137] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_2
-    4'b 1111, // index[138] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_3
-    4'b 1111, // index[139] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_4
-    4'b 1111, // index[140] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_5
-    4'b 1111, // index[141] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_6
-    4'b 1111, // index[142] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_7
-    4'b 1111, // index[143] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_8
-    4'b 1111, // index[144] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_9
-    4'b 1111, // index[145] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_10
-    4'b 1111, // index[146] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_11
-    4'b 1111, // index[147] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_12
-    4'b 1111, // index[148] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_13
-    4'b 1111, // index[149] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_14
-    4'b 1111, // index[150] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_15
-    4'b 1111, // index[151] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_16
-    4'b 1111, // index[152] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_17
-    4'b 1111, // index[153] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_18
-    4'b 1111, // index[154] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_19
-    4'b 1111, // index[155] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_20
-    4'b 1111, // index[156] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_21
-    4'b 1111, // index[157] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_22
-    4'b 1111, // index[158] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_23
-    4'b 1111, // index[159] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_24
-    4'b 1111, // index[160] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_25
-    4'b 1111, // index[161] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_26
-    4'b 1111, // index[162] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_27
-    4'b 1111, // index[163] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28
-    4'b 1111, // index[164] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29
-    4'b 1111, // index[165] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30
-    4'b 1111  // index[166] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31
+    4'b 0001, // index[  4] AC_RANGE_CHECK_ALERT_STATUS
+    4'b 0011, // index[  5] AC_RANGE_CHECK_LOG_CONFIG
+    4'b 1111, // index[  6] AC_RANGE_CHECK_LOG_STATUS
+    4'b 1111, // index[  7] AC_RANGE_CHECK_LOG_ADDRESS
+    4'b 0001, // index[  8] AC_RANGE_CHECK_RANGE_REGWEN_0
+    4'b 0001, // index[  9] AC_RANGE_CHECK_RANGE_REGWEN_1
+    4'b 0001, // index[ 10] AC_RANGE_CHECK_RANGE_REGWEN_2
+    4'b 0001, // index[ 11] AC_RANGE_CHECK_RANGE_REGWEN_3
+    4'b 0001, // index[ 12] AC_RANGE_CHECK_RANGE_REGWEN_4
+    4'b 0001, // index[ 13] AC_RANGE_CHECK_RANGE_REGWEN_5
+    4'b 0001, // index[ 14] AC_RANGE_CHECK_RANGE_REGWEN_6
+    4'b 0001, // index[ 15] AC_RANGE_CHECK_RANGE_REGWEN_7
+    4'b 0001, // index[ 16] AC_RANGE_CHECK_RANGE_REGWEN_8
+    4'b 0001, // index[ 17] AC_RANGE_CHECK_RANGE_REGWEN_9
+    4'b 0001, // index[ 18] AC_RANGE_CHECK_RANGE_REGWEN_10
+    4'b 0001, // index[ 19] AC_RANGE_CHECK_RANGE_REGWEN_11
+    4'b 0001, // index[ 20] AC_RANGE_CHECK_RANGE_REGWEN_12
+    4'b 0001, // index[ 21] AC_RANGE_CHECK_RANGE_REGWEN_13
+    4'b 0001, // index[ 22] AC_RANGE_CHECK_RANGE_REGWEN_14
+    4'b 0001, // index[ 23] AC_RANGE_CHECK_RANGE_REGWEN_15
+    4'b 0001, // index[ 24] AC_RANGE_CHECK_RANGE_REGWEN_16
+    4'b 0001, // index[ 25] AC_RANGE_CHECK_RANGE_REGWEN_17
+    4'b 0001, // index[ 26] AC_RANGE_CHECK_RANGE_REGWEN_18
+    4'b 0001, // index[ 27] AC_RANGE_CHECK_RANGE_REGWEN_19
+    4'b 0001, // index[ 28] AC_RANGE_CHECK_RANGE_REGWEN_20
+    4'b 0001, // index[ 29] AC_RANGE_CHECK_RANGE_REGWEN_21
+    4'b 0001, // index[ 30] AC_RANGE_CHECK_RANGE_REGWEN_22
+    4'b 0001, // index[ 31] AC_RANGE_CHECK_RANGE_REGWEN_23
+    4'b 0001, // index[ 32] AC_RANGE_CHECK_RANGE_REGWEN_24
+    4'b 0001, // index[ 33] AC_RANGE_CHECK_RANGE_REGWEN_25
+    4'b 0001, // index[ 34] AC_RANGE_CHECK_RANGE_REGWEN_26
+    4'b 0001, // index[ 35] AC_RANGE_CHECK_RANGE_REGWEN_27
+    4'b 0001, // index[ 36] AC_RANGE_CHECK_RANGE_REGWEN_28
+    4'b 0001, // index[ 37] AC_RANGE_CHECK_RANGE_REGWEN_29
+    4'b 0001, // index[ 38] AC_RANGE_CHECK_RANGE_REGWEN_30
+    4'b 0001, // index[ 39] AC_RANGE_CHECK_RANGE_REGWEN_31
+    4'b 1111, // index[ 40] AC_RANGE_CHECK_RANGE_BASE_0
+    4'b 1111, // index[ 41] AC_RANGE_CHECK_RANGE_BASE_1
+    4'b 1111, // index[ 42] AC_RANGE_CHECK_RANGE_BASE_2
+    4'b 1111, // index[ 43] AC_RANGE_CHECK_RANGE_BASE_3
+    4'b 1111, // index[ 44] AC_RANGE_CHECK_RANGE_BASE_4
+    4'b 1111, // index[ 45] AC_RANGE_CHECK_RANGE_BASE_5
+    4'b 1111, // index[ 46] AC_RANGE_CHECK_RANGE_BASE_6
+    4'b 1111, // index[ 47] AC_RANGE_CHECK_RANGE_BASE_7
+    4'b 1111, // index[ 48] AC_RANGE_CHECK_RANGE_BASE_8
+    4'b 1111, // index[ 49] AC_RANGE_CHECK_RANGE_BASE_9
+    4'b 1111, // index[ 50] AC_RANGE_CHECK_RANGE_BASE_10
+    4'b 1111, // index[ 51] AC_RANGE_CHECK_RANGE_BASE_11
+    4'b 1111, // index[ 52] AC_RANGE_CHECK_RANGE_BASE_12
+    4'b 1111, // index[ 53] AC_RANGE_CHECK_RANGE_BASE_13
+    4'b 1111, // index[ 54] AC_RANGE_CHECK_RANGE_BASE_14
+    4'b 1111, // index[ 55] AC_RANGE_CHECK_RANGE_BASE_15
+    4'b 1111, // index[ 56] AC_RANGE_CHECK_RANGE_BASE_16
+    4'b 1111, // index[ 57] AC_RANGE_CHECK_RANGE_BASE_17
+    4'b 1111, // index[ 58] AC_RANGE_CHECK_RANGE_BASE_18
+    4'b 1111, // index[ 59] AC_RANGE_CHECK_RANGE_BASE_19
+    4'b 1111, // index[ 60] AC_RANGE_CHECK_RANGE_BASE_20
+    4'b 1111, // index[ 61] AC_RANGE_CHECK_RANGE_BASE_21
+    4'b 1111, // index[ 62] AC_RANGE_CHECK_RANGE_BASE_22
+    4'b 1111, // index[ 63] AC_RANGE_CHECK_RANGE_BASE_23
+    4'b 1111, // index[ 64] AC_RANGE_CHECK_RANGE_BASE_24
+    4'b 1111, // index[ 65] AC_RANGE_CHECK_RANGE_BASE_25
+    4'b 1111, // index[ 66] AC_RANGE_CHECK_RANGE_BASE_26
+    4'b 1111, // index[ 67] AC_RANGE_CHECK_RANGE_BASE_27
+    4'b 1111, // index[ 68] AC_RANGE_CHECK_RANGE_BASE_28
+    4'b 1111, // index[ 69] AC_RANGE_CHECK_RANGE_BASE_29
+    4'b 1111, // index[ 70] AC_RANGE_CHECK_RANGE_BASE_30
+    4'b 1111, // index[ 71] AC_RANGE_CHECK_RANGE_BASE_31
+    4'b 1111, // index[ 72] AC_RANGE_CHECK_RANGE_LIMIT_0
+    4'b 1111, // index[ 73] AC_RANGE_CHECK_RANGE_LIMIT_1
+    4'b 1111, // index[ 74] AC_RANGE_CHECK_RANGE_LIMIT_2
+    4'b 1111, // index[ 75] AC_RANGE_CHECK_RANGE_LIMIT_3
+    4'b 1111, // index[ 76] AC_RANGE_CHECK_RANGE_LIMIT_4
+    4'b 1111, // index[ 77] AC_RANGE_CHECK_RANGE_LIMIT_5
+    4'b 1111, // index[ 78] AC_RANGE_CHECK_RANGE_LIMIT_6
+    4'b 1111, // index[ 79] AC_RANGE_CHECK_RANGE_LIMIT_7
+    4'b 1111, // index[ 80] AC_RANGE_CHECK_RANGE_LIMIT_8
+    4'b 1111, // index[ 81] AC_RANGE_CHECK_RANGE_LIMIT_9
+    4'b 1111, // index[ 82] AC_RANGE_CHECK_RANGE_LIMIT_10
+    4'b 1111, // index[ 83] AC_RANGE_CHECK_RANGE_LIMIT_11
+    4'b 1111, // index[ 84] AC_RANGE_CHECK_RANGE_LIMIT_12
+    4'b 1111, // index[ 85] AC_RANGE_CHECK_RANGE_LIMIT_13
+    4'b 1111, // index[ 86] AC_RANGE_CHECK_RANGE_LIMIT_14
+    4'b 1111, // index[ 87] AC_RANGE_CHECK_RANGE_LIMIT_15
+    4'b 1111, // index[ 88] AC_RANGE_CHECK_RANGE_LIMIT_16
+    4'b 1111, // index[ 89] AC_RANGE_CHECK_RANGE_LIMIT_17
+    4'b 1111, // index[ 90] AC_RANGE_CHECK_RANGE_LIMIT_18
+    4'b 1111, // index[ 91] AC_RANGE_CHECK_RANGE_LIMIT_19
+    4'b 1111, // index[ 92] AC_RANGE_CHECK_RANGE_LIMIT_20
+    4'b 1111, // index[ 93] AC_RANGE_CHECK_RANGE_LIMIT_21
+    4'b 1111, // index[ 94] AC_RANGE_CHECK_RANGE_LIMIT_22
+    4'b 1111, // index[ 95] AC_RANGE_CHECK_RANGE_LIMIT_23
+    4'b 1111, // index[ 96] AC_RANGE_CHECK_RANGE_LIMIT_24
+    4'b 1111, // index[ 97] AC_RANGE_CHECK_RANGE_LIMIT_25
+    4'b 1111, // index[ 98] AC_RANGE_CHECK_RANGE_LIMIT_26
+    4'b 1111, // index[ 99] AC_RANGE_CHECK_RANGE_LIMIT_27
+    4'b 1111, // index[100] AC_RANGE_CHECK_RANGE_LIMIT_28
+    4'b 1111, // index[101] AC_RANGE_CHECK_RANGE_LIMIT_29
+    4'b 1111, // index[102] AC_RANGE_CHECK_RANGE_LIMIT_30
+    4'b 1111, // index[103] AC_RANGE_CHECK_RANGE_LIMIT_31
+    4'b 0111, // index[104] AC_RANGE_CHECK_RANGE_PERM_0
+    4'b 0111, // index[105] AC_RANGE_CHECK_RANGE_PERM_1
+    4'b 0111, // index[106] AC_RANGE_CHECK_RANGE_PERM_2
+    4'b 0111, // index[107] AC_RANGE_CHECK_RANGE_PERM_3
+    4'b 0111, // index[108] AC_RANGE_CHECK_RANGE_PERM_4
+    4'b 0111, // index[109] AC_RANGE_CHECK_RANGE_PERM_5
+    4'b 0111, // index[110] AC_RANGE_CHECK_RANGE_PERM_6
+    4'b 0111, // index[111] AC_RANGE_CHECK_RANGE_PERM_7
+    4'b 0111, // index[112] AC_RANGE_CHECK_RANGE_PERM_8
+    4'b 0111, // index[113] AC_RANGE_CHECK_RANGE_PERM_9
+    4'b 0111, // index[114] AC_RANGE_CHECK_RANGE_PERM_10
+    4'b 0111, // index[115] AC_RANGE_CHECK_RANGE_PERM_11
+    4'b 0111, // index[116] AC_RANGE_CHECK_RANGE_PERM_12
+    4'b 0111, // index[117] AC_RANGE_CHECK_RANGE_PERM_13
+    4'b 0111, // index[118] AC_RANGE_CHECK_RANGE_PERM_14
+    4'b 0111, // index[119] AC_RANGE_CHECK_RANGE_PERM_15
+    4'b 0111, // index[120] AC_RANGE_CHECK_RANGE_PERM_16
+    4'b 0111, // index[121] AC_RANGE_CHECK_RANGE_PERM_17
+    4'b 0111, // index[122] AC_RANGE_CHECK_RANGE_PERM_18
+    4'b 0111, // index[123] AC_RANGE_CHECK_RANGE_PERM_19
+    4'b 0111, // index[124] AC_RANGE_CHECK_RANGE_PERM_20
+    4'b 0111, // index[125] AC_RANGE_CHECK_RANGE_PERM_21
+    4'b 0111, // index[126] AC_RANGE_CHECK_RANGE_PERM_22
+    4'b 0111, // index[127] AC_RANGE_CHECK_RANGE_PERM_23
+    4'b 0111, // index[128] AC_RANGE_CHECK_RANGE_PERM_24
+    4'b 0111, // index[129] AC_RANGE_CHECK_RANGE_PERM_25
+    4'b 0111, // index[130] AC_RANGE_CHECK_RANGE_PERM_26
+    4'b 0111, // index[131] AC_RANGE_CHECK_RANGE_PERM_27
+    4'b 0111, // index[132] AC_RANGE_CHECK_RANGE_PERM_28
+    4'b 0111, // index[133] AC_RANGE_CHECK_RANGE_PERM_29
+    4'b 0111, // index[134] AC_RANGE_CHECK_RANGE_PERM_30
+    4'b 0111, // index[135] AC_RANGE_CHECK_RANGE_PERM_31
+    4'b 1111, // index[136] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_0
+    4'b 1111, // index[137] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_1
+    4'b 1111, // index[138] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_2
+    4'b 1111, // index[139] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_3
+    4'b 1111, // index[140] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_4
+    4'b 1111, // index[141] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_5
+    4'b 1111, // index[142] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_6
+    4'b 1111, // index[143] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_7
+    4'b 1111, // index[144] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_8
+    4'b 1111, // index[145] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_9
+    4'b 1111, // index[146] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_10
+    4'b 1111, // index[147] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_11
+    4'b 1111, // index[148] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_12
+    4'b 1111, // index[149] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_13
+    4'b 1111, // index[150] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_14
+    4'b 1111, // index[151] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_15
+    4'b 1111, // index[152] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_16
+    4'b 1111, // index[153] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_17
+    4'b 1111, // index[154] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_18
+    4'b 1111, // index[155] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_19
+    4'b 1111, // index[156] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_20
+    4'b 1111, // index[157] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_21
+    4'b 1111, // index[158] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_22
+    4'b 1111, // index[159] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_23
+    4'b 1111, // index[160] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_24
+    4'b 1111, // index[161] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_25
+    4'b 1111, // index[162] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_26
+    4'b 1111, // index[163] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_27
+    4'b 1111, // index[164] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28
+    4'b 1111, // index[165] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29
+    4'b 1111, // index[166] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30
+    4'b 1111  // index[167] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31
   };
 
 endpackage
