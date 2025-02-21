@@ -30,7 +30,7 @@ module ${module_instance_name}
   output tlul_pkg::tl_d2h_t tl_o,
 
   // Interrupts
-  output logic [31:0] intr_gpio_o,
+  output logic [NumIOs-1:0] intr_gpio_o,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -41,20 +41,20 @@ module ${module_instance_name}
   output top_racl_pkg::racl_error_log_t   racl_error_o,
 
   // GPIOs
-  input        [31:0] cio_gpio_i,
-  output logic [31:0] cio_gpio_o,
-  output logic [31:0] cio_gpio_en_o
+  input        [NumIOs-1:0] cio_gpio_i,
+  output logic [NumIOs-1:0] cio_gpio_o,
+  output logic [NumIOs-1:0] cio_gpio_en_o
 );
   ${module_instance_name}_reg2hw_t reg2hw;
   ${module_instance_name}_hw2reg_t hw2reg;
 
-  logic [31:0] cio_gpio_q;
-  logic [31:0] cio_gpio_en_q;
+  logic [NumIOs-1:0] cio_gpio_q;
+  logic [NumIOs-1:0] cio_gpio_en_q;
 
   // possibly filter the input based upon register configuration
-  logic [31:0] data_in_d;
+  logic [NumIOs-1:0] data_in_d;
   localparam int unsigned CntWidth = 4;
-  for (genvar i = 0 ; i < 32 ; i++) begin : gen_filter
+  for (genvar i = 0 ; i < NumIOs ; i++) begin : gen_filter
     prim_filter_ctr #(
       .AsyncOn(GpioAsyncOn),
       .CntWidth(CntWidth)
@@ -110,7 +110,7 @@ module ${module_instance_name}
   assign cio_gpio_en_o                  = cio_gpio_en_q;
 
   assign hw2reg.direct_out.d            = cio_gpio_q;
-  assign hw2reg.masked_out_upper.data.d = cio_gpio_q[31:16];
+  assign hw2reg.masked_out_upper.data.d = cio_gpio_q[NumIOs-1:16];
   assign hw2reg.masked_out_upper.mask.d = 16'h 0;
   assign hw2reg.masked_out_lower.data.d = cio_gpio_q[15:0];
   assign hw2reg.masked_out_lower.mask.d = 16'h 0;
@@ -121,9 +121,9 @@ module ${module_instance_name}
     end else if (reg2hw.direct_out.qe) begin
       cio_gpio_q <= reg2hw.direct_out.q;
     end else if (reg2hw.masked_out_upper.data.qe) begin
-      cio_gpio_q[31:16] <=
+      cio_gpio_q[NumIOs-1:16] <=
         ( reg2hw.masked_out_upper.mask.q & reg2hw.masked_out_upper.data.q) |
-        (~reg2hw.masked_out_upper.mask.q & cio_gpio_q[31:16]);
+        (~reg2hw.masked_out_upper.mask.q & cio_gpio_q[NumIOs-1:16]);
     end else if (reg2hw.masked_out_lower.data.qe) begin
       cio_gpio_q[15:0] <=
         ( reg2hw.masked_out_lower.mask.q & reg2hw.masked_out_lower.data.q) |
@@ -133,7 +133,7 @@ module ${module_instance_name}
 
   // GPIO OE
   assign hw2reg.direct_oe.d = cio_gpio_en_q;
-  assign hw2reg.masked_oe_upper.data.d = cio_gpio_en_q[31:16];
+  assign hw2reg.masked_oe_upper.data.d = cio_gpio_en_q[NumIOs-1:16];
   assign hw2reg.masked_oe_upper.mask.d = 16'h 0;
   assign hw2reg.masked_oe_lower.data.d = cio_gpio_en_q[15:0];
   assign hw2reg.masked_oe_lower.mask.d = 16'h 0;
@@ -144,9 +144,9 @@ module ${module_instance_name}
     end else if (reg2hw.direct_oe.qe) begin
       cio_gpio_en_q <= reg2hw.direct_oe.q;
     end else if (reg2hw.masked_oe_upper.data.qe) begin
-      cio_gpio_en_q[31:16] <=
+      cio_gpio_en_q[NumIOs-1:16] <=
         ( reg2hw.masked_oe_upper.mask.q & reg2hw.masked_oe_upper.data.q) |
-        (~reg2hw.masked_oe_upper.mask.q & cio_gpio_en_q[31:16]);
+        (~reg2hw.masked_oe_upper.mask.q & cio_gpio_en_q[NumIOs-1:16]);
     end else if (reg2hw.masked_oe_lower.data.qe) begin
       cio_gpio_en_q[15:0] <=
         ( reg2hw.masked_oe_lower.mask.q & reg2hw.masked_oe_lower.data.q) |
@@ -154,16 +154,16 @@ module ${module_instance_name}
     end
   end
 
-  logic [31:0] data_in_q;
+  logic [NumIOs-1:0] data_in_q;
   always_ff @(posedge clk_i) begin
     data_in_q <= data_in_d;
   end
 
-  logic [31:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
-  logic [31:0] event_intr_combined;
+  logic [NumIOs-1:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
+  logic [NumIOs-1:0] event_intr_combined;
 
   // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(32)) intr_hw (
+  prim_intr_hw #(.Width(NumIOs)) intr_hw (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_intr_combined),

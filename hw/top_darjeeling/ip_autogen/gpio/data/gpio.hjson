@@ -78,6 +78,16 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "NumIOs",
+      type:    "int",
+      default: "32",
+      desc:    '''Number of I/Os.
+                  If you change this, also change the width of `gpio` in `available_inout_list` and `interrupt_list`.
+                  Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
+                  Values outside that range would likely require significant RTL changes.
+               '''
+      local:   "true",
+    },
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY",
