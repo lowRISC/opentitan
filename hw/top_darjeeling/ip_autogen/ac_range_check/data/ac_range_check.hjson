@@ -109,6 +109,46 @@
   ]
   regwidth: "32"
   registers: [
+    { name: "ALERT_STATUS"
+      desc: "Status of hardware alerts."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          name: "SHADOWED_UPDATE_ERR"
+          resval: "0"
+          swaccess: "rc"
+          desc: '''Update error of a shadowed register.
+                   This is a recoverable error caused by SW misbehavior.
+                   This field gets cleared by a SW read.
+                '''
+        }
+        { bits: "1"
+          name: "SHADOWED_STORAGE_ERR"
+          resval: "0"
+          desc: '''Storage error of a shadowed register.
+                   This is a fatal error.
+                   Once set, this field remains set until this HW IP block gets reset.
+                '''
+        }
+        { bits: "2"
+          name: "REG_INTG_ERR"
+          resval: "0"
+          desc: '''Integrity error in the register interface.
+                   This is a fatal error.
+                   Once set, this field remains set until this HW IP block gets reset.
+                '''
+        }
+        { bits: "3"
+          name: "COUNTER_ERR"
+          resval: "0"
+          desc: '''Integrity error in a counter.
+                   This is a fatal error.
+                   Once set, this field remains set until this HW IP block gets reset.
+                '''
+        }
+      ]
+    }
     { name: "LOG_CONFIG"
       desc: ""
       swaccess: "rw"

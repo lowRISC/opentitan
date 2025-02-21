@@ -9885,6 +9885,7 @@
             INTR_ENABLE: 2
             INTR_TEST: 2
             ALERT_TEST: 2
+            ALERT_STATUS: 2
             LOG_CONFIG: 2
             LOG_STATUS: 2
             LOG_ADDRESS: 2
