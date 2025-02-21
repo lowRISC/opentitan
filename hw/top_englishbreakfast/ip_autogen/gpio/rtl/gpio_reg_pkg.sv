@@ -7,6 +7,7 @@
 package gpio_reg_pkg;
 
   // Param list
+  parameter int NumIOs = 32;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
