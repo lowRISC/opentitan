@@ -66,9 +66,9 @@ module ac_range_check_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [166:0] reg_we_check;
+  logic [167:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(167)
+    .OneHotWidth(168)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -1125,6 +1125,10 @@ module ac_range_check_reg_top
   logic [15:0] range_racl_policy_shadowed_31_write_perm_31_wd;
   logic range_racl_policy_shadowed_31_write_perm_31_storage_err;
   logic range_racl_policy_shadowed_31_write_perm_31_update_err;
+  logic alert_status_shadowed_storage_err_qs;
+  logic alert_status_shadowed_update_err_qs;
+  logic alert_status_reg_intg_err_qs;
+  logic alert_status_counter_err_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -11875,13 +11879,123 @@ module ac_range_check_reg_top
   );
 
 
+  // R[alert_status]: V(False)
+  //   F[shadowed_storage_err]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_alert_status_shadowed_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [166:0] addr_hit;
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.alert_status.shadowed_storage_err.de),
+    .d      (hw2reg.alert_status.shadowed_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_status_shadowed_storage_err_qs)
+  );
+
+  //   F[shadowed_update_err]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_alert_status_shadowed_update_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.alert_status.shadowed_update_err.de),
+    .d      (hw2reg.alert_status.shadowed_update_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_status_shadowed_update_err_qs)
+  );
+
+  //   F[reg_intg_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_alert_status_reg_intg_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.alert_status.reg_intg_err.de),
+    .d      (hw2reg.alert_status.reg_intg_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_status_reg_intg_err_qs)
+  );
+
+  //   F[counter_err]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_alert_status_counter_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.alert_status.counter_err.de),
+    .d      (hw2reg.alert_status.counter_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (alert_status_counter_err_qs)
+  );
+
+
+
+  logic [167:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [166:0] racl_addr_hit_read;
-  logic [166:0] racl_addr_hit_write;
+  logic [167:0] racl_addr_hit_read;
+  logic [167:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -12070,9 +12184,10 @@ module ac_range_check_reg_top
     addr_hit[164] = (reg_addr == AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29_OFFSET);
     addr_hit[165] = (reg_addr == AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30_OFFSET);
     addr_hit[166] = (reg_addr == AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31_OFFSET);
+    addr_hit[167] = (reg_addr == AC_RANGE_CHECK_ALERT_STATUS_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 167; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 168; slice_idx++) begin
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
@@ -12270,7 +12385,8 @@ module ac_range_check_reg_top
                (racl_addr_hit_write[163] & (|(AC_RANGE_CHECK_PERMIT[163] & ~reg_be))) |
                (racl_addr_hit_write[164] & (|(AC_RANGE_CHECK_PERMIT[164] & ~reg_be))) |
                (racl_addr_hit_write[165] & (|(AC_RANGE_CHECK_PERMIT[165] & ~reg_be))) |
-               (racl_addr_hit_write[166] & (|(AC_RANGE_CHECK_PERMIT[166] & ~reg_be)))));
+               (racl_addr_hit_write[166] & (|(AC_RANGE_CHECK_PERMIT[166] & ~reg_be))) |
+               (racl_addr_hit_write[167] & (|(AC_RANGE_CHECK_PERMIT[167] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -13298,6 +13414,7 @@ module ac_range_check_reg_top
     reg_we_check[164] = range_racl_policy_shadowed_29_gated_we;
     reg_we_check[165] = range_racl_policy_shadowed_30_gated_we;
     reg_we_check[166] = range_racl_policy_shadowed_31_gated_we;
+    reg_we_check[167] = 1'b0;
   end
 
   // Read data return
@@ -14142,6 +14259,13 @@ module ac_range_check_reg_top
       racl_addr_hit_read[166]: begin
         reg_rdata_next[15:0] = range_racl_policy_shadowed_31_read_perm_31_qs;
         reg_rdata_next[31:16] = range_racl_policy_shadowed_31_write_perm_31_qs;
+      end
+
+      racl_addr_hit_read[167]: begin
+        reg_rdata_next[0] = alert_status_shadowed_storage_err_qs;
+        reg_rdata_next[1] = alert_status_shadowed_update_err_qs;
+        reg_rdata_next[2] = alert_status_reg_intg_err_qs;
+        reg_rdata_next[3] = alert_status_counter_err_qs;
       end
 
       default: begin

@@ -15,7 +15,7 @@ package ac_range_check_reg_pkg;
   parameter int BlockAw = 10;
 
   // Number of registers for every interface
-  parameter int NumRegs = 167;
+  parameter int NumRegs = 168;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -146,6 +146,25 @@ package ac_range_check_reg_pkg;
     logic        de;
   } ac_range_check_hw2reg_log_address_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_update_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } counter_err;
+  } ac_range_check_hw2reg_alert_status_reg_t;
+
   // Register -> HW type
   typedef struct packed {
     ac_range_check_reg2hw_intr_state_reg_t intr_state; // [3602:3602]
@@ -162,9 +181,10 @@ package ac_range_check_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [72:71]
-    ac_range_check_hw2reg_log_status_reg_t log_status; // [70:33]
-    ac_range_check_hw2reg_log_address_reg_t log_address; // [32:0]
+    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [80:79]
+    ac_range_check_hw2reg_log_status_reg_t log_status; // [78:41]
+    ac_range_check_hw2reg_log_address_reg_t log_address; // [40:8]
+    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [7:0]
   } ac_range_check_hw2reg_t;
 
   // Register offsets
@@ -335,6 +355,7 @@ package ac_range_check_reg_pkg;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29_OFFSET = 10'h 290;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30_OFFSET = 10'h 294;
   parameter logic [BlockAw-1:0] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31_OFFSET = 10'h 298;
+  parameter logic [BlockAw-1:0] AC_RANGE_CHECK_ALERT_STATUS_OFFSET = 10'h 29c;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] AC_RANGE_CHECK_INTR_TEST_RESVAL = 1'h 0;
@@ -511,11 +532,12 @@ package ac_range_check_reg_pkg;
     AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28,
     AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29,
     AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30,
-    AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31
+    AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31,
+    AC_RANGE_CHECK_ALERT_STATUS
   } ac_range_check_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] AC_RANGE_CHECK_PERMIT [167] = '{
+  parameter logic [3:0] AC_RANGE_CHECK_PERMIT [168] = '{
     4'b 0001, // index[  0] AC_RANGE_CHECK_INTR_STATE
     4'b 0001, // index[  1] AC_RANGE_CHECK_INTR_ENABLE
     4'b 0001, // index[  2] AC_RANGE_CHECK_INTR_TEST
@@ -682,7 +704,8 @@ package ac_range_check_reg_pkg;
     4'b 1111, // index[163] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_28
     4'b 1111, // index[164] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_29
     4'b 1111, // index[165] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_30
-    4'b 1111  // index[166] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31
+    4'b 1111, // index[166] AC_RANGE_CHECK_RANGE_RACL_POLICY_SHADOWED_31
+    4'b 0001  // index[167] AC_RANGE_CHECK_ALERT_STATUS
   };
 
 endpackage

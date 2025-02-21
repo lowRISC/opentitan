@@ -346,14 +346,15 @@ package top_darjeeling_racl_pkg;
    *     RANGE_RACL_POLICY_SHADOWED_29: SOC_ROT (Idx 2)
    *     RANGE_RACL_POLICY_SHADOWED_30: SOC_ROT (Idx 2)
    *     RANGE_RACL_POLICY_SHADOWED_31: SOC_ROT (Idx 2)
+   *     ALERT_STATUS:                  SOC_ROT (Idx 2)
    */
-  parameter racl_policy_sel_t RACL_POLICY_SEL_AC_RANGE_CHECK [167] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_AC_RANGE_CHECK [168] = '{
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
   };
 
 endpackage
