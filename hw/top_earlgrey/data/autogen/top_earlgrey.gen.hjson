@@ -5693,6 +5693,15 @@
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
         }
+        {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonEccCorrection
+        }
       ]
       inter_signal_list:
       [
@@ -5807,6 +5816,31 @@
           desc: RACL error log information of this module.
           struct: racl_error_log
           package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_ret_aon
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc:
+            '''
+            SRAM read error log.
+            Bit 0: Correctable error
+            Bit 1: Uncorrectable error
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 2
+          inst_name: sram_ctrl_ret_aon
+          index: -1
+        }
+        {
+          name: sram_rerror_addr
+          desc: SRAM read error address.
+          struct: logic [top_pkg::TL_AW-1:0]
           type: uni
           act: req
           width: 1
@@ -8625,6 +8659,15 @@
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
+        {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainEccCorrection
+        }
       ]
       inter_signal_list:
       [
@@ -8741,6 +8784,31 @@
           desc: RACL error log information of this module.
           struct: racl_error_log
           package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc:
+            '''
+            SRAM read error log.
+            Bit 0: Correctable error
+            Bit 1: Uncorrectable error
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 2
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
+          name: sram_rerror_addr
+          desc: SRAM read error address.
+          struct: logic [top_pkg::TL_AW-1:0]
           type: uni
           act: req
           width: 1
@@ -21342,6 +21410,31 @@
         index: -1
       }
       {
+        name: sram_rerror
+        desc:
+          '''
+          SRAM read error log.
+          Bit 0: Correctable error
+          Bit 1: Uncorrectable error
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 2
+        inst_name: sram_ctrl_ret_aon
+        index: -1
+      }
+      {
+        name: sram_rerror_addr
+        desc: SRAM read error address.
+        struct: logic [top_pkg::TL_AW-1:0]
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_ret_aon
+        index: -1
+      }
+      {
         name: regs_tl
         struct: tl
         package: tlul_pkg
@@ -22873,6 +22966,31 @@
         desc: RACL error log information of this module.
         struct: racl_error_log
         package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_main
+        index: -1
+      }
+      {
+        name: sram_rerror
+        desc:
+          '''
+          SRAM read error log.
+          Bit 0: Correctable error
+          Bit 1: Uncorrectable error
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 2
+        inst_name: sram_ctrl_main
+        index: -1
+      }
+      {
+        name: sram_rerror_addr
+        desc: SRAM read error address.
+        struct: logic [top_pkg::TL_AW-1:0]
         type: uni
         act: req
         width: 1
