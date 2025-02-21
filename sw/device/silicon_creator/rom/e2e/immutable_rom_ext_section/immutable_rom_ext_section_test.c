@@ -24,8 +24,7 @@ enum {
   kSramValuePass = 0x53534150,  // PASS
 };
 
-OT_SECTION(".rom_ext_immutable")
-void rom_ext_non_mutable(void) {
+OT_USED OT_SECTION(".rom_ext_immutable") void rom_ext_non_mutable(void) {
   // Print "Immutable" to the UART console.
   //                        l b a t u m m I
   const uint64_t kStr1 = 0x6c626174756d6d49;
