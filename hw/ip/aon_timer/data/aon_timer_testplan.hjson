@@ -82,6 +82,43 @@
       stage: V2
       tests: ["aon_timer_stress_all"]
     }
+    {
+      name: max_threshold
+      desc: '''
+            Run the basic smoke sequence, but constrained to set max thresholds. This helps
+            close coverage.
+            '''
+      stage: V3
+      tests: ["aon_timer_smoke_max_thold"]
+    }
+    {
+      name: min_threshold
+      desc: '''
+            Run the basic smoke sequence, but constrained to set min thresholds. This helps
+            close coverage.
+            '''
+      stage: V3
+      tests: ["aon_timer_smoke_min_thold"]
+    }
+    {
+      name: wkup_count_hi_cdc
+      desc: '''
+            Run aon_timer_wkup_count_cdc_hi_vseq which maximises the chances to hit
+            conditional and branch coverage in wkup_count_hi_cdc (prim_reg_cdc and
+            prim_reg_cdc_arb).
+            '''
+      stage: V3
+      tests: ["aon_timer_wkup_count_cdc_hi"]
+    }
+    {
+      name: custom_intr
+      desc: '''
+            Run aon_timer_custom_intr_vseq, which drives random wdog/wkup control enables
+            as well as intr_test writes in order to help close intr_test_cg covergroup.
+            '''
+      stage: V3
+      tests: ["aon_timer_custom_intr"]
+    }
   ]
 
   covergroups: [

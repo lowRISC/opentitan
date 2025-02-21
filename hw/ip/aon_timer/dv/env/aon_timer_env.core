@@ -25,6 +25,10 @@ filesets:
       - seq_lib/aon_timer_prescaler_vseq.sv: {is_include_file: true}
       - seq_lib/aon_timer_jump_vseq.sv: {is_include_file: true}
       - seq_lib/aon_timer_stress_all_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_custom_intr_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_smoke_max_thold_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_smoke_min_thold_vseq.sv: {is_include_file: true}
+      - seq_lib/aon_timer_wkup_count_cdc_hi_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

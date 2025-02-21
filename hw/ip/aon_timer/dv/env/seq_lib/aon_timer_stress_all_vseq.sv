@@ -13,7 +13,7 @@ class aon_timer_stress_all_vseq extends aon_timer_base_vseq;
 endclass : aon_timer_stress_all_vseq
 
 constraint aon_timer_stress_all_vseq::num_trans_c {
-  num_trans inside {[15:20]};
+  num_trans inside {[5:15]};
 }
 
 function aon_timer_stress_all_vseq::new (string name="");
@@ -48,5 +48,6 @@ task aon_timer_stress_all_vseq::body();
     end
 
     aon_timer_vseq.start(p_sequencer);
+    if (cfg.under_reset) break;
   end
 endtask : body

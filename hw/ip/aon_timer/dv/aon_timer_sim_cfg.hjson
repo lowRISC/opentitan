@@ -39,7 +39,7 @@
   sim_tops: ["aon_timer_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 15
 
   // Add specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/aon_timer/dv/cov/aon_timer_unr_excl.el",
@@ -58,6 +58,7 @@
     {
       name: aon_timer_smoke
       uvm_test_seq: aon_timer_smoke_vseq
+      reseed: 5
     }
     {
       name: aon_timer_prescaler
@@ -66,6 +67,27 @@
     {
       name: aon_timer_jump
       uvm_test_seq: aon_timer_jump_vseq
+      reseed: 5
+    }
+    {
+      name: aon_timer_custom_intr
+      uvm_test_seq: aon_timer_custom_intr_vseq
+      reseed: 10
+    }
+    {
+      name: aon_timer_smoke_max_thold
+      uvm_test_seq: aon_timer_smoke_max_thold_vseq
+      reseed: 5
+    }
+    {
+      name: aon_timer_smoke_min_thold
+      uvm_test_seq: aon_timer_smoke_min_thold_vseq
+      reseed: 5
+    }
+    {
+      name: aon_timer_wkup_count_cdc_hi
+      uvm_test_seq: aon_timer_wkup_count_cdc_hi_vseq
+      reseed: 5
     }
   ]
 

@@ -40,23 +40,27 @@ endtask : body
 
 task aon_timer_jump_vseq::jump_configure();
 
-  // Write random value to the COUNT registers
-  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0]);
-  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32]);
   `uvm_info(`gfn,
             $sformatf("\n\t Writing random COUNT value of %d to WKUP", wkup_count),
             UVM_HIGH)
+  // Write random value to the COUNT registers
+  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0]);
+  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32]);
+  if (cfg.under_reset) return;
 
-  csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
   `uvm_info(`gfn,
             $sformatf("\n\t Writing random COUNT value of %d to WDOG", wdog_count),
             UVM_HIGH)
+  csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
 
-  cfg.aon_clk_rst_vif.wait_clks(1);
+  cfg.aon_clk_rst_vif.wait_clks_or_rst(1);
+  if (cfg.under_reset) return;
 
   `uvm_info(`gfn, "Enabling AON Timer. Writing 1 to WKUP_CTRL and WDOG_CTRL", UVM_HIGH)
   csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b1);
+  if (cfg.under_reset) return;
   csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
+  if (cfg.under_reset) return;
 
   `uvm_info(`gfn, "\n\t Waiting for AON Timer to finish (interrupt)", UVM_HIGH)
 endtask : jump_configure
