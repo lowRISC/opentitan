@@ -588,3 +588,26 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "keymgr_dpe_testutils",
+    srcs = ["keymgr_dpe_testutils.c"],
+    hdrs = ["keymgr_dpe_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":entropy_testutils",
+        ":kmac_testutils",
+        ":otp_ctrl_testutils",
+        ":rstmgr_testutils",
+        "//hw/top:dt",
+        "//hw/top:keymgr_dpe_c_regs",
+        "//sw/device/lib/arch:boot_stage",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/base:chip",
+    ],
+)
