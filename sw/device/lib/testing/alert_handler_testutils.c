@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 
+#include "dt/dt_alert_handler.h"  // Generated
+#include "dt/dt_api.h"            // Generated
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -145,8 +147,11 @@ status_t alert_handler_testutils_configure_all(
 
 status_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds,
                                                     uint32_t *cycles) {
-  uint64_t cycles_ = udiv64_slow(microseconds * kClockFreqPeripheralHz, 1000000,
-                                 /*rem_out=*/NULL);
+  uint64_t cycles_ = udiv64_slow(
+      microseconds * dt_clock_frequency(dt_alert_handler_clock(
+                         (dt_alert_handler_t)0, kDtAlertHandlerClockClk)),
+      1000000,
+      /*rem_out=*/NULL);
   TRY_CHECK(cycles_ < UINT32_MAX,
             "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
             (uint32_t)(cycles_ >> 32), (uint32_t)cycles_);
