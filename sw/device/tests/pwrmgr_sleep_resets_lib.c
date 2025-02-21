@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt/dt_pwrmgr.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -32,6 +33,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 static_assert(
@@ -45,7 +49,6 @@ dif_flash_ctrl_state_t *flash_ctrl;
 dif_rv_plic_t *plic;
 dif_alert_handler_t *alert_handler;
 dif_aon_timer_t *aon_timer;
-dif_pwrmgr_t *pwrmgr;
 dif_sysrst_ctrl_t *sysrst_ctrl_aon;
 dif_rstmgr_t *rstmgr;
 
@@ -53,16 +56,13 @@ dif_flash_ctrl_state_t flash_ctrl_actual;
 dif_rv_plic_t plic_actual;
 dif_alert_handler_t alert_handler_actual;
 dif_aon_timer_t aon_timer_actual;
-dif_pwrmgr_t pwrmgr_actual;
+dif_pwrmgr_t pwrmgr;
 dif_sysrst_ctrl_t sysrst_ctrl_aon_actual;
 dif_rstmgr_t rstmgr_actual;
 
 void init_peripherals(void) {
   // Initialize pwrmgr.
-  CHECK_DIF_OK(
-      dif_pwrmgr_init(mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-                      &pwrmgr_actual));
-  pwrmgr = &pwrmgr_actual;
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize sysrst_ctrl.
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
@@ -163,7 +163,7 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
   LOG_INFO("sysrst enabled");
 
   // Set sysrst as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceOne,
                                               kDifToggleEnabled));
   LOG_INFO("Reset Request SourceOne is set");
@@ -214,7 +214,7 @@ void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
                                                       bite_cycles, false));
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceTwo,
                                               kDifToggleEnabled));
 }
@@ -227,7 +227,7 @@ void trigger_escalation(void) {
       kWdogBiteMicros * alert_handler_testutils_cycle_rescaling_factor());
   // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
-  CHECK_DIF_OK(dif_pwrmgr_alert_force(pwrmgr, alert));
+  CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, alert));
 
   // If this busy spin expires the escalation didn't occur as expected.
   busy_spin_micros(kWdogBiteMicros);
@@ -251,7 +251,7 @@ void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode) {
     // Program the pwrmgr to go to deep sleep state (clocks off).
     // Enter in low power mode.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
     wait_for_interrupt();
   }
   // If we arrive here the test must fail.
@@ -273,7 +273,7 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
                          kDifPwrmgrDomainOptionIoClockInLowPower |
                          kDifPwrmgrDomainOptionMainPowerInLowPower;
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
     // Log message to synchronize with host side: emit it as close as
     // possible before WFI so the host has no chance of sending the reset
     // before it is enabled.

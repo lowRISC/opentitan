@@ -63,60 +63,6 @@ static const bitfield_field32_t kDomainConfigBitfield = {
 };
 
 /**
- * Relevant bits of the WAKEUP_EN and WAKE_INFO registers must start at `0` and
- * be in the same order as `dif_pwrmgr_wakeup_request_source_t` constants.
- */
-#if defined(OPENTITAN_IS_EARLGREY)
-static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                  (1u << PWRMGR_WAKEUP_EN_EN_0_BIT),
-              "Layout of WAKEUP_EN register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                  (1u << PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
-                  (1u << PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceThree ==
-                  (1u << PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceFour ==
-                  (1u << PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceFive ==
-                  (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceSix ==
-                  (1u << PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-#elif defined(OPENTITAN_IS_DARJEELING)
-static_assert(kDifPwrmgrWakeupRequestSourceOne ==
-                  (1u << PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceTwo ==
-                  (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceThree ==
-                  (1u << PWRMGR_PARAM_SOC_PROXY_WKUP_INTERNAL_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-static_assert(kDifPwrmgrWakeupRequestSourceFour ==
-                  (1u << PWRMGR_PARAM_SOC_PROXY_WKUP_EXTERNAL_REQ_IDX),
-              "Layout of WAKE_INFO register changed.");
-#else
-#error "dif_pwrmgr does not support this top"
-#endif
-
-/**
- * Relevant bits of the RESET_EN register must start at `0` and be in the same
- * order as `dif_pwrmgr_reset_request_source_t` constants.
- */
-static_assert(kDifPwrmgrResetRequestSourceOne ==
-                  (1u << PWRMGR_RESET_EN_EN_0_BIT),
-              "Layout of RESET_EN register changed.");
-static_assert(kDifPwrmgrResetRequestSourceTwo ==
-                  (1u << PWRMGR_RESET_EN_EN_1_BIT),
-              "Layout of RESET_EN register changed.");
-
-/**
  * `dif_pwrmgr_irq_t` constants must match the corresponding generated values.
  */
 static_assert(kDifPwrmgrIrqWakeup == PWRMGR_INTR_COMMON_WAKEUP_BIT,
@@ -156,10 +102,9 @@ static const request_reg_info_t request_reg_infos[2] = {
         },
 };
 
-static dif_result_t request_reg_bitfield(
-  const dif_pwrmgr_t *pwrmgr,
-  dif_pwrmgr_req_type_t val,
-  bitfield_field32_t *bitfield) {
+static dif_result_t request_reg_bitfield(const dif_pwrmgr_t *pwrmgr,
+                                         dif_pwrmgr_req_type_t val,
+                                         bitfield_field32_t *bitfield) {
   dt_pwrmgr_t dt;
   dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
   if (res != kDifOk) {
@@ -169,11 +114,9 @@ static dif_result_t request_reg_bitfield(
   size_t count = 0;
   if (val == kDifPwrmgrReqTypeWakeup) {
     count = dt_pwrmgr_wakeup_src_count(dt);
-  }
-  else if (val == kDifPwrmgrReqTypeReset) {
+  } else if (val == kDifPwrmgrReqTypeReset) {
     count = dt_pwrmgr_reset_request_src_count(dt);
-  }
-  else {
+  } else {
     return kDifBadArg;
   }
   bitfield->index = 0;
@@ -469,12 +412,12 @@ dif_result_t dif_pwrmgr_wakeup_reason_get(const dif_pwrmgr_t *pwrmgr,
   }
 
   bitfield_field32_t bitfield;
-  dif_result_t res = request_reg_bitfield(pwrmgr, kDifPwrmgrReqTypeWakeup, &bitfield);
+  dif_result_t res =
+      request_reg_bitfield(pwrmgr, kDifPwrmgrReqTypeWakeup, &bitfield);
   if (res != kDifOk) {
     return res;
   }
-  uint32_t request_sources = bitfield_field32_read(
-      reg_val, bitfield);
+  uint32_t request_sources = bitfield_field32_read(reg_val, bitfield);
   if (request_sources != 0) {
     types |= kDifPwrmgrWakeupTypeRequest;
   }

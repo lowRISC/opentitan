@@ -36,10 +36,14 @@ typedef struct test_wakeup_sources {
    * Name of the device.
    */
   const char *name;
-  /**
-   * Handle to the DIF object for this device.
+  /*
+   * Type of the module.
    */
-  void *dif_handle;
+  dt_device_type_t dev_type;
+  /*
+   * Index of the wakeup signal.
+   */
+  size_t wakeup;
   /**
    * Wakeup Sources.
    */
@@ -48,7 +52,15 @@ typedef struct test_wakeup_sources {
    * Configuration and initialization actions for the device.
    * This will be passed the value of `dif` above.
    */
-  void (*config)(void *dif);
+  void (*config)(dt_pwrmgr_wakeup_src_t src);
+  /**
+   * Check the wakeup reason.
+   */
+  void (*check)(dt_pwrmgr_wakeup_src_t src);
+  /**
+   * Clear the wakeup reason.
+   */
+  void (*clear)(dt_pwrmgr_wakeup_src_t src);
 } test_wakeup_sources_t;
 
 extern dif_adc_ctrl_t adc_ctrl;
@@ -67,9 +79,20 @@ extern dif_usbdev_t usbdev;
 void init_units(void);
 
 /**
+ * Return the number of units to test.
+ */
+size_t get_wakeup_count(void);
+
+/**
+ * Obtain information about a wakeup source.
+ */
+const test_wakeup_sources_t *get_wakeup_source(size_t wakeup_unit,
+                                               dt_pwrmgr_wakeup_src_t *src);
+
+/**
  * Check pwrmgr reports this unit as the reason for the wakeup.
  */
-void check_wakeup_reason(uint32_t wakeup_unit);
+void check_wakeup_reason(size_t wakeup_unit);
 
 /**
  * Execute the test for a given unit and sleep mode.
@@ -77,11 +100,11 @@ void check_wakeup_reason(uint32_t wakeup_unit);
  * Configure wakeup_unit to cause a wakeup up and the pwrmgr sleep mode,
  * and let the CPU wait for interrupt.
  */
-void execute_test(uint32_t wakeup_unit, bool deep_sleep);
+void execute_test(size_t wakeup_unit, bool deep_sleep);
 
 /**
  * Clear the wakeup for the given unit.
  */
-void clear_wakeup(uint32_t wakeup_unit);
+void clear_wakeup(size_t wakeup_unit);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
