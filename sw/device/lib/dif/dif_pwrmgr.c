@@ -130,7 +130,6 @@ typedef struct request_reg_info {
   bitfield_bit32_index_t write_enable_bit_index;
   ptrdiff_t sources_enable_reg_offset;
   ptrdiff_t cur_req_sources_reg_offset;
-  bitfield_field32_t bitfield;
 } request_reg_info_t;
 
 /**
@@ -147,22 +146,6 @@ static const request_reg_info_t request_reg_infos[2] = {
             .write_enable_bit_index = PWRMGR_WAKEUP_EN_REGWEN_EN_BIT,
             .sources_enable_reg_offset = PWRMGR_WAKEUP_EN_REG_OFFSET,
             .cur_req_sources_reg_offset = PWRMGR_WAKE_STATUS_REG_OFFSET,
-            .bitfield =
-                {
-                    .mask = kDifPwrmgrWakeupRequestSourceOne |
-                            kDifPwrmgrWakeupRequestSourceTwo |
-                            kDifPwrmgrWakeupRequestSourceThree |
-#if defined(OPENTITAN_IS_EARLGREY)
-                            kDifPwrmgrWakeupRequestSourceFour |
-                            kDifPwrmgrWakeupRequestSourceFive |
-                            kDifPwrmgrWakeupRequestSourceSix,
-#elif defined(OPENTITAN_IS_DARJEELING)
-                            kDifPwrmgrWakeupRequestSourceFour,
-#else
-#error "dif_pwrmgr does not support this top"
-#endif
-                    .index = 0,
-                },
         },
     [kDifPwrmgrReqTypeReset] =
         {
@@ -170,14 +153,33 @@ static const request_reg_info_t request_reg_infos[2] = {
             .write_enable_bit_index = PWRMGR_RESET_EN_REGWEN_EN_BIT,
             .sources_enable_reg_offset = PWRMGR_RESET_EN_REG_OFFSET,
             .cur_req_sources_reg_offset = PWRMGR_RESET_STATUS_REG_OFFSET,
-            .bitfield =
-                {
-                    .mask = kDifPwrmgrResetRequestSourceOne |
-                            kDifPwrmgrResetRequestSourceTwo,
-                    .index = 0,
-                },
         },
 };
+
+static dif_result_t request_reg_bitfield(
+  const dif_pwrmgr_t *pwrmgr,
+  dif_pwrmgr_req_type_t val,
+  bitfield_field32_t *bitfield) {
+  dt_pwrmgr_t dt;
+  dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+
+  size_t count = 0;
+  if (val == kDifPwrmgrReqTypeWakeup) {
+    count = dt_pwrmgr_wakeup_src_count(dt);
+  }
+  else if (val == kDifPwrmgrReqTypeReset) {
+    count = dt_pwrmgr_reset_request_src_count(dt);
+  }
+  else {
+    return kDifBadArg;
+  }
+  bitfield->index = 0;
+  bitfield->mask = (1 << count) - 1;
+  return kDifOk;
+}
 
 /**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
@@ -326,8 +328,13 @@ dif_result_t dif_pwrmgr_set_request_sources(
   }
 
   request_reg_info_t reg_info = request_reg_infos[req_type];
+  bitfield_field32_t bitfield;
+  dif_result_t res = request_reg_bitfield(pwrmgr, req_type, &bitfield);
+  if (res != kDifOk) {
+    return res;
+  }
 
-  if (!is_valid_for_bitfield(sources, reg_info.bitfield)) {
+  if (!is_valid_for_bitfield(sources, bitfield)) {
     return kDifBadArg;
   }
 
@@ -337,7 +344,7 @@ dif_result_t dif_pwrmgr_set_request_sources(
   }
 
   // Write new value
-  uint32_t reg_val = bitfield_field32_write(0, reg_info.bitfield, sources);
+  uint32_t reg_val = bitfield_field32_write(0, bitfield, sources);
   mmio_region_write32(pwrmgr->base_addr, reg_info.sources_enable_reg_offset,
                       reg_val);
   // Slow clock domain may be synced for changes to take effect.
@@ -355,9 +362,14 @@ dif_result_t dif_pwrmgr_get_request_sources(
   }
 
   request_reg_info_t reg_info = request_reg_infos[req_type];
+  bitfield_field32_t bitfield;
+  dif_result_t res = request_reg_bitfield(pwrmgr, req_type, &bitfield);
+  if (res != kDifOk) {
+    return res;
+  }
   uint32_t reg_val =
       mmio_region_read32(pwrmgr->base_addr, reg_info.sources_enable_reg_offset);
-  *sources = bitfield_field32_read(reg_val, reg_info.bitfield);
+  *sources = bitfield_field32_read(reg_val, bitfield);
 
   return kDifOk;
 }
@@ -370,9 +382,14 @@ dif_result_t dif_pwrmgr_get_current_request_sources(
   }
 
   request_reg_info_t reg_info = request_reg_infos[req_type];
+  bitfield_field32_t bitfield;
+  dif_result_t res = request_reg_bitfield(pwrmgr, req_type, &bitfield);
+  if (res != kDifOk) {
+    return res;
+  }
   uint32_t reg_val = mmio_region_read32(pwrmgr->base_addr,
                                         reg_info.cur_req_sources_reg_offset);
-  *sources = bitfield_field32_read(reg_val, reg_info.bitfield);
+  *sources = bitfield_field32_read(reg_val, bitfield);
 
   return kDifOk;
 }
@@ -451,8 +468,13 @@ dif_result_t dif_pwrmgr_wakeup_reason_get(const dif_pwrmgr_t *pwrmgr,
     types |= kDifPwrmgrWakeupTypeAbort;
   }
 
+  bitfield_field32_t bitfield;
+  dif_result_t res = request_reg_bitfield(pwrmgr, kDifPwrmgrReqTypeWakeup, &bitfield);
+  if (res != kDifOk) {
+    return res;
+  }
   uint32_t request_sources = bitfield_field32_read(
-      reg_val, request_reg_infos[kDifPwrmgrReqTypeWakeup].bitfield);
+      reg_val, bitfield);
   if (request_sources != 0) {
     types |= kDifPwrmgrWakeupTypeRequest;
   }
