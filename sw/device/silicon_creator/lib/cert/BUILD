@@ -84,6 +84,17 @@ cc_test(
 )
 
 cc_library(
+    name = "template",
+    srcs = ["template.c"],
+    hdrs = ["template.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+    ],
+)
+
+cc_library(
     name = "cert",
     srcs = ["cert.c"],
     hdrs = ["cert.h"],
