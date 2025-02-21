@@ -117,14 +117,21 @@ def certificate_template(name, template, cert_format = "x509"):
         output_group = "unittest",
     )
 
+    if cert_format == "x509":
+        runtime_deps = [
+            "@//sw/device/silicon_creator/lib/cert:asn1",
+            "@//sw/device/silicon_creator/lib/cert:template",
+        ]
+    else:
+        runtime_deps = [
+            "@//sw/device/silicon_creator/lib/cert:cbor",
+        ]
+
     native.cc_library(
         name = "{}_library".format(name),
         srcs = [":{}_srcs".format(name)],
         hdrs = [":{}_hdrs".format(name)],
-        deps = [
-            "@//sw/device/silicon_creator/lib/cert:asn1",
-            "@//sw/device/silicon_creator/lib/cert:cbor",
-        ],
+        deps = runtime_deps,
     )
 
     native.cc_test(
