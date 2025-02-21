@@ -72,21 +72,21 @@ inline uint32_t addr_as_offset(mmio_region_t base, uint32_t offset) {
 /**
  * Send CSR access to aes, expecting to timeout.
  */
-static void aes_csr_access(void) {
+OT_NOINLINE void aes_csr_access(void) {
   CHECK_DIF_OK(dif_aes_alert_force(&aes, kDifAesAlertRecovCtrlUpdateErr));
 }
 
-static void hmac_csr_access(void) {
+OT_NOINLINE static void hmac_csr_access(void) {
   dif_hmac_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
 }
 
-static void kmac_csr_access(void) {
+OT_NOINLINE static void kmac_csr_access(void) {
   dif_kmac_status_t status;
   CHECK_DIF_OK(dif_kmac_get_status(&kmac, &status));
 }
 
-static void otbn_csr_access(void) {
+OT_NOINLINE static void otbn_csr_access(void) {
   dif_otbn_err_bits_t err_bits;
   CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn, &err_bits));
 }
@@ -187,13 +187,13 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   // Initialize the expected error data address and execution address.
   clock_error_info_t clock_error_info[kTopEarlgreyHintableClocksLast + 1] = {
       {"aes", addr_as_offset(aes.base_addr, AES_ALERT_TEST_REG_OFFSET),
-       (uint32_t)&dif_aes_alert_force},
+       (uint32_t)&aes_csr_access},
       {"hmac", addr_as_offset(hmac.base_addr, HMAC_INTR_STATE_REG_OFFSET),
-       (uint32_t)&dif_hmac_irq_get_state},
+       (uint32_t)&hmac_csr_access},
       {"kmac", addr_as_offset(kmac.base_addr, KMAC_STATUS_REG_OFFSET),
-       (uint32_t)&dif_kmac_get_status},
+       (uint32_t)&kmac_csr_access},
       {"otbn", addr_as_offset(otbn.base_addr, OTBN_ERR_BITS_REG_OFFSET),
-       (uint32_t)&dif_otbn_get_err_bits}};
+       (uint32_t)&otbn_csr_access}};
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
