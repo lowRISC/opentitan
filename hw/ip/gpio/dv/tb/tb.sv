@@ -11,8 +11,6 @@ module tb;
   import gpio_env_pkg::*;
   import gpio_test_pkg::*;
   import gpio_reg_pkg::*;
-  import gpio_pkg::*;
-
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -24,6 +22,8 @@ module tb;
   wire [NUM_GPIOS-1:0] gpio_oe;
   wire [NUM_GPIOS-1:0] gpio_intr;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  gpio_straps_t sampled_straps;
+  wire strap_en;
 
   `DV_ALERT_IF_CONNECT()
 
@@ -33,6 +33,10 @@ module tb;
     .rst_n(rst_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
+  gpio_straps_if straps_if_inst (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -52,9 +56,8 @@ module tb;
     .clk_i (clk),
     .rst_ni(rst_n),
 
-    // TODO: need to test snapshot functionality
-    .strap_en_i(1'b0),
-    .sampled_straps_o(),
+    .strap_en_i(straps_if_inst.strap_en),
+    .sampled_straps_o(straps_if_inst.sampled_straps),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
@@ -85,6 +88,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
+    uvm_config_db#(virtual gpio_straps_if)::set(null, "*.*", "straps_vif", straps_if_inst);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
