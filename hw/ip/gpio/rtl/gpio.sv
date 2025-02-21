@@ -71,7 +71,143 @@ module gpio
     );
   end
 
+  // Input period counters
+  logic [NumInpPeriodCounters-1:0][31:0] inp_prd_cnt_d, inp_prd_cnt_q;
+  logic [NumInpPeriodCounters-1:0][7:0] prescaler_cnt_d, prescaler_cnt_q;
+  logic [NumInpPeriodCounters-1:0] sampled_inp_d, sampled_inp_q;
+  logic [NumInpPeriodCounters-1:0] prescaler_cnt_reached,
+                                   sensitive_edge;
+  typedef enum logic [1:0] {
+    InpPrdCntDisabled,
+    InpPrdCntPreOpeningEdge,
+    InpPrdCntPreClosingEdge
+   } inp_prd_cnt_state_e;
+   inp_prd_cnt_state_e [NumInpPeriodCounters-1:0] inp_prd_cnt_state_d, inp_prd_cnt_state_q;
 
+  for (genvar i = 0; i < NumInpPeriodCounters; i++) begin : gen_inp_prd_cnt
+
+    // Determine when the prescaler counter reaches the prescaler threshold.
+    assign prescaler_cnt_reached[i] =
+        (prescaler_cnt_q[i] == reg2hw.inp_prd_cnt_ctrl[i].prescaler.q) &
+        reg2hw.inp_prd_cnt_ctrl[i].enable.q;
+
+    always_comb begin
+      prescaler_cnt_d[i] = prescaler_cnt_q[i];
+
+      if (!reg2hw.inp_prd_cnt_ctrl[i].enable.q) begin
+        // Clear the prescaler counter when the input period counter is disabled.
+        prescaler_cnt_d[i] = '0;
+      end else begin
+        // When the input period counter is enabled ..
+        if (prescaler_cnt_reached[i]) begin
+          // .. and the prescaler counter has reached its threshold, clear it, ..
+          prescaler_cnt_d[i] = '0;
+        end else begin
+          // .. otherwise increment it.
+          prescaler_cnt_d[i] = prescaler_cnt_q[i] + 8'd1;
+        end
+      end
+    end
+
+    // Sample the input when the prescaler counter has reached the prescaler threshold.
+    assign sampled_inp_d[i] = prescaler_cnt_reached[i] ?
+                              data_in_d[reg2hw.inp_prd_cnt_ctrl[i].input_select.q] :
+                              sampled_inp_q[i];
+
+    // Detect sensitive edges.
+    assign sensitive_edge[i] = reg2hw.inp_prd_cnt_ctrl[i].polarity.q ?
+                               // Rising edge
+                               (~sampled_inp_q[i] & sampled_inp_d[i]) :
+                               // Falling edge
+                               (sampled_inp_q[i] & ~sampled_inp_d[i]);
+
+    always_comb begin
+      hw2reg.inp_prd_cnt_ctrl[i].enable.de = 1'b0;
+      hw2reg.inp_prd_cnt_val[i].de = 1'b0;
+      inp_prd_cnt_d[i] = inp_prd_cnt_q[i];
+      inp_prd_cnt_state_d[i] = inp_prd_cnt_state_q[i];
+
+      unique case (inp_prd_cnt_state_q[i])
+        InpPrdCntDisabled: begin
+          if (reg2hw.inp_prd_cnt_ctrl[i].enable.q) begin
+            // When the input period counter gets enabled, clear the counter and wait for the
+            // opening edge.
+            inp_prd_cnt_d[i] = '0;
+            inp_prd_cnt_state_d[i] = InpPrdCntPreOpeningEdge;
+          end
+        end
+
+        InpPrdCntPreOpeningEdge: begin
+          // Wait for the opening edge.
+          if (prescaler_cnt_reached[i] && sensitive_edge[i]) begin
+            // Increment the counter for the first time and switch to waiting for the closing edge.
+            inp_prd_cnt_d[i] = inp_prd_cnt_q[i] + 32'd1;
+            inp_prd_cnt_state_d[i] = InpPrdCntPreClosingEdge;
+          end
+        end
+
+        InpPrdCntPreClosingEdge: begin
+          if (prescaler_cnt_reached[i]) begin
+            // Increment the counter while waiting for the closing edge.
+            inp_prd_cnt_d[i] = inp_prd_cnt_q[i] + 32'd1;
+            if (sensitive_edge[i]) begin
+              // Update the value register of this input period counter.
+              hw2reg.inp_prd_cnt_val[i].de = 1'b1;
+              // Clear the counter.
+              inp_prd_cnt_d[i] = '0;
+              // If continuous mode is not enabled, clear the enable bit and go back to the disabled
+              // state.
+              if (!reg2hw.inp_prd_cnt_ctrl[i].continuous_mode.q) begin
+                hw2reg.inp_prd_cnt_ctrl[i].enable.de = 1'b1;
+                inp_prd_cnt_state_d[i] = InpPrdCntDisabled;
+              end
+              // Else, (i.e., if continuous mode is enabled), implicitly don't clear the enable bit
+              // and keep waiting for the next closing edge.
+            end
+          end
+        end
+
+        default: inp_prd_cnt_state_d[i] = InpPrdCntDisabled;
+      endcase
+
+      // When the input period counter is not enabled, clear the counter and go back to the disabled
+      // state.
+      if (!reg2hw.inp_prd_cnt_ctrl[i].enable.q) begin
+        inp_prd_cnt_d[i] = '0;
+        inp_prd_cnt_state_d[i] = InpPrdCntDisabled;
+      end
+    end
+
+    // When the register gets updated, write the incremented counter value.
+    assign hw2reg.inp_prd_cnt_val[i].d = inp_prd_cnt_q[i] + 32'd1;
+
+    // HW only ever clears the enable bit in the enable bit of the control register (in the FSM
+    // above), it never writes any of the other bits.
+    assign hw2reg.inp_prd_cnt_ctrl[i].enable.d = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].continuous_mode.d = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].continuous_mode.de = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].polarity.d = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].polarity.de = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].input_select.d = '0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].input_select.de = 1'b0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].prescaler.d = '0;
+    assign hw2reg.inp_prd_cnt_ctrl[i].prescaler.de = 1'b0;
+
+    // Flops for each input period counter.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        inp_prd_cnt_q[i] <= '0;
+        inp_prd_cnt_state_q[i] <= InpPrdCntDisabled;
+        prescaler_cnt_q[i] <= '0;
+        sampled_inp_q[i] <= '0;
+      end else begin
+        inp_prd_cnt_q[i] <= inp_prd_cnt_d[i];
+        inp_prd_cnt_state_q[i] <= inp_prd_cnt_state_d[i];
+        prescaler_cnt_q[i] <= prescaler_cnt_d[i];
+        sampled_inp_q[i] <= sampled_inp_d[i];
+      end
+    end
+  end
 
   if (GpioAsHwStrapsEn) begin : gen_strap_sample
     // sample at gpio inputs at strap_en_i signal pulse.
