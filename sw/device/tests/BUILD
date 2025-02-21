@@ -3075,7 +3075,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -3358,7 +3358,6 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         "//hw/top:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",

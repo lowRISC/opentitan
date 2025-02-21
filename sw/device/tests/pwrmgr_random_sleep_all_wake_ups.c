@@ -62,11 +62,6 @@ bool test_main(void) {
 
   init_units();
 
-  // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
-
   // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
   uint32_t wakeup_count = 0;
@@ -109,6 +104,8 @@ bool test_main(void) {
   deep_sleep = get_deep_sleep(wakeup_count);
   delay_n_clear(4);
   CHECK(!deep_sleep, "Should be normal sleep");
+  const test_wakeup_sources_t *src = get_wakeup_source(wakeup_unit, NULL);
+  LOG_INFO("Test %d begin (%s)", wakeup_unit, src->name);
   execute_test(wakeup_unit, deep_sleep);
   check_wakeup_reason(wakeup_unit);
   LOG_INFO("Woke up by source %d", wakeup_unit);
@@ -120,6 +117,7 @@ bool test_main(void) {
   deep_sleep = get_deep_sleep(wakeup_count);
   delay_n_clear(4);
   CHECK(deep_sleep, "Should be deep sleep");
+  LOG_INFO("Test %d begin (%s)", wakeup_unit, src->name);
   execute_test(wakeup_unit, deep_sleep);
 
   // This is not reachable.

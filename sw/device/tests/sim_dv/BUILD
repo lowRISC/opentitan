@@ -565,8 +565,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",

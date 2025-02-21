@@ -112,6 +112,7 @@ extend-exclude = [
   "util/vendor.py",
   "util/verible-format.py",
   "util/version_file.py",
+  "**/pwrmgr/util/*.py",
 ]
 
 [lint]
