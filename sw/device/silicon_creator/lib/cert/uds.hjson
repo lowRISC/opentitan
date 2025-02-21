@@ -10,44 +10,46 @@
         // (x and y) which are 32-bytes integers.
         creator_pub_key_ec_x: {
             type: "integer",
-            size: 32,
+            exact-size: 32,
         },
         creator_pub_key_ec_y: {
             type: "integer",
-            size: 32,
+            exact-size: 32,
         },
         // Creator public key ID: this is a 20-byte hash
         // derived from the creator public key.
         creator_pub_key_id: {
             type: "byte-array",
-            size: 20,
+            exact-size: 20,
+            tweak-msb: true,
         },
         // Authority key ID: this is the identifier of
         // the key that will be used to sign this certificate
         // offline.
         auth_key_key_id: {
             type: "byte-array",
-            size: 20,
+            exact-size: 20,
+            tweak-msb: true,
         },
         // Hash of the creator_sw_cfg OTP partition (SHA256).
         otp_creator_sw_cfg_hash: {
             type: "byte-array",
-            size: 32,
+            exact-size: 32,
         },
         // Hash of the owner_sw_cfg OTP partition (SHA256).
         otp_owner_sw_cfg_hash: {
             type: "byte-array",
-            size: 32,
+            exact-size: 32,
         },
         // Hash of the rot_creator_auth_codesign OTP partition (SHA256).
         otp_rot_creator_auth_codesign_hash: {
             type: "byte-array",
-            size: 32,
+            exact-size: 32,
         },
         // Hash of the rot_creator_auth_state OTP partition (SHA256).
         otp_rot_creator_auth_state_hash: {
             type: "byte-array",
-            size: 32,
+            exact-size: 32,
         },
         // Debug (whether LC state exposes JTAG access or not).
         debug_flag: {
@@ -57,11 +59,11 @@
         // are two integers named "r" and "s"
         cert_signature_r: {
             type: "integer",
-            size: 32,
+            range-size: [24, 32],
         },
         cert_signature_s: {
             type: "integer",
-            size: 32,
+            range-size: [24, 32],
         }
     },
 

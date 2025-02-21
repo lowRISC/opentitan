@@ -63,6 +63,23 @@ impl Der {
         Ok(der.output)
     }
 
+    pub fn encode_size(size: usize) -> Vec<u8> {
+        // Push length, see X.690 section 8.1.3.
+        let mut encoded = Vec::<u8>::new();
+        if size <= 0x7f {
+            encoded.push(size as u8);
+        } else {
+            let mut remaining = size;
+            while remaining != 0 {
+                encoded.push((remaining & 0xff) as u8);
+                remaining >>= 8;
+            }
+            encoded.push(0x80 | (encoded.len() as u8));
+            encoded.reverse();
+        }
+        encoded
+    }
+
     fn get_value_or_error<T>(val: &Value<T>) -> Result<&T> {
         match val {
             Value::Literal(x) => Ok(x),
@@ -198,14 +215,8 @@ impl Builder for Der {
         if content.output.len() <= 0x7f {
             self.push_byte(content.output.len() as u8)?;
         } else {
-            let mut len = content.output.len();
-            let mut bytes = Vec::<u8>::new();
-            while len != 0 {
-                bytes.push((len & 0xff) as u8);
-                len >>= 8;
-            }
-            self.push_byte(0x80 | (bytes.len() as u8))?;
-            bytes.reverse();
+            let len = content.output.len();
+            let bytes = Self::encode_size(len);
             self.push_bytes(&bytes)?;
         }
         // Push content

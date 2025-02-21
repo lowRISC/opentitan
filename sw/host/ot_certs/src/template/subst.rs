@@ -8,14 +8,14 @@
 use anyhow::{bail, ensure, Context, Result};
 use hex::{FromHex, ToHex};
 use indexmap::IndexMap;
-use num_bigint_dig::{BigUint, ToBigInt};
+use num_bigint_dig::{BigUint, ToBigUint};
 use num_traits::Num;
 use serde::{Deserialize, Serialize};
 
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
     DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, KeyUsage,
-    Signature, SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
+    Signature, SizeRange, SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -24,7 +24,7 @@ use crate::template::{
 #[serde(untagged)]
 pub enum SubstValue {
     ByteArray(Vec<u8>),
-    Int32(i32),
+    Uint32(u32),
     String(String),
     Boolean(bool),
 }
@@ -67,9 +67,9 @@ impl SubstValue {
     // the size constraint will be enforced.
     pub fn parse(&self, var_type: &VariableType) -> Result<SubstValue> {
         match *var_type {
-            VariableType::ByteArray { size } => self.parse_as_byte_array(size),
-            VariableType::Integer { size } => self.parse_as_integer(size),
-            VariableType::String { size } => self.parse_as_string(size),
+            VariableType::ByteArray { .. } => self.parse_as_byte_array(var_type.size()),
+            VariableType::Integer { .. } => self.parse_as_integer(var_type.size()),
+            VariableType::String { .. } => self.parse_as_string(var_type.size()),
             VariableType::Boolean => self.parse_as_boolean(),
         }
     }
@@ -126,12 +126,13 @@ impl SubstValue {
                 );
                 Ok(SubstValue::ByteArray(bytes))
             }
-            SubstValue::Int32(x) => {
-                let bigint = x.to_bigint().expect("cannot convert a i32 to BigInt");
-                let bytes = bigint.to_signed_bytes_be();
+            SubstValue::Uint32(x) => {
+                let bigint = x.to_biguint().expect("cannot convert a i32 to BigInt");
+                let bytes = bigint.to_bytes_be();
                 ensure!(
                     size == 0 || bytes.len() <= size,
-                    "expected an integer that fits on {size} bytes but it uses 4 bytes"
+                    "expected an integer that fits on {size} bytes but it uses {} bytes",
+                    bytes.len()
                 );
                 Ok(SubstValue::ByteArray(bytes))
             }
@@ -224,7 +225,10 @@ impl ConvertValue<Vec<u8>> for SubstValue {
     fn convert(&self, convert: &Option<Conversion>) -> Result<Vec<u8>> {
         // Calling `parse` will ensure that that the returned value is a byte
         // array, this avoids duplicating code.
-        let val = self.parse(&VariableType::ByteArray { size: 0 })?;
+        let val = self.parse(&VariableType::ByteArray {
+            size: SizeRange::ExactSize(0),
+            tweak_msb: None,
+        })?;
         // The only supported conversion to byte array is from a byte array.
         let SubstValue::ByteArray(bytes) = val else {
             bail!("cannot substitute a byte-array field with value {:?}", self);
@@ -241,7 +245,9 @@ impl ConvertValue<Vec<u8>> for SubstValue {
 impl ConvertValue<BigUint> for SubstValue {
     fn convert(&self, convert: &Option<Conversion>) -> Result<BigUint> {
         // Calling `parse` will ensure that that the returned value is a byte array.
-        let val = self.parse(&VariableType::Integer { size: 0 })?;
+        let val = self.parse(&VariableType::Integer {
+            size: SizeRange::ExactSize(0),
+        })?;
         match val {
             SubstValue::ByteArray(bytes) => {
                 // No conversion means big-endian.
@@ -577,22 +583,34 @@ mod tests {
         // Size 0 means any size.
         assert_eq!(
             byte_array
-                .parse(&VariableType::ByteArray { size: 0 })
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(0),
+                    tweak_msb: None
+                })
                 .unwrap(),
             byte_array
         );
         assert_eq!(
             byte_array
-                .parse(&VariableType::ByteArray { size: 4 })
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(4),
+                    tweak_msb: None
+                })
                 .unwrap(),
             byte_array
         );
         assert!(byte_array
-            .parse(&VariableType::ByteArray { size: 3 })
+            .parse(&VariableType::ByteArray {
+                size: SizeRange::ExactSize(3),
+                tweak_msb: None
+            })
             .is_err());
         // Size must match exactly.
         assert!(byte_array
-            .parse(&VariableType::ByteArray { size: 5 })
+            .parse(&VariableType::ByteArray {
+                size: SizeRange::ExactSize(5),
+                tweak_msb: None
+            })
             .is_err());
 
         // Strings are interpreted as hexstrings.
@@ -600,22 +618,34 @@ mod tests {
         // Size 0 means any size.
         assert_eq!(
             byte_array_str
-                .parse(&VariableType::ByteArray { size: 0 })
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(0),
+                    tweak_msb: None
+                })
                 .unwrap(),
             byte_array
         );
         assert_eq!(
             byte_array_str
-                .parse(&VariableType::ByteArray { size: 4 })
+                .parse(&VariableType::ByteArray {
+                    size: SizeRange::ExactSize(4),
+                    tweak_msb: None
+                })
                 .unwrap(),
             byte_array
         );
         assert!(byte_array_str
-            .parse(&VariableType::ByteArray { size: 3 })
+            .parse(&VariableType::ByteArray {
+                size: SizeRange::ExactSize(3),
+                tweak_msb: None
+            })
             .is_err());
         // Size must match exactly.
         assert!(byte_array_str
-            .parse(&VariableType::ByteArray { size: 5 })
+            .parse(&VariableType::ByteArray {
+                size: SizeRange::ExactSize(5),
+                tweak_msb: None
+            })
             .is_err());
     }
 
@@ -628,7 +658,7 @@ mod tests {
         let byte_array_str_hex = SubstValue::String("0x3f2e1d0c".to_string());
         let byte_array_str_dec = SubstValue::String("1059986700".to_string());
         // Fixed-size integer.
-        let byte_array_int = SubstValue::Int32(0x3f2e1d0c);
+        let byte_array_int = SubstValue::Uint32(0x3f2e1d0c);
 
         for val in [
             &byte_array,
@@ -638,20 +668,33 @@ mod tests {
         ] {
             // Size 0 means any size.
             assert_eq!(
-                val.parse(&VariableType::Integer { size: 0 }).unwrap(),
+                val.parse(&VariableType::Integer {
+                    size: SizeRange::ExactSize(0),
+                })
+                .unwrap(),
                 byte_array
             );
             assert_eq!(
-                val.parse(&VariableType::Integer { size: 4 }).unwrap(),
+                val.parse(&VariableType::Integer {
+                    size: SizeRange::ExactSize(4),
+                })
+                .unwrap(),
                 byte_array
             );
             // Size does not need not match exactly.
             assert_eq!(
-                val.parse(&VariableType::Integer { size: 5 }).unwrap(),
+                val.parse(&VariableType::Integer {
+                    size: SizeRange::ExactSize(5),
+                })
+                .unwrap(),
                 byte_array
             );
             // Too small size in an error.
-            assert!(val.parse(&VariableType::Integer { size: 3 }).is_err());
+            assert!(val
+                .parse(&VariableType::Integer {
+                    size: SizeRange::ExactSize(3),
+                })
+                .is_err());
         }
     }
 
@@ -661,11 +704,33 @@ mod tests {
         // Big-endian integer.
         let s = SubstValue::String("OpenTitan".into());
         // Size 0 means any size.
-        assert_eq!(s.parse(&VariableType::String { size: 0 }).unwrap(), s);
-        assert_eq!(s.parse(&VariableType::String { size: 9 }).unwrap(), s);
+        assert_eq!(
+            s.parse(&VariableType::String {
+                size: SizeRange::ExactSize(0),
+            })
+            .unwrap(),
+            s
+        );
+        assert_eq!(
+            s.parse(&VariableType::String {
+                size: SizeRange::ExactSize(9),
+            })
+            .unwrap(),
+            s
+        );
         // A shorting string than specified is acceptable.
-        assert_eq!(s.parse(&VariableType::String { size: 10 }).unwrap(), s);
-        assert!(s.parse(&VariableType::String { size: 8 }).is_err());
+        assert_eq!(
+            s.parse(&VariableType::String {
+                size: SizeRange::ExactSize(10),
+            })
+            .unwrap(),
+            s
+        );
+        assert!(s
+            .parse(&VariableType::String {
+                size: SizeRange::ExactSize(8),
+            })
+            .is_err());
     }
 
     /// Test parsing of booleans.

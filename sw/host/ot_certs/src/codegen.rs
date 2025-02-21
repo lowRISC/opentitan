@@ -5,18 +5,22 @@
 //! This module is capable of generating C code for generating a binary X.509
 //! certificate according to a [`Template`].
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use heck::ToUpperCamelCase;
 use indexmap::IndexMap;
+use itertools::Itertools;
 use std::fmt::Write;
 
-use crate::asn1::codegen::{self, ConstantPool, VariableCodegenInfo, VariableInfo};
+use crate::asn1::codegen::{self, CodegenOutput, VariableCodegenInfo, VariableInfo};
 use crate::asn1::x509::X509;
 use crate::template::subst::{Subst, SubstValue};
-use crate::template::{EcdsaSignature, Signature, Template, Value, Variable, VariableType};
+use crate::template::{
+    EcdsaSignature, Signature, SizeRange, Template, Value, Variable, VariableType,
+};
 use crate::x509;
 
-const INDENT: &str = "  ";
+/// The amount of test cases to generate for covering more corner cases.
+const TEST_CASE_COUNT: u32 = 100;
 
 pub struct Codegen {
     /// Header.
@@ -80,6 +84,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_c.push('\n');
     writeln!(source_c, "#include \"{}.h\"", tmpl.name)?;
     source_c.push_str("#include \"sw/device/silicon_creator/lib/cert/asn1.h\"\n\n");
+    source_c.push_str("#include \"sw/device/silicon_creator/lib/cert/template.h\"\n\n");
 
     source_h.push_str("#include \"sw/device/lib/base/status.h\"\n\n");
 
@@ -99,18 +104,14 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_h.push_str(&generate_value_struct(&tbs_value_struct_name, &tbs_vars));
     let tbs_value_struct_name = tbs_value_struct_name + "_t";
 
-    // Create a constant pool to share between the two functions.
-    let mut const_pool = ConstantPool::new();
-
     // Generate TBS function.
     let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
     let generate_tbs_fn_params =
-        format!("{tbs_value_struct_name} *values, uint8_t *tbs, size_t *tbs_inout_size");
-    let (generate_tbs_fn_def, generate_tbs_fn_impl, max_tbs_size) = generate_builder(
+        format!("{tbs_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
+    let (generate_tbs_fn_def, generate_tbs_fn_impl) = generate_builder(
         CertificateComponent::Tbs,
         &generate_tbs_fn_name,
         &generate_tbs_fn_params,
-        &mut const_pool,
         &tbs_vars,
         |builder| X509::push_tbs_certificate(builder, &tmpl.certificate),
     )?;
@@ -119,7 +120,13 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let tbs_binary_val_name = "tbs";
     sig_vars.insert(
         tbs_binary_val_name.to_string(),
-        VariableType::ByteArray { size: max_tbs_size },
+        VariableType::ByteArray {
+            size: SizeRange::RangeSize(
+                generate_tbs_fn_impl.min_size,
+                generate_tbs_fn_impl.max_size,
+            ),
+            tweak_msb: None,
+        },
     );
     let tbs_binary_val = Value::Variable(Variable {
         name: tbs_binary_val_name.to_string(),
@@ -134,38 +141,48 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     // Generate sig function.
     let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
     let generate_cert_fn_params =
-        format!("{sig_value_struct_name} *values, uint8_t *cert, size_t *cert_inout_size");
-    let (generate_cert_fn_def, generate_cert_fn_impl, max_cert_size) = generate_builder(
+        format!("{sig_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
+    let (generate_cert_fn_def, generate_cert_fn_impl) = generate_builder(
         CertificateComponent::Certificate,
         &generate_cert_fn_name,
         &generate_cert_fn_params,
-        &mut const_pool,
         &sig_vars,
         |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
     )?;
 
-    // Create two constants for the maximum possible size of TBS and cert.
-    // Also generate a comment stating how this size was computed.
-    let max_tbs_size_const_name = format!("k{}MaxTbsSizeBytes", tmpl.name.to_upper_camel_case());
-    let max_cert_size_const_name = format!("k{}MaxCertSizeBytes", tmpl.name.to_upper_camel_case());
-    source_h.push_str("// Maximum possible size of a TBS and a certificate assuming:\n");
+    // Create constants for the variable size range.
+    source_h.push_str("enum {\n");
     for (var_name, var_type) in tbs_vars.iter().chain(sig_vars.iter()) {
         // Only consider variables whose size can vary, ie pointers.
         let (codegen, _) = c_variable_info(var_name, "", var_type);
         if let VariableCodegenInfo::Pointer { .. } = codegen {
-            let size = match var_type {
-                VariableType::ByteArray { size }
-                | VariableType::Integer { size }
-                | VariableType::String { size } => *size,
-                VariableType::Boolean => bail!("internal error: boolean represented by a pointer"),
-            };
-            writeln!(source_h, "// - {var_name} is of size at most {size} bytes.")?;
+            let tmpl_name = tmpl.name.to_upper_camel_case();
+            let const_name = var_name.to_upper_camel_case();
+            let (min_size, max_size) = var_type.array_size();
+            writeln!(
+                source_h,
+                "k{tmpl_name}Min{const_name}SizeBytes = {min_size},"
+            )?;
+            writeln!(
+                source_h,
+                "k{tmpl_name}Max{const_name}SizeBytes = {max_size},"
+            )?;
+
+            if var_type.has_constant_array_size() {
+                writeln!(
+                    source_h,
+                    "k{tmpl_name}Exact{const_name}SizeBytes = {max_size},"
+                )?;
+            }
         }
     }
+    source_h.push_str("};\n");
+
+    let max_cert_size_const_name = format!("k{}MaxCertSizeBytes", tmpl.name.to_upper_camel_case());
+    source_h.push_str("// Maximum possible size of a certificate\n");
     source_h.push_str(&indoc::formatdoc! {"enum {{
-    {INDENT}{max_tbs_size_const_name} = {max_tbs_size},
-    {INDENT}{max_cert_size_const_name} = {max_cert_size},
-    }};"});
+        {max_cert_size_const_name} = {},
+    }};", generate_cert_fn_impl.max_size});
 
     // Output definition of the functions.
     source_h.push_str("\n\n");
@@ -173,19 +190,14 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_h.push_str(&generate_cert_fn_def);
     source_h.push('\n');
 
-    // Output constant pool and the implementation of the functions.
-    source_c.push_str(&const_pool.codestring());
-    source_c.push('\n');
-    source_c.push_str(&generate_tbs_fn_impl);
-    source_c.push_str(&generate_cert_fn_impl);
+    // Output the implementation of the functions.
+    source_c.push_str(&generate_tbs_fn_impl.code);
+    source_c.push_str(&generate_cert_fn_impl.code);
     source_c.push('\n');
 
     writeln!(source_h, "\n#endif /* __{}__ */", preproc_guard_include)?;
 
     // Generate unittest.
-    let unittest_data = tmpl.random_test()?;
-    let expected_cert = x509::generate_certificate(&tmpl.subst(&unittest_data)?)?;
-
     source_unittest.push_str(&license_and_warning);
     source_unittest.push('\n');
     source_unittest.push_str("extern \"C\" {\n");
@@ -193,13 +205,63 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_unittest.push_str("}\n");
     source_unittest.push_str("#include \"gtest/gtest.h\"\n\n");
 
+    for idx in 0..TEST_CASE_COUNT {
+        let test_case = generate_test_case(
+            &format!("Verify{idx}"),
+            &tbs_vars,
+            &sig_vars,
+            generate_tbs_fn_impl.min_size,
+            generate_tbs_fn_impl.max_size,
+            generate_cert_fn_impl.max_size,
+            tmpl,
+        )?;
+        source_unittest.push_str(&test_case);
+    }
+
+    Ok(Codegen {
+        source_h,
+        source_c,
+        source_unittest,
+    })
+}
+
+// Generate a unit test test case with random variables.
+fn generate_test_case(
+    test_name: &str,
+    tbs_vars: &IndexMap<String, VariableType>,
+    sig_vars: &IndexMap<String, VariableType>,
+    min_tbs_size: usize,
+    max_tbs_size: usize,
+    max_cert_size: usize,
+    tmpl: &Template,
+) -> Result<String> {
+    let mut source_unittest = String::new();
+    let unittest_data = tmpl.random_test()?;
+    let expected_cert = x509::generate_certificate(&tmpl.subst(&unittest_data)?)?;
+
+    let tmpl_name = tmpl.name.to_upper_camel_case();
+    let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
+    let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
+    let tbs_value_struct_name = format!("{}_tbs_values_t", tmpl.name);
+    let sig_value_struct_name = format!("{}_sig_values_t", tmpl.name);
+
+    source_unittest.push_str(&format! { r#"
+        TEST({tmpl_name}, {test_name})
+    "#});
+
+    source_unittest.push_str(
+        "
+        {
+    ",
+    );
+
     // Generate constants holding the data.
     for (var_name, data) in unittest_data.values {
         match data {
             SubstValue::ByteArray(bytes) => {
                 writeln!(
                     source_unittest,
-                    "uint8_t g_{var_name}[] = {{ {} }};",
+                    "static uint8_t g_{var_name}[] = {{ {} }};",
                     bytes
                         .iter()
                         .map(|x| format!("{:#02x}", x))
@@ -207,26 +269,27 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
                         .join(", ")
                 )?;
             }
-            SubstValue::String(s) => writeln!(source_unittest, "char g_{var_name}[] = \"{s}\";")?,
-            SubstValue::Int32(val) => writeln!(source_unittest, "uint32_t g_{var_name} = {val};")?,
+            SubstValue::String(s) => {
+                let s = s.chars().map(|c| format!("'{c}'")).join(", ");
+                writeln!(source_unittest, "static char g_{var_name}[] = {{{s}}};")?
+            }
+
+            SubstValue::Uint32(val) => writeln!(source_unittest, "uint32_t g_{var_name} = {val};")?,
             SubstValue::Boolean(val) => writeln!(source_unittest, "bool g_{var_name} = {val};")?,
         }
     }
     // Generate structure to hold the TBS data.
     source_unittest.push('\n');
     writeln!(source_unittest, "{tbs_value_struct_name} g_tbs_values = {{")?;
-    source_unittest.push_str(&generate_value_struct_assignment(&tbs_vars)?);
+    source_unittest.push_str(&generate_value_struct_assignment(tbs_vars)?);
     source_unittest.push_str("};\n");
     // Generate buffer for the TBS data.
     source_unittest.push('\n');
-    writeln!(
-        source_unittest,
-        "uint8_t g_{tbs_binary_val_name}[{max_tbs_size}];"
-    )?;
+    writeln!(source_unittest, "uint8_t g_tbs[{max_tbs_size}];")?;
     // Generate structure to hold the certificate data.
     source_unittest.push('\n');
     writeln!(source_unittest, "{sig_value_struct_name} g_sig_values = {{")?;
-    source_unittest.push_str(&generate_value_struct_assignment(&sig_vars)?);
+    source_unittest.push_str(&generate_value_struct_assignment(sig_vars)?);
     source_unittest.push_str("};\n");
     // Generate buffer for the certificate data.
     source_unittest.push('\n');
@@ -238,29 +301,47 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         expected_cert.len(),
         expected_cert
             .iter()
-            .map(|x| format!("{:#02x}", x))
+            .map(|x| format!("0x{:02x}", x))
             .collect::<Vec<_>>()
             .join(", ")
     )?;
     source_unittest.push('\n');
+
+    // Comment out tbs size setter if the size is constant.
+    let no_tbs_size = if min_tbs_size == max_tbs_size {
+        "// "
+    } else {
+        ""
+    };
+
     // Generate the body of the test.
-    source_unittest.push_str(&indoc::formatdoc!{ r#"
-        TEST({}, Verify) {{
-        {INDENT}EXPECT_EQ(kErrorOk, {generate_tbs_fn_name}(&g_tbs_values, g_{tbs_binary_val_name}, &g_sig_values.{tbs_binary_val_name}_size));
-        {INDENT}size_t cert_size = sizeof(g_cert_data);
-        {INDENT}EXPECT_EQ(kErrorOk, {generate_cert_fn_name}(&g_sig_values, g_cert_data, &cert_size));
-        {INDENT}EXPECT_EQ(cert_size, sizeof(kExpectedCert));
-        {INDENT}EXPECT_EQ(0, memcmp(g_cert_data, kExpectedCert, cert_size));
-        }}
+    source_unittest.push_str(&format! { r#"
+            size_t tbs_size = sizeof(g_tbs);
+            EXPECT_EQ(kErrorOk, {generate_tbs_fn_name}(&g_tbs_values, g_tbs, &tbs_size));
+            EXPECT_GE(tbs_size, {min_tbs_size});
+            EXPECT_LE(tbs_size, {max_tbs_size});
+
+            {no_tbs_size} g_sig_values.tbs_size = tbs_size;
+
+            size_t cert_size = sizeof(g_cert_data);
+            EXPECT_EQ(kErrorOk, {generate_cert_fn_name}(&g_sig_values, g_cert_data, &cert_size));
+            EXPECT_EQ(cert_size, sizeof(kExpectedCert));
+            printf("Generated cert: \n");
+            for (size_t i=0; i<cert_size; i++) {{
+              printf("%02x, ", g_cert_data[i]);
+            }}
+            printf("\n");
+            EXPECT_EQ(0, memcmp(g_cert_data, kExpectedCert, cert_size));
         "#,
-        tmpl.name.to_upper_camel_case()
     });
 
-    Ok(Codegen {
-        source_h,
-        source_c,
-        source_unittest,
-    })
+    source_unittest.push_str(
+        "
+        }
+    ",
+    );
+
+    Ok(source_unittest)
 }
 
 // Generate a structure holding the value of the variables.
@@ -290,12 +371,14 @@ fn generate_value_struct_assignment(variables: &IndexMap<String, VariableType>) 
                 ptr_expr,
                 size_expr,
             } => {
-                writeln!(source, "{INDENT}.{ptr_expr} = g_{var_name},")?;
-                writeln!(source, "{INDENT}.{size_expr} = sizeof(g_{var_name}),")?;
+                writeln!(source, ".{ptr_expr} = g_{var_name},")?;
+                if !var_type.has_constant_array_size() {
+                    writeln!(source, ".{size_expr} = sizeof(g_{var_name}),")?;
+                }
             }
-            VariableCodegenInfo::Int32 { value_expr }
+            VariableCodegenInfo::Uint32 { value_expr }
             | VariableCodegenInfo::Boolean { value_expr } => {
-                writeln!(source, "{INDENT}.{value_expr} = g_{var_name},\n")?;
+                writeln!(source, ".{value_expr} = g_{var_name},\n")?;
             }
         }
     }
@@ -320,22 +403,17 @@ enum CertificateComponent {
     Tbs,
 }
 
-// Generate a function that generates a TBS/cert. This functions returns three
-// elements: the header definition, the implementation and the maximum size of
-// the produced TBS/cert.
+/// Generate a function that generates a TBS/cert.
+///
+/// This functions returns the header definition, the generated implementation
+/// code and the produced TBS/cert size range.
 fn generate_builder(
     component: CertificateComponent,
     fn_name: &str,
     fn_params_str: &str,
-    constants: &mut ConstantPool,
     variables: &IndexMap<String, VariableType>,
     gen: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
-) -> Result<(String, String, usize)> {
-    let mut generate_fn_impl = String::new();
-    writeln!(
-        generate_fn_impl,
-        "rom_error_t {fn_name}({fn_params_str}) {{"
-    )?;
+) -> Result<(String, CodegenOutput)> {
     let get_var_info = |var_name: &str| -> Result<VariableInfo> {
         let var_type = variables
             .get(var_name)
@@ -345,8 +423,7 @@ fn generate_builder(
         Ok(VariableInfo { var_type, codegen })
     };
     let generate_fn_def: String;
-    let implementation: String;
-    let max_size: usize;
+    let mut generated_code: CodegenOutput;
     if component == CertificateComponent::Tbs {
         generate_fn_def = indoc::formatdoc! { r#"
         /**
@@ -354,9 +431,9 @@ fn generate_builder(
          *
          * @param values Pointer to a structure giving the values to use to generate the TBS
          * portion of the certificate.
-         * @param[out] tbs Pointer to a user-allocated buffer that will contain the TBS portion of
+         * @param[out] out_buf Pointer to a user-allocated buffer that will contain the TBS portion of
          * the certificate.
-         * @param[in,out] tbs_inout_size Pointer to an integer holding the size of
+         * @param[in,out] inout_size Pointer to an integer holding the size of
          * the provided buffer; this value will be updated to reflect the actual size of
          * the output.
          * @return The result of the operation.
@@ -365,12 +442,9 @@ fn generate_builder(
 
         "#
         };
-        (implementation, max_size) = codegen::Codegen::generate(
-            /* buf_name */ "tbs",
-            /* buf_size_name */ "tbs_inout_size",
-            /* indent */ INDENT,
-            /* indent_lvl */ 1,
-            constants,
+        generated_code = codegen::Codegen::generate(
+            /* buf_name */ "out_buf",
+            /* buf_size_name */ "inout_size",
             &get_var_info,
             gen,
         )?;
@@ -381,9 +455,9 @@ fn generate_builder(
          *
          * @param values Pointer to a structure giving the values to use to generate the
          * certificate (TBS and signature).
-         * @param[out] cert Pointer to a user-allocated buffer that will contain the
+         * @param[out] out_buf Pointer to a user-allocated buffer that will contain the
          * result.
-         * @param[in,out] cert_inout_size Pointer to an integer holding the size of
+         * @param[in,out] inout_size Pointer to an integer holding the size of
          * the provided buffer, this value will be updated to reflect the actual size of
          * the output.
          * @return The result of the operation.
@@ -392,21 +466,25 @@ fn generate_builder(
 
         "#
         };
-        (implementation, max_size) = codegen::Codegen::generate(
-            /* buf_name */ "cert",
-            /* buf_size_name */ "cert_inout_size",
-            /* indent */ INDENT,
-            /* indent_lvl */ 1,
-            constants,
+        generated_code = codegen::Codegen::generate(
+            /* buf_name */ "out_buf",
+            /* buf_size_name */ "inout_size",
             &get_var_info,
             gen,
         )?;
     }
-    generate_fn_impl.push_str(&implementation);
+
+    let mut generate_fn_impl = String::new();
+    writeln!(
+        generate_fn_impl,
+        "rom_error_t {fn_name}({fn_params_str}) {{"
+    )?;
+    generate_fn_impl.push_str(&generated_code.code);
     generate_fn_impl.push_str("  return kErrorOk;\n");
     generate_fn_impl.push_str("}\n\n");
+    generated_code.code = generate_fn_impl;
 
-    Ok((generate_fn_def, generate_fn_impl, max_size))
+    Ok((generate_fn_def, generated_code))
 }
 
 // Decide whether a integer should use a special C type instead
@@ -425,58 +503,106 @@ fn c_variable_info(
     var_type: &VariableType,
 ) -> (VariableCodegenInfo, String) {
     match var_type {
-        VariableType::ByteArray { .. } => (
-            VariableCodegenInfo::Pointer {
-                ptr_expr: format!("{struct_expr}{name}"),
-                size_expr: format!("{struct_expr}{name}_size"),
-            },
-            indoc::formatdoc! {r#"
-                {INDENT}// Pointer to an array of bytes.
-                {INDENT}uint8_t *{name};
-                {INDENT}// Size of this array in bytes.
-                {INDENT}size_t {name}_size;
-                "#
-            },
-        ),
-        VariableType::Integer { size } => match c_integer_for_length(*size) {
+        VariableType::ByteArray { .. } => {
+            if var_type.has_constant_array_size() {
+                (
+                    VariableCodegenInfo::Pointer {
+                        ptr_expr: format!("{struct_expr}{name}"),
+                        size_expr: format!("{}", var_type.size()),
+                    },
+                    indoc::formatdoc! {r#"
+                        // Pointer to an array of bytes.
+                        uint8_t *{name};
+                    "#
+                    },
+                )
+            } else {
+                (
+                    VariableCodegenInfo::Pointer {
+                        ptr_expr: format!("{struct_expr}{name}"),
+                        size_expr: format!("{struct_expr}{name}_size"),
+                    },
+                    indoc::formatdoc! {r#"
+                        // Pointer to an array of bytes.
+                        uint8_t *{name};
+                        // Size of this array in bytes.
+                        size_t {name}_size;
+                    "#
+                    },
+                )
+            }
+        }
+        VariableType::Integer { .. } => match c_integer_for_length(var_type.size()) {
             Some(c_type) => (
-                VariableCodegenInfo::Int32 {
+                VariableCodegenInfo::Uint32 {
                     value_expr: format!("{struct_expr}{name}"),
                 },
-                format!("{INDENT}{c_type} {name};\n"),
+                format!("    {c_type} {name};\n"),
             ),
-            None => (
-                VariableCodegenInfo::Pointer {
-                    ptr_expr: format!("{struct_expr}{name}"),
-                    size_expr: format!("{struct_expr}{name}_size"),
-                },
-                indoc::formatdoc! {r#"
-                    {INDENT}// Pointer to an unsigned big-endian in integer.
-                    {INDENT}uint8_t *{name};
-                    {INDENT}// Size of this integer in bytes.
-                    {INDENT}size_t {name}_size;
-                    "#
-                },
-            ),
+            None => {
+                if var_type.has_constant_array_size() {
+                    (
+                        VariableCodegenInfo::Pointer {
+                            ptr_expr: format!("{struct_expr}{name}"),
+                            size_expr: format!("{}", var_type.size()),
+                        },
+                        indoc::formatdoc! {r#"
+                            // Pointer to an unsigned big-endian in integer.
+                            uint8_t *{name};
+                        "#
+                        },
+                    )
+                } else {
+                    (
+                        VariableCodegenInfo::Pointer {
+                            ptr_expr: format!("{struct_expr}{name}"),
+                            size_expr: format!("{struct_expr}{name}_size"),
+                        },
+                        indoc::formatdoc! {r#"
+                            // Pointer to an unsigned big-endian in integer.
+                            uint8_t *{name};
+                            // Size of this array in bytes.
+                            size_t {name}_size;
+                        "#
+                        },
+                    )
+                }
+            }
         },
-        VariableType::String { .. } => (
-            VariableCodegenInfo::Pointer {
-                ptr_expr: format!("{struct_expr}{name}"),
-                size_expr: format!("{struct_expr}{name}_len"),
-            },
-            indoc::formatdoc! {r#"
-                {INDENT}// Pointer to a (not necessarily zero-terminated) string.
-                {INDENT}char *{name};
-                {INDENT}// Length of this string.
-                {INDENT}size_t {name}_len;
-                "#
-            },
-        ),
+        VariableType::String { .. } => {
+            if var_type.has_constant_array_size() {
+                (
+                    VariableCodegenInfo::Pointer {
+                        ptr_expr: format!("{struct_expr}{name}"),
+                        size_expr: format!("{}", var_type.size()),
+                    },
+                    indoc::formatdoc! {r#"
+                        // Pointer to a (not necessarily zero-terminated) string.
+                        char *{name};
+                    "#
+                    },
+                )
+            } else {
+                (
+                    VariableCodegenInfo::Pointer {
+                        ptr_expr: format!("{struct_expr}{name}"),
+                        size_expr: format!("{struct_expr}{name}_len"),
+                    },
+                    indoc::formatdoc! {r#"
+                        // Pointer to a (not necessarily zero-terminated) string.
+                        char *{name};
+                        // Length of this string.
+                        size_t {name}_len;
+                    "#
+                    },
+                )
+            }
+        }
         VariableType::Boolean => (
             VariableCodegenInfo::Boolean {
                 value_expr: format!("{struct_expr}{name}"),
             },
-            format!("{INDENT}bool {name};\n"),
+            format!("bool {name};\n"),
         ),
     }
 }
