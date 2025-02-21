@@ -166,7 +166,8 @@ module tlul_adapter_reg
   // outgoing integrity generation
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(EnableRspIntgGen),
-    .EnableDataIntgGen(EnableDataIntgGen)
+    .EnableDataIntgGen(EnableDataIntgGen),
+    .UserInIsZero(1'b1)
   ) u_rsp_intg_gen (
     .tl_i(tl_o_pre),
     .tl_o(tl_o)

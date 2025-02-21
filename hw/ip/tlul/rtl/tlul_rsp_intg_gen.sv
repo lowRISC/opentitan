@@ -4,13 +4,27 @@
 
 `include "prim_assert.sv"
 
-/**
- * Tile-Link UL response integrity generator
- */
+/*
+
+ Tile-Link UL response integrity generator
+
+ This generates integrity bits that get stored in the rsp_intg and data_intg fields of tl_o.d_user.
+
+ If EnableRspIntgGen is true then the rsp_intg field is generated from the opcode, d_size and
+ d_error fields of the response (extracted with tlul_pkg::extract_d2h_rsp_intg). If it is false then
+ the rsp_intg field either comes from the same field in the tl_i input (if UserInIsZero is false) or
+ is wired to zero (if UserInIsZero is true).
+
+ If EnableDataIntgGen is true then the data_intg field is generated from the d_data field of the
+ response. If it is false then the rsp_intg field either comes from the same field in the tl_i input
+ (if UserInIsZero is false) or is wired to zero (if UserInIsZero is true).
+
+*/
 
 module tlul_rsp_intg_gen import tlul_pkg::*; #(
   parameter bit EnableRspIntgGen = 1'b1,
-  parameter bit EnableDataIntgGen = 1'b1
+  parameter bit EnableDataIntgGen = 1'b1,
+  parameter bit UserInIsZero = 1'b0
 ) (
   // TL-UL interface
   input  tl_d2h_t tl_i,
@@ -28,6 +42,8 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
       .data_i(D2HRspMaxWidth'(rsp)),
       .data_o({rsp_intg, unused_payload})
     );
+  end else if (UserInIsZero) begin : gen_zero_rsp_intg
+    assign rsp_intg = 0;
   end else begin : gen_passthrough_rsp_intg
     assign rsp_intg = tl_i.d_user.rsp_intg;
   end
@@ -39,6 +55,8 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
       .data_i(DataMaxWidth'(tl_i.d_data)),
       .data_intg_o({data_intg, unused_data})
     );
+  end else if (UserInIsZero) begin : gen_zero_data_intg
+    assign data_intg = 0;
   end else begin : gen_passthrough_data_intg
     assign data_intg = tl_i.d_user.data_intg;
   end
