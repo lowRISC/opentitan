@@ -45,15 +45,15 @@ enum payload_entry_sizes {
   kConfigDescBuffSize = 64,
 };
 
-// Reusable buffer for generating Configuration Descriptor
-static uint8_t config_desc_buf[kConfigDescBuffSize] = {0};
+// Simple object to put all "configuration descriptor" variables together
+typedef struct {
+  uint8_t *buf;
+  size_t *buf_size;
+  hmac_digest_t *d;
+} config_desc_t;
+
 // a0    # map(0)
 const uint8_t kCborMap0[] = {0xa0};
-// Reusable buffer for generating UDS/CDI_* COSE_Key
-static uint8_t cose_key_buffer[kCwtCoseKeyMaxVariableSizeBytes] = {0};
-// Reusable buffer for generating signature
-static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
-
 #define CWT_PROFILE_NAME "android.16"
 
 // Debug=2, Normal=1
@@ -61,24 +61,21 @@ static uint8_t get_chip_mode(void) {
   return ((lifecycle_state_get() == kLcStateProd) ? 1 : 2);
 }
 
-static char issuer[kIssuerSubjectNameLength + 1] = {0};
-static char subject[kIssuerSubjectNameLength + 1] = {0};
-
 static void fill_dice_id_string(
     const uint8_t dice_id[kIssuerSubjectKeyIdLength],
     char dice_id_str[kIssuerSubjectNameLength + 1]) {
   size_t idx;
   for (idx = 0; idx < kIssuerSubjectKeyIdLength; idx++, dice_id_str += 2)
-    util_hexdump_byte(dice_id[idx], (uint8_t *)&dice_id_str[0]);
+    util_hexdump_byte(dice_id[idx], (uint8_t *)dice_id_str);
 }
 
 static rom_error_t configuration_descriptor_build(
-    uint8_t *buf, size_t *buf_size, const size_t sec_version,
+    config_desc_t *config_desc, const size_t sec_version,
     const hmac_digest_t *manifest_measurement) {
   struct CborOut kCborOutHandle;
   struct CborOut *pCborOut = &kCborOutHandle;
   HARDENED_RETURN_IF_ERROR(
-      cbor_write_out_init(pCborOut, config_desc_buf, *buf_size));
+      cbor_write_out_init(pCborOut, config_desc->buf, *config_desc->buf_size));
   HARDENED_RETURN_IF_ERROR(
       cbor_map_init(pCborOut, (manifest_measurement != NULL) ? 2 : 1));
   HARDENED_RETURN_IF_ERROR(
@@ -86,8 +83,8 @@ static rom_error_t configuration_descriptor_build(
   if (manifest_measurement != NULL)
     HARDENED_RETURN_IF_ERROR(cbor_write_pair_int_bytes(
         pCborOut, kOwnerManifestMeasurmentLabel,
-        (uint8_t *)&manifest_measurement->digest[0], kHmacDigestNumBytes));
-  *buf_size = CborOutSize(pCborOut);
+        (uint8_t *)manifest_measurement->digest, kHmacDigestNumBytes));
+  *config_desc->buf_size = CborOutSize(pCborOut);
 
   return kErrorOk;
 }
@@ -115,38 +112,32 @@ rom_error_t dice_uds_tbs_cert_build(
   return kErrorOk;
 }
 
-rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
-                                  uint32_t rom_ext_security_version,
-                                  cert_key_id_pair_t *key_ids,
-                                  ecdsa_p256_public_key_t *cdi_0_pubkey,
-                                  uint8_t *cert, size_t *cert_size) {
+static rom_error_t dice_cwt_cdi_build(hmac_digest_t *image_measurement,
+                                      const config_desc_t *config_desc,
+                                      cert_key_id_pair_t *key_ids,
+                                      ecdsa_p256_public_key_t *cdi_pubkey,
+                                      uint8_t *cert, size_t *cert_size) {
   // Build Subject public key structure
+  uint8_t cose_key_buffer[kCwtCoseKeyMaxVariableSizeBytes] = {0};
   size_t cose_key_size = sizeof(cose_key_buffer);
   cwt_cose_key_values_t cwt_cose_key_params = {
-      .pub_key_ec_x = (uint8_t *)cdi_0_pubkey->x,
-      .pub_key_ec_x_size = sizeof(cdi_0_pubkey->x),
-      .pub_key_ec_y = (uint8_t *)cdi_0_pubkey->y,
-      .pub_key_ec_y_size = sizeof(cdi_0_pubkey->y),
+      .pub_key_ec_x = (uint8_t *)cdi_pubkey->x,
+      .pub_key_ec_x_size = sizeof(cdi_pubkey->x),
+      .pub_key_ec_y = (uint8_t *)cdi_pubkey->y,
+      .pub_key_ec_y_size = sizeof(cdi_pubkey->y),
   };
-  HARDENED_RETURN_IF_ERROR(cwt_cose_key_build(
-      &cwt_cose_key_params, &cose_key_buffer[0], &cose_key_size));
+  HARDENED_RETURN_IF_ERROR(cwt_cose_key_build(&cwt_cose_key_params,
+                                              cose_key_buffer, &cose_key_size));
 
   // Try to generate DiceChainEntryPayload
+  char issuer[kIssuerSubjectNameLength + 1] = {0};
+  char subject[kIssuerSubjectNameLength + 1] = {0};
   fill_dice_id_string((uint8_t *)(key_ids->endorsement->digest), issuer);
   fill_dice_id_string((uint8_t *)(key_ids->cert->digest), subject);
 
-  uint8_t
-      cdi0_entry_payload_buffer[kCwtDiceChainEntryPayloadMaxVariableSizeBytes];
-  size_t cdi0_entry_payload_size = sizeof(cdi0_entry_payload_buffer);
-
-  size_t config_desc_buf_size = kConfigDescBuffSize;
-  // No extension measurement is needed in CDI_0, just pass a NULL to the
-  // config_descriptors to bypass encoding.
-  HARDENED_RETURN_IF_ERROR(configuration_descriptor_build(
-      config_desc_buf, &config_desc_buf_size, rom_ext_security_version, NULL));
-  hmac_digest_t conf_hash;
-  hmac_sha256(config_desc_buf, config_desc_buf_size, &conf_hash);
-  util_reverse_bytes(conf_hash.digest, kHmacDigestNumBytes);
+  uint8_t entry_payload_buffer[kCwtDiceChainEntryPayloadMaxVariableSizeBytes] =
+      {0};
+  size_t entry_payload_size = sizeof(entry_payload_buffer);
 
   // Compute Authority Hash against an empty map since it's mandatory but
   // "Authority Descriptor" isn't.
@@ -156,41 +147,41 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   uint8_t mode = get_chip_mode();
   cwt_dice_chain_entry_payload_values_t cwt_dice_chain_entry_payload_params = {
-      .auth_hash = (uint8_t *)&auth_hash.digest[0],
+      .auth_hash = (uint8_t *)auth_hash.digest,
       .auth_hash_size = kHmacDigestNumBytes,
-      .code_hash = (uint8_t *)&rom_ext_measurement->digest[0],
+      .code_hash = (uint8_t *)image_measurement->digest,
       .code_hash_size = kHmacDigestNumBytes,
-      .subject = &subject[0],
+      .subject = subject,
       .subject_size = kIssuerSubjectNameLength,
       .mode = &mode,
       .mode_size = sizeof(mode),
-      .issuer = &issuer[0],
+      .issuer = issuer,
       .issuer_size = kIssuerSubjectNameLength,
-      .subject_pk = &cose_key_buffer[0],
+      .subject_pk = cose_key_buffer,
       .subject_pk_size = cose_key_size,
-      .config_desc = config_desc_buf,
-      .config_desc_size = config_desc_buf_size,
-      .config_hash = (uint8_t *)&conf_hash.digest[0],
+      .config_desc = config_desc->buf,
+      .config_desc_size = *config_desc->buf_size,
+      .config_hash = (uint8_t *)config_desc->d->digest,
       .config_hash_size = kHmacDigestNumBytes,
       .profile_name = CWT_PROFILE_NAME,
       .profile_name_size = kProfileNameLength};
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_payload_build(
-      &cwt_dice_chain_entry_payload_params, cdi0_entry_payload_buffer,
-      &cdi0_entry_payload_size));
+      &cwt_dice_chain_entry_payload_params, entry_payload_buffer,
+      &entry_payload_size));
 
   // Try to generate DiceChainEntryInput, by reusing the cert buffer.
-  size_t cdi0_entry_input_size = kCwtDiceChainEntryInputMaxVariableSizeBytes;
-  if (cdi0_entry_input_size > *cert_size)
+  size_t cdi_entry_input_size = kCwtDiceChainEntryInputMaxVariableSizeBytes;
+  if (cdi_entry_input_size > *cert_size)
     return kErrorCertInvalidSize;
   cwt_dice_chain_entry_input_values_t cwt_dice_chain_entry_input_params = {
-      .payload = cdi0_entry_payload_buffer,
-      .payload_size = cdi0_entry_payload_size};
+      .payload = entry_payload_buffer, .payload_size = entry_payload_size};
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_input_build(
-      &cwt_dice_chain_entry_input_params, cert, &cdi0_entry_input_size));
+      &cwt_dice_chain_entry_input_params, cert, &cdi_entry_input_size));
 
   // Obtain digest & sign
+  ecdsa_p256_signature_t curr_tbs_signature;
   hmac_digest_t tbs_digest;
-  hmac_sha256(cert, cdi0_entry_input_size, &tbs_digest);
+  hmac_sha256(cert, cdi_entry_input_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
   util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
@@ -198,18 +189,51 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Build the final DiceEntry
   cwt_dice_chain_entry_values_t cwt_dice_chain_entry_params = {
-      .payload = cdi0_entry_payload_buffer,
-      .payload_size = cdi0_entry_payload_size,
+      .payload = entry_payload_buffer,
+      .payload_size = entry_payload_size,
       .signature = (uint8_t *)&curr_tbs_signature,
       .signature_size = sizeof(ecdsa_p256_signature_t)};
   HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
       &cwt_dice_chain_entry_params, cert, cert_size));
 
-  // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-      *kDiceKeyCdi0.keymgr_diversifier));
   return kErrorOk;
+}
+
+static rom_error_t cwt_build(hmac_digest_t *image_measurement,
+                             hmac_digest_t *manifest_measurement,
+                             uint32_t security_version,
+                             cert_key_id_pair_t *key_ids,
+                             ecdsa_p256_public_key_t *cdi_pubkey,
+                             const sc_keymgr_ecc_key_t *dicekey, uint8_t *cert,
+                             size_t *cert_size) {
+  uint8_t config_desc_buf[kConfigDescBuffSize];
+  size_t config_desc_buf_size = sizeof(config_desc_buf);
+  hmac_digest_t config_desc_hash;
+  config_desc_t config_desc = {.buf = config_desc_buf,
+                               .buf_size = &config_desc_buf_size,
+                               .d = &config_desc_hash};
+  HARDENED_RETURN_IF_ERROR(configuration_descriptor_build(
+      &config_desc, security_version, manifest_measurement));
+  hmac_sha256(config_desc.buf, *config_desc.buf_size, config_desc.d);
+  util_reverse_bytes(config_desc.d->digest, kHmacDigestNumBytes);
+
+  HARDENED_RETURN_IF_ERROR(dice_cwt_cdi_build(
+      image_measurement, &config_desc, key_ids, cdi_pubkey, cert, cert_size));
+
+  // Save the CDI private key to OTBN DMEM so it can endorse the next stage.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+      dicekey->keygen_seed_idx, dicekey->type, *dicekey->keymgr_diversifier));
+
+  return kErrorOk;
+}
+
+rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
+                                  uint32_t rom_ext_security_version,
+                                  cert_key_id_pair_t *key_ids,
+                                  ecdsa_p256_public_key_t *cdi_0_pubkey,
+                                  uint8_t *cert, size_t *cert_size) {
+  return cwt_build(rom_ext_measurement, NULL, rom_ext_security_version, key_ids,
+                   cdi_0_pubkey, &kDiceKeyCdi0, cert, cert_size);
 }
 
 rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
@@ -218,96 +242,9 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
-  // Build Subject public key structure
-  size_t cose_key_size = sizeof(cose_key_buffer);
-  cwt_cose_key_values_t cwt_cose_key_params = {
-      .pub_key_ec_x = (uint8_t *)cdi_1_pubkey->x,
-      .pub_key_ec_x_size = sizeof(cdi_1_pubkey->x),
-      .pub_key_ec_y = (uint8_t *)cdi_1_pubkey->y,
-      .pub_key_ec_y_size = sizeof(cdi_1_pubkey->y),
-  };
-  HARDENED_RETURN_IF_ERROR(cwt_cose_key_build(
-      &cwt_cose_key_params, &cose_key_buffer[0], &cose_key_size));
-
-  // Try to generate DiceChainEntryPayload
-  fill_dice_id_string((uint8_t *)(key_ids->endorsement->digest), issuer);
-  fill_dice_id_string((uint8_t *)(key_ids->cert->digest), subject);
-
-  uint8_t
-      cdi1_entry_payload_buffer[kCwtDiceChainEntryPayloadMaxVariableSizeBytes];
-  size_t cdi1_entry_payload_size = sizeof(cdi1_entry_payload_buffer);
-
-  size_t config_desc_buf_size = sizeof(config_desc_buf);
-  HARDENED_RETURN_IF_ERROR(configuration_descriptor_build(
-      config_desc_buf, &config_desc_buf_size, owner_security_version,
-      owner_manifest_measurement));
-  hmac_digest_t conf_hash;
-  hmac_sha256(config_desc_buf, config_desc_buf_size, &conf_hash);
-  util_reverse_bytes(conf_hash.digest, kHmacDigestNumBytes);
-
-  // Compute Authority Hash against an empty map since it's mandatory but
-  // "Authority Descriptor" isn't.
-  hmac_digest_t auth_hash;
-  hmac_sha256(kCborMap0, sizeof(kCborMap0), &auth_hash);
-  util_reverse_bytes(auth_hash.digest, kHmacDigestNumBytes);
-
-  uint8_t mode = get_chip_mode();
-  cwt_dice_chain_entry_payload_values_t cwt_dice_chain_entry_payload_params = {
-      .auth_hash = (uint8_t *)&auth_hash.digest[0],
-      .auth_hash_size = kHmacDigestNumBytes,
-      .code_hash = (uint8_t *)&owner_measurement->digest[0],
-      .code_hash_size = kHmacDigestNumBytes,
-      .subject = &subject[0],
-      .subject_size = kIssuerSubjectNameLength,
-      .mode = &mode,
-      .mode_size = sizeof(mode),
-      .issuer = &issuer[0],
-      .issuer_size = kIssuerSubjectNameLength,
-      .subject_pk = &cose_key_buffer[0],
-      .subject_pk_size = cose_key_size,
-      .config_desc = config_desc_buf,
-      .config_desc_size = config_desc_buf_size,
-      .config_hash = (uint8_t *)&conf_hash.digest[0],
-      .config_hash_size = kHmacDigestNumBytes,
-      .profile_name = CWT_PROFILE_NAME,
-      .profile_name_size = kProfileNameLength};
-  HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_payload_build(
-      &cwt_dice_chain_entry_payload_params, cdi1_entry_payload_buffer,
-      &cdi1_entry_payload_size));
-
-  // Try to generate DiceChainEntryInput, by reusing the cert buffer.
-  size_t cdi1_entry_input_size = kCwtDiceChainEntryInputMaxVariableSizeBytes;
-  if (cdi1_entry_input_size > *cert_size)
-    return kErrorCertInvalidSize;
-  cwt_dice_chain_entry_input_values_t cwt_dice_chain_entry_input_params = {
-      .payload = cdi1_entry_payload_buffer,
-      .payload_size = cdi1_entry_payload_size};
-  HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_input_build(
-      &cwt_dice_chain_entry_input_params, cert, &cdi1_entry_input_size));
-
-  // Obtain digest & sign
-  hmac_digest_t tbs_digest;
-  hmac_sha256(cert, cdi1_entry_input_size, &tbs_digest);
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
-                                       curr_tbs_signature.s);
-
-  // Build the final DiceEntry
-  cwt_dice_chain_entry_values_t cwt_dice_chain_entry_params = {
-      .payload = cdi1_entry_payload_buffer,
-      .payload_size = cdi1_entry_payload_size,
-      .signature = (uint8_t *)&curr_tbs_signature,
-      .signature_size = sizeof(ecdsa_p256_signature_t)};
-  HARDENED_RETURN_IF_ERROR(cwt_dice_chain_entry_build(
-      &cwt_dice_chain_entry_params, cert, cert_size));
-
-  // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-      *kDiceKeyCdi1.keymgr_diversifier));
-
-  return kErrorOk;
+  return cwt_build(owner_measurement, owner_manifest_measurement,
+                   owner_security_version, key_ids, cdi_1_pubkey, &kDiceKeyCdi1,
+                   cert, cert_size);
 }
 
 rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
