@@ -9,8 +9,6 @@ module clkmgr_meas_chk
 #(
   // Maximum value of input clock counts over measurement period
   parameter int Cnt = 16,
-  // Maximum value of reference clock counts over measurement period
-  parameter int RefCnt = 1,
   localparam int CntWidth = prim_util_pkg::vbits(Cnt)
 ) (
   // the local operating clock
@@ -42,7 +40,6 @@ module clkmgr_meas_chk
 
   prim_clock_meas #(
     .Cnt(Cnt),
-    .RefCnt(RefCnt),
     .ClkTimeOutChkEn(1'b1),
     .RefTimeOutChkEn(1'b0)
   ) u_meas (

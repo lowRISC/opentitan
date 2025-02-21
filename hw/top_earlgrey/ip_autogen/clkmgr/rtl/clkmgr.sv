@@ -559,8 +559,7 @@
   end
 
   clkmgr_meas_chk #(
-    .Cnt(1024),
-    .RefCnt(1)
+    .Cnt(1024)
   ) u_io_meas (
     .clk_i,
     .rst_ni,
@@ -586,8 +585,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(512),
-    .RefCnt(1)
+    .Cnt(512)
   ) u_io_div2_meas (
     .clk_i,
     .rst_ni,
@@ -613,8 +611,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(256),
-    .RefCnt(1)
+    .Cnt(256)
   ) u_io_div4_meas (
     .clk_i,
     .rst_ni,
@@ -640,8 +637,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(1024),
-    .RefCnt(1)
+    .Cnt(1024)
   ) u_main_meas (
     .clk_i,
     .rst_ni,
@@ -667,8 +663,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(512),
-    .RefCnt(1)
+    .Cnt(512)
   ) u_usb_meas (
     .clk_i,
     .rst_ni,
