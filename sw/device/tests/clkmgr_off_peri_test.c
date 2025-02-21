@@ -38,7 +38,6 @@ OTTF_DEFINE_TEST_CONFIG();
 typedef struct peri_context {
   const char *peripheral_name;  // The name of the peripheral tested.
   void (*csr_access)(void);     // The function causing a timeout.
-  uint32_t crash_function;      // The address of the function that will crash.
   uint32_t address;             // The address causing a timeout.
 } peri_context_t;
 
@@ -54,34 +53,33 @@ static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
-static void uart0_csr_access(void) {
+OT_NOINLINE static void uart0_csr_access(void) {
   dif_uart_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
 }
 
-static void spi_host0_csr_access(void) {
+OT_NOINLINE static void spi_host0_csr_access(void) {
   dif_spi_host_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
 }
 
-static void spi_host1_csr_access(void) {
+OT_NOINLINE static void spi_host1_csr_access(void) {
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host1, true));
 }
 
-static void usbdev_csr_access(void) {
+OT_NOINLINE static void usbdev_csr_access(void) {
   dif_usbdev_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
 }
 
 peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
-    {"uart0", uart0_csr_access, (uint32_t)&dif_uart_irq_get_state,
+    {"uart0", uart0_csr_access,
      TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET},
     {"spi_host1", spi_host1_csr_access,
-     (uint32_t)&dif_spi_host_output_set_enabled,
      TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_CONTROL_REG_OFFSET},
-    {"spi_host0", spi_host0_csr_access, (uint32_t)&dif_spi_host_irq_get_state,
+    {"spi_host0", spi_host0_csr_access,
      TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET},
-    {"usbdev", usbdev_csr_access, (uint32_t)&dif_usbdev_irq_get_state,
+    {"usbdev", usbdev_csr_access,
      TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
 
 /**
@@ -200,11 +198,11 @@ bool test_main(void) {
           peri_context[clock].peripheral_name);
     // Check the fault PC is close enough to the address of the function
     // that causes the hung access.
-    CHECK(crash_dump.fault_state.mcpc >= peri_context[clock].crash_function &&
-              crash_dump.fault_state.mcpc <=
-                  peri_context[clock].crash_function + kPcSpread,
+    uint32_t crash_function = (uint32_t)peri_context[clock].csr_access;
+    CHECK(crash_dump.fault_state.mcpc >= crash_function &&
+              crash_dump.fault_state.mcpc <= crash_function + kPcSpread,
           "The crash PC 0x%x is too far from the expected 0x%x",
-          crash_dump.fault_state.mcpc, peri_context[clock].crash_function);
+          crash_dump.fault_state.mcpc, crash_function);
     // Mark this clock as tested.
     LOG_INFO("Expectations are okay for clock %d, with peripheral %s", clock,
              peri_context[clock].peripheral_name);
