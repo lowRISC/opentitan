@@ -15,7 +15,7 @@ package otbn_env_pkg;
   import push_pull_agent_pkg::*;
   import otbn_model_agent_pkg::*;
   import otbn_memutil_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import sram_bkdr_util_pkg::sram_bkdr_util;
   import prim_util_pkg::vbits;
   import prim_mubi_pkg::*;
   import key_sideload_agent_pkg::*;

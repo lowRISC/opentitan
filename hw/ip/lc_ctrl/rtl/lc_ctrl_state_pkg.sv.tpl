@@ -188,6 +188,7 @@ ${_print_state_enum('LcCnt', 'lc_cnt', lc_st_enc.config)}
   } lc_cnt_e;
 
   typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
+  parameter soc_dbg_state_t SOC_DBG_STATE_DEFAULT = '0;
   typedef enum soc_dbg_state_t {
 ${_print_state_enum('SocDbgSt', 'soc_dbg_state', lc_st_enc.config)}
   } soc_dbg_state_e;

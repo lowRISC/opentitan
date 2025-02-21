@@ -41,8 +41,8 @@ class flash_ctrl_env #(
         int i = 0, flash_dv_part_e part = part.first(); i < part.num(); i++, part = part.next()
     ) begin
       foreach (cfg.mem_bkdr_util_h[, bank]) begin
-        string name = $sformatf("mem_bkdr_util[%0s][%0d]", part.name(), bank);
-        if (!uvm_config_db#(mem_bkdr_util)::get(
+        string name = $sformatf("flash_bkdr_util[%0s][%0d]", part.name(), bank);
+        if (!uvm_config_db#(flash_bkdr_util)::get(
                 this, "", name, cfg.mem_bkdr_util_h[part][bank]
             )) begin
           `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", name))

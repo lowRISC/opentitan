@@ -15,7 +15,7 @@ package rom_ctrl_env_pkg;
   import rom_ctrl_regs_ral_pkg::*;
   import rom_ctrl_prim_ral_pkg::*;
   import kmac_app_agent_pkg::*;
-  import mem_bkdr_util_pkg::*;
+  import rom_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
   import sec_cm_pkg::*;
 

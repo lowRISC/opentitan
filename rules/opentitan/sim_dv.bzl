@@ -77,21 +77,25 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             ctx,
             name = name,
             src = signed_bin if signed_bin else binary,
-            word_size = 64,
+# TODO: Hacked for DJ bring up
+            word_size = 32,
+#            word_size = 64,
         )
-        vmem = scramble_flash(
-            ctx,
-            name = name,
-            suffix = "64.scr.vmem",
-            src = vmem_base,
-            otp = get_fallback(ctx, "file.otp", exec_env),
-            otp_mmap = exec_env.otp_mmap,
-            otp_seed = exec_env.otp_seed,
-            otp_data_perm = exec_env.otp_data_perm,
-            _tool = exec_env.flash_scramble_tool.files_to_run,
-        )
+#        vmem = scramble_flash(
+#            ctx,
+#            name = name,
+#            suffix = "64.scr.vmem",
+#            src = vmem_base,
+#            otp = get_fallback(ctx, "file.otp", exec_env),
+#            otp_mmap = exec_env.otp_mmap,
+#            otp_seed = exec_env.otp_seed,
+#            otp_data_perm = exec_env.otp_data_perm,
+#            _tool = exec_env.flash_scramble_tool.files_to_run,
+#        )
         rom = None
-        default = vmem
+# TODO:
+        default = vmem_base
+#        default = vmem
         vmem = vmem_base
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)

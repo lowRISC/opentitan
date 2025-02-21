@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:sram_bkdr_util
       - lowrisc:dv:mem_bkdr_scb
     files:
       - sram_ctrl_prim_ral_pkg.sv

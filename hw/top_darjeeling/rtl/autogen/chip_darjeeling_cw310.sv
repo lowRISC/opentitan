@@ -983,6 +983,9 @@ module chip_darjeeling_cw310 #(
   // monitored clock
   logic sck_monitor;
 
+  // debug policy bus
+  soc_dbg_ctrl_pkg::soc_dbg_policy_t soc_dbg_policy_bus;
+
   // observe interface
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
@@ -1003,6 +1006,7 @@ module chip_darjeeling_cw310 #(
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
+  assign ast_alert_rsp = '0;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -1071,13 +1075,25 @@ module chip_darjeeling_cw310 #(
     default: '0
   };
 
-  prim_rom_pkg::rom_cfg_t rom_cfg;
-  assign rom_cfg = '{
+  prim_rom_pkg::rom_cfg_t rom_ctrl0_cfg;
+  prim_rom_pkg::rom_cfg_t rom_ctrl1_cfg;
+
+  assign rom_ctrl0_cfg = '{
+    test: ast_rom_cfg.test,
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
+  assign rom_ctrl1_cfg = '{
     test: ast_rom_cfg.test,
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
   };
 
+  // TODO: connect
+  // otp DFT
+  prim_otp_cfg_pkg::otp_cfg_t     otp_cfg;
+  prim_otp_cfg_pkg::otp_cfg_rsp_t otp_cfg_rsp;
+  assign otp_cfg = '0;
 
   //////////////////////////////////
   // AST - Custom for targets     //
@@ -1305,12 +1321,27 @@ module chip_darjeeling_cw310 #(
     .tl_d2h_i   (dmi_d2h)
   );
 
+  // TODO: Resolve this and wire it up.
+  tlul_pkg::tl_h2d_t ctn_misc_tl_h2d_i;
+  assign ctn_misc_tl_h2d_i = tlul_pkg::TL_H2D_DEFAULT;
+  tlul_pkg::tl_d2h_t ctn_misc_tl_d2h_o;
+
+  // TODO: Over/ride/ all access range checks for now.
+  prim_mubi_pkg::mubi8_t ac_range_check_overwrite_i;
+  assign ac_range_check_overwrite_i = prim_mubi_pkg::MuBi8True;
+
+  // TODO: External RACL error input.
+  top_racl_pkg::racl_error_log_t ext_racl_error;
+  assign ext_racl_error = '0;
+
   ////////////////
   // CTN M-to-1 //
   ////////////////
 
   tlul_pkg::tl_h2d_t ctn_tl_h2d[2];
   tlul_pkg::tl_d2h_t ctn_tl_d2h[2];
+  //TODO: Resolve this and wire it up.
+  assign ctn_tl_h2d[1] = tlul_pkg::TL_H2D_DEFAULT;
 
   tlul_pkg::tl_h2d_t ctn_sm1_to_s1n_tl_h2d;
   tlul_pkg::tl_d2h_t ctn_sm1_to_s1n_tl_d2h;
@@ -1359,8 +1390,11 @@ module chip_darjeeling_cw310 #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
-        TOP_DARJEELING_RAM_CTN_BASE_ADDR) begin
+    //
+    // TODO: Presently the software is being built to execute at the start of the window, so map
+    // the RAM there; it's supposed to be at an offset of 256MiB.
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) == 0) begin
+    //  (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end
@@ -1412,7 +1446,7 @@ module chip_darjeeling_cw310 #(
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0),
     .compound_txn_in_progress_o(),
-    .readback_en_i(1'b0),
+    .readback_en_i(prim_mubi_pkg::MuBi4False),
     .readback_error_o(),
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0)
@@ -1440,6 +1474,7 @@ module chip_darjeeling_cw310 #(
     // Bus ECC is checked at the consumer side.
     .rerror_o (),
     .cfg_i    (ram_1p_cfg),
+    .cfg_rsp_o(),
     .alert_o()
   );
 
@@ -1522,6 +1557,7 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .clks_ast_o                   ( clkmgr_aon_clocks     ),
     .clk_main_jitter_en_o         ( jen                   ),
     .rsts_ast_o                   ( rstmgr_aon_resets     ),
+    .integrator_id_i              ( '0                    ),
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
@@ -1540,21 +1576,21 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
+    .otp_cfg_i                    ( otp_cfg                    ),
+    .otp_cfg_rsp_o                ( otp_cfg_rsp                ),
     .ctn_tl_h2d_o                 ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
+    .ac_range_check_overwrite_i   ( ac_range_check_overwrite_i ),
+    .racl_error_i                 ( ext_racl_error             ),
     .soc_gpi_async_o              (                            ),
     .soc_gpo_async_i              ( '0                         ),
+    .soc_dbg_policy_bus_o         ( soc_dbg_policy_bus         ),
+    .debug_halt_cpu_boot_i        ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
-    .dma_ctn_tl_h2d_o             ( ctn_tl_h2d[1]              ),
-    .dma_ctn_tl_d2h_i             ( ctn_tl_d2h[1]              ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .calib_rdy_i                  ( ast_init_done              ),
-    .ast_init_done_i              ( ast_init_done              ),
 
     // DMI TL-UL
     .dbg_tl_req_i                 ( dmi_h2d                    ),
@@ -1576,9 +1612,28 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .dio_attr_o                   ( dio_attr                   ),
 
     // Memory attributes
-    .ram_1p_cfg_i    ( '0 ),
-    .spi_ram_2p_cfg_i( '0 ),
-    .rom_cfg_i       ( '0 ),
+    .rom_ctrl0_cfg_i                           ( '0 ),
+    .rom_ctrl1_cfg_i                           ( '0 ),
+    .i2c_ram_1p_cfg_i                          ( '0 ),
+    .i2c_ram_1p_cfg_rsp_o                      (    ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( '0 ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (    ),
+    .sram_ctrl_main_ram_1p_cfg_i               ( '0 ),
+    .sram_ctrl_main_ram_1p_cfg_rsp_o           (    ),
+    .sram_ctrl_mbox_ram_1p_cfg_i               ( '0 ),
+    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (    ),
+    .otbn_imem_ram_1p_cfg_i                    ( '0 ),
+    .otbn_imem_ram_1p_cfg_rsp_o                (    ),
+    .otbn_dmem_ram_1p_cfg_i                    ( '0 ),
+    .otbn_dmem_ram_1p_cfg_rsp_o                (    ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( '0 ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (    ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( '0 ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (    ),
+    .spi_device_ram_2p_cfg_sys2spi_i           ( '0 ),
+    .spi_device_ram_2p_cfg_spi2sys_i           ( '0 ),
+    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (    ),
+    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (    ),
 
      // DFT signals
     .ast_lc_dft_en_o      ( lc_dft_en                  ),

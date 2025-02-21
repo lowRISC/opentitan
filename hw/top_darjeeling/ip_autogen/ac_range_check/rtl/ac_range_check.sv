@@ -178,6 +178,7 @@ module ac_range_check
   // Priority comparison. If the deny mask is larger than the read, write, or execute mask, there
   // was an address match with a higher priority for the range to be denied
   logic read_allowed, write_allowed, execute_allowed;
+
   assign read_allowed    = read_access    & (read_mask    > deny_mask);
   assign write_allowed   = write_access   & (write_mask   > deny_mask);
   assign execute_allowed = execute_access & (execute_mask > deny_mask);

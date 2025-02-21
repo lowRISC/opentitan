@@ -19,7 +19,7 @@ package sram_ctrl_env_pkg;
   import otp_ctrl_pkg::*;
   import lc_ctrl_pkg::*;
   import crypto_dpi_prince_pkg::*;
-  import mem_bkdr_util_pkg::*;
+  import sram_bkdr_util_pkg::*;
   import mem_bkdr_scb_pkg::*;
   import prim_mubi_pkg::*;
   import sec_cm_pkg::*;
