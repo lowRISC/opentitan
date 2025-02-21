@@ -268,6 +268,7 @@ module dma
   always_comb begin
     control_d.opcode                     = opcode_e'(reg2hw.control.opcode.q);
     control_d.cfg_handshake_en           = reg2hw.control.hardware_handshake_enable.q;
+    control_d.cfg_digest_swap            = reg2hw.control.digest_swap.q;
     control_d.range_valid                = reg2hw.range_valid.q;
     control_d.enabled_memory_range_base  = reg2hw.enabled_memory_range_base.q;
     control_d.enabled_memory_range_limit = reg2hw.enabled_memory_range_limit.q;
@@ -1254,17 +1255,22 @@ module dma
       for (int unsigned i = 0; i < NR_SHA_DIGEST_ELEMENTS / 2; i++) begin
         unique case (control_q.opcode)
           OpcSha256: begin
-            hw2reg.sha2_digest[i].d = sha2_digest[i][0 +: 32];
+            hw2reg.sha2_digest[i].d = conv_endian32(sha2_digest[i][0 +: 32],
+                                                    control_q.cfg_digest_swap);
           end
           OpcSha384: begin
             if (i < 6) begin
-              hw2reg.sha2_digest[i*2].d     = sha2_digest[i][32 +: 32];
-              hw2reg.sha2_digest[(i*2)+1].d = sha2_digest[i][0  +: 32];
+              hw2reg.sha2_digest[i*2].d     = conv_endian32(sha2_digest[i][32 +: 32],
+                                                            control_q.cfg_digest_swap);
+              hw2reg.sha2_digest[(i*2)+1].d = conv_endian32(sha2_digest[i][0  +: 32],
+                                                            control_q.cfg_digest_swap);
             end
           end
           default: begin // SHA2-512
-            hw2reg.sha2_digest[i*2].d     = sha2_digest[i][32 +: 32];
-            hw2reg.sha2_digest[(i*2)+1].d = sha2_digest[i][0  +: 32];
+            hw2reg.sha2_digest[i*2].d     = conv_endian32(sha2_digest[i][32 +: 32],
+                                                          control_q.cfg_digest_swap);
+            hw2reg.sha2_digest[(i*2)+1].d = conv_endian32(sha2_digest[i][0  +: 32],
+                                                          control_q.cfg_digest_swap);
           end
         endcase
       end

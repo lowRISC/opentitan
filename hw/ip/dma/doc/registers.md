@@ -458,12 +458,12 @@ Other values are reserved.
 Control register for DMA data movement.
 - Offset: `0x44`
 - Reset default: `0x0`
-- Reset mask: `0x8800011f`
+- Reset mask: `0x8800013f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 18}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
+{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 18}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                             |
@@ -473,7 +473,8 @@ Control register for DMA data movement.
 |   27   |   wo   |   0x0   | [abort](#control--abort)                                         |
 |  26:9  |        |         | Reserved                                                         |
 |   8    |   rw   |   0x0   | [initial_transfer](#control--initial_transfer)                   |
-|  7:5   |        |         | Reserved                                                         |
+|  7:6   |        |         | Reserved                                                         |
+|   5    |   rw   |   0x0   | [digest_swap](#control--digest_swap)                             |
 |   4    |   rw   |   0x0   | [hardware_handshake_enable](#control--hardware_handshake_enable) |
 |  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                       |
 
@@ -492,6 +493,12 @@ Any OpenTitan-internal transactions are guaranteed to complete, but there are no
 Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
 Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
 Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
+
+### CONTROL . digest_swap
+Digest register byte swap.
+
+If 1 the value in each digest output register is converted to big-endian byte order.
+This setting does not affect the order of the digest output registers, [`SHA2_DIGEST_0`](#sha2_digest_0) still contains the first 4 bytes of the digest.
 
 ### CONTROL . hardware_handshake_enable
 Enable hardware handshake mode.

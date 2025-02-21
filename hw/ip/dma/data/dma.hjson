@@ -470,6 +470,15 @@
                 No explicit clearing necessary.
                 '''
         }
+        { bits: "5"
+          name: "digest_swap"
+          resval: 0x0
+          desc: '''Digest register byte swap.
+
+                If 1 the value in each digest output register is converted to big-endian byte order.
+                This setting does not affect the order of the digest output registers, !!SHA2_DIGEST_0 still contains the first 4 bytes of the digest.
+                '''
+        }
         { bits: "8"
           name: "initial_transfer"
           resval: 0x0

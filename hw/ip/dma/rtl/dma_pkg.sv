@@ -55,6 +55,7 @@ package dma_pkg;
     // Control register
     opcode_e    opcode;
     logic       cfg_handshake_en;
+    logic       cfg_digest_swap;
     logic       range_valid;
     // Enabled memory base register
     logic [31:0] enabled_memory_range_base;
