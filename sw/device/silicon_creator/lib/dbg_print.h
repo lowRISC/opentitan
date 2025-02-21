@@ -41,6 +41,14 @@ extern "C" {
 void dbg_printf(const char *format, ...) __attribute__((format(printf, 1, 2)));
 
 /**
+ * Print the string to the console.
+ *
+ * Note: `dbg_puts` will NOT output an additional newline character '\n' after
+ * `str`, unlike the standard C puts.
+ */
+void dbg_puts(const char *str);
+
+/**
  * Print the ePMP configuration to the console.
  */
 void dbg_print_epmp(void);
