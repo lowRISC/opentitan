@@ -134,8 +134,8 @@ typedef enum dif_pwrmgr_reset_request_source {
  * particular request type, i.e. wakeup or reset, as well querying wakeup
  * reasons.
  *
- * See also: `dif_pwrmgr_wakeup_request_source_t`,
- * `dif_pwrmgr_reset_request_source_t`.
+ * See also: `dt_pwrmgr_wakeup_src_t`, `dt_pwrmgr_reset_req_src_t` and
+ * associated functions.
  */
 typedef uint32_t dif_pwrmgr_request_sources_t;
 
