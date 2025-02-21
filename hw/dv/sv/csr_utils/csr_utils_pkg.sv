@@ -333,6 +333,48 @@ package csr_utils_pkg;
     end
   endtask
 
+  // csr_mirror
+  // Make a read to the register and update the mirrored value
+  task automatic csr_mirror(input  uvm_object         ptr, // accept reg or field
+                            input  uvm_check_e        check = default_csr_check,
+                            input  uint               timeout_ns = default_timeout_ns);
+
+    uvm_status_e status;
+
+    fork
+      begin : isolation_fork
+        csr_field_t   csr_or_fld;
+        string        msg_id = {csr_utils_pkg::msg_id, "::csr_mirror"};
+
+        fork
+          begin
+            increment_outstanding_access();
+            csr_or_fld = decode_csr_or_field(ptr);
+            if (csr_or_fld.field != null) begin
+              csr_or_fld.field.mirror(.status(status), .check(check));
+            end else begin
+              csr_or_fld.csr.mirror(.status(status), .check(check));
+            end
+            // TODO: need to remove the frontdoor to switch back to the default,
+            // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
+            if (check == UVM_CHECK && !under_reset) begin
+              `DV_CHECK_EQ(status, UVM_IS_OK,
+                           $sformatf("trying to read csr/field %0s", ptr.get_full_name()),
+                           error, msg_id)
+            end
+            decrement_outstanding_access();
+          end
+          begin
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id,
+                             $sformatf("Timeout waiting to csr_rd %0s (addr=0x%0h)",
+                                       ptr.get_full_name(), csr_or_fld.csr.get_address()))
+          end
+        join_any
+        disable fork;
+      end : isolation_fork
+    join
+  endtask
+
   // subroutine of csr_rd, don't use it directly
   task automatic csr_rd_sub(input  uvm_object         ptr, // accept reg or field
                             output uvm_reg_data_t     value,
