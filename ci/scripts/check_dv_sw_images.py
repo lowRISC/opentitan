@@ -45,7 +45,7 @@ def check_sw_image(name: str, sw_image: str, valid_bazel_targets: List[str]) -> 
     # The format is sw_image is target:type[:flags]...
     # where the target is a bazel name so it also contains a ':', for example:
     #     //sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:new_rules
-    #     //sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0
+    #     //sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_ecdsa_prod_key_0 # noqa: E501
     # The type indicate whether it's a flash image, otp image, and so on.
     # The flags can be used for other purposes such as indicating if the DV
     # requires a signed image.

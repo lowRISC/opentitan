@@ -92,6 +92,4 @@ extend-exclude = [ "*vendor*" ]
 [tool.ruff.lint]
 preview = true
 explicit-preview-rules = true
-extend-select = ["E303", "W391"]
-# Ignore conflicting rules as recommended
-ignore = ["D203", "D213", "COM812", "ISC001"]
+extend-select = ["E", "E303", "W391"]
