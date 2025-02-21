@@ -1030,6 +1030,54 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     if (cfg_item.mode == AES_GCM && !status.alert_fatal_fault) begin
+      // As we are splitting the message, we also need to recalculate the length
+      // of the AAD and PTX -> len(aad) || len(data) that is stored in a AES_GCM_TAG
+      // block. Image we split the message after the first AAD block:
+      // |AAD|AAD|PTX|PTX|TAG|
+      // we will land up having:
+      // |AAD|PTX|PTX|TAG
+      // Hence, recalculate here the new len(aad) || len(data).
+      aes_seq_item    aes_item_queue_clone[$];
+      aes_seq_item    data_item_tmp;
+      bit [3:0][31:0] len_aad_data_conc;
+      bit [3:0][31:0] len_aad_data;
+      int aad_len = 0;
+      int ptx_len = 0;
+      // Get AAD or PTX length of the current data_item.
+      if (data_item.item_type == AES_DATA) begin
+        ptx_len = data_item.data_len == 0 ? 16 : data_item.data_len;
+      end else if (data_item.item_type == AES_GCM_AAD) begin
+        aad_len = data_item.data_len == 0 ? 16 : data_item.data_len;
+      end
+      // Fetch all remaining data items and accumulate the AAD/PTX length.
+      while (aes_item_queue.size() > 0) begin
+        int data_len;
+        data_item_tmp = aes_item_queue.pop_back();
+        aes_item_queue_clone.push_front(data_item_tmp);
+        data_len = data_item_tmp.data_len == 0 ? 16 : data_item_tmp.data_len;
+        if (data_item_tmp.item_type == AES_GCM_AAD) begin
+          aad_len += data_len;
+        end else if (data_item_tmp.item_type == AES_DATA) begin
+          ptx_len += data_len;
+        end
+      end
+      // Resemble len(aad) || len(data).
+      len_aad_data_conc = ((aad_len * 8 << 64) | ptx_len * 8);
+      len_aad_data = {<<8{len_aad_data_conc}};
+      // Put all items back to the aes_item_queue in the correct order.
+      while (aes_item_queue_clone.size() > 0) begin
+        data_item_tmp = aes_item_queue_clone.pop_back();
+        if (data_item_tmp.item_type == AES_GCM_TAG) begin
+          // Once we reached the AES_GCM_TAG block, put in the new
+          // len(aad) || len(data)
+          data_item_tmp.data_in = len_aad_data;
+        end
+        aes_item_queue.push_front(data_item_tmp);
+      end
+      aes_item_queue_clone.delete();
+
+      // After re-calculating len(aad) || len(data) start the AES-GCM operation
+      // by putting the block into the GCM_INIT phase.
       set_gcm_phase(GCM_INIT, 16, 1);
     end
 
