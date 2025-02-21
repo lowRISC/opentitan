@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Specialization of the `mem_bkdr_util` class for SRAM's encrypted read/write operations.
+// Specialization of the `mem_util` class for SRAM control's encrypted read/write operations.
 
-class sram_bkdr_util extends mem_bkdr_util;
+class sram_ctrl_util extends mem_util;
 
   // Initialize the class instance.
   // `extra_bits_per_subword` is the width of any additional metadata that is not captured in the
@@ -200,11 +200,11 @@ class sram_bkdr_util extends mem_bkdr_util;
                                    logic [bus_params_pkg::BUS_AW-1:0] addr_offset,
                                    logic [SRAM_KEY_WIDTH-1:0]         key,
                                    logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    bit [38:0] preload_data[] = new [num_entries];
+    bit [38:0] preload_data[] = new [get_size_subwords()];
     $readmemh(file, preload_data);
     foreach(preload_data[i]) begin
       sram_encrypt_write32_integ(addr_offset + i * 4, preload_data[i], key, nonce, 0);
     end
   endtask : bkdr_load_from_file
 
-endclass : sram_bkdr_util
+endclass : sram_ctrl_util

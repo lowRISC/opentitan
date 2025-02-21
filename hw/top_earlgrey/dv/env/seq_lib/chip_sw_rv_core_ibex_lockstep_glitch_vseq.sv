@@ -752,10 +752,10 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     // ic_data_addr_o may lead to cache entries being read before writing them, leading to
     // X-propagation into the main crossbar and SRAM. In contrast, reading an all-zero
     // entry triggers ECC integrity errors which the design can handle.
-    cfg.mem_bkdr_util_h[ICacheWay0Tag].clear_mem();
-    cfg.mem_bkdr_util_h[ICacheWay1Tag].clear_mem();
-    cfg.mem_bkdr_util_h[ICacheWay0Data].clear_mem();
-    cfg.mem_bkdr_util_h[ICacheWay1Data].clear_mem();
+    cfg.mem_util_h[ICacheWay0Tag].clear_mem();
+    cfg.mem_util_h[ICacheWay1Tag].clear_mem();
+    cfg.mem_util_h[ICacheWay0Data].clear_mem();
+    cfg.mem_util_h[ICacheWay1Data].clear_mem();
   endtask
 
   virtual task body();

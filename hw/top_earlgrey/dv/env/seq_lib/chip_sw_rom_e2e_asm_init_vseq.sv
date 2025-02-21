@@ -26,7 +26,7 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual task body();
-    lc_ctrl_state_pkg::lc_state_e lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
+    lc_ctrl_state_pkg::lc_state_e lc_state = otp_read_lc_partition_state(cfg.mem_util_h[Otp]);
     bit [31:0] otp_creator_sw_cfg_ast_init_en = 32'b0;
     bit [31:0] otp_creator_sw_cfg_jitter_en = 32'b0;
 
@@ -35,9 +35,9 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
     // We backdoor read the LC state, AST init enablement state, and clock jitter enablement state
     // from OTP to alter the expectations this test checks below.
     otp_creator_sw_cfg_ast_init_en =
-      cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset);
+      cfg.mem_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset);
     otp_creator_sw_cfg_jitter_en =
-      cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset);
+      cfg.mem_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset);
 
     // Once the retention SRAM is initialized, we have made it to `rom_main()`. At this point, we
     // can start checking CSR states that were configured in the `rom_start.S` assembly.

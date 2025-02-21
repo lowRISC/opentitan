@@ -29,10 +29,10 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
 
-    val = cfg.mem_bkdr_util_h[Otp].read32(hw_cfg_addr);
+    val = cfg.mem_util_h[Otp].read32(hw_cfg_addr);
 
     // Inject 2 bits error in this hw_cfg_addr to trigger a ECC non-correctable error.
-    cfg.mem_bkdr_util_h[Otp].inject_errors(hw_cfg_addr, 2);
+    cfg.mem_util_h[Otp].inject_errors(hw_cfg_addr, 2);
 
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "OTP_CTRL error inject done",
@@ -41,7 +41,7 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     // TODO: backdoor check if alerts are firing.
 
     // Backdoor write back the original value so the chip can reboot successfully.
-    cfg.mem_bkdr_util_h[Otp].write32(hw_cfg_addr, val);
+    cfg.mem_util_h[Otp].write32(hw_cfg_addr, val);
 
   endtask
 

@@ -10,7 +10,7 @@ module tb;
   import flash_ctrl_pkg::*;
   import flash_ctrl_env_pkg::*;
   import flash_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import flash_ctrl_util_pkg::*:
 
   // macro includes
   `include "uvm_macros.svh"

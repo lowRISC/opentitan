@@ -30,7 +30,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   chip_jtag_tap_e       select_jtag = JtagTapNone;
 
   // Memory backdoor util instances for all memory instances in the chip.
-  mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
+  mem_bkdr_util mem_util_h[chip_mem_e];
 
   // Creator SW config region in OTP that holds the AST config data. Randomized for open source.
   //
@@ -486,8 +486,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual function bit get_mem_from_addr(input uint addr, output chip_mem_e mem);
     chip_mem_e mem_iter = mem_iter.first();
     do begin
-      if (mem_bkdr_util_h[mem_iter] != null) begin
-        if (mem_bkdr_util_h[mem_iter].is_valid_addr(addr)) begin
+      if (mem_util_h[mem_iter] != null) begin
+        if (mem_util_h[mem_iter].is_valid_addr(addr)) begin
           mem = mem_iter;
           return 1;
         end

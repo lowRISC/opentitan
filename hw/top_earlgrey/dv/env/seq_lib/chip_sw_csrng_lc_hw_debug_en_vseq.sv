@@ -45,10 +45,10 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
     // of which OTP image was loaded. The C portion of this test checks the
     // lc states across resets.
     otp_write_hw_cfg0_partition(
-      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+      .mem_util_h(cfg.mem_util_h[Otp]),
       .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
     otp_write_hw_cfg1_partition(
-      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+      .mem_util_h(cfg.mem_util_h[Otp]),
       .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE),
       .dis_rv_dm_late_debug(MUBI8TRUE));
   endtask
