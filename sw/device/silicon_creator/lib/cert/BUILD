@@ -149,10 +149,10 @@ cc_library(
 
 cc_library(
     name = "cbor",
+    srcs = ["cbor.c"],
     hdrs = ["cbor.h"],
     deps = [
         "//sw/device/lib/base:status",
-        "@open-dice//:cbor_reader_writer",
     ],
 )
 
