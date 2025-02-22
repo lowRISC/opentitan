@@ -172,6 +172,7 @@
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_29`](#range_racl_policy_shadowed) | 0x290    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_30`](#range_racl_policy_shadowed) | 0x294    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_31`](#range_racl_policy_shadowed) | 0x298    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
+| ac_range_check.[`ALERT_STATUS`](#alert_status)                                | 0x29c    |        4 | Status of hardware alerts.                                                                                                                                |
 
 ## INTR_STATE
 Interrupt State Register
@@ -589,6 +590,26 @@ This register is protected against fault attacks by using a shadow register impl
 |:------:|:------:|:-------:|:-----------|:--------------------------------|
 | 31:16  |   rw   |   0x0   | write_perm | Write permission policy bitmap. |
 |  15:0  |   rw   |   0x0   | read_perm  | Read permission policy bitmap.  |
+
+## ALERT_STATUS
+Status of hardware alerts.
+- Offset: `0x29c`
+- Reset default: `0x0`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SHADOWED_STORAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHADOWED_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "REG_INTG_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "COUNTER_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                 | Description                                |
+|:------:|:------:|:-------:|:---------------------|:-------------------------------------------|
+|  31:4  |        |         |                      | Reserved                                   |
+|   3    |   ro   |   0x0   | COUNTER_ERR          | Integrity error in a counter.              |
+|   2    |   ro   |   0x0   | REG_INTG_ERR         | Integrity error in the register interface. |
+|   1    |   ro   |   0x0   | SHADOWED_UPDATE_ERR  | Update error of a shadowed register.       |
+|   0    |   ro   |   0x0   | SHADOWED_STORAGE_ERR | Storage error of a shadowed register.      |
 
 
 <!-- END CMDGEN -->

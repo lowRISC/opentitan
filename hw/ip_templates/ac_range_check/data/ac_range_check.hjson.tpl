@@ -361,5 +361,32 @@ import math
         ]
       }
     }
+    { name: "ALERT_STATUS",
+      desc: "Status of hardware alerts.",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      fields: [
+        { bits: "0",
+          name: "SHADOWED_STORAGE_ERR",
+          resval: "0",
+          desc: "Storage error of a shadowed register."
+        }
+        { bits: "1",
+          name: "SHADOWED_UPDATE_ERR",
+          resval: "0",
+          desc: "Update error of a shadowed register."
+        }
+        { bits: "2",
+          name: "REG_INTG_ERR",
+          resval: "0",
+          desc: "Integrity error in the register interface."
+        }
+        { bits: "3",
+          name: "COUNTER_ERR",
+          resval: "0",
+          desc: "Integrity error in a counter."
+        }
+      ]
+    }
   ]
 }

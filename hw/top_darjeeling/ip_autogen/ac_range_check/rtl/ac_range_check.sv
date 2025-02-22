@@ -94,6 +94,15 @@ module ac_range_check
     );
   end
 
+  assign hw2reg.alert_status.shadowed_storage_err.d = 1'b1;
+  assign hw2reg.alert_status.shadowed_storage_err.de = shadowed_storage_err;
+  assign hw2reg.alert_status.shadowed_update_err.d = 1'b1;
+  assign hw2reg.alert_status.shadowed_update_err.de = shadowed_update_err;
+  assign hw2reg.alert_status.reg_intg_err.d = 1'b1;
+  assign hw2reg.alert_status.reg_intg_err.de = reg_intg_error;
+  assign hw2reg.alert_status.counter_err.d = 1'b1;
+  assign hw2reg.alert_status.counter_err.de = deny_cnt_error;
+
   //////////////////////////////////////////////////////////////////////////////
   // Range Check Logic
   //////////////////////////////////////////////////////////////////////////////

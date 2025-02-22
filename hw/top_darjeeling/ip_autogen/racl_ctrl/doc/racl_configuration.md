@@ -318,6 +318,7 @@
 | ac_range_check.`RANGE_RACL_POLICY_SHADOWED_29` | 0x290    | 0x1464290 | 0x4     | 2 (SOC_ROT) | R / W | - / -   | R / W |
 | ac_range_check.`RANGE_RACL_POLICY_SHADOWED_30` | 0x294    | 0x1464294 | 0x4     | 2 (SOC_ROT) | R / W | - / -   | R / W |
 | ac_range_check.`RANGE_RACL_POLICY_SHADOWED_31` | 0x298    | 0x1464298 | 0x4     | 2 (SOC_ROT) | R / W | - / -   | R / W |
+| ac_range_check.`ALERT_STATUS`                  | 0x29c    | 0x146429c | 0x4     | 2 (SOC_ROT) | R / W | - / -   | R / W |
 
 
 <!-- END CMDGEN -->

@@ -10048,6 +10048,7 @@
             RANGE_RACL_POLICY_SHADOWED_29: 2
             RANGE_RACL_POLICY_SHADOWED_30: 2
             RANGE_RACL_POLICY_SHADOWED_31: 2
+            ALERT_STATUS: 2
           }
           window_mapping: {}
           range_mapping: []
