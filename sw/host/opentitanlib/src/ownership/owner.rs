@@ -24,6 +24,12 @@ with_unknown! {
     pub enum MinSecurityVersion: u32 [default = Self::NoChange] {
         NoChange = 0xFFFFFFFFu32,
     }
+
+    pub enum OwnershipUpdateMode: u32 [default = Self::Open] {
+        Open = u32::from_le_bytes(*b"OPEN"),
+        UnlockSelf = u32::from_le_bytes(*b"SELF"),
+        NewVersion = u32::from_le_bytes(*b"NEWV"),
+    }
 }
 
 /// Describes the owner configuration and key material.
@@ -46,9 +52,12 @@ pub struct OwnerBlock {
     /// Set the minimum security version to this value.
     #[serde(default)]
     pub min_security_version_bl0: MinSecurityVersion,
+    /// Ownership update mode.
+    #[serde(default)]
+    pub update_mode: OwnershipUpdateMode,
     #[serde(default)]
     #[annotate(format=hex)]
-    pub reserved: [u32; 25],
+    pub reserved: [u32; 24],
     /// The owner identity key.
     pub owner_key: KeyMaterial,
     /// The owner activation key.
@@ -77,7 +86,8 @@ impl Default for OwnerBlock {
             ownership_key_alg: OwnershipKeyAlg::default(),
             config_version: 0,
             min_security_version_bl0: MinSecurityVersion::default(),
-            reserved: [0u32; 25],
+            update_mode: OwnershipUpdateMode::default(),
+            reserved: [0u32; 24],
             owner_key: KeyMaterial::default(),
             activate_key: KeyMaterial::default(),
             unlock_key: KeyMaterial::default(),
@@ -115,6 +125,7 @@ impl OwnerBlock {
         dest.write_u32::<LittleEndian>(u32::from(self.ownership_key_alg))?;
         dest.write_u32::<LittleEndian>(self.config_version)?;
         dest.write_u32::<LittleEndian>(u32::from(self.min_security_version_bl0))?;
+        dest.write_u32::<LittleEndian>(u32::from(self.update_mode))?;
         for x in &self.reserved {
             dest.write_u32::<LittleEndian>(*x)?;
         }
@@ -138,7 +149,8 @@ impl OwnerBlock {
         let ownership_key_alg = OwnershipKeyAlg(src.read_u32::<LittleEndian>()?);
         let config_version = src.read_u32::<LittleEndian>()?;
         let min_security_version_bl0 = MinSecurityVersion(src.read_u32::<LittleEndian>()?);
-        let mut reserved = [0u32; 25];
+        let update_mode = OwnershipUpdateMode(src.read_u32::<LittleEndian>()?);
+        let mut reserved = [0u32; 24];
         src.read_u32_into::<LittleEndian>(&mut reserved)?;
         let owner_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
         let activate_key = KeyMaterial::read_length(src, ownership_key_alg, 96)?;
@@ -163,6 +175,7 @@ impl OwnerBlock {
             ownership_key_alg,
             config_version,
             min_security_version_bl0,
+            update_mode,
             reserved,
             owner_key,
             activate_key,
@@ -245,7 +258,7 @@ mod test {
     #[rustfmt::skip]
     const OWNER_BIN: &str =
 r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
-00000010: 50 32 35 36 00 00 00 00 ff ff ff ff 00 00 00 00  P256............
+00000010: 50 32 35 36 00 00 00 00 ff ff ff ff 4f 50 45 4e  P256........OPEN
 00000020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
 00000040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
@@ -384,8 +397,8 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
   ownership_key_alg: "EcdsaP256",
   config_version: 0,
   min_security_version_bl0: "NoChange",
+  update_mode: "Open",
   reserved: [
-    0x0,
     0x0,
     0x0,
     0x0,
