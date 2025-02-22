@@ -254,6 +254,7 @@ fpga_cw305(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw305",
+        "//hw/top_earlgrey/sw/dt:fpga_cw305",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
