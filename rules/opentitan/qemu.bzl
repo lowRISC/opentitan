@@ -184,6 +184,11 @@ def gen_flash(ctx, **kwargs):
             firmware_bin.path,
             "-X",
             firmware_elf.path,
+            # Skip `flashgen`'s ELF/binary mtime checks - it will fail if the
+            # binary is older than the ELF which usually suggests that the
+            # binary has not been regenerated, however Bazel often messes with
+            # mtimes causing false negatives.
+            "--ignore-time",
             out.path,
         ],
         mnemonic = "FlashGen",
@@ -348,7 +353,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     }
 
     if firmware.signed_bin != None and firmware.binary != None:
-        qemu_args += ["-drive", "if=mtd,bus=1,file=flash_img.bin,format=raw"]
+        qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
         test_script_fmt |= {
             "flash": firmware.default.short_path,
             "mutable_flash": "flash_img.bin",
