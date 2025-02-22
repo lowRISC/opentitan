@@ -23,9 +23,15 @@ uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out) {
   // upon.
   size_t bits = sizeof(uint64_t) * 8;
   for (size_t i = 0; i < bits; ++i) {
+    // For the following operations, we are counting on the compiler
+    // not being too dumb and emitting 32-bit shifts instead of calling
+    // __lshrdi3.
     rem <<= 1;
     quot <<= 1;
-    rem |= (a >> (bits - i - 1)) & 1;
+    if ((a >> 63) & 1) {
+      rem |= 1;
+    }
+    a <<= 1;
 
     // We need to keep bringing down zeros until `rem`, the running total, is
     // large enough that we can subtract off `b`; this tells us the value we
