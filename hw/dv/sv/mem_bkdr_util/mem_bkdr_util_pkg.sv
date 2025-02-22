@@ -8,7 +8,6 @@ package mem_bkdr_util_pkg;
   import dv_utils_pkg::uint32_t, dv_utils_pkg::addr_range_t;
   import lc_ctrl_state_pkg::*;
   import prim_secded_pkg::*;
-  import sram_scrambler_pkg::*;
   import uvm_pkg::*;
 
   // Represents the various forms of error detection / correction supported.
@@ -36,17 +35,10 @@ package mem_bkdr_util_pkg;
     ParityOdd
   } err_detection_e;
 
-  parameter int ROM_DIGEST_SIZE = 256;
-  parameter int ROM_DIGEST_BYTES = ROM_DIGEST_SIZE / 8;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // sources
   `include "mem_bkdr_util.sv"
-  // extended classes
-  `include "flash_bkdr_util.sv"
-  `include "rom_bkdr_util.sv"
-  `include "sram_bkdr_util.sv"
-
 endpackage

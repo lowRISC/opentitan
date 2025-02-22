@@ -84,10 +84,10 @@ class otbn_env extends cip_base_env #(
                                                      cfg.ssctrl_vif)) begin
       `uvm_fatal(`gfn, "failed to get otbn_ssctrl_if handle from uvm_config_db")
     end
-    if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "imem_util", cfg.imem_util)) begin
+    if (!uvm_config_db#(sram_bkdr_util)::get(this, "", "imem_util", cfg.imem_util)) begin
       `uvm_fatal(`gfn, "failed to get imem_util from uvm_config_db")
     end
-    if (!uvm_config_db#(mem_bkdr_util)::get(this, "", "dmem_util", cfg.dmem_util)) begin
+    if (!uvm_config_db#(sram_bkdr_util)::get(this, "", "dmem_util", cfg.dmem_util)) begin
       `uvm_fatal(`gfn, "failed to get dmem_util from uvm_config_db")
     end
 

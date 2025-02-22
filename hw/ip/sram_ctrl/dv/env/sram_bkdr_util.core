@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:mem_bkdr_util"
-description: "Backdoor read/write memory for DV"
+name: "lowrisc:dv:sram_bkdr_util"
+description: "Backdoor read/write SRAM for DV"
 
 filesets:
   files_dv:
@@ -12,13 +12,12 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:crypto_dpi_prince:0.1
       - lowrisc:dv:crypto_dpi_present:0.1
-      - lowrisc:prim:cipher_pkg:0.1
       - lowrisc:prim:secded:0.1
-      - lowrisc:dv:digestpp_dpi
-      - lowrisc:ip:kmac_pkg
+      - lowrisc:dv:mem_bkdr_util
     files:
-      - mem_bkdr_util_pkg.sv
-      - mem_bkdr_util.sv: {is_include_file: true}
+      - sram_scrambler_pkg.sv
+      - sram_bkdr_util_pkg.sv
+      - sram_bkdr_util.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

@@ -9,7 +9,7 @@ module tb;
   import sram_ctrl_pkg::*;
   import sram_ctrl_env_pkg::*;
   import sram_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::sram_bkdr_util;
+  import sram_bkdr_util_pkg::sram_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
