@@ -38,11 +38,11 @@ enum {
 
 /* Macro to define and use variable that need to be stored in flash
  * for DV tests and RAM for real tests, to enable backdoor access. */
-#define DEFINE_BACKDOOR_VAR(type, name, default_val)                       \
-  /* DV variable in flash. */                                              \
-  OT_SECTION(".rodata") static volatile const type name##DV = default_val; \
-  /* non-DV variable in RAM. */                                            \
-  OT_SECTION(".data") type name##Real = default_val;
+#define DEFINE_BACKDOOR_VAR(type, name, default_val) \
+  /* DV variable in flash. */                        \
+  OTTF_BACKDOOR_VAR_DV type name##DV = default_val;  \
+  /* non-DV variable in RAM. */                      \
+  OTTF_BACKDOOR_VAR type name##Real = default_val;
 
 #define BACKDOOR_VAR(name) (kDeviceType == kDeviceSimDV ? name##DV : name##Real)
 
@@ -77,6 +77,7 @@ typedef enum {
 } test_cmd_t;
 
 /* Backdoor variable for real device */
+OTTF_BACKDOOR_VAR
 uint8_t test_cmd = kTestCmdWait;
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
