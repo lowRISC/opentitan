@@ -59,15 +59,19 @@ static dif_flash_ctrl_state_t flash;
 static void flash_word_write_verify(uintptr_t address,
                                     uint64_t expected_value) {
   size_t kWordSize = sizeof(uint64_t) / sizeof(uint32_t);
+  uint32_t tmp[2] = {(uint32_t)expected_value,
+                     (uint32_t)(expected_value >> 32)};
   CHECK_STATUS_OK(flash_ctrl_testutils_write(
-      &flash, address, kUnusedDataPartitionParam, (uint32_t *)&expected_value,
+      &flash, address, kUnusedDataPartitionParam, tmp,
       kDifFlashCtrlPartitionTypeData, kWordSize));
 
+  uint32_t tmp2[2];
+  CHECK_STATUS_OK(
+      flash_ctrl_testutils_read(&flash, address, kUnusedDataPartitionParam,
+                                tmp2, kDifFlashCtrlPartitionTypeData, kWordSize,
+                                /*delay=*/1));
   uint64_t got_value;
-  CHECK_STATUS_OK(flash_ctrl_testutils_read(
-      &flash, address, kUnusedDataPartitionParam, (uint32_t *)&got_value,
-      kDifFlashCtrlPartitionTypeData, kWordSize,
-      /*delay=*/1));
+  memcpy(&got_value, tmp2, sizeof(uint64_t));
   CHECK(expected_value == got_value);
 }
 
