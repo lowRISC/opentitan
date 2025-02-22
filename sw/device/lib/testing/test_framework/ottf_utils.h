@@ -19,6 +19,10 @@
  * @param cond: an expression that can be repeated tested for.
  * @param timeout_usec: timeout in microseconds.
  *
+ * NOTE: all variables which appear in `cond` should be declared by
+ * `OTTF_BACKDOOR_VAR` to prevent compiler optimization that could result
+ * in unexpected behaviours.
+ *
  * In DV, this function will simply spin since the DV environment can do
  * backdoor writes to make the condition true. On real device, this will wait
  * for host to send ujson message. The condition is check after each command.
@@ -42,5 +46,30 @@
       IBEX_SPIN_FOR(cond, timeout_usec);                                      \
     }                                                                         \
   } while (0)
+
+/**
+ * Declare a variable which can be used with `OTTF_WAIT_FOR`.
+ *
+ * This macro guarantees the following:
+ * - This variable can be used within the condition of `OTTF_WAIT_FOR` and
+ *   the compiler will not optimize the condition thinking that the variable
+ *   is not modified, *even* if the program never writes to it.
+ * - This variable will have an associated symbol in the final ELF binary.
+ *
+ * NOTE: this macro guarantees that the variable works in all non-DV
+ * environments but may not work in DV.
+ *
+ * Example:
+ * ```c
+ * OTTF_BACKDOOR_VAR bool sival_is_ready = false;
+ * ```
+ */
+#define OTTF_BACKDOOR_VAR OT_USED OT_SECTION(".data") volatile
+
+/**
+ * Same as `OTTF_BACKDOOR_VAR` but for DV environments.
+ * ```
+ */
+#define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata") volatile
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
