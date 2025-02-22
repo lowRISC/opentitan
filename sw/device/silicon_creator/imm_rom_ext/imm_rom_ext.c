@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/imm_rom_ext/hash_enforcement.h"
 #include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext_epmp.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -22,7 +23,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t imm_rom_ext_start(void) {
+static rom_error_t imm_rom_ext_start(uint32_t hash_enforcement) {
   // Check the ePMP state.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
   // Check sec_mmio expectations.
@@ -39,6 +40,11 @@ static rom_error_t imm_rom_ext_start(void) {
   uart_init(kUartNCOValue);
 
   dbg_puts("IMM_ROM_EXT:0.1\r\n");
+  if (hash_enforcement == IMMUTABLE_HASH_UNENFORCED) {
+    // CAUTION: The message below should match the message defined in:
+    //   //sw/device/silicon_creator/imm_rom_ext/defs.bzl
+    dbg_puts("info: hash unenforced\r\n");
+  }
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
@@ -61,8 +67,8 @@ static rom_error_t imm_rom_ext_start(void) {
   return kErrorOk;
 }
 
-void imm_rom_ext_main(void) {
-  rom_error_t error = imm_rom_ext_start();
+void imm_rom_ext_main(uint32_t hash_enforcement) {
+  rom_error_t error = imm_rom_ext_start(hash_enforcement);
   if (launder32(error) != kErrorOk) {
     shutdown_finalize(error);
   }
