@@ -51,6 +51,7 @@ module top_englishbreakfast #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlMainFlopRamOutput = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b1,
@@ -1188,7 +1189,8 @@ module top_englishbreakfast #(
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .FlopRamOutput(SramCtrlMainFlopRamOutput)
   ) u_sram_ctrl_main (
       // [22]: fatal_error
       .alert_tx_o  ( alert_tx[22:22] ),

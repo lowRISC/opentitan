@@ -4200,6 +4200,7 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -4313,6 +4314,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage on the RAM macro output
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopRamOutput
         }
       ]
       inter_signal_list:
@@ -6475,6 +6485,7 @@
       {
         InstrExec: "1"
         InstSize: 65536
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -6588,6 +6599,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage on the RAM macro output
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopRamOutput
         }
       ]
       inter_signal_list:
@@ -6773,6 +6793,7 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -6886,6 +6907,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxNumPrinceRoundsHalf
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage on the RAM macro output
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopRamOutput
         }
       ]
       inter_signal_list:

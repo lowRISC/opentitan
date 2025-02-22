@@ -291,17 +291,18 @@ import i2c_reg_pkg::AcqFifoDepth;
   ) u_ram_1p (
     .clk_i,
     .rst_ni,
-    .req_i    (ram_req),
-    .write_i  (ram_write),
-    .addr_i   (ram_addr),
-    .wdata_i  (ram_wdata),
-    .wmask_i  ('1),
-    .rdata_o  (ram_rdata),
-    .rvalid_o (ram_rvalid),
-    .rerror_o (/* unused */),
-    .cfg_i    (ram_cfg_i),
-    .cfg_rsp_o(ram_cfg_rsp_o),
-    .alert_o  (/* unused */)
+    .req_i         (ram_req),
+    .write_i       (ram_write),
+    .addr_i        (ram_addr),
+    .wdata_i       (ram_wdata),
+    .wmask_i       ('1),
+    .rdata_o       (ram_rdata),
+    .rvalid_o      (ram_rvalid),
+    .rvalid_mubi_o (/* unused */),
+    .rerror_o      (/* unused */),
+    .cfg_i         (ram_cfg_i),
+    .cfg_rsp_o     (ram_cfg_rsp_o),
+    .alert_o       (/* unused */)
   );
   assign {ram_write, ram_addr, ram_wdata} = ram_arb_oup_data;
 

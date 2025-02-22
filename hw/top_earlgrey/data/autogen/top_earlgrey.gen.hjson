@@ -5693,6 +5693,15 @@
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
         }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage on the RAM macro output
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopRamOutput
+        }
       ]
       inter_signal_list:
       [
@@ -8624,6 +8633,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage on the RAM macro output
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopRamOutput
         }
       ]
       inter_signal_list:
