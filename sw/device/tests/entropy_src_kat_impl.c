@@ -64,16 +64,18 @@ static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
 
   // Read (and discard) the resulting seed.
   uint32_t got[kEntropyFifoBufferSize];
-  for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
+  size_t total = 0;
+  do {
     dif_result_t op_result =
-        dif_entropy_src_non_blocking_read(entropy_src, &got[i]);
+        dif_entropy_src_non_blocking_read(entropy_src, &got[total]);
     if (op_result == kDifUnavailable) {
       fail_count++;
       CHECK(fail_count < kKatTestTimeoutAttempts);
     } else {
       CHECK_DIF_OK(op_result);
+      total++;
     }
-  }
+  } while (total < ARRAYSIZE(got));
 }
 
 void entropy_src_kat_test(dif_entropy_src_t *entropy_src) {
@@ -104,13 +106,13 @@ void entropy_src_kat_test(dif_entropy_src_t *entropy_src) {
   do {
     op_result = dif_entropy_src_fw_ov_data_write(
         entropy_src, kInputMsg + total, ARRAYSIZE(kInputMsg) - total, &count);
-    total += count;
     if (op_result == kDifIpFifoFull) {
       fail_count++;
       CHECK(fail_count < kKatTestTimeoutAttempts);
     } else {
       fail_count = 0;
       CHECK_DIF_OK(op_result);
+      total += count;
     }
   } while (total < ARRAYSIZE(kInputMsg));
 
@@ -119,15 +121,17 @@ void entropy_src_kat_test(dif_entropy_src_t *entropy_src) {
 
   fail_count = 0;
   uint32_t got[kEntropyFifoBufferSize];
-  for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
-    op_result = dif_entropy_src_non_blocking_read(entropy_src, &got[i]);
+  total = 0;
+  do {
+    op_result = dif_entropy_src_non_blocking_read(entropy_src, &got[total]);
     if (op_result == kDifUnavailable) {
       fail_count++;
       CHECK(fail_count < kKatTestTimeoutAttempts);
     } else {
       CHECK_DIF_OK(op_result);
+      total++;
     }
-  }
+  } while (total < ARRAYSIZE(got));
 
   const uint32_t kExpectedDigest[kEntropyFifoBufferSize] = {
       0x1c88164a, 0x5ff456e1, 0x0845dbdf, 0xbe233f8e, 0x7a5a4c1b, 0x5d31356a,
