@@ -561,7 +561,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                 kIbexAesGcmSleepCycles * 2);
   TRY(dif_aes_load_gcm_tag_len(&aes, len_ptx, len_aad));
-  if (trigger.triggers[3]) {
+  if (trigger.triggers[4]) {
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
