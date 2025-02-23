@@ -765,7 +765,7 @@ status_t usb_testutils_streams_typed_init(
           "Bulk",
           "Interrupt",
       };
-      TRY_CHECK(xfr_type <= ARRAYSIZE(xfr_name));
+      TRY_CHECK(xfr_type < ARRAYSIZE(xfr_name));
       LOG_INFO("S%u: IN %u:OUT %u : %s - 0x%x bytes flags 0x%x", id, ep_in,
                ep_out, xfr_name[xfr_type], num_bytes, flags);
     }

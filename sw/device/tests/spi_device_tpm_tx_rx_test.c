@@ -79,7 +79,7 @@ static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
                                         kDifSpiDeviceIrqReadbufFlip,
                                         kDifSpiDeviceIrqTpmHeaderNotEmpty};
 
-  for (uint32_t i = 0; i <= ARRAYSIZE(kIrqs); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(kIrqs); ++i) {
     CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kIrqs[i],
                                                 kDifToggleEnabled));
   }
