@@ -21,8 +21,9 @@ typedef struct kmac_test {
   dif_kmac_mode_kmac_t mode;
   dif_kmac_key_t key;
 
-  const char *message_big_endian;
-  const char *message_little_endian;
+  // The message needs to be 32-bit aligned (see below).
+  const uint32_t *message_big_endian;
+  const uint32_t *message_little_endian;
   size_t message_len;
 
   size_t digest_len;
@@ -34,6 +35,9 @@ typedef struct kmac_test {
  * Example taken from:
  * https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/KMAC_samples.pdf
  */
+const uint32_t message_big_endian[] = {0x03020100, 0x07060504};
+const uint32_t message_little_endian[] = {0x00010203, 0x04050607};
+
 const kmac_test_t kmac_test = {
     // KMAC
     .mode = kDifKmacModeKmacLen128,
@@ -44,9 +48,9 @@ const kmac_test_t kmac_test = {
             .share1 = {0},
             .length = kDifKmacKeyLen256,
         },
-    .message_big_endian = "\x00\x01\x02\x03",
-    .message_little_endian = "\x03\x02\x01\x00",
-    .message_len = 4,
+    .message_big_endian = message_big_endian,
+    .message_little_endian = message_little_endian,
+    .message_len = ARRAYSIZE(message_big_endian),
     .digest_len = 8,
 };
 
@@ -117,7 +121,7 @@ status_t test_endianess(void) {
     CHECK_DIF_OK(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
                                           kmac_test.mode, kmac_test.digest_len,
                                           &kmac_test.key, NULL));
-    const char *message;
+    const uint32_t *message;
     if (msg_endianess_big[it]) {
       message = kmac_test.message_big_endian;
     } else {
@@ -125,8 +129,12 @@ status_t test_endianess(void) {
     }
 
     uint32_t out[kmac_test.digest_len];
+    size_t base_printf(const char *format, ...);
+    // The message needs to be word aligned data, otherwise the unaligned
+    // bytes will not be byte swapped.
     CHECK_DIF_OK(dif_kmac_absorb(&kmac, &kmac_operation_state, message,
-                                 kmac_test.message_len, NULL));
+                                 kmac_test.message_len * sizeof(uint32_t),
+                                 NULL));
     CHECK_DIF_OK(dif_kmac_squeeze(&kmac, &kmac_operation_state, out,
                                   kmac_test.digest_len, /*processed=*/NULL,
                                   /*capacity=*/NULL));
