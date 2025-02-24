@@ -36,8 +36,7 @@ module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
 % if racl_support:
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 % endif
   // bus integrity alert
   output logic                 fatal_integ_alert_o
@@ -71,7 +70,6 @@ module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
   % if racl_support:
     .racl_policies_i,
     .racl_error_o,
-    .racl_error_log_o,
   % endif
     .shadowed_storage_err_o(reg2hw_wrap.shadowed_err_storage),
     .shadowed_update_err_o(reg2hw_wrap.shadowed_err_update),
