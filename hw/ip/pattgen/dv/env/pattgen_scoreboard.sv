@@ -19,7 +19,6 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   local pattgen_item exp_item_q[NUM_PATTGEN_CHANNELS][$];
   // local variables
   local pattgen_channel_cfg channel_cfg[NUM_PATTGEN_CHANNELS-1:0];
-  local bit [NumPattgenIntr-1:0] intr_exp_at_addr_phase;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
