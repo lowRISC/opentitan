@@ -8,10 +8,6 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "IMM_ROM_EXT_SECTIONS",
-)
-load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
@@ -52,7 +48,6 @@ manifest(d = {
             "minsize",
             "use_lld",
         ],
-        immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS[slot]["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         # In order to prevent the linker from prematurely discarding symbols, we
         # need to give the CRT library last.
@@ -69,6 +64,7 @@ manifest(d = {
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -87,7 +83,6 @@ manifest(d = {
             "minsize",
             "use_lld",
         ],
-        immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS[slot]["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [
             "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
@@ -99,6 +94,7 @@ manifest(d = {
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
