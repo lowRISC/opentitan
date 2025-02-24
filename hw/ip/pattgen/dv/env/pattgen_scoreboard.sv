@@ -30,19 +30,14 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    forever begin
-      `DV_SPINWAIT_EXIT(
-        for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
-          fork
-            automatic uint channel = i;
-            compare_trans(channel);
-          join_none
-        end
-        wait fork;,
-        @(negedge cfg.clk_rst_vif.rst_n),
-      )
+    for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+      fork
+        automatic uint channel = i;
+        compare_trans(channel);
+      join_none
     end
-  endtask : run_phase
+    wait fork;
+  endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg         csr;
@@ -193,6 +188,17 @@ class pattgen_scoreboard extends cip_base_scoreboard #(
   endtask : process_tl_access
 
   task compare_trans(uint channel);
+    wait(cfg.clk_rst_vif.rst_n);
+    fork begin : isolation_fork
+      fork
+        wait(!cfg.clk_rst_vif.rst_n);
+        compare_trans_(channel);
+      join_any
+      disable fork;
+    end join
+  endtask
+
+  task compare_trans_(uint channel);
     pattgen_item exp_item;
     pattgen_item dut_item;
 
