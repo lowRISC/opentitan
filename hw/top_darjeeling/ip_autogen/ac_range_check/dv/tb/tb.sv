@@ -19,7 +19,6 @@ module tb;
   wire                                  rst_shadowed_n;
   wire top_racl_pkg::racl_policy_vec_t  racl_policies;
   wire                                  racl_error;
-  wire top_racl_pkg::racl_error_log_t   racl_error_log;
   wire                                  intr_deny_cnt_reached;
   wire prim_mubi_pkg::mubi8_t           range_check_overwrite;
 
@@ -44,7 +43,6 @@ module tb;
     // RACL interface
     .racl_policies_i          (racl_policies          ),
     .racl_error_o             (racl_error             ),
-    .racl_error_log_o         (racl_error_log         ),
     // Access range check interrupts
     .intr_deny_cnt_reached_o  (intr_deny_cnt_reached  ),
     // Bus interface
@@ -69,7 +67,6 @@ module tb;
   assign interrupts[DenyCntReached] = intr_deny_cnt_reached;
   // TODO should be monitored dynamically by an io_agent (to be created TODO MVy)
   // assign io_if.racl_error          = racl_error;
-  // assign io_if.racl_error_log      = racl_error_log;
 
   initial begin
     clk_rst_if.set_active();
