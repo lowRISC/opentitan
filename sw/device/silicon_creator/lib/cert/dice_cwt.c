@@ -57,7 +57,16 @@ static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 #define CWT_PROFILE_NAME "android.16"
 
 // Debug=2, Normal=1
-static uint8_t get_chip_mode(void) {
+//
+// Two function variants are created to prevent linking both lifecycle
+// functions that would result in additional firmware space costs.
+// This is because Immutable ROM_EXT (CDI0) is linked with lifecycle_is_prod,
+// while mutable ROM_EXT (CDI_1) is linked with lifecycle_state_get.
+static uint8_t get_chip_mode_cdi0(void) {
+  return (lifecycle_is_prod() ? 1 : 2);
+}
+
+static uint8_t get_chip_mode_cdi1(void) {
   return ((lifecycle_state_get() == kLcStateProd) ? 1 : 2);
 }
 
@@ -154,7 +163,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   hmac_sha256(kCborMap0, sizeof(kCborMap0), &auth_hash);
   util_reverse_bytes(auth_hash.digest, kHmacDigestNumBytes);
 
-  uint8_t mode = get_chip_mode();
+  uint8_t mode = get_chip_mode_cdi0();
   cwt_dice_chain_entry_payload_values_t cwt_dice_chain_entry_payload_params = {
       .auth_hash = (uint8_t *)&auth_hash.digest[0],
       .auth_hash_size = kHmacDigestNumBytes,
@@ -251,7 +260,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   hmac_sha256(kCborMap0, sizeof(kCborMap0), &auth_hash);
   util_reverse_bytes(auth_hash.digest, kHmacDigestNumBytes);
 
-  uint8_t mode = get_chip_mode();
+  uint8_t mode = get_chip_mode_cdi1();
   cwt_dice_chain_entry_payload_values_t cwt_dice_chain_entry_payload_params = {
       .auth_hash = (uint8_t *)&auth_hash.digest[0],
       .auth_hash_size = kHmacDigestNumBytes,
