@@ -11,8 +11,6 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
-#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -29,9 +27,7 @@ enum {
    * The size of the scratch buffer that is large enough for constructing the
    * CDI certs.
    */
-  kScratchCertSizeBytes =
-      (kCdi0MaxCertSizeBytes > kCdi1MaxCertSizeBytes ? kCdi0MaxCertSizeBytes
-                                                     : kCdi1MaxCertSizeBytes),
+  kScratchCertSizeBytes = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
 };
 
 /**
