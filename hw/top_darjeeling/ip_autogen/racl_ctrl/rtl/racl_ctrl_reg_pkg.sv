@@ -14,7 +14,7 @@ package racl_ctrl_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 5;
+  parameter int NumRegs = 6;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -88,6 +88,11 @@ package racl_ctrl_reg_pkg;
     } ctn_uid;
   } racl_ctrl_hw2reg_error_log_reg_t;
 
+  typedef struct packed {
+    logic [31:0] d;
+    logic        de;
+  } racl_ctrl_hw2reg_error_log_address_reg_t;
+
   // Register -> HW type
   typedef struct packed {
     racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [101:70]
@@ -99,7 +104,8 @@ package racl_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    racl_ctrl_hw2reg_error_log_reg_t error_log; // [16:0]
+    racl_ctrl_hw2reg_error_log_reg_t error_log; // [49:33]
+    racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [32:0]
   } racl_ctrl_hw2reg_t;
 
   // Register offsets
@@ -108,6 +114,7 @@ package racl_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] RACL_CTRL_POLICY_SOC_ROT_SHADOWED_OFFSET = 8'h 10;
   parameter logic [BlockAw-1:0] RACL_CTRL_ALERT_TEST_OFFSET = 8'h f4;
   parameter logic [BlockAw-1:0] RACL_CTRL_ERROR_LOG_OFFSET = 8'h f8;
+  parameter logic [BlockAw-1:0] RACL_CTRL_ERROR_LOG_ADDRESS_OFFSET = 8'h fc;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] RACL_CTRL_ALERT_TEST_RESVAL = 2'h 0;
@@ -118,16 +125,18 @@ package racl_ctrl_reg_pkg;
     RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED,
     RACL_CTRL_POLICY_SOC_ROT_SHADOWED,
     RACL_CTRL_ALERT_TEST,
-    RACL_CTRL_ERROR_LOG
+    RACL_CTRL_ERROR_LOG,
+    RACL_CTRL_ERROR_LOG_ADDRESS
   } racl_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RACL_CTRL_PERMIT [5] = '{
+  parameter logic [3:0] RACL_CTRL_PERMIT [6] = '{
     4'b 1111, // index[0] RACL_CTRL_POLICY_ALL_RD_WR_SHADOWED
     4'b 1111, // index[1] RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED
     4'b 1111, // index[2] RACL_CTRL_POLICY_SOC_ROT_SHADOWED
     4'b 0001, // index[3] RACL_CTRL_ALERT_TEST
-    4'b 0011  // index[4] RACL_CTRL_ERROR_LOG
+    4'b 0011, // index[4] RACL_CTRL_ERROR_LOG
+    4'b 1111  // index[5] RACL_CTRL_ERROR_LOG_ADDRESS
   };
 
 endpackage
