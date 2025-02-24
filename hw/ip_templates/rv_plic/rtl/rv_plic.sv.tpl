@@ -42,8 +42,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t  racl_policies_i,
-  output logic                            racl_error_o,
-  output top_racl_pkg::racl_error_log_t   racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t   racl_error_o,
 % endif
 
   // Interrupt Sources
@@ -263,7 +262,6 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
     // RACL interface
     .racl_policies_i,
     .racl_error_o,
-    .racl_error_log_o,
   % endif
 
     // SEC_CM: BUS.INTEGRITY
@@ -274,8 +272,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
 % if racl_support:
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 % endif
   `ASSERT_KNOWN(IrqKnownO_A, irq_o)
   `ASSERT_KNOWN(MsipKnownO_A, msip_o)
