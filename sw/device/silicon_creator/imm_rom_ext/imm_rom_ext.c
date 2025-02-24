@@ -13,14 +13,11 @@
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
-#include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
-#include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
@@ -38,10 +35,7 @@ static rom_error_t imm_rom_ext_start(void) {
   sec_mmio_next_stage_init();
   HARDENED_RETURN_IF_ERROR(imm_rom_ext_epmp_reconfigure());
 
-  // Configure UART0 as stdout.
-  pinmux_init_uart0_tx();
-  uart_init(kUartNCOValue);
-
+  // Debug UART is already configured by ROM.
   dbg_puts("IMM_ROM_EXT:0.1\r\n");
   uint32_t hash_enforcement =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
@@ -74,9 +68,9 @@ static rom_error_t imm_rom_ext_start(void) {
 
 void imm_rom_ext_main(void) {
   rom_error_t error = imm_rom_ext_start();
-  if (launder32(error) != kErrorOk) {
-    shutdown_finalize(error);
-  }
+
+  // If there's an error, this hardened check will trigger the irq handler
+  // in ROM to shutdown.
   HARDENED_CHECK_EQ(error, kErrorOk);
 
   // Go back to ROM / Mutable ROM_EXT.
