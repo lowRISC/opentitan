@@ -32,15 +32,18 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", static_racl_support: true }
   ],
+  // In order to not disturb the racl_ctrl address map, we place the alert test
+  // register manually at a safe offset after the main CSRs.
+  no_auto_alert_regs: "True",
   alert_list: [
+    { name: "fatal_fault"
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
   % if enable_shadow_reg:
     { name: "recov_ctrl_update_err",
       desc: "This recoverable alert is triggered upon detecting an update error in the shadowed Control Register."
     }
   % endif
-    { name: "fatal_fault"
-      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
-    }
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
@@ -110,6 +113,55 @@
   ],
 
   registers: [
+    % for policy in policies:
+    { name: "POLICY_${policy['name'].upper()}${"_SHADOWED" if enable_shadow_reg else ""}"
+      desc: '''
+            Read and write policy for ${policy['name']}
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+    % if enable_shadow_reg:
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+    % endif
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: ${policy['wr_default']}
+          desc: '''
+                Write permission for policy ${policy['name']}
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: ${policy['rd_default']}
+          desc: '''
+                Read permission for policy ${policy['name']}
+                '''
+        }
+      ]
+    }
+    { reserved: "1" }
+    % endfor
+    { skipto: "0xF4" }
+    { name: "ALERT_TEST",
+      desc: '''Alert Test Register.''',
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "True",
+      hwext:    "True",
+      fields: [
+        { bits: "0",
+          name: "fatal_fault",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+        { bits: "1",
+          name: "recov_ctrl_update_err",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+      ],
+    }
     { name: "ERROR_LOG"
       desc: "Error logging registers"
       swaccess: "ro"
@@ -157,35 +209,5 @@
         }
       ]
     }
-    % for policy in policies:
-    { name: "POLICY_${policy['name'].upper()}${"_SHADOWED" if enable_shadow_reg else ""}"
-      desc: '''
-            Read and write policy for ${policy['name']}
-            '''
-      swaccess: "rw"
-      hwaccess: "hro"
-    % if enable_shadow_reg:
-      shadowed: "true"
-      update_err_alert: "recov_ctrl_update_err"
-      storage_err_alert: "fatal_fault"
-    % endif
-      fields: [
-        { bits: "31:16"
-          name: "write_perm"
-          resval: ${policy['wr_default']}
-          desc: '''
-                Write permission for policy ${policy['name']}
-                '''
-        }
-        { bits: "15:0"
-          name: "read_perm"
-          resval: ${policy['rd_default']}
-          desc: '''
-                Read permission for policy ${policy['name']}
-                '''
-        }
-      ]
-    }
-    % endfor
   ]
 }
