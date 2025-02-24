@@ -125,6 +125,32 @@ cc_library(
 )
 
 cc_library(
+    name = "static_dice_cdi_0",
+    srcs = ["static_dice_cdi_0.c"],
+    hdrs = ["static_dice_cdi_0.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+    # This library provides a special symbol that the linker will find.
+    alwayslink = True,
+)
+
+ld_library(
+    name = "static_dice_sections",
+    includes = [
+        "static_dice.ld",
+    ],
+)
+
+cc_library(
+    name = "static_dice",
+    deps = [
+        ":static_dice_cdi_0",
+    ],
+)
+
+cc_library(
     name = "chip",
     hdrs = ["chip.h"],
 )
