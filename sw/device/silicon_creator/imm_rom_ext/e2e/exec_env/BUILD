@@ -3,14 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_test")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "SLOTS",
+)
 
 package(default_visibility = ["//visibility:public"])
-
-SLOTS = [
-    "a",
-    "b",
-    "virtual",
-]
 
 [
     py_test(

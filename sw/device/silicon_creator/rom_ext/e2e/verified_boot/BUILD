@@ -25,7 +25,7 @@ load(
 load(
     "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
     "IMMUTABLE_HASH_UNENFORCED_MSG",
-    "SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS",
+    "IMM_ROM_EXT_VARIATIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -50,7 +50,7 @@ filegroup(
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
         visibility = ["//visibility:private"],
     )
-    for name in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS
+    for name in IMM_ROM_EXT_VARIATIONS
 ]
 
 [
@@ -64,7 +64,7 @@ filegroup(
         ],
         visibility = ["//visibility:private"],
     )
-    for name in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS
+    for name in IMM_ROM_EXT_VARIATIONS
 ]
 
 _POSITIONS = {
@@ -142,7 +142,7 @@ _POSITIONS = {
         "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
         "otp_img": ":otp_img_with_{}_imm_romext_enabled".format(name),
     }
-    for name in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS
+    for name in IMM_ROM_EXT_VARIATIONS
 }
 
 [
