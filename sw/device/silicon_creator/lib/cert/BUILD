@@ -227,8 +227,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
         "//sw/device/silicon_creator/lib/cert:dice",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
