@@ -106,6 +106,7 @@ ld_library(
     deps = [
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/device/silicon_creator/lib/base:static_dice_sections",
     ],
 )
 
@@ -192,6 +193,7 @@ cc_test(
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
             "//sw/device/silicon_creator/lib/base:static_critical",
+            "//sw/device/silicon_creator/lib/base:static_dice",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
             "//sw/device/silicon_creator/lib/cert:dice_chain",
