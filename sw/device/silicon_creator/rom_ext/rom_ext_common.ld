@@ -148,6 +148,12 @@ SECTIONS {
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
+   * Critical static data that is accessible by both the immutable and
+   * mutable ROM extension.
+   */
+  INCLUDE sw/device/silicon_creator/lib/base/static_dice.ld
+
+  /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
    * from flash at runtime by the CRT.
    *

@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/base/static_dice_cdi_0.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
@@ -98,6 +99,11 @@ typedef struct dice_chain {
 } dice_chain_t;
 
 static dice_chain_t dice_chain;
+
+cert_key_id_pair_t dice_chain_cdi_0_key_ids = (cert_key_id_pair_t){
+    .endorsement = &static_dice_cdi_0.uds_pubkey_id,
+    .cert = &static_dice_cdi_0.cdi_0_pubkey_id,
+};
 
 // Get the size of the remaining tail space that is not processed yet.
 OT_WARN_UNUSED_RESULT
@@ -286,34 +292,13 @@ rom_error_t dice_chain_attestation_silicon(void) {
   sc_keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
-      kDiceKeyUds, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
-
-  // Switch page for the factory provisioned UDS cert.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
-
-  // Check if the UDS cert is valid.
-  RETURN_IF_ERROR(dice_chain_load_cert_obj("UDS", /*name_size=*/4));
-  if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    // The UDS key ID (and cert itself) should never change unless:
-    // 1. there is a hardware issue / the page has been corrupted, or
-    // 2. the cert has not yet been provisioned.
-    //
-    // In both cases, we do nothing, and boot normally, later attestation
-    // attempts will fail in a detectable manner.
-
-    // CAUTION: This error message should match the one in
-    //   //sw/host/provisioning/ft_lib/src/lib.rs
-    dbg_puts("error: UDS certificate not valid\r\n");
-  } else {
-    // Cert is valid, move to the next one.
-    dice_chain_next_cert_obj();
-  }
+      kDiceKeyUds, &static_dice_cdi_0.uds_pubkey_id,
+      &dice_chain.subject_pubkey));
 
   // Save UDS key for signing next stage cert.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(
       kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
       *kDiceKeyUds.keymgr_diversifier));
-  dice_chain.endorsement_pubkey_id = dice_chain.subject_pubkey_id;
 
   return kErrorOk;
 }
@@ -331,7 +316,8 @@ rom_error_t dice_chain_attestation_creator(
       /*attest_binding=*/rom_ext_measurement,
       rom_ext_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
-      kDiceKeyCdi0, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
+      kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
+      &dice_chain.subject_pubkey));
 
   // Switch page for the device generated CDI_0.
   RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
@@ -344,26 +330,72 @@ rom_error_t dice_chain_attestation_creator(
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
     // Update the cert page buffer.
-    size_t updated_cert_size = kScratchCertSizeBytes;
-    HARDENED_RETURN_IF_ERROR(
-        dice_cdi_0_cert_build((hmac_digest_t *)rom_ext_measurement->data,
-                              rom_ext_manifest->security_version,
-                              &dice_chain.key_ids, &dice_chain.subject_pubkey,
-                              dice_chain.scratch_cert, &updated_cert_size));
-    RETURN_IF_ERROR(dice_chain_push_cert("CDI_0", dice_chain.scratch_cert,
-                                         updated_cert_size));
+    static_dice_cdi_0.cert_size = sizeof(static_dice_cdi_0.cert_data);
+    HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
+        (hmac_digest_t *)rom_ext_measurement->data,
+        rom_ext_manifest->security_version, &dice_chain_cdi_0_key_ids,
+        &dice_chain.subject_pubkey, static_dice_cdi_0.cert_data,
+        &static_dice_cdi_0.cert_size));
   } else {
-    // Cert is valid, move to the next one.
-    dice_chain_next_cert_obj();
-
     // Replace UDS with CDI_0 key for endorsing next stage cert.
     HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
         kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
         *kDiceKeyCdi0.keymgr_diversifier));
   }
-  dice_chain.endorsement_pubkey_id = dice_chain.subject_pubkey_id;
 
   sc_keymgr_sw_binding_unlock_wait();
+
+  return kErrorOk;
+}
+
+// Compare the UDS identity in the static critical section to the UDS cert
+// cached in the flash.
+static rom_error_t dice_chain_attestation_check_uds(void) {
+  // Switch page for the factory provisioned UDS cert.
+  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
+
+  // Check if the UDS cert is valid.
+  dice_chain.endorsement_pubkey_id = static_dice_cdi_0.uds_pubkey_id;
+  dice_chain.subject_pubkey_id = static_dice_cdi_0.uds_pubkey_id;
+  RETURN_IF_ERROR(dice_chain_load_cert_obj("UDS", /*name_size=*/4));
+  if (dice_chain.cert_valid == kHardenedBoolFalse) {
+    // The UDS key ID (and cert itself) should never change unless:
+    // 1. there is a hardware issue / the page has been corrupted, or
+    // 2. the cert has not yet been provisioned.
+    //
+    // In both cases, we do nothing, and boot normally, later attestation
+    // attempts will fail in a detectable manner.
+
+    // CAUTION: This error message should match the one in
+    //   //sw/host/provisioning/ft_lib/src/lib.rs
+    dbg_puts("error: UDS certificate not valid\r\n");
+  }
+
+  return kErrorOk;
+}
+
+// Compare the CDI_0 identity in the static critical section to the CDI_0 cert
+// cached in the flash, and refresh the cache if invalid.
+static rom_error_t dice_chain_attestation_check_cdi_0(void) {
+  // Switch page for the device CDI chain.
+  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
+
+  // Seek to skip previous objects.
+  RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
+
+  // Refresh cdi 0 if invalid
+  dice_chain.endorsement_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
+  dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
+  RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
+  if (dice_chain.cert_valid == kHardenedBoolFalse) {
+    dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
+    // Update the cert page buffer.
+    RETURN_IF_ERROR(dice_chain_push_cert("CDI_0", static_dice_cdi_0.cert_data,
+                                         static_dice_cdi_0.cert_size));
+  } else {
+    // Cert is valid, move to the next one.
+    dice_chain_next_cert_obj();
+  }
 
   return kErrorOk;
 }
@@ -371,6 +403,10 @@ rom_error_t dice_chain_attestation_creator(
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding) {
+  // Handles the certificates from the immutable rom_ext first.
+  RETURN_IF_ERROR(dice_chain_attestation_check_uds());
+  RETURN_IF_ERROR(dice_chain_attestation_check_cdi_0());
+
   // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
@@ -396,14 +432,7 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
-  // Switch page for the device generated CDI_1.
-  RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
-
-  // Seek to skip previous objects.
-  RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
-  RETURN_IF_ERROR(dice_chain_skip_cert_obj("CDI_0", /*name_size=*/6));
-
-  // Check if the current CDI_0 cert is valid.
+  // Check if the current CDI_1 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");

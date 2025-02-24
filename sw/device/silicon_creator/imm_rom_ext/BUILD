@@ -40,6 +40,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/base:static_dice",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
@@ -70,6 +71,7 @@ ld_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/device/silicon_creator/lib/base:static_dice_sections",
     ],
 )
 
