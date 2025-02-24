@@ -22,8 +22,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Alert Name            | Description                                                                                          |
 |:----------------------|:-----------------------------------------------------------------------------------------------------|
-| recov_ctrl_update_err | This recoverable alert is triggered upon detecting an update error in the shadowed Control Register. |
 | fatal_fault           | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.                    |
+| recov_ctrl_update_err | This recoverable alert is triggered upon detecting an update error in the shadowed Control Register. |
 
 ## Security Countermeasures
 

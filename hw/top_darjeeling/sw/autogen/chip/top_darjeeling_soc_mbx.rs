@@ -157,7 +157,7 @@ pub const RACL_CTRL_BASE_ADDR: usize = 0x1461F00;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RACL_CTRL_BASE_ADDR and
 /// `RACL_CTRL_BASE_ADDR + RACL_CTRL_SIZE_BYTES`.
-pub const RACL_CTRL_SIZE_BYTES: usize = 0x20;
+pub const RACL_CTRL_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for ac_range_check in top darjeeling.
 ///
