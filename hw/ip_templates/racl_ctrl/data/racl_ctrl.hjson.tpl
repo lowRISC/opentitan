@@ -175,7 +175,7 @@
           hwaccess: "hrw"
           desc: '''
                 Indicates a RACL error and the log register contains valid data.
-                Writing a one clears the error log register.
+                Writing a one clears this register and the !!ERROR_LOG_ADDRESS register.
                 '''
         }
         { bits: "1"
@@ -205,6 +205,25 @@
           resval: 0x0
           desc: '''
                 CTN UID causing the error.
+                '''
+        }
+      ]
+    }
+    { name: "ERROR_LOG_ADDRESS"
+      desc: '''Contains the address on which a RACL violation occurred.
+               This register is valid if and only if the `valid` field of !!ERROR_LOG is true.
+               Once valid, the address doesn't change (even if there are subsequent RACL violations) until the register gets cleared.
+               This register gets cleared when SW writes `1` to the `valid` field of the !!ERROR_LOG register.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe: "true"
+      fields: [
+        { bits: "31:0"
+          name: "address"
+          resval: 0x0
+          desc: '''
+                Address on which a RACL violation occurred.
                 '''
         }
       ]
