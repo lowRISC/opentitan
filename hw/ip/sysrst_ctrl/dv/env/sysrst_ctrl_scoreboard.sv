@@ -19,7 +19,6 @@ class sysrst_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Intr checks
   local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp;
-  local bit [NUM_MAX_INTERRUPTS-1:0] intr_exp_at_addr_phase;
 
   virtual  sysrst_ctrl_cov_if   cov_if;           // handle to sysrst_ctrl coverage interface
 
