@@ -48,7 +48,6 @@ static rom_error_t imm_rom_ext_start(void) {
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
-  // TODO: Move UDS cert check to mutable ROM_EXT.
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
 
   // Sideload sealing key to KMAC hw keyslot.
@@ -56,9 +55,6 @@ static rom_error_t imm_rom_ext_start(void) {
 
   HARDENED_RETURN_IF_ERROR(
       dice_chain_attestation_creator(&boot_measurements.rom_ext, rom_ext));
-
-  // Write the DICE certs to flash if they have been updated.
-  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
 
   // Make mutable part executable.
   HARDENED_RETURN_IF_ERROR(imm_rom_ext_epmp_mutable_rx(rom_ext));
