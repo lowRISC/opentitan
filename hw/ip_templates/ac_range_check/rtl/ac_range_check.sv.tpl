@@ -265,7 +265,7 @@ module ${module_instance_name}
 
   // Request is denied because no range was matching at all
   assign hw2reg.log_status.denied_no_match.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.denied_no_match.d = ~(|addr_hit);
+  assign hw2reg.log_status.denied_no_match.d = log_first_deny ? ~(|addr_hit) : 1'b0;
 
   // TODO(#25454): RACL status gets implemented once RACL is in
   assign hw2reg.log_status.denied_racl_read.de = log_first_deny | clear_log;
@@ -276,11 +276,12 @@ module ${module_instance_name}
   assign hw2reg.log_status.denied_racl_write.d  = '0;
 
   assign hw2reg.log_status.denied_source_role.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.denied_source_role.d  = racl_role;
+  assign hw2reg.log_status.denied_source_role.d  = log_first_deny ? racl_role : '0;
 
   assign hw2reg.log_status.denied_ctn_uid.de = log_first_deny | clear_log;
   assign hw2reg.log_status.denied_ctn_uid.d  =
-    top_racl_pkg::tlul_extract_ctn_uid_bits(ctn_tl_h2d_i.a_user.rsvd);
+      log_first_deny ? top_racl_pkg::tlul_extract_ctn_uid_bits(ctn_tl_h2d_i.a_user.rsvd)
+                     : '0;
 
   // TODO(#25456): Need to determine the index that caused the denial
   assign hw2reg.log_status.deny_range_index.de = log_first_deny | clear_log;
