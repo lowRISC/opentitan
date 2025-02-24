@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
@@ -111,14 +110,10 @@ opentitan_binary(
     ],
 )
 
-[
-    create_imm_rom_ext_targets(
-        src = ":main_binaries_slot_a",
-        base_name = "main_section_slot_a",
-        exec_env = env,
-    )
-    for env in DEFAULT_EXEC_ENV
-]
+create_imm_rom_ext_targets(
+    name = "main_section_slot_a",
+    src = ":main_binaries_slot_a",
+)
 
 opentitan_binary(
     name = "main_binaries_slot_b",
@@ -135,14 +130,10 @@ opentitan_binary(
     ],
 )
 
-[
-    create_imm_rom_ext_targets(
-        src = ":main_binaries_slot_b",
-        base_name = "main_section_slot_b",
-        exec_env = env,
-    )
-    for env in DEFAULT_EXEC_ENV
-]
+create_imm_rom_ext_targets(
+    name = "main_section_slot_b",
+    src = ":main_binaries_slot_b",
+)
 
 opentitan_binary(
     name = "main_binaries_slot_virtual",
@@ -159,11 +150,7 @@ opentitan_binary(
     ],
 )
 
-[
-    create_imm_rom_ext_targets(
-        src = ":main_binaries_slot_virtual",
-        base_name = "main_section_slot_virtual",
-        exec_env = env,
-    )
-    for env in DEFAULT_EXEC_ENV
-]
+create_imm_rom_ext_targets(
+    name = "main_section_slot_virtual",
+    src = ":main_binaries_slot_virtual",
+)

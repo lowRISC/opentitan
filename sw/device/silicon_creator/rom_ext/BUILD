@@ -13,9 +13,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "SLOT_A_IMM_ROM_EXT_SECTIONS",
-    "SLOT_B_IMM_ROM_EXT_SECTIONS",
-    "SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS",
+    "IMM_ROM_EXT_VARIATIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -240,7 +238,6 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
@@ -249,6 +246,7 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
@@ -267,7 +265,6 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
     # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
@@ -276,6 +273,7 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
@@ -294,13 +292,13 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    immutable_rom_ext_sections = SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
     transitive_features = ROM_EXT_FEATURES,
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
@@ -309,7 +307,7 @@ opentitan_binary(
 
 [
     opentitan_binary(
-        name = "rom_ext_with_{}_imm_slot_virtual".format(name),
+        name = "rom_ext_with_{}_imm_slot_virtual".format(imm_name),
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
@@ -319,7 +317,6 @@ opentitan_binary(
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
-        immutable_rom_ext_sections = imm_rom_ext_sections,
         linker_script = ":ld_slot_virtual",
         manifest = ":manifest",
         transitive_features = ROM_EXT_FEATURES,
@@ -329,9 +326,10 @@ opentitan_binary(
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner",
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
+            "//sw/device/silicon_creator/imm_rom_ext:{}_section_slot_virtual".format(imm_name),
         ],
     )
-    for name, imm_rom_ext_sections in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS.items()
+    for imm_name in IMM_ROM_EXT_VARIATIONS
 ]
 
 manifest(d = {

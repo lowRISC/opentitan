@@ -12,10 +12,8 @@ load(
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "SLOT_A_IMM_ROM_EXT_SECTIONS",
-    "SLOT_B_IMM_ROM_EXT_SECTIONS",
-    "SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS",
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "SLOTS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -26,12 +24,6 @@ LINK_ORDER = [
     "$(location //sw/device/silicon_creator/rom_ext)",
     "$(location //sw/device/lib/crt)",
 ]
-
-SLOTS = {
-    "a": SLOT_A_IMM_ROM_EXT_SECTIONS,
-    "b": SLOT_B_IMM_ROM_EXT_SECTIONS,
-    "virtual": SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS,
-}
 
 manifest(d = {
     "name": "manifest_sival",
@@ -63,7 +55,6 @@ ROM_EXT_FEATURES = [
             "//hw/top_earlgrey:sim_dv_base",
             "//hw/top_earlgrey:sim_verilator_base",
         ],
-        immutable_rom_ext_sections = imm_sections["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         manifest = ":manifest_sival",
@@ -75,9 +66,10 @@ ROM_EXT_FEATURES = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
         ],
     )
-    for slot, imm_sections in SLOTS.items()
+    for slot in SLOTS
 ]
 
 [
@@ -88,7 +80,6 @@ ROM_EXT_FEATURES = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
-        immutable_rom_ext_sections = imm_sections["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         transitive_features = ROM_EXT_FEATURES,
@@ -97,9 +88,10 @@ ROM_EXT_FEATURES = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
         ],
     )
-    for slot, imm_sections in SLOTS.items()
+    for slot in SLOTS
 ]
 
 offline_presigning_artifacts(
