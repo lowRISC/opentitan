@@ -2023,10 +2023,10 @@ pub enum AlertId {
     SocDbgCtrlFatalFault = 93,
     /// soc_dbg_ctrl_recov_ctrl_update_err
     SocDbgCtrlRecovCtrlUpdateErr = 94,
-    /// racl_ctrl_recov_ctrl_update_err
-    RaclCtrlRecovCtrlUpdateErr = 95,
     /// racl_ctrl_fatal_fault
-    RaclCtrlFatalFault = 96,
+    RaclCtrlFatalFault = 95,
+    /// racl_ctrl_recov_ctrl_update_err
+    RaclCtrlRecovCtrlUpdateErr = 96,
     /// ac_range_check_recov_ctrl_update_err
     AcRangeCheckRecovCtrlUpdateErr = 97,
     /// ac_range_check_fatal_fault
@@ -2140,8 +2140,8 @@ impl TryFrom<u32> for AlertId {
             92 => Ok(Self::MbxPcie1RecovFault),
             93 => Ok(Self::SocDbgCtrlFatalFault),
             94 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            95 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
-            96 => Ok(Self::RaclCtrlFatalFault),
+            95 => Ok(Self::RaclCtrlFatalFault),
+            96 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
             97 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
             98 => Ok(Self::AcRangeCheckFatalFault),
             99 => Ok(Self::RvCoreIbexFatalSwErr),
@@ -2348,9 +2348,9 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 103] = [
     AlertPeripheral::SocDbgCtrl,
     // SocDbgCtrlRecovCtrlUpdateErr -> AlertPeripheral::SocDbgCtrl
     AlertPeripheral::SocDbgCtrl,
-    // RaclCtrlRecovCtrlUpdateErr -> AlertPeripheral::RaclCtrl
-    AlertPeripheral::RaclCtrl,
     // RaclCtrlFatalFault -> AlertPeripheral::RaclCtrl
+    AlertPeripheral::RaclCtrl,
+    // RaclCtrlRecovCtrlUpdateErr -> AlertPeripheral::RaclCtrl
     AlertPeripheral::RaclCtrl,
     // AcRangeCheckRecovCtrlUpdateErr -> AlertPeripheral::AcRangeCheck
     AlertPeripheral::AcRangeCheck,

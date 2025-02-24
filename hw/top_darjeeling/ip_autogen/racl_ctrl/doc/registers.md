@@ -5,54 +5,15 @@
 
 | Name                                                                    | Offset   |   Length | Description                           |
 |:------------------------------------------------------------------------|:---------|---------:|:--------------------------------------|
-| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0x0      |        4 | Alert Test Register                   |
-| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0x4      |        4 | Error logging registers               |
-| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x8      |        4 | Read and write policy for ALL_RD_WR   |
-| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0xc      |        4 | Read and write policy for ROT_PRIVATE |
+| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x0      |        4 | Read and write policy for ALL_RD_WR   |
+| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0x8      |        4 | Read and write policy for ROT_PRIVATE |
 | racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for SOC_ROT     |
-
-## ALERT_TEST
-Alert Test Register
-- Offset: `0x0`
-- Reset default: `0x0`
-- Reset mask: `0x3`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "recov_ctrl_update_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                  | Description                                      |
-|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------|
-|  31:2  |        |         |                       | Reserved                                         |
-|   1    |   wo   |   0x0   | fatal_fault           | Write 1 to trigger one alert event of this kind. |
-|   0    |   wo   |   0x0   | recov_ctrl_update_err | Write 1 to trigger one alert event of this kind. |
-
-## ERROR_LOG
-Error logging registers
-- Offset: `0x4`
-- Reset default: `0x0`
-- Reset mask: `0xfff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "valid", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "overflow", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "read_access", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "role", "bits": 4, "attr": ["ro"], "rotate": 0}, {"name": "ctn_uid", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
-```
-
-|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                   |
-|:------:|:------:|:-------:|:------------|:--------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |             | Reserved                                                                                                      |
-|  11:7  |   ro   |   0x0   | ctn_uid     | CTN UID causing the error.                                                                                    |
-|  6:3   |   ro   |   0x0   | role        | RACL role causing the error.                                                                                  |
-|   2    |   ro   |   0x0   | read_access | 0: Write transfer was denied. 1: Read transfer was denied.                                                    |
-|   1    |   ro   |   0x0   | overflow    | Indicates a RACL error overflow when a RACL error occurred while the log register was set.                    |
-|   0    |  rw1c  |   0x0   | valid       | Indicates a RACL error and the log register contains valid data. Writing a one clears the error log register. |
+| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0xf4     |        4 | Alert Test Register.                  |
+| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0xf8     |        4 | Error logging registers               |
 
 ## POLICY_ALL_RD_WR_SHADOWED
 Read and write policy for ALL_RD_WR
-- Offset: `0x8`
+- Offset: `0x0`
 - Reset default: `0x70007`
 - Reset mask: `0xffffffff`
 
@@ -69,7 +30,7 @@ Read and write policy for ALL_RD_WR
 
 ## POLICY_ROT_PRIVATE_SHADOWED
 Read and write policy for ROT_PRIVATE
-- Offset: `0xc`
+- Offset: `0x8`
 - Reset default: `0x10001`
 - Reset mask: `0xffffffff`
 
@@ -100,6 +61,45 @@ Read and write policy for SOC_ROT
 |:------:|:------:|:-------:|:-----------|:------------------------------------|
 | 31:16  |   rw   |   0x5   | write_perm | Write permission for policy SOC_ROT |
 |  15:0  |   rw   |   0x5   | read_perm  | Read permission for policy SOC_ROT  |
+
+## ALERT_TEST
+Alert Test Register.
+- Offset: `0xf4`
+- Reset default: `0x0`
+- Reset mask: `0x3`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_ctrl_update_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                        |
+|:------:|:------:|:-------:|:----------------------|:---------------------------------------------------|
+|  31:2  |        |         |                       | Reserved                                           |
+|   1    |   wo   |    x    | recov_ctrl_update_err | 'Write 1 to trigger one alert event of this kind.' |
+|   0    |   wo   |    x    | fatal_fault           | 'Write 1 to trigger one alert event of this kind.' |
+
+## ERROR_LOG
+Error logging registers
+- Offset: `0xf8`
+- Reset default: `0x0`
+- Reset mask: `0xfff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "valid", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "overflow", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "read_access", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "role", "bits": 4, "attr": ["ro"], "rotate": 0}, {"name": "ctn_uid", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                   |
+|:------:|:------:|:-------:|:------------|:--------------------------------------------------------------------------------------------------------------|
+| 31:12  |        |         |             | Reserved                                                                                                      |
+|  11:7  |   ro   |   0x0   | ctn_uid     | CTN UID causing the error.                                                                                    |
+|  6:3   |   ro   |   0x0   | role        | RACL role causing the error.                                                                                  |
+|   2    |   ro   |   0x0   | read_access | 0: Write transfer was denied. 1: Read transfer was denied.                                                    |
+|   1    |   ro   |   0x0   | overflow    | Indicates a RACL error overflow when a RACL error occurred while the log register was set.                    |
+|   0    |  rw1c  |   0x0   | valid       | Indicates a RACL error and the log register contains valid data. Writing a one clears the error log register. |
 
 
 <!-- END CMDGEN -->

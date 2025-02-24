@@ -14340,7 +14340,7 @@
               {
                 soc_mbx: 0x1461f00
               }
-              size_byte: 0x20
+              size_byte: 0x100
             }
           ]
           xbar: false
@@ -18408,22 +18408,22 @@
       lpg_idx: 4
     }
     {
-      name: racl_ctrl_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: racl_ctrl
-      desc: racl_ctrl recov_ctrl_update_err alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
       name: racl_ctrl_fatal_fault
       width: 1
       type: alert
       async: "1"
       module_name: racl_ctrl
       desc: racl_ctrl fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: racl_ctrl_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: racl_ctrl
+      desc: racl_ctrl recov_ctrl_update_err alert
       lpg_name: infra_lc_0
       lpg_idx: 10
     }
