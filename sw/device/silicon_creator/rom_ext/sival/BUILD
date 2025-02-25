@@ -65,7 +65,7 @@ ROM_EXT_FEATURES = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_{}".format(slot),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -91,7 +91,7 @@ ROM_EXT_FEATURES = [
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_{}".format(slot),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation, slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
