@@ -29,6 +29,11 @@ function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
   super.initialize(csr_base_addr);
 
+  // Set shadow register error status
+  tl_intg_alert_fields[ral.alert_status.reg_intg_err] = 1;
+  shadow_update_err_status_fields[ral.alert_status.shadowed_update_err] = 1;
+  shadow_storage_err_status_fields[ral.alert_status.shadowed_storage_err] = 1;
+
   // TL Agent Configuration objects - Non RAL
   // Create tl_unfilt agent config obj
   tl_unfilt_agt_cfg = tl_agent_cfg::type_id::create("tl_unfilt_agt_cfg");
