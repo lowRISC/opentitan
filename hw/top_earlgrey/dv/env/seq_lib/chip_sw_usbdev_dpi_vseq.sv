@@ -9,7 +9,7 @@ class chip_sw_usbdev_dpi_vseq extends chip_sw_base_vseq;
 
   // Zero initialize the usbdev packet memory
   function void init_packet_mem();
-    cfg.mem_bkdr_util_h[UsbdevBuf].clear_mem();
+    cfg.mem_util_h[UsbdevBuf].clear_mem();
   endfunction
 
   virtual task body();

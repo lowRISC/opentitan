@@ -26,7 +26,7 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_state)
     `uvm_info(`gfn, $sformatf("Configuring via backdoor OTP:  lc_state %0s", lc_state.name),
               UVM_LOW)
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_state);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], lc_state);
   endfunction
 
   virtual function void initialize_otp_lc_state();

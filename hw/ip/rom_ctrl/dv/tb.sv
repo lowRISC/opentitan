@@ -8,7 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rom_ctrl_env_pkg::*;
   import rom_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::rom_bkdr_util;
+  import rom_ctrl_util_pkg::rom_ctrl_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -78,8 +78,8 @@ module tb;
     tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
 
   initial begin
-    rom_bkdr_util m_rom_bkdr_util;
-    m_rom_bkdr_util = new(.name  ("rom_bkdr_util"),
+    rom_ctrl_util m_rom_ctrl_util;
+    m_rom_ctrl_util = new(.name  ("rom_ctrl_util"),
                           .path  (`DV_STRINGIFY(`ROM_CTRL_MEM_HIER)),
                           .depth ($size(`ROM_CTRL_MEM_HIER)),
                           .n_bits($bits(`ROM_CTRL_MEM_HIER)),
@@ -98,7 +98,7 @@ module tb;
         "*.env.m_tl_agent_rom_ctrl_prim_reg_block*", "vif", tl_rom_if);
     uvm_config_db#(virtual tl_if)::set(null,
         "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
-    uvm_config_db#(rom_bkdr_util)::set(null, "*.env", "rom_bkdr_util", m_rom_bkdr_util);
+    uvm_config_db#(rom_ctrl_util)::set(null, "*.env", "rom_ctrl_util", m_rom_ctrl_util);
     uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", rom_ctrl_if);
     $timeformat(-12, 0, " ps", 12);

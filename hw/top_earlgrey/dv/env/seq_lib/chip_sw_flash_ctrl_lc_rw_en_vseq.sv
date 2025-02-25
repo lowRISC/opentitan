@@ -19,7 +19,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     // Override the LC partition to TestLocked state.
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStTestLocked2);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStTestLocked2);
   endtask
 
   virtual function lc_ctrl_pkg::lc_tx_t get_rw_en_signals(int rw_en_index);
@@ -46,7 +46,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
     // LC state changed to Dev. and reset, CPU will now be enabled.
 
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStDev);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStDev);
     apply_reset();
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest, 50_000_000)
@@ -54,7 +54,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
     // LC state changed to Prod.
 
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStProd);
     apply_reset();
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
@@ -62,7 +62,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
 
     // LC state changed to Scrap. CPU not enabled so do the checks directly.
 
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStScrap);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStScrap);
     apply_reset();
 
     for (int i = 0; i < 5; i++) begin

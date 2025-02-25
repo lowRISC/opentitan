@@ -17,29 +17,29 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
 
     // make sure it is unlocked and empty to start
     for (int i = 0; i < 4; i++) begin
-      cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashAddrKeySeedOffset + i*8,
+      cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashAddrKeySeedOffset + i*8,
                                        '0);
 
-      cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashDataKeySeedOffset + i*8,
+      cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashDataKeySeedOffset + i*8,
                                        '0);
 
-      cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::SramDataKeySeedOffset + i*8,
+      cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::SramDataKeySeedOffset + i*8,
                                        '0);
     end
 
 
-    cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret1DigestOffset,
+    cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret1DigestOffset,
                                      '0);
 
 
     // make sure we are in prod state
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStProd);
 
     // Randomize the expected data and write it into flash.
     `DV_CHECK_STD_RANDOMIZE_FATAL(iso_part_data);
     for (int i = 0; i < ISO_PART_SIZE; i++) begin
       // write some data into isolated partition
-      cfg.mem_bkdr_util_h[FlashBank0Info].write8(ISO_PART_ADDR + i, iso_part_data[i]);
+      cfg.mem_util_h[FlashBank0Info].write8(ISO_PART_ADDR + i, iso_part_data[i]);
     end
 
   endtask // dut_init
