@@ -110,7 +110,7 @@ class PwrmgrExt(Extension):
     WAKEUP_SOURCE_WAKEUP_FIELD_NAME = Name(["wakeup"])
     RSTREQ_SOURCE_STRUCT_NAME = Name.from_snake_case("dt_pwrmgr_reset_req_src")
     RSTREQ_SOURCE_INST_FIELD_NAME = Name(["inst", "id"])
-    RSTREQ_SOURCE_WAKEUP_FIELD_NAME = Name(["reset", "req"])
+    RSTREQ_SOURCE_REQ_FIELD_NAME = Name(["reset", "req"])
     EXT_WAKEUP_SOURCES_FIELD_NAME = Name(["wakeup", "src"])
     EXT_RESET_REQS_FIELD_NAME = Name(["rst", "reqs"])
 
@@ -140,7 +140,7 @@ class PwrmgrExt(Extension):
             docstring = "Instance ID of the source of this reset request.",
         )
         self.reset_req_src_struct.add_field(
-            name = self.RSTREQ_SOURCE_WAKEUP_FIELD_NAME,
+            name = self.RSTREQ_SOURCE_REQ_FIELD_NAME,
             field_type = ScalarType("size_t"),
             docstring = "Index of the reset request signal for that instance.",
         )
@@ -204,7 +204,7 @@ class PwrmgrExt(Extension):
                 self.ip_helper.simplify_reset_request_name(reset["name"]))
             rst_reqs[str(idx)] = {
                 self.RSTREQ_SOURCE_INST_FIELD_NAME: Name.from_snake_case(reset["module"]),
-                self.RSTREQ_SOURCE_WAKEUP_FIELD_NAME: rstreq.as_c_enum()
+                self.RSTREQ_SOURCE_REQ_FIELD_NAME: rstreq.as_c_enum()
             }
 
         return {
