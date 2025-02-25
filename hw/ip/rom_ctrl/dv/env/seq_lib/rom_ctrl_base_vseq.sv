@@ -25,7 +25,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                           input bit [TL_AW-1:0]  addr,
                           input bit              write,
                           inout bit [TL_DW-1:0]  data,
-                          input uint             tl_access_timeout_ns = cfg.tl_access_timeout_ns,
+                          input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
                           input bit [TL_DBW-1:0] mask = '1,
                           input bit              check_rsp = 1'b1,
                           input bit              exp_err_rsp = 1'b0,
@@ -38,23 +38,23 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
                           input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone);
 
   extern virtual task tl_access_w_abort(
-                           input bit [TL_AW-1:0]  addr,
-                           input bit              write,
-                           inout bit [TL_DW-1:0]  data,
-                           output bit             completed,
-                           output bit             saw_err,
-                           input uint             tl_access_timeout_ns = cfg.tl_access_timeout_ns,
-                           input bit [TL_DBW-1:0] mask = '1,
-                           input bit              check_rsp = 1'b1,
-                           input bit              exp_err_rsp = 1'b0,
-                           input bit [TL_DW-1:0]  exp_data = 0,
-                           input bit [TL_DW-1:0]  compare_mask = '1,
-                           input bit              check_exp_data = 1'b0,
-                           input bit              blocking = csr_utils_pkg::default_csr_blocking,
-                           input mubi4_t          instr_type = MuBi4False,
-                           tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
-                           input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
-                           input int              req_abort_pct = 0);
+                          input bit [TL_AW-1:0]  addr,
+                          input bit              write,
+                          inout bit [TL_DW-1:0]  data,
+                          output bit             completed,
+                          output bit             saw_err,
+                          input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
+                          input bit [TL_DBW-1:0] mask = '1,
+                          input bit              check_rsp = 1'b1,
+                          input bit              exp_err_rsp = 1'b0,
+                          input bit [TL_DW-1:0]  exp_data = 0,
+                          input bit [TL_DW-1:0]  compare_mask = '1,
+                          input bit              check_exp_data = 1'b0,
+                          input bit              blocking = csr_utils_pkg::default_csr_blocking,
+                          input mubi4_t          instr_type = MuBi4False,
+                          tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
+                          input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
+                          input int              req_abort_pct = 0);
 
   extern function void set_kmac_digest(bit [DIGEST_SIZE-1:0] value);
   extern function void configure_kmac_digest(bit as_expected);
@@ -170,20 +170,24 @@ endfunction
 // The ROM takes a while to be read and otherwise some tests may timeout when using
 // default timeout.
 task rom_ctrl_base_vseq::tl_access(
-                              input bit [TL_AW-1:0]  addr,
-                              input bit              write,
-                              inout bit [TL_DW-1:0]  data,
-                              input uint             tl_access_timeout_ns,
-                              input bit [TL_DBW-1:0] mask = '1,
-                              input bit              check_rsp = 1'b1,
-                              input bit              exp_err_rsp = 1'b0,
-                              input bit [TL_DW-1:0]  exp_data = 0,
-                              input bit [TL_DW-1:0]  compare_mask = '1,
-                              input bit              check_exp_data = 1'b0,
-                              input bit              blocking,
-                              input mubi4_t          instr_type = MuBi4False,
-                              tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
-                              input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone);
+                          input bit [TL_AW-1:0]  addr,
+                          input bit              write,
+                          inout bit [TL_DW-1:0]  data,
+                          input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
+                          input bit [TL_DBW-1:0] mask = '1,
+                          input bit              check_rsp = 1'b1,
+                          input bit              exp_err_rsp = 1'b0,
+                          input bit [TL_DW-1:0]  exp_data = 0,
+                          input bit [TL_DW-1:0]  compare_mask = '1,
+                          input bit              check_exp_data = 1'b0,
+                          input bit              blocking,
+                          input mubi4_t          instr_type = MuBi4False,
+                          tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
+                          input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone);
+
+  if (tl_access_timeout_ns < cfg.tl_access_timeout_ns) begin
+    tl_access_timeout_ns = cfg.tl_access_timeout_ns;
+  end
 
   super.tl_access(.addr(addr), .write(write), .data(data),
                   .tl_access_timeout_ns(tl_access_timeout_ns),
@@ -198,24 +202,27 @@ endtask
 // The ROM takes a while to be read and otherwise some tests may timeout when using
 // default timeout.
 task rom_ctrl_base_vseq::tl_access_w_abort(
-                              input bit [TL_AW-1:0]  addr,
-                              input bit              write,
-                              inout bit [TL_DW-1:0]  data,
-                              output bit             completed,
-                              output bit             saw_err,
-                              input uint             tl_access_timeout_ns,
-                              input bit [TL_DBW-1:0] mask = '1,
-                              input bit              check_rsp = 1'b1,
-                              input bit              exp_err_rsp = 1'b0,
-                              input bit [TL_DW-1:0]  exp_data = 0,
-                              input bit [TL_DW-1:0]  compare_mask = '1,
-                              input bit              check_exp_data = 1'b0,
-                              input bit              blocking,
-                              input mubi4_t          instr_type = MuBi4False,
-                              tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
-                              input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
-                              input int              req_abort_pct = 0);
+                          input bit [TL_AW-1:0]  addr,
+                          input bit              write,
+                          inout bit [TL_DW-1:0]  data,
+                          output bit             completed,
+                          output bit             saw_err,
+                          input uint             tl_access_timeout_ns = default_spinwait_timeout_ns,
+                          input bit [TL_DBW-1:0] mask = '1,
+                          input bit              check_rsp = 1'b1,
+                          input bit              exp_err_rsp = 1'b0,
+                          input bit [TL_DW-1:0]  exp_data = 0,
+                          input bit [TL_DW-1:0]  compare_mask = '1,
+                          input bit              check_exp_data = 1'b0,
+                          input bit              blocking,
+                          input mubi4_t          instr_type = MuBi4False,
+                          tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
+                          input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
+                          input int              req_abort_pct = 0);
 
+  if (tl_access_timeout_ns < cfg.tl_access_timeout_ns) begin
+    tl_access_timeout_ns = cfg.tl_access_timeout_ns;
+  end
 
   super.tl_access_w_abort(.addr(addr), .write(write), .data(data), .completed(completed),
                           .saw_err(saw_err), .tl_access_timeout_ns(tl_access_timeout_ns),
