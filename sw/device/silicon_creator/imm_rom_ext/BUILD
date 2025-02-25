@@ -6,7 +6,11 @@ load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//sw/device/silicon_creator/imm_rom_ext:defs.bzl", "DEFAULT_EXEC_ENV")
-load("//sw/device/silicon_creator/rom_ext:defs.bzl", "SLOTS")
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
+    "SLOTS",
+)
 load(
     "//sw/device/silicon_creator/imm_rom_ext:utils.bzl",
     "create_imm_rom_ext_targets",
@@ -83,7 +87,7 @@ ld_library(
 
 [
     opentitan_binary(
-        name = "main_binaries_slot_{}".format(slot),
+        name = "main_binaries_{}_slot_{}".format(variation_name, slot),
         exec_env = DEFAULT_EXEC_ENV,
         extra_bazel_features = [
             "minsize",
@@ -94,16 +98,17 @@ ld_library(
         deps = [
             ":main_lib",
             "//sw/device/lib/crt",
-            "//sw/device/silicon_creator/lib/cert:dice",
-        ],
+        ] + variation_deps,
     )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
 
 [
     create_imm_rom_ext_targets(
-        name = "main_section_slot_{}".format(slot),
-        src = ":main_binaries_slot_{}".format(slot),
+        name = "main_section_{}_slot_{}".format(variation_name, slot),
+        src = ":main_binaries_{}_slot_{}".format(variation_name, slot),
     )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
