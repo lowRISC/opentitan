@@ -8,7 +8,8 @@
 class gpio_virtual_sequencer #(type CFG_T      = gpio_env_cfg,
                                type COV_T      = gpio_env_cov,
                                type ITEM_T     = uvm_sequence_item,
-                               type RSP_ITEM_T = uvm_sequence_item) extends cip_base_virtual_sequencer #(CFG_T, COV_T);
+                               type RSP_ITEM_T = uvm_sequence_item)
+                               extends cip_base_virtual_sequencer #(CFG_T, COV_T);
 
   `uvm_component_param_utils(gpio_virtual_sequencer #(CFG_T,
                                                       COV_T,

@@ -7,28 +7,34 @@ class gpio_strap_driver extends dv_base_driver #(.ITEM_T(uvm_sequence_item),
 
   `uvm_component_utils(gpio_strap_driver)
 
-  straps_vif         m_straps_vif;
-  virtual clk_rst_if clk_rst_vif;
-  strap_sequencer    m_seqr;
+  // Strap interface used to trigger the strap_en_i signal.
+  local straps_vif m_straps_vif;
+  // Clock and reset virtual interface
+  virtual local clk_rst_if m_clk_rst_vif;
+  // Strap virtual sequencer used to get the gpio seq items
+  local strap_sequencer    m_seqr;
+  // gpio config env object;
+  gpio_env_cfg m_gpio_env_cfg;
 
   // Constructor: Creates a new instance of the gpio_driver class
-  // @param name - The name of the component
-  // @param parent - The parent component
   function new(string name, uvm_component parent);
     super.new(name, parent);
   endfunction
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", m_straps_vif)) begin
-        `uvm_fatal(`gfn, "Virtual interface m_straps_vif is not set in the uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "*.env", "clk_rst_vif", clk_rst_vif)) begin
-        `uvm_fatal(`gfn, "Could not get clk_rst_vif")
-    end
+    // Strap sequencer uvm_config_db get method.
     if (!uvm_config_db#(strap_sequencer)::get(this, "", "strap_sqr", m_seqr)) begin
         `uvm_fatal(`gfn, "Failed to get sequencer handle from config DB!")
     end
+    // Environment config object.
+    if (!uvm_config_db#(gpio_env_cfg)::get(null, "uvm_test_top.env", "cfg", m_gpio_env_cfg)) begin
+      `uvm_fatal(`gfn, "Could not get environment config object")
+    end
+
+    // Get the vif handles from the environment config object.
+    m_straps_vif   = m_gpio_env_cfg.straps_vif_inst;
+    m_clk_rst_vif  = m_gpio_env_cfg.clk_rst_vif;
   endfunction
 
   virtual task run_phase(uvm_phase phase);
@@ -44,10 +50,10 @@ class gpio_strap_driver extends dv_base_driver #(.ITEM_T(uvm_sequence_item),
     end
   endtask
 
-  // Drive the stran_en_i pin
-  virtual task drive_item(gpio_seq_item req);
-    @(posedge clk_rst_vif.clk);
-    m_straps_vif.tb_if.strap_en <= req.strap_en_i;
+  // Drive the strap_en_i pin
+  task drive_item(gpio_seq_item req);
+    @(posedge m_clk_rst_vif.clk);
+    m_straps_vif.tb_port.strap_en <= req.strap_en_i;
   endtask
 
 endclass
