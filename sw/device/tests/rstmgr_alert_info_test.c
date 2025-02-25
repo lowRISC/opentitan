@@ -18,7 +18,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -32,8 +31,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -41,8 +38,14 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#ifdef OPENTITAN_IS_EARLGREY
+#include "dt/dt_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
+#endif  // OPENTITAN_IS_EARLGREY
+
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /*
   RSTMGR ALERT_INFO Test
@@ -103,7 +106,6 @@ enum {
 };
 
 static const uint32_t kPlicTarget = 0;
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_uart_t uart;
@@ -115,7 +117,6 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_i2c_t i2c;
 
-static const dt_flash_ctrl_t kFlashCtrlDt = 0;
 static const dt_rstmgr_t kRstmgrDt = 0;
 static const dt_alert_handler_t kAlertHandlerDt = 0;
 static const dt_otp_ctrl_t kOtpCtrlDt = 0;
@@ -125,7 +126,11 @@ static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
 static const dt_aon_timer_t kAonTimerDt = 0;
 static const dt_pwrmgr_t kPwrmgrDt = 0;
 
-static_assert(kDtFlashCtrlCount > 0, "test requires a flash controller");
+#ifdef OPENTITAN_IS_EARLGREY
+static dif_flash_ctrl_state_t flash_ctrl;
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+#endif  // OPENTITAN_IS_EARLGREY
+
 static_assert(kDtRstmgrCount > 0, "test requires a reset manager");
 static_assert(kDtAlertHandlerCount > 0, "test requires an alert handler");
 static_assert(kDtOtpCtrlCount > 0, "test requires an OTP controller");
@@ -719,9 +724,11 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 
+#ifdef OPENTITAN_IS_EARLGREY
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
   CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+#endif  // OPENTITAN_IS_EARLGREY
 
   peripheral_init();
 
@@ -759,6 +766,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
+
+#ifdef OPENTITAN_IS_EARLGREY
     // If not running rom_ext we need to initialize the info FLASH partitions
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
@@ -767,6 +776,7 @@ bool test_main(void) {
                                                   &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+#endif  // OPENTITAN_IS_EARLGREY
 
     global_test_round = kRound1;
     prgm_alert_handler_round1();

@@ -5261,7 +5261,6 @@ opentitan_test(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
@@ -5276,13 +5275,20 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": [
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/testing:flash_ctrl_testutils",
+                "//sw/device/lib/testing:keymgr_testutils",
+            ],
+        },
+        [],
+    ),
 )
 
 opentitan_test(
