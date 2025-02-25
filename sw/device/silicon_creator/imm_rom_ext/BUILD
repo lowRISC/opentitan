@@ -6,6 +6,7 @@ load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//sw/device/silicon_creator/imm_rom_ext:defs.bzl", "DEFAULT_EXEC_ENV")
+load("//sw/device/silicon_creator/rom_ext:defs.bzl", "SLOTS")
 load(
     "//sw/device/silicon_creator/imm_rom_ext:utils.bzl",
     "create_imm_rom_ext_targets",
@@ -68,90 +69,41 @@ ld_library(
     ],
 )
 
-ld_library(
-    name = "ld_slot_a",
-    script = "imm_rom_ext_slot_a.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
+[
+    ld_library(
+        name = "ld_slot_{}".format(slot),
+        script = "imm_rom_ext_slot_{}.ld".format(slot),
+        deps = [
+            ":ld_common",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ],
+    )
+    for slot in SLOTS
+]
 
-ld_library(
-    name = "ld_slot_b",
-    script = "imm_rom_ext_slot_b.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
+[
+    opentitan_binary(
+        name = "main_binaries_slot_{}".format(slot),
+        exec_env = DEFAULT_EXEC_ENV,
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
+        ],
+        linker_script = ":ld_slot_{}".format(slot),
+        manifest = "//hw/top_earlgrey:none_manifest",
+        deps = [
+            ":main_lib",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib/cert:dice",
+        ],
+    )
+    for slot in SLOTS
+]
 
-ld_library(
-    name = "ld_slot_virtual",
-    script = "imm_rom_ext_slot_virtual.ld",
-    deps = [
-        ":ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ],
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_a",
-    exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib/cert:dice",
-    ],
-)
-
-create_imm_rom_ext_targets(
-    name = "main_section_slot_a",
-    src = ":main_binaries_slot_a",
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_b",
-    exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
-    linker_script = ":ld_slot_b",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-    ],
-)
-
-create_imm_rom_ext_targets(
-    name = "main_section_slot_b",
-    src = ":main_binaries_slot_b",
-)
-
-opentitan_binary(
-    name = "main_binaries_slot_virtual",
-    exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
-    linker_script = ":ld_slot_virtual",
-    manifest = "//hw/top_earlgrey:none_manifest",
-    deps = [
-        ":main_lib",
-        "//sw/device/lib/crt",
-    ],
-)
-
-create_imm_rom_ext_targets(
-    name = "main_section_slot_virtual",
-    src = ":main_binaries_slot_virtual",
-)
+[
+    create_imm_rom_ext_targets(
+        name = "main_section_slot_{}".format(slot),
+        src = ":main_binaries_slot_{}".format(slot),
+    )
+    for slot in SLOTS
+]
