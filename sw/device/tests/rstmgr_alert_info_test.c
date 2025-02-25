@@ -271,7 +271,46 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
         },
 };
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast];
+static node_t test_node(dt_instance_id_t inst_id) {
+  dt_device_type_t device_type = dt_device_type(inst_id);
+
+  switch (device_type) {
+    case kDtDeviceTypeSpiHost:
+      return (node_t){
+          .alert = dt_spi_host_alert_to_alert_id(
+              dt_spi_host_from_instance_id(inst_id), kDtSpiHostAlertFatalFault),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeOtpCtrl:
+      return (node_t){
+          .alert = dt_otp_ctrl_alert_to_alert_id(
+              dt_otp_ctrl_from_instance_id(inst_id),
+              kDtOtpCtrlAlertFatalBusIntegError),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeKmac:
+      return (node_t){
+          .alert = dt_kmac_alert_to_alert_id(dt_kmac_from_instance_id(inst_id),
+                                             kDtKmacAlertFatalFaultErr),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeUart:
+      return (node_t){
+          .alert = dt_uart_alert_to_alert_id(dt_uart_from_instance_id(inst_id),
+                                             kDtUartAlertFatalFault),
+          .class = kDifAlertHandlerClassC,
+      };
+    case kDtDeviceTypeI2c:
+      return (node_t){
+          .alert = dt_i2c_alert_to_alert_id(dt_i2c_from_instance_id(inst_id),
+                                            kDtI2cAlertFatalFault),
+          .class = kDifAlertHandlerClassA,
+      };
+    default:
+      CHECK(false, "unhandled device type");
+      abort();
+  }
+}
 
 static void set_extra_alert(volatile uint32_t *set) {
   CHECK_DIF_OK(dif_uart_alert_force(&uart, kDifUartAlertFatalFault));
@@ -364,10 +403,11 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
-  for (int i = kTopEarlgreyAlertPeripheralI2c0;
-       i < kTopEarlgreyAlertPeripheralI2c2 + 1; ++i) {
+  for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
+    dt_instance_id_t inst_id = dt_i2c_instance_id(i2c);
+    node_t node = test_node(inst_id);
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, test_node[i].alert, test_node[i].class,
+        &alert_handler, node.alert, node.class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
 
@@ -397,17 +437,19 @@ static void prgm_alert_handler_round2(void) {
       kConfigProfiles[kDifAlertHandlerClassC],
       kConfigProfiles[kDifAlertHandlerClassB]};
 
-  for (int i = kTopEarlgreyAlertPeripheralUart0;
-       i < kTopEarlgreyAlertPeripheralUart3 + 1; ++i) {
+  for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
+    dt_instance_id_t inst_id = dt_uart_instance_id(uart);
+    node_t node = test_node(inst_id);
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, test_node[i].alert, test_node[i].class,
+        &alert_handler, node.alert, node.class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
-  CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, test_node[kTopEarlgreyAlertPeripheralOtpCtrl].alert,
-      test_node[kTopEarlgreyAlertPeripheralOtpCtrl].class,
-      /*enabled=*/kDifToggleEnabled,
-      /*locked=*/kDifToggleEnabled));
+  dt_instance_id_t otp_ctrl_id = dt_otp_ctrl_instance_id(kDtOtpCtrl);
+  node_t node = test_node(otp_ctrl_id);
+  CHECK_DIF_OK(dif_alert_handler_configure_alert(&alert_handler, node.alert,
+                                                 node.class,
+                                                 /*enabled=*/kDifToggleEnabled,
+                                                 /*locked=*/kDifToggleEnabled));
 
   for (int i = 0; i < ARRAYSIZE(alert_classes); ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_class(
@@ -430,18 +472,26 @@ static void prgm_alert_handler_round2(void) {
 static void prgm_alert_handler_round3(void) {
   // Enable all incoming alerts. This will create ping timeout event
   // for all possible alerts and will see the timeout more often.
-  dif_alert_handler_class_t alert_class;
+  for (dt_alert_id_t i = 0; i < kDtAlertCount; i++) {
+    dt_instance_id_t inst_id = dt_alert_id_to_instance_id(i);
+    dt_device_type_t device_type = dt_device_type(inst_id);
 
-  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdSpiHost0FatalFault) {
-      alert_class = kDifAlertHandlerClassB;
-    } else if (i == kTopEarlgreyAlertIdUart0FatalFault) {
-      alert_class = kDifAlertHandlerClassC;
-    } else if (i == kTopEarlgreyAlertIdI2c0FatalFault) {
-      alert_class = kDifAlertHandlerClassA;
-    } else {
-      alert_class = kDifAlertHandlerClassD;
+    dif_alert_handler_class_t alert_class;
+    switch (device_type) {
+      case kDtDeviceTypeSpiHost:
+        alert_class = kDifAlertHandlerClassB;
+        break;
+      case kDtDeviceTypeUart:
+        alert_class = kDifAlertHandlerClassC;
+        break;
+      case kDtDeviceTypeI2c:
+        alert_class = kDifAlertHandlerClassA;
+        break;
+      default:
+        alert_class = kDifAlertHandlerClassD;
+        break;
     }
+
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, i, alert_class, /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
@@ -623,94 +673,42 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   }
 }
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
-    [kTopEarlgreyAlertPeripheralSpiHost0] =
-        {
-            .alert = kTopEarlgreyAlertIdSpiHost0FatalFault,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralOtpCtrl] =
-        {
-            .alert = kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralKmac] =
-        {
-            .alert = kTopEarlgreyAlertIdKmacFatalFaultErr,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralUart0] =
-        {
-            .alert = kTopEarlgreyAlertIdUart0FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart1] =
-        {
-            .alert = kTopEarlgreyAlertIdUart1FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart2] =
-        {
-            .alert = kTopEarlgreyAlertIdUart2FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart3] =
-        {
-            .alert = kTopEarlgreyAlertIdUart3FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralI2c0] =
-        {
-            .alert = kTopEarlgreyAlertIdI2c0FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-    [kTopEarlgreyAlertPeripheralI2c1] =
-        {
-            .alert = kTopEarlgreyAlertIdI2c1FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-    [kTopEarlgreyAlertPeripheralI2c2] =
-        {
-            .alert = kTopEarlgreyAlertIdI2c2FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-};
-
 static void init_expected_cause(void) {
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c1FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c2FatalFault] = 1;
+  for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
+    dt_alert_id_t alert_id =
+        dt_i2c_alert_to_alert_id(i2c, kDtI2cAlertFatalFault);
+    kExpectedInfo[kRound1].alert_info.alert_cause[alert_id] = 1;
+  }
 
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart1FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart2FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart3FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
+  for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
+    dt_alert_id_t alert_id =
+        dt_uart_alert_to_alert_id(uart, kDtUartAlertFatalFault);
+    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
+  }
+
+  dt_alert_id_t ibex_alert_id = dt_rv_core_ibex_alert_to_alert_id(
+      kDtRvCoreIbex, kDtRvCoreIbexAlertRecovSwErr);
+  dt_alert_id_t uart_alert_id =
+      dt_uart_alert_to_alert_id((dt_uart_t)0, kDtUartAlertFatalFault);
+  dt_alert_id_t i2c_alert_id =
+      dt_i2c_alert_to_alert_id((dt_i2c_t)0, kDtI2cAlertFatalFault);
+  dt_alert_id_t spi_alert_id = dt_spi_host_alert_to_alert_id(
+      (dt_spi_host_t)0, kDtSpiHostAlertFatalFault);
+  kExpectedInfo[kRound3].alert_info.alert_cause[ibex_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[uart_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[i2c_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[spi_alert_id] = 1;
 }
 
 // Modify kExpectedInfo for runs without rom_ext, so non-owner stages. The
 // difference is that without rom_ext we expect an otp alert in round 2.
 static void init_expected_info_for_non_rom_ext(void) {
   if (kBootStage != kBootStageOwner) {
+    dt_alert_id_t alert_id = dt_otp_ctrl_alert_to_alert_id(
+        kDtOtpCtrl, kDtOtpCtrlAlertFatalBusIntegError);
     kExpectedInfo[kRound2].alert_info.class_accum_cnt[1] = 1;
     kExpectedInfo[kRound2].alert_info.class_esc_state[1] = kCstatePhase1;
-    kExpectedInfo[kRound2]
-        .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] =
-        1;
+    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
   }
 }
 
