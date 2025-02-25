@@ -5,6 +5,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -12,7 +13,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
@@ -24,6 +24,8 @@
  */
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static dif_sensor_ctrl_t sensor_ctrl;
 
 /**
  * Clean up pwrmgr wakeup reason register for the next round.
@@ -47,11 +49,7 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   init_units();
-
-  // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kDtSensorCtrlAon, &sensor_ctrl));
 
   // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
