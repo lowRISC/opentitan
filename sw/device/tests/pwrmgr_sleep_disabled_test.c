@@ -13,56 +13,48 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
+
+static const uint32_t kPlicTarget = 0;
 static const uint32_t kSourcePriority = 1;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t plic;
 
 // Volatile globals accessed from the ISR.
 static volatile dif_aon_timer_irq_t irq;
-static volatile top_earlgrey_plic_peripheral_t peripheral;
-static volatile bool interrupt_serviced;
-static volatile bool interrupt_failed;
+static volatile bool interrupt_serviced = false;
 
 static bool is_pwrmgr_irq_pending(void) {
   bool status;
-  CHECK_DIF_OK(dif_rv_plic_irq_is_pending(
-      &plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup, &status));
+  dif_rv_plic_irq_id_t irq_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  CHECK_DIF_OK(dif_rv_plic_irq_is_pending(&plic, irq_id, &status));
   return status;
 }
 
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
-
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
-
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_aon_timer_instance_id(kAonTimerDt) &&
+      irq_id == dt_aon_timer_irq_to_plic_id(kAonTimerDt,
+                                            kDtAonTimerIrqWkupTimerExpired)) {
     CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
+    interrupt_serviced = true;
+    return true;
   } else {
-    interrupt_failed = true;
-    return;
+    return false;
   }
-
-  // Complete the IRQ by writing the IRQ source to the Ibex specific CC
-  // register.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
-  interrupt_serviced = true;
-  interrupt_failed = false;
 }
 
 bool test_main(void) {
@@ -80,16 +72,14 @@ bool test_main(void) {
     wakeup_cycles *= 10;
   }
 
-  interrupt_serviced = false;
-  interrupt_failed = true;
-
   // Initialize unit difs.
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
   // Notice we are clearing rstmgr's RESET_INFO, so after the aon wakeup there
   // is only one bit set.
@@ -98,30 +88,27 @@ bool test_main(void) {
 
     // Enable aon wakeup.
     CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
-        &pwrmgr, kDifPwrmgrReqTypeWakeup, kDifPwrmgrWakeupRequestSourceFive,
-        kDifToggleEnabled));
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, wakeup_sources, kDifToggleEnabled));
     LOG_INFO("Enabled aon wakeup");
 
     // Enable the AON wakeup interrupt.
-    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        &plic, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired, kPlicTarget,
-        kDifToggleEnabled));
+    dif_rv_plic_irq_id_t plic_id = dt_aon_timer_irq_to_plic_id(
+        kAonTimerDt, kDtAonTimerIrqWkupTimerExpired);
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, plic_id, kPlicTarget,
+                                             kDifToggleEnabled));
     LOG_INFO("Enabled aon wakeup interrupt");
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-        &plic, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-        kSourcePriority));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, plic_id, kSourcePriority));
     LOG_INFO("Set aon wakeup interrupt priority");
 
     // Enable pwrmgr wakeup interrupt, so it triggers an interrupt even though
     // it should not.
     CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, kDifPwrmgrIrqWakeup,
                                             kDifToggleEnabled));
-    CHECK_DIF_OK(
-        dif_rv_plic_irq_set_enabled(&plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                    kPlicTarget, kDifToggleEnabled));
+    plic_id = dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, plic_id, kPlicTarget,
+                                             kDifToggleEnabled));
     LOG_INFO("Enabled pwrmgr wakeup interrupt");
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-        &plic, kTopEarlgreyPlicIrqIdPwrmgrAonWakeup, kSourcePriority));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, plic_id, kSourcePriority));
     LOG_INFO("Set pwrmgr wakeup interrupt priority");
 
     // Prepare for interrupt.
@@ -133,18 +120,15 @@ bool test_main(void) {
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_cycles));
     irq_global_ctrl(true);
     irq_external_ctrl(true);
-    wait_for_interrupt();
+    ATOMIC_WAIT_FOR_INTERRUPT(interrupt_serviced);
 
-    // Check that interrupt was serviced correctly.
-    CHECK(interrupt_serviced);
-    CHECK(!interrupt_failed);
     LOG_INFO("The interrupt was processed");
     // And to be extra safe, check there is no pwrmgr interrupt pending.
     CHECK(!is_pwrmgr_irq_pending());
 
     return true;
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, wakeup_sources)) == true) {
     LOG_ERROR("Unexpected wakeup request");
     return false;
   }
