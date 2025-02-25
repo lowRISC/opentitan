@@ -64,7 +64,7 @@ manifest(d = {
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_{}_slot_{}".format(variation, slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -94,7 +94,7 @@ manifest(d = {
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
-            "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_{}".format(slot),
+            "//sw/device/silicon_creator/imm_rom_ext:main_section_{}_slot_{}".format(variation, slot),
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
