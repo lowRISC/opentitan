@@ -22,18 +22,30 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
   rand bit [NUM_GPIOS-1:0] gpio_out;
   // gpio output enable to program in register
   rand bit [NUM_GPIOS-1:0] gpio_oe;
-  // Read straps_data_in
-  bit [NUM_GPIOS-1:0] rd_hw_straps_data_in;
-  // Read straps_data_in valid
-  bit rd_hw_straps_data_in_valid;
-
-  constraint num_trans_c {
-    num_trans inside {[1:4]};
-  }
 
   function new(string name = "gpio_rand_straps_vseq");
     super.new(name);
   endfunction
+
+  // Read hw_straps_data_in and hw_straps_data_in_valid and
+  // check they match the expected value in
+  // the scoreboard
+  task csr_strap_read();
+    fork
+      begin
+        uvm_status_e status;
+        ral.hw_straps_data_in.mirror(status, UVM_CHECK);
+        `DV_CHECK_EQ(status, UVM_IS_OK)
+        `uvm_info(`gfn, $sformatf("Read the data_in status = %0d", status), UVM_HIGH)
+      end
+      begin
+        uvm_status_e status;
+        ral.hw_straps_data_in_valid.mirror(status, UVM_CHECK);
+        `DV_CHECK_EQ(status, UVM_IS_OK)
+        `uvm_info(`gfn, $sformatf("Read the data valid status = %0d", status), UVM_HIGH)
+      end
+    join
+  endtask : csr_strap_read
 
   // Drive the strap_en_i input signal using the strap_en_seq sequence
   task set_strap_en(bit strap_en);
@@ -64,7 +76,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
 
     // Wait at least one clock cycle to drive the strap_en
     // Required because is required one clock cycle to update the gpio_in regsisters.
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
     cfg.clk_rst_vif.wait_clks(delay);
 
     // Set the strap_en to trigger the snapshot of gpio_in into the hw_strap_* register
@@ -75,26 +87,20 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // TODO: Replace those csr_rd calls to mirror() function (Done in another PR that will me merged).
     // Read the hw_straps_data_in and check the expected value in the scoreboard
-    csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
-    // Read the hw_straps_data_in_valid and check the expected value in the scoreboard
-    csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
+    csr_strap_read();
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
-    cfg.clk_rst_vif.wait_clks(delay);
+    short_wait(0);
 
     // Clear the gpio_in inputs
     undrive_gpio_in();
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
-    cfg.clk_rst_vif.wait_clks(delay);
+    short_wait(0);
 
     // Read again to make sure that if does not affect the straps registers after undrive the gpio_in
-    csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
-    csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
+    csr_strap_read();
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
@@ -103,24 +109,19 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     // Drive the gpio_out to make sure that has no impact on straps registers.
     // then read the gpio strap registers again
     cfg.gpio_vif.drive_en('0);
-
-    ral.direct_out.set(gpio_out);
-    ral.direct_oe.set(gpio_oe);
-    csr_update(.csr(ral.direct_out));
-    csr_update(.csr(ral.direct_oe));
+    csr_wr(ral.direct_out, gpio_out);
+    csr_wr(ral.direct_oe, gpio_oe);
 
     // Random wait
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
     cfg.clk_rst_vif.wait_clks(delay);
 
     // Read to make sure that if does not affect the straps registers after drive the gpio_out
-    csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
-    csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
+    csr_strap_read();
 
   endtask : test_straps_gpio_out
 
-  task start_test(string txn_desc);
-    string msg_id = {`gfn, txn_desc};
+  task start_test();
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_out)
@@ -134,8 +135,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     test_straps_gpio_out();
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 2;)
-    cfg.clk_rst_vif.wait_clks(delay);
+    short_wait(0);
 
     // Disable the strap_en
     set_strap_en('b0);
@@ -143,29 +143,20 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     // Apply reset and make sure the strap registers are clean
     apply_reset();
 
-    // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 2;)
-    cfg.clk_rst_vif.wait_clks(delay);
-
+    // Random wait, at least one clock cycle to avoid race condition
+    // between the reset and read transactions.
+    short_wait(1);
     // Read the straps registers after reset
-    csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
-    csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
+    csr_strap_read();
 
   endtask : start_test
 
   task body();
-    `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
-
-    for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
-      string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-      cfg.clk_rst_vif.wait_clks(delay);
-      `uvm_info(msg_id, $sformatf("delay = %0d", delay), UVM_HIGH)
-
-      start_test(msg_id);
-      `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
-
-    end // end for
+      // Random wait
+      short_wait(0);
+      `uvm_info(`gfn, "Start of Test", UVM_HIGH)
+      start_test();
+      `uvm_info(`gfn, "End of Test", UVM_HIGH)
   endtask : body
 
 endclass : gpio_rand_straps_vseq

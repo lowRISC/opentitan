@@ -58,9 +58,9 @@ package gpio_env_pkg;
   `include "gpio_virtual_sequencer.sv"
 
   typedef gpio_virtual_sequencer #(.CFG_T(gpio_strap_agent_cfg),
-    .COV_T(gpio_env_cov),
-    .ITEM_T(uvm_sequence_item),
-    .RSP_ITEM_T(uvm_sequence_item)) strap_sequencer;
+                                   .COV_T(gpio_env_cov),
+                                   .ITEM_T(uvm_sequence_item),
+                                   .RSP_ITEM_T(uvm_sequence_item)) strap_sequencer;
 
   `include "gpio_agent/gpio_strap_monitor.sv"
   `include "gpio_agent/gpio_strap_driver.sv"
