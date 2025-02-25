@@ -20,8 +20,8 @@ class pattgen_perf_vseq extends pattgen_base_vseq;
     ch_cfg = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg_%0d", channel));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,
       ch_cfg.prediv dist {0 :/ 1, 1024 :/ 1};
-      ch_cfg.len    dist {0 :/ 1, 1023 :/ 1};
-      ch_cfg.reps   dist {0 :/ 1,   63 :/ 1};
+      ch_cfg.len    dist {0 :/ 1,   63 :/ 1};
+      ch_cfg.reps   dist {0 :/ 1, 1023 :/ 1};
       // dependent constraints
       solve ch_cfg.len before ch_cfg.data;
       ch_cfg.data inside {[0 : (1 << (ch_cfg.len + 1)) - 1]};
