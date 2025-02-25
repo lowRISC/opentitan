@@ -138,7 +138,6 @@ static_assert(kDtI2cCount > 0, "test requires at least one I2C");
 static_assert(kDtUartCount > 0, "test requires at least one UART");
 
 typedef struct node {
-  const char *name;
   dif_alert_handler_alert_t alert;
   dif_alert_handler_class_t class;
 } node_t;
@@ -627,61 +626,51 @@ static void collect_alert_dump_and_compare(test_round_t round) {
 static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
     [kTopEarlgreyAlertPeripheralSpiHost0] =
         {
-            .name = "SPIHOST0",
             .alert = kTopEarlgreyAlertIdSpiHost0FatalFault,
             .class = kDifAlertHandlerClassB,
         },
     [kTopEarlgreyAlertPeripheralOtpCtrl] =
         {
-            .name = "OTPCTRL",
             .alert = kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError,
             .class = kDifAlertHandlerClassB,
         },
     [kTopEarlgreyAlertPeripheralKmac] =
         {
-            .name = "KMAC",
             .alert = kTopEarlgreyAlertIdKmacFatalFaultErr,
             .class = kDifAlertHandlerClassB,
         },
     [kTopEarlgreyAlertPeripheralUart0] =
         {
-            .name = "UART0",
             .alert = kTopEarlgreyAlertIdUart0FatalFault,
             .class = kDifAlertHandlerClassC,
         },
     [kTopEarlgreyAlertPeripheralUart1] =
         {
-            .name = "UART1",
             .alert = kTopEarlgreyAlertIdUart1FatalFault,
             .class = kDifAlertHandlerClassC,
         },
     [kTopEarlgreyAlertPeripheralUart2] =
         {
-            .name = "UART2",
             .alert = kTopEarlgreyAlertIdUart2FatalFault,
             .class = kDifAlertHandlerClassC,
         },
     [kTopEarlgreyAlertPeripheralUart3] =
         {
-            .name = "UART3",
             .alert = kTopEarlgreyAlertIdUart3FatalFault,
             .class = kDifAlertHandlerClassC,
         },
     [kTopEarlgreyAlertPeripheralI2c0] =
         {
-            .name = "I2C0",
             .alert = kTopEarlgreyAlertIdI2c0FatalFault,
             .class = kDifAlertHandlerClassA,
         },
     [kTopEarlgreyAlertPeripheralI2c1] =
         {
-            .name = "I2C1",
             .alert = kTopEarlgreyAlertIdI2c1FatalFault,
             .class = kDifAlertHandlerClassA,
         },
     [kTopEarlgreyAlertPeripheralI2c2] =
         {
-            .name = "I2C2",
             .alert = kTopEarlgreyAlertIdI2c2FatalFault,
             .class = kDifAlertHandlerClassA,
         },
