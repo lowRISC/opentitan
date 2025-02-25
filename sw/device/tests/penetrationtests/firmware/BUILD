@@ -133,14 +133,12 @@ opentitan_test(
 opentitan_test(
     name = "chip_pen_test_fi_otbn",
     srcs = [":firmware_fi_otbn.c"],
-    exec_env = {
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:sim_dv": None,
-    },
-    silicon_owner = silicon_params(
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
         tags = [
-            "broken",
             "manual",
+            "skip_in_ci",
         ],
     ),
     deps = FIRMWARE_DEPS_FI_OTBN,
