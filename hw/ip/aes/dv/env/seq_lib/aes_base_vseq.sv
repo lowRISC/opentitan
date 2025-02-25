@@ -133,6 +133,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.operation.get_mirrored_value() != operation) begin
       ral.ctrl_shadowed.operation.set(operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.operation.predict(operation));
     end
   endtask // set_operation
 
@@ -141,6 +142,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.mode.get_mirrored_value() != mode) begin
       ral.ctrl_shadowed.mode.set(mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.mode.predict(mode));
     end
   endtask
 
@@ -149,6 +151,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.key_len.get_mirrored_value() != key_len) begin
       ral.ctrl_shadowed.key_len.set(key_len);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.key_len.predict(key_len));
     end
   endtask // set_key_len
 
@@ -157,6 +160,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.sideload.get_mirrored_value() != sideload) begin
       ral.ctrl_shadowed.sideload.set(sideload);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.sideload.predict(sideload));
     end
   endtask
 
@@ -165,6 +169,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.prng_reseed_rate.get_mirrored_value() != reseed_rate) begin
       ral.ctrl_shadowed.prng_reseed_rate.set(reseed_rate);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.prng_reseed_rate.predict(reseed_rate));
     end
   endtask
 
@@ -173,6 +178,7 @@ class aes_base_vseq extends cip_base_vseq #(
     if (ral.ctrl_shadowed.manual_operation.get_mirrored_value() != manual_operation) begin
       ral.ctrl_shadowed.manual_operation.set(manual_operation);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+      void'(ral.ctrl_shadowed.manual_operation.predict(manual_operation));
     end
   endtask
 
@@ -209,6 +215,8 @@ class aes_base_vseq extends cip_base_vseq #(
     ral.ctrl_gcm_shadowed.phase.set(phase);
     ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
     csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+    void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
+    void'(ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes));
   endtask
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
@@ -1028,6 +1036,11 @@ class aes_base_vseq extends cip_base_vseq #(
       // if alert just try to update ctrl and everything else
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
     end
+
+    // Read the main control register. This will update the mirrored values thereby getting them
+    // back in sync with the DUT (updated via csr_update() above) and the predicted values (updated
+    // via set() above).
+    csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .backdoor(1));
 
     if (cfg_item.mode == AES_GCM && !status.alert_fatal_fault) begin
       // As we are splitting the message, we also need to recalculate the length
