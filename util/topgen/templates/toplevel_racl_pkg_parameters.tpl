@@ -37,7 +37,7 @@ policy: ${policy_names[range['policy']]} (Idx ${f"{range['policy']}".rjust(polic
 % endif
    */
 % if len(register_mapping) > 0:
-<% policy_sel_value = ", ".join(map(str, reversed(register_mapping.values())))%>\
+<% policy_sel_value = ", ".join(map(str, register_mapping.values()))%>\
 <% policy_sel_value = "\n    ".join(textwrap.wrap(policy_sel_value, 94))%>\
   parameter racl_policy_sel_t ${policy_sel_name} [${len(register_mapping)}] = '{
     ${policy_sel_value}
