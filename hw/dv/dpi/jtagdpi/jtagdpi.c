@@ -156,9 +156,9 @@ void *jtagdpi_create(const char *display_name, int listen_port,
       "\n"
       "JTAG: Virtual JTAG interface %s is listening on port %d. Use\n"
       "OpenOCD and the following configuration to connect:\n"
-      "  interface remote_bitbang\n"
-      "  remote_bitbang_host localhost\n"
-      "  remote_bitbang_port %d\n",
+      "  adapter driver remote_bitbang\n"
+      "  remote_bitbang host localhost\n"
+      "  remote_bitbang port %d\n",
       display_name, listen_port, listen_port);
 
   return (void *)ctx;
