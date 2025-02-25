@@ -12,26 +12,20 @@ To run the penetration tests either on the FPGA or the chip, please follow the i
 
 ### Building Images
 
-To build the penetration testing framework for the ChipWhisperer CW310 FPGA board, run:
-```console
-cd $REPO_TOP
-./bazelisk.sh build //sw/device/tests/penetrationtests/firmware:firmware_fi
-```
-
-Due to code size memory limitations, the firmware for the chip is split into a SCA, general FI, and OTBN FI binary. To build these binaries, run:
+Due to code size memory limitations, the firmware for the chip and the FPGA is split into a SCA, general FI, and OTBN FI binary. To build these binaries for the chip, run:
 ```console
 cd $REPO_TOP
 ./bazelisk.sh build \
   --//signing:token=//signing/tokens:cloud_kms_sival \
-  //sw/device/tests/penetrationtests/firmware:chip_pen_test_sca_silicon_owner_sival_rom_ext
+  //sw/device/tests/penetrationtests/firmware:pen_test_sca_silicon_owner_sival_rom_ext
 
 ./bazelisk.sh build \
   --//signing:token=//signing/tokens:cloud_kms_sival \
-  //sw/device/tests/penetrationtests/firmware:chip_pen_test_fi_silicon_owner_sival_rom_ext
+  //sw/device/tests/penetrationtests/firmware:pen_test_fi_silicon_owner_sival_rom_ext
 
 ./bazelisk.sh build \
   --//signing:token=//signing/tokens:cloud_kms_sival \
-  //sw/device/tests/penetrationtests/firmware:chip_pen_test_fi_otbn_silicon_owner_sival_rom_ext
+  //sw/device/tests/penetrationtests/firmware:pen_test_fi_otbn_silicon_owner_sival_rom_ext
 ```
 
 The binaries are located in `bazel-bin/sw/device/tests/penetrationtests/firmware/`.
