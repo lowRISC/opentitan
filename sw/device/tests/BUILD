@@ -5254,7 +5254,6 @@ opentitan_test(
     deps = [
         "//hw/top:alert_handler_c_regs",
         "//hw/top:dt",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",

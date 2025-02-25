@@ -327,28 +327,21 @@ static void set_extra_alert(volatile uint32_t *set) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral;
-  dif_rv_plic_irq_id_t irq_id;
-  uint32_t irq = 0;
+  dif_rv_plic_irq_id_t plic_irq;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+  dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq);
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
-
+  if (inst_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, plic_irq);
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    irq = (irq_id -
-           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+  } else if (inst_id == dt_alert_handler_instance_id(kDtAlertHandler)) {
+    dt_alert_handler_irq_t irq =
+        dt_alert_handler_irq_from_plic_id(kDtAlertHandler, plic_irq);
 
     switch (irq) {
-      case 0:  // class a
+      case kDtAlertHandlerIrqClassa:
         LOG_INFO("IRQ: class A");
         CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
             &alert_handler, kDifI2cAlertFatalFault));
@@ -365,13 +358,13 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
 
         break;
-      case 1:
+      case kDtAlertHandlerIrqClassb:
         LOG_INFO("IRQ: class B %d", global_test_round);
         break;
-      case 2:
+      case kDtAlertHandlerIrqClassc:
         LOG_INFO("IRQ: class C");
         break;
-      case 3:
+      case kDtAlertHandlerIrqClassd:
         if (global_alert_called == 0) {
           set_extra_alert(&global_alert_called);
           LOG_INFO("IRQ: class D");
@@ -385,7 +378,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
 
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, plic_irq));
 }
 
 static void print_alert_cause(alert_handler_testutils_info_t info) {
@@ -733,12 +726,19 @@ bool test_main(void) {
   peripheral_init();
 
   // Enable all interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-  rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+  dt_plic_irq_id_t class_a_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassa);
+  dt_plic_irq_id_t class_d_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassd);
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, class_a_irq,
+                                     class_d_irq);
+
+  dt_plic_irq_id_t timer_expired_irq = dt_aon_timer_irq_to_plic_id(
+      kDtAonTimerAon, kDtAonTimerIrqWkupTimerExpired);
+  dt_plic_irq_id_t timer_bark_irq =
+      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon, kDtAonTimerIrqWdogTimerBark);
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, timer_expired_irq,
+                                     timer_bark_irq);
 
   // enable alert info
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
