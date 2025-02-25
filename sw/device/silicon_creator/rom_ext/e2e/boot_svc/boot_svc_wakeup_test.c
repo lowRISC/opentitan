@@ -15,28 +15,32 @@
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/rom_ext/e2e/boot_svc/boot_svc_test_lib.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_pwrmgr_t pwrmgr;
 static dif_aon_timer_t aon_timer;
+static dif_pwrmgr_request_sources_t wakeup_sources;
 
 static status_t test_init(void) {
   // Initialize aon timer to use the wdog.
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  TRY(dif_pwrmgr_init(mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-                      &pwrmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  TRY(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  TRY(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &wakeup_sources));
   return OK_STATUS();
 }
 
 static status_t deep_sleep_enter(uint32_t wakeup_ticks) {
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;
-  // WakeupSourceFive is the AonTimer source.
-  // See hw/top_earlgrey/ip_autogen/pwrmgr/dv/env/pwrmgr_env_pkg.sv%wakeup_e.
-  TRY(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, pwrmgr_domain_cfg));
+  TRY(pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                        pwrmgr_domain_cfg));
   TRY(dif_aon_timer_wakeup_start(&aon_timer, wakeup_ticks, 0));
   LOG_INFO("Going to sleep.");
   wait_for_interrupt();
@@ -45,8 +49,7 @@ static status_t deep_sleep_enter(uint32_t wakeup_ticks) {
 }
 
 static status_t deep_sleep_check(void) {
-  bool wkup = TRY(pwrmgr_testutils_is_wakeup_reason(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceFive));
+  bool wkup = TRY(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources));
   return OK_STATUS(wkup);
 }
 
