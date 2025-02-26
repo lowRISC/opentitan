@@ -20,6 +20,7 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:aes_sca_commands",
+        "//sw/device/tests/penetrationtests/json:commands",
     ],
 )
 
@@ -136,6 +137,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:commands",
         "//sw/device/tests/penetrationtests/json:kmac_sca_commands",
     ],
 )
@@ -194,6 +196,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:commands",
         "//sw/device/tests/penetrationtests/json:sha3_sca_commands",
     ],
 )
