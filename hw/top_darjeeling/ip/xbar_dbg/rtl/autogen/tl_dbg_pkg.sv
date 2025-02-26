@@ -7,8 +7,8 @@
 package tl_dbg_pkg;
 
   localparam logic [31:0] ADDR_SPACE_RV_DM__DBG         = 32'h 00000000;
-  localparam logic [31:0] ADDR_SPACE_MBX_JTAG__SOC      = 32'h 00001000;
-  localparam logic [31:0] ADDR_SPACE_LC_CTRL__DMI       = 32'h 00020000;
+  localparam logic [31:0] ADDR_SPACE_MBX_JTAG__SOC      = 32'h 00002200;
+  localparam logic [31:0] ADDR_SPACE_LC_CTRL__DMI       = 32'h 00003000;
   localparam logic [31:0] ADDR_SPACE_SOC_DBG_CTRL__JTAG = 32'h 00002300;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__DBG         = 32'h 000001ff;

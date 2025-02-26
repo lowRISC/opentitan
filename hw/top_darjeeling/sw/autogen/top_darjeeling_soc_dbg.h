@@ -32,7 +32,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR 0x20000u
+#define TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR 0x3000u
 
 /**
  * Peripheral size for dmi device on lc_ctrl in top darjeeling.
@@ -68,7 +68,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR 0x1000u
+#define TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR 0x2200u
 
 /**
  * Peripheral size for soc device on mbx_jtag in top darjeeling.
