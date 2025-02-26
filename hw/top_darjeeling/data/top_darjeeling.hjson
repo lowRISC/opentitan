@@ -1032,7 +1032,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
       base_addr: {
-        soc_mbx: "0x01463000",
+        soc_mbx: "0x01461f00",
       },
       attr: "ipgen"
     },
