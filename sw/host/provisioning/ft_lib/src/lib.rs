@@ -565,6 +565,7 @@ pub fn check_slot_b_boot_up(
     transport.reset(UartRx::Clear)?;
     let uart_console = transport.uart("console")?;
     let result = UartConsole::wait_for(&*uart_console, r"ROM_EXT:(.*)\r", timeout)?;
+    log::info!("ROM_EXT started.");
     response.stats.log_string(
         "rom_ext-version",
         result
@@ -573,6 +574,17 @@ pub fn check_slot_b_boot_up(
             .map(|s| s.as_str())
             .unwrap_or("unknown"),
     );
+    let result = UartConsole::wait_for(&*uart_console, r"IMM_SECTION:(.*)\r\n", timeout)?;
+    log::info!("IMM_ROM_EXT started.");
+    response.stats.log_string(
+        "imm_rom_ext-version",
+        result
+            .get(1)
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or("unknown"),
+    );
+
     let t0 = Instant::now();
 
     // Timeout for waiting for a potential error message indicating invalid UDS
