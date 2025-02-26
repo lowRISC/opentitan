@@ -558,10 +558,23 @@ pub fn check_slot_b_boot_up(
 ) -> Result<()> {
     transport.reset_target(init.bootstrap.options.reset_delay, true)?;
     let uart_console = transport.uart("console")?;
+
+    let result = UartConsole::wait_for(&*uart_console, r"IMM_ROM_EXT[: ](.*)\r\n", timeout)?;
+    log::info!("IMM_ROM_EXT started.");
+    response.stats.log_string(
+        "imm_rom_ext-version",
+        result
+            .get(1)
+            .as_ref()
+            .map(|s| s.as_str())
+            .unwrap_or("unknown"),
+    );
+
     // The ROM_EXT used to print "Starting ROM_EXT 0.1", but we cleaned up the
     // ROM_EXT output.  It now prints "ROM_EXT:0.1".
-    // The following regex recognizes both forms:
-    let result = UartConsole::wait_for(&*uart_console, r"ROM_EXT[: ](.*)\r\n", timeout)?;
+    // The following regex recognizes both forms but not "IMM_ROM_EXT":
+    let result = UartConsole::wait_for(&*uart_console, r"(?:\n| )ROM_EXT[: ](.*)\r\n", timeout)?;
+    log::info!("ROM_EXT started.");
     response.stats.log_string(
         "rom_ext-version",
         result
