@@ -20,6 +20,6 @@
   KEEP(*(.static_dice.cdi_0))
 
   ASSERT(
-    SIZEOF(.static_dice) == 1092,
+    SIZEOF(.static_dice) == 1220,
     "Error: .static_dice section size has changed");
 } > ram_main
