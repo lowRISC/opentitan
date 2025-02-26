@@ -2,8 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@lowrisc_opentitan//rules:manifest.bzl", "update_manifest")
-load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load(
+    "@lowrisc_opentitan//rules:rv.bzl",
+    "rv_rule",
+    _OPENTITAN_CPU = "OPENTITAN_CPU",
+    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
+    _opentitan_transition = "opentitan_transition",
+)
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load(
@@ -191,9 +196,6 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
-    if manifest and ctx.attr.immutable_rom_ext_enabled:
-        manifest = update_manifest(ctx, manifest, elf, exec_env)
-
     if (manifest or rsa_key) and kind != "ram":
         if not (manifest and (rsa_key or ecdsa_key)):
             fail("Signing requires a manifest and an rsa_key or ecdsa_key, and optionally an spx_key")
@@ -363,10 +365,6 @@ common_binary_attrs = {
     "rom_scramble_mode": attr.string(
         doc = "ROM scrambling mode.",
         default = "base-rom",
-    ),
-    "immutable_rom_ext_enabled": attr.bool(
-        doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
-        default = False,
     ),
     "transitive_features": attr.string_list(
         default = [],
