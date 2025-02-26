@@ -27,10 +27,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "i2c_regs.h"  // Generated.
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
-
 static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
               "This test assumes the target platform is little endian.");
 
@@ -39,7 +35,15 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 enum {
   kTestTimeout = 1000000,     // 1 second
   kTransactionDelay = 10000,  // 10 ms
+  kPlicTarget = 0,
 };
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
 
 static dif_pinmux_t pinmux;
 static dif_pwrmgr_t pwrmgr;
@@ -49,47 +53,18 @@ static dif_i2c_t i2c;
 static uint8_t i2c_instance_under_test = 0;
 static uint32_t i2c_clock_stretching_delay_micros = 0;
 
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
-
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_rv_plic_irq_id_t plic_irq_id = 0;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, plic_ctx.hart_id, &plic_irq_id));
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  // Check that both the peripheral and the irq id is correct
-  switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralUart0:
-      CHECK(ottf_console_flow_control_isr(exc_info),
-            "Unexpected non-flow control UART IRQ, with PLIC ID %d",
-            plic_irq_id);
-      break;
-    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
-      dif_pwrmgr_irq_t irq =
-          (dif_pwrmgr_irq_t)(plic_irq_id -
-                             pwrmgr_isr_ctx.plic_pwrmgr_start_irq_id);
-      dif_irq_type_t type;
-      CHECK_DIF_OK(dif_pwrmgr_irq_get_type(&pwrmgr, irq, &type));
-      CHECK(irq == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq);
-      if (type == kDifIrqTypeEvent) {
-        CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(pwrmgr_isr_ctx.pwrmgr, irq));
-      }
-    } break;
-    default:
-      CHECK(false, "IRQ peripheral: %d is incorrect", peripheral);
-      break;
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_pwrmgr_instance_id(kPwrmgrDt) &&
+      irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
+  } else {
+    return false;
   }
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, plic_ctx.hart_id, plic_irq_id));
 }
 
 static status_t reset_fifos(dif_i2c_t *i2c) {
@@ -108,14 +83,10 @@ static status_t i2c_detach_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 
 static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                                        uint8_t i2c_instance) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
-  TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
+  TRY_CHECK(i2c_instance < kDtI2cCount);
 
-  mmio_region_t base_addr =
-      mmio_region_from_addr(kI2cBaseAddrTable[i2c_instance]);
-  TRY(dif_i2c_init(base_addr, i2c));
+  dt_i2c_t dt_i2c = i2c_instance;  // Starts at 0.
+  TRY(dif_i2c_init_from_dt(dt_i2c, i2c));
 
   TRY(i2c_testutils_select_pinmux(pinmux, i2c_instance,
                                   I2cPinmuxPlatformIdHyper310));
@@ -256,9 +227,9 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
   if (normal) {
     // Normal sleep wakes up from an interrupt, so enable the relevant sources.
     // Enable all the AON interrupts used in this test.
-    rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                       kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                       kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+    dif_rv_plic_irq_id_t plic_id =
+        dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+    rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, plic_id, plic_id);
     // Enable pwrmgr interrupt.
     TRY(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
@@ -344,15 +315,11 @@ static status_t command_processor(ujson_t *uj) {
 }
 
 static status_t test_init(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  TRY(dif_pinmux_init(base_addr, &pinmux));
+  TRY(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  TRY(dif_pwrmgr_init(base_addr, &pwrmgr));
+  TRY(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  TRY(dif_rv_plic_init(base_addr, &plic));
+  TRY(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   TRY(dif_rv_plic_reset(&plic));
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);

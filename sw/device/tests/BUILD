@@ -6396,7 +6396,6 @@ opentitan_test(
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/testing:i2c_testutils",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/json:command",
