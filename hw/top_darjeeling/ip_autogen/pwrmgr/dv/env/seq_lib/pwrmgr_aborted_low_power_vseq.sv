@@ -43,7 +43,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   task body();
     logic [TL_DW-1:0] value;
     wakeups_t enabled_wakeups;
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     check_wake_status('0);
     set_nvms_idle();
@@ -95,7 +95,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
           end
         end
       join
-      wait_for_fast_fsm(FastFsmActive);
+      wait_for_rom_and_active();
 
       `uvm_info(`gfn, "Back from sleep attempt", UVM_MEDIUM)
       @cfg.clk_rst_vif.cb;

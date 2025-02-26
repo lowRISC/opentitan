@@ -23,31 +23,12 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   // Disabling escalation resets per comment above.
   constraint escalation_reset_c {escalation_reset == 0;}
 
-  // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
-  // transition to active state.
-  // ICEBOX(lowrisc/opentitan#18236) Consider adding checks to monitor fast state transitions are
-  // compliant with "ROM Integrity Checks" at
-  // https://opentitan.org/book/hw/top_${topname}/ip_autogen/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
-  virtual task twirl_rom_response();
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
-    cfg.clk_rst_vif.wait_clks(10);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
-  endtask
-
   task body();
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
     wakeups_t enabled_wakeups;
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     check_reset_status('0);
     check_wake_status('0);
@@ -124,10 +105,8 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
           fast_check_wake_status(enabled_wakeups);
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
         end
-        twirl_rom_response();
+        wait_for_rom_and_active();
       join
-
-      wait_for_fast_fsm(FastFsmActive);
 
       check_reset_status('0);
 
@@ -135,10 +114,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
                       .prior_fall_through(1'b0), .abort(1'b0), .prior_abort(1'b0));
 
       if (mubi_mode == PwrmgrMubiRomCtrl) begin
-        add_rom_rsp_noise();
-        cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-        cfg.clk_rst_vif.wait_clks(5);
-        cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
+        randomize_roms_response();
       end
 
       // This is the expected side-effect of the low power entry reset, since the source of the

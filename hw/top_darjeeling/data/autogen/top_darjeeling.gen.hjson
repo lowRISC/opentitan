@@ -49,12 +49,6 @@
         ref: false
       }
       {
-        name: usb
-        aon: no
-        freq: "1000000000"
-        ref: false
-      }
-      {
         name: aon
         aon: yes
         freq: "62500000"
@@ -91,7 +85,6 @@
         {
           clk_main_i: main
           clk_io_i: io
-          clk_usb_i: usb
           clk_aon_i: aon
         }
       }
@@ -106,7 +99,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_usb_powerup: usb
           clk_io_div2_powerup: io_div2
         }
       }
@@ -133,7 +125,6 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_aon_infra: aon
-          clk_usb_infra: usb
         }
       }
       {
@@ -157,7 +148,6 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_aon_peri: aon
-          clk_usb_peri: usb
         }
       }
       {
@@ -274,21 +264,6 @@
         clock: io_div4
       }
       {
-        name: por_usb
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-          "0"
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_usb_n
-        parent: por_aon
-        clock: usb
-      }
-      {
         name: lc
         gen: true
         type: top
@@ -359,21 +334,6 @@
         path: rstmgr_aon_resets.rst_lc_io_div4_n
         parent: lc_src
         clock: io_div4
-      }
-      {
-        name: lc_usb
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-          "0"
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_usb_n
-        parent: lc_src
-        clock: usb
       }
       {
         name: sys
@@ -2910,7 +2870,6 @@
         clk_aon_i: aon
         clk_main_i: main
         clk_io_i: io
-        clk_usb_i: usb
         clk_io_div2_i: io_div2
         clk_io_div4_i: io_div4
       }
@@ -2941,7 +2900,6 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
         clk_main_i: clkmgr_aon_clocks.clk_main_powerup
         clk_io_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_usb_i: clkmgr_aon_clocks.clk_usb_powerup
         clk_io_div2_i: clkmgr_aon_clocks.clk_io_div2_powerup
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
@@ -3117,11 +3075,6 @@
           group: ast
           clock: io
         }
-        clk_usb_i:
-        {
-          group: ast
-          clock: usb
-        }
         clk_aon_i:
         {
           group: ast
@@ -3161,11 +3114,6 @@
           name: lc
           domain: Aon
         }
-        rst_usb_ni:
-        {
-          name: lc_usb
-          domain: Aon
-        }
         rst_root_ni:
         {
           name: por_io_div4
@@ -3191,11 +3139,6 @@
           name: por
           domain: Aon
         }
-        rst_root_usb_ni:
-        {
-          name: por_usb
-          domain: Aon
-        }
       }
       domain:
       [
@@ -3207,7 +3150,6 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_main_i: clk_main_i
         clk_io_i: clk_io_i
-        clk_usb_i: clk_usb_i
         clk_aon_i: clk_aon_i
       }
       param_decl: {}
@@ -3689,11 +3631,6 @@
           clock: main
           group: secure
         }
-        clk_ast_usb_i:
-        {
-          clock: usb
-          group: peri
-        }
       }
       clock_group: secure
       reset_connections:
@@ -3723,11 +3660,6 @@
           name: lc
           domain: "0"
         }
-        rst_ast_usb_ni:
-        {
-          name: por_usb
-          domain: "0"
-        }
       }
       domain:
       [
@@ -3742,7 +3674,6 @@
         clk_ast_alert_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_ast_es_i: clkmgr_aon_clocks.clk_main_secure
         clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
-        clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_peri
       }
       param_decl: {}
       param_list: []
@@ -11656,7 +11587,6 @@
       {
         clk_main_i: main
         clk_fixed_i: io_div4
-        clk_usb_i: usb
       }
       clock_group: infra
       reset: rst_main_ni
@@ -11672,17 +11602,11 @@
           name: lc_io_div4
           domain: "0"
         }
-        rst_usb_ni:
-        {
-          name: lc_usb
-          domain: "0"
-        }
       }
       clock_connections:
       {
         clk_main_i: clkmgr_aon_clocks.clk_main_infra
         clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
-        clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
       }
       domain:
       [
@@ -13601,7 +13525,7 @@
               {
                 hart: 0x30420000
               }
-              size_byte: 0x80
+              size_byte: 0x40
             }
           ]
           xbar: false
@@ -19548,7 +19472,6 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_aon_peri: aon
-          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -19573,7 +19496,6 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_aon_peri: aon
-          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -19598,7 +19520,6 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_aon_peri: aon
-          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -19669,7 +19590,6 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_aon_peri: aon
-          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
@@ -19695,7 +19615,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_usb_powerup: usb
           clk_io_div2_powerup: io_div2
         }
       }
@@ -19722,7 +19641,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_usb_powerup: usb
           clk_io_div2_powerup: io_div2
         }
       }
@@ -19771,7 +19689,6 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_aon_infra: aon
-          clk_usb_infra: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
@@ -19796,7 +19713,6 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_aon_infra: aon
-          clk_usb_infra: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
@@ -19821,7 +19737,6 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_aon_infra: aon
-          clk_usb_infra: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
@@ -19846,7 +19761,6 @@
           clk_io_div4_infra: io_div4
           clk_main_infra: main
           clk_aon_infra: aon
-          clk_usb_infra: usb
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra

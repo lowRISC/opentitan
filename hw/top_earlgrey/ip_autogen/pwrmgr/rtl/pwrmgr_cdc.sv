@@ -24,8 +24,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output logic [NumWkups-1:0] slow_wakeup_en_o,
   output logic [NumRstReqs-1:0] slow_reset_en_o,
   output logic slow_main_pd_no,
+  output logic slow_main_clk_en_o,
   output logic slow_io_clk_en_o,
-  output logic slow_core_clk_en_o,
   output logic slow_usb_clk_en_lp_o,
   output logic slow_usb_clk_en_active_o,
   output logic slow_req_pwrdn_o,
@@ -44,8 +44,8 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input [NumWkups-1:0] wakeup_en_i,
   input logic [NumRstReqs-1:0] reset_en_i,
   input main_pd_ni,
+  input main_clk_en_i,
   input io_clk_en_i,
-  input core_clk_en_i,
   input usb_clk_en_lp_i,
   input usb_clk_en_active_i,
   output logic ack_pwrdn_o,
@@ -174,16 +174,16 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
       slow_wakeup_en_o <= '0;
       slow_reset_en_o <= '0;
       slow_main_pd_no <= '1;
+      slow_main_clk_en_o <= '0;
       slow_io_clk_en_o <= '0;
-      slow_core_clk_en_o <= '0;
       slow_usb_clk_en_lp_o <= '0;
       slow_usb_clk_en_active_o <= 1'b1;
     end else if (slow_cdc_sync) begin
       slow_wakeup_en_o <= wakeup_en_i;
       slow_reset_en_o <= reset_en_i;
       slow_main_pd_no <= main_pd_ni;
+      slow_main_clk_en_o <= main_clk_en_i;
       slow_io_clk_en_o <= io_clk_en_i;
-      slow_core_clk_en_o <= core_clk_en_i;
       slow_usb_clk_en_lp_o <= usb_clk_en_lp_i;
       slow_usb_clk_en_active_o <= usb_clk_en_active_i;
     end
