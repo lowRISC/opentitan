@@ -81,7 +81,6 @@ def exec_env_as_dict(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     result = {
         "_opentitantool": tc.tools.opentitantool,
-        "_update_manifest_json": tc.tools.update_manifest_json,
     }
     for field, (path, required) in _FIELDS.items():
         val = getattr_path(ctx, path)
