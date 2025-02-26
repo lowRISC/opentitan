@@ -6,3 +6,6 @@ The `jtagdpi` module is instantiated in the hardware simulation to receive the J
 
 The `remote_bitbang` protocol is documented in the OpenOCD source tree at `doc/manual/jtag/drivers/remote_bitbang.txt`, or [online](https://repo.or.cz/openocd.git/blob/HEAD:/doc/manual/jtag/drivers/remote_bitbang.txt).
 In case you're wondering how to configure this interface, there is rendered documentation [here](https://openocd.org/doc/html/Debug-Adapter-Configuration.html).
+
+OpenOCD does not automatically get built with remote bitbang enabled.
+If you are building from source you must look in `configure.ac` and change the `no` to `yes` in this expression `build_remote_bitbang=no`.
