@@ -13,6 +13,10 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // Imports from packages
+  import prim_mubi_pkg::mubi8_t;
+  import prim_mubi_pkg::MuBi8False;
+
   wire                                  clk;
   wire                                  rst_n;
   wire [NUM_MAX_INTERRUPTS-1:0]         interrupts;
@@ -20,7 +24,7 @@ module tb;
   wire top_racl_pkg::racl_policy_vec_t  racl_policies;
   wire                                  racl_error;
   wire                                  intr_deny_cnt_reached;
-  wire prim_mubi_pkg::mubi8_t           range_check_overwrite;
+  wire mubi8_t                          range_check_overwrite;
 
   // Interfaces
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
@@ -60,7 +64,7 @@ module tb;
 
   // Manage inputs
   // TODO should be driven dynamically by an io_agent (to be created TODO MVy)
-  assign range_check_overwrite  = prim_mubi_pkg::MuBi8False;
+  assign range_check_overwrite  = MuBi8False;
   assign racl_policies          = top_racl_pkg::RACL_POLICY_VEC_DEFAULT;
 
   // Manage outputs
