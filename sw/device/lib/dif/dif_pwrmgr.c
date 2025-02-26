@@ -215,6 +215,28 @@ dif_result_t dif_pwrmgr_find_request_source(
   }
 }
 
+static dif_result_t request_reg_bitfield(const dif_pwrmgr_t *pwrmgr,
+                                         dif_pwrmgr_req_type_t val,
+                                         bitfield_field32_t *bitfield) {
+  dt_pwrmgr_t dt;
+  dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+
+  size_t count = 0;
+  if (val == kDifPwrmgrReqTypeWakeup) {
+    count = dt_pwrmgr_wakeup_src_count(dt);
+  } else if (val == kDifPwrmgrReqTypeReset) {
+    count = dt_pwrmgr_reset_request_src_count(dt);
+  } else {
+    return kDifBadArg;
+  }
+  bitfield->index = 0;
+  bitfield->mask = (1 << count) - 1;
+  return kDifOk;
+}
+
 /**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
  */
