@@ -581,9 +581,9 @@ pub fn check_slot_b_boot_up(
     // These values were tested on fpga cw340 and could be potentially fine-tuned.
     let slot_b_startup_timeout: Duration =
         Duration::from_millis(if owner_fw_success_string.is_none() {
-            200
+            800
         } else {
-            1500
+            2000
         });
 
     response.stats.log_elapsed_time("rom_ext-done", t0);
