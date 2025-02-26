@@ -51,6 +51,7 @@ range_required = {
 # Default configuration to render the RACL package for systems that don't use RACL but need the
 # type definitions
 DEFAULT_RACL_CONFIG = {
+    'error_response': False,
     'role_bit_lsb': 0,
     'role_bit_msb': 0,
     'ctn_uid_bit_lsb': 0,

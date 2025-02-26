@@ -15,6 +15,9 @@ package top_racl_pkg;
   // RACL Policy selector type
   typedef logic [RaclPolicySelLen-1:0] racl_policy_sel_t;
 
+  // Enable TLUL error response on RACL denied accesses
+  parameter bit ErrorRsp = ${int(racl_config['error_response'])};
+
   // Number of RACL bits transferred
   parameter int unsigned NrRaclBits = ${racl_config['nr_role_bits']};
 

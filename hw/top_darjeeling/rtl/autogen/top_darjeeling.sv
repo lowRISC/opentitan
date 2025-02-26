@@ -2201,7 +2201,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX0_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX0_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX0_SOC_WIN_RDATA),
@@ -2237,7 +2237,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX1_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX1_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX1_SOC_WIN_RDATA),
@@ -2273,7 +2273,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX2_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX2_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX2_SOC_WIN_RDATA),
@@ -2340,7 +2340,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX4_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX4_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX4_SOC_WIN_RDATA),
@@ -2376,7 +2376,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX5_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX5_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX5_SOC_WIN_RDATA),
@@ -2443,7 +2443,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX_JTAG_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_RDATA),
@@ -2479,7 +2479,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX_PCIE0_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_RDATA),
@@ -2515,7 +2515,7 @@ module top_darjeeling #(
   );
   mbx #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVecSoc(RACL_POLICY_SEL_MBX_PCIE1_SOC),
     .RaclPolicySelWinSocWdata(RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_WDATA),
     .RaclPolicySelWinSocRdata(RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_RDATA),
@@ -2601,7 +2601,7 @@ module top_darjeeling #(
   );
   ac_range_check #(
     .EnableRacl(1'b1),
-    .RaclErrorRsp(1'b1),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVec(RACL_POLICY_SEL_AC_RANGE_CHECK),
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:97])
   ) u_ac_range_check (
