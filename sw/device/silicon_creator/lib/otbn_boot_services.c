@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
@@ -94,13 +95,11 @@ static rom_error_t load_attestation_keygen_seed(uint32_t additional_seed_idx,
     flash_ctrl_error_code_get(&flash_ctrl_err_code);
     if (flash_ctrl_err_code.rd_err) {
       // If we encountered a read error, this means the attestation seed page
-      // has not been provisioned yet. In this case, we erase the page and
+      // has not been provisioned yet. In this case, we clear the seed and
       // continue, which will simply result in generating an invalid identity.
       dbg_puts(
-          "Warning: Attestation key seed flash info page not provisioned. "
-          "Erasing page to format.\r\n");
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-          &kFlashCtrlInfoPageAttestationKeySeeds, kFlashCtrlEraseTypePage));
+          "Warning: Attestation key seed flash info page not provisioned.\r\n");
+      memset(seed, 0, kAttestationSeedBytes);
       return kErrorOk;
     }
     return err;
