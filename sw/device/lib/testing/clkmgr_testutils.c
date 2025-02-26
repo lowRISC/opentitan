@@ -9,8 +9,15 @@
 
 #define MODULE_ID MAKE_MODULE_ID('c', 'm', 't')
 
-static const char *measure_clock_names[kDifClkmgrMeasureClockUsb + 1] = {
-    "io_clk", "io_div2_clk", "io_div4_clk", "main_clk", "usb_clk"};
+static const char *measure_clock_names[kDifClkmgrMeasureClockCount] = {
+#if defined(OPENTITAN_IS_EARLGREY)
+    "io_clk", "io_div2_clk",
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have Io / IoDiv2 clock measurements
+#else
+#error Unsupported top
+#endif
+    "io_div4_clk", "main_clk", "usb_clk"};
 
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
@@ -31,10 +38,10 @@ typedef struct expected_count_info {
 } expected_count_info_t;
 
 // The expected counts when jitter is disabled.
-static expected_count_info_t kNoJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
+static expected_count_info_t kNoJitterCountInfos[kDifClkmgrMeasureClockCount];
 
 // The expected counts when jitter is enabled.
-static expected_count_info_t kJitterCountInfos[kDifClkmgrMeasureClockUsb + 1];
+static expected_count_info_t kJitterCountInfos[kDifClkmgrMeasureClockCount];
 
 // Notice the expected variability is set to somewhat less than the added
 // variability of the AON and the measured clock.
@@ -73,10 +80,12 @@ void initialize_expected_counts(void) {
       cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
                               /*rem_out=*/NULL) *
                   4);
+#if defined(OPENTITAN_IS_EARLGREY)
   const uint32_t kDeviceIoDiv2Count =
       cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
                               /*rem_out=*/NULL) *
                   2);
+#endif
   const uint32_t kDeviceIoDiv4Count =
       cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
                               /*rem_out=*/NULL));
@@ -91,6 +100,7 @@ void initialize_expected_counts(void) {
 
   // Each clock count is guaranteed by the AST +- 3%. This includes the AON
   // clock, so we use an effective variability of +- 5%.
+#if defined(OPENTITAN_IS_EARLGREY)
   kNoJitterCountInfos[kDifClkmgrMeasureClockIo] =
       (expected_count_info_t){.count = kDeviceIoCount - 1,
                               .variability = get_count_variability(
@@ -99,6 +109,7 @@ void initialize_expected_counts(void) {
       (expected_count_info_t){.count = kDeviceIoDiv2Count - 1,
                               .variability = get_count_variability(
                                   kDeviceIoDiv2Count, kVariabilityPercentage)};
+#endif
   kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv4] =
       (expected_count_info_t){.count = kDeviceIoDiv4Count - 1,
                               .variability = get_count_variability(
@@ -115,10 +126,12 @@ void initialize_expected_counts(void) {
   // When jitter is enabled only the main clk is affected: the low threshold
   // should be up to 20% lower, so the expected count is set to 0.9 max, and
   // the variability is set per kJitterVariabilityPercentage.
+#if defined(OPENTITAN_IS_EARLGREY)
   kJitterCountInfos[kDifClkmgrMeasureClockIo] =
       kNoJitterCountInfos[kDifClkmgrMeasureClockIo];
   kJitterCountInfos[kDifClkmgrMeasureClockIoDiv2] =
       kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv2];
+#endif
   kJitterCountInfos[kDifClkmgrMeasureClockIoDiv4] =
       kNoJitterCountInfos[kDifClkmgrMeasureClockIoDiv4];
   kJitterCountInfos[kDifClkmgrMeasureClockMain] =
@@ -133,10 +146,12 @@ void initialize_expected_counts(void) {
 const char *clkmgr_testutils_measurement_name(
     dif_clkmgr_measure_clock_t clock) {
   switch (clock) {
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifClkmgrMeasureClockIo:
       return "io";
     case kDifClkmgrMeasureClockIoDiv2:
       return "io_div2";
+#endif
     case kDifClkmgrMeasureClockIoDiv4:
       return "io_div4";
     case kDifClkmgrMeasureClockMain:
@@ -174,6 +189,7 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
     if (jitter_enabled) {
       count_info = &kJitterCountInfos[clk];
     } else if (external_clk) {
+#if defined(OPENTITAN_IS_EARLGREY)
       if (low_speed) {
         if (clk == kDifClkmgrMeasureClockIo ||
             clk == kDifClkmgrMeasureClockMain) {
@@ -188,6 +204,12 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
           count_info = &kNoJitterCountInfos[clk];
         }
       }
+#elif defined(OPENTITAN_IS_DARJEELING)
+      TRY_CHECK(false, "Darjeeling has no external clock");
+      OT_UNREACHABLE();
+#else
+#error Unsupported top
+#endif
     } else {
       count_info = &kNoJitterCountInfos[clk];
     }
@@ -202,7 +224,7 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
 status_t clkmgr_testutils_check_measurement_enables(
     const dif_clkmgr_t *clkmgr, dif_toggle_t expected_status) {
   bool success = true;
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     dif_toggle_t actual_status;
     TRY(dif_clkmgr_measure_counts_get_enable(clkmgr, clock, &actual_status));
@@ -217,7 +239,7 @@ status_t clkmgr_testutils_check_measurement_enables(
 
 status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
   LOG_INFO("Disabling all clock count measurements");
-  for (int i = 0; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     TRY(dif_clkmgr_disable_measure_counts(clkmgr, clock));
   }
