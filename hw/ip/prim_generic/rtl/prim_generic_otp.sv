@@ -384,17 +384,18 @@ module prim_generic_otp
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
-    .req_i    ( req                    ),
-    .write_i  ( wren                   ),
-    .addr_i   ( addr                   ),
-    .wdata_i  ( wdata_rmw              ),
-    .wmask_i  ( {Width+EccWidth{1'b1}} ),
-    .rdata_o  ( rdata_ecc              ),
-    .rvalid_o ( rvalid                 ),
-    .rerror_o (                        ),
-    .cfg_i    ( '0                     ),
-    .cfg_rsp_o(                        ),
-    .alert_o  (                        )
+    .req_i         ( req                    ),
+    .write_i       ( wren                   ),
+    .addr_i        ( addr                   ),
+    .wdata_i       ( wdata_rmw              ),
+    .wmask_i       ( {Width+EccWidth{1'b1}} ),
+    .rdata_o       ( rdata_ecc              ),
+    .rvalid_o      ( rvalid                 ),
+    .rvalid_mubi_o (                        ),
+    .rerror_o      (                        ),
+    .cfg_i         ( '0                     ),
+    .cfg_rsp_o     (                        ),
+    .alert_o       (                        )
   );
 
   // Currently it is assumed that no wrap arounds can occur.

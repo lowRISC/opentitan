@@ -855,17 +855,18 @@ module usbdev
       .clk_i,
       .rst_ni,
 
-      .req_i      (mem_req),
-      .write_i    (mem_write),
-      .addr_i     (mem_addr),
-      .wdata_i    (mem_wdata),
-      .wmask_i    ({SramDw{1'b1}}),
-      .rdata_o    (mem_rdata),
-      .rvalid_o   (mem_rvalid),
-      .rerror_o   (mem_rerror),
-      .cfg_i      (ram_cfg_i),
-      .cfg_rsp_o  (ram_cfg_rsp_o),
-      .alert_o    ()
+      .req_i         (mem_req),
+      .write_i       (mem_write),
+      .addr_i        (mem_addr),
+      .wdata_i       (mem_wdata),
+      .wmask_i       ({SramDw{1'b1}}),
+      .rdata_o       (mem_rdata),
+      .rvalid_o      (mem_rvalid),
+      .rvalid_mubi_o (),
+      .rerror_o      (mem_rerror),
+      .cfg_i         (ram_cfg_i),
+      .cfg_rsp_o     (ram_cfg_rsp_o),
+      .alert_o       ()
     );
   end : gen_no_stubbed_memory
 
