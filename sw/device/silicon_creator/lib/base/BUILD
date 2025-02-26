@@ -131,6 +131,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
     ],
     # This library provides a special symbol that the linker will find.
     alwayslink = True,
