@@ -23,7 +23,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kHart = kTopDarjeelingPlicTargetIbex0,
+  kHart = 0,
   kIrqVoid = UINT32_MAX,
 };
 
@@ -317,40 +317,15 @@ static void init_global_state(void) {
 
 /**
  * Initialize the peripherals used in this test.
- *
- * - dif_*_init() for all peripherals
  */
 static void init_peripherals(void) {
-  mmio_region_t base_addr;
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbex, &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMbox, &sram_ctrl_mbox));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(base_addr, &rv_core_ibex));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &rv_plic));
-  base_addr =
-      mmio_region_from_addr(TOP_DARJEELING_SRAM_CTRL_MBOX_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_sram_ctrl_init(base_addr, &sram_ctrl_mbox));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX0_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[0]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX1_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[1]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX2_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[2]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX3_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[3]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX4_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[4]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX5_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[5]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX6_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[6]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_JTAG_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[7]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE0_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[8]));
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_MBX_PCIE1_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_mbx_init(base_addr, &gMbx[9]));
+  for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
+    CHECK_DIF_OK(dif_mbx_init_from_dt(mbx, &gMbx[mbx]));
+  }
 
   // ADDITIONAL INITIALIZATION
   CHECK_DIF_OK(dif_sram_ctrl_scramble(
