@@ -108,5 +108,12 @@ package top_racl_pkg;
   parameter racl_role_t RACL_ROLE_ROLE1 = 4'h1;
   parameter racl_role_t RACL_ROLE_SOC   = 4'h2;
 
+  /**
+   * RACL Policy Selectors for group Null
+   */
+  parameter racl_policy_sel_t RACL_POLICY_SEL_ALL_RD_WR = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_ROT_PRIVATE = 1;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_SOC_ROT = 2;
+
 
 endpackage

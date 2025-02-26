@@ -14,17 +14,17 @@
       group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else ""
       if_suffix = f"_{if_name.upper()}" if if_name else ""
       if_suffix2 = f"{if_name.title()}" if if_name else ""
-      policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}"
+      policy_sel_name = f"{m['name'].upper()}{group_suffix}{if_suffix}"
 %>\
     % if len(register_mapping) > 0:
-    .RaclPolicySelVec${if_suffix2}(${policy_sel_name}),
+    .RaclPolicySelVec${if_suffix2}(RACL_POLICY_SEL_VEC_${policy_sel_name}),
     % endif
     % for window_name, policy_idx in window_mapping.items():
-    .RaclPolicySelWin${if_suffix2}${window_name.replace("_","").title()}(${policy_sel_name}_WIN_${window_name.upper()}),
+    .RaclPolicySelWin${if_suffix2}${window_name.replace("_","").title()}(RACL_POLICY_SEL_WIN_${policy_sel_name}_${window_name.upper()}),
     % endfor
     % if len(range_mapping) > 0:
-    .RaclPolicySelRanges${if_suffix2}Num(${policy_sel_name}_NUM_RANGES),
-    .RaclPolicySelRanges${if_suffix2}(${policy_sel_name}_RANGES),
+    .RaclPolicySelNumRanges${if_suffix2}(RACL_POLICY_SEL_NUM_RANGES_${policy_sel_name}),
+    .RaclPolicySelRanges${if_suffix2}(RACL_POLICY_SEL_RANGES_${policy_sel_name}),
     % endif
   % endfor
 % endif
