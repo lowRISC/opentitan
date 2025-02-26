@@ -617,7 +617,7 @@ bool test_main(void) {
 
     // Loop WFI->ISR->WFI->etc. until 'is_finished' is set true
     // Use this to only advance iff our ISR sets it
-    wfi_flag(&is_finished);
+    ATOMIC_WAIT_FOR_INTERRUPT(is_finished);
 
     // Find which mbx received the request
     for (size_t i = 0; i < NUM_MBXS; ++i) {
