@@ -293,7 +293,7 @@ rom_error_t dice_chain_attestation_silicon(void) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyUds, &static_dice_cdi_0.uds_pubkey_id,
-      &dice_chain.subject_pubkey));
+      &static_dice_cdi_0.uds_pubkey));
 
   // Save UDS key for signing next stage cert.
   RETURN_IF_ERROR(otbn_boot_attestation_key_save(
@@ -317,7 +317,7 @@ rom_error_t dice_chain_attestation_creator(
       rom_ext_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &static_dice_cdi_0.cdi_0_pubkey_id,
-      &dice_chain.subject_pubkey));
+      &static_dice_cdi_0.cdi_0_pubkey));
 
   // Switch page for the device generated CDI_0.
   RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
@@ -334,7 +334,7 @@ rom_error_t dice_chain_attestation_creator(
     HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
         (hmac_digest_t *)rom_ext_measurement->data,
         rom_ext_manifest->security_version, &dice_chain_cdi_0_key_ids,
-        &dice_chain.subject_pubkey, static_dice_cdi_0.cert_data,
+        &static_dice_cdi_0.cdi_0_pubkey, static_dice_cdi_0.cert_data,
         &static_dice_cdi_0.cert_size));
   } else {
     // Replace UDS with CDI_0 key for endorsing next stage cert.
@@ -357,6 +357,7 @@ static rom_error_t dice_chain_attestation_check_uds(void) {
   // Check if the UDS cert is valid.
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.uds_pubkey_id;
   dice_chain.subject_pubkey_id = static_dice_cdi_0.uds_pubkey_id;
+  dice_chain.subject_pubkey = static_dice_cdi_0.uds_pubkey;
   RETURN_IF_ERROR(dice_chain_load_cert_obj("UDS", /*name_size=*/4));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     // The UDS key ID (and cert itself) should never change unless:
@@ -386,6 +387,7 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Refresh cdi 0 if invalid
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
   dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
+  dice_chain.subject_pubkey = static_dice_cdi_0.cdi_0_pubkey;
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
