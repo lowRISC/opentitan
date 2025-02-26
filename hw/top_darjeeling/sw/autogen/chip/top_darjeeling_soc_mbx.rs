@@ -149,7 +149,7 @@ pub const MBX_PCIE1_SOC_SIZE_BYTES: usize = 0x20;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RACL_CTRL_BASE_ADDR: usize = 0x1463000;
+pub const RACL_CTRL_BASE_ADDR: usize = 0x1461F00;
 
 /// Peripheral size for racl_ctrl in top darjeeling.
 ///
