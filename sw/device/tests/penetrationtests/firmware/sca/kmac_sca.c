@@ -13,6 +13,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/json/commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -653,20 +654,17 @@ status_t handle_kmac_sca_fixed_key_set(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_kmac_sca_batch(ujson_t *uj) {
-  cryptotest_kmac_sca_data_t uj_data;
-  TRY(ujson_deserialize_cryptotest_kmac_sca_data_t(uj, &uj_data));
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
-  uint32_t num_encryptions = 0;
   uint32_t out[kDigestLength];
   uint32_t batch_digest[kDigestLength];
-
-  num_encryptions = read_32(uj_data.data);
 
   for (uint32_t j = 0; j < kDigestLength; ++j) {
     batch_digest[j] = 0;
   }
 
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     if (run_fixed) {
       memcpy(kmac_batch_keys[i], key_fixed, kKeyLength);
     } else {
@@ -676,7 +674,7 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
     run_fixed = batch_messages[i][0] & 0x1;
   }
 
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     kmac_reset();
     memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
 
