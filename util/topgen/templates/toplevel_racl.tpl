@@ -4,7 +4,7 @@
 <%page args="m, top"/>\
 % if m.get('racl_mappings'):
     .EnableRacl(1'b1),
-    .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
+    .RaclErrorRsp(top_racl_pkg::ErrorRsp),
   % for if_name, mappings in m['racl_mappings'].items():
 <%
       register_mapping = mappings.get('register_mapping', {})
