@@ -5,30 +5,34 @@
 <% import textwrap %>\
 <% import math %>\
 <% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
+<% reg_idx_len = math.ceil(math.log10(max(1,len(register_mapping)+1))) %>\
 <% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
 <% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
 <% reg_name_len = max( (len(name) for name in register_mapping.keys()), default=0 ) %>\
 <% window_name_len = max( (len(name) for name in window_mapping.keys()), default=0 ) %>\
-<% policy_sel_name = f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}" %>\
+<% policy_sel_name = f"{module_name.upper()}{group_suffix}{if_suffix}" %>\
+<% fmt_sel = "RACL_POLICY_SEL{group_suffix}_{policy}" %>\
+<% policy_sel_len = max( (len(name) for name in policy_names), default=0 ) %>\
+<% verbose = False %>\
   /**
    * Policy selection vector for ${module_name}
    *   TLUL interface name: ${if_name}
    *   RACL group: ${racl_group}
-% if len(register_mapping) > 0:
+% if len(register_mapping) > 0 and verbose:
    *   Register to policy mapping:
   % for reg_name, policy_idx in register_mapping.items():
-   *     ${f"{reg_name}:".ljust(reg_name_len+1)} ${policy_names[policy_idx]} \
+   *     ${f"{loop.index}".rjust(reg_idx_len)} ${f"{reg_name}:".ljust(reg_name_len+1)} ${policy_names[policy_idx]} \
 (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
   % endfor
 % endif
-% if len(window_mapping) > 0:
+% if len(window_mapping) > 0 and verbose:
    *   Window to policy mapping:
   % for window_name, policy_idx in window_mapping.items():
    *     ${f"{window_name}:".ljust(window_name_len+1)} ${policy_names[policy_idx]} \
 (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
   % endfor
 % endif
-% if len(range_mapping) > 0:
+% if len(range_mapping) > 0 and verbose:
    *   Range to policy mapping:
   % for range in range_mapping:
    *     ${f"0x{range['base']:08x}"} -- ${f"0x{(range['base']+range['size']):08x}"} \
@@ -37,20 +41,40 @@ policy: ${policy_names[range['policy']]} (Idx ${f"{range['policy']}".rjust(polic
 % endif
    */
 % if len(register_mapping) > 0:
-<% policy_sel_value = ", ".join(map(str, register_mapping.values()))%>\
-<% policy_sel_value = "\n    ".join(textwrap.wrap(policy_sel_value, 94))%>\
-  parameter racl_policy_sel_t ${policy_sel_name} [${len(register_mapping)}] = '{
-    ${policy_sel_value}
+  parameter racl_policy_sel_t RACL_POLICY_SEL_VEC_${policy_sel_name} [${len(register_mapping)}] = '{
+% for reg_name, policy_idx in register_mapping.items():
+<%
+    value = fmt_sel.format(group_suffix=group_suffix, policy=policy_names[policy_idx].upper())
+    value += ' ' if loop.last else ','
+    value = value.ljust(policy_sel_len + 1 + len(fmt_sel.format(group_suffix=group_suffix, policy="")))
+    comment = " // " + f"{loop.index}".rjust(reg_idx_len) \
+            + " " + f"{reg_name}".ljust(reg_name_len) \
+            + " : Policy Idx " + f"{policy_idx}".rjust(policy_idx_len)
+%>\
+    ${value}${comment}
+% endfor
   };
 % endif
 % for window_name, policy_idx in window_mapping.items():
-  parameter racl_policy_sel_t ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
+<%
+    value = fmt_sel.format(group_suffix=group_suffix, policy=policy_names[policy_idx].upper()) + ";"
+    value = value.ljust(policy_sel_len + 1 + len(fmt_sel.format(group_suffix=group_suffix, policy="")))
+    comment = " // Policy Idx " + f"{policy_idx}".rjust(policy_idx_len)
+%>\
+  parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_${policy_sel_name}_${window_name.upper()} =
+    ${value}${comment}
 % endfor
 % if len(range_mapping) > 0:
-  parameter racl_policy_sel_t ${policy_sel_name}_NUM_RANGES = ${len(range_mapping)};
-<% fmt_range = "'{{base:'h{base:x},mask:'h{mask:x},policy:{policy}}}" %>\
-<% value =  ",\n".join(map(fmt_range.format_map, range_mapping)) %>\
-  parameter racl_range_t ${policy_sel_name}_RANGES [${len(range_mapping)}] = '{
-    ${value}
+  parameter racl_policy_sel_t RACL_POLICY_SEL_NUM_RANGES_${policy_sel_name} = ${len(range_mapping)};
+<% fmt_range = "'{{base:'h{base:04x},mask:'h{mask:04x},policy:{policy:{policy_sel_len}}}}" %>\
+  parameter racl_range_t RACL_POLICY_SEL_RANGES_${policy_sel_name} [${len(range_mapping)}] = '{
+% for range in range_mapping:
+<%
+    value = fmt_range.format(base=range['base'],mask=range['mask'],policy=policy_names[range['policy']],policy_sel_len=policy_sel_len)
+    value += ' ' if loop.last else ','
+    comment = " // Policy Idx " + f"{range['policy']}".rjust(policy_idx_len)
+%>\
+    ${value}${comment}
+% endfor
   };
 % endif

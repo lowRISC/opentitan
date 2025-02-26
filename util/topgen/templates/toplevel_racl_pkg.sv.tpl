@@ -11,7 +11,7 @@ package top_${topcfg["name"]}_racl_pkg;
 <% import math %>\
 % if 'racl' in topcfg:
   /**
-   * RACL groups:
+   * RACL groups and policies:
 % for racl_group in racl_config['policies']:
    *   ${racl_group}
 <%
@@ -20,7 +20,7 @@ package top_${topcfg["name"]}_racl_pkg;
     policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1)))
 %>\
   % for policy_idx, policy_name in enumerate(policy_names):
-   *     ${f"{policy_name}".ljust(policy_name_len)} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
+   *     ${f"{policy_idx}".rjust(policy_idx_len)}: ${policy_name}
   % endfor
 % endfor
    */

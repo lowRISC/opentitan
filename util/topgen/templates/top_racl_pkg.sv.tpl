@@ -107,5 +107,18 @@ package top_racl_pkg;
   % endfor
 
 % endif
+% if racl_config.get('policies'):
+  % for racl_group, policies in racl_config.get('policies').items():
+  /**
+   * RACL Policy Selectors for group ${racl_group}
+   */
+<% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
+    % for policy_idx,policy in enumerate(list(policies)):
+<% name = "RACL_POLICY_SEL{}_{}".format(group_suffix,policy['name'].upper()) %>\
+  parameter racl_policy_sel_t ${name} = ${policy_idx};
+    % endfor
+  % endfor
+
+% endif
 
 endpackage
