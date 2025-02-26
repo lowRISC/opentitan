@@ -468,7 +468,7 @@ TEST_F(MeasureCountTest, Enable) {
   bitfield_field32_t lo_field;
   bitfield_field32_t hi_field;
 
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clk = (dif_clkmgr_measure_clock_t)i;
     switch (clk) {
 #define PICK_COUNT_CTRL_FIELDS(kind_)                          \
@@ -533,7 +533,7 @@ TEST_F(MeasureCountTest, DisableLocked) {
 TEST_F(MeasureCountTest, Disable) {
   uint32_t en_offset;
 
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clk = (dif_clkmgr_measure_clock_t)i;
     switch (clk) {
 #define PICK_COUNT_CTRL_FIELDS(kind_)                   \
@@ -579,7 +579,7 @@ TEST_F(MeasureCountTest, GetEnableBadArgs) {
 TEST_F(MeasureCountTest, GetEnable) {
   uint32_t en_offset;
 
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clk = (dif_clkmgr_measure_clock_t)i;
     switch (clk) {
 #define PICK_COUNT_CTRL_FIELDS(kind_)                   \
@@ -647,7 +647,7 @@ TEST_F(MeasureCountTest, GetThresholds) {
   bitfield_field32_t lo_field;
   bitfield_field32_t hi_field;
 
-  for (int i = kDifClkmgrMeasureClockIo; i <= kDifClkmgrMeasureClockUsb; ++i) {
+  for (int i = 0; i < kDifClkmgrMeasureClockCount; ++i) {
     dif_clkmgr_measure_clock_t clk = (dif_clkmgr_measure_clock_t)i;
     switch (clk) {
 #define PICK_COUNT_CTRL_FIELDS(kind_)                          \
