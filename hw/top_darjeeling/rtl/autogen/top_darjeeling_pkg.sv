@@ -74,7 +74,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for prim device on otp_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR = 32'h30138000;
+  parameter int unsigned TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR = 32'h30140000;
 
   /**
    * Peripheral size in bytes for prim device on otp_ctrl in top darjeeling.
@@ -84,7 +84,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for regs device on lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR = 32'h30140000;
+  parameter int unsigned TOP_DARJEELING_LC_CTRL_REGS_BASE_ADDR = 32'h30150000;
 
   /**
    * Peripheral size in bytes for regs device on lc_ctrl in top darjeeling.
@@ -94,7 +94,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for alert_handler in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR = 32'h30150000;
+  parameter int unsigned TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR = 32'h30160000;
 
   /**
    * Peripheral size in bytes for alert_handler in top darjeeling.
@@ -514,7 +514,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral base address for core device on soc_dbg_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR = 32'h30160000;
+  parameter int unsigned TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR = 32'h30170000;
 
   /**
    * Peripheral size in bytes for core device on soc_dbg_ctrl in top darjeeling.

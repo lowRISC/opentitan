@@ -313,7 +313,7 @@
         {
           base_addrs:
           {
-            hart: 0x30138000
+            hart: 0x30140000
           }
           size_byte: 0x20
         }
@@ -334,7 +334,7 @@
         {
           base_addrs:
           {
-            hart: 0x30140000
+            hart: 0x30150000
           }
           size_byte: 0x100
         }
@@ -355,7 +355,7 @@
         {
           base_addrs:
           {
-            hart: 0x30150000
+            hart: 0x30160000
           }
           size_byte: 0x800
         }
@@ -460,7 +460,7 @@
         {
           base_addrs:
           {
-            hart: 0x30160000
+            hart: 0x30170000
           }
           size_byte: 0x20
         }

@@ -15,7 +15,7 @@ package tl_mbx_pkg;
   localparam logic [31:0] ADDR_SPACE_MBX6__SOC      = 32'h 01496000;
   localparam logic [31:0] ADDR_SPACE_MBX_PCIE0__SOC = 32'h 01460100;
   localparam logic [31:0] ADDR_SPACE_MBX_PCIE1__SOC = 32'h 01460200;
-  localparam logic [31:0] ADDR_SPACE_RACL_CTRL      = 32'h 01463000;
+  localparam logic [31:0] ADDR_SPACE_RACL_CTRL      = 32'h 01461f00;
   localparam logic [31:0] ADDR_SPACE_AC_RANGE_CHECK = 32'h 01464000;
 
   localparam logic [31:0] ADDR_MASK_MBX0__SOC      = 32'h 0000001f;

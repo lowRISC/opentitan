@@ -1196,7 +1196,7 @@
         }
         prim:
         {
-          hart: 0x30138000
+          hart: 0x30140000
         }
       }
       attr: ipgen
@@ -1652,7 +1652,7 @@
       {
         regs:
         {
-          hart: 0x30140000
+          hart: 0x30150000
         }
         dmi:
         {
@@ -2401,7 +2401,7 @@
       {
         null:
         {
-          hart: 0x30150000
+          hart: 0x30160000
         }
       }
       generate_dif: true
@@ -9412,7 +9412,7 @@
       {
         core:
         {
-          hart: 0x30160000
+          hart: 0x30170000
         }
         jtag:
         {
@@ -9712,7 +9712,7 @@
       {
         null:
         {
-          soc_mbx: 0x01463000
+          soc_mbx: 0x01461f00
         }
       }
       generate_dif: true
@@ -13662,7 +13662,7 @@
             {
               base_addrs:
               {
-                hart: 0x30138000
+                hart: 0x30140000
               }
               size_byte: 0x20
             }
@@ -13683,7 +13683,7 @@
             {
               base_addrs:
               {
-                hart: 0x30140000
+                hart: 0x30150000
               }
               size_byte: 0x100
             }
@@ -13704,7 +13704,7 @@
             {
               base_addrs:
               {
-                hart: 0x30150000
+                hart: 0x30160000
               }
               size_byte: 0x800
             }
@@ -13809,7 +13809,7 @@
             {
               base_addrs:
               {
-                hart: 0x30160000
+                hart: 0x30170000
               }
               size_byte: 0x20
             }
@@ -14338,7 +14338,7 @@
             {
               base_addrs:
               {
-                soc_mbx: 0x1463000
+                soc_mbx: 0x1461f00
               }
               size_byte: 0x20
             }

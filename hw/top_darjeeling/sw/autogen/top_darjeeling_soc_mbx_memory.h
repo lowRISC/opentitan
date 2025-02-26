@@ -185,7 +185,7 @@
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR 0x1463000
+#define TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR 0x1461F00
 
 /**
  * Peripheral size for racl_ctrl in top darjeeling.

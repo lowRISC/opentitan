@@ -17,14 +17,14 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_CLKMGR_AON              = 32'h 30420000;
   localparam logic [31:0] ADDR_SPACE_PINMUX_AON              = 32'h 30460000;
   localparam logic [31:0] ADDR_SPACE_OTP_CTRL__CORE          = 32'h 30130000;
-  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 30138000;
-  localparam logic [31:0] ADDR_SPACE_LC_CTRL__REGS           = 32'h 30140000;
-  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 30150000;
+  localparam logic [31:0] ADDR_SPACE_OTP_CTRL__PRIM          = 32'h 30140000;
+  localparam logic [31:0] ADDR_SPACE_LC_CTRL__REGS           = 32'h 30150000;
+  localparam logic [31:0] ADDR_SPACE_ALERT_HANDLER           = 32'h 30160000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__REGS = 32'h 30500000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 30600000;
   localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON           = 32'h 30470000;
   localparam logic [31:0] ADDR_SPACE_AST                     = 32'h 30480000;
-  localparam logic [31:0] ADDR_SPACE_SOC_DBG_CTRL__CORE      = 32'h 30160000;
+  localparam logic [31:0] ADDR_SPACE_SOC_DBG_CTRL__CORE      = 32'h 30170000;
 
   localparam logic [31:0] ADDR_MASK_UART0                   = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_I2C0                    = 32'h 0000007f;

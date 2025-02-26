@@ -109,7 +109,7 @@ pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x8000;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x30138000;
+pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x30140000;
 
 /// Peripheral size for prim device on otp_ctrl in top darjeeling.
 ///
@@ -123,7 +123,7 @@ pub const OTP_CTRL_PRIM_SIZE_BYTES: usize = 0x20;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const LC_CTRL_REGS_BASE_ADDR: usize = 0x30140000;
+pub const LC_CTRL_REGS_BASE_ADDR: usize = 0x30150000;
 
 /// Peripheral size for regs device on lc_ctrl in top darjeeling.
 ///
@@ -137,7 +137,7 @@ pub const LC_CTRL_REGS_SIZE_BYTES: usize = 0x100;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const ALERT_HANDLER_BASE_ADDR: usize = 0x30150000;
+pub const ALERT_HANDLER_BASE_ADDR: usize = 0x30160000;
 
 /// Peripheral size for alert_handler in top darjeeling.
 ///
@@ -725,7 +725,7 @@ pub const MBX_PCIE1_CORE_SIZE_BYTES: usize = 0x80;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SOC_DBG_CTRL_CORE_BASE_ADDR: usize = 0x30160000;
+pub const SOC_DBG_CTRL_CORE_BASE_ADDR: usize = 0x30170000;
 
 /// Peripheral size for core device on soc_dbg_ctrl in top darjeeling.
 ///
