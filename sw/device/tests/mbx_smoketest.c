@@ -82,16 +82,13 @@ static void increment_array_uint32(uint32_t *arr, uint32_t size) {
 ////////////////////////
 
 enum {
-  kSramStart = TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR,
-  kSramEnd = TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_BASE_ADDR +
-             TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES,
+  kSramCtrlMbxSize = TOP_DARJEELING_SRAM_CTRL_MBOX_RAM_SIZE_BYTES,
   kMbxSizeDWORDS = 8,  // The size we are allocating to each mbx for this test
                        // (imbx + ombx == kMbxSizeDWORDS * 2)
 };
 
 static_assert(
-    kDtMbxCount * (kMbxSizeDWORDS * 2) <=
-        (kSramEnd - kSramStart) / sizeof(uint32_t),
+    kDtMbxCount * (kMbxSizeDWORDS * 2) <= kSramCtrlMbxSize / sizeof(uint32_t),
     "As specified, the mailbox memories cannot fit in the backing SRAM!");
 
 // Backing storage for objects used by the mailbox handler(s)
@@ -108,7 +105,9 @@ void configure_mbx_peripherals(void) {
   uint32_t mbx_size_bytes = kMbxSizeDWORDS * sizeof(uint32_t);
 
   for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
-    uint32_t mbx_region_base = kSramStart + (mbx_size_bytes * 2 * mbx);
+    uint32_t sram_start =
+        dt_sram_ctrl_reg_block(kDtSramCtrlMbox, kDtSramCtrlRegBlockRam);
+    uint32_t mbx_region_base = sram_start + (mbx_size_bytes * 2 * mbx);
     // Set the memory ranges
     dif_mbx_range_config_t config = {
         .imbx_base_addr = mbx_region_base,
