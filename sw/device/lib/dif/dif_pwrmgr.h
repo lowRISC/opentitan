@@ -201,6 +201,38 @@ typedef struct dif_pwrmgr_wakeup_reason {
 } dif_pwrmgr_wakeup_reason_t;
 
 /**
+ * Obtain a bit mask of wakeups/reset requests for a device.
+ *
+ * Given a module instance (identified by its instance ID) and a wakeup
+ * or reset request index from this module, return a bitmask of sources which
+ * can be used with the pwrmgr DIF or testutils.
+ *
+ * Example (find request source of the aon_timer wakeup):
+ * ```c
+ * dif_pwrmgr_request_sources_t wakeup_sources;
+ * CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+ *   pwrmgr,
+ *   kDifPwrmgrReqTypeWakeup,
+ *   dt_aon_timer_instance_id(kDtAonTimerAon),
+ *   kDtAonTimerWakeupWkupReq,
+ *   &wakeup_sources));
+ * ```
+ *
+ * @param pwrmgr A power manager handle.
+ * @param req_type Request type (wake up or reset request).
+ * @param inst_id An instance ID.
+ * @param idx Signal index.
+ * @param[out] sources The bitmask corresponding to the wakeup or reset
+ * requested.
+ * @return `kDifError` if no signal matches the description, `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_find_request_source(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
+    dt_instance_id_t inst_id, size_t idx,
+    dif_pwrmgr_request_sources_t *sources);
+
+/**
  * Enables or disables low power state.
  *
  * When enabled, the power manager transitions to low power state on the next
