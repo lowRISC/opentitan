@@ -172,6 +172,7 @@ enum {
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
   kFlashCtrlSecMmioInfoCfgSet = 1,
+  kFlashCtrlSecMmioInfoCfgLock = 1,
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
@@ -567,6 +568,18 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
  */
 void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
                              flash_ctrl_cfg_t cfg);
+
+/**
+ * Write-locks configuration settings for an info page.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgLock)` when sec_mmio is
+ * being used to check expectations.
+ *
+ * @param info_page An information page.
+ * @param cfg New configuration settings.
+ */
+void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page);
 
 /**
  * Set bank erase permissions for both flash banks.
