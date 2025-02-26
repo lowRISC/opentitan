@@ -179,6 +179,42 @@ static const request_reg_info_t request_reg_infos[2] = {
         },
 };
 
+dif_result_t dif_pwrmgr_find_request_source(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
+    dt_instance_id_t inst_id, size_t sig_idx,
+    dif_pwrmgr_request_sources_t *sources) {
+  if (pwrmgr == NULL || sources == NULL) {
+    return kDifBadArg;
+  }
+  dt_pwrmgr_t dt;
+  dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+  // Query the DT to find the information.
+  if (req_type == kDifPwrmgrReqTypeWakeup) {
+    for (size_t i = 0; i < dt_pwrmgr_wakeup_src_count(dt); i++) {
+      dt_pwrmgr_wakeup_src_t src = dt_pwrmgr_wakeup_src(dt, i);
+      if (src.inst_id == inst_id && src.wakeup == sig_idx) {
+        *sources = 1u << i;
+        return kDifOk;
+      }
+    }
+    return kDifError;
+  } else if (req_type == kDifPwrmgrReqTypeReset) {
+    for (size_t i = 0; i < dt_pwrmgr_reset_request_src_count(dt); i++) {
+      dt_pwrmgr_reset_req_src_t src = dt_pwrmgr_reset_request_src(dt, i);
+      if (src.inst_id == inst_id && src.reset_req == sig_idx) {
+        *sources = 1u << i;
+        return kDifOk;
+      }
+    }
+    return kDifError;
+  } else {
+    return kDifBadArg;
+  }
+}
+
 /**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
  */
