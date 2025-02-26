@@ -7501,3 +7501,21 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "mbx_smoketest",
+    srcs = ["mbx_smoketest.c"],
+    exec_env = {
+        "//hw/top_darjeeling:sim_dv": None,
+    },
+    deps = [
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/dif:mbx",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
