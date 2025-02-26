@@ -88,16 +88,6 @@ py_binary(
 )
 
 py_binary(
-    name = "update-manifest-json",
-    srcs = ["update-manifest-json.py"],
-    imports = ["."],
-    deps = [
-        "//util/design/lib:immutable_section_processor",
-        requirement("hjson"),
-    ],
-)
-
-py_binary(
     name = "sparse-fsm-encode",
     srcs = ["sparse-fsm-encode.py"],
     imports = ["."],
