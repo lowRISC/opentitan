@@ -23,7 +23,6 @@ static dif_pinmux_t pinmux;
 static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
 static const dt_sysrst_ctrl_t kSysrstCtrlDt = kDtSysrstCtrlAon;
 static dif_sysrst_ctrl_t sysrst_ctrl;
-static dif_flash_ctrl_state_t flash;
 
 enum {
   kTestPhaseTimeoutUsecDV = 100,
@@ -178,9 +177,6 @@ static void set_output_overrides(uint8_t override_value) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
-  if (kDeviceType == kDeviceSimDV) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
-  }
 
   const volatile uint8_t *kTestPhase =
       kDeviceType == kDeviceSimDV ? &kTestPhaseDV : &kTestPhaseReal;

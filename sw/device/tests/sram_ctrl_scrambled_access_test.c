@@ -101,7 +101,6 @@ static scramble_test_frame *reference_frame;
 
 static dif_sram_ctrl_t ret_sram;
 static dif_rstmgr_t rstmgr;
-static dif_flash_ctrl_state_t flash;
 
 /**
  * Test pattern to be written and read from SRAM.
@@ -446,10 +445,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &ret_sram));
-
-  if (kDeviceType == kDeviceSimDV) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
-  }
 
   main_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
       (uintptr_t)_freertos_heap_start,

@@ -22,7 +22,6 @@ static dif_pinmux_t pinmux;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
-static dif_flash_ctrl_state_t flash;
 static dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
 
 const uint32_t kTestPhaseTimeoutUsec = 10000;
@@ -184,8 +183,6 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
 
   pinmux_setup();
   rstmgr_reset_info = rstmgr_testutils_reason_get();
