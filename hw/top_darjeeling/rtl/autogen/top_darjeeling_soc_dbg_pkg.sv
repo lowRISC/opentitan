@@ -14,7 +14,7 @@ package top_darjeeling_soc_dbg_pkg;
   /**
    * Peripheral base address for dmi device on lc_ctrl in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR = 32'h20000;
+  parameter int unsigned TOP_DARJEELING_SOC_DBG_LC_CTRL_DMI_BASE_ADDR = 32'h3000;
 
   /**
    * Peripheral size in bytes for dmi device on lc_ctrl in top darjeeling.
@@ -34,7 +34,7 @@ package top_darjeeling_soc_dbg_pkg;
   /**
    * Peripheral base address for soc device on mbx_jtag in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR = 32'h1000;
+  parameter int unsigned TOP_DARJEELING_SOC_DBG_MBX_JTAG_SOC_BASE_ADDR = 32'h2200;
 
   /**
    * Peripheral size in bytes for soc device on mbx_jtag in top darjeeling.

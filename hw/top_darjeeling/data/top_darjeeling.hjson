@@ -355,7 +355,7 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
       base_addrs: {
         regs: {hart: "0x30150000"},
-        dmi:  {soc_dbg: "0x00020000"},
+        dmi:  {soc_dbg: "0x3000"},
       },
       param_decl: {
         // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
@@ -983,7 +983,7 @@
       reset_connections: {rst_ni: "lc"},
       base_addrs: {
         core: {hart: "0x22000800"},
-        soc:  {soc_dbg: "0x1000"},
+        soc:  {soc_dbg: "0x2200"},
       },
       racl_mappings: {
         soc: 'racl/all_rd_wr_mapping.hjson'

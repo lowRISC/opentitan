@@ -1656,7 +1656,7 @@
         }
         dmi:
         {
-          soc_dbg: 0x00020000
+          soc_dbg: 0x3000
         }
       }
       param_decl:
@@ -8858,7 +8858,7 @@
         }
         soc:
         {
-          soc_dbg: 0x1000
+          soc_dbg: 0x2200
         }
       }
       racl_mappings:
@@ -14615,7 +14615,7 @@
             {
               base_addrs:
               {
-                soc_dbg: 0x1000
+                soc_dbg: 0x2200
               }
               size_byte: 0x20
             }
@@ -14636,7 +14636,7 @@
             {
               base_addrs:
               {
-                soc_dbg: 0x20000
+                soc_dbg: 0x3000
               }
               size_byte: 0x1000
             }

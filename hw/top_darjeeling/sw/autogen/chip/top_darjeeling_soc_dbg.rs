@@ -23,7 +23,7 @@ use core::convert::TryFrom;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const LC_CTRL_DMI_BASE_ADDR: usize = 0x20000;
+pub const LC_CTRL_DMI_BASE_ADDR: usize = 0x3000;
 
 /// Peripheral size for dmi device on lc_ctrl in top darjeeling.
 ///
@@ -51,7 +51,7 @@ pub const RV_DM_DBG_SIZE_BYTES: usize = 0x200;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const MBX_JTAG_SOC_BASE_ADDR: usize = 0x1000;
+pub const MBX_JTAG_SOC_BASE_ADDR: usize = 0x2200;
 
 /// Peripheral size for soc device on mbx_jtag in top darjeeling.
 ///

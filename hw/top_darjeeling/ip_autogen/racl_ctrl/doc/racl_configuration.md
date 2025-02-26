@@ -97,18 +97,18 @@
 ### RACL configuration for `mbx_jtag` and interface `soc`
 
 - IP: mbx
-- Instance base address: 0x1000
+- Instance base address: 0x2200
 - RACL group: Null
 
 
 | Name                                 | Offset   | Address   | Width   | Policy        | ROT   | ROLE1   | SOC   |
 |:-------------------------------------|:---------|:----------|:--------|:--------------|:------|:--------|:------|
-| mbx_jtag.soc.`SOC_CONTROL`           | 0x8      | 0x1008    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
-| mbx_jtag.soc.`SOC_STATUS`            | 0xc      | 0x100c    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
-| mbx_jtag.soc.`WDATA`                 | 0x10     | 0x1010    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
-| mbx_jtag.soc.`RDATA`                 | 0x14     | 0x1014    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
-| mbx_jtag.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x1018    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
-| mbx_jtag.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x101c    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`SOC_CONTROL`           | 0x8      | 0x2208    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`SOC_STATUS`            | 0xc      | 0x220c    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`WDATA`                 | 0x10     | 0x2210    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`RDATA`                 | 0x14     | 0x2214    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x2218    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx_jtag.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x221c    | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 
 ### RACL configuration for `mbx_pcie0` and interface `soc`
 
