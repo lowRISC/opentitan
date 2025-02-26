@@ -76,7 +76,6 @@ opentitan_test(
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     deps = [
-        "//hw/top:pwrmgr_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
