@@ -715,6 +715,10 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
   sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_offset, reg);
 }
 
+void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page) {
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_offset, 0);
+}
+
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
   uint32_t reg = 0;
   switch (launder32(enable)) {
