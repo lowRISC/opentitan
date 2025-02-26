@@ -6190,7 +6190,6 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_wakeup",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:alert_handler",
