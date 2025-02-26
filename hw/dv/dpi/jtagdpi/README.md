@@ -11,3 +11,6 @@ etc.) from it.
 The `remote_bitbang` protocol is documented in the OpenOCD source tree at
 `doc/manual/jtag/drivers/remote_bitbang.txt`, or online at
 https://repo.or.cz/openocd.git/blob/HEAD:/doc/manual/jtag/drivers/remote_bitbang.txt
+In case you're wondering how to configure this interface, there is rendered 
+documentation here:
+https://openocd.org/doc/html/Debug-Adapter-Configuration.html
