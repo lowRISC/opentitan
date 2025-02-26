@@ -14,8 +14,11 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwrmgr_regs.h"  // Generated.
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -85,8 +88,11 @@ rom_error_t retention_ram_keep_test(void) {
 
     // Initialize pwrmgr
     dif_pwrmgr_t pwrmgr;
-    CHECK_DIF_OK(dif_pwrmgr_init(
-        mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+    CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+    dif_pwrmgr_request_sources_t wakeup_sources;
+    CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+        &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+        kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
     // Initialize aon timer
     // Issue a wakeup signal in ~150us through the AON timer.
@@ -101,18 +107,13 @@ rom_error_t retention_ram_keep_test(void) {
     uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
 
     dif_aon_timer_t aon_timer;
-    CHECK_DIF_OK(dif_aon_timer_init(
-        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-        &aon_timer));
+    CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
     // Enter low-power
-    static_assert(kDifPwrmgrWakeupRequestSourceFive ==
-                      (1u << PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX),
-                  "Layout of WAKE_INFO register changed.");
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+    CHECK_STATUS_OK(
+        pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();  // Enter low-power
   } else if (bitfield_bit32_read(reset_reasons, kRstmgrReasonLowPowerExit)) {
