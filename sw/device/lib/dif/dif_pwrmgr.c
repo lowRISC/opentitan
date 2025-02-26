@@ -195,10 +195,7 @@ dif_result_t dif_pwrmgr_find_request_source(
     return kDifBadArg;
   }
   dt_pwrmgr_t dt;
-  dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
-  if (res != kDifOk) {
-    return res;
-  }
+  DIF_RETURN_IF_ERROR(dif_pwrmgr_get_dt(pwrmgr, &dt));
   // Query the DT to find the information.
   if (req_type == kDifPwrmgrReqTypeWakeup) {
     for (size_t i = 0; i < dt_pwrmgr_wakeup_src_count(dt); i++) {
@@ -221,6 +218,33 @@ dif_result_t dif_pwrmgr_find_request_source(
   } else {
     return kDifBadArg;
   }
+}
+
+/**
+ * Obtain the bitfield in PWRMGR_{WAKEUP,RESET}_EN_REG_OFFSET which
+ * represents all wakeup/reset sources.
+ */
+OT_WARN_UNUSED_RESULT
+static dif_result_t request_reg_bitfield(const dif_pwrmgr_t *pwrmgr,
+                                         dif_pwrmgr_req_type_t req_type,
+                                         bitfield_field32_t *bitfield) {
+  dt_pwrmgr_t dt;
+  dif_result_t res = dif_pwrmgr_get_dt(pwrmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+
+  size_t count = 0;
+  if (req_type == kDifPwrmgrReqTypeWakeup) {
+    count = dt_pwrmgr_wakeup_src_count(dt);
+  } else if (req_type == kDifPwrmgrReqTypeReset) {
+    count = dt_pwrmgr_reset_request_src_count(dt);
+  } else {
+    return kDifBadArg;
+  }
+  bitfield->index = 0;
+  bitfield->mask = (1 << count) - 1;
+  return kDifOk;
 }
 
 /**

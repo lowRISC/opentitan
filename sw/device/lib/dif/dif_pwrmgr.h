@@ -233,7 +233,8 @@ typedef struct dif_pwrmgr_wakeup_reason {
  * @param idx Signal index.
  * @param[out] sources The bitmask corresponding to the wakeup or reset
  * requested.
- * @return `kDifError` if no signal matches the description, `kDifOk` otherwise.
+ * @return `kDifError` if no signal matches the description or the DIF
+ * was not initialized by DT, `kDifOk` otherwise.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_find_request_source(
