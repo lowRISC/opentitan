@@ -14,7 +14,7 @@ See that document for an overview of how it is integrated into the top level sys
 
 ## Features
 
-- Two 32-bit upcounting timers: one timer functions as a wakeup timer, one as a watchdog timer
+- Two upcounting timers: one 64-bit timer that functions as a wakeup timer, and a 32-bit one that functions as a watchdog timer
 - The watchdog timer has two thresholds: bark (generates an interrupt) and bite (resets core)
 - There is 12 bit pre-scaler for the wakeup timer to enable very long timeouts
 
