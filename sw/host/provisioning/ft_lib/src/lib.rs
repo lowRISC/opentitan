@@ -592,6 +592,8 @@ pub fn check_slot_b_boot_up(
     //   //sw/device/silicon_creator/lib/cert/dice_chain.c.
     let rom_ext_failure_msg = r"UDS certificate not valid";
 
+    let error_code_msg = r"BFV:.*\r\n";
+
     let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
         let full_owner_anchor = if response.seeds.number != 0 {
             let seed0 = response.seeds.seed[0].as_slice();
@@ -621,9 +623,12 @@ pub fn check_slot_b_boot_up(
             (*owner_anchor).clone()
         };
 
-        format!(r"(?s)({}|{})", rom_ext_failure_msg, full_owner_anchor)
+        format!(
+            r"(?s)({}|{}|{})",
+            rom_ext_failure_msg, error_code_msg, full_owner_anchor
+        )
     } else {
-        rom_ext_failure_msg.to_string()
+        format!(r"(?s)({}|{})", rom_ext_failure_msg, error_code_msg)
     };
 
     let result =
@@ -632,8 +637,10 @@ pub fn check_slot_b_boot_up(
     match result {
         Ok(captures) => {
             if captures[0] == *rom_ext_failure_msg {
-                // Error message found.
                 bail!("Invalid UDS certificate detected!");
+            }
+            if captures[0].starts_with("BFV:") {
+                bail!("Error detected!");
             }
         }
         Err(e) => {
