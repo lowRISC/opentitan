@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
 use std::fs;
 use std::iter;
 use std::path::PathBuf;
@@ -107,7 +106,7 @@ struct CodegenVar {
     value: CodegenVarValue,
 }
 
-type CodegenVarTable = HashMap<String, CodegenVar>;
+type CodegenVarTable = IndexMap<String, CodegenVar>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 enum CodegenVarValue {
@@ -233,7 +232,7 @@ impl CodegenStructure<'_> {
         vars: &'a CodegenVarTable,
     ) -> Result<Vec<CodegenStructure<'a>>> {
         let mut nodes = Vec::<CodegenStructure>::new();
-        let mut id_mapping = HashMap::<String, usize>::new();
+        let mut id_mapping = IndexMap::<String, usize>::new();
         Self::build_codegen_structure(&template.structure, vars, &mut nodes, &mut id_mapping)
             .context("build_codegen_structure failed")?;
         Ok(nodes)
@@ -246,7 +245,7 @@ impl CodegenStructure<'_> {
         cur: &TemplateStructure,
         vars: &'a CodegenVarTable,
         nodes: &mut Vec<CodegenStructure<'a>>,
-        var_ids: &mut HashMap<String, usize>,
+        var_ids: &mut IndexMap<String, usize>,
     ) -> Result<usize> {
         let node = match cur {
             TemplateStructure::Item(name) => {
@@ -541,7 +540,7 @@ fn derive_size_expressions<'a>(
 }
 
 fn collect_codegenvar(template: &CwtTemplate) -> Result<CodegenVarTable> {
-    let mut vars = HashMap::<String, CodegenVar>::new();
+    let mut vars = IndexMap::<String, CodegenVar>::new();
 
     for (name, var) in &template.variables {
         let ret = vars.insert(name.clone(), CodegenVar::from_template_variable(name, var)?);
