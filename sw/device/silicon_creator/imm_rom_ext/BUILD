@@ -37,6 +37,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/base:static_dice",
         "//sw/device/silicon_creator/lib/cert:dice_chain",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
