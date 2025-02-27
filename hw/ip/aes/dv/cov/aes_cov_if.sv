@@ -350,6 +350,25 @@ interface aes_cov_if
 
   endgroup // aes_gcm_aad_len_cg
 
+  covergroup aes_ctrl_gcm_reg_cg  with function sample(
+             bit [aes_pkg::AES_GCMPHASE_WIDTH-1:0] phase
+             );
+    option.per_instance = 1;
+    option.name         = "aes_ctrl_gcm_reg_cg";
+
+    cp_phase: coverpoint phase
+      {
+        bins init[]     = (GCM_INIT     => GCM_RESTORE, GCM_AAD, GCM_TEXT, GCM_TAG);
+        bins restore[]  = (GCM_RESTORE  => GCM_INIT, GCM_AAD, GCM_TEXT);
+        bins aad[]      = (GCM_AAD      => GCM_INIT, GCM_TEXT, GCM_SAVE);
+        bins text[]     = (GCM_TEXT     => GCM_INIT, GCM_SAVE, GCM_TAG);
+        bins save       = (GCM_SAVE     => GCM_INIT);
+        bins tag        = (GCM_TAG      => GCM_INIT);
+        bins illegal    = {[0:$]} with ($countones(item) != 1);
+      }
+
+  endgroup // aes_ctrl_gcm_reg_cg
+
   ///////////////////////////////////
   // Instantiation Macros          //
   ///////////////////////////////////
@@ -364,6 +383,7 @@ interface aes_cov_if
  `DV_FCOV_INSTANTIATE_CG(aes_key_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_reg_interleave_cg, en_full_cov)
  `DV_FCOV_INSTANTIATE_CG(aes_gcm_len_cg, en_full_cov)
+ `DV_FCOV_INSTANTIATE_CG(aes_ctrl_gcm_reg_cg, en_full_cov)
 
   ///////////////////////////////////
   // Sample functions              //
@@ -440,4 +460,10 @@ interface aes_cov_if
                                text_block_zero,
                                aes_op);
   endfunction
+
+  function automatic void cg_ctrl_gcm_reg_sample(
+           bit [aes_pkg::AES_GCMPHASE_WIDTH-1:0] phase);
+    aes_ctrl_gcm_reg_cg_inst.sample(phase);
+  endfunction
+
 endinterface
