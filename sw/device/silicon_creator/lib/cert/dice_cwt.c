@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
@@ -144,7 +145,7 @@ static void fill_dice_id_string(
 }
 
 static rom_error_t configuration_descriptor_build(
-    uint8_t *buf, size_t *buf_size, const size_t sec_version,
+    size_t *buf_size, const size_t sec_version,
     const hmac_digest_t *manifest_measurement) {
   cbor_out_t cbor_out;
   cbor_out_init(&cbor_out, config_desc_buf);
@@ -182,16 +183,23 @@ rom_error_t dice_uds_tbs_cert_build(
     hmac_digest_t *otp_rot_creator_auth_state_measurement,
     cert_key_id_pair_t *key_ids, ecdsa_p256_public_key_t *uds_pubkey,
     uint8_t *tbs_cert, size_t *tbs_cert_size) {
+  // These parameters are used by the X.509 sibling implementation.
+  OT_DISCARD(otp_creator_sw_cfg_measurement);
+  OT_DISCARD(otp_owner_sw_cfg_measurement);
+  OT_DISCARD(otp_rot_creator_auth_codesign_measurement);
+  OT_DISCARD(otp_rot_creator_auth_state_measurement);
+  OT_DISCARD(key_ids);
+
+  // For DICE CWT implementation, no need to sign UDS_Pub but just a COSE_Key
+  // structure.
+  // Those otp_*measurement parameters exist just for API alignment between
+  // different implementations.
   cwt_cose_key_values_t cwt_cose_key_params = {
       .pub_key_ec_x = (uint8_t *)uds_pubkey->x,
       .pub_key_ec_x_size = sizeof(uds_pubkey->x),
       .pub_key_ec_y = (uint8_t *)uds_pubkey->y,
       .pub_key_ec_y_size = sizeof(uds_pubkey->y),
   };
-  // For DICE CWT implementation, no need to sign UDS_Pub but just a COSE_Key
-  // structure.
-  // Those otp_*measurement parameters exist just for API alignment between
-  // different implementations.
   HARDENED_RETURN_IF_ERROR(
       cwt_cose_key_build(&cwt_cose_key_params, tbs_cert, tbs_cert_size));
 
@@ -226,7 +234,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   // No extension measurement is needed in CDI_0, just pass a NULL to the
   // config_descriptors to bypass encoding.
   HARDENED_RETURN_IF_ERROR(configuration_descriptor_build(
-      config_desc_buf, &config_desc_buf_size, rom_ext_security_version, NULL));
+      &config_desc_buf_size, rom_ext_security_version, NULL));
   hmac_digest_t conf_hash;
   hmac_sha256(config_desc_buf, config_desc_buf_size, &conf_hash);
   util_reverse_bytes(conf_hash.digest, kHmacDigestNumBytes);
@@ -322,7 +330,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 
   size_t config_desc_buf_size = sizeof(config_desc_buf);
   HARDENED_RETURN_IF_ERROR(configuration_descriptor_build(
-      config_desc_buf, &config_desc_buf_size, owner_security_version,
+      &config_desc_buf_size, owner_security_version,
       owner_manifest_measurement));
   hmac_digest_t conf_hash;
   hmac_sha256(config_desc_buf, config_desc_buf_size, &conf_hash);
