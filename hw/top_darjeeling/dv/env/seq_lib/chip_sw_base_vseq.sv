@@ -172,6 +172,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endtask
 
+  virtual function void main_sram_bkdr_write8(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [7:0] data,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlMainSramKey,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce,
+      bit [38:0] flip_bits = '0);
+    _sram_bkdr_write8(addr, data, RamMain0, cfg.num_ram_main_tiles, 1, key, nonce, flip_bits);
+  endfunction
+
   virtual function void main_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
@@ -191,11 +200,93 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endfunction
 
   // The CTN memory is currently not scrambled, but it has integrity.
+  virtual function void ctn_sram_bkdr_write8(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [31:0] data,
+      bit [38:0] flip_bits = '0);
+    _sram_bkdr_write8(addr, data, RamCtn0, cfg.num_ram_ctn_tiles, 0, '0, '0, flip_bits);
+  endfunction
+
   virtual function void ctn_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit [38:0] flip_bits = '0);
     _sram_bkdr_write32(addr, data, RamCtn0, cfg.num_ram_ctn_tiles, 0, '0, '0, flip_bits);
+  endfunction
+
+  // TODO(#26486): This code just mimics the behavior of _sram_bkdr_write32 in a manner that permits
+  // sw_symbol_backdoor_write support, this being essential for a lot of the top-level DV tests,
+  // but it all of this functionality could surely be implemented much more cleanly and in a better
+  // place such as `sram_ctrl_bkdr_util` (or similar), which knows about scrambling and integrity.
+  //
+  // scrambled address may cross the tile, this function will find out what tile the address is
+  // located and backdoor write to it.
+  protected function void _sram_bkdr_write8(
+      bit [bus_params_pkg::BUS_AW-1:0] addr,
+      bit [7:0] data,
+      chip_mem_e mem,
+      int num_tiles,
+      bit is_scrambled,
+      bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce,
+      bit [38:0] flip_bits);
+
+    sram_ctrl_bkdr_util sram;
+    bit [31:0] addr_scr;
+    bit [38:0] data_scr;
+    bit [31:0] addr_mask;
+    bit [31:0] data32;
+    int        tile_idx;
+    int        size_bytes;
+
+    // Assume each tile contains the same number of bytes
+    `downcast(sram, cfg.mem_bkdr_util_h[mem])
+    size_bytes = sram.get_size_bytes();
+    addr_mask = (size_bytes - 1) & ~32'h3;  // Operations are performed on 32-bit words.
+
+    `uvm_info(`gfn, $sformatf("addr %0x, data %0x scrambled %0d", addr, data, is_scrambled),
+              UVM_HIGH)
+
+    if (is_scrambled) begin
+      // calculate the scrambled address; can use any of the memory tiles for this purpose.
+      addr_scr = sram.get_sram_encrypt_addr(addr, nonce, $clog2(num_tiles));
+    end else begin
+      addr_scr = addr;
+    end
+
+    // determine which tile the scrambled address belongs
+    tile_idx = addr_scr / size_bytes;
+    mem = chip_mem_e'(mem + tile_idx);
+    `downcast(sram, cfg.mem_bkdr_util_h[mem])
+
+    if (is_scrambled) begin
+      // retrieve the current 32-bit word in unscrambled form.
+      data32 = sram.sram_encrypt_read32_integ(addr_scr & addr_mask, key, nonce, $clog2(num_tiles));
+    end else begin
+      data32 = sram.read32(addr & addr_mask);
+      addr_scr = addr;
+    end
+
+    // Insert the byte at the appropriate offset.
+    case (addr_scr[1:0])
+      2'b00:   data32[7:0]   = data;
+      2'b01:   data32[15:8]  = data;
+      2'b10:   data32[23:16] = data;
+      default: data32[31:24] = data;
+    endcase
+
+    // calculate the scrambled data
+    if (is_scrambled) begin
+      data_scr = sram.get_sram_encrypt32_intg_data(addr & addr_mask, data32, key, nonce,
+                                                   $clog2(num_tiles));
+    end else begin
+      data_scr = prim_secded_pkg::prim_secded_inv_39_32_enc(data32);
+    end
+
+    // write the scrambled data into the targeted memory tile
+    `uvm_info(`gfn, $sformatf("SRAM write addr %0x data %0x", addr_scr & addr_mask,
+                              data_scr ^ flip_bits), UVM_HIGH)
+    cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
   endfunction
 
   // scrambled address may cross the tile, this function will find out what tile the address is
@@ -565,7 +656,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
   //
   // In the extended test vseq, override the cpu_init() to add this function call.
   // TODO: bootstrap mode not supported.
-  // TODO: Need to deal with scrambling.
   virtual function void sw_symbol_backdoor_access(input string symbol,
                                                   inout bit [7:0] data[],
                                                   // Used to be SwTypeTestSlotA, but Darjeeling
@@ -612,15 +702,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
       `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
                                "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                                "addr_mask = 0x%0h"},
-                              symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
+                              symbol, mem.name(), addr, mem_addr, size, addr_mask), UVM_LOW)
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
-      // TODO: Move this specialization to an extended class called rom_ctrl_bkdr_util.
+      // TODO(#26486): Move this specialization to an extended class called rom_ctrl_bkdr_util.
       if (mem inside {Rom0, Rom1}) begin
         rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        // TODO: The ROM utils _do_ have their configurations stored internally.
+        // TODO(#26486): The ROM utils _do_ have their configurations stored internally.
         if (mem == Rom0) begin
           rom.update_rom_digest(RndCnstRomCtrl0ScrKey, RndCnstRomCtrl0ScrNonce);
         end else begin
@@ -665,21 +755,37 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // General-use function to backdoor write a byte of data to any selected memory type
   //
-  // TODO: Add support for tiled RAM memories.
+  // TODO(#26486): Add support for tiled RAM memories.
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
-    byte prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
-    cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    byte prev_data;
+    // TODO(#26486): Tidy this up properly! There should be no need for special cases based on
+    // memory-type here. sram_ctrl instances should just transparently perform the scrambling on
+    // read/write operations as the RTL logic does on bus accesses.
+    //
+    // Similarly, any memory type that may be tiled should hide the fact that it _is_ tiled from
+    // uses of read/write functions.
+    if (mem inside {[RamCtn0:RamCtn15]}) begin
+      ctn_sram_bkdr_write8(addr, data);
+    end else if (mem inside {[RamMain0:RamMain15]}) begin
+      main_sram_bkdr_write8(addr, data);
+    end else begin
+      prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
+      cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    end
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
 
   // General-use function to backdoor read a byte of data from any selected memory type
   //
-  // TODO: Add support for tiled RAM memories.
+  // TODO(#26486): Add support for tiled RAM memories.
   virtual function void mem_bkdr_read8(input chip_mem_e mem,
                                        input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                        output byte data);
+    // TODO(#26486): We cannot read from a number of the memories.
+    `DV_CHECK_FATAL(mem inside {FlashBank0Data, FlashBank1Data, FlashBank0Info, FlashBank1Info},
+                    "Currently unable to read from that (type of )memory")
     data = cfg.mem_bkdr_util_h[mem].read8(addr);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h", addr, data), UVM_HIGH)
   endfunction

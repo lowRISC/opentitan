@@ -317,7 +317,10 @@ module tb;
   // Instantitate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     initial begin
-      sram_ctrl_bkdr_util ram_main0, ram_ret0, ram_mbox0, ram_ctn0;
+      sram_ctrl_bkdr_util ram_main0, ram_ret0, ram_mbox0;
+      // TODO: CTN RAM is NOT actually a scrambled RAM presently. sw_symbol_backdoor_access
+      // must be able to modify it.
+      sram_ctrl_bkdr_util ram_ctn0;
       rom_ctrl_bkdr_util rom0, rom1;
       chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
@@ -409,7 +412,9 @@ module tb;
           .depth ($size(`RAM_CTN_MEM_HIER)),
           .n_bits($bits(`RAM_CTN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
+// TODO: build system is targeting this address at present.
+          .system_base_addr     (top_darjeeling_pkg::TOP_DARJEELING_CTN_BASE_ADDR));
+//          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
       m_mem_bkdr_util[RamCtn0] = ram_ctn0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamCtn0], `RAM_CTN_MEM_HIER)
 
