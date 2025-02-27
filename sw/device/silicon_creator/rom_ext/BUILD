@@ -13,10 +13,6 @@ load(
     "ROM_EXT_VERSION",
     "SLOTS",
 )
-load(
-    "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
-    "IMM_SECTION_VARIATIONS",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -250,33 +246,6 @@ ROM_EXT_FEATURES = [
     )
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
-]
-
-[
-    opentitan_binary(
-        name = "rom_ext_with_{}_imm_slot_virtual".format(imm_name),
-        testonly = True,
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-        exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
-            "//hw/top_earlgrey:sim_dv_base",
-            "//hw/top_earlgrey:sim_verilator_base",
-            "//hw/top_earlgrey:silicon_creator",
-        ],
-        linker_script = ":ld_slot_virtual",
-        manifest = ":manifest",
-        transitive_features = ROM_EXT_FEATURES,
-        deps = [
-            ":rom_ext_dice_x509",
-            "//sw/device/lib/crt",
-            "//sw/device/silicon_creator/lib:manifest_def",
-            "//sw/device/silicon_creator/lib/ownership:test_owner",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake",
-            "//sw/device/silicon_creator/rom_ext/imm_section:{}_section_dice_x509_slot_virtual".format(imm_name),
-        ],
-    )
-    for imm_name in IMM_SECTION_VARIATIONS
 ]
 
 # This binary is a test-only ROM_EXT that has ownership initialized in
