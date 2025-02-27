@@ -305,12 +305,37 @@ impl AttributeMap {
             if a == cryptoki::object::AttributeType::AllowedMechanisms {
                 continue;
             }
+            // Skip the value attribute. We first have to check if the object
+            // is sensitive before being able to load it. Some Luna HSM
+            // versions will return an error if we attempt to read a sensitive
+            // value.
+            if a == cryptoki::object::AttributeType::Value {
+                continue;
+            }
             if matches!(i, AttributeInfo::Available(_)) {
                 atypes.push(a);
             }
         }
+
         let attrs = session.get_attributes(object, &atypes)?;
         let mut map = AttributeMap::from(attrs.as_slice());
+
+        let sensitive = map.get(&AttributeType::Sensitive);
+        if sensitive.is_none() || matches!(sensitive, Some(AttrData::Bool(false))) {
+            // If the object is not sensitive, we can read the value attribute.
+            let value = session
+                .get_attributes(object, &[cryptoki::object::AttributeType::Value])?
+                .remove(0);
+            let (ty, val) = into_kv(&value)?;
+            map.insert(ty, val);
+        } else {
+            // If the object is sensitive, we redact the value attribute.
+            map.insert(
+                AttributeType::Value,
+                AttrData::Redacted(Redacted::RedactedByHsm),
+            );
+        }
+
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
                 map.insert(a.into(), AttrData::Redacted(Redacted::RedactedByHsm));
