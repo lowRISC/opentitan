@@ -13,10 +13,6 @@ load(
     "ROM_EXT_VERSION",
     "SLOTS",
 )
-load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "IMM_ROM_EXT_VARIATIONS",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -285,36 +281,6 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
-
-[
-    opentitan_binary(
-        name = "rom_ext_with_{}_imm_slot_virtual".format(imm_name),
-        testonly = True,
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-        exec_env = [
-            "//hw/top_earlgrey:fpga_cw310",
-            "//hw/top_earlgrey:fpga_cw340",
-            "//hw/top_earlgrey:sim_dv_base",
-            "//hw/top_earlgrey:sim_verilator_base",
-            "//hw/top_earlgrey:silicon_creator",
-        ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
-        linker_script = ":ld_slot_virtual",
-        manifest = ":manifest",
-        deps = [
-            ":rom_ext_dice_x509",
-            "//sw/device/lib/crt",
-            "//sw/device/silicon_creator/lib:manifest_def",
-            "//sw/device/silicon_creator/lib/ownership:test_owner",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake",
-            "//sw/device/silicon_creator/imm_rom_ext:{}_section_dice_x509_slot_virtual".format(imm_name),
-        ],
-    )
-    for imm_name in IMM_ROM_EXT_VARIATIONS
-]
 
 manifest(d = {
     "name": "manifest_bad_address_translation",
