@@ -89,6 +89,11 @@
       uvm_test_seq: aon_timer_wkup_count_cdc_hi_vseq
       reseed: 5
     }
+    {
+      name: aon_timer_alternating_enable_on_off
+      uvm_test_seq: aon_timer_alternating_enable_on_off_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.

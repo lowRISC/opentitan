@@ -119,6 +119,16 @@
       stage: V3
       tests: ["aon_timer_custom_intr"]
     }
+    {
+      name: alternating_on_off
+      desc: '''
+            Run aon_timer_alternating_enable_on_off_vseq, which alternates each counter enable
+            between ON/OFF as well as intr_test writes in order to ensure the TB can cope with non
+            SW-like stimulus.
+            '''
+      stage: V3
+      tests: ["aon_timer_alternating_enable_on_off"]
+    }
   ]
 
   covergroups: [
