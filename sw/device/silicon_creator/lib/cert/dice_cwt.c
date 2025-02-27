@@ -38,12 +38,15 @@ enum payload_entry_sizes {
   kProfileNameLength = 10,
   // The Key ID length, which equals to the SHA256 digest size in bytes
   kIssuerSubjectKeyIdLength = kHmacDigestNumBytes,
-  // The size of issuer & subject name, which equals to the ascii size
-  // transformed form Key ID.
-  kIssuerSubjectNameLength = kIssuerSubjectKeyIdLength * 2,
+  // The identifiers are 20 octets (reserve double size for HEX translation) so
+  // they fit in the RFC 5280 serialNumber field constraints and the
+  // X520SerialNumber type when hex encoded.
+  kIssuerSubjectNameLength = 40,
   // 64 byte should be enough for 2 entries
   kConfigDescBuffSize = 64,
 };
+static_assert(kIssuerSubjectNameLength < (1u << kIssuerSubjectKeyIdLength),
+              "Insufficient SubjectNameLength");
 
 // Reusable buffer for generating Configuration Descriptor
 static uint8_t config_desc_buf[kConfigDescBuffSize] = {0};
@@ -77,7 +80,7 @@ static void fill_dice_id_string(
     const uint8_t dice_id[kIssuerSubjectKeyIdLength],
     char dice_id_str[kIssuerSubjectNameLength + 1]) {
   size_t idx;
-  for (idx = 0; idx < kIssuerSubjectKeyIdLength; idx++, dice_id_str += 2)
+  for (idx = 0; idx * 2 < kIssuerSubjectNameLength; idx++, dice_id_str += 2)
     util_hexdump_byte(dice_id[idx], (uint8_t *)&dice_id_str[0]);
 }
 
