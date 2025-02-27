@@ -27,6 +27,50 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "dt/dt_adc_ctrl.h"     // Generated
+#include "dt/dt_entropy_src.h"  // Generated
+#include "dt/dt_flash_ctrl.h"   // Generated
+#include "dt/dt_keymgr.h"       // Generated
+#include "dt/dt_pattgen.h"      // Generated
+#include "dt/dt_pwm.h"          // Generated
+#include "dt/dt_sensor_ctrl.h"  // Generated
+#include "dt/dt_sysrst_ctrl.h"  // Generated
+#include "dt/dt_usbdev.h"       // Generated
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+
+#include "flash_ctrl_regs.h"  // Generated
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "dt/dt_keymgr_dpe.h"  // Generated
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
+
+#include "dt/dt_aes.h"            // Generated
+#include "dt/dt_alert_handler.h"  // Generated
+#include "dt/dt_aon_timer.h"      // Generated
+#include "dt/dt_api.h"            // Generated
+#include "dt/dt_clkmgr.h"         // Generated
+#include "dt/dt_csrng.h"          // Generated
+#include "dt/dt_edn.h"            // Generated
+#include "dt/dt_gpio.h"           // Generated
+#include "dt/dt_hmac.h"           // Generated
+#include "dt/dt_i2c.h"            // Generated
+#include "dt/dt_kmac.h"           // Generated
+#include "dt/dt_lc_ctrl.h"        // Generated
+#include "dt/dt_otbn.h"           // Generated
+#include "dt/dt_otp_ctrl.h"       // Generated
+#include "dt/dt_pinmux.h"         // Generated
+#include "dt/dt_pwrmgr.h"         // Generated
+#include "dt/dt_rom_ctrl.h"       // Generated
+#include "dt/dt_rstmgr.h"         // Generated
+#include "dt/dt_rv_core_ibex.h"   // Generated
+#include "dt/dt_rv_dm.h"          // Generated
+#include "dt/dt_rv_plic.h"        // Generated
+#include "dt/dt_rv_timer.h"       // Generated
+#include "dt/dt_spi_device.h"     // Generated
+#include "dt/dt_spi_host.h"       // Generated
+#include "dt/dt_sram_ctrl.h"      // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
@@ -35,7 +79,6 @@
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -58,9 +101,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "alert_handler_regs.h"
-#include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "alert_handler_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -85,8 +126,8 @@ typedef struct fault_checker {
 // This preserves the fault checker across multiple resets.
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint64_t nv_fault_checker[3];)
 
-// This is the fault checker to be used. It is saved and retrieved from flash
-// to preserve it across resets.
+// This is the fault checker to be used. It is saved and retrieved from
+// Retention SRAM to preserve it across resets.
 fault_checker_t fault_checker;
 
 // Alert class to use for the test. Will be chosen randomly by the test SW.
@@ -140,39 +181,81 @@ static_assert(
     "The wdog bite shall after the NMI phase when lc_escalate_en is asserted");
 
 /**
- * SRAM addresses used in the test below.
+ * SRAM address used in the test below.
  */
-enum {
-  kSramMainStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
-  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-};
+static uint32_t kSramRetStart;
 
 /**
- * Objects to access the peripherals used in this test via dif API.
+ * Objects to access the peripherals used in this test via dif/dt APIs.
  */
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+// Top-specific objects
+#if defined(OPENTITAN_IS_EARLGREY)
+static dif_flash_ctrl_state_t flash_ctrl_state;
+dt_flash_ctrl_t kFlashCtrlDt = (dt_flash_ctrl_t)0;
+static_assert(kDtFlashCtrlCount >= 1, "This test requires a Flash Ctrl");
+static dif_rom_ctrl_t rom_ctrl;
+static dt_rom_ctrl_t kRomCtrlDt = (dt_rom_ctrl_t)0;
+static_assert(kDtRomCtrlCount >= 1, "This test requires a ROM CTRL");
+
+static const char *flash_fatal_check = "flash_fatal_check";
+#elif defined(OPENTITAN_IS_DARJEELING)
+static dif_sram_ctrl_t sram_ctrl_mbox;
+static dt_sram_ctrl_t kSramCtrlMboxDt = kDtSramCtrlMbox;
+static dif_rom_ctrl_t rom_ctrl0;
+static dif_rom_ctrl_t rom_ctrl1;
+static dt_rom_ctrl_t kRomCtrl0Dt = kDtRomCtrl0;
+static dt_rom_ctrl_t kRomCtrl1Dt = kDtRomCtrl1;
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
+
+// Top-agnostic objects
+static const uint32_t kPlicTarget = 0;
+
 static dif_aes_t aes;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
 static dif_clkmgr_t clkmgr;
-static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pwrmgr_t pwrmgr;
-static dif_rom_ctrl_t rom_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t plic;
 static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_ret;
 
+static dt_aes_t kAesDt = (dt_aes_t)0;
+static_assert(kDtAesCount >= 1, "This test requires an AES");
+static dt_alert_handler_t kAlertHandlerDt = (dt_alert_handler_t)0;
+static_assert(kDtAlertHandlerCount >= 1, "This test needs an Alert Handler");
+static dt_aon_timer_t kAonTimerDt = kDtAonTimerAon;
+static dt_clkmgr_t kClkmgrDt = kDtClkmgrAon;
+static dt_kmac_t kKmacDt = (dt_kmac_t)0;
+static_assert(kDtKmacCount >= 1, "This test requires a KMAC instance");
+static dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static_assert(kDtLcCtrlCount >= 1, "This test requries a LC CTRL");
+static dt_otp_ctrl_t kOtpCtrlDt = (dt_otp_ctrl_t)0;
+static_assert(kDtOtpCtrlCount >= 1, "This test requires an OTP CTRL");
+static dt_pwrmgr_t kPwrmgrDt = kDtPwrmgrAon;
+static dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+static dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
+static_assert(kDtRvCoreIbexCount >= 1, "This test requires an Ibex core");
+static dt_rv_plic_t kRvPlicDt = (dt_rv_plic_t)0;
+static_assert(kDtRvPlicCount >= 1, "This test requries an RV PLIC instance");
+static dt_sram_ctrl_t kSramCtrlMainDt = kDtSramCtrlMain;
+static dt_sram_ctrl_t kSramCtrlRetAonDt = kDtSramCtrlRetAon;
+
 static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
 static const char *rst_cnsty_check = "rst_cnsty_check";
-static const char *flash_fatal_check = "flash_fatal_check";
 static const char *sw_alert_check = "sw_fatal_alert_check";
 
+/**
+ * Utilities for saving & restoring the fault checker to/from non-volatile SRAM
+ * so it persists across resets.
+ */
 static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
@@ -191,75 +274,95 @@ static void restore_fault_checker(fault_checker_t *fault_checker) {
       2, 1, (uint32_t *)&(fault_checker->type)));
 }
 
-// It would be handy to generate these.
+// Instance name definitions. TODO: It would be handy to generate these.
+#if defined(OPENTITAN_IS_EARLGREY)
 static const char *adc_ctrl_inst_name = "adc_ctrl";
+static const char *entropy_src_inst_name = "entropy_src";
+static const char *flash_ctrl_inst_name = "flash_ctrl";
+static const char *i2c1_inst_name = "i2c1";
+static const char *i2c2_inst_name = "i2c2";
+static const char *keymgr_inst_name = "keymgr";
+static const char *pattgen_inst_name = "pattgen";
+static const char *pwm_inst_name = "pwm";
+static const char *rom_ctrl_inst_name = "rom_ctrl";
+static const char *sensor_ctrl_inst_name = "sensor_ctrl";
+static const char *spi_host1_inst_name = "spi_host1";
+static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
+static const char *uart1_inst_name = "uart1";
+static const char *uart2_inst_name = "uart2";
+static const char *uart3_inst_name = "uart3";
+static const char *usbdev_inst_name = "usbdev";
+#elif defined(OPENTITAN_IS_DARJEELING)
+static const char *keymgr_dpe_inst_name = "keymgr_dpe";
+static const char *sram_ctrl_mbox_inst_name = "sram_ctrl_mbox";
+static const char *rom_ctrl0_inst_name = "rom_ctrl0";
+static const char *rom_ctrl1_inst_name = "rom_ctrl1";
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
+
 static const char *aes_inst_name = "aes";
 static const char *aon_timer_inst_name = "aon_timer";
 static const char *clkmgr_inst_name = "clkmgr";
 static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
-static const char *entropy_src_inst_name = "entropy_src";
-static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
 static const char *i2c0_inst_name = "i2c0";
-static const char *i2c1_inst_name = "i2c1";
-static const char *i2c2_inst_name = "i2c2";
-static const char *keymgr_inst_name = "keymgr";
 static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
 static const char *otp_ctrl_inst_name = "otp_ctrl";
-static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
-static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
-static const char *rom_ctrl_inst_name = "rom_ctrl";
 static const char *rstmgr_inst_name = "rstmgr";
 // TODO: test rv_core_ibex fatal SW error, alert 57.
 static const char *rv_core_ibex_inst_name = "rv_core_ibex";
 static const char *rv_dm_inst_name = "rv_dm";
 static const char *rv_plic_inst_name = "rv_plic";
 static const char *rv_timer_inst_name = "rv_timer";
-static const char *sensor_ctrl_inst_name = "sensor_ctrl";
 static const char *spi_host0_inst_name = "spi_host0";
-static const char *spi_host1_inst_name = "spi_host1";
 static const char *spi_device_inst_name = "spi_device";
 static const char *sram_ctrl_main_inst_name = "sram_ctrl_main";
 static const char *sram_ctrl_ret_inst_name = "sram_ctrl_ret";
-static const char *sysrst_ctrl_inst_name = "sysrst_ctrl";
 static const char *uart0_inst_name = "uart0";
-static const char *uart1_inst_name = "uart1";
-static const char *uart2_inst_name = "uart2";
-static const char *uart3_inst_name = "uart3";
-static const char *usbdev_inst_name = "usbdev";
 
+/**
+ * Define fault checkers used for checking faults in different IPs
+ * during the test.
+ */
 static void trivial_fault_checker(bool enable, const char *ip_inst,
                                   const char *type) {
   CHECK(enable == enable);
 }
 
-static void aes_fault_checker(bool enable, const char *ip_inst,
-                              const char *type) {
-  // Check the aes integrity fatal error code.
-  bool status;
-  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusAlertFatalFault, &status));
-  CHECK(status == enable, "For %s got 0x%x, expected 0x%x", ip_inst, status,
-        enable);
+static void generic_rom_ctrl_fault_checker(bool enable, const char *ip_inst,
+                                           const char *type,
+                                           dif_rom_ctrl_t *dif) {
+  dif_rom_ctrl_fatal_alert_causes_t codes;
+  CHECK_DIF_OK(dif_rom_ctrl_get_fatal_alert_cause(dif, &codes));
+  uint32_t expected_codes =
+      enable ? bitfield_bit32_write(0, kDifRomCtrlFatalAlertCauseIntegrityError,
+                                    true)
+             : 0;
+  CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
+        ip_inst, codes, expected_codes);
 }
 
-static void clkmgr_fault_checker(bool enable, const char *ip_inst,
-                                 const char *type) {
-  // Check the clkmgr integrity fatal error code.
-  dif_clkmgr_fatal_err_codes_t codes;
-  CHECK_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr, &codes));
-  uint32_t expected = enable ? kDifClkmgrFatalErrTypeRegfileIntegrity : 0;
-  CHECK(codes == expected, "For %s got codes 0x%x, expected 0x%x", ip_inst,
-        codes, expected);
+static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
+                                            bool enable, const char *ip_inst,
+                                            const char *type) {
+  dif_sram_ctrl_status_bitfield_t codes;
+  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &codes));
+  uint32_t expected_codes = enable ? kDifSramCtrlStatusBusIntegErr : 0;
+  CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
+        ip_inst, codes, expected_codes);
 }
 
+// Fault checkers for Top-specific IP
+#if defined(OPENTITAN_IS_EARLGREY)
 static void flash_ctrl_fault_checker(bool enable, const char *ip_inst,
                                      const char *type) {
   dif_flash_ctrl_faults_t faults;
@@ -294,6 +397,79 @@ static void flash_ctrl_prim_fault_checker(bool enable, const char *ip_inst,
 }
 
 /*
+// TODO(#14518) keymgr cannot read fault_status register.
+static void keymgr_fault_checker(bool enable) {
+  // Check the keymgr integrity fatal error code.
+  dif_kmac_status_t status;
+  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
+  if (enable) {
+    CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
+  } else {
+    CHECK(status.faults == 0, "Got codes 0x%x", status.faults);
+  }
+}
+*/
+
+static void keymgr_fault_checker(bool enable, const char *ip_inst,
+                                 const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
+           kDtKeymgrAlertFatalFaultErr);
+  trivial_fault_checker(enable, ip_inst, type);
+}
+
+static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
+                                   const char *type) {
+  return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl);
+}
+#elif defined(OPENTITAN_IS_DARJEELING)
+static void keymgr_dpe_fault_checker(bool enable, const char *ip_inst,
+                                     const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d keymgr_dpe fault check is yet unimplemented",
+           kDtKeymgrDpeAlertFatalFaultErr);
+  trivial_fault_checker(enable, ip_inst, type);
+}
+
+static void rom_ctrl0_fault_checker(bool enable, const char *ip_inst,
+                                    const char *type) {
+  return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl0);
+}
+
+static void rom_ctrl1_fault_checker(bool enable, const char *ip_inst,
+                                    const char *type) {
+  return generic_rom_ctrl_fault_checker(enable, ip_inst, type, &rom_ctrl1);
+}
+
+static void sram_ctrl_mbox_fault_checker(bool enable, const char *ip_inst,
+                                         const char *type) {
+  generic_sram_ctrl_fault_checker(&sram_ctrl_mbox, enable, ip_inst, type);
+}
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
+
+// Fault checkers for the remaining top-agnostic IP
+static void aes_fault_checker(bool enable, const char *ip_inst,
+                              const char *type) {
+  // Check the aes integrity fatal error code.
+  bool status;
+  CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusAlertFatalFault, &status));
+  CHECK(status == enable, "For %s got 0x%x, expected 0x%x", ip_inst, status,
+        enable);
+}
+
+static void clkmgr_fault_checker(bool enable, const char *ip_inst,
+                                 const char *type) {
+  // Check the clkmgr integrity fatal error code.
+  dif_clkmgr_fatal_err_codes_t codes;
+  CHECK_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr, &codes));
+  uint32_t expected = enable ? kDifClkmgrFatalErrTypeRegfileIntegrity : 0;
+  CHECK(codes == expected, "For %s got codes 0x%x, expected 0x%x", ip_inst,
+        codes, expected);
+}
+
+/*
 // TODO(#14518) hmac cannot read fault_status register.
 static void hmac_fault_checker(bool enable) {
   // Check the hmac integrity fatal error code.
@@ -307,19 +483,13 @@ static void hmac_fault_checker(bool enable) {
 }
 */
 
-/*
-// TODO(#14518) keymgr cannot read fault_status register.
-static void keymgr_fault_checker(bool enable) {
-  // Check the keymgr integrity fatal error code.
-  dif_kmac_status_t status;
-  CHECK_DIF_OK(dif_kmac_get_status(&keymgr, &codes));
-  if (enable) {
-    CHECK(status.faults == 1, "Got faults 0x%x", status.faults);
-  } else {
-    CHECK(status.faults == 0, "Got codes 0x%x", status.faults);
-  }
+static void hmac_fault_checker(bool enable, const char *ip_inst,
+                               const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d hmac fault check is yet unimplemented",
+           kDtHmacAlertFatalFault);
+  trivial_fault_checker(enable, ip_inst, type);
 }
-*/
 
 static void kmac_fault_checker(bool enable, const char *ip_inst,
                                const char *type) {
@@ -367,6 +537,14 @@ static void otbn_ctrl_fault_checker(bool enable) {
 }
 */
 
+static void otbn_fault_checker(bool enable, const char *ip_inst,
+                               const char *type) {
+  // TODO(#14518)
+  LOG_INFO("Expected alert %d otbn fault check is yet unimplemented",
+           kDtOtbnAlertFatal);
+  trivial_fault_checker(enable, ip_inst, type);
+}
+
 static void otp_ctrl_fault_checker(bool enable, const char *ip_inst,
                                    const char *type) {
   // Check the otp_ctrl integrity fatal error code.
@@ -406,18 +584,6 @@ static void pwrmgr_fault_checker(bool enable, const char *ip_inst,
   dif_pwrmgr_fatal_err_codes_t codes;
   CHECK_DIF_OK(dif_pwrmgr_fatal_err_code_get_codes(&pwrmgr, &codes));
   uint32_t expected_codes = enable ? kDifPwrmgrFatalErrTypeRegfileIntegrity : 0;
-  CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
-        ip_inst, codes, expected_codes);
-}
-
-static void rom_ctrl_fault_checker(bool enable, const char *ip_inst,
-                                   const char *type) {
-  dif_rom_ctrl_fatal_alert_causes_t codes;
-  CHECK_DIF_OK(dif_rom_ctrl_get_fatal_alert_cause(&rom_ctrl, &codes));
-  uint32_t expected_codes =
-      enable ? bitfield_bit32_write(0, kDifRomCtrlFatalAlertCauseIntegrityError,
-                                    true)
-             : 0;
   CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
         ip_inst, codes, expected_codes);
 }
@@ -472,16 +638,6 @@ void ottf_load_store_fault_handler(uint32_t *exc_info) {
   LOG_INFO("Load access error handler exiting");
 }
 
-static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
-                                            bool enable, const char *ip_inst,
-                                            const char *type) {
-  dif_sram_ctrl_status_bitfield_t codes;
-  CHECK_DIF_OK(dif_sram_ctrl_get_status(sram_ctrl, &codes));
-  uint32_t expected_codes = enable ? kDifSramCtrlStatusBusIntegErr : 0;
-  CHECK(codes == expected_codes, "For %s got codes 0x%x, expected 0x%x",
-        ip_inst, codes, expected_codes);
-}
-
 static void sram_ctrl_main_fault_checker(bool enable, const char *ip_inst,
                                          const char *type) {
   generic_sram_ctrl_fault_checker(&sram_ctrl_main, enable, ip_inst, type);
@@ -518,17 +674,15 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  dt_instance_id_t peripheral_id = dt_plic_id_to_instance_id(irq_id);
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+  if (peripheral_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, irq_id);
 
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  } else if (peripheral_id == dt_alert_handler_instance_id(kAlertHandlerDt)) {
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
@@ -540,8 +694,8 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Disable these interrupts from alert_handler so they don't keep happening
   // until NMI.
-  uint32_t irq =
-      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+  dt_alert_handler_irq_t irq =
+      dt_alert_handler_irq_from_plic_id(kAlertHandlerDt, irq_id);
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
                                                  kDifToggleDisabled));
 
@@ -606,55 +760,31 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
+#if defined(OPENTITAN_IS_EARLGREY)
   CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+      dif_flash_ctrl_init_state_from_dt(&flash_ctrl_state, kFlashCtrlDt));
+  CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrlDt, &rom_ctrl));
+#elif defined(OPENTITAN_IS_DARJEELING)
+  CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrl0Dt, &rom_ctrl0));
+  CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrl1Dt, &rom_ctrl1));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlMboxDt, &sram_ctrl_mbox));
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
 
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
-
-  CHECK_DIF_OK(dif_lc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
-
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-
-  CHECK_DIF_OK(dif_rom_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR), &rom_ctrl));
-
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
-      &sram_ctrl_main));
-
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-      &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_aes_init_from_dt(kAesDt, &aes));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kKmacDt, &kmac));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc_ctrl));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlMainDt, &sram_ctrl_main));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kSramCtrlRetAonDt, &sram_ctrl_ret));
 }
 
 /**
@@ -754,260 +884,232 @@ static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
 }
 
 /**
- * Execute the aon timer interrupt test.
+ * Initialise the map of fault checkers to use for different fault alerts.
+ */
+static void init_fault_checkers(fault_checker_t *checkers) {
+#if defined(OPENTITAN_IS_EARLGREY)
+  checkers[dt_adc_ctrl_alert_to_alert_id(kDtAdcCtrlAon,
+                                         kDtAdcCtrlAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, adc_ctrl_inst_name, we_check};
+
+  checkers[dt_entropy_src_alert_to_alert_id((dt_entropy_src_t)0,
+                                            kDtEntropySrcAlertFatalAlert)] =
+      (fault_checker_t){trivial_fault_checker, entropy_src_inst_name, we_check};
+  static_assert(kDtEntropySrcCount >= 1, "This test needs an entropy src");
+
+  checkers[dt_flash_ctrl_alert_to_alert_id(
+      kFlashCtrlDt, kDtFlashCtrlAlertFatalErr)] = (fault_checker_t){
+      flash_ctrl_fault_checker, flash_ctrl_inst_name, flash_fatal_check};
+  checkers[dt_flash_ctrl_alert_to_alert_id(
+      kFlashCtrlDt, kDtFlashCtrlAlertFatalStdErr)] = (fault_checker_t){
+      flash_ctrl_fault_checker, flash_ctrl_inst_name, flash_fatal_check};
+  checkers[dt_flash_ctrl_alert_to_alert_id(
+      kFlashCtrlDt, kDtFlashCtrlAlertFatalPrimFlashAlert)] = (fault_checker_t){
+      flash_ctrl_prim_fault_checker, flash_ctrl_inst_name, flash_fatal_check};
+
+  checkers[dt_i2c_alert_to_alert_id((dt_i2c_t)1, kDtI2cAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, i2c1_inst_name, we_check};
+  checkers[dt_i2c_alert_to_alert_id((dt_i2c_t)2, kDtI2cAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, i2c2_inst_name, we_check};
+  static_assert(kDtI2cCount >= 3, "This test needs 3 I2C instances");
+
+  checkers[dt_keymgr_alert_to_alert_id((dt_keymgr_t)0,
+                                       kDtKeymgrAlertFatalFaultErr)] =
+      (fault_checker_t){keymgr_fault_checker, keymgr_inst_name, we_check};
+  static_assert(kDtKeymgrCount >= 1, "This test needs a keymgr");
+
+  checkers[dt_pattgen_alert_to_alert_id((dt_pattgen_t)0,
+                                        kDtPattgenAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, pattgen_inst_name, we_check};
+  static_assert(kDtPattgenCount >= 1, "This test needs a pattgen instance");
+
+  checkers[dt_pwm_alert_to_alert_id(kDtPwmAon, kDtPwmAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, pwm_inst_name, we_check};
+
+  checkers[dt_rom_ctrl_alert_to_alert_id(kRomCtrlDt, kDtRomCtrlAlertFatal)] =
+      (fault_checker_t){rom_ctrl_fault_checker, rom_ctrl_inst_name, we_check};
+
+  checkers[dt_sensor_ctrl_alert_to_alert_id(kDtSensorCtrlAon,
+                                            kDtSensorCtrlAlertFatalAlert)] =
+      (fault_checker_t){trivial_fault_checker, sensor_ctrl_inst_name, we_check};
+
+  checkers[dt_spi_host_alert_to_alert_id((dt_spi_host_t)1,
+                                         kDtSpiHostAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, spi_host1_inst_name, we_check};
+  static_assert(kDtSpiHostCount >= 2, "This test needs 2 SPI Host instances");
+
+  checkers[dt_sysrst_ctrl_alert_to_alert_id(kDtSysrstCtrlAon,
+                                            kDtSysrstCtrlAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, sysrst_ctrl_inst_name, we_check};
+
+  checkers[dt_uart_alert_to_alert_id((dt_uart_t)1, kDtUartAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, uart1_inst_name, we_check};
+  checkers[dt_uart_alert_to_alert_id((dt_uart_t)2, kDtUartAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, uart2_inst_name, we_check};
+  checkers[dt_uart_alert_to_alert_id((dt_uart_t)3, kDtUartAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, uart3_inst_name, we_check};
+  static_assert(kDtUartCount >= 4, "This test needs 4 UART instances");
+
+  checkers[dt_usbdev_alert_to_alert_id((dt_usbdev_t)0,
+                                       kDtUsbdevAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, usbdev_inst_name, we_check};
+  static_assert(kDtUsbdevCount >= 1, "This test needs a USB Device");
+#elif defined(OPENTITAN_IS_DARJEELING)
+  checkers[dt_keymgr_dpe_alert_to_alert_id(
+      (dt_keymgr_dpe_t)0, kDtKeymgrDpeAlertFatalFaultErr)] = (fault_checker_t){
+      keymgr_dpe_fault_checker, keymgr_dpe_inst_name, we_check};
+  static_assert(kDtKeymgrDpeCount >= 1, "This test needs a keymgr_dpe");
+
+  checkers[dt_sram_ctrl_alert_to_alert_id(
+      kDtSramCtrlMbox, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
+      sram_ctrl_mbox_fault_checker, sram_ctrl_mbox_inst_name, we_check};
+
+  checkers[dt_rom_ctrl_alert_to_alert_id(kRomCtrl0Dt, kDtRomCtrlAlertFatal)] =
+      (fault_checker_t){rom_ctrl0_fault_checker, rom_ctrl0_inst_name, we_check};
+  checkers[dt_rom_ctrl_alert_to_alert_id(kRomCtrl1Dt, kDtRomCtrlAlertFatal)] =
+      (fault_checker_t){rom_ctrl1_fault_checker, rom_ctrl1_inst_name, we_check};
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
+
+  checkers[dt_aes_alert_to_alert_id(kAesDt, kDtAesAlertFatalFault)] =
+      (fault_checker_t){aes_fault_checker, aes_inst_name, we_check};
+
+  checkers[dt_aon_timer_alert_to_alert_id(kAonTimerDt,
+                                          kDtAonTimerAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, aon_timer_inst_name, we_check};
+
+  checkers[dt_clkmgr_alert_to_alert_id(kClkmgrDt, kDtClkmgrAlertFatalFault)] =
+      (fault_checker_t){clkmgr_fault_checker, clkmgr_inst_name, we_check};
+
+  checkers[dt_csrng_alert_to_alert_id((dt_csrng_t)0, kDtCsrngAlertFatalAlert)] =
+      (fault_checker_t){trivial_fault_checker, csrng_inst_name, we_check};
+  static_assert(kDtCsrngCount >= 1, "This test needs a CSRNG instance");
+
+  checkers[dt_edn_alert_to_alert_id((dt_edn_t)0, kDtEdnAlertFatalAlert)] =
+      (fault_checker_t){trivial_fault_checker, edn0_inst_name, we_check};
+  checkers[dt_edn_alert_to_alert_id((dt_edn_t)1, kDtEdnAlertFatalAlert)] =
+      (fault_checker_t){trivial_fault_checker, edn1_inst_name, we_check};
+  static_assert(kDtEdnCount >= 2, "This test needs 2 EDN instances");
+
+  checkers[dt_gpio_alert_to_alert_id((dt_gpio_t)0, kDtGpioAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, gpio_inst_name, we_check};
+  static_assert(kDtGpioCount >= 1, "This test needs 1 GPIO instance");
+
+  checkers[dt_hmac_alert_to_alert_id((dt_hmac_t)0, kDtHmacAlertFatalFault)] =
+      (fault_checker_t){hmac_fault_checker, hmac_inst_name, we_check};
+  static_assert(kDtHmacCount >= 1, "This test needs 1 HMAC instance");
+
+  checkers[dt_i2c_alert_to_alert_id((dt_i2c_t)0, kDtI2cAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, i2c0_inst_name, we_check};
+  static_assert(kDtI2cCount >= 1, "This test needs at least 1 I2C instance");
+
+  checkers[dt_kmac_alert_to_alert_id(kKmacDt, kDtKmacAlertFatalFaultErr)] =
+      (fault_checker_t){kmac_fault_checker, kmac_inst_name, we_check};
+
+  // TODO add mechanism to inject kDtLcCtrlAlertFatalProgError by
+  // forcing otp_prog_err_o from lc_ctrl_fsm
+  checkers[dt_lc_ctrl_alert_to_alert_id(
+      kLcCtrlDt, kDtLcCtrlAlertFatalStateError)] = (fault_checker_t){
+      lc_ctrl_fault_checker, lc_ctrl_inst_name, sparse_fsm_check};
+  checkers[dt_lc_ctrl_alert_to_alert_id(kLcCtrlDt,
+                                        kDtLcCtrlAlertFatalBusIntegError)] =
+      (fault_checker_t){lc_ctrl_fault_checker, lc_ctrl_inst_name, we_check};
+
+  checkers[dt_otbn_alert_to_alert_id((dt_otbn_t)0, kDtOtbnAlertFatal)] =
+      (fault_checker_t){otbn_fault_checker, otbn_inst_name, we_check};
+  static_assert(kDtOtbnCount >= 1, "This test needs at least 1 OTBN instance");
+
+  // TODO add mechanism to inject:
+  // forcing otp_prog_err_o from lc_ctrl_fsm and
+  // kDtLcCtrlAlertFatalStateError using sparse fsm.
+  // alerts, and corresponding CSR bit to check.
+  checkers[dt_otp_ctrl_alert_to_alert_id(
+      kOtpCtrlDt, kDtOtpCtrlAlertFatalMacroError)] = (fault_checker_t){
+      otp_ctrl_fault_checker, otp_ctrl_inst_name, sparse_fsm_check};
+  checkers[dt_otp_ctrl_alert_to_alert_id(
+      kOtpCtrlDt, kDtOtpCtrlAlertFatalPrimOtpAlert)] = (fault_checker_t){
+      otp_ctrl_prim_fault_checker, otp_ctrl_inst_name, sparse_fsm_check};
+  checkers[dt_otp_ctrl_alert_to_alert_id(
+      kOtpCtrlDt, kDtOtpCtrlAlertFatalCheckError)] = (fault_checker_t){
+      otp_ctrl_fault_checker, otp_ctrl_inst_name, sparse_fsm_check};
+  checkers[dt_otp_ctrl_alert_to_alert_id(kOtpCtrlDt,
+                                         kDtOtpCtrlAlertFatalBusIntegError)] =
+      (fault_checker_t){otp_ctrl_fault_checker, otp_ctrl_inst_name, we_check};
+
+  checkers[dt_pinmux_alert_to_alert_id(kDtPinmuxAon,
+                                       kDtPinmuxAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, pinmux_inst_name, we_check};
+
+  checkers[dt_pwrmgr_alert_to_alert_id(kPwrmgrDt, kDtPwrmgrAlertFatalFault)] =
+      (fault_checker_t){pwrmgr_fault_checker, pwrmgr_inst_name, we_check};
+
+  checkers[dt_rstmgr_alert_to_alert_id(
+      kRstmgrDt, kDtRstmgrAlertFatalCnstyFault)] = (fault_checker_t){
+      rstmgr_fault_checker, rstmgr_inst_name, rst_cnsty_check};
+  checkers[dt_rstmgr_alert_to_alert_id(kRstmgrDt, kDtRstmgrAlertFatalFault)] =
+      (fault_checker_t){rstmgr_fault_checker, rstmgr_inst_name, we_check};
+
+  checkers[dt_rv_core_ibex_alert_to_alert_id(
+      kRvCoreIbexDt, kDtRvCoreIbexAlertFatalSwErr)] = (fault_checker_t){
+      rv_core_ibex_fault_checker, rv_core_ibex_inst_name, sw_alert_check};
+  checkers[dt_rv_core_ibex_alert_to_alert_id(
+      kRvCoreIbexDt, kDtRvCoreIbexAlertFatalHwErr)] = (fault_checker_t){
+      rv_core_ibex_fault_checker, rv_core_ibex_inst_name, we_check};
+
+  checkers[dt_rv_dm_alert_to_alert_id((dt_rv_dm_t)0, kDtRvDmAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, rv_dm_inst_name, we_check};
+  static_assert(kDtRvDmCount >= 1, "This test needs an RV DM");
+
+  checkers[dt_rv_plic_alert_to_alert_id(kRvPlicDt, kDtRvPlicAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, rv_plic_inst_name, we_check};
+
+  checkers[dt_rv_timer_alert_to_alert_id((dt_rv_timer_t)0,
+                                         kDtRvTimerAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, rv_timer_inst_name, we_check};
+  static_assert(kDtRvTimerCount >= 1, "This test needs a RV Timer");
+
+  checkers[dt_spi_device_alert_to_alert_id((dt_spi_device_t)0,
+                                           kDtSpiDeviceAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, spi_device_inst_name, we_check};
+  static_assert(kDtSpiDeviceCount >= 1, "This test needs a SPI Device");
+
+  checkers[dt_spi_host_alert_to_alert_id((dt_spi_host_t)0,
+                                         kDtSpiHostAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, spi_host0_inst_name, we_check};
+  static_assert(kDtSpiHostCount >= 1, "This test needs at leasst 1 SPI Host");
+
+  checkers[dt_sram_ctrl_alert_to_alert_id(
+      kSramCtrlMainDt, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
+      sram_ctrl_main_fault_checker, sram_ctrl_main_inst_name, we_check};
+  checkers[dt_sram_ctrl_alert_to_alert_id(
+      kSramCtrlRetAonDt, kDtSramCtrlAlertFatalError)] = (fault_checker_t){
+      sram_ctrl_ret_fault_checker, sram_ctrl_ret_inst_name, we_check};
+
+  checkers[dt_uart_alert_to_alert_id((dt_uart_t)0, kDtUartAlertFatalFault)] =
+      (fault_checker_t){trivial_fault_checker, uart0_inst_name, we_check};
+  static_assert(kDtUartCount >= 1, "This test needs at least 1 UART instance");
+}
+
+/**
+ * Execute the all_escalations_reset_test.
  */
 static void execute_test(const dif_aon_timer_t *aon_timer) {
   alert_handler_config();
 
+  fault_checker_t fault_checkers[kDtAlertCount] = {{NULL, NULL, NULL}};
+  init_fault_checkers((fault_checker_t *)fault_checkers);
+
   // Select the fault_checker function, depending on kExpectedAlertNumber.
-  switch (kExpectedAlertNumber) {
-    case kTopEarlgreyAlertIdAdcCtrlAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, adc_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdAesFatalFault: {
-      fault_checker_t fc = {aes_fault_checker, aes_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdAonTimerAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, aon_timer_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdClkmgrAonFatalFault: {
-      fault_checker_t fc = {clkmgr_fault_checker, clkmgr_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdCsrngFatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, csrng_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdEdn0FatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, edn0_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdEdn1FatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, edn1_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdEntropySrcFatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, entropy_src_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalErr: {
-      fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
-                            flash_fatal_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalStdErr: {
-      fault_checker_t fc = {flash_ctrl_fault_checker, flash_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert: {
-      fault_checker_t fc = {flash_ctrl_prim_fault_checker, flash_ctrl_inst_name,
-                            flash_fatal_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdGpioFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, gpio_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdHmacFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, hmac_inst_name, we_check};
-      // TODO(#14518)
-      LOG_INFO("Expected alert %d hmac fault check is yet unimplemented",
-               kExpectedAlertNumber);
-      /*
-        fault_checker = {hmac_fault_checker, hmac_inst, we_check};
-      */
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdI2c0FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, i2c0_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdI2c1FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, i2c1_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdI2c2FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, i2c2_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdKeymgrFatalFaultErr: {
-      fault_checker_t fc = {trivial_fault_checker, keymgr_inst_name, we_check};
-      // TODO(#14518)
-      LOG_INFO("Expected alert %d keymgr fault check is yet unimplemented",
-               kExpectedAlertNumber);
-      /*
-        fault_checker = keymgr_fault_checker;
-      */
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdKmacFatalFaultErr: {
-      fault_checker_t fc = {kmac_fault_checker, kmac_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    // TODO add mechanism to inject kTopEarlgreyAlertIdLcCtrlFatalProgError by
-    // forcing otp_prog_err_o from lc_ctrl_fsm
-    case kTopEarlgreyAlertIdLcCtrlFatalStateError: {
-      fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name,
-                            sparse_fsm_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdLcCtrlFatalBusIntegError: {
-      fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdOtbnFatal: {
-      fault_checker_t fc = {trivial_fault_checker, otbn_inst_name, we_check};
-      // TODO(#14518)
-      LOG_INFO("Expected alert %d otbn fault check is yet unimplemented",
-               kExpectedAlertNumber);
-      /*
-        fault_checker = otbn_fault_checker;
-      */
-      fault_checker = fc;
-    } break;
-      // TODO add mechanism to inject:
-      // forcing otp_prog_err_o from lc_ctrl_fsm and
-      // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
-      // alerts, and corresponding CSR bit to check.
-    case kTopEarlgreyAlertIdOtpCtrlFatalMacroError: {
-      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
-                            sparse_fsm_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert: {
-      fault_checker_t fc = {otp_ctrl_prim_fault_checker, otp_ctrl_inst_name,
-                            sparse_fsm_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalCheckError: {
-      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
-                            sparse_fsm_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError: {
-      fault_checker_t fc = {otp_ctrl_fault_checker, otp_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdPattgenFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, pattgen_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdPinmuxAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, pinmux_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdPwmAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, pwm_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdPwrmgrAonFatalFault: {
-      fault_checker_t fc = {pwrmgr_fault_checker, pwrmgr_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRomCtrlFatal: {
-      fault_checker_t fc = {rom_ctrl_fault_checker, rom_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault: {
-      fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name,
-                            rst_cnsty_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRstmgrAonFatalFault: {
-      fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRvCoreIbexFatalSwErr: {
-      fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
-                            sw_alert_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRvCoreIbexFatalHwErr: {
-      fault_checker_t fc = {rv_core_ibex_fault_checker, rv_core_ibex_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRvDmFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, rv_dm_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRvPlicFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, rv_plic_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdRvTimerFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, rv_timer_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSensorCtrlAonFatalAlert: {
-      fault_checker_t fc = {trivial_fault_checker, sensor_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSpiDeviceFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, spi_device_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSpiHost0FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, spi_host0_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSpiHost1FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, spi_host1_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSramCtrlMainFatalError: {
-      fault_checker_t fc = {sram_ctrl_main_fault_checker,
-                            sram_ctrl_main_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSramCtrlRetAonFatalError: {
-      fault_checker_t fc = {sram_ctrl_ret_fault_checker,
-                            sram_ctrl_ret_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdSysrstCtrlAonFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, sysrst_ctrl_inst_name,
-                            we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdUart0FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart0_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdUart1FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart1_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdUart2FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart2_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdUart3FatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, uart3_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    case kTopEarlgreyAlertIdUsbdevFatalFault: {
-      fault_checker_t fc = {trivial_fault_checker, usbdev_inst_name, we_check};
-      fault_checker = fc;
-    } break;
-    default: {
-      LOG_ERROR("Unexpected fault");
-    }
+  CHECK(kExpectedAlertNumber < kDtAlertCount,
+        "Expected alert number larger than the number of alerts?");
+  fault_checker_t fc = fault_checkers[kExpectedAlertNumber];
+  if (fc.function == NULL || fc.ip_inst == NULL || fc.type == NULL) {
+    LOG_ERROR("Unexpected fault");
+  } else {
+    fault_checker = fc;
   }
+
   // Save the fault_checker to flash.
   save_fault_checker(&fault_checker);
 
@@ -1026,21 +1128,26 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
 
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdRvCoreIbexFatalSwErr) {
+  if (kExpectedAlertNumber ==
+      dt_rv_core_ibex_alert_to_alert_id(kRvCoreIbexDt,
+                                        kDtRvCoreIbexAlertFatalSwErr)) {
     CHECK_DIF_OK(dif_rv_core_ibex_trigger_sw_fatal_err_alert(&rv_core_ibex));
     LOG_INFO("Software fatal alert triggered");
   }
 
   // OTP ecc macro error test requires otp to read backdoor injected error
   // macro.
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError) {
+  if (kExpectedAlertNumber == dt_otp_ctrl_alert_to_alert_id(
+                                  kOtpCtrlDt, kDtOtpCtrlAlertFatalMacroError)) {
     CHECK_DIF_OK(
         dif_otp_ctrl_dai_read_start(&otp_ctrl, kDifOtpCtrlPartitionHwCfg0, 0));
     LOG_INFO("OTP_CTRL error inject done");
   }
 
+#if defined(OPENTITAN_IS_EARLGREY)
   // FlashCtrlFatalErr test requires host read request.
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalErr) {
+  if (kExpectedAlertNumber == dt_flash_ctrl_alert_to_alert_id(
+                                  kFlashCtrlDt, kDtFlashCtrlAlertFatalErr)) {
     enum {
       kNumTestWords = 16,
       kNumTestBytes = kNumTestWords * sizeof(uint32_t),
@@ -1048,14 +1155,22 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     uint32_t host_data[kNumTestWords];
     // Send host request to trigger host grant from flash_ctrl.
     mmio_region_memcpy_from_mmio32(
-        mmio_region_from_addr(TOP_EARLGREY_EFLASH_BASE_ADDR),
+        mmio_region_from_addr(
+            dt_flash_ctrl_reg_block(kFlashCtrlDt, kDtFlashCtrlRegBlockMem)),
         FLASH_CTRL_PARAM_BYTES_PER_BANK, &host_data, kNumTestBytes);
   }
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have a Flash Controller
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
 
   IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
   LOG_INFO("Alert IRQ seen");
 
-  if (kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlRetAonFatalError) {
+  if (kExpectedAlertNumber ==
+      dt_sram_ctrl_alert_to_alert_id(kSramCtrlRetAonDt,
+                                     kDtSramCtrlAlertFatalError)) {
     LOG_INFO("Check that the retention SRAM blocks accesses");
     uint32_t data = *((uint32_t *)kSramRetStart);
     LOG_INFO("Read from address 0x%0x with expected error gets 0x%x",
@@ -1102,19 +1217,29 @@ void check_alert_dump(void) {
 }
 
 bool test_main(void) {
+  // Retrieve the SRAM Ret Start address from the DT
+  kSramRetStart =
+      dt_sram_ctrl_reg_block(kDtSramCtrlRetAon, kDtSramCtrlRegBlockRam);
+
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
   init_peripherals();
 
+  ret_sram_testutils_init();
+
   // Enable all the interrupts used in this test.
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
+      &plic, kPlicTarget,
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWkupTimerExpired),
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWdogTimerBark));
+  rv_plic_testutils_irq_range_enable(
+      &plic, kPlicTarget,
+      dt_alert_handler_irq_to_plic_id(kAlertHandlerDt,
+                                      kDtAlertHandlerIrqClassa),
+      dt_alert_handler_irq_to_plic_id(kAlertHandlerDt,
+                                      kDtAlertHandlerIrqClassd));
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -1160,15 +1285,25 @@ bool test_main(void) {
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
 
+#if defined(OPENTITAN_IS_EARLGREY)
     // ISRs should not run if flash_ctrl or sram_ctrl_main get a fault because
     // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
     // state, otp_fatal alerts tha will trigger LC to escalate, the lc_ctrl
     // blocks the CPU.
-    if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalMacroError ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdOtpCtrlFatalCheckError) {
+    if (kExpectedAlertNumber ==
+            dt_flash_ctrl_alert_to_alert_id(kFlashCtrlDt,
+                                            kDtFlashCtrlAlertFatalStdErr) ||
+        kExpectedAlertNumber ==
+            dt_sram_ctrl_alert_to_alert_id(kSramCtrlMainDt,
+                                           kDtSramCtrlAlertFatalError) ||
+        kExpectedAlertNumber == dt_lc_ctrl_alert_to_alert_id(
+                                    kLcCtrlDt, kDtLcCtrlAlertFatalStateError) ||
+        kExpectedAlertNumber ==
+            dt_otp_ctrl_alert_to_alert_id(kOtpCtrlDt,
+                                          kDtOtpCtrlAlertFatalMacroError) ||
+        kExpectedAlertNumber ==
+            dt_otp_ctrl_alert_to_alert_id(kOtpCtrlDt,
+                                          kDtOtpCtrlAlertFatalCheckError)) {
       CHECK(interrupt_count == 0,
             "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
             "state, or sram_ctrl_main faults");
@@ -1179,6 +1314,34 @@ bool test_main(void) {
       CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
       CHECK(nmi_count > 0, "Expected at least one nmi");
     }
+#elif defined(OPENTITAN_IS_DARJEELING)
+    // ISRs should not run if sram_ctrl_main gets a fault because sram accesses
+    // are blocked in that cases. For lc_ctrl fatal state, otp_fatal alerts that
+    // will trigger LC to escalate, the lc_ctrl blocks the CPU.
+    if (kExpectedAlertNumber ==
+            dt_sram_ctrl_alert_to_alert_id(kSramCtrlMainDt,
+                                           kDtSramCtrlAlertFatalError) ||
+        kExpectedAlertNumber == dt_lc_ctrl_alert_to_alert_id(
+                                    kLcCtrlDt, kDtLcCtrlAlertFatalStateError) ||
+        kExpectedAlertNumber ==
+            dt_otp_ctrl_alert_to_alert_id(kOtpCtrlDt,
+                                          kDtOtpCtrlAlertFatalMacroError) ||
+        kExpectedAlertNumber ==
+            dt_otp_ctrl_alert_to_alert_id(kOtpCtrlDt,
+                                          kDtOtpCtrlAlertFatalCheckError)) {
+      CHECK(interrupt_count == 0,
+            "Expected regular ISR should not run for lc_ctrl fatal state, "
+            "or sram_ctrl_main faults");
+      CHECK(nmi_count == 0,
+            "Expected nmi should not run for lc_ctrl fatal state, or "
+            "sram_ctrl_main faults");
+    } else {
+      CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
+      CHECK(nmi_count > 0, "Expected at least one nmi");
+    }
+#else
+#error "all_escalation_resets_test does not support this top"
+#endif
 
     // Check the alert handler cause is cleared.
     bool is_cause = true;

@@ -62,6 +62,8 @@ bool test_main(void) {
 
   init_units();
 
+  ret_sram_testutils_init();
+
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
                                      kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,

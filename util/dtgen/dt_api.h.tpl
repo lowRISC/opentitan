@@ -78,6 +78,11 @@ dt_instance_id_t dt_plic_id_to_instance_id(dt_plic_irq_id_t irq);
  */
 typedef ${top_name.as_snake_case()}_alert_id_t dt_alert_id_t;
 
+/** Number of alerts. */
+enum {
+  kDtAlertCount = ${top_name.as_c_enum()}AlertIdLast + 1,
+};
+
 /**
  * Get the instance ID for a given alert ID.
  *
