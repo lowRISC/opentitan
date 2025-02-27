@@ -114,6 +114,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       default:   input_item.item_type = AES_CFG;
     endcase
 
+    cov_if.cg_ctrl_gcm_reg_sample(get_field_val(ral.ctrl_gcm_shadowed.phase, wdata));
+
     input_item.data_len = get_field_val(ral.ctrl_gcm_shadowed.num_valid_bytes, wdata);
   endfunction
 

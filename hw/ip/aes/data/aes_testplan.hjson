@@ -204,9 +204,8 @@ covergroups: [
            Further more it covers that also illegal values have been tested.
            Individual control settings that are covered include:
            - phase (all phases including illegal values)
-           - restore after init/aad/text
+           - restore after init
            - save after aad/text
-           - num_valid_bytes (all valid numbers from 1 to 16 for the last AAD and last TEXT block, all invalid values)
            '''
     }
     {
