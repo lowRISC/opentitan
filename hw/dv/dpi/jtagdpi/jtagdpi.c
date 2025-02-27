@@ -116,9 +116,9 @@ static void update_jtag_signals(struct jtagdpi_ctx *ctx) {
     // JTAG read
     act_send_resp = true;
   } else if (cmd == 'B') {
-    // printf("%s: BLINK ON!\n", ctx->display_name);
+    // printf("BLINK ON!\n");
   } else if (cmd == 'b') {
-    // printf("%s: BLINK OFF!\n", ctx->display_name);
+    // printf("BLINK OFF!\n");
   } else if (cmd == 'Q') {
     // quit (client disconnect)
     act_quit = true;
