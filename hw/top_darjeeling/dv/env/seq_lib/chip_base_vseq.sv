@@ -167,10 +167,10 @@ class chip_base_vseq #(
     if (otp_clear_secret2) begin
         otp_clear_secret2_partition(cfg.mem_bkdr_util_h[Otp]);
     end
-// TODO: introduce secret3 partition clearing!
-//    if (otp_clear_secret3) begin
-//        otp_clear_secret3_partition(cfg.mem_bkdr_util_h[Otp]);
-//    end
+    // TODO(#26288): introduce secret3 partition clearing!
+    // if (otp_clear_secret3) begin
+    //   otp_clear_secret3_partition(cfg.mem_bkdr_util_h[Otp]);
+    // end
 
     initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
