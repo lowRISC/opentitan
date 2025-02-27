@@ -71,6 +71,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
       // Wait until the DUT is idle. This is required to provide key and IV.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       // Provide key, IV and data.
+      cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
       write_data_key_iv(cfg_item, cfg_item, 1, cfg_item.manual_op, 0, 0, rst_set);
       if (cfg_item.manual_op && !rst_set) trigger();
       if (cfg_item.manual_op && !rst_set) trigger();
@@ -93,6 +94,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
         if (item_cnt == save_restore_item) begin
           `uvm_info(`gfn, $sformatf("Saving AES-GCM state before processing item %d",
                                     item_cnt), UVM_MEDIUM)
+          cov_if.cg_ctrl_gcm_reg_sample(GCM_SAVE);
           set_gcm_phase(GCM_SAVE, 16, 0);
           if (cfg_item.manual_op) trigger();
           // Save the current AES-GCM context.
@@ -111,12 +113,14 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           `uvm_info(`gfn, $sformatf("Restoring AES-GCM state before processing item %d",
                                     item_cnt), UVM_MEDIUM)
           // Reconfigure the initial IV and the key.
+          cov_if.cg_ctrl_gcm_reg_sample(GCM_INIT);
           write_data_key_iv(cfg_item_restored_iv, data_item, 1, cfg_item.manual_op,
                             0, 0, rst_set);
           if (cfg_item.manual_op) trigger();
           if (cfg_item.manual_op) trigger();
 
           // Restore the saved AES-GCM context.
+          cov_if.cg_ctrl_gcm_reg_sample(GCM_RESTORE);
           set_gcm_phase(GCM_RESTORE, 16, 1);
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(saved_gcm_state, do_b2b);
@@ -136,6 +140,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
             // Configure AAD phase as this is either the first AAD block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+            cov_if.cg_ctrl_gcm_reg_sample(GCM_AAD);
             set_gcm_phase(GCM_AAD, valid_bytes, 0);
             new_aad = 0;
           end
@@ -149,6 +154,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
             // Configure TEXT phase as this is either the first plaintext block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+            cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
             set_gcm_phase(GCM_TEXT, valid_bytes, 0);
             new_aad = 0;
           end
@@ -160,6 +166,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           // Add input and output data block to message.
           msg.add_data_item(data_item);
         end else if (data_item.item_type == AES_GCM_TAG) begin
+          cov_if.cg_ctrl_gcm_reg_sample(GCM_TAG);
           set_gcm_phase(GCM_TAG, 16, 0);
           csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
           add_data(data_item.data_in, do_b2b);
