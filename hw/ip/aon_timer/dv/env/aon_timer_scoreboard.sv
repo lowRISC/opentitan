@@ -90,6 +90,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   // Model the timers and interrupts for WKUP/WDOG and compare them against the actual values
   // the task doesn't return
   extern virtual task check_interrupt();
+  // Whenever the WKUP or WDOG counters are enabled we recalculate the count in case the count had
+  // changed since last time the counter was enabled
+  extern task recalculate_num_cycles(timers_e tmr);
   // This tasks runs forever and it calculates the  number of clock cycles until an interrupt is
   // raised. The number of clock cycles is stored in variables wkup_num and wdog_bark/bite_num.
   // The WKUP timer takes the prescaler into consideration when it comes to calculating clock cycles
@@ -747,10 +750,14 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
       end
     end
     "wkup_ctrl": begin
+      bit current_enable;
       `uvm_info(`gfn, "ACCESSING Wkup_ctrl", UVM_DEBUG)
       prescaler = get_reg_fld_mirror_value(ral, csr.get_name(), "prescaler");
       wkup_en   = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
-      if (data_phase_write) wkup_num_update_due = 1;
+      csr_rd(.ptr(ral.wkup_ctrl.enable), .value(current_enable), .backdoor(1));
+      // Only trigger recalculation if enable was unset before this write
+      if (wkup_en && (wkup_en != current_enable) && addr_phase_write)
+        recalculate_num_cycles(WKUP);
       if (cfg.en_cov) begin
         bit [1:0] intr_test_mv = `gmv(ral.intr_test);
         cov.intr_test_cg.sample(WKUP, intr_test_mv[WKUP],
@@ -790,9 +797,14 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
         update_wkup_thold_hi_timely();
     end
     "wdog_ctrl": begin
+      bit current_enable;
       `uvm_info(`gfn, "Accessing Wdog_ctrl", UVM_DEBUG)
       wdog_en = get_reg_fld_mirror_value(ral, csr.get_name(), "enable");
       wdog_pause_in_sleep = get_reg_fld_mirror_value(ral, csr.get_name(), "pause_in_sleep");
+      csr_rd(.ptr(ral.wdog_ctrl.enable), .value(current_enable), .backdoor(1));
+      // Only trigger recalculation if enable was unset before this write
+      if (wdog_en && (current_enable != wdog_en) && addr_phase_write)
+        recalculate_num_cycles(WDOG);
       if (cfg.en_cov) begin
         bit [1:0] intr_test_mv = `gmv(ral.intr_test);
         cov.intr_test_cg.sample(WDOG, intr_test_mv[WDOG],
@@ -851,6 +863,10 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
     end
   endcase // case (csr.get_name())
 
+  // Unset flag at the end of the read phase
+  if (csr.get_name() == "intr_state" && data_phase_read)
+    ongoing_intr_state_read = 0;
+
   // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
   if (data_phase_read) begin
     if (do_read_check) begin
@@ -880,6 +896,32 @@ task aon_timer_scoreboard::check_interrupt();
     join
   end
 endtask : check_interrupt
+
+task aon_timer_scoreboard::recalculate_num_cycles(timers_e tmr);
+  fork
+    begin
+      if (tmr == WDOG) begin
+        wait_for_wdog_enable_matching(.enable(1));
+        // Recalculate wdog_count. This is because it's possible WDOG timer  is disabled mid-way
+        // through (before wdog_count > thold) and re-enabled at a later point without writing a
+        // new count value. TB does a backdoor read to ensure count calculations are up to date.
+        csr_rd(.ptr(ral.wdog_count), .value(wdog_count), .backdoor(1));
+        wdog_num_update_due = 1;
+      end
+      else if (tmr == WKUP) begin
+        wait_for_wkup_enable_matching(.enable(1));
+        // Recalculate wkup_count. This is because it's possible WKUP timer  is disabled mid-way
+        // through (before wkup_count > thold) and re-enabled at a later point without writing a
+        // new count value. TB does a backdoor read to ensure count calculations are up to date.
+        csr_rd(.ptr(ral.wkup_count_lo), .value(wkup_count[31:0]),  .backdoor(1));
+        csr_rd(.ptr(ral.wkup_count_hi), .value(wkup_count[63:32]), .backdoor(1));
+        wkup_num_update_due = 1;
+      end
+      else
+        `uvm_fatal(`gfn, $sformatf("Incorrect timer type passed (%0s)", tmr.name()))
+    end
+  join_none
+endtask
 
 task aon_timer_scoreboard::compute_num_clks();
   fork
@@ -963,11 +1005,13 @@ task aon_timer_scoreboard::collect_wkup_timer_coverage(event sample_coverage);
 endtask : collect_wkup_timer_coverage
 
 task aon_timer_scoreboard::run_wkup_timer();
+  bit   predicting_interrupt;
   forever begin
     wait (cfg.clk_rst_vif.rst_n === 1);
     wait_for_wkup_enable_matching(.enable(1));
     `uvm_info(`gfn, "WKUP ctrl.enable signal is set", UVM_DEBUG)
 
+    predicting_interrupt = 0;
     fork
       begin
         // trying to count how many cycles we need to count
@@ -989,12 +1033,17 @@ task aon_timer_scoreboard::run_wkup_timer();
                                     count, wkup_num), UVM_DEBUG)
           -> sample_wkup_timer_coverage;
         end
-        wait_for_wkup_enable_matching(.enable(1));
-        `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
 
-        // Interrupt should happen N+1 clock ticks after count == wkup_num.
-        // Orignal delay:
-        cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
+        // If prescaler is 0, the wkup_incr signal will be high the moment count >= threshold
+        // Otherwise, there will be 'prescaler' clock cycles before we set wkup_incr. And if
+        // the timer is disabled before then the interrupt won't fire.
+        // predicting_interrupt = 1 blocks the thread from being killed if the counter get's disabled.
+        cfg.aon_clk_rst_vif.wait_clks(prescaler);
+        cfg.aon_clk_rst_vif.wait_clks(1);
+        wait_for_wkup_enable_matching(.enable(1));
+        predicting_interrupt = 1;
+
+        `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
 
         // Using a local interrupt flag in case 'intr_status_exp[WKUP]' changes
         // due to TL-UL accesses
@@ -1044,11 +1093,24 @@ task aon_timer_scoreboard::run_wkup_timer();
         `uvm_info(`gfn, $sformatf("WKUP Timer checks passed."), UVM_HIGH)
       end
       begin
-        wait (!wkup_en || !cfg.aon_clk_rst_vif.rst_n);
-        `uvm_info(`gfn, $sformatf("WKUP Timer disabled, quit scoring"), UVM_HIGH)
+        wait (cfg.aon_clk_rst_vif.rst_n);
         wkup_en = 0;
-        wait_for_wkup_enable_matching(.enable(0));
+        fork
+          begin : iso_fork
+            fork
+              // If Reset occurs, exit inmediately don't  block for another AON clock tick
+              wait_for_wkup_enable_matching(.enable(0));
+              wait (cfg.aon_clk_rst_vif.rst_n==0);
+            join_any
+            disable fork;
+          end : iso_fork
+        join
+
         `uvm_info(`gfn, $sformatf("WKUP Timer disabled, quit scoring"), UVM_HIGH)
+        // Only delay the killing of the thread if there's an interrupt to be predicted
+        // and reset isn't active
+        cfg.clk_rst_vif.wait_clks(1);
+        wait (predicting_interrupt==0 || !cfg.aon_clk_rst_vif.rst_n);
       end
     join_any
     disable fork;
@@ -1109,6 +1171,7 @@ function void aon_timer_scoreboard::check_intr_state_bit(timers_e timer_type, bi
   bit pred_q[$];
 
   return_pred_intr_q(timer_type, pred_q);
+  `uvm_info(`gfn, $sformatf("Comparing 'intr_state.%0s'", timer_type.name), UVM_DEBUG)
   `DV_CHECK_CASE_EQ(pred_q[0], // Comparing against the oldes predicted value
                     actual_value)
 
@@ -1161,8 +1224,13 @@ task aon_timer_scoreboard::run_wdog_bark_timer();
                                     count, wdog_bark_num), UVM_HIGH)
           -> sample_wdog_bark_timer_coverage;
         end
-
+        // Wait until negedge to see if enable stays high a whole tick, otherwise
+        // the interrupt won't propagate
+        cfg.aon_clk_rst_vif.wait_n_clks(1);
         wait_for_wdog_enable_matching(.enable(1));
+        // If the enable becomes unset after this time the prediction needs to finish
+        predicting_interrupt = 1;
+
         `uvm_info(`gfn, $sformatf("WDOG Bark Timer expired check for interrupts"), UVM_HIGH)
         `uvm_info(`gfn, "Setting 'intr_status_exp[WDOG]'", UVM_DEBUG)
         intr_status_exp[WDOG] = 1'b1;
@@ -1173,8 +1241,6 @@ task aon_timer_scoreboard::run_wdog_bark_timer();
         -> sample_wdog_bark_timer_coverage;
         // Propagation delay of one cycle from aon_core to interrupt pins.
         cfg.aon_clk_rst_vif.wait_clks(1);
-        // If the enable becomes unset at this time the prediction needs to finish
-        predicting_interrupt = 1;
 
         // Using flag to predict the interrupt
         local_interrupt = intr_status_exp[WDOG];
@@ -1250,8 +1316,17 @@ task aon_timer_scoreboard::run_wdog_bark_timer();
       end
       begin
         wait (cfg.aon_clk_rst_vif.rst_n);
-        wait_for_wdog_enable_matching(.enable(0));
-        `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
+        fork
+          begin : iso_fork
+            fork
+              // If Reset occurs, exit inmediately don't  block for another AON clock tick
+              wait_for_wdog_enable_matching(.enable(0));
+              wait (cfg.aon_clk_rst_vif.rst_n==0);
+            join_any
+            disable fork;
+          end : iso_fork
+        join
+        `uvm_info(`gfn, $sformatf("%m - WDOG Timer disabled, quit scoring"), UVM_HIGH)
         // Waiting a sys clock to see if the interrupt will propagate after the module
         // just got disabled
         cfg.clk_rst_vif.wait_clks(1);
@@ -1267,8 +1342,8 @@ task aon_timer_scoreboard::wait_for_wdog_enable_matching(bit enable);
   bit local_enable;
   do begin
     csr_rd(.ptr(ral.wdog_ctrl.enable), .value(local_enable), .backdoor(1));
-    `uvm_info(`gfn, $sformatf("[backdoor read] : WDOG_CTRL.enable = 0x%0x",local_enable),
-              UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("[backdoor read] : WDOG_CTRL.enable = 0x%0x - matching against = %0d",
+                              local_enable, enable), UVM_DEBUG)
     if (local_enable != enable)
       cfg.aon_clk_rst_vif.wait_clks(1);
   end
@@ -1300,9 +1375,11 @@ task aon_timer_scoreboard::collect_wdog_bite_timer_coverage(event sample_coverag
 endtask : collect_wdog_bite_timer_coverage
 
 task aon_timer_scoreboard::run_wdog_bite_timer();
+  bit   predicting_interrupt;
   forever begin
     wait_for_wdog_enable_matching(.enable(1));
     `uvm_info(`gfn, "WDOG ctrl.enable signal is set", UVM_DEBUG)
+    predicting_interrupt = 0;
     fork
       begin
         // trying to count how many cycles we need to count
@@ -1310,7 +1387,6 @@ task aon_timer_scoreboard::run_wdog_bite_timer();
 
         wdog_count_ev.wait_ptrigger();
         `uvm_info(`gfn, "Start WDOG - bite timer UVM event 'wdog_count_ev' Received", UVM_DEBUG)
-        `uvm_info(`gfn, "Start WDOG - bark Start to count", UVM_DEBUG)
         -> sample_wdog_bite_timer_coverage;
         // Need to check for sleep input before the loop in case the count >= thold already
         wait_for_sleep();
@@ -1330,6 +1406,8 @@ task aon_timer_scoreboard::run_wdog_bite_timer();
 
         // Propagation delay of one cycle from aon_core to interrupt pins.
         cfg.aon_clk_rst_vif.wait_clks(1);
+        wait_for_wdog_enable_matching(.enable(1));
+        predicting_interrupt = 1;
         // Wait a further 5 clocks for the interrupt to propagate through logic in the clk domain
         // to become visible on the top-level pins.
         cfg.clk_rst_vif.wait_clks(5);
@@ -1337,13 +1415,26 @@ task aon_timer_scoreboard::run_wdog_bite_timer();
         `DV_CHECK_CASE_EQ(wdog_rst_req_exp,
                           cfg.aon_intr_vif.sample_pin(.idx(0)))
         `uvm_info(`gfn,$sformatf("WDOG INTR Bite: %d", wdog_rst_req_exp), UVM_HIGH)
+        predicting_interrupt = 0;
       end
       begin
-        wait (!wdog_en || !cfg.aon_clk_rst_vif.rst_n);
+        wait (cfg.aon_clk_rst_vif.rst_n);
+        fork
+          begin : iso_fork
+            fork
+              // If Reset occurs, exit inmediately don't  block for another AON clock tick
+              wait_for_wdog_enable_matching(.enable(0));
+              wait (cfg.aon_clk_rst_vif.rst_n==0);
+            join_any
+            disable fork;
+          end : iso_fork
+        join
+        `uvm_info(`gfn, $sformatf("%m - WDOG Timer disabled, quit scoring"), UVM_HIGH)
+        // Waiting a sys clock to see if the interrupt will propagate after the module
+        // just got disabled
+        cfg.clk_rst_vif.wait_clks(1);
+        wait (predicting_interrupt==0 || !cfg.aon_clk_rst_vif.rst_n);
         wdog_en = 0;
-
-        wait_for_wdog_enable_matching(.enable(0));
-        `uvm_info(`gfn, $sformatf("WDOG Timer disabled, quit scoring"), UVM_HIGH)
       end
     join_any
     disable fork;
