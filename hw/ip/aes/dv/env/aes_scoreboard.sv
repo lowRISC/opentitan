@@ -658,7 +658,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
 
         if (msg.aes_mode == AES_GCM) begin
-          in_aad = msg.input_aad;
+          in_aad = msg.aad_length == 0 ? {'0} : msg.input_aad;
           out_tag = msg.output_tag;
         end else begin
           // All modes except GCM do not take an AAD as an input. Just pass '0
