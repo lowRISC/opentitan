@@ -209,6 +209,17 @@ covergroups: [
            '''
     }
     {
+     name: gcm_len_cg
+     desc: '''
+           Covers that, when in AES-GCM mode, different sized AAD and TEXT blocks have
+           been tested. This includes:
+           - enc / dec
+           - zero sized AAD block
+           - Full and partial AAD / TEXT blocks
+           - Single and multiple AAD / TEXT blocks
+           '''
+    }
+    {
      name: ctrl_aux_cg
      desc: '''
            Covers when enabled a complete write forces a reseed.
