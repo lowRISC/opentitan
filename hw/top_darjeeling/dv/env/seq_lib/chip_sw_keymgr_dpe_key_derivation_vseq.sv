@@ -394,7 +394,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
           cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::OwnerSeedOffset + i * 4);
     end
     `uvm_fatal(`gfn, "OTP Secret3 key required")
-    // TODO: #26288 - Secret3 present only in Darjeeling.
+    // TODO(#26288): Secret3 present only in Darjeeling.
     //for (int i = 0; i < otp_ctrl_reg_pkg::OwnerSeedSize / 8; i++) begin
     //  otp_owner_seed[i * 64 +: 64] =
     //      otp_scrambler_pkg::descramble_data(otp_owner_seed[i * 64 +: 64],
