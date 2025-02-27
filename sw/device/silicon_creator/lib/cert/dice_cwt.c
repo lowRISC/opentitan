@@ -200,6 +200,15 @@ rom_error_t dice_uds_tbs_cert_build(
       .pub_key_ec_y = (uint8_t *)uds_pubkey->y,
       .pub_key_ec_y_size = sizeof(uds_pubkey->y),
   };
+  // For DICE CWT implementation, no need to sign UDS_Pub but just a COSE_Key
+  // structure.
+  // Those otp_*measurement parameters exist just for API alignment between
+  // different implementations.
+  OT_DISCARD(otp_creator_sw_cfg_measurement);
+  OT_DISCARD(otp_owner_sw_cfg_measurement);
+  OT_DISCARD(otp_rot_creator_auth_codesign_measurement);
+  OT_DISCARD(otp_rot_creator_auth_state_measurement);
+  OT_DISCARD(key_ids);
   HARDENED_RETURN_IF_ERROR(
       cwt_cose_key_build(&cwt_cose_key_params, tbs_cert, tbs_cert_size));
 
