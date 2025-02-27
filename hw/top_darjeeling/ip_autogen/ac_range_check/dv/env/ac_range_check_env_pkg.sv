@@ -41,6 +41,17 @@ package ac_range_check_env_pkg;
     bit [15:0] read_perm;
   } racl_policy_t;
 
+  typedef struct packed {
+    bit                 rand_write;
+    bit                 write;
+    bit                 rand_addr;
+    bit [AddrWidth-1:0] addr;
+    bit                 rand_mask;
+    bit [MaskWidth-1:0] mask;
+    bit                 rand_data;
+    bit [DataWidth-1:0] data;
+  } tl_main_vars_t;
+
   typedef enum bit [1:0] {
     AddrRead  = 0,
     AddrWrite = 1,
