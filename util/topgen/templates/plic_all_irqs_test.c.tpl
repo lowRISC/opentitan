@@ -4,6 +4,16 @@
 // clang-format off
 ${gencmd}
 <%
+
+## TODO: Darjeeling contains peripherals which expose IRQs/Alerts to the RV
+## PLIC and Alert Handler respectively, but are not accessible from the hart
+## address space and thus cannot be tested directly (via the IRQ_TEST and
+## ALERT_TEST registers). While this issue remains, we specifically hard-code
+## for excluding these IRQs from the test.
+IGNORE_PERIPHERALS = [("ac_range_check", "darjeeling"), ("racl_ctrl", "darjeeling")]
+irq_peripherals = [p for p in helper.irq_peripherals[addr_space]
+                   if (p.inst_name, top["name"]) not in IGNORE_PERIPHERALS]
+
 ## Get unique module names (not instance names) and the associated masks
 ## determining interrupt type and default behavior. The helper list is
 ## already sorted, so no need to sort it again here.
@@ -11,7 +21,7 @@ known_names = {}
 irq_peripheral_names = []
 status_default_masks = []
 status_type_masks = []
-for p in helper.irq_peripherals[addr_space]:
+for p in irq_peripherals:
   if p.name not in known_names:
     known_names.update({p.name: 1})
     irq_peripheral_names.append(p.name)
@@ -45,7 +55,7 @@ def args(p):
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
-#include "sw/device/lib/dif/dif_${n}.h"
+#include "sw/device/lib/dif/autogen/dif_${n}_autogen.h"
 % endfor
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
@@ -57,7 +67,7 @@ def args(p):
 
 #include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
 
-% for p in helper.irq_peripherals[addr_space]:
+% for p in irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
@@ -116,7 +126,7 @@ void ottf_external_isr(uint32_t *exc_info) {
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-% for p in helper.irq_peripherals[addr_space]:
+% for p in irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
   indent = " " * len(p.name)
@@ -185,7 +195,7 @@ ${indent}                           ${p.plic_start_irq});
 static void peripherals_init(void) {
   mmio_region_t base_addr;
 
-  % for p in helper.irq_peripherals[addr_space]:
+  % for p in irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
@@ -203,7 +213,7 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  % for p in helper.irq_peripherals[addr_space]:
+  % for p in irq_peripherals:
 <%
   indent = ""
   i = irq_peripheral_names.index(p.name)
@@ -244,7 +254,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
   % endfor
-  % for p in helper.irq_peripherals[addr_space]:
+  % for p in irq_peripherals:
 <%
   if p.name == "aon_timer": continue
   i = irq_peripheral_names.index(p.name)
@@ -291,7 +301,7 @@ static void peripheral_irqs_trigger(void) {
   // in the clang linter. This statement waives that error.
   (void)status_default_mask;
 
-  % for p in helper.irq_peripherals[addr_space]:
+  % for p in irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
