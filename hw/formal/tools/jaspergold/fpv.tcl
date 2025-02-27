@@ -70,7 +70,7 @@ if {[info exists ::env(AFTER_LOAD)]} {
     set flist $env(AFTER_LOAD)
     foreach file $flist {
         if {$file != ""} {
-            puts "Running prefix TCL command from $env(AFTER_LOAD)"
+            puts "Running prefix TCL command from $file"
             source $file
         }
     }
