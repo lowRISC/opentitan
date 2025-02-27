@@ -8,6 +8,7 @@
 
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/template.h"
 #include "sw/device/silicon_creator/lib/cert/tpm_ek.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -38,29 +39,26 @@ rom_error_t tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *tpm_ek_pubkey,
                                   uint8_t *tpm_ek_tbs,
                                   size_t *tpm_ek_tbs_size) {
-  static_assert(kTpmEkExactAuthKeyKeyIdSizeBytes == kCertKeyIdSizeInBytes,
-                "Invalid variable size.");
-  static_assert(
-      kTpmEkExactTpmEkPubKeyEcXSizeBytes == kEcdsaP256PublicKeyCoordBytes,
-      "Invalid variable size.");
-  static_assert(
-      kTpmEkExactTpmEkPubKeyEcYSizeBytes == kEcdsaP256PublicKeyCoordBytes,
-      "Invalid variable size.");
-  static_assert(kTpmEkExactTpmEkPubKeyIdSizeBytes == kCertKeyIdSizeInBytes,
-                "Invalid variable size.");
+  // We initialize these strings with character arrays (as opposed to the more
+  // readable string literal) as we need them to be non-null terminated.
+  // Additionally, they are not declared `const` as the TBS cert generator does
+  // not accept const params.
+  static char tpm_version[] = {'0', '.', '0', '.', '1'};
+  static char tpm_vendor[] = {'N', 'u', 'v', 'o', 't', 'o', 'n'};
+  static char tpm_model[] = {'T', 'i', '5', '0'};
 
-  tpm_ek_tbs_values_t tpm_ek_tbs_params = {
-      .auth_key_key_id = (unsigned char *)key_ids->endorsement,
-      .tpm_ek_pub_key_ec_x = (unsigned char *)tpm_ek_pubkey->x,
-      .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
-      .tpm_ek_pub_key_id = (unsigned char *)key_ids->cert,
-      .tpm_version = "0.0.1",
-      .tpm_version_len = 5,
-      .tpm_vendor = "Nuvoton",
-      .tpm_vendor_len = 7,
-      .tpm_model = "Ti50",
-      .tpm_model_len = 4,
-  };
+  tpm_ek_tbs_values_t tpm_ek_tbs_params = {0};
+
+  TEMPLATE_SET(tpm_ek_tbs_params, TpmEk, TpmEkPubKeyEcX, tpm_ek_pubkey->x);
+  TEMPLATE_SET(tpm_ek_tbs_params, TpmEk, TpmEkPubKeyEcY, tpm_ek_pubkey->y);
+  TEMPLATE_SET(tpm_ek_tbs_params, TpmEk, TpmVersion, tpm_version);
+  TEMPLATE_SET(tpm_ek_tbs_params, TpmEk, TpmVendor, tpm_vendor);
+  TEMPLATE_SET(tpm_ek_tbs_params, TpmEk, TpmModel, tpm_model);
+
+  TEMPLATE_SET_TRUNCATED(tpm_ek_tbs_params, TpmEk, AuthKeyKeyId,
+                         key_ids->endorsement->digest, kCertKeyIdSizeInBytes);
+  TEMPLATE_SET_TRUNCATED(tpm_ek_tbs_params, TpmEk, TpmEkPubKeyId,
+                         key_ids->cert->digest, kCertKeyIdSizeInBytes);
 
   HARDENED_RETURN_IF_ERROR(
       tpm_ek_build_tbs(&tpm_ek_tbs_params, tpm_ek_tbs, tpm_ek_tbs_size));
