@@ -199,7 +199,6 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   // turn on read/write/earse permissions until we need them.
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSecret, cfg);
 
-  ownership_seal_init();
   // We don't want to abort ownership setup if we fail to
   // read the INFO pages, so we discard the error result.
   if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
