@@ -150,33 +150,42 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
     )?;
 
+    let tmpl_name = tmpl.name.to_upper_camel_case();
+
     // Create constants for the variable size range.
     source_h.push_str("enum {\n");
     for (var_name, var_type) in tbs_vars.iter().chain(sig_vars.iter()) {
-        // Only consider variables whose size can vary, ie pointers.
         let (codegen, _) = c_variable_info(var_name, "", var_type);
-        if let VariableCodegenInfo::Pointer { .. } = codegen {
-            let tmpl_name = tmpl.name.to_upper_camel_case();
-            let const_name = var_name.to_upper_camel_case();
+        let const_name = var_name.to_upper_camel_case();
+        let (min_size, max_size) = if let VariableCodegenInfo::Pointer { .. } = codegen {
             let (min_size, max_size) = var_type.array_size();
-            writeln!(
-                source_h,
-                "k{tmpl_name}Min{const_name}SizeBytes = {min_size},"
-            )?;
-            writeln!(
-                source_h,
-                "k{tmpl_name}Max{const_name}SizeBytes = {max_size},"
-            )?;
-
             if var_type.has_constant_array_size() {
                 writeln!(
                     source_h,
                     "k{tmpl_name}Exact{const_name}SizeBytes = {max_size},"
                 )?;
             }
-        }
+            (min_size, max_size)
+        } else {
+            // Arbitrary range to hold scalars.
+            (1, 100)
+        };
+        writeln!(
+            source_h,
+            "k{tmpl_name}Min{const_name}SizeBytes = {min_size},"
+        )?;
+        writeln!(
+            source_h,
+            "k{tmpl_name}Max{const_name}SizeBytes = {max_size},"
+        )?;
     }
     source_h.push_str("};\n");
+
+    // Create field name mapping.
+    for (var_name, _) in tbs_vars.iter().chain(sig_vars.iter()) {
+        let const_name = var_name.to_upper_camel_case();
+        writeln!(source_h, "#define k{tmpl_name}Field{const_name} {var_name}")?;
+    }
 
     let max_cert_size_const_name = format!("k{}MaxCertSizeBytes", tmpl.name.to_upper_camel_case());
     source_h.push_str("// Maximum possible size of a certificate\n");

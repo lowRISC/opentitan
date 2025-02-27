@@ -129,6 +129,7 @@ cc_library(
     hdrs = ["dice.h"],
     deps = [
         ":cert",
+        ":template",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
@@ -203,6 +204,7 @@ cc_library(
     hdrs = ["tpm.h"],
     deps = [
         ":cert",
+        ":template",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
