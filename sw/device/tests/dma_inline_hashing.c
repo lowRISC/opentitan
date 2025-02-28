@@ -57,7 +57,9 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 
 /**
- * Enable the interrupts required by this test.
+ * Enable the interrupts required by this test; the test is not expected to
+ * raise an Error interrupt, but enable and respond to this as a contingency
+ * so that we can report a failure promptly rather than timing out.
  */
 static void init_interrupts(void) {
   irq_global_ctrl(false);
@@ -73,11 +75,17 @@ static void init_interrupts(void) {
   // - set prio > 0
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
       &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaDone, kHart, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaError, kHart, kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
       &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaDone, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &rv_plic, kTopDarjeelingPlicIrqIdDmaDmaError, kDifRvPlicMaxPriority));
   // Enable IRQs at the peripheral
   CHECK_DIF_OK(
       dif_dma_irq_set_enabled(&dma, kDifDmaIrqDmaDone, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_dma_irq_set_enabled(&dma, kDifDmaIrqDmaError, kDifToggleEnabled));
 
   irq_external_ctrl(true);
   irq_global_ctrl(true);
@@ -213,7 +221,11 @@ bool test_main(void) {
 
   dif_dma_transaction_address_t dest_transaction_address;
   // Decide where to transfer the second transfer the data to
-  if (rand_testutils_gen32_range(0, 1) == 0) {
+  //
+  // TODO: The build system does not map the `.ctn_data` section to the CTN
+  //       address space presently, so we must use the OT internal memory.
+  // if (rand_testutils_gen32_range(0, 1) == 0) {
+  if (true) {
     // OT internal memory
     dest_transaction_address = (dif_dma_transaction_address_t){
         .address = (uint32_t)&target_ot_internal_data[0],
@@ -225,7 +237,7 @@ bool test_main(void) {
         .asid = kDifDmaSoCControlRegisterBus};
   }
 
-  // We only check the digest. If thats valid, we assume the correct data to be
+  // We only check the digest. If that's valid, we assume the correct data to be
   // transferred
   CHECK_ARRAYS_EQ((uint8_t *)digest, (uint8_t *)kShaDigestExpData, digest_len);
 
@@ -233,6 +245,8 @@ bool test_main(void) {
       .source = {.address = (uint32_t)&received_data[0],
                  .asid = kDifDmaOpentitanInternalBus},
       .destination = dest_transaction_address,
+      .src_config = {.wrap = false, .increment = true},
+      .dst_config = {.wrap = false, .increment = true},
       .total_size = TX_SIZE,
       .chunk_size = TX_SIZE,
       .width = transfer_width};
