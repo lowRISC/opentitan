@@ -17,12 +17,8 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   // Various knobs to enable certain routines
   bit do_ac_range_check_init = 1'b1;
 
-  // Randomized variables
-  rand tl_main_vars_t  tl_main_vars;
-  rand bit [TL_DW-1:0] range_base[NUM_RANGES];  // Granularity is 32-bit words, 2-LSBs are ignored
-  rand bit [TL_DW-1:0] range_limit[NUM_RANGES]; // Granularity is 32-bit words, 2-LSBs are ignored
-  rand range_perm_t    range_perm[NUM_RANGES];
-  rand racl_policy_t   range_racl_policy[NUM_RANGES];
+  // Configuration variables
+  rand ac_range_check_dut_cfg dut_cfg;
 
   // Constraints
   extern constraint tl_main_vars_c;
@@ -44,14 +40,15 @@ endclass : ac_range_check_base_vseq
 
 
 constraint ac_range_check_base_vseq::tl_main_vars_c {
-  soft tl_main_vars.rand_write == 1;
-  soft tl_main_vars.rand_addr  == 1;
-  soft tl_main_vars.rand_mask  == 1;
-  soft tl_main_vars.rand_data  == 1;
+  soft dut_cfg.tl_main_vars.rand_write == 1;
+  soft dut_cfg.tl_main_vars.rand_addr  == 1;
+  soft dut_cfg.tl_main_vars.rand_mask  == 1;
+  soft dut_cfg.tl_main_vars.rand_data  == 1;
 }
 
 function ac_range_check_base_vseq::new(string name="");
   super.new(name);
+  dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 endfunction : new
 
 task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
@@ -81,15 +78,15 @@ endtask : ac_range_check_init
 
 // Only update registers whose value does not match the new one (usage of set+update instead write)
 task ac_range_check_base_vseq::cfg_range_base();
-  foreach (range_base[i]) begin
-    ral.range_base[i].set(range_base[i]);
+  foreach (dut_cfg.range_base[i]) begin
+    ral.range_base[i].set(dut_cfg.range_base[i]);
     csr_update(.csr(ral.range_base[i]));
   end
 endtask : cfg_range_base
 
 task ac_range_check_base_vseq::cfg_range_limit();
-  foreach (range_limit[i]) begin
-    ral.range_limit[i].set(range_limit[i]);
+  foreach (dut_cfg.range_limit[i]) begin
+    ral.range_limit[i].set(dut_cfg.range_limit[i]);
     csr_update(.csr(ral.range_limit[i]));
   end
 endtask : cfg_range_limit
