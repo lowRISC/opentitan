@@ -35,7 +35,6 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_pinmux_t pinmux;
 static dif_sysrst_ctrl_t sysrst_ctrl;
-static dif_flash_ctrl_state_t flash;
 static dif_gpio_t gpio;
 
 enum {
@@ -205,12 +204,9 @@ bool test_main(void) {
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   // In DV, we use flash backdoor writes to store the phase.
-  if (kDeviceType == kDeviceSimDV) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
-  }
   // On real devices, we cannot store it in RAM since the wakeup will erase
   // it so use three pins to read the test phase.
-  else {
+  if (kDeviceType != kDeviceSimDV) {
     CHECK_DIF_OK(dif_pinmux_input_select(
         &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0,
         kTopEarlgreyPinmuxInselIob0));

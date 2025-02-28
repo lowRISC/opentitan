@@ -18,8 +18,6 @@
 
 #include "flash_ctrl_regs.h"  // Generated
 
-static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
-
 #define MODULE_ID MAKE_MODULE_ID('f', 'c', 't')
 
 status_t flash_ctrl_testutils_wait_for_init(
@@ -296,21 +294,6 @@ status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
   TRY(dif_flash_ctrl_set_bank_erase_enablement(flash_state, bank,
                                                bank_erase_enabled));
   return OK_STATUS();
-}
-
-status_t flash_ctrl_testutils_backdoor_init(
-    dif_flash_ctrl_state_t *flash_state) {
-  TRY(dif_flash_ctrl_init_state(flash_state,
-                                mmio_region_from_addr(dt_flash_ctrl_reg_block(
-                                    kFlashCtrlDt, kDtFlashCtrlRegBlockCore))));
-
-  return flash_ctrl_testutils_default_region_access(flash_state,
-                                                    /*rd_en*/ true,
-                                                    /*prog_en*/ true,
-                                                    /*erase_en*/ true,
-                                                    /*scramble_en*/ false,
-                                                    /*ecc_en*/ false,
-                                                    /*he_en*/ false);
 }
 
 static void flash_ctrl_testutils_flush_read_buffers(void) {

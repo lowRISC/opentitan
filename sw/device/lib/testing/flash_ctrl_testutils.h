@@ -238,17 +238,6 @@ enum {
 };
 
 /**
- * Init the backdoor API, it should be called before
- * `flash_ctrl_testutils_backdoor_wait_update`.
- *
- * @param flash_state A flash_ctrl handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-status_t flash_ctrl_testutils_backdoor_init(
-    dif_flash_ctrl_state_t *flash_state);
-
-/**
  * This detects changes in a specific byte in flash memory contents with a
  * timeout. In some cases the party updating it uses a backdoor overwrite,
  * so this code flushes the read buffers since the backdoor API has no
