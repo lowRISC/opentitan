@@ -18,6 +18,8 @@ set -euo pipefail
 : "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
+: ${HOST_ARCH:=$(uname -m)}
+
 LINE_SEP="====================================================================="
 
 ################################################################################
@@ -143,10 +145,10 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     //... \
     @remote_java_tools//... \
     @remote_java_tools_linux//... \
-    @bindgen_clang_linux//... \
+    @bindgen_clang_linux_${HOST_ARCH}//... \
     @rules_rust_bindgen__bindgen-0.65.1//... \
     @go_sdk//... \
-    @lowrisc_rv32imcb_files//... \
+    @lowrisc_rv32imcb_${HOST_ARCH}_files//... \
     @local_config_cc_toolchains//... \
     @local_config_platform//... \
     @local_config_sh//... \

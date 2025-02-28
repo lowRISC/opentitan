@@ -41,3 +41,8 @@ host_tools_transition = transition(
         "//hw/bitstream/universal:env",
     ],
 )
+
+HOST_ARCHS = [
+    "x86_64",
+    "aarch64",
+]

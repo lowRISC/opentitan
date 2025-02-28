@@ -4,6 +4,7 @@
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules:host_cpu.bzl", "get_host_cpu")
 
 def _certificate_codegen_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
@@ -70,7 +71,7 @@ certificate_codegen = rule(
     attrs = {
         "template": attr.label(allow_single_file = True, doc = "path to the hjson template file"),
         "clang_format": attr.label(
-            default = "@lowrisc_rv32imcb_files//:bin/clang-format",
+            default = "@lowrisc_rv32imcb_{}_files//:bin/clang-format".format(get_host_cpu()),
             allow_single_file = True,
             cfg = "host",
             executable = True,
