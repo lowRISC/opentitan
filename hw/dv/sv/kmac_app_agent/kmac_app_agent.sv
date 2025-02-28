@@ -58,7 +58,8 @@ class kmac_app_agent extends dv_base_agent #(
     m_data_push_agent.monitor.analysis_port.connect(monitor.data_fifo.analysis_export);
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
+  // TODO MVy: I think an agent is not supposed to have a run phase, this is an issue
+  virtual task run_main();
     if (cfg.is_active) begin
       kmac_app_device_seq m_seq = kmac_app_device_seq::type_id::create("m_seq", this);
       if (cfg.if_mode == dv_utils_pkg::Device && cfg.start_default_device_seq) begin
@@ -66,7 +67,7 @@ class kmac_app_agent extends dv_base_agent #(
                                                {sequencer.get_full_name(), ".run_phase"},
                                                "default_sequence",
                                                m_seq.get_type());
-        sequencer.start_phase_sequence(phase);
+        // sequencer.start_phase_sequence(phase);   // has been deprecated from UVM ref manual
       end
     end
   endtask

@@ -131,11 +131,15 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       m_tl_agents[i].monitor.a_chan_port.connect(scoreboard.tl_a_chan_fifos[i].analysis_export);
       m_tl_agents[i].monitor.d_chan_port.connect(scoreboard.tl_d_chan_fifos[i].analysis_export);
       m_tl_agents[i].monitor.channel_dir_port.connect(scoreboard.tl_dir_fifos[i].analysis_export);
+      // Connect reset status analysis port from the reset agent to the analysis port of this agent
+      rst_agt.reset_st_ap.connect(m_tl_agents[i].reset_st_exp);
     end
     foreach (cfg.list_of_alerts[i]) begin
       string alert_name = cfg.list_of_alerts[i];
       m_alert_agent[alert_name].monitor.alert_esc_port.connect(
           scoreboard.alert_fifos[alert_name].analysis_export);
+      // Connect reset status analysis port from the reset agent to the analysis port of this agent
+      rst_agt.reset_st_ap.connect(m_alert_agent[alert_name].reset_st_exp);
     end
 
     foreach (cfg.m_tl_agent_cfgs[i]) begin
@@ -155,6 +159,8 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
     foreach (m_edn_pull_agent[i]) begin
       m_edn_pull_agent[i].monitor.analysis_port.connect(scoreboard.edn_fifos[i].analysis_export);
+      // Connect reset status analysis port from the reset agent to the analysis port of this agent
+      rst_agt.reset_st_ap.connect(m_edn_pull_agent[i].reset_st_exp);
     end
   endfunction
 
