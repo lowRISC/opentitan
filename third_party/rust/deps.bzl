@@ -5,6 +5,7 @@
 load("@rules_rust//bindgen:repositories.bzl", "rust_bindgen_dependencies")
 load("@rules_rust//rust:repositories.bzl", "rules_rust_dependencies", "rust_register_toolchains", "rust_repository_set")
 load("@rules_rust//tools/rust_analyzer:deps.bzl", "rust_analyzer_dependencies")
+load("//rules:host.bzl", "HOST_ARCHS")
 
 def rust_deps():
     rules_rust_dependencies()
@@ -20,8 +21,9 @@ def rust_deps():
     )
 
     rust_bindgen_dependencies()
-    native.register_toolchains(
-        "//third_party/rust:bindgen_toolchain",
-    )
+    for host_arch in HOST_ARCHS:
+        native.register_toolchains(
+            "//third_party/rust:bindgen_toolchain_" + host_arch,
+        )
 
     rust_analyzer_dependencies()

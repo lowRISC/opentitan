@@ -13,7 +13,7 @@ use object::{Object, ObjectSection};
 use num_enum::TryFromPrimitive;
 
 use std::convert::TryFrom;
-use std::ffi::CString;
+use std::ffi::{c_char, CString};
 use std::path::PathBuf;
 
 pub use bindgen::status::absl_status_t as RawStatusCode;
@@ -57,7 +57,7 @@ fn status_create_safe(code: StatusCode, mod_id: u32, file: String, arg: i32) -> 
 
 // Convert an array of i8 to a string. This function will stop at first 0 (or at the
 // end of the array if it contains no zero).
-fn c_string_to_string(array: &[i8]) -> String {
+fn c_string_to_string(array: &[c_char]) -> String {
     let array = array
         .iter()
         .map(|c| *c as u8)
@@ -91,7 +91,7 @@ impl Status {
             //   to the english name of the error code,
             // - a non-null pointer to an integer (argument),
             // - a non-null pointer to a char[3] buffer that is filled with the module ID.
-            status_extract(status, &mut _code_str, &mut arg, &mut mod_id as *mut i8)
+            status_extract(status, &mut _code_str, &mut arg, &mut mod_id as *mut c_char)
         };
         let code = match is_err_status {
             false => StatusCode::Ok,

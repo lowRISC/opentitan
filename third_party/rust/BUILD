@@ -5,6 +5,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+load("//rules:host.bzl", "HOST_ARCHS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -19,23 +20,26 @@ string_flag(
     make_variable = "OPENSSL_PKG_CONFIG_PATH",
 )
 
-rust_bindgen_toolchain(
-    name = "bindgen_toolchain_impl",
+[rust_bindgen_toolchain(
+    name = "bindgen_toolchain_impl_" + host_arch,
     bindgen = "@rules_rust//bindgen/3rdparty:bindgen",
-    clang = "@bindgen_clang_linux//:clang",
-    libclang = "@bindgen_clang_linux//:libclang",
+    clang = "@bindgen_clang_linux_{}//:clang".format(host_arch),
+    libclang = "@bindgen_clang_linux_{}//:libclang".format(host_arch),
     libstdcxx = select({
         ":specify_bindgen_libstdcxx": "@bindgen_libstdcxx_linux//:libstdc++",
         "//conditions:default": None,
     }),
-    system_includes = "@bindgen_clang_linux//:system_includes",
-)
+    system_includes = "@bindgen_clang_linux_{}//:system_includes".format(host_arch),
+) for host_arch in HOST_ARCHS]
 
-toolchain(
-    name = "bindgen_toolchain",
-    toolchain = "bindgen_toolchain_impl",
+[toolchain(
+    name = "bindgen_toolchain_" + host_arch,
+    exec_compatible_with = [
+        "@platforms//cpu:" + host_arch,
+    ],
+    toolchain = "bindgen_toolchain_impl_" + host_arch,
     toolchain_type = "@rules_rust//bindgen:toolchain_type",
-)
+) for host_arch in HOST_ARCHS]
 
 crates_vendor(
     name = "crate_index",
