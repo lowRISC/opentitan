@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:mubi
       - lowrisc:prim:all
+      - lowrisc:prim:leading_one_ppc
       - lowrisc:systems:top_racl_pkg
       - lowrisc:prim:edge_detector
       - lowrisc:prim:onehot
