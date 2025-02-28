@@ -48,9 +48,11 @@ task aon_timer_alternating_enable_on_off_vseq::read_intr_and_clear();
   bit [1:0] intr_state_value;
   // Give some delay for interrupts to propagate
   cfg.aon_clk_rst_vif.wait_clks_or_rst($urandom_range(10, 15));
+  if (cfg.under_reset) return;
   wait (ral.intr_state.m_is_busy == 0);
   csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
   cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(1, 15));
+  if (cfg.under_reset) return;
   wait (ral.intr_state.m_is_busy == 0);
   csr_utils_pkg::csr_wr(ral.intr_state, intr_state_value);
   cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(5, 50));
@@ -70,13 +72,16 @@ task aon_timer_alternating_enable_on_off_vseq::body();
             wkup_init();
             wdog_init();
           join : counter_init
+          if (cfg.under_reset) break;
           fork : alternate_enable
             // Enable / disable each counter thread in parallel
             alternate_on_off(.wkup(1), .delay(wkup_count_gap));
             alternate_on_off(.wkup(0), .delay(wdog_count_gap));
           join  : alternate_enable
+          if (cfg.under_reset) break;
           // read intr_state in case there are interrupts and clear them:
           read_intr_and_clear();
+          if (cfg.under_reset) break;
           if (!this.randomize())
             `uvm_fatal(`gfn, "Randomization Failure")
         end
@@ -86,6 +91,7 @@ task aon_timer_alternating_enable_on_off_vseq::body();
          // Randomly write intr_state/test
          forever begin
            csr_utils_pkg::csr_wr(ral.intr_test, $random);
+           if (cfg.under_reset) break;
            if (counter_stim_done)
              break;
            cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(5, 50));
