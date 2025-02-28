@@ -53,13 +53,13 @@ block_level_urls = {
     "usb": "hw/ip/usbdev/dv/2024.01.22_11.14.22/",
     "high-speed-crossbar": "hw/top_earlgrey/ip/xbar_main/dv/autogen/2024.01.22_11.18.04/",
     "peripheral-crossbar": "hw/top_earlgrey/ip/xbar_peri/dv/autogen/2024.01.22_11.19.10/",
-    "ibex": "https://ibex.reports.lowrisc.org/opentitan/latest",
+    "ibex": "https://ibex.reports.lowrisc.org/opentitan/latest/report.json",
 }
 
 
-def parse_report(path: str) -> Tuple[int, int]:
+def parse_report(url: str) -> Tuple[int, int]:
     try:
-        with urlopen(f'https://reports.opentitan.org/{path}/report.json') as response:
+        with urlopen(url) as response:
             report = json.load(response)
     except HTTPError:
         # URL does not exist, there are no test runs yet for that
@@ -123,10 +123,18 @@ def main() -> None:
             block_output['design_stage'],
             block_output['verification_stage'],
         ) = parse_data_file(block['data_file']) if block['data_file'] else (None, None, None)
-        (
-            block_output['total_runs'],
-            block_output['total_passing'],
-        ) = parse_report(block_level_urls[name]) if block['report'] else (None, None)
+
+        if name in block_level_urls:
+            report_url = block_level_urls[name]
+            if not report_url.startswith("https://"):
+                report_url = f'https://reports.opentitan.org/{report_url}/report.json'
+            (
+                block_output['total_runs'],
+                block_output['total_passing'],
+            ) = parse_report(report_url)
+        else:
+            block_output['total_runs'] = None
+            block_output['total_passing'] = None
 
         output[name] = block_output
 
