@@ -41,8 +41,10 @@ endfunction : build_phase
 function void ac_range_check_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   if (cfg.en_scb) begin
-    tl_unfilt_agt.monitor.analysis_port.connect(scoreboard.tl_unfilt_fifo.analysis_export);
-    tl_filt_agt.monitor.analysis_port.connect(scoreboard.tl_filt_fifo.analysis_export);
+    tl_unfilt_agt.monitor.a_chan_port.connect(scoreboard.tl_unfilt_a_chan_fifo.analysis_export);
+    tl_unfilt_agt.monitor.d_chan_port.connect(scoreboard.tl_unfilt_d_chan_fifo.analysis_export);
+    tl_filt_agt.monitor.a_chan_port.connect(scoreboard.tl_filt_a_chan_fifo.analysis_export);
+    tl_filt_agt.monitor.d_chan_port.connect(scoreboard.tl_filt_d_chan_fifo.analysis_export);
   end
   if (cfg.is_active && cfg.tl_unfilt_agt_cfg.is_active) begin
     virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agt.sequencer;
