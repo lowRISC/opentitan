@@ -55,7 +55,7 @@ module soc_dbg_ctrl_decode #(
 
   logic valid_decoded, relocked_decoded;
   assign valid_decoded    = prim_mubi_pkg::mubi4_test_true_strict(valid);
-  assign relocked_decoded = prim_mubi_pkg::mubi4_test_false_strict(relocked);
+  assign relocked_decoded = prim_mubi_pkg::mubi4_test_true_strict(relocked);
 
   logic valid_rising;
   // Determine the rising edge of valid to latch the debug policy
