@@ -145,5 +145,20 @@
       stage: V2
       tests: ["gpio_stress_all"]
     }
+    {
+      name: straps_data
+      desc: '''Verify the straps data/valid ouput expected values based on the strap_en and gpio_i inputs:
+      - Drives gpio_i input with random values.
+      - Set the strap_en high for at least one clock cycle.
+      - Read the registers hw_straps_data_in and hw_straps_data_in_valid.
+      - The data read and sampled_straps_o will be checked in the scoreboard.
+      - Drive the gpio_o to make sure that has no impact on straps registers.
+      - Read to make sure that if does not affect the straps registers after drive the gpio_o.
+      - Apply reset and make sure the strap registers are clean.
+      - Read straps registers after reset.
+      - Iterate again the same flow, with new random values.'''
+      stage: V3
+      tests: ["gpio_rand_straps"]
+    }
   ]
 }

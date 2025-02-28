@@ -1,16 +1,33 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 class gpio_base_test extends cip_base_test #(
   .ENV_T(gpio_env),
   .CFG_T(gpio_env_cfg)
 );
   `uvm_component_utils(gpio_base_test)
-  `uvm_component_new
+
+  straps_vif m_straps_vif; // Virtual interface
+
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction
+
+  task reset_phase(uvm_phase phase);
+    phase.raise_objection(this);
+    // Initialize strap_en input
+    m_straps_vif.tb_if.strap_en = 0;
+    phase.drop_objection(this);
+  endtask
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", m_straps_vif)) begin
+      `uvm_fatal(`gfn, "Virtual interface straps_vif_inst is not set in the uvm_config_db")
+    end
   endfunction : build_phase
 
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+  endtask
 endclass : gpio_base_test
