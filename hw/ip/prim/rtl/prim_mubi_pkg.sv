@@ -37,6 +37,11 @@ package prim_mubi_pkg;
     return (val ? MuBi4True : MuBi4False);
   endfunction : mubi4_bool_to_mubi
 
+  // Convert a mubi input to a 1 bit output value
+  function automatic logic mubi4_to_bool(mubi4_t val);
+    return (val == MuBi4True);
+  endfunction : mubi4_to_bool
+
   // Test whether the multibit value signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
