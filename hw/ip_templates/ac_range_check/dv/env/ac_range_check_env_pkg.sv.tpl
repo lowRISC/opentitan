@@ -80,6 +80,7 @@ package ac_range_check_env_pkg;
   endfunction : get_csr_idx
 
   // Package sources
+  `include "ac_range_check_dut_cfg.sv"
   `include "ac_range_check_env_cfg.sv"
   `include "ac_range_check_env_cov.sv"
   `include "ac_range_check_virtual_sequencer.sv"
