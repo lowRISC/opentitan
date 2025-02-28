@@ -13,12 +13,8 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   // Various knobs to enable certain routines
   bit do_ac_range_check_init = 1'b1;
 
-  // Randomized variables
-  rand tl_main_vars_t  tl_main_vars;
-  rand bit [TL_DW-1:0] range_base[NUM_RANGES];  // Granularity is 32-bit words, 2-LSBs are ignored
-  rand bit [TL_DW-1:0] range_limit[NUM_RANGES]; // Granularity is 32-bit words, 2-LSBs are ignored
-  rand range_perm_t    range_perm[NUM_RANGES];
-  rand racl_policy_t   range_racl_policy[NUM_RANGES];
+  // Configuration variables
+  rand ac_range_check_dut_cfg dut_cfg;
 
   // Constraints
   extern constraint tl_main_vars_c;
@@ -42,14 +38,15 @@ endclass : ac_range_check_base_vseq
 // Keep the TL transactions randomized by default, this can be overridden easily by derived
 // sequences if needed as declared as soft constraints.
 constraint ac_range_check_base_vseq::tl_main_vars_c {
-  soft tl_main_vars.rand_write == 1;
-  soft tl_main_vars.rand_addr  == 1;
-  soft tl_main_vars.rand_mask  == 1;
-  soft tl_main_vars.rand_data  == 1;
+  soft dut_cfg.tl_main_vars.rand_write == 1;
+  soft dut_cfg.tl_main_vars.rand_addr  == 1;
+  soft dut_cfg.tl_main_vars.rand_mask  == 1;
+  soft dut_cfg.tl_main_vars.rand_data  == 1;
 }
 
 function ac_range_check_base_vseq::new(string name="");
   super.new(name);
+  dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 endfunction : new
 
 task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
@@ -70,35 +67,35 @@ task ac_range_check_base_vseq::ac_range_check_init();
 endtask : ac_range_check_init
 
 task ac_range_check_base_vseq::cfg_range_base();
-  foreach (range_base[i]) begin
-    ral.range_base[i].set(range_base[i]);
+  foreach (dut_cfg.range_base[i]) begin
+    ral.range_base[i].set(dut_cfg.range_base[i]);
     csr_update(.csr(ral.range_base[i]));
   end
 endtask : cfg_range_base
 
 task ac_range_check_base_vseq::cfg_range_limit();
-  foreach (range_limit[i]) begin
-    ral.range_limit[i].set(range_limit[i]);
+  foreach (dut_cfg.range_limit[i]) begin
+    ral.range_limit[i].set(dut_cfg.range_limit[i]);
     csr_update(.csr(ral.range_limit[i]));
   end
 endtask : cfg_range_limit
 
 task ac_range_check_base_vseq::cfg_range_perm();
-  foreach (range_perm[i]) begin
+  foreach (dut_cfg.range_perm[i]) begin
     ral.range_perm[i].set({
-      prim_mubi_pkg::mubi4_bool_to_mubi(range_perm[i].log_denied_access),
-      prim_mubi_pkg::mubi4_bool_to_mubi(range_perm[i].execute_access   ),
-      prim_mubi_pkg::mubi4_bool_to_mubi(range_perm[i].write_access     ),
-      prim_mubi_pkg::mubi4_bool_to_mubi(range_perm[i].read_access      ),
-      prim_mubi_pkg::mubi4_bool_to_mubi(range_perm[i].enable           )
+      prim_mubi_pkg::mubi4_bool_to_mubi(dut_cfg.range_perm[i].log_denied_access),
+      prim_mubi_pkg::mubi4_bool_to_mubi(dut_cfg.range_perm[i].execute_access   ),
+      prim_mubi_pkg::mubi4_bool_to_mubi(dut_cfg.range_perm[i].write_access     ),
+      prim_mubi_pkg::mubi4_bool_to_mubi(dut_cfg.range_perm[i].read_access      ),
+      prim_mubi_pkg::mubi4_bool_to_mubi(dut_cfg.range_perm[i].enable           )
     });
     csr_update(.csr(ral.range_perm[i]));
   end
 endtask : cfg_range_perm
 
 task ac_range_check_base_vseq::cfg_range_racl_policy();
-  foreach (range_racl_policy[i]) begin
-    ral.range_racl_policy_shadowed[i].set(range_racl_policy[i]);
+  foreach (dut_cfg.range_racl_policy[i]) begin
+    ral.range_racl_policy_shadowed[i].set(dut_cfg.range_racl_policy[i]);
     // Shodowed register: the 2 writes are automatcally managed by the csr_utils_pkg
     csr_update(.csr(ral.range_racl_policy_shadowed[i]));
   end
