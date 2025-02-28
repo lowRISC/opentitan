@@ -8,12 +8,15 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -86,9 +89,15 @@ static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET ==
  * Peripheral handles.
  */
 static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
+static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
+
+// ATE Indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 1;
 
 /**
  * Keymgr binding values.
@@ -173,6 +182,9 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
 OT_WEAK rom_error_t
 sku_creator_owner_init(boot_data_t *bootdata, owner_config_t *config,
                        owner_application_keyring_t *keyring) {
+  OT_DISCARD(bootdata);
+  OT_DISCARD(config);
+  OT_DISCARD(keyring);
   LOG_ERROR("No ownership initialization");
   return kErrorOk;
 }
@@ -216,10 +228,13 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+                      &pinmux));
   TRY(dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
                       &rstmgr));
   return OK_STATUS();
@@ -314,8 +329,10 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     // Wait for host the host generated RMA unlock token hash to arrive over the
     // console.
     LOG_INFO("Waiting For RMA Unlock Token Hash ...");
+    TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
     CHECK_STATUS_OK(
         UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
+    TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
                                          &token_hash));
@@ -472,7 +489,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Waiting for certificate inputs ...");
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
   memcpy(uds_endorsement_key_id.digest, certgen_inputs.dice_auth_key_key_id,
@@ -727,14 +746,17 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Exporting TBS certificates ...");
-
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, true));
   RESP_OK(ujson_serialize_perso_blob_t, uj, &perso_blob_to_host);
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, false));
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Importing endorsed certificates ...");
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
@@ -839,7 +861,10 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 }
 
 static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
-  return RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash);
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, true));
+  TRY(RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, hash));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, false));
+  return OK_STATUS();
 }
 
 /**
@@ -907,8 +932,20 @@ static status_t finalize_otp_partitions(void) {
   return OK_STATUS();
 }
 
+static status_t configure_ate_gpio_indicators(void) {
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+                               kTopEarlgreyPinmuxOutselGpioGpio0));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa6,
+                               kTopEarlgreyPinmuxOutselGpioGpio1));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first two GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
+  return OK_STATUS();
+}
+
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  pinmux_testutils_init(&pinmux);
+  CHECK_STATUS_OK(configure_ate_gpio_indicators());
   CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
   log_self_hash();

@@ -18,7 +18,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
@@ -56,11 +55,8 @@ static const int kSettleDelayMicros = 200;
 // Number of NMIs seen as a result of alerts firing.
 static size_t alert_nmi_count = 0;
 
-// OTP programming indicator GPIOs.
-static const dif_gpio_pin_t kGpioPinOtpDaiWaitHook = 0;
-static const dif_gpio_pin_t kGpioPinOtpDaiWriteHook = 1;
-static const dif_gpio_pin_t kGpioPinOtpDaiReadHook = 2;
-static const dif_gpio_pin_t kGpioPinOtpDaiErrorCheckHook = 3;
+// ATE Indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 1;
 
 /**
  * Handle NMIs from the alert escalation mechanism.
@@ -68,6 +64,7 @@ static const dif_gpio_pin_t kGpioPinOtpDaiErrorCheckHook = 3;
  * @param exc_info Execution info.
  */
 void ottf_external_nmi_handler(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
   LOG_INFO("Processing Alert NMI %d ...", alert_nmi_count++);
   ibex_clear_nmi(kIbexNmiSourceAlert);
 }
@@ -154,62 +151,13 @@ static status_t configure_all_alerts(void) {
   return OK_STATUS();
 }
 
-static status_t configure_gpio_indicators(void) {
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc9,
+static status_t configure_ate_gpio_indicators(void) {
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
                                kTopEarlgreyPinmuxOutselGpioGpio0));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc10,
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa6,
                                kTopEarlgreyPinmuxOutselGpioGpio1));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc11,
-                               kTopEarlgreyPinmuxOutselGpioGpio2));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc12,
-                               kTopEarlgreyPinmuxOutselGpioGpio3));
-  TRY(dif_gpio_output_set_enabled_all(&gpio, 0xF));  // Enable first 4 GPIOs.
-  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_wait_for_dai_pre_hook(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWaitHook, true));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_wait_for_dai_post_hook(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWaitHook, false));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_write_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWriteHook, true));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_write_post_hook(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWriteHook, false));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_read_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiReadHook, true));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_read_post_hook(const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiReadHook, false));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_write_pre_error_check_hook(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiErrorCheckHook, true));
-  return OK_STATUS();
-}
-
-status_t otp_ctrl_testutils_dai_write_post_error_check_hook(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiErrorCheckHook, false));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first two GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();
 }
 
@@ -268,9 +216,14 @@ static status_t patch_ast_config_value(void) {
  * all fields can be programmed until the personalization stage.
  */
 static status_t provision(ujson_t *uj) {
+  // Enable ATE GPIO indicators.
+  TRY(configure_ate_gpio_indicators());
+
   // Get host data.
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
+  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
   // Enable all alerts (and alert NMIs) if requested.
   if (in_data.enable_alerts) {
@@ -291,9 +244,6 @@ static status_t provision(ujson_t *uj) {
   if (in_data.patch_ast) {
     TRY(patch_ast_config_value());
   }
-
-  // Enable GPIO indicators during OTP writes.
-  TRY(configure_gpio_indicators());
 
   // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
