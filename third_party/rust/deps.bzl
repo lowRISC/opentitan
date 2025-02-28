@@ -19,9 +19,15 @@ def rust_deps():
         ],
     )
 
+    HOST_ARCHS = [
+        "x86_64",
+        "aarch64",
+    ]
+
     rust_bindgen_dependencies()
-    native.register_toolchains(
-        "//third_party/rust:bindgen_toolchain",
-    )
+    for host_arch in HOST_ARCHS:
+        native.register_toolchains(
+            "//third_party/rust:bindgen_toolchain_" + host_arch,
+        )
 
     rust_analyzer_dependencies()
