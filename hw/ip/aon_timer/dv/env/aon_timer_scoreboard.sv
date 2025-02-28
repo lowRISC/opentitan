@@ -963,7 +963,6 @@ task aon_timer_scoreboard::collect_wkup_timer_coverage(event sample_coverage);
 endtask : collect_wkup_timer_coverage
 
 task aon_timer_scoreboard::run_wkup_timer();
-  bit   wkup_enabled;
   forever begin
     wait (cfg.clk_rst_vif.rst_n === 1);
     wait_for_wkup_enable_matching(.enable(1));
@@ -975,8 +974,6 @@ task aon_timer_scoreboard::run_wkup_timer();
         uint count          = 0;
         bit local_interrupt = 0;
         bit local_intr_exp = 0;
-        bit cdc_reg_compared = 0;
-        bit [63:0] count_backdoor_value = 0;
 
         wkup_count_ev.wait_ptrigger();
         `uvm_info(`gfn, "Start WKUP timer UVM event 'wkup_count_ev' Received", UVM_DEBUG)
@@ -1143,9 +1140,6 @@ task aon_timer_scoreboard::run_wdog_bark_timer();
         uint count = 0;
         bit is_enabled  = 0;
         bit local_interrupt = 0;
-        bit cdc_reg_compared = 0;
-        bit [31:0] count_backdoor_value;
-        bit        wkup_cause_updated;
         // Used to ensure the correct value is passed to predict intr_state
         bit [1:0]  local_intr_exp;
         bit [1:0]  backdoor_intr_state;
