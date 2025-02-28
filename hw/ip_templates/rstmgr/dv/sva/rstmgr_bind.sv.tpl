@@ -54,39 +54,29 @@ module rstmgr_bind;
     .rst_sys_src_n(pwr_o.rst_sys_src_n)
   );
 
+<%
+ # Collect those resets outputs that have software resets, and list them in descending order
+ # within each concatentation.
+ sva_sw_rsts = [rst for rst in output_rsts if rst['sw']];
+%>\
   bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
     .clk_i({
-      clk_io_div4_i,
-      clk_io_div4_i,
-      clk_io_div4_i,
-      clk_aon_i,
-      clk_usb_i,
-      clk_io_div2_i,
-      clk_io_i,
-      clk_io_div4_i
+% for rst in range(len(sva_sw_rsts) - 1, -1, -1):
+      clk_${sva_sw_rsts[rst]['clock']}_i${',' if rst else ''}
+% endfor
     }),
     .rst_ni,
     .parent_rst_n(rst_sys_src_n[1]),
     .ctrl_ns(reg2hw.sw_rst_ctrl_n),
     .rst_ens({
-      rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.i2c0[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.usb_aon[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.usb[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.spi_host1[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.spi_host0[1] == prim_mubi_pkg::MuBi4True,
-      rst_en_o.spi_device[1] == prim_mubi_pkg::MuBi4True
+% for rst in range(len(sva_sw_rsts) - 1, -1, -1):
+      rst_en_o.${sva_sw_rsts[rst]['name']}[1] == prim_mubi_pkg::MuBi4True${',' if rst else ''}
+% endfor
     }),
     .rst_ns({
-      resets_o.rst_i2c2_n[1],
-      resets_o.rst_i2c1_n[1],
-      resets_o.rst_i2c0_n[1],
-      resets_o.rst_usb_aon_n[1],
-      resets_o.rst_usb_n[1],
-      resets_o.rst_spi_host1_n[1],
-      resets_o.rst_spi_host0_n[1],
-      resets_o.rst_spi_device_n[1]
+% for rst in range(len(sw_rsts) - 1, -1, -1):
+      resets_o.rst_${sva_sw_rsts[rst]['name']}_n[1]${',' if rst else ''}
+% endfor
     })
   );
 
