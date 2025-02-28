@@ -48,7 +48,7 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
       localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
-      localparam string PrimMemoryInitFile = (MemInitFile != "") ? MemInitFile : "none";
+      localparam string PrimMemoryInitFile = (MemInitFile != "") ? string'(MemInitFile) : "none";
 
       xpm_memory_spram #(
         .ADDR_WIDTH_A(Aw),
