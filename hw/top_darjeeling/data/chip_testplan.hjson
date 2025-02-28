@@ -1,0 +1,3006 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "chip"
+
+  // TODO: remove the common testplans if not applicable
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     // TODO #5484, comment these 2 lines out because spi host memory is dummy
+                     // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     // Integrity error is tested in a SW test.
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
+                     "hw/ip/tlul/data/tlul_testplan.hjson",
+                     "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
+                     "hw/top_darjeeling/data/chip_conn_testplan.hjson"]
+
+  testpoints: [
+    /////////////////////////////////////////////////////////////
+    // IO Peripherals                                          //
+    // UART, GPIO, I2C, SPIDEV, SPIHOST, PINMUX & PADCTRL, MBX //
+    /////////////////////////////////////////////////////////////
+
+    // UART (pre-verified IP) integration tests:
+    {
+      name: chip_sw_uart_tx_rx
+      desc: '''Verify transmission of data over the TX and RX port.
+
+            SW test sends a known payload over the TX port. The testbench, at the same time
+            sends a known payload over RX. On reception, both payloads are checked for integrity.
+            SW validates the reception of TX watermark, RX watermark, and the TX empty interrupts.
+            Choosing the max supported baud rate for the UART is sufficient.
+            '''
+      stage: V1
+      tests: ["chip_sw_uart_tx_rx"]
+      tags: ["gls"]
+    }
+    {
+      name: chip_sw_uart_rx_overflow
+      desc: '''Verify the RX overflow interrupt.
+
+            The testbench sends a random payload of size greater than the RX fifo size (32). The SW
+            ignores the received the data to allow the RX overflow interrupt to assert.
+            '''
+      stage: V1
+      tests: ["chip_sw_uart_tx_rx"]
+    }
+    {
+      name: chip_sw_uart_rand_baudrate
+      desc: '''Verify UART transmission of data at various speeds.
+
+            Randomly pick one of the UART instances and configure it to run with any of these baud
+            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
+
+            '''
+      stage: V1
+      tests: ["chip_sw_uart_rand_baudrate"]
+    }
+    {
+      name: chip_sw_uart_tx_rx_alt_clk_freq
+      desc: '''Verify the transmission of UART via using external clock as uart core clock.
+
+            Extend from chip_sw_uart_rand_baudrate with following added settings.
+            - Configure LC to RMA state, so that it allows clkmgr to use external clock.
+            - Configure clkmgr to select external clock.
+            - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
+              ext_clk_freq / 4 or ext_clk_freq / 2.
+            '''
+      stage: V1
+      tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
+    }
+
+    // GPIO (pre-verified IP) integration tests:
+    {
+      name: chip_sw_gpio_out
+      desc: '''Verify GPIO outputs.
+
+            SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
+            pins. The testbench checks the value for correctness and verifies that there is no
+            aliasing between the pins.
+            '''
+      stage: V1
+      tests: ["chip_sw_gpio"]
+    }
+    {
+      name: chip_sw_gpio_in
+      desc: '''Verify GPIO inputs.
+
+            The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
+            the pins. SW test ensures that the GPIO values read from the CSR is correct.
+            '''
+      stage: V1
+      tests: ["chip_sw_gpio"]
+    }
+    {
+      name: chip_sw_gpio_irq
+      desc: '''Verify GPIO interrupts.
+
+            The SW test configures the GPIOs to be in input mode and enables all of them to generate
+            an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
+            interrupt corresponding to the right pin is seen.
+            '''
+      stage: V1
+      tests: ["chip_sw_gpio"]
+    }
+
+    // SPI_DEVICE (pre-verified IP) integration tests:
+    {
+      name: chip_sw_spi_device_flash_mode
+      desc: '''Verify the SPI device in flash mode.
+
+            - SW puts the SPI device in flash mode
+            - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device
+              memory.
+            - Ensure the image is executed correctly
+            '''
+      stage: V2
+      tests: ["chip_sw_uart_tx_rx_bootstrap"]
+    }
+    {
+      name: chip_sw_spi_device_pass_through
+      desc: '''Verify the pass through mode from an end-to-end perspective.
+
+            - Configure the SPI device and host in pass through mode.
+            - Program the cmd_filter_* CSRs to filter out random commands.
+            - Configure and enable spi_host0
+            - Send a random flash commands over the SPI device interface (chip IOs) from the
+              testbench.
+            - Verify the flash commands which pass through spi_host0, are received on chip IOs.
+            - Verify that only the payloads that are not filtered show up on the SPI host interface
+              at chip IOs.
+            - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
+            - Run with single, dual and quad SPI modes.
+            - Testbench should test the following commands:
+            - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_device_pass_through"]
+    }
+
+    {
+      name: chip_sw_spi_device_pass_through_flash_model
+      desc: '''Verify the command filtering mechanism in passthrough mode.
+
+            - Extend the chip_spi_device_pass_through test.
+            - Connect with a real flash model on spi_host
+            - Verify that the flash commands are received and interpreted correctly in the flash
+              model
+            '''
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: chip_sw_spi_device_pass_through_collision
+      desc: '''Verify the collisions on driving spi_host is handled properly.
+
+            - Enable upload related interrupts and configure the spi_device in passthrough mode.
+            - Configure a command slot to enable upload for a flash program/erase command.
+            - Excecute two parallel threads:
+              1. SPI host agent.
+                - Send this command via an upstream SPI host agent, then the agent keeps sending
+                read_status to poll the busy bit.
+                - When the busy bit is low, issue a read command to read data from the downstream
+                  SPI port, and check data correctness.
+              2. A SW process.
+                - SW receives an upload interrupt and reads the command in the upload fifo to check.
+                - SW configures the SPI host that shows the same downstream port, to send the
+                  uploaded command to the downstream SPI port.
+                - SW clears busy bit to allow the upstream SPI host to proceed to the next command.
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_device_pass_through_collision"]
+    }
+    {
+      name: chip_sw_spi_device_tpm
+      desc: '''Verify the basic operation of the spi tpm mode.
+
+            - The testbench sends a known payload over the chip's SPI device tpm input port.
+            - The testbench sends a read command.
+            - The software test should playback the data received in the write command as the read
+              response.
+            - The testbench should check if the written and read data match.
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_device_tpm"]
+    }
+
+    {
+      name: chip_sw_spi_device_output_when_disabled_or_sleeping
+      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
+
+               SW needs to be able to set the SPI output value when spi_device is disabled or the
+               chip is sleeping, to either all-zeros or all-ones, depending on integration
+               requirements.  The following scenarios have to be verified:
+
+               After power-on reset:
+               - SW to configure pinmux retention logic so that the chip pins connected to
+                 spi_device outputs are (a) always zero or (b) always one (SW needs to be able to
+                 choose between a and b).
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Going to sleep:
+               - SW to disable spi_device, wait until CSb is high, configure pinmux retention logic
+                 as it would after POR, and put chip to sleep.
+               - DV environment to check that SPI outputs match configuration by SW.
+
+               Wake up from sleep:
+               - DV environment to wake chip from sleep.
+               - SW to enable spi_device and disable retention logic.
+               - DV environment to check that SPI transactions work as usual.
+             '''
+      stage: V3
+      tests: []
+    }
+
+    // SPI_HOST (pre-verified IP) integration tests:
+    {
+      name: chip_sw_spi_host_tx_rx
+      desc: '''Verify the transmission of data on the chip's SPI host port.
+
+            - Program the SPI host to send a known payload out of the chip on the SPI host ports.
+            - The testbench receives the payload and plays it back to the SPI host interface.
+            - The SW verifies the sent payload matches the read response and services SPI event
+              interrupts.
+            - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
+
+            Verify all SPI host instances in the chip.
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_host_tx_rx"]
+    }
+
+    // I2C (pre-verified IP) integration tests:
+    {
+      name: chip_sw_i2c_host_tx_rx
+      desc: '''Verify the transmission of data over the chip's I2C host interface.
+
+            - Program the I2C to be in host mode.
+            - The SW test writes a known payload over the chip's I2C host interface, which is
+              received by the testbench.
+            - The testbench then loops this data back to the chip's I2C host and exercises the
+              read interface.
+            - SW validates the reception of FMT watermark and trans complete interrupts.
+            - SW validates that the data read matches the original data written.
+            - Verify the virtual / true open drain capability.
+
+            Verify all instances of I2C in the chip.
+            '''
+      stage: V2
+      tests: ["chip_sw_i2c_host_tx_rx"]
+    }
+    {
+      name: chip_sw_i2c_device_tx_rx
+      desc: '''Verify the transmission of data over the chip's I2C device interface.
+
+            - Program the I2C to be in device mode.
+            - The testbench writes a known payload over the chip's I2C device interface, which is
+              received and verified by the SW test for correctness.
+            - The testbench reads and verifies a known payload over the chip's I2C device interface,
+            - SW validates the reception of tx empty and trans complete interrupts.
+            - Verify the virtual / true open drain capability.
+
+            Verify all instances of I2C in the chip.
+            '''
+      stage: V2
+      tests: ["chip_sw_i2c_device_tx_rx"]
+    }
+
+    // PINMUX & PADRING (pre-verified IP) integration tests:
+    {
+      name: chip_pin_mux
+      desc: '''Verify the MIO muxing at input and output sides.
+
+            - Enable `stub_cpu` mode.
+            - Add a forcing interface to pinmux's pad-facing DIO and MIO ports, including the output
+              enables; and a sampling interface for the peripheral facing DIO and MIO ports.
+            - Similarly, add a driving / sampling interface for all DIOs and MIOs at the chip pads.
+            - In the output direction:
+              - Program all MIO outsel and pad attribute registers to random values.
+              - Force the pad-facing pinmux MIO ports and output enables to random values.
+              - Verify all MIO pad values for correctness.
+            - For the input direction:
+              - Program all MIO insel and pad attribute registers to random values.
+              - Drive the MIO pads to random values.
+              - Probe and sample the peripheral facing MIO ports of the pinmux and verify the values
+                for correctness.
+            - Follow a similar testing procedure for DIOs.
+            '''
+      stage: V2
+      tests: ["chip_padctrl_attributes"]
+    }
+    {
+      name: chip_padctrl_attributes
+      desc: '''Verify pad attribute settings for all MIO and DIO pads.
+
+            - Follow the same procedure as the `chip_pin_mux` test, ensuring the padctrl attribute
+              registers for all MIOs and DIOs are also randomized when verifying the outcomes.
+            - Verify weak pull enable, output inversion and virtual open drain and drive strength
+              (bit 0) signaling in the output direction.
+            - Verify weak pull enable and input inversion in the input direction.
+            - Verify multiple pad attributes for each pad set at the same time through
+              randomization.
+
+            Cross-references the `chip_pin_mux` test.
+            '''
+      stage: V2
+      tests: ["chip_padctrl_attributes"]
+    }
+    {
+      name: chip_sw_sleep_pin_mio_dio_val
+      desc: '''Verify the MIO output values in any sleep states.
+
+            - Pick between normal sleep and deep sleep randomly
+            - Pick between tie-0, tie-1, or High-Z randomly for all muxed,
+              dedicated outputs coming from non-AON IPs.
+
+            SW programs the MIO OUTSEL CSRs to ensure that in sleep it randomly picks
+            between tie-0, tie-1 or hi-Z for all muxed outputs coming from non-AON IPs. If an AON
+            peripheral output is muxed, then that peripheral's output is selected to ensure in deep
+            sleep the peripheral can continue its signaling even in deep sleep. The testbench
+            verifies the correctness of the reflected values once the chip goes into deep sleep.
+            This is replicated for DIO pins as well.
+
+            In this test, passthrough feature is not tested.
+            '''
+      stage: V2
+      tests: ["chip_sw_sleep_pin_mio_dio_val"]
+    }
+    {
+      name: chip_sw_sleep_pin_wake
+      desc: '''Verify pin wake up from any sleep states.
+
+            Verify one of the 8 possible MIO or DIO pad inputs (randomly configured) can cause the
+            chip to wake up from sleep state. Verifying wake on posedge is sufficient for the chip
+            level integration testing. Upon wake up, SW reads the wake cause CSR to verify
+            correctness.
+
+            For V3, enhance this test to configure all wakeup detectors rather than configure only
+            one, then have the host randomly pick one of the IOs configured for wakeup in one of
+            those detectors. Also, randomize and test all wakeup modes and enable debounce filter.
+            '''
+      stage: V2
+      tests: ["chip_sw_sleep_pin_wake"]
+    }
+    {
+      name: chip_sw_sleep_pin_retention
+      desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
+
+            - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
+              1) and verify the correctless of the value on the chip IO.
+            - Program the pin's retention value during deep sleep to be opposite of the active power
+              value programmed in the previous step.
+            - Reuse an existing deep sleep / low power wake up test, such as
+              `chip_sw_sleep_pin_wake` test to enter low power.
+            - Once the chip enters the deep sleep state, verify that this pin holds the correct
+              retention value throughout the low power state.
+            - Wake up the chip from sleep using the chosen method.
+            - Verify the pin value at the chip IOs is no longer holding the retention value once the
+              chip is back in active power.
+            '''
+      stage: V2
+      tests: ["chip_sw_sleep_pin_retention"]
+    }
+    {
+      name: chip_sw_mbx_smoke
+      desc: '''Verify the mailbox integrations with a basic smoketest
+
+            - Random-cyclicly select a mailbox to perform a req-rsp transaction with
+            - TB(requester) writes a message into the imbx, then awaits a response
+            - sw(responder) awaits the request, reads it then replies with a modified version
+              of the original message
+            - TB checks if the received response is as-expected
+            - Requester randomly selects between an irq or polling-based handler
+            - Responder polls the peripheral to await transaction completed
+            - Repeat process for all mailboxes in the system
+            '''
+      stage: V2
+      tests: ["chip_sw_mbx_smoke"]
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // System Peripherals                                                               //
+    // XBAR, RV_DM, RV_TIMER, AON_TIMER, PLIC, CLK/RST/PWR MGR, ALERT_HANDLER, LC_CTRL, //
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // XBAR (pre-verified IP) tests:
+    {
+      name: chip_sw_data_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to integrity violations of load ops.
+
+            An SW test which performs the following on main and retention SRAMs to verify the memory
+            end-to-end integrity scheme:
+            - Corrupt a random data / integrity bit in the memory using SV force.
+            - SW reads that address and the corrupted data is sent to ibex.
+            - Verify that ibex detects the integrity violation and triggers an alert.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
+            '''
+      stage: V2
+      tests: ["chip_sw_data_integrity_escalation"]
+    }
+    {
+      name: chip_sw_instruction_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to integrity violations of instruction fetches.
+
+            An SW test which performs the following on main SRAM to verify the memory end-to-end
+            integrity scheme:
+            - Corrupt a data / integrity bit in a test function in the main SRAM using SV force.
+            - SW jumps to that test function in the main SRAM.
+            - Verify that ibex detects the integrity violation and triggers an alert.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
+            '''
+      stage: V2
+      tests: ["chip_sw_data_integrity_escalation"]
+    }
+
+    // RV_DM (JTAG) tests:
+    {
+      name: chip_jtag_csr_rw
+      desc: '''
+            Verify accessibility of all the CSRs in the chip over JTAG.
+
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+            - Write all CSRs via JTAG interface with a random value.
+            - Shuffle the list of CSRs yet again.
+            - Read all CSRs back and check their values for correctness while adhering to the CSR's
+              access policies.
+            - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
+            '''
+      stage: V2
+      tests: ["chip_jtag_csr_rw"]
+    }
+    {
+      name: chip_jtag_mem_access
+      desc: '''
+            Verify accessibility of all the memories in the chip over JTAG.
+
+            This test will target the following memories in the chip:
+              sram_main, sram_ret, otbn i|dmem, ROM
+
+            - Shuffle the list of memories first to remove the effect of ordering.
+            - Write a location in a randomly chosen set of addresses within each memory via JTAG
+              interface with random values.
+            - For read-only memories, preload the memory with random data via backdoor.
+            - Shuffle the list of memories again.
+            - Read the previously written addresses in the memories back again and check the read
+              value for correctness. Pick some random addresses to verify in case of read-only
+              memories.
+            '''
+      stage: V2
+      tests: ["chip_jtag_mem_access"]
+    }
+    {
+      name: chip_rv_dm_perform_debug
+      desc: '''
+            - X-ref'ed with rom_e2e_jtag_inject from rom testplan.
+            - X-ref'ed with chip_sw_flash_lc_iso_part_sw_wr_en.
+            - X-ref'ed with manuf_cp_device_info_flash_wr from manufacturing testplan.
+            - Using the sram injection mechanism from rom_e2e_jtag_inject, load a SRAM program that
+              writes to isolated flash partition while the device is in TEST_UNLOCKED state.
+            - After writing, verify that the test program cannot read back the written value.
+
+            '''
+      stage: V3
+      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
+              "rom_e2e_jtag_debug_rma"]
+    }
+    {
+      name: chip_rv_dm_ndm_reset_req
+      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
+
+            - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
+            - Configure RV_DM to send NDM reset request to reset sytem reset tree.
+            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
+              accessed.
+            - Read the programmed CSRs / mem to ensure that everything under system reset tree is
+              reset to the original values, while values under life cycle reset will be preserved.
+            - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
+            '''
+      stage: V2
+      tests: ["chip_rv_dm_ndm_reset_req"]
+    }
+    {
+      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
+      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
+
+            - Initialize the DUT in a HW-debug enabled life cycle state.
+            - Activate the RISCV debug module.
+            - Run some SW test on the CPU.
+            - Initiate a CPU halt request via JTAG.
+            - Wait for the CPU to be in halted state via JTAG by polling dmstatus.anyhalted.
+            - Deassert the CPU haltreq and verify that we are still in halted state.
+            - (Optional) Using the abstract command, read the dcsr register to verify the cause
+              reflects the debug halt request.
+            - Issue an NDM reset request. All non-debug parts of the chip should reset. Read the
+              dmstatus.anyhalted / dvstatus.allhalted and verify that they are cleared.
+            - Verify that the debug logic is fully accessible during this time, while the NDM reset
+              is being processed and the chip is rebooted, by continuously accessing the DMI
+              register space in `rv_dm` over JTAG.
+            - De-assert the NDM reset request and wait for the CPU to reboot and finish the post-NDM
+              reset phase of the test.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
+    }
+    {
+      name: chip_rv_dm_access_after_wakeup
+      desc: '''Verify RV_DM works after wakes up from sleep.
+
+            - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
+            - If waking up from normal sleep, an activation should not be required for RV_DM CSR
+              accesses to work.
+            - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_dm_access_after_wakeup"]
+    }
+    {
+      name: chip_sw_rv_dm_access_after_hw_reset
+      desc: '''Verify RV_DM works after a watchdog or escalated reset.
+
+            - Access some RV_DM CSRs both before and after resets.
+            - An activation would be required, and the tap strap would also be sampled again.
+            '''
+      stage: V3
+      tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
+    }
+    {
+      name: chip_rv_dm_lc_disabled
+      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
+
+            - Put life cycle in a random life cycle state.
+            - Verify that the rv_dm bus device is inaccessible from the CPU as well as external
+              JTAG if the life cycle state is not in TEST_UNLOCKED*, DEV or RMA.
+            - The bus access check is performed by randomly reading or writing a CSR inside the
+              RV_DM and checking whether the TL-UL bus errors out.
+            - The JTAG access check is performed by writing and then reading a register that is
+              accessible via the TAP/DMI inside the RV_DM. If the JTAG wires are gated, it is
+              expected that the RV_DM returns all-zero instead of the written value.
+            - X-ref'ed with `chip_tap_strap_sampling`
+            '''
+      stage: V2
+      tests: ["chip_rv_dm_lc_disabled"]
+    }
+
+    // RV_TIMER (pre-verified IP) integration tests:
+    {
+      name: chip_sw_timer
+      desc: '''Verify the timeout interrupt assertion.
+
+            - Configure the RV_TIMER to generate interrupt after a set timeout.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from rv_timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_timer_irq"]
+    }
+
+    // AON_TIMER (pre-verified IP) integration tests:
+    {
+      name: chip_sw_aon_timer_wakeup_irq
+      desc: '''Verify the AON timer wake up interrupt in normal operating state.
+
+            - Program the PLIC to let the AON timer wake up interrupt the CPU.
+            - Program the AON timer to generate the wake up timeout interrupt after some time.
+            - Issue a WFI to wait for the interrupt to trigger.
+            - Service the interrupt when it triggers; verify that it came from AON timer.
+            - Verify that the interrupt triggered only after the timeout elapsed.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_irq"]
+    }
+    {
+      name: chip_sw_aon_timer_sleep_wakeup
+      desc: '''Verify that AON timer can wake up the chip from a deep sleep state.
+
+            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
+              phase.
+            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
+            - Program the AON timer to wake up the chip in a reasonable amount of time.
+            - Have the CPU issue WFI to signal the pwrmgr to go into sleep state.
+            - Verify via assertion checks, the wake up request occurs after the timeout has elapsed.
+            - After reset followed by AON timer wake up, read the reset cause register to confirm
+              the AON timer wake up phase.
+            - After the test sequence is complete, read the wake up threshold register - it should
+              not be reset.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_smoketest"]
+    }
+    {
+      name: chip_sw_aon_timer_wdog_bark_irq
+      desc: '''Verify the watchdog bark reception in normal state.
+
+            - Program the PLIC to let the wdog bark signal interrupt the CPU.
+            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
+            - Service the bark interrupt upon reception.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_irq"]
+    }
+    {
+      name: chip_sw_aon_timer_wdog_lc_escalate
+      desc: '''Verify that the LC escalation signal disables the AON timer wdog.
+
+            - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
+            - Start the escalation process and fail the test in the interrupt handler in case the
+              bark interrupt is fired.
+            - Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but the
+              phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is
+              programed to bark and bite.
+            - Trigger an alert to cause an escalation condition before the bark signal asserts.
+            - After the reset ensure that the reset cause was due to the escalation to prove that
+              the wdog was disabled.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_wdog_lc_escalate"]
+    }
+    {
+      name: chip_sw_aon_timer_wdog_bite_reset
+      desc: '''Verify the watchdog bite causing reset in the normal state.
+
+            - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
+              phase.
+            - Program the AON timer wdog to 'bark' after some time.
+            - Let the bark escalate to bite, which should result in a reset request.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the wdog reset phase.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+    }
+    {
+      name: chip_sw_aon_timer_sleep_wdog_bite_reset
+      desc: '''Verify the watchdog bite causing reset in sleep state.
+
+            - Repeat the steps in chip_aon_timer_wdog_bite_reset test, but with following changes:
+            - Program the pwrmgr to go to deep sleep state (clocks off, power off).
+            - Issue a WFI after programming the wdog, so that the reset request due to bite occurs
+              during deep sleep state.
+            - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
+              the wdog reset phase.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+    }
+    {
+      name: chip_sw_aon_timer_sleep_wdog_sleep_pause
+      desc: '''Verify that the wdog can be paused in sleep state.
+
+            - Repeat the steps in chip_aon_timer_sleep_wakeup test, but with following changes:
+            - Program the wdog to 'bite' a little sooner than the AON timer wake up.
+            - Also, program the wdog to pause during sleep.
+            - Issue a WFI after programming the wdog, so that the reset request occurs during deep
+              sleep state.
+            - After reset followed by AON timer wake up, read the reset cause register to confirm
+              that the AON timer woke up the chip, not the wdog reset.
+            - Un-pause the wdog and service the bark interrupt.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
+    }
+
+    // PLIC integration tests:
+    {
+      name: chip_sw_plic_all_irqs
+      desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
+
+            The automated SW test enables all interrupts at the PLIC to interrupt the core. It uses
+            the `intr_test` CSR in each peripheral to mock assert an interrupt, looping through all
+            available interrupts in that peripheral. The ISR verifies that the right interrupt
+            occurred. This is used as a catch-all interrupt test for all peripheral integration
+            testing within which functionally asserting an interrupt is hard to achieve or not of
+            high value.
+            '''
+      stage: V2
+      tests: ["chip_plic_all_irqs"]
+    }
+    {
+      name: chip_sw_plic_sw_irq
+      desc: '''Verify the SW interrupt to the CPU.
+
+            Enable all peripheral interrupts at PLIC. Enable all types of interrupt at the CPU core.
+            Write to the MSIP CSR to generate a SW interrupt to the CPU. Verify that the only
+            interrupt that is seen is the SW interrupt.
+            '''
+      stage: V2
+      tests: ["chip_sw_plic_sw_irq"]
+    }
+    {
+      name: chip_sw_plic_alerts
+      desc: '''Verify alerts from PLIC due to both, TL intg and reg WE onehot check faults.
+
+            - Since PLIC is not pre-verified in a DV environment, we need to ensure these are tested
+              separately.
+            '''
+      stage: V3
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+
+    // CLKMGR tests:
+    {
+      name: chip_sw_clkmgr_idle_trans
+      desc: '''Verify the ability to turn off the transactional clock via SW.
+
+            Ensure that the clock to transactional units will be turned off after any activity
+            completes in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
+            Verify that turning off this clock does not affect the other derived clocks.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_idle",
+              "chip_sw_hmac_enc_idle",
+              "chip_sw_kmac_idle",
+              "chip_sw_otbn_randomness"]
+    }
+    {
+      name: chip_sw_clkmgr_off_trans
+      desc: '''Verify the turned off transactional units.
+
+            Verify CSR accesses do not complete in units that are off.  Using the watchdog timers,
+            turn off a transactional unit's clock, issue a CSR access to that unit, verify a
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
+
+            A stretch goal is to check the PC corresponds to the code performing the CSR access
+            (stretch since it could be difficult to maintain this check).
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_off_aes_trans",
+              "chip_sw_clkmgr_off_hmac_trans",
+              "chip_sw_clkmgr_off_kmac_trans",
+              "chip_sw_clkmgr_off_otbn_trans"]
+    }
+    {
+      name: chip_sw_clkmgr_off_peri
+      desc: '''Verify the ability to turn off the peripheral clock via SW.
+
+            Verify CSR accesses do not complete in peripherals that are off.  Using the watchdog
+            timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_off_peri"]
+    }
+    {
+      name: chip_sw_clkmgr_div
+      desc: '''Verify clk division logic is working correctly.
+
+            The IP level checks the divided clocks via SVA, and these are also bound at chip level.
+            Connectivity tests check peripherals are connected to the clock they expect.
+            Use the clkmgr count measurement feature to verify clock division.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",
+              "chip_sw_clkmgr_external_clk_src_for_lc"]
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_lc
+      desc: '''Verify the clkmgr requests ext clk src during certain LC states.
+
+            On POR lc asserts lc_clk_byp_req on some LC states, and de-asserts
+            it when lc_program completes. This also triggers divided clocks to step down. It may be
+            best to verify this via SVA, unless we implement clock cycle counters.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
+    }
+    {
+      name: chip_sw_clkmgr_external_clk_src_for_sw
+      desc: '''Verify SW causes the clkmgr requests ext clk src during certain LC states.
+
+            In RMA and TEST_UNLOCKED lc states the external clock is enabled in response to
+            `extclk_ctrl.sel` CSR writes. In addition `extclk_ctrl.hi_speed_sel` CSR causes the
+            divided clocks to step down. Verify this via SVA bound to clkmgr, and clock cycle
+            counters.
+
+            Disable external clock source and verify the AST reliably falls back to the internal
+            clock. Ensure the chip operates normally.
+            X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",
+              "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",
+              "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma"]
+    }
+    {
+      name: chip_sw_clkmgr_jitter
+      desc: '''Verify the clock jitter functionality.
+
+            Enable clock jitter setting the clkmgr `jitter_enable` CSR high. This causes the
+            jitter_o clkmgr output to toggle. Verify this output is connected to AST's
+            clk_src_sys_jen_i input using formal.
+
+            X-ref with various specific jitter enable tests.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_jitter",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_aes_enc_jitter_en",
+              "chip_sw_hmac_enc_jitter_en",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
+              "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en",
+              "chip_sw_edn_entropy_reqs_jitter"]
+    }
+    {
+      name: chip_sw_clkmgr_extended_range
+      desc: '''Verify that the system can run at a reduced, calibrated clock frequency.
+
+            This test should check that the system can run at a reduced, calibrated clock frequency
+            (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz
+            momentarily). This option is intended as a fall-back in case there are issues running
+            the system with at 100MHz (calibrated).
+
+            This testpoint can be covered by extending the DV environment to support the extended
+            range clock option via a flag, and running several existing chip-level tests with that
+            option.
+
+            Test the following functionalities with reduced clock:
+
+            - AES, HMAC, KMAC and OTBN operations
+            - Keymgr key derivation
+            - Scramble-enabled access from the main SRAM
+            - Csrng edn concurrency
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_jitter_reduced_freq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+              "chip_sw_aes_enc_jitter_en_reduced_freq",
+              "chip_sw_hmac_enc_jitter_en_reduced_freq",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en_reduced_freq",
+              "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
+              "chip_sw_csrng_edn_concurrency_reduced_freq"]
+    }
+    {
+      name: chip_sw_clkmgr_deep_sleep_frequency
+      desc: '''Verify the frequency measurement through deep sleep.
+
+            Enable clock cycle counts. Put the chip in deep sleep. Upon wakeup reset the
+            clock measurements should be off, but the recoverable fault status should not
+            be cleared.
+            '''
+      stage: V2
+      tests: ["chip_sw_ast_clk_outputs"]
+    }
+    {
+      name: chip_sw_clkmgr_sleep_frequency
+      desc: '''Verify the frequency measurement through shallow sleep.
+
+            Enable clock cycle counts. Put the chip in shallow sleep with pwrmgr's CONTROL CSR
+            keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
+            recoverable fault status should show no errors for the disabled clocks.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_sleep_frequency"]
+    }
+    {
+      name: chip_sw_clkmgr_reset_frequency
+      desc: '''Verify the frequency measurement through reset.
+
+            Enable clock cycle counts, configured to cause errors. Trigger a chip reset via SW.
+            After reset the clock measurements should be off and the recoverable fault status
+            should be cleared.
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_reset_frequency"]
+    }
+    {
+      name: chip_sw_clkmgr_escalation_reset
+      desc: '''Verify the clock manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and clkmgr
+            should not attempt to send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+
+    // PWRMGR tests:
+    {
+      name: chip_sw_pwrmgr_external_full_reset
+      desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
+
+            This ensures that both FSMs are properly reset on the POR signal. The check  is that
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into random low power states and be woken up by ALL wake
+            up sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to both normal and low power sleep, optionally
+            disabling the source's clock, have the source issue a wakeup event and verify
+            `wake_info` indicates the expected wakeup.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with wakeup interactions.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's
+            clock, have the source issue a wakeup event and verify `wake_info` indicates the
+            expected wakeup.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into normal sleep state and be reset by ALL reset req
+            sources.
+
+            This verifies ALL reset sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each reset
+            source, enable the source and bring the chip to low power, issue a reset, and verify the
+            rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
+            reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_aon_timer_wdog_bite_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into deep sleep state and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into deep sleep state and be reset up by ALL reset req
+            sources.
+
+            This verifies ALL reset sources.
+            - 7 resets are generated randomly with deep sleeps
+            - POR (HW PAD) reset, SW POR, wdog timer reset, esc rst, SW req
+            - esc reset is followd by normal mode because it does not work with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
+    }
+    {
+      name: chip_sw_pwrmgr_normal_sleep_all_reset_reqs
+      desc: '''Verify that the chip can go into normal sleep state and be reset up by ALL reset req
+            sources.
+
+            This verifies ALL reset sources.
+            - 7 resets are generated randomly with normal sleeps
+            - POR (HW PAD) reset, SW POR, wdog timer reset, esc rst, SW req
+            - esc reset is followed by normal mode and cleared by reset because it does not work
+              with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
+    }
+    {
+      name: chip_sw_pwrmgr_wdog_reset
+      desc: '''Verify that the chip can be reset by watchdog timer reset source.
+
+            This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing
+            is working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_wdog_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_aon_power_glitch_reset
+      desc: '''Verify the cold boot sequence through an AON power glitch.
+
+
+            Pulsing the AST vcaon_supp_i input causes an AON power glitch which becomes a POR.
+            This ensures that both FSMs are properly reset on the POR signal. The check is that
+            the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
+            by checking retention SRAM for reset_reason.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_full_aon_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_main_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail.
+
+            The vcmain_supp_i AST input is forced to drop once the test is running. This triggers
+            a MainPwr reset request, which is checked by reading retention SRAM's reset_reason to
+            see that the reset_info CSR's POR bit is not set when the test restarts.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in random sleep states.
+
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in a random
+            sleep state. This triggers a MainPwr reset request, which is checked by reading
+            retention SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when
+            the test restarts.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with power glitch handling.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in deep sleep.
+
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in deep
+            sleep. This triggers a MainPwr reset request, which is checked by reading retention
+            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
+            restarts.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in shallow sleep.
+
+            The vcmain_supp_i AST input is forced to drop after putting the chip in shallow sleep.
+            This triggers a MainPwr reset request, which is checked by reading the retention SRAM's
+            reset_reason shows that the reset_info CSR's POR bit is not set when the
+            test restarts.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
+      desc: '''Verify that this chip can be reset by All available reset sources.
+
+            - 12 resets are generated randomly with normal/deep sleeps
+            - POR (HW PAD) reset, SW POR, wdog timer reset, esc rst, SW req
+            - esc reset is followd by normal mode because it does not work with sleep mode
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
+    }
+    // {
+    //   name: chip_sw_pwrmgr_b2b_sleep_reset_req
+    //   desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
+    //         time, one after the other. Use POR_N PAD to trigger reset.
+    //         '''
+    //   stage: V2
+    //   tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
+    // }
+    {
+      name: chip_sw_pwrmgr_sleep_disabled
+      desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
+
+            This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
+            and fails if the pwrmgr ISR is called.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_disabled"]
+    }
+    {
+      name: chip_sw_pwrmgr_escalation_reset
+      desc: '''Verify the power manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and pwrmgr
+            should not attempt to send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+
+    // RSTMGR tests:
+    {
+      name: chip_sw_rstmgr_non_sys_reset_info
+      desc: '''Verify the `reset_info` CSR register for lc or higher resets.
+
+            Generate the 5 types of reset at `lc` level or higher, and check the retention SRAM's
+            reset_reason to show that `reset_info` CSR is as expected. This and other rstmgr
+            testpoints that require different resets cross-reference the individual IP tests that
+            generate those resets, and this testpoint merely adds reset checks in them. Those IP
+            blocks are `pwrmgr`, `alert_handler` and `aon_timer`.
+
+            This should also check the reset's destination IP to make sure some reset side-effect
+            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
+            after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
+            need special consideration.
+            TODO(maturana) Add specific tests once they are developed.
+            '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_smoketest"]
+    }
+    {
+      name: chip_sw_rstmgr_sys_reset_info
+      desc: '''Verify the `reset_info` CSR register for sys reset.
+
+            Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
+            retention SRAM's reset_reason to show that the `reset_info` CSR is as expected. This
+            testpoint cross-reference the `rv_dm` tests that generate this reset, and this
+            testpoint merely adds reset checks in them.
+
+            This should also check the reset's destination IP to make sure some reset side-effect
+            is present. Setting some `intr_enable` CSR bit when the test starts and checking it
+            after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
+            need special consideration.
+
+            X-ref with chip_rv_dm_ndm_reset_req.
+
+            '''
+      stage: V2
+      tests: ["chip_rv_dm_ndm_reset_req"]
+    }
+    {
+      name: chip_sw_rstmgr_cpu_info
+      desc: '''Verify the expected values from the `cpu_info` CSR on reset.
+
+            For some software induced resets we can predict the expected contents of `cpu_info`;
+            reads of writes to unmapped addresses for example. Generate these resets and verify
+            the `cpu_info` register contents when reset is handled.
+            Refer to `chip_*sys_rstmgr_reset_info`.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_cpu_info"]
+    }
+    {
+      name: chip_sw_rstmgr_sw_req_reset
+      desc: '''Verify software requested device reset.
+
+            Generate a reset request by directly writing the `reset_req` CSR.
+            The reset created should be identical to those caused by hardware sources.
+            After reset, the retention SRAM's reset_reason should show that the `reset_info` CSR
+            reflects that a software request was the reset cause.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_sw_req"]
+    }
+    {
+      name: chip_sw_rstmgr_alert_info
+      desc: '''Verify the expected values from the `alert_info` CSR on reset.
+
+            Various alerts can be created, for example, timeouts, and integrity errors, and at
+            least part of the `alert_info` CSR can be predicted. To cause some of these to
+            cause a reset, mask the relevant processor interrupts. Trigger these resets and
+            verify the `alert_info` register contents when reset is handled.
+            Refer to `chip_*sys_rstmgr_reset_info`.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_alert_info"]
+    }
+    {
+      name: chip_sw_rstmgr_sw_rst
+      desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
+
+            - Pick a rw type CSR in each peripheral and program arbitrary value
+              that does not cause any adverse side-effects.
+            - Pulse the reset to the peripheral via software.
+            - Read the resister after reset and verify it returns the reset value.
+            - Repeat these steps for each of these software resettable peripherals:
+              `spi_device`, `spi_host0`, `i2c0`.
+
+            Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_sw_rst"]
+    }
+    {
+      name: chip_sw_rstmgr_escalation_reset
+      desc: '''Verify the reset manager resets to a clean state after an escalation reset.
+
+            Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
+            reset. Upon alert escalation reset, the internal status should be clear and rstmgr
+            should not attempt to send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+
+    // ALERT_HANDLER (pre-verified IP) integration tests:
+    {
+      name: chip_sw_alert_handler_alerts
+      desc: '''Verify all alerts coming into the alert_handler.
+
+            An automated SW test, which does the following (applies to all alerts in all IPs):
+            - Program the alert_test CSR in each block to trigger each alert one by one.
+            - Ensure that all alerts are properly connected to the alert handler and cause the
+              escalation paths to trigger.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_test"]
+    }
+    {
+      name: chip_sw_alert_handler_escalations
+      desc: '''Verify all alert escalation paths.
+
+            Verify all escalation paths triggered by an alert.
+            - Verify the first escalation results in NMI interrupt serviced by the CPU.
+            - Verify the second results in device being put in scrap state, via the LC JTAG TAP.
+            - Verify the third results in chip reset.
+            - Ensure that all escalation handshakes complete without errors.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_escalation"]
+    }
+    {
+      name: chip_sw_all_escalation_resets
+      desc: '''Verify escalation from all unit integrity errors.
+
+            Inject integrity errors in any unit that has a one-hot checker for CSR register
+            writes, and verify escalation is triggered. Allow escalation to go through reset.
+            Use the rstmgr alert info and the unit's fault CSRs to check the alert cause is right.
+            Each run of the test randomly chooses some one-hot checker for the error to be injected.
+            Keep state across resets in flash to check the expected interrupts and the right number
+            of resets occur.
+            - Verify the integrity error results in a regular interrupt.
+            - Verify the first escalation results in NMI serviced by the CPU.
+            - Verify the alert id in both these interrupts.
+            - Verify the unit's fault CSR correctly captured the fault kind.
+            - Verify any timer interrupts are disabled by escalation.
+            - Verify after the escalation reset all faults are cleared, and that the alert
+              info captured the correct alert.
+            - Check that no additional resets occur.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
+    }
+    {
+      name: chip_sw_alert_handler_irqs
+      desc: '''Verify all classes of alert handler interrupts to the CPU.
+
+            X-ref'ed with the automated PLIC test.
+            '''
+      stage: V2
+      tests: ["chip_plic_all_irqs"]
+    }
+    {
+      name: chip_sw_alert_handler_entropy
+      desc: '''Verify the alert handler entropy input to ensure pseudo-random ping timer.
+
+            - Force `alert_handler_ping_timer` input signal `wait_cyc_mask_i` to `8'h07` to
+              shorten the simulation time.
+            - Verify that the alert_handler can request EDN to provide entropy.
+            - Ensure that the alert ping handshake to all alert sources and escalation receivers
+              complete without errors.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_entropy"]
+    }
+    {
+      name: chip_sw_alert_handler_crashdump
+      desc: '''Verify the alert handler crashdump signal.
+
+            When the chip resets due to alert escalating to cause the chip to reset, verify the
+            reset cause to verify the alert crashdump.
+
+            Xref'ed with chip_sw_rstmgr_alert_info.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_alert_info"]
+    }
+    {
+      name: chip_sw_alert_handler_ping_timeout
+      desc: '''Verify the alert senders' ping timeout.
+
+            Set alert_handler's ping timeout cycle to 2 and enable alert_senders. Verify that
+            alert_handler detects the ping timeout and reflects it on the `loc_alert_cause`
+            register.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_ping_timeout"]
+    }
+    {
+      name: chip_sw_alert_handler_lpg_sleep_mode_alerts
+      desc: '''Verify alert_handler can preserve alerts during low_power mode.
+
+            - Trigger fatal alerts for all IPs but configure alert_handler so it won't trigger
+              reset.
+            - Randomly enter normal or deep sleep mode.
+            - Wait random cycles then wake up from the sleep mode.
+            - After wake up from normal sleep mode, clear all alert cause registers and check that
+              all alerts are still firing after waking up.
+            - Repeat the previous steps for random number of iterations.
+            - Fatal alerts from flash_ctrl, otp_ctrl, sram_ctrl, and lc_ctrl are omitted because
+              they disable the CPU and require a reset for the system to continue to function.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
+    }
+    {
+      name: chip_sw_alert_handler_lpg_sleep_mode_pings
+      desc: '''Verify alert_handler's ping mechanism works correctly during sleep and wake up.
+
+            There are two scenarios to check:
+            - Configure alert_handler's ping timeout register to a reasonble value that won't cause
+              ping timeout in normal cases.
+              Then randomly enter and exit normal or deep sleep modes.
+              Check that no local alerts triggered in alert_handler.
+              This scenario ensures that ping mechanism won't send out spurious failure.
+            - Configure alert_handler's ping timeout register to a small value that will always
+              causes ping timeout.
+              Then randomly enter and exit normal or deep sleep modes.
+              Clear local alert cause register and check that alert ping timeout continue to fire
+              after wake up.
+              This scenario ensures the ping mechanism will continue to send out pings after waking
+              up from sleep modes.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_lpg_sleep_mode_pings"]
+    }
+    {
+      name: chip_sw_alert_handler_lpg_clock_off
+      desc: '''Verify alert_handler's works correctly when sender clock is turned off.
+
+            - Configure clkmgr to randomly turn off one of the IP's clock and check alert_handler
+              won't trigger a ping timeout error on that block.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_lpg_clkoff"]
+    }
+    {
+      name: chip_sw_alert_handler_lpg_reset_toggle
+      desc: '''Verify alert_handler's works correctly when sender reset is toggled.
+
+            - Configure rstmgr to randomly toggle one IP block's SW reset and check alert_handler
+              won't trigger a ping timeout error on that block.
+           '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
+   }
+   {
+      name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
+      desc: '''Verify escalation reverse ping timer disabled in sleep mode.
+
+            Check that escalation receivers located inside always-on blocks do not auto-escalate
+            due to the reverse ping feature while the system is in deep sleep.
+
+            ## Reverse ping timeout calculation
+
+            The reverse ping timeout calculation is done using the following formula available in
+            `prim_esc_receiver`:
+
+            ```
+            4  * N_ESC_SEV * (2 * 2 * 2^PING_CNT_DW)
+            ```
+
+            `pwrmgr` is the only block consuming the `N_ESC_SEV` and `PING_CNT_DW` compile time
+            parameters:
+
+            ```
+            alert_handler_reg_pkg::N_ESC_SEV = 4
+            alert_handler_reg_pkg::PING_CNT_DW = 16
+            ```
+
+            The alert escalation responder inside `pwrmgr` is connected to the `io_div4` clock,
+            yielding a target 24MHz frequency. The result expected timeout based on the above
+            parameters is thus:
+
+            ```
+            reverse_ping_timeout = 0.175s = (4 * 4 ( 2 * 2 * 2^16)) / 24e6
+            ```
+
+            ## Procedure
+
+            - On POR reset:
+              - Enable all alerts assigning them to ClassA.
+              - Enable all local alerts and assign to ClassB.
+              - Set escalation configuration to trigger before test wake up time.
+              - Set ping timeout to a time less than wake up time.
+              - Lock alert configuration and enable ping mechanism.
+              - Wait for polling counters to cycle through by busy polling on Ibex for
+                `reverse_ping_timeout >> 2` usec.
+              - Configure AON to wake up device at a later time, making sure it is greater than the
+                `reverse_ping_timeout` calculated in the previous section.
+              - Enter deep sleep.
+            - On wake up from sleep:
+              - Ensure reset status is low power exit. A `kDifRstmgrResetInfoEscalation` signals
+                that there was a local escalation and should result in test failure.
+              - Disable AON timer.
+              - Check there are no flagged local alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
+    }
+
+    // LC_CTRL (pre-verified IP) integration tests:
+    {
+      name: chip_sw_lc_ctrl_alert_handler_escalation
+      desc: '''Verify that the escalation signals from the alert handler are connected to LC ctrl.
+
+            - Trigger an alert to initiate the escalations.
+            - Check that the escalation signals are connected to the LC ctrl:
+              - First escalation has no effect on the LC ctrl.  Read LC_STATE CSR to confirm
+                this is the case.
+              - Second escalation should cause the `lc_escalation_en` output to be asserted and for
+                the LC_STATE to transition to scrap state.  Confirm by reading the LC_STATE CSR
+              - Verify that all decoded outputs except for escalate_en are
+                disabled. X-ref'ed with the respective IP tests that consume these signals.
+
+            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            decoded outputs to other IPs.
+            X-ref'ed with alert_handler's escalation test.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_escalation"]
+    }
+    {
+      name: chip_sw_lc_ctrl_jtag_access
+      desc: '''Verify enable to access LC ctrl via JTAG.
+
+            Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
+            correctness.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_lc_ctrl_otp_hw_cfg
+      desc: '''Verify the device_ID and ID_state CSRs.
+
+            - Preload the hw_cfg partition in OTP ctrl with random data.
+            - Read the device ID and the ID state CSRs to verify their correctness.
+            - Reset the chip and repeat the first 2 steps to verify a different set of values.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+    }
+    {
+      name: chip_sw_lc_ctrl_init
+      desc: '''Verify the LC ctrl initialization on power up.
+
+            Verify that the chip powers up correctly on POR.
+            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
+              FSM states. Ensure that the whole power up sequence does not hang.
+            - Verify with connectivity assertion checks, the handshake signals are connected.
+            - Ensure that no interrupts or alerts are triggered.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_lc_ctrl_transitions
+      desc: '''Verify the LC ctrl can transit from one state to another valid state with the
+            correct tokens.
+
+            - Preload OTP image with a LC state and required tokens to transfer to next state.
+            - Initiate an LC ctrl state transition via SW if CPU is enabled, or via JTAG interface
+              if CPU is disable.
+            - Ensure that the LC program request is received by the OTP ctrl.
+            - Verify the updated data output from OTP ctrl to LC ctrl is correct.
+            - Ensure that there is no background or otp_init error.
+            - Verify that the LC ctrl has transitioned to the programmed state after a reboot.
+            Re-randomize the lc_transition tokens and repeat the sequence above.
+
+            X-ref'ed chip_sw_otp_ctrl_program.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_lc_ctrl_kmac_req
+      desc: '''Verify the token requested from KMAC.
+
+            - For conditional transition, the LC ctrl will send out a token request to KMAC.
+            - Verify that the KMAC returns a hashed token, which should match one of the
+              transition token CSRs.
+
+            X-ref'ed with chip_kmac_lc_req.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_lc_ctrl_key_div
+      desc: '''Verify the keymgr div output to keymgr.
+
+            - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
+            - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_dpe_key_derivation_prod"]
+    }
+    {
+      name: chip_sw_lc_ctrl_broadcast
+      desc: '''Verify broadcast signals from lc_ctrl.
+
+            - Preload the LC partition in the otp_ctrl with the following states: RMA, DEV,
+              TEST_LOCKED[N] & SCRAP.
+            - Verify that the following broadcast signals are having the right effect in the
+              respective IPs that consume them:
+              - lc_dft_en_o: impacts pinmux, pwrmgr, otp_ctrl, AST
+              - lc_hw_debug_en_o: impacts pinmux, pwrmgr, sram_ctrl (main and ret) & the rv_dm
+              - lc_keymgr_en_o: impacts keymgr
+              - lc_clk_byp_req_o: impacts clkmgr (handshake with lc_clk_byp_ack_i)
+              - lc_check_byp_en_o: impacts otp_ctrl
+              - lc_creator_seed_sw_rw_en_o: impacts otp_ctrl
+              - lc_seed_hw_rd_en_o: impacts otp_ctrl
+            - These outputs are enabled per the
+              [life cycle architecture spec](doc/security/specs/device_life_cycle/README.md#architecture).
+
+            X-ref'ed with the respective IP tests that consume these signals.
+
+            Note that the following signals are already verified with connectivity tests and SVAs:
+              - lc_dft_en_o (AST connection)
+              - lc_cpu_en_o (rv_core_ibex)
+              - lc_escalate_en_o (multiple)
+            '''
+      stage: V2
+      tests: [
+        "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
+        "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
+        "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
+        "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
+        "chip_sw_keymgr_dpe_key_derivation",           // lc_keymgr_en_o: keymgr
+        "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
+        "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_rma",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+      ]
+    }
+    {
+      name: chip_sw_lc_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC returning an error during the hash generation of LC tokens.
+
+            - Follow the steps in `chip_sw_lc_ctrl_kmac_req` test.
+            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
+              trigger a fault.
+            - Verify that KMAC returns an error signal to the LC controller.
+            - TBD
+            '''
+      stage: V3
+      tests: []
+    }
+
+    ///////////////////////////////////////////////////////
+    // Security Peripherals                              //
+    // AES, HMAC, KMAC, CSRNG, ENTROPY_SRC, KEYMGR, OTBN //
+    ///////////////////////////////////////////////////////
+
+    // AES (pre-verified IP) integration tests:
+    {
+      name: chip_sw_aes_enc
+      desc: '''Verify the AES operation.
+
+            Write a 32-byte key and a 16-byte plain text to the AES registers and trigger the AES
+            computation to start. Wait for the AES operation to complete by polling the status
+            register. Check the digest registers for correctness against the expected digest value.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_enc",
+              "chip_sw_aes_enc_jitter_en"]
+    }
+    {
+      name: chip_sw_aes_entropy
+      desc: '''Verify the AES entropy input used by the internal PRNGs.
+
+            - Write the initial key share, IV and data in CSRs (known combinations).
+            - Configure the entropy_src to generate entropy in LFSR mode.
+            - Write the PRNG_RESEED bit to reseed the internal state of the PRNG.
+            - Poll the status idle bit to ensure reseed operation is complete.
+            - Trigger the AES operation to run and wait for it to complete.
+            - Check the digest against the expected value.
+            - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
+              complete by polling the status idle bit.
+            - Read back the data out CSRs - they should all read garbage values.
+            - Assertion check verifies that the IV are also garbage, i.e. different from the
+              originally written values.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_entropy"]
+    }
+    {
+      name: chip_sw_aes_idle
+      desc: '''Verify AES idle signaling to clkmgr.
+
+            - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
+              verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
+            - Write the AES clk hint to 1 within clkmgr to indicate AES clk can be enabled.
+            - Initiate an AES operation with a known key, plain text and digest, write AES clk
+              hint to 0 and verify that the AES clk hint status within clkmgr now reads 1 (AES
+              is enabled), before the AES operation is complete.
+            - After the AES operation is complete verify that the AES clk hint status within
+              clkmgr now reads 0 again (AES is disabled).
+            - Write the AES clk hint to 1, read and check the AES output for correctness.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_idle"]
+    }
+    {
+      name: chip_sw_aes_sideload
+      desc: '''Verify the AES sideload mechanism.
+
+            - Configure the keymgr to generate an aes key.
+            - Configure the AES to use the sideloaded key.
+            - Load the plaintext into the AES.
+            - Trigger the AES encryption and wait for it to complete.
+            - Verify that the ciphertext is different from the plaintext.
+            - Load the ciphertext into the AES.
+            - Trigger the AES decryption and wait for it to complete.
+            - Verify that the output is equal to the plain text.
+            - Clear the key in the keymgr and decrypt the ciphertext again.
+            - Verify that output is not equal to the plain text.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_sideload_aes"]
+    }
+    {
+      name: chip_sw_aes_masking_off
+      desc: '''Verify the AES masking off feature for ES.
+
+            - Perform known-answer test using CSRNG SW application interface.
+            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
+              masking PRNG.
+            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed
+              commands using the maximum amount of additional data and no entropy input in automatic
+              mode.
+            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero
+              output of the AES masking PRNG.
+            - Initialize AES and set the force_masks configuration bit.
+            - Configure an AES key of which the second share is zero.
+            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic
+              seed produced by CSRNG and distributed by EDN.
+            - Verify that the masking PRNG outputs an all-zero vector.
+            - Encrypt a message of multiple blocks using AES.
+            - Verify that the second share of the initial, intermediate and output state is zero.
+            - Verify that the second share of the SubBytes input and output is zero.
+            - Verify that the produced cipher text is correct.
+            '''
+      stage: V2S
+      tests: ["chip_sw_aes_masking_off"]
+    }
+
+    // HMAC (pre-verified IP) integration tests:
+    {
+      name: chip_sw_hmac_enc
+      desc: '''Verify HMAC operation.
+
+            SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
+            the HMAC done and FIFO empty interrupts as a part of this test.
+            '''
+      stage: V2
+      tests: ["chip_sw_hmac_enc",
+              "chip_sw_hmac_enc_jitter_en"]
+    }
+    {
+      name: chip_sw_hmac_idle
+      desc: '''Verify the HMAC clk idle signal to clkmgr.
+
+            - Write the HMAC clk hint to 0 within clkmgr to indicate HMAC clk can be gated and
+              verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is disabled).
+            - Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk can be enabled.
+              Verify that the HMAC clk hint status within clkmgr reads 1 (HMAC is enabled).
+            - Initiate an HMAC operation with a known key, plain text and digest.
+              Write HMAC clock hint to 0 and verify the HMAC clk hint status within clkmgr reads 1
+              (HMAC is enabled), before the HMAC operation is complete.
+            - After the HMAC operation is complete, verify the digest for correctness. Verify that
+              the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
+            - This process is repeated for two hmac operations needed to verify the resulting hmac
+              digest.
+            '''
+      stage: V2
+      tests: ["chip_sw_hmac_enc_idle"]
+    }
+
+    // KMAC pre-verified IP) integration tests:
+    {
+      name: chip_sw_kmac_enc
+      desc: '''Verify the SHA3 operation.
+
+            SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
+            the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac",
+              "chip_sw_kmac_mode_kmac_jitter_en"]
+    }
+    {
+      name: chip_sw_kmac_app_keymgr
+      desc: '''Verify the keymgr interface to KMAC.
+
+            - Configure the keymgr to start sending known message data to the KMAC.
+            - Keymgr should transmit a sideloaded key to the KMAC as well.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+              keymgr.
+            - This digest is compared against the known digest value for correctness.
+            - Verify that the keymgr has received valid output from the KMAC.
+
+            X-ref'ed with keymgr test.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_dpe_key_derivation"]
+    }
+    {
+      name: chip_sw_kmac_app_lc
+      desc: '''Verify the LC interface to KMAC.
+
+            - Configure the LC_CTRL to start a token hash using KMAC interface.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+            LC_CTRL.
+
+            X-ref'ed with LC_CTRL test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_kmac_app_rom
+      desc: '''Verify the ROM interface to KMAC.
+
+            - Backdoor initialize ROM memory immediately out of reset.
+            - ROM will send message to the KMAC containing its memory contents,
+            - KMAC will hash and return the digest to the ROM.
+            - ROM will compare received digest against its first 8 logical memory lines for
+            correctness.
+
+            X-ref'ed with ROM_CTRL test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_app_rom"]
+    }
+    {
+      name: chip_sw_kmac_entropy
+      desc: '''Verify the EDN interface to KMAC.
+
+            Requires `EnMasking` parameter to be enabled.
+            SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
+            Randomly enable/disable the `entropy_refresh`.
+            Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
+              - Program `wait_timer` to a small value.
+                Check if EDN timeout error occurs after issuing the hashing op.
+              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
+                too). Then check if Digest is correct.
+            KMAC should send EDN request after `entropy_ready` is set.
+            KMAC also should send out another request to EDN when either:
+              - kmac hash counter hits the configured threshold (assuming it is non-zero)
+              - Hash count exceeds the threshold.
+            SW verifies that KMAC produces the correct digest value.
+
+            TODO: This is pending security review discussion. It is unclear if this feature will be
+            implemented.
+
+            X-ref'ed with EDN test/env.
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_entropy"]
+    }
+    {
+      name: chip_sw_kmac_idle
+      desc: '''Verify the KMAC idle signaling to clkmgr.
+
+            - Write the KMAC clk hint to 0 within clkmgr to indicate KMAC clk can be gated and
+              verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is disabled).
+            - Write the KMAC clk hint to 1 within clkmgr to indicate KMAC clk can be enabled.
+              Verify that the KMAC clk hint status within clkmgr reads 1 (KMAC is enabled).
+            - Initiate a KMAC operation with a known key, plain text and digest.
+              Write KMAC clock hint to 0 and verify the KMAC clk hint status within clkmgr reads 1
+              (KMAC is enabled), before the KMAC operation is complete.
+            - After the KMAC operation is complete, verify the digest for correctness. Verify that
+              the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
+            '''
+      stage: V2
+      tests: ["chip_sw_kmac_idle"]
+    }
+
+    // ENTROPY_SRC (pre-verified IP) integration tests:
+    {
+      name: chip_sw_entropy_src_csrng
+      desc: '''Verify the transfer of entropy bits to CSRNG.
+
+            Verify the entropy valid interrupt.
+            At the CSRNG, validate the reception of entropy req interrupt.
+
+            - Disable edn0, edn1, and csrng, as these are enabled by the test ROM.
+            - Enable csrng and enable the entropy request interrupt.
+            - Issue csrng instantiate and reseed commands. Check that for each csrng command,
+              there is a corresponding entropy request interrupt.
+            - Generate output and ensure the data output is valid, and that csrng is not reporting
+              any errors.
+            - Issue instantiate and reseed commands from edn0 and edn1. Check that for each
+              command, there is a corresponding entropy request interrupt.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_csrng"]
+    }
+
+    // CSRNG (pre-verified IP) integration tests:
+    {
+      name: chip_sw_csrng_edn_cmd
+      desc: '''Verify incoming command interface from EDN.
+
+            - Have each EDN instance issue an instantiate, reseed and generate command to CSRNG.
+            - On each command done, verify the reception of edn cmd req done interrupt.
+            - Run OTBN randomness test to test the output from EDN0 and EDN1.
+            - Check the data returned to EDN via connectivity assertion checks.
+            '''
+      stage: V2
+      tests: ["chip_sw_entropy_src_csrng"]
+    }
+    {
+      name: chip_sw_csrng_fuse_en_sw_app_read
+      desc: '''Verify the fuse input to CSRNG.
+
+            - Issue an instantiate command to request entropy.
+            - Verify that SW can read the internal state values.
+
+             Note that this test has been simplified to just test the test_fuse_enable path,
+             since the HW has been updated to always hardwire the EN_CSRNG_SW_APP_READ
+             chicken switch to True. The chicken switch itself has been removed from OTP.
+            '''
+      stage: V2
+      tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
+    }
+    {
+      name: chip_sw_csrng_known_answer_tests
+      desc: '''Verify our ability to run known-answer tests in SW.
+
+            - Configure the software instance with the expected seed (as per
+              the NIST-specified test for CTR_DRBG operation). Compare the
+              DRBG internal K and V state against the test vector expected
+              values.
+            - Perform generate operations as required by the test vector.
+            - Compare the results to test expectations.
+            '''
+      stage: V2
+      tests: ["chip_sw_csrng_kat_test"]
+    }
+    {
+      name: chip_sw_csrng_edn_error
+      desc: '''Verify the outcome of an error response generated by CSRNG when processing an EDN
+               request.
+
+              - Inject a fault in CSRNG while it is processing a request from EDN so that it returns
+                an error response to EDN.
+              - TODO(#16516): How does EDN respond to the error?
+            '''
+      stage: V3
+      tests: []
+    }
+
+    // EDN (pre-verified IP) integration tests:
+    {
+      name: chip_sw_edn_entropy_reqs
+      desc: '''Verify the entropy requests from all peripherals.
+
+            Verify that there are no misconnects between each peripheral requesting entropy.
+            TODO: system level scenario: have all entropy sources request entropy in the same test
+            one after to show boot to post boot load, cycling all entropy blocks off and on again.
+            Ensure there are no deadlocks and everything works as expected.
+            X'ref'ed with each IP test that requsts entropy from EDN.
+            '''
+      stage: V2
+      tests: ["chip_sw_edn_entropy_reqs",
+              "chip_sw_csrng_edn_concurrency"]
+    }
+
+    // KEYMGR_DPE (pre-verified IP) integration tests:
+    {
+      name: chip_sw_keymgr_dpe_key_derivation
+      desc: '''Verify the keymgr advances to all states and generate identity / SW output.
+
+            - In the SW test, write fixed value to OTP for root_key and write creator and owner
+              seeds in flash. And then roboot the chip.
+            - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
+            - For HardwareRevisionSecret, use the constant values in design.
+            - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
+            - Check keymgr internal keys after advance operations.
+            - Generate identity / SW output for the Sealing CDI.
+               - No need to test the Attestation CDI in chip-level as the only difference is to
+                 use another set of CSR values, and the rest of inputs are the same as the Sealing
+                 CDI.
+            - KMAC should finish hashing successfully (not visible to SW) and return digest to
+              keymgr.
+            - Read keymgr CSRs `SW_SHARE*` and verify the return values.
+            - Advance to `Disabled` and verify keymgr enters the state successfully.
+
+            - For each operation, wait for the interrupt `op_done` to be triggered and check CSR
+              `op_status` is `DONE_SUCCESS`.
+
+            - Note: there are 3 ways of calculating the expected digest for comparison. Any of them
+              is acceptable.
+              - Use SW to calculate that, and it will also exercise the Ibex.
+              - SW sends all the keys through CSRs to KMAC to generate the degist data.
+              - DV calls C functions to generate and backdoor load to a specific memory location
+                for SW. (Adpot this approach.)
+
+            X-ref'ed with kmac test.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_dpe_key_derivation", "chip_sw_keymgr_dpe_key_derivation_jitter_en"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_kmac
+      desc: '''Verify the keymgr sideload interface to KMAC.
+
+            - Configure the keymgr and advance to the `OwnerIntKey` state.
+            - Request keymgr to generate hw key for KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest for correctness (should match the DV-side result).
+            - Clear keymer's KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest value has changed.
+            - Request keymgr to derive the same key for the KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest for correctness (should match the DV-side result again).
+
+            X-ref'ed with chip_kmac_app_keymgr test.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_sideload_kmac"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_aes
+      desc: '''Verify the keymgr sideload interface to AES.
+
+               Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_sideload_aes"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_otbn
+      desc: '''Verify the keymgr sideload interface to OTBN.
+
+               Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
+               sideloading to otbn.
+
+               Clear the sideload key once done.
+            '''
+      stage: V2
+      tests: ["chip_sw_keymgr_sideload_otbn"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_kmac_error
+      desc: '''
+            Verify the effect of KMAC returning an error during a keymgr operation.
+
+            - Configure keymgr to enter any of the 3 working states.
+            - Issue a keymgr operation.
+            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
+              trigger a fault.
+            - Verify that KMAC returns an error signal to the keymgr via checking keymgr CSRs, when
+              the operation is done:
+              - Check `op_status` is set to `DONE_ERROR`.
+              - Check `fault_status.kmac_done` is set to 1.
+            '''
+      stage: V3
+      tests: []
+    }
+
+    // OTBN (pre-verified IP) integration tests:
+    {
+      name: chip_sw_otbn_op
+      desc: '''Verify an OTBN operation.
+
+            - SW test directs the OTBN engine to perform an ECDSA operation.
+            - SW validates the reception of the otbn done interrupt once the operation is complete.
+            - SW verifies the correctness of the result with the expected value which is
+              pre-computed using a reference model.
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_ecdsa_op_irq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
+    }
+    {
+      name: chip_sw_otbn_rnd_entropy
+      desc: '''Verify OTBN can fetch RND numbers from the entropy src.
+
+            - SW initializes the entropy subsystem to generate randomness.
+            - SW loads an OTBN app that executes instructions to read the RND bits.
+            - The OTBN app ensures that the values when read consequtively do not match, and its not
+              all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is returning
+              some data.
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_randomness"]
+    }
+    {
+      name: chip_sw_otbn_urnd_entropy
+      desc: '''Verify OTBN can fetch URND numbers from the entropy src.
+
+            - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
+            '''
+      stage: V2
+      tests:  ["chip_sw_otbn_randomness"]
+    }
+    {
+      name: chip_sw_otbn_idle
+      desc: '''Verify the OTBN idle signal to clkmgr.
+
+            - Write the OTBN clk hint to 0 within clkmgr to indicate OTBN clk can be gated
+              and verify that the OTBN clk hint status within clkmgr reads 0 (OTBN is disabled).
+            - Write the OTBN clk hint to 1 within clkmgr to indicate OTBN clk can be enabled.
+              Verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled).
+            - Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and verify that
+              the OTBN clk hint status within clkmgr reads 1 (OTBN is enabled) before the
+              OTBN operation is complete.
+            - After the OTBN operation is complete, verify that the OTBN clk hint status within
+              clkmgr now reads 0 again (OTBN is disabled).
+            - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_randomness"]
+    }
+    {
+      name: chip_sw_otbn_mem_scramble
+      desc: '''Verify the OTBN can receive keys from the OTP to scramble the OTBN imem and dmem.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Extract random address offsets from RV_CORE_IBEX_RND_DATA.
+            - Wait for OTBN to be idle.
+            - Write random address offsets in OTBN imem and dmem.
+            - Read back the written address offsets and compare against expected values. All values
+              must match, no integrity errors must be triggered.
+            - Have OTBN fetch new keys and nonces from the OTP_CTRL.
+            - Wait for OTBN to be idle.
+            - Read back the written address offsets. Most reads should trigger integrity errors. It
+              is possible that after re-scrambling the integrity bits are still valid. But this is
+              expected to happen rarely. If the number of observed integrity errors is below a
+              chosen threshold, the test fails.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_mem_scramble"]
+    }
+
+    /////////////////////////////////////////////////////
+    // Memory & Controllers                            //
+    // ROM_CTRL, RAM, FLASH, FLASH_CTRL, OTP, OTP_CTRL //
+    /////////////////////////////////////////////////////
+
+    // ROM_CTRL (pre-verified IP) integration tests:
+    {
+      name: chip_sw_rom_access
+      desc: '''Verify that the CPU can access the rom contents.
+
+            - Verify that the CPU can fetch instructions from the ROM.
+            '''
+      stage: V2
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_integrity_check
+      desc: '''Verify that the ROM ctrl performs the integrity check of the ROM on power up.
+
+            - In non-PROD LC state, the computed digest does not have to match the top 8 words in
+              the ROM. Verify that we can successfully power up the chip in this case.
+            - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
+              digest does not match the top 8 words of the ROM.
+            '''
+      stage: V2
+      tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC reporting an error during ROM digest computation.
+
+            - Backdoor load a valid test ROM image and bring the DUT out of reset.
+            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
+              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
+              fault.
+            - Verify that KMAC returns an error signal to the ROM controller.
+            - Verify that the ROM controller itself transitions to invalid state and the chip is
+              effectively dead.
+            '''
+      stage: V3
+      tests: []
+    }
+
+    // SRAM (pre-verified IP) integration tests:
+    {
+      name: chip_sw_sram_scrambled_access
+      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
+
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Trigger both SRAMs to fetch a new key and nonce from the OTP_CTRL
+            - Drive the CPU to perform random accesses to both RAMs and verify these operations
+              complete successfully by using the backdoor interface
+            - Fetch a new key from the OTP_CTRL and ensure that the previous contents cannot be
+              read anymore.
+            - Verify the validity of EDN's output to OTP_CTRL via assertions
+              (unique, non-zero data).
+            '''
+      stage: V2
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+    }
+    {
+      name: chip_sw_sleep_sram_ret_contents
+      desc: '''Verify that the data within the retention SRAM survives low power entry-exit and reset.
+
+            Ensure that the data within the retention SRAM survives as described in this table.
+              |             Mode             | Scrambled | Data Preserved |
+              |:----------------------------:|:---------:|:--------------:|
+              |          Normal sleep        |    No     |       Yes      |
+              |           Deep sleep         |    No     |       Yes      |
+              | Reset due to a reset request |    No     |       Yes      |
+              |          Normal sleep        |    Yes    |       Yes      |
+              |           Deep sleep         |    Yes    |       Yes      |
+              | Reset due to a reset request |    Yes    |       No       |
+            '''
+      stage: V2
+      tests: ["chip_sw_sleep_sram_ret_contents"]
+    }
+    {
+      name: chip_sw_sram_execution
+      desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
+
+            - Create the following combinations of 8 scenarios:
+              - The fetch enable bit in the HW_CFG1 partition of OTP controller set and not set.
+              - A life cycle state that enables (TEST_UNLOCKED, DEV or RMA) and disables (PROD)
+                hardware debug.
+              - The execution CSR programmed to be enabled and disabled.
+
+            - For both, main and the retention SRAM in each of these 8 scenarios:
+              - Load instruction data into the SRAMs.
+              - If the instruction execution is enabled, verify that the CPU can fetch and execute
+                the instruction from the SRAM correctly.
+              - If the instruction execution is not enabled, verify that the SRAM throws an error
+                response via an exception handler.
+
+            The following table indicates in which of these scenarios should the instruction
+            execution be enabled, for both, main and the retention SRAM instances.
+
+              | OTP HW_CFG[IFETCH] | HW_DEBUG_EN via LC state | EXEC CSR | MAIN SRAM | RET SRAM |
+              |:------------------:|:------------------------:|:--------:|:---------:|:--------:|
+              |          0         |             0            |     0    |  disabled | disabled |
+              |          0         |             0            |     1    |  disabled | disabled |
+              |          0         |             1            |     0    |  enabled  | disabled |
+              |          0         |             1            |     1    |  enabled  | disabled |
+              |          1         |             0            |     0    |  disabled | disabled |
+              |          1         |             0            |     1    |  enabled  | disabled |
+              |          1         |             1            |     0    |  disabled | disabled |
+              |          1         |             1            |     1    |  enabled  | disabled |
+
+            For the retention SRAM, instruction fetch is completely disabled via design parameter.
+            '''
+      stage: V2
+      tests: ["chip_sw_sram_ctrl_execution_main"]
+    }
+    {
+      name: chip_sw_sram_lc_escalation
+      desc: '''Verify the LC escalation path to the SRAMs.
+
+            - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
+            - Verify that the SRAMs stop accepting and responding to new memory requests.
+            - Reset the system to exit the terminal escalation state.
+            - Re-initialize the SRAMs and verify that they can now respond correctly to
+              any further memory requests.
+
+            X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets",
+              "chip_sw_data_integrity_escalation"]
+    }
+
+    // OTP (pre-verified IP) integration tests:
+    {
+      name: chip_otp_ctrl_init
+      desc: '''Verify the OTP ctrl initialization on chip power up.
+
+            Verify that the chip powers up correctly on POR.
+            - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
+              FSM states. Ensure that the whole power up sequence does not hang.
+            - Verify with connectivity assertion checks, the handshake signals are connected.
+            - Ensure that no interrupts or alerts are triggered.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_otp_ctrl_keys
+      desc: '''Verify the proliferation of keys to security peripherals.
+
+            - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
+              (note that keymgr does not have handshake), OTBN and the CPU instruction cache.
+            - Ensure that the test requests a new key and verifies the previously written
+              data to an address now returns a garbage value.
+
+            X-ref'ed with the following IP tests that consume these signals:
+            - chip_sw_sram_scrambled_access
+            - chip_sw_keymgr_key_derivation
+            - chip_sw_otbn_mem_scramble
+            '''
+      stage: V2
+      tests: [// Verifies both, main and retention SRAM scrambling.
+              "chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_keymgr_dpe_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
+    }
+    {
+      name: chip_sw_otp_ctrl_entropy
+      desc: '''Verify the entropy interface from OTP ctrl to EDN.
+
+            This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
+            to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
+            '''
+      stage: V2
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_keymgr_dpe_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
+    }
+    {
+      name: chip_sw_otp_ctrl_program
+      desc: '''Verify the program request from lc_ctrl.
+
+            - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
+              program request.
+            - Verify that the OTP ctrl generates the LC data output correctly and is sent to the LC
+              ctrl before it is reset.
+            - Verify that the `lc_check_byp_en_i` from LC ctrl is set.
+            - Ensure that the whole operation does not raise any interrupts or alerts or errors.
+            - After reset, verify that the LC state transition completed successfully by reading the
+              LC state and LC count CSRs.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_transition"]
+    }
+    {
+      name: chip_sw_otp_ctrl_program_error
+      desc: '''Verify the otp program error.
+
+            - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
+              `lc_otp_program_i`.
+            - Verify that the LC ctrl triggers an alert and escalation when the OTP ctrl responds back with the correct
+              fatal program error as expected.
+            - Allow escalation to go through reset.
+            - Use the rstmgr alert info and the fault CSRs to check the alert cause is right.
+            - Keep state across resets in flash to check that no NMI or regular ISR interrupt run
+              for kTopDarjeelingAlertIdLcCtrlFatalProgError.
+	    - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
+            - Verify after the escalation reset that the alert info captured the correct alert.
+            '''
+
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_program_error"]
+    }
+    {
+      name: chip_sw_otp_ctrl_hw_cfg
+      desc: '''Verify the correctness of otp_hw_cfg bus in all peripherals that receive it.
+
+            Preload the OTP ctrl's `hw_cfg` partition with random data and verify that all
+            consumers of the hardware configuration bits are receiving the correct values.
+
+            Xref'ed with corresponding IP tests that receive these bits.
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals
+      desc: '''Verify the broadcast signals from LC ctrl.
+
+            - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
+            - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
+            - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
+            - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
+              programming passes when enabled.
+
+            Note that `lc_escalate_en_i` is verified via a connectivity test.
+
+            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr advance operation
+            into the CreatorRootKey state, which should fail since the root key will be tied off to
+            all-zero when the SECRET2 partition is not locked in OTP.
+
+            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            decoded outputs to other IPs.
+            '''
+      stage: V2
+      tests: [
+        // lc_dft_en_i
+        "chip_prim_tl_access",
+        // lc_check_byp_en_i
+        "chip_sw_lc_ctrl_transition",
+        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses
+        // the keymgr.
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
+        "chip_sw_otp_ctrl_lc_signals_dev",
+        "chip_sw_otp_ctrl_lc_signals_prod",
+        "chip_sw_otp_ctrl_lc_signals_rma",
+        ]
+    }
+    {
+      name: chip_sw_otp_prim_tl_access
+      desc: '''Verify that the SW can read / write the prim tlul interface.
+
+            - The prim tlul interface is a open source placeholder for the closed source CSRs that
+              will be implemented in a translation 'shim'.
+            - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
+              When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
+            '''
+      stage: V2
+      tests: ["chip_prim_tl_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      desc: '''
+            Verify the vendor test control access in raw, test_*, dev, prod, and rma LC states.
+
+            - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
+            - Verify that the SW is able to access the vendor test control and status registers in
+              raw, test_* and rma LC states.
+              In open source environment, this check is implemented by probing the OTP_CTRL's
+              `lc_otp_vendor_test_i` port.
+            - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
+              of what is programmed into the vendor test control register.
+            '''
+      stage: V3
+      tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_escalation
+      desc: '''Verify escalation from otp_ctrl macro fatal error.
+
+            - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
+              via DAI interface.
+            - Because this fatal error will immediately turn off CPU, so the DV sequence will probe
+              the alert interface to make sure alert and escalation is triggered.
+
+            X'ref with chip_sw_all_escalation_resets.
+            '''
+      stage: V3
+      tests: ["chip_sw_otp_ctrl_escalation"]
+    }
+    {
+      name: chip_sw_otp_ctrl_nvm_cnt
+      desc: '''Verify the NVM strike counter partition in otp_ctrl.
+
+            - Check that the partition is all-zeroes first.
+            - Increment the strike counter by 1 multiple times around different count offsets, e.g.:
+              - start with offset zero, increment multiple times
+              - set counter to 30 (which is just before the first word boundary) and increment a few times
+              - set counter to a higher count close to a word boundary and increment a few times
+            - Test error cases by
+              - injecting errors that can be recovered by OR'ing the two counter copies.
+              - injecting errors that cannot be recovered by OR'ing the two counter copies.
+            - Set counter to a value close to the maximum and let it saturate. This will overwrite
+              previously corrupt encodings with all-ones, thus resulting in a consistent encoding.
+            - Reset the chip and check that the counter is still maximal.
+            '''
+      stage: V2
+      tests: ["chip_sw_otp_ctrl_nvm_cnt"]
+    }
+    {
+      name: chip_sw_otp_ctrl_sw_parts
+      desc: '''Verify that SW partitions can be programmed and read/write locked.
+
+            This test operates on three representative SW partitions with
+            different attributes and we rely on block-level coverage for the
+            remaining partitions:
+            - OWNER_SW_CFG (read and write-lockable)
+            - OWNERSHIP_SLOT_STATE (only read-lockable)
+            - EXT_NVM (only read-lockable, no ECC)
+
+            The test checks:
+            - That the first word of each partition is writable.
+            - That the dynamic read locks work for each partition.
+            - That the permanent write lock works for OWNER_SW_CFG only.
+            '''
+      stage: V2
+      tests: ["chip_sw_otp_ctrl_sw_parts"]
+    }
+
+    ////////////////////////
+    // Analog Peripherals //
+    // AST, SENSOR_CTRL   //
+    ////////////////////////
+
+    // AST (pre-verified IP) integration tests:
+    {
+      name: chip_sw_ast_clk_outputs
+      desc: '''Verify that the AST generates the 4 clocks when requested by the clkmgr.
+
+            Verify the clock frequencies are reasonably accurate. Bring the chip to deep sleep,
+            and verify that upon wakeup reset the clock counters are turned off, measure ctrl
+            regwen is enabled, and errors are not cleared.
+            '''
+      stage: V2
+      tests: ["chip_sw_ast_clk_outputs"]
+    }
+    {
+      name: chip_sw_ast_clk_rst_inputs
+      desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
+
+            Create different scenarios that affect the clocks and resets and see that the AST features
+            (RNG, entropy, alert, ADC) that use those clocks/resets behave correctly.
+            sequence:
+            1. Check that AST RNG generates data and fills the entropy source fifo
+            2. Create AST alerts
+            3. Activate ADC conversion
+            4. EDN entropy supply to AST
+            Enter sleep/deep sleep/ stop IO clocks
+            Repeat 1-4 to check it is ok.
+            '''
+      stage: V2
+      tests: ["chip_sw_ast_clk_rst_inputs"]
+    }
+    {
+      name: chip_sw_ast_sys_clk_jitter
+      desc: '''Verify that the AST sys clk jitter control.
+
+            X-ref with chip_sw_clkmgr_jitter
+            '''
+      stage: V2
+      tests: ["chip_sw_clkmgr_jitter",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_aes_enc_jitter_en",
+              "chip_sw_hmac_enc_jitter_en",
+              "chip_sw_keymgr_dpe_key_derivation_jitter_en",
+              "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en",
+              "chip_sw_edn_entropy_reqs_jitter"]
+    }
+    {
+      name: chip_sw_ast_alerts
+      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
+
+             X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
+             '''
+      stage: V2
+      tests: ["chip_sw_sensor_ctrl_alert"]
+    }
+
+    // SENSOR_CTRL tests:
+    {
+      name: chip_sw_sensor_ctrl_ast_alerts
+      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
+
+               Check that AST events can be triggered from sensor_ctrl and that
+               the resulting AST outputs are observed in both sensor_ctrl and
+               the alert_handler.
+
+               For the alert handler case, make sure to test each alert configured
+               as either recoverable or fatal.
+             '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
+              "chip_sw_sensor_ctrl_alert"]
+    }
+    {
+      name: chip_sw_sensor_ctrl_ast_status
+      desc: '''Verify the io power ok status from AST.
+
+               Check that when the IO POK status changes, an interrupt is triggered
+               from sensor_ctrl.  After triggering, the IO status can be read
+               from a sensor_ctrl register.
+            '''
+      stage: V2
+      tests: ["chip_sw_sensor_ctrl_status"]
+    }
+    {
+      name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
+      desc: '''Verify the sensor control is able to wake the device
+               from sleep mode when an alert event is triggered from
+               AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
+             '''
+      stage: V2
+      tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+    }
+
+    // soc_proxy tests:
+    {
+      name: chip_sw_soc_proxy_external_reset_requests
+      desc: '''Verify that external reset requests reset (parts of) OT.
+
+               - In DV env, trigger the external reset request.
+               - In DV env, ensure that the desired parts of OT get reset and the others don't.
+               - In SW, ensure that the reset request shows up in Reset Manager's RESET_INFO register.
+           '''
+      stage: V2
+      tests: ["chip_sw_soc_proxy_smoketest"]
+    }
+    {
+      name: chip_sw_soc_proxy_external_irqs
+      desc: '''Verify that external IRQs are forwarded to the PLIC.
+
+               For each of the external IRQs:
+               - In DV env, trigger the external IRQ.
+               - In DV env, ensure that an internal wakeup is requested.
+               - In SW, ensure that the IRQ shows up in the respective *Interrupt Pending* register of the PLIC.
+            '''
+      stage: V2
+      tests: ["chip_sw_soc_proxy_smoketest"]
+    }
+    {
+      name: chip_sw_soc_proxy_external_alerts
+      desc: '''Verify that external alerts are forwarded to Alert Handler.
+
+               For each of the external alerts (fatal and recoverable):
+               - In DV env, trigger the external alert.
+               - In DV env, ensure that an internal wakeup is requested.
+               Then:
+               - For recoverable alerts:
+                 - In SW, ensure that the alert shows up in Alert Handler's registers.
+               - For fatal alerts:
+                 - In DV env, ensure that Alert Handler escalates so that Power Manager triggers a reset.
+                 - In SW, ensure that the reset cause is an escalation by Alert Handler.
+            '''
+      stage: V2
+      tests: ["chip_sw_soc_proxy_external_alerts"]
+    }
+    {
+      name: chip_sw_soc_proxy_external_wakeup_requests
+      desc: '''Verify that external wakeup requests are forwarded to Power Manager.
+
+               - In SW, enable the wakeup in Power Manager.
+               - In DV env, trigger the wakeup request.
+               - In SW, ensure that the wakeup request shows up in Power Manager's `WAKE_STATUS` register.
+            '''
+      stage: V2
+      tests: ["chip_sw_soc_proxy_external_wakeup"]
+    }
+    {
+      name: chip_sw_soc_proxy_gpios
+      desc: '''Verify that GPI/Os of the SoC into/from OT are correctly connected to multiplexed I/Os.
+
+               For each of the general-purpose outputs of the SoC into OT
+               - In SW, configure Pinmux MIO such that the pin is externally observable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the configured pin.
+
+               For each of the general-purpose inputs of the SoC from OT
+               - In SW, configure Pinmux MIO such that the pin is externally controllable.
+               - In DV env, toggle the pin.
+               - In DV env, ensure that the pattern shows up on the SoC input.
+            '''
+      stage: V2
+      tests: ["chip_sw_soc_proxy_gpios"]
+    }
+
+    //////////////////
+    // CPU          //
+    // RV_CORE_IBEX //
+    //////////////////
+
+    {
+      name: chip_sw_nmi_irq
+      desc: '''Verify the NMI interrupt to the CPU and correctness of the cause.
+
+            Randomly use these two methods (simultaneously or choose one of them) to trigger the
+            NMI interrupt:
+            - Trigger the alert_handler escalation pair that maps to NMI.
+            - Trigger a watchdog bark.
+
+            Check rv_core_ibex's NMI interrupt register and clear the interrupt.
+            If the NMI interrupt is triggered by alert_handle and the `class_clr_regwen` register
+            is not locked, check that alert_handler can clear this NMI escalation stage. Then make
+            sure that the alert_handler won't move forward to the next escalation stage.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_core_ibex_nmi_irq"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_rnd
+      desc: '''Verify the functionality of the random number generation CSRs.
+
+               - Enable entropy complex so `RND_DATA` can get entropy.
+               - Perform multiple reads from `RND_DATA` polling `RND_STATUS` in
+                 between to only read valid data. Check different random bits
+                 are provided each time and that the random data is never zero or all ones.
+               - Ensure `RND_STATUS` indicate invalid data immediately after
+                 `RND_DATA` read.
+               - Perform repeated reads from `RND_DATA` without `RND_STATUS`
+                 polling to check read when invalid doesn't block.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_core_ibex_rnd"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_address_translation
+      desc: '''Verify the simple address translation functionality.
+
+               - Setup address translation for both slots on the I and D
+                 side and check correct translation for I and D accesses.
+               - Switch address translation to use different regions that
+                 overlap for both slots and check translation again. Ensure some
+                 test accesses match both regions, where the lowest indexed one
+                 takes priority.
+               - Turn off address translation and confirm regions are no longer
+                 being remapped.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_core_ibex_address_translation"]
+   }
+   {
+     name: chip_sw_rv_core_ibex_icache_scrambled_access
+     desc: '''Verify scrambled memory accesses to CPU icache.
+
+           - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+             done by the test_rom startup code).
+           - Execute the `fence` instruction to invalidate the icache.
+           - Verify using probes, that this resulted in a new scrambling key fetched from the OTP
+             ctrl.
+           '''
+     stage: V2
+     tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
+   }
+   {
+      name: chip_sw_rv_core_ibex_fault_dump
+      desc: '''Verify the functionality of the ibex fault dump.
+
+               - Purposely create an ibex exception during execution through reads to an ummapped
+                 address.
+               - Ensure the rstmgr fault dump correctly captures the related addresses to the
+                 exception.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_cpu_info"]
+   }
+   {
+      name: chip_sw_rv_core_ibex_double_fault
+      desc: '''Verify the functionality of the ibex double fault dump.
+
+               - Purposely create an ibex double exception during execution, by performing an
+                 unmapped read and in the exception handler perform another unmapped read.
+               - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates
+                 the previous dump is valid.
+            '''
+      stage: V2
+      tests: ["chip_sw_rstmgr_cpu_info"]
+   }
+   {
+    name: chip_sw_rv_core_ibex_lockstep_glitch
+    desc: '''Verify lockstep checking of the Ibex core.
+
+             Ensure suitable alerts are triggered when:
+             - Outputs from the lockstep or the main core are corrupted.
+             - Inputs into the lockstep core are corrupted.
+          '''
+    stage: V2S
+    tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+   }
+   {
+     name: chip_sw_rv_core_ibex_alerts
+     desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
+
+            Inject faults in the following areas and verify the alert is fired leading to an
+            escalation.
+
+            - Bus integrity error on the data and instruction TL interface (on the response channel)
+            - PC mismatch fault
+            - ECC error in the register file
+           '''
+      stage: V3
+      tests: []
+   }
+
+    ////////////////////////////
+    // System level scenarios //
+    ////////////////////////////
+    {
+      name: chip_sw_example_tests
+      desc: '''Provide example tests for different testing scenarios / needs.
+
+            These tests do not verify the hardware. They are meant to serve as a guide for
+            developing actual tests under different testing scenarios. These example tests
+            demonstrate the capabilities of the DV infrastructure which enables these scenarios:
+
+            1. Implement test in the ROM stage itself
+            2. Implement test in the flash stage, using test ROM
+            3. Implement test in the flash stage, using production ROM
+            4. Enable external maufacturer hooks in existing tests developed in the open source
+            5. Enable concurrent threads in tests
+            '''
+      stage: V1
+      tests: ["chip_sw_example_rom",
+              "chip_sw_example_flash",
+              "chip_sw_uart_smoketest_signed",
+              "chip_sw_example_manufacturer",
+              "chip_sw_example_concurrency"
+              ]
+    }
+    {
+      name: chip_sw_smoketest
+      desc: '''Run smoke tests developed for each IP.
+
+            The smoke tests are developed by the SW team to test each IP is
+            alive, and can be actuated by the DIF. We need to ensure that they
+            work in DV as well.
+            '''
+      stage: V2
+      tests: ["chip_sw_aes_smoketest",
+              "chip_sw_aon_timer_smoketest",
+              "chip_sw_clkmgr_smoketest",
+              "chip_sw_csrng_smoketest",
+              "chip_sw_gpio_smoketest",
+              "chip_sw_hmac_smoketest",
+              "chip_sw_kmac_smoketest",
+              "chip_sw_otbn_smoketest",
+              "chip_sw_otp_ctrl_smoketest",
+              "chip_sw_pwrmgr_smoketest",
+              "chip_sw_rv_plic_smoketest",
+              "chip_sw_rv_timer_smoketest",
+              "chip_sw_rstmgr_smoketest",
+              "chip_sw_sram_ctrl_smoketest",
+              "chip_sw_uart_smoketest",
+            ]
+    }
+    {
+      name: chip_sw_rom_functests
+      desc: '''Run some ROM functional tests with test ROM.
+
+            ROM functional tests test ROM drivers and libraries by exercising
+            these components in the flash stage, launched via the test ROM. They
+            primarily are tested on the FPGA, however, we ensure they run in DV
+            as well.
+            '''
+      stage: V2
+      tests: ["rom_keymgr_functest"]
+    }
+    {
+      name: chip_sw_signed
+      desc: '''Run some chip-level tests with ROM.
+
+            In addition to ROM E2E tests, we select at least one (or a few)
+            tests defined in this file to sign, and run via ROM instead of
+            test ROM. We need to ensure our test infrastructure and ROM can
+            boot and run one (or a few) of the same tests our test ROM can.
+            '''
+      stage: V2
+      tests: ["chip_sw_uart_smoketest_signed"]
+    }
+    {
+      name: chip_sw_coremark
+      desc: '''Run the coremark benchmark on the full chip.'''
+      stage: V3
+      tests: ["chip_sw_coremark"]
+    }
+    {
+      name: chip_sw_boot
+      desc: '''Verify the full flash image download with bootstrap signal set.
+
+            - SW puts the SPI device in firmware mode
+            - Load a firmware image (bootstrap) through spi input pin to the spi_device memory.
+            - SW verifies the integrity of the image upon reception by reading the spi_device
+              memory.
+            - Ensure the image is executed correctly
+
+             Note: This flow will be replaced by using spi_device flash mode.
+             For detail, refer to chip_spi_device_flash_mode
+             '''
+      stage: V2
+      tests: ["chip_sw_uart_tx_rx_bootstrap"]
+    }
+    {
+      name: chip_sw_secure_boot
+      desc: '''Verify the secure boot flow.
+
+             X-ref rom_e2e_smoke.
+             In reality this can be any rom based test, which requires secure boot.
+             '''
+      stage: V2
+      tests: ["base_rom_e2e_smoke"]
+    }
+    {
+      name: chip_lc_scrap
+      desc: '''Ensure it is possible to enter scrap state from every legal life cycle state.
+
+            -  Request transition to SCRAP state using the JTAG interface.
+            -  It should be possible to transition from every legal state using external clock.
+            -  Where it is allowed, transition using internal clocks should also be checked.
+            -  After transition, verify that the device is in SCRAP state through LC read.
+            -  Verify while in SCRAP state:
+               - RV JTAG interface is unavailable.
+               - Ibex is not executing.
+               - RV_DM is unreachable by the stub CPU.
+
+            - X-ref'd with manuf_scrap from the manufacturing testplan.
+            - X-ref'd with chip_lc_test_locked.
+            - X-ref'd with chip_tap_strap_sampling
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_rand_to_scrap",
+              "chip_sw_lc_ctrl_raw_to_scrap",
+              "chip_sw_lc_ctrl_rma_to_scrap",
+              "chip_sw_lc_ctrl_test_locked0_to_scrap"]
+    }
+    {
+      name: chip_lc_test_locked
+      desc: '''Transition from TEST_UNLOCKED to TEST_LOCKED using LC JTAG interface.
+
+            -  Check in TEST_UNLOCKED RV JTAG interface is available.
+            -  Verify When in TEST_LOCKED state:
+               - RV JTAG interface is unavailable.
+               - Ibex is not executing.
+               - RV_DM is unreachable by the stub CPU.
+
+            - X-ref'd with manuf_cp_test_lock from the manufacturing testplan.
+            - X-ref'd with chip_lc_scrap.
+            - X-ref'd with chip_tap_strap_sampling
+            - X-ref'd with chip_sw_lc_walkthrough
+            - X-ref'd with chip_rv_dm_lc_disabled
+            '''
+      stage: V2
+      tests: ["chip_sw_lc_walkthrough_testunlocks",
+              "chip_rv_dm_lc_disabled"]
+    }
+    {
+      name: chip_sw_lc_walkthrough
+      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to one of the test unlock state.
+             - Program test_unlock_token, test_exit_token, rma_unlock_token into OTP partitions.
+             - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
+               enabled.
+             Verify that the features that should indeed be disabled are indeed disabled.
+             '''
+      stage: V2
+      tests: ["chip_sw_lc_walkthrough_dev",
+              "chip_sw_lc_walkthrough_prod",
+              "chip_sw_lc_walkthrough_prodend",
+              "chip_sw_lc_walkthrough_rma",
+              "chip_sw_lc_walkthrough_testunlocks"]
+    }
+    {
+      name: chip_sw_lc_ctrl_volatile_raw_unlock
+      desc: '''Configure VOLATILE_RAW_UNLOCK via LC TAP interface and enable CPU execution.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to test_unlocked0 state using the
+               VOLATILE_RAW_UNLOCK mode of operation.
+             - As part of the transition to test_unlocked0, switch the TAP interface to rv_dm.
+             - Enable ROM execution via rv_dm, and perform POR.
+             - Initiate a second transition to test_unlocked0 using VOLATILE_RAW_UNLOCK.
+             - Verify that the CPU is able to execute.
+
+             Test ext_clk injection before enabling ROM execution.
+             '''
+      stage: V2
+      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
+              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
+              "rom_volatile_raw_unlock"]
+    }
+    {
+      name: chip_sw_rom_raw_unlock
+      desc: '''Configure RAW_UNLOCK via LC TAP interface and enable CPU execution.
+
+            This test characterizes the DUT initial state before RAW unlock operation, and
+            switches to external clock via clkmgr to ensure the system clock can be switched
+            right after transition into test_unlcoked0 state. The test also verifies that
+            AST is not initialized while CPU is executing code.
+
+             - Pre-load OTP image with RAW lc_state.
+             - Initiate the LC transition to test_unlocked0 state using the
+               RAW_UNLOCK mode of operation.
+             - Switch TAP interface to rv_dm and configure the ROM_EXEC_EN OTP to enable ROM
+               execution.
+             - If running with the production ROM, enable signature verification via OTBN to
+               improve simulation time.
+             - Perform POR to apply OTP changes.
+             - With rv_dm TAP still selected, switch to external clock via clkmgr using extclk
+               slow mode configuration.
+             - Wait for ROM to start executing code.
+             - Check AST init done equal to 0 via sensor_ctrl.
+             '''
+      stage: V2
+      tests: ["rom_raw_unlock"]
+    }
+    {
+      name: chip_sw_power_max_load
+      desc: '''Concurrency test modeling maximum load conditions.
+
+      This concurrency test runs multiple blocks at the same time, to simulate
+      maximum load ("power virus test"). Should be combined with low power
+      entry and exit scenarios.
+
+      The test should be made configurable so that the type of power state and
+      the time spent in a particular power state can be configured via a
+      flag (or similar). This will make it easier to reuse the test for power
+      simulation and characterization later on.
+
+      The test should set a GPIO (mapped to the IOA2 pin) to high while the power
+      state of interest is active.
+
+      Blocks / functionality to run simulatenously in this test:
+
+        - The ADC is continuously sampling new data
+        - Staggered activation of OTBN, aes, KMAC/HMAC.
+          - KMAC / aes would need to take turns being fed data
+          - KMAC activation should be a combination of otp background, key
+            manager background and software
+          - for OTBN, any signature verification / signing event is sufficient
+        - Entropy complex ongoing
+          - reseed / update operation ongoing
+        - Flash scramble ongoing (ideally both instruction and data, but data should be sufficient
+          for now)
+          - instruction scrambling gated by script availability
+        - Simultaneous IO toggling as defined below
+          - ideally for digital activity, UART / I2C modules should be activated
+            - for first pass simplicity can activate IO portion only for now through GPIO
+          - for dedicated pins, focus on SPI device quad activity
+        - Ongoing cpu activity (icache / SRAM scrambling both activated)
+          - servicing ongoing threads and random read/write data to memory
+          - icache needs to be activated, otherwise the system may spend most of its time fetching
+            code
+        - Background checks enabled wherever possible
+          - rstmgr background checks
+          - alert_handler ping checks
+          - OTP background checks
+        - The test should be run both with / without external clock
+
+      This test should leverage the OTTF test framework for supporting
+      concurrency in a FreeRTOS environment. See also the design docs linked
+      in #14095 for more details on how to approach the implementation.
+      '''
+      stage: V3
+      tests: ["chip_sw_power_virus"]
+    }
+    {
+      name: chip_sw_exit_test_unlocked_bootstrap
+      desc: '''End to end test to ensure rom boot strap can be performed after
+      transitioning from TEST state to PROD state.
+
+      - Pre-load the device into TEST_UNLOCKED state and ROM_EXEC_EN = 0.
+      - In the same power cycle, advance device to PROD, PROD_END or DEV through LC JTAG request and
+        set ROM_EXEC_EN in OTP to logically true.
+      - Reboot the device and perform boot strap of a simple image, (e.g Hello World).
+      - Ensure boot strap succeeds.
+
+      X-ref'ed with manuf_ft_exit_token from manufacturing test plan.
+      '''
+      stage: V2
+      tests: ["chip_sw_exit_test_unlocked_bootstrap"]
+    }
+
+    {
+      name: chip_sw_inject_scramble_seed
+      desc: '''End to end test to ensure boot strap can succeed after injecting scramble seeds.
+
+      - Pre-load the device into PROD, PROD_END or DEV state.
+      - Backdoor load an unscrambled value into flash isolated partition.
+      - In the test program, populate the scramble seeds (flash / sram).
+      - In the test program, populate OTP entries to inform ROM to scramble flash upon next boot.
+      - Reboot the device and perform boot strap of the same test image, ROM should now program
+        the flash image with scramble enabled.
+      - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
+        instructions.
+      - In the test program, check whether the OTP partition containing the scramble seeds is
+        locked. Also check that the unscrambled value progarmmed into flash isolated partition
+        can be correctly read back when the region is set to scramble disable.
+      - If either of the above checks is incorrect, return error.
+
+
+      X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
+      '''
+      stage: V2
+      tests: ["chip_sw_inject_scramble_seed"]
+    }
+  ]
+}

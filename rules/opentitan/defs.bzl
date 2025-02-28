@@ -130,6 +130,11 @@ EARLGREY_CW340_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
 }
 
+# The default set of test environments for Darjeeling.
+DARJEELING_TEST_ENVS = {
+    "//hw/top_darjeeling:sim_dv": None,
+}
+
 # Messages we expect for possible test outcomes.
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
@@ -274,7 +279,9 @@ def opentitan_binary(name, exec_env, **kwargs):
 def opentitan_test(
         name,
         srcs = [],
-        kind = "flash",
+# TODO: Darjeeling bring up
+        kind = "ram",
+#        kind = "flash",
         deps = [],
         copts = [],
         defines = [],
