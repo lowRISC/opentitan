@@ -24,7 +24,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/impl/aes_gcm",
-        "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -155,6 +154,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:drbg",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
