@@ -5,10 +5,10 @@ package:
 dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
-  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.2 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
-  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "d27fe16181559df9c6f87391f815e55f1c1c0b57" } # branch: alsaqr-2.0
+  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: "7d0a4f8acae71a583a6713cab5554e60b9bb8d27" } # v1.2.1
+  idma:                 { git: "git@github.com:pulp-platform/idma.git", rev: "559f94af44873eecccd51b6282668e57f302fb98" }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  rev: "5daa85d164cf6b54ad061ea1e4c6f3624556e467"  } # v0.4.5
+  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "4aa4951c832a782a4ef9dbcb4a32592b0a499d44" } # branch: alsaqr-2.0
 
 export_include_dirs:
       - hw/ip/prim/rtl
