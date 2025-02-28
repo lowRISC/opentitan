@@ -771,7 +771,7 @@ def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
         generate_regfile_from_path(hjson_path, genrtl_dir)
 
 
-def generate_top_ral(top: ConfigT, name_to_block: IpBlocksT,
+def generate_top_ral(topname: str, top: ConfigT, name_to_block: IpBlocksT,
                      dv_base_names: List[str], out_path: str) -> None:
     # construct top ral block
     regwidth = int(top["datawidth"])
@@ -842,8 +842,8 @@ def generate_top_ral(top: ConfigT, name_to_block: IpBlocksT,
             del name_to_block[t]
 
     addr_spaces = {addr_space["name"] for addr_space in top["addr_spaces"]}
-    chip = Top(regwidth, addr_spaces, name_to_block, inst_to_block, if_addrs,
-               mems, attrs)
+    chip = Top(topname, regwidth, addr_spaces, name_to_block, inst_to_block,
+               if_addrs, mems, attrs)
 
     # generate the top ral model with template
     return gen_dv(chip, dv_base_names, str(out_path))
@@ -1557,7 +1557,7 @@ def main():
         # the other files (e.g. RTL files) generated through topgen.
         shutil.rmtree(out_path_gen, ignore_errors=True)
 
-        exit_code = generate_top_ral(completecfg, name_to_block,
+        exit_code = generate_top_ral(topname, completecfg, name_to_block,
                                      args.dv_base_names, out_path)
         sys.exit(exit_code)
 

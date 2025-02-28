@@ -1,0 +1,37 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_darjeeling/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr secure clock connectivity
+CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_alert_handler, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_EDN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure,    top_darjeeling.u_alert_handler, clk_edn_i
+
+CONNECTION, CLKMGR_SECURE_CLK_CSRNG_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_csrng, clk_i
+
+CONNECTION, CLKMGR_SECURE_CLK_EDN0_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_edn0, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_EDN1_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_edn1, clk_i
+
+CONNECTION, CLKMGR_SECURE_CLK_KEYMGR_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_keymgr, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_KEYMGR_EDN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_keymgr, clk_edn_i
+
+CONNECTION, CLKMGR_SECURE_CLK_LC_CTRL,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_lc_ctrl, clk_i
+CONNECTION, CLKMGR_SECURE_KMAC_CLK_LC_CTRL, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure,    top_darjeeling.u_lc_ctrl, clk_kmac_i
+
+CONNECTION, CLKMGR_SECURE_CLK_OTBN_EDN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_otbn, clk_edn_i
+CONNECTION, CLKMGR_SECURE_CLK_OTBN_OTP_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_otbn, clk_otp_i
+
+CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_otp_ctrl, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_EDN_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure,    top_darjeeling.u_otp_ctrl, clk_edn_i
+
+CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_rv_core_ibex, clk_esc_i
+CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_OTP_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_rv_core_ibex, clk_otp_i
+
+CONNECTION, CLKMGR_SECURE_CLK_RV_PLIC_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_secure, top_darjeeling.u_rv_plic, clk_i
+
+CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_CLK,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_darjeeling.u_sensor_ctrl, clk_i
+CONNECTION, CLKMGR_SECURE_CLK_SENSOR_CTRL_AON_CLK, top_darjeeling.u_clkmgr_aon, clocks_o.clk_aon_secure,     top_darjeeling.u_sensor_ctrl, clk_aon_i
