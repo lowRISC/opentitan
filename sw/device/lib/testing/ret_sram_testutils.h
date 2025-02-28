@@ -28,6 +28,12 @@ enum {
 };
 
 /**
+ * Initialise the retention SRAM test utilities location.
+ * Must be called before other ret_ram_testutils functions can be used.
+ */
+void ret_sram_testutils_init(void);
+
+/**
  * Clears the value of a counter in retention sram.
  *
  * @param counter Counter ID, [0..kRetSramTestutilsNumberOfCounters].

@@ -470,6 +470,8 @@ static void chip_sw_reset(void) {
 bool test_main(void) {
   init_test_components();
 
+  ret_sram_testutils_init();
+
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
   if (rst_info & kDifRstmgrResetInfoPor) {
