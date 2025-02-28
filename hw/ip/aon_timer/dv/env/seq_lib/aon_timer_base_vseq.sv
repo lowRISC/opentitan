@@ -55,6 +55,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   extern function new (string name="");
   extern virtual task dut_init(string reset_kind = "HARD");
   extern virtual task aon_timer_shutdown();
+  // WDOG and WKUP init tasks are split to be able to spawn both processes in parallel
+  extern task wdog_init();
+  extern task wkup_init();
   extern task aon_timer_init();
   extern virtual task apply_reset(string kind = "HARD");
   extern virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -151,29 +154,17 @@ task aon_timer_base_vseq::aon_timer_shutdown();
   cfg.aon_clk_rst_vif.wait_clks_or_rst(5);
 endtask : aon_timer_shutdown
 
-// setup basic aon_timer features
-task aon_timer_base_vseq::aon_timer_init();
-  bit wkup_thold_lo_we, wkup_thold_hi_we;
+
+task aon_timer_base_vseq::wdog_init();
   // Clear the interrupts
-  csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
+  csr_utils_pkg::csr_wr(ral.intr_state, 2'b10);
   if (cfg.under_reset) return;
 
-  `uvm_info(`gfn, "Initializating AON Timer. Writing 0 to WKUP_COUNT and WDOG_COUNT", UVM_LOW)
-  // Register Write
-  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0]);
-  if (cfg.under_reset) return;
-  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32]);
-  if (cfg.under_reset) return;
+  `uvm_info(`gfn, $sformatf("Initializating AON Timer WDOG count (0x%0x).",wdog_count), UVM_LOW)
   csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
   if (cfg.under_reset) return;
 
-  `uvm_info(`gfn, "Randomizing AON Timer thresholds", UVM_HIGH)
-
-  `uvm_info(`gfn, $sformatf("Writing 0x%0h to wkup_thold", wkup_thold), UVM_HIGH)
-  write_wkup_reg(ral.wkup_thold_lo, wkup_thold[31:0]);
-  if (cfg.under_reset) return;
-  write_wkup_reg(ral.wkup_thold_hi, wkup_thold[63:32]);
-  if (cfg.under_reset) return;
+  `uvm_info(`gfn, "Randomizing AON Timer WDOG thresholds", UVM_HIGH)
 
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bark_thold", wdog_bark_thold), UVM_HIGH)
   write_wkup_reg(ral.wdog_bark_thold, wdog_bark_thold);
@@ -182,13 +173,39 @@ task aon_timer_base_vseq::aon_timer_init();
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bite_thold", wdog_bite_thold), UVM_HIGH)
   write_wkup_reg(ral.wdog_bite_thold, wdog_bite_thold);
   if (cfg.under_reset) return;
-
-  cfg.lc_escalate_en_vif.drive(0);
-
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to WDOG_REGWEN", wdog_regwen), UVM_HIGH)
-  csr_utils_pkg::csr_wr(ral.wdog_regwen, wdog_regwen);
+//  csr_utils_pkg::csr_wr(ral.wdog_regwen, wdog_regwen);
+  if (cfg.under_reset) return;
+endtask : wdog_init
+
+task aon_timer_base_vseq::wkup_init();
+  // Clear the interrupts
+  csr_utils_pkg::csr_wr(ral.intr_state, 2'b01);
   if (cfg.under_reset) return;
 
+  `uvm_info(`gfn, $sformatf("Initializating AON Timer WKUP count (0x%0x)", wkup_count), UVM_LOW)
+  // Register Write
+  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0]);
+  if (cfg.under_reset) return;
+  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32]);
+  if (cfg.under_reset) return;
+
+  `uvm_info(`gfn, $sformatf("Randomizing AON Timer WKUP threshold (0x%0x)",wkup_thold), UVM_HIGH)
+  write_wkup_reg(ral.wkup_thold_lo, wkup_thold[31:0]);
+  if (cfg.under_reset) return;
+  write_wkup_reg(ral.wkup_thold_hi, wkup_thold[63:32]);
+  if (cfg.under_reset) return;
+endtask : wkup_init
+
+// setup basic aon_timer features
+// Disable lc_escalate at the end of the configuration
+task aon_timer_base_vseq::aon_timer_init();
+
+  fork
+    wkup_init();
+    wdog_init();
+  join
+  cfg.lc_escalate_en_vif.drive(0);
 endtask : aon_timer_init
 
 task aon_timer_base_vseq::apply_reset(string kind = "HARD");
