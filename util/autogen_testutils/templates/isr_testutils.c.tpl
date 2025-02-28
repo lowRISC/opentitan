@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 ${autogen_banner}
+<%
+  top_name = top["name"]
+%>
 
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -16,8 +19,6 @@ ${autogen_banner}
 % endfor
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h" // Generated.
-
 % for ip in ips_with_difs:
   % if ip.irqs:
     void isr_testutils_${ip.name_snake}_isr(
@@ -26,7 +27,7 @@ ${autogen_banner}
     % if ip.has_status_type_irqs():
       bool mute_status_irq,
     % endif
-      top_earlgrey_plic_peripheral_t *peripheral_serviced,
+      top_${top_name}_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced) {
 
       // Claim the IRQ at the PLIC.
@@ -37,8 +38,8 @@ ${autogen_banner}
         &plic_irq_id));
 
       // Get the peripheral the IRQ belongs to.
-      *peripheral_serviced = (top_earlgrey_plic_peripheral_t)
-        top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+      *peripheral_serviced = (top_${top_name}_plic_peripheral_t)
+        top_${top_name}_plic_interrupt_for_peripheral[plic_irq_id];
 
       // Get the IRQ that was fired from the PLIC IRQ ID.
       dif_${ip.name_snake}_irq_t irq = (dif_${ip.name_snake}_irq_t)(plic_irq_id -
