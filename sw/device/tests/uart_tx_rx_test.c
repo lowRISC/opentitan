@@ -90,7 +90,7 @@ static volatile const bool kUseLowSpeedSel = false;
 //
 // The first byte must be FF so we can differentiate this blob from ASCII sent
 // by the ROM when it starts. FF is not UTF-8 / ASCII.
-static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
+static volatile const uint8_t kUartTxData[UART_DATASET_SIZE] = {
     0xff, 0x50, 0xc6, 0xb4, 0xbe, 0x16, 0xed, 0x55, 0x16, 0x1d, 0xe6,
     0x1c, 0xde, 0x9f, 0xfd, 0x24, 0x89, 0x81, 0x4d, 0x0d, 0x1a, 0x12,
     0x4f, 0x57, 0xea, 0xd6, 0x6f, 0xc0, 0x7d, 0x46, 0xe7, 0x37, 0x81,
@@ -100,7 +100,7 @@ static const uint8_t kUartTxData[UART_DATASET_SIZE] = {
 };
 
 // The set of bytes expected to be received over RX.
-static const uint8_t kExpUartRxData[UART_DATASET_SIZE] = {
+static volatile const uint8_t kExpUartRxData[UART_DATASET_SIZE] = {
     0x1b, 0x95, 0xc5, 0xb5, 0x8a, 0xa4, 0xa8, 0x9f, 0x6a, 0x7d, 0x6b,
     0x0c, 0xcd, 0xd5, 0xa6, 0x8f, 0x07, 0x3a, 0x9e, 0x82, 0xe6, 0xa2,
     0x2b, 0xe0, 0x0c, 0x30, 0xe8, 0x5a, 0x05, 0x14, 0x79, 0x8a, 0xFf,
@@ -148,7 +148,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
   CHECK(peripheral == uart_cfg.peripheral_id,
-        "Interurpt from unexpected peripheral: %d", peripheral);
+        "Interrupt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
@@ -360,7 +360,7 @@ static void execute_test(const dif_uart_t *uart) {
   exp_uart_irq_tx_watermark = true;
   exp_uart_irq_tx_empty = true;
   // Set the flag below to true to allow TX data to be sent the first time in
-  // the if comdition below. Subsequently, TX watermark interrupt will trigger
+  // the if condition below. Subsequently, TX watermark interrupt will trigger
   // more data to be sent.
   uart_irq_tx_watermark_fired = true;
   exp_uart_irq_tx_done = false;
@@ -370,7 +370,7 @@ static void execute_test(const dif_uart_t *uart) {
   size_t uart_rx_bytes_read = 0;
   exp_uart_irq_rx_watermark = true;
   // Set the flag below to true to allow RX data to be received the first time
-  // in the if comdition below. Subsequently, RX watermark interrupt will
+  // in the if condition below. Subsequently, RX watermark interrupt will
   // trigger more data to be received.
   uart_irq_rx_watermark_fired = true;
   exp_uart_irq_rx_overflow = false;
