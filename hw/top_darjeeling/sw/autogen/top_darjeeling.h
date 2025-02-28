@@ -1415,8 +1415,8 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdMbxPcie1RecovFault = 92, /**< mbx_pcie1_recov_fault */
   kTopDarjeelingAlertIdSocDbgCtrlFatalFault = 93, /**< soc_dbg_ctrl_fatal_fault */
   kTopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 94, /**< soc_dbg_ctrl_recov_ctrl_update_err */
-  kTopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr = 95, /**< racl_ctrl_recov_ctrl_update_err */
-  kTopDarjeelingAlertIdRaclCtrlFatalFault = 96, /**< racl_ctrl_fatal_fault */
+  kTopDarjeelingAlertIdRaclCtrlFatalFault = 95, /**< racl_ctrl_fatal_fault */
+  kTopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr = 96, /**< racl_ctrl_recov_ctrl_update_err */
   kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr = 97, /**< ac_range_check_recov_ctrl_update_err */
   kTopDarjeelingAlertIdAcRangeCheckFatalFault = 98, /**< ac_range_check_fatal_fault */
   kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 99, /**< rv_core_ibex_fatal_sw_err */

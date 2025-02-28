@@ -204,7 +204,7 @@ extern "C" {
  * address between #TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR and
  * `TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR + TOP_DARJEELING_SOC_MBX_RACL_CTRL_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_MBX_RACL_CTRL_SIZE_BYTES 0x20u
+#define TOP_DARJEELING_SOC_MBX_RACL_CTRL_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for ac_range_check in top darjeeling.

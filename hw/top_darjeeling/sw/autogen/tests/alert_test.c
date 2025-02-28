@@ -716,10 +716,10 @@ static void trigger_alert_test(void) {
 
   // Write racl_ctrl's alert_test reg and check alert_cause.
   for (dif_racl_ctrl_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_racl_ctrl_alert_force(&racl_ctrl, kDifRaclCtrlAlertRecovCtrlUpdateErr + i));
+    CHECK_DIF_OK(dif_racl_ctrl_alert_force(&racl_ctrl, kDifRaclCtrlAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr + i;
+    exp_alert = kTopDarjeelingAlertIdRaclCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

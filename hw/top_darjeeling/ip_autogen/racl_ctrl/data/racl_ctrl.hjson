@@ -32,12 +32,15 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", static_racl_support: true }
   ],
+  // In order to not disturb the racl_ctrl address map, we place the alert test
+  // register manually at a safe offset after the main CSRs.
+  no_auto_alert_regs: "True",
   alert_list: [
-    { name: "recov_ctrl_update_err",
-      desc: "This recoverable alert is triggered upon detecting an update error in the shadowed Control Register."
-    }
     { name: "fatal_fault"
       desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
+    { name: "recov_ctrl_update_err",
+      desc: "This recoverable alert is triggered upon detecting an update error in the shadowed Control Register."
     }
   ],
   countermeasures: [
@@ -106,6 +109,105 @@
   ],
 
   registers: [
+    { name: "POLICY_ALL_RD_WR_SHADOWED"
+      desc: '''
+            Read and write policy for ALL_RD_WR
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 7
+          desc: '''
+                Write permission for policy ALL_RD_WR
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 7
+          desc: '''
+                Read permission for policy ALL_RD_WR
+                '''
+        }
+      ]
+    }
+    { reserved: "1" }
+    { name: "POLICY_ROT_PRIVATE_SHADOWED"
+      desc: '''
+            Read and write policy for ROT_PRIVATE
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 1
+          desc: '''
+                Write permission for policy ROT_PRIVATE
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 1
+          desc: '''
+                Read permission for policy ROT_PRIVATE
+                '''
+        }
+      ]
+    }
+    { reserved: "1" }
+    { name: "POLICY_SOC_ROT_SHADOWED"
+      desc: '''
+            Read and write policy for SOC_ROT
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 5
+          desc: '''
+                Write permission for policy SOC_ROT
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 5
+          desc: '''
+                Read permission for policy SOC_ROT
+                '''
+        }
+      ]
+    }
+    { reserved: "1" }
+    { skipto: "0xF4" }
+    { name: "ALERT_TEST",
+      desc: '''Alert Test Register.''',
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe:     "True",
+      hwext:    "True",
+      fields: [
+        { bits: "0",
+          name: "fatal_fault",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+        { bits: "1",
+          name: "recov_ctrl_update_err",
+          desc: "'Write 1 to trigger one alert event of this kind.'",
+        }
+      ],
+    }
     { name: "ERROR_LOG"
       desc: "Error logging registers"
       swaccess: "ro"
@@ -119,7 +221,7 @@
           hwaccess: "hrw"
           desc: '''
                 Indicates a RACL error and the log register contains valid data.
-                Writing a one clears the error log register.
+                Writing a one clears this register and the !!ERROR_LOG_ADDRESS register.
                 '''
         }
         { bits: "1"
@@ -153,80 +255,21 @@
         }
       ]
     }
-    { name: "POLICY_ALL_RD_WR_SHADOWED"
-      desc: '''
-            Read and write policy for ALL_RD_WR
+    { name: "ERROR_LOG_ADDRESS"
+      desc: '''Contains the address on which a RACL violation occurred.
+               This register is valid if and only if the `valid` field of !!ERROR_LOG is true.
+               Once valid, the address doesn't change (even if there are subsequent RACL violations) until the register gets cleared.
+               This register gets cleared when SW writes `1` to the `valid` field of the !!ERROR_LOG register.
             '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      shadowed: "true"
-      update_err_alert: "recov_ctrl_update_err"
-      storage_err_alert: "fatal_fault"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe: "true"
       fields: [
-        { bits: "31:16"
-          name: "write_perm"
-          resval: 7
+        { bits: "31:0"
+          name: "address"
+          resval: 0x0
           desc: '''
-                Write permission for policy ALL_RD_WR
-                '''
-        }
-        { bits: "15:0"
-          name: "read_perm"
-          resval: 7
-          desc: '''
-                Read permission for policy ALL_RD_WR
-                '''
-        }
-      ]
-    }
-    { name: "POLICY_ROT_PRIVATE_SHADOWED"
-      desc: '''
-            Read and write policy for ROT_PRIVATE
-            '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      shadowed: "true"
-      update_err_alert: "recov_ctrl_update_err"
-      storage_err_alert: "fatal_fault"
-      fields: [
-        { bits: "31:16"
-          name: "write_perm"
-          resval: 1
-          desc: '''
-                Write permission for policy ROT_PRIVATE
-                '''
-        }
-        { bits: "15:0"
-          name: "read_perm"
-          resval: 1
-          desc: '''
-                Read permission for policy ROT_PRIVATE
-                '''
-        }
-      ]
-    }
-    { name: "POLICY_SOC_ROT_SHADOWED"
-      desc: '''
-            Read and write policy for SOC_ROT
-            '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      shadowed: "true"
-      update_err_alert: "recov_ctrl_update_err"
-      storage_err_alert: "fatal_fault"
-      fields: [
-        { bits: "31:16"
-          name: "write_perm"
-          resval: 5
-          desc: '''
-                Write permission for policy SOC_ROT
-                '''
-        }
-        { bits: "15:0"
-          name: "read_perm"
-          resval: 5
-          desc: '''
-                Read permission for policy SOC_ROT
+                Address on which a RACL violation occurred.
                 '''
         }
       ]

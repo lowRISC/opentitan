@@ -49,11 +49,12 @@ module prim_racl_error_arb
   assign overflow = |any_valid_overflow | (racl_error_arb.valid & |(error_valid & ~gnt));
 
   // Assemble dinal arbitrated RACL error based on the arbitrated error and the computed overflow.
-  assign error_log_o.valid       = racl_error_arb.valid;
-  assign error_log_o.racl_role   = racl_error_arb.racl_role;
-  assign error_log_o.ctn_uid     = racl_error_arb.ctn_uid;
-  assign error_log_o.read_access = racl_error_arb.read_access;
-  assign error_log_o.overflow    = overflow;
+  assign error_log_o.valid           = racl_error_arb.valid;
+  assign error_log_o.racl_role       = racl_error_arb.racl_role;
+  assign error_log_o.ctn_uid         = racl_error_arb.ctn_uid;
+  assign error_log_o.read_access     = racl_error_arb.read_access;
+  assign error_log_o.request_address = racl_error_arb.request_address;
+  assign error_log_o.overflow        = overflow;
 
   // Arbitrated overflow is not used
   logic unused_signals;

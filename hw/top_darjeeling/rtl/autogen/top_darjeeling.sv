@@ -2582,8 +2582,8 @@ module top_darjeeling #(
     .NumSubscribingIps(RaclCtrlNumSubscribingIps),
     .NumExternalSubscribingIps(RaclCtrlNumExternalSubscribingIps)
   ) u_racl_ctrl (
-      // [95]: recov_ctrl_update_err
-      // [96]: fatal_fault
+      // [95]: fatal_fault
+      // [96]: recov_ctrl_update_err
       .alert_tx_o  ( alert_tx[96:95] ),
       .alert_rx_i  ( alert_rx[96:95] ),
 
