@@ -107,6 +107,13 @@
       expose:    "true",
       default:   "3"
     },
+    { name:      "EccCorrection",
+      desc:      "Enable single-bit error correction and error logging",
+      type:      "bit",
+      local:     "false",
+      expose:    "true",
+      default:   "0"
+    },
   ]
 
   features: [
@@ -222,6 +229,25 @@
       desc:    '''
         RACL error log information of this module.
       '''
+    }
+    { struct:  "logic",
+      width:   "2"
+      type:    "uni",
+      name:    "sram_rerror",
+      act:     "req",
+      desc:    '''
+               SRAM read error log.
+               Bit 0: Correctable error
+               Bit 1: Uncorrectable error
+               '''
+    },
+    { struct:  "logic [top_pkg::TL_AW-1:0]",
+      type:    "uni",
+      name:    "sram_rerror_addr",
+      act:     "req",
+      desc:    '''
+               SRAM read error address.
+               '''
     }
   ]
 
