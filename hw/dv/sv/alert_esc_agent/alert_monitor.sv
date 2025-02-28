@@ -103,7 +103,7 @@ class alert_monitor extends alert_esc_base_monitor;
                   req.ping_timeout = 1'b1;
                 end
                 begin : wait_ping_handshake
-                  while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb)
+                  while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
                   req.alert_handshake_sta = AlertReceived;
                   wait_ack();
                   req.alert_handshake_sta = AlertAckReceived;
