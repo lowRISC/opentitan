@@ -46,7 +46,7 @@ void setup_pads_spi_host0(dif_pinmux_t *pinmux) {
       .drive_strength = 0,
       .flags = kDifPinmuxPadAttrPullResistorEnable |
                kDifPinmuxPadAttrPullResistorUp};
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host0_direct_pads); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(spi_host0_direct_pads); ++i) {
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, spi_host0_direct_pads[i],
                                             kDifPinmuxPadKindDio, in_attr,
                                             &out_attr));

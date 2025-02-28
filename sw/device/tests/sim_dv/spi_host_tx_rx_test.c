@@ -149,7 +149,7 @@ void setup_pinmux_pads_spi_host1(void) {
       .flags = kDifPinmuxPadAttrPullResistorEnable |
                kDifPinmuxPadAttrPullResistorUp};
   dif_result_t res;
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host1_muxed_pads); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(spi_host1_muxed_pads); ++i) {
     res = dif_pinmux_pad_write_attrs(&pinmux, spi_host1_muxed_pads[i],
                                      kDifPinmuxPadKindMio, in_attr, &out_attr);
     if (res == kDifError) {

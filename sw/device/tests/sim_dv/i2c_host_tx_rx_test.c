@@ -127,7 +127,7 @@ static void en_i2c_irqs(dif_i2c_t *i2c) {
       // explanation kDifI2cIrqSdaUnstable,
       kDifI2cIrqCmdComplete};
 
-  for (uint32_t i = 0; i <= ARRAYSIZE(i2c_irqs); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(i2c_irqs); ++i) {
     CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c, i2c_irqs[i], kDifToggleEnabled));
   }
 }

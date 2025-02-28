@@ -342,7 +342,7 @@ status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux) {
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {.slew_rate = 1, .drive_strength = 3};
   dif_result_t res;
-  for (uint32_t i = 0; i <= ARRAYSIZE(kSpiDeviceDirectPads); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(kSpiDeviceDirectPads); ++i) {
     dt_pad_t pad = kSpiDeviceDirectPads[i];
     res = dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr);
     if (res == kDifError) {
