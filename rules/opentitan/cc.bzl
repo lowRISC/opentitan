@@ -261,6 +261,9 @@ def _opentitan_binary(ctx):
 
         # FIXME(cfrantz): Special case: The englishbreakfast verilator model
         # requires a non-scrambled ROM image.
+        #
+        # DV simulation might also need non-scrambled ROM to reduce simulation
+        # run times.
         if provides.get("rom32"):
             default_info.append(provides["rom32"])
 
