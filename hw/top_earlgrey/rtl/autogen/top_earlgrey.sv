@@ -85,6 +85,7 @@ module top_earlgrey #(
   parameter bit SecAesAllowForcingMasks = 1'b0,
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
   // parameters for hmac
+  parameter bit HmacStub = 0,
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
   parameter bit KmacSwKeyMasked = 0,
@@ -2408,7 +2409,8 @@ module top_earlgrey #(
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   hmac #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44:44])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[44:44]),
+    .Stub(HmacStub)
   ) u_hmac (
 
       // Interrupt
