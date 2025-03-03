@@ -392,8 +392,8 @@ module flash_phy_core
   // transactions coming from flash controller are always data type
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
   assign muxed_part = host_sel ? flash_ctrl_top_specific_pkg::FlashPartData : part_i;
-  assign muxed_scramble_en = host_sel ? host_scramble_en_i : scramble_en_i;
-  assign muxed_ecc_en = host_sel ? host_ecc_en_i : ecc_en_i;
+  assign muxed_scramble_en = 1'b0; //host_sel ? host_scramble_en_i : scramble_en_i;
+  assign muxed_ecc_en = 1'b0; //host_sel ? host_ecc_en_i : ecc_en_i;
   assign rd_done_o = ctrl_rsp_vld & rd_i;
   assign prog_done_o = ctrl_rsp_vld & prog_i;
   assign erase_done_o = ctrl_rsp_vld & (pg_erase_i | bk_erase_i);
