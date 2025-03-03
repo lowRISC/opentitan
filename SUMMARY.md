@@ -72,6 +72,13 @@
 
 - [Top Darjeeling](./hw/top_darjeeling/README.md)
   - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
+  - [AC Range Check](./hw/top_darjeeling/ip_autogen/ac_range_check/dv/README.md)
+    - [Theory of Operation](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/theory_of_operation.md)
+    - [Design Verification](./hw/top_darjeeling/ip_autogen/ac_range_check/dv/README.md)
+      - [Testplan](./hw/top_darjeeling/ip_autogen/ac_range_check/data/ac_range_check_testplan.hjson)
+    - [Hardware Interfaces](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/interfaces.md)
+    - [Registers](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/registers.md)
+    - [Checklist](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/checklist.md)
   - [OTP Controller](./hw/top_darjeeling/ip_autogen/otp_ctrl/README.md)
     - [Theory of Operation](./hw/top_darjeeling/ip_autogen/otp_ctrl/doc/theory_of_operation.md)
     - [Design Verification](./hw/top_darjeeling/ip_autogen/otp_ctrl/dv/README.md)
