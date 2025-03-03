@@ -24,11 +24,13 @@ readonly release="v1.11.0"
 declare -A hashes=(
     # sha256sums for v1.11.0.  Update this if you update the release.
     [linux-amd64]="231ec5ca8115e94c75a1f4fbada1a062b48822ca04f21f26e4cb1cd8973cd458"
+    [linux-arm64]="f9119deb1eeb6d730ee8b2e1a14d09cb45638f0447df23144229c5b3b3bc2408"
 )
 
 declare -A architectures=(
     # Map `uname -m -o` to bazelisk's precompiled binary target names.
     [x86_64 GNU/Linux]="linux-amd64"
+    [aarch64 GNU/Linux]="linux-arm64"
 )
 
 function os_arch() {
