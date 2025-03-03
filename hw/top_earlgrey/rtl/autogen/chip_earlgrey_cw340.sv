@@ -1052,6 +1052,7 @@ module chip_earlgrey_cw340 #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
+    .HmacStub(1'b1),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),

@@ -9224,7 +9224,19 @@
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: Stub
+          desc: Stub out the core of HMAC logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: HmacStub
+        }
+      ]
       inter_signal_list:
       [
         {
