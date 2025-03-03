@@ -24,6 +24,8 @@ module sram_ctrl
   // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
   // Setting this to 3 lowers this to approximately 7 effective rounds.
   parameter int NumPrinceRoundsHalf                        = 3,
+  // Number of outstanding TLUL transfers
+  parameter int Outstanding                                = 2,
   // Random netlist constants
   parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -478,7 +480,8 @@ module sram_ctrl
 
   // SEC_CM: RAM_TL_LC_GATE.FSM.SPARSE
   tlul_lc_gate #(
-    .NumGatesPerDirection(2)
+    .NumGatesPerDirection(2),
+    .Outstanding(Outstanding)
   ) u_tlul_lc_gate (
     .clk_i,
     .rst_ni,
@@ -516,7 +519,7 @@ module sram_ctrl
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
-    .Outstanding(2),
+    .Outstanding(Outstanding),
     .ByteAccess(1),
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),

@@ -107,6 +107,13 @@
       expose:    "true",
       default:   "3"
     },
+    { name:      "Outstanding",
+      desc:      "Number of outstanding TLUL transactions",
+      type:      "int",
+      local:     "true",
+      expose:    "true",
+      default:   "2"
+    },
   ]
 
   features: [
