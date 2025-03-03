@@ -1346,6 +1346,8 @@
         'lc_ctrl.otp_manuf_state',
         'keymgr_dpe.otp_device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
+        # Unconditionally disable the late debug feature and enable early debug
+        'rv_dm.otp_dis_rv_dm_late_debug'
     ],
 
     // ext is to create port in the top.

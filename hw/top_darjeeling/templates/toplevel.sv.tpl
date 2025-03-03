@@ -370,6 +370,9 @@ module top_${top["name"]} #(
   assign rv_core_ibex_irq_timer = intr_rv_timer_timer_expired_hart0_timer0;
   assign rv_core_ibex_hart_id = '0;
 
+  // Unconditionally disable the late debug feature and enable early debug
+  assign rv_dm_otp_dis_rv_dm_late_debug = prim_mubi_pkg::MuBi8True;
+
   ## Not all top levels have a rom controller.
   ## For those that do not, reference the ROM directly.
 <% num_rom_ctrl = lib.num_rom_ctrl(top["module"]) %>\
