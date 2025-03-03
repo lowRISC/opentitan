@@ -59,7 +59,7 @@ typedef struct boot_svc_next_boot_bl0_slot_res {
   /**
    * Response status from the ROM_EXT.
    */
-  rom_error_t status;
+  uint32_t status;
   /**
    * Which slot is primary.
    */
