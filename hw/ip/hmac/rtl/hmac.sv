@@ -10,8 +10,8 @@ module hmac
   import prim_sha2_pkg::*;
   import hmac_reg_pkg::*;
 #(
+  parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  // Number of cycles a differential skew is tolerated on the alert signal
   parameter int unsigned AlertSkewCycles = 1
 ) (
   input clk_i,
@@ -30,6 +30,12 @@ module hmac
   output prim_mubi_pkg::mubi4_t idle_o
 );
 
+  logic rst_n;
+  if (Stub) begin : gen_stubbed_reset
+    assign rst_n = '0;
+  end else begin : gen_no_stubbed_reset
+    assign rst_n = rst_ni;
+  end
 
   /////////////////////////
   // Signal declarations //
@@ -188,8 +194,8 @@ module hmac
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       done_state_q <= DoneAwaitCmd;
     end else begin
       done_state_q <= done_state_d;
@@ -215,8 +221,8 @@ module hmac
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) secret_key <= '0;
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) secret_key <= '0;
     else         secret_key <= secret_key_d;
   end
 
@@ -300,8 +306,8 @@ module hmac
   // Hold the previous digest size till HMAC is started with the new digest size configured
   assign digest_size_started_d = (hash_start_or_continue) ? digest_size : digest_size_started_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) digest_size_started_q <= SHA2_None;
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) digest_size_started_q <= SHA2_None;
     else         digest_size_started_q <= digest_size_started_d;
   end
 
@@ -351,8 +357,8 @@ module hmac
   assign hash_process           = reg_hash_process  & sha_en & cfg_block &  ~invalid_config;
   assign hash_start_or_continue = hash_start | hash_continue;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       cfg_block <= '0;
     end else if (hash_start_or_continue) begin
       cfg_block <= 1'b 1;
@@ -361,8 +367,8 @@ module hmac
     end
   end
   // Hold the configuration during the process
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       cfg_reg <= '{
         hmac_en: '{
           q: 1'b0,
@@ -400,8 +406,8 @@ module hmac
   end
 
   // Open up the MSG_FIFO from the TL-UL port when it is ready
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       msg_allowed <= '0;
     end else if (hash_start_or_continue) begin
       msg_allowed <= 1'b 1;
@@ -417,7 +423,7 @@ module hmac
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
     .clk_i,
-    .rst_ni,
+    .rst_ni                 (rst_n),
     .event_intr_i           (hash_done_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
@@ -471,8 +477,8 @@ module hmac
 
   assign status_fifo_empty = fifo_empty_gate ? 1'b 0 : fifo_empty;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       fifo_empty_q     <= 1'b 0;
       fifo_full_q      <= 1'b 0;
       fifo_full_seen_q <= 1'b 0;
@@ -488,7 +494,7 @@ module hmac
     .IntrT("Status")
   ) intr_hw_fifo_empty (
     .clk_i,
-    .rst_ni,
+    .rst_ni                 (rst_n),
     .event_intr_i           (status_fifo_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
@@ -500,7 +506,7 @@ module hmac
   );
   prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni                 (rst_n),
     .event_intr_i           (err_valid),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_err.q),
@@ -562,7 +568,7 @@ module hmac
     .NeverClears (1'b1)
   ) u_msg_fifo (
     .clk_i,
-    .rst_ni,
+    .rst_ni  (rst_n),
     .clr_i   (1'b0),
 
     .wvalid_i(fifo_wvalid & sha_en),
@@ -626,8 +632,8 @@ module hmac
   end
 
   // Calculate written message
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) message_length <= '0;
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) message_length <= '0;
     else         message_length <= message_length_d;
   end
 
@@ -666,7 +672,7 @@ module hmac
     .EnProtection (1'b 0)
   ) u_packer (
     .clk_i,
-    .rst_ni,
+    .rst_ni       (rst_n),
 
     .valid_i      (msg_write & sha_en),
     .data_i       (msg_fifo_wdata_endian),
@@ -686,7 +692,7 @@ module hmac
 
   hmac_core u_hmac (
     .clk_i,
-    .rst_ni,
+    .rst_ni        (rst_n),
     .secret_key_i  (secret_key),
     .hmac_en_i     (hmac_en),
     .digest_size_i (digest_size),
@@ -726,7 +732,7 @@ module hmac
       .MultimodeEn(1)
   ) u_prim_sha2_512 (
     .clk_i,
-    .rst_ni,
+    .rst_ni               (rst_n),
     .wipe_secret_i        (wipe_secret),
     .wipe_v_i             (wipe_v),
     .fifo_rvalid_i        (shaf_rvalid),
@@ -883,8 +889,8 @@ module hmac
 
   prim_mubi_pkg::mubi4_t idle_q, idle_d;
   assign idle_d = prim_mubi_pkg::mubi4_bool_to_mubi(idle);
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       idle_q <= prim_mubi_pkg::MuBi4False;
     end else begin
       idle_q <= idle_d;
