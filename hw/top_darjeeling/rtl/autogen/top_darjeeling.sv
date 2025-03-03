@@ -316,6 +316,12 @@ module top_darjeeling #(
   localparam int LcCtrlNumRmaAckSigs = 1;
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
+  // local parameters for sram_ctrl_ret_aon
+  localparam int SramCtrlRetAonOutstanding = 2;
+  // local parameters for sram_ctrl_main
+  localparam int SramCtrlMainOutstanding = 2;
+  // local parameters for sram_ctrl_mbox
+  localparam int SramCtrlMboxOutstanding = 2;
   // local parameters for racl_ctrl
   localparam int RaclCtrlNumSubscribingIps = 9;
   // local parameters for rv_core_ibex
@@ -1684,7 +1690,8 @@ module top_darjeeling #(
     .InstSize(SramCtrlRetAonInstSize),
     .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlRetAonOutstanding)
   ) u_sram_ctrl_ret_aon (
       // [50]: fatal_error
       .alert_tx_o  ( alert_tx[50:50] ),
@@ -2054,7 +2061,8 @@ module top_darjeeling #(
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlMainOutstanding)
   ) u_sram_ctrl_main (
       // [68]: fatal_error
       .alert_tx_o  ( alert_tx[68:68] ),
@@ -2091,7 +2099,8 @@ module top_darjeeling #(
     .InstSize(SramCtrlMboxInstSize),
     .NumRamInst(SramCtrlMboxNumRamInst),
     .InstrExec(SramCtrlMboxInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlMboxOutstanding)
   ) u_sram_ctrl_mbox (
       // [69]: fatal_error
       .alert_tx_o  ( alert_tx[69:69] ),

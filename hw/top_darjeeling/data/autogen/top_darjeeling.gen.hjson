@@ -4346,6 +4346,15 @@
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
         }
+        {
+          name: Outstanding
+          desc: Number of outstanding TLUL transactions
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: SramCtrlRetAonOutstanding
+        }
       ]
       inter_signal_list:
       [
@@ -6622,6 +6631,15 @@
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
+        {
+          name: Outstanding
+          desc: Number of outstanding TLUL transactions
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: SramCtrlMainOutstanding
+        }
       ]
       inter_signal_list:
       [
@@ -6919,6 +6937,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxNumPrinceRoundsHalf
+        }
+        {
+          name: Outstanding
+          desc: Number of outstanding TLUL transactions
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: SramCtrlMboxOutstanding
         }
       ]
       inter_signal_list:
