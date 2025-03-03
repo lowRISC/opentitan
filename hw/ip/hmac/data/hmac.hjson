@@ -85,6 +85,13 @@
     }
   ],
   param_list: [
+    { name:    "Stub",
+      type:    "bit",
+      default: "0",
+      desc:    "Stub out the core of HMAC logic"
+      local:   "false",
+      expose:  "true"
+    }
     { name:    "NumDigestWords",
       type:    "int",
       default: "16",
