@@ -4653,6 +4653,7 @@
           width: 1
           default: prim_mubi_pkg::MuBi8False
           inst_name: rv_dm
+          top_signame: rv_dm_otp_dis_rv_dm_late_debug
           index: -1
         }
         {
@@ -11534,6 +11535,7 @@
       lc_ctrl.otp_manuf_state
       keymgr_dpe.otp_device_id
       sram_ctrl_main.otp_en_sram_ifetch
+      rv_dm.otp_dis_rv_dm_late_debug
     ]
     external:
     {
@@ -22602,6 +22604,7 @@
         width: 1
         default: prim_mubi_pkg::MuBi8False
         inst_name: rv_dm
+        top_signame: rv_dm_otp_dis_rv_dm_late_debug
         index: -1
       }
       {
@@ -31334,6 +31337,15 @@
         package: prim_mubi_pkg
         struct: mubi8
         signame: sram_ctrl_main_otp_en_sram_ifetch
+        width: 1
+        type: uni
+        end_idx: -1
+        default: prim_mubi_pkg::MuBi8False
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        signame: rv_dm_otp_dis_rv_dm_late_debug
         width: 1
         type: uni
         end_idx: -1
