@@ -35,6 +35,7 @@ cc_library(
     hdrs = ["alert_handler_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:rstmgr",
@@ -48,6 +49,7 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
@@ -431,7 +433,7 @@ cc_library(
     hdrs = ["ret_sram_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
