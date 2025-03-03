@@ -1143,6 +1143,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .HmacStub(1'b1),
+    .SpiHost0Stub(1'b1),
+    .SpiHost1Stub(1'b1),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
@@ -1172,6 +1174,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
     .HmacStub(1'b1),
+    .SpiHost0Stub(1'b1),
+    .SpiHost1Stub(1'b1),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
