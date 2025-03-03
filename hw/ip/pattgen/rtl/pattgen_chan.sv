@@ -79,21 +79,29 @@ module pattgen_chan
     end
   end
 
-  assign pcl_int_d = (!enable) ? 1'h0 :
-                     (clk_cnt_q == prediv_q) ? ~pcl_int_q : pcl_int_q;
+  // disable the clock if the previous pattern is complete
+  assign clk_en = ~complete_q;
+
   assign clk_cnt_d = (!enable) ? 32'h0:
                      (clk_cnt_q == prediv_q) ? 32'h0 : (clk_cnt_q + 32'h1);
 
-  // disable the clock if the previous pattern is complete
-  assign clk_en    = ~complete_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      clk_cnt_q <= 32'h0;
+    end else begin
+      clk_cnt_q <= clk_en ? clk_cnt_d : clk_cnt_q;
+    end
+  end
+
+  assign pcl_int_d = (!enable) ? 1'h0 :
+                     (clk_cnt_q == prediv_q) ? ~pcl_int_q : // Rollover
+                     pcl_int_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       pcl_int_q <= 1'h0;
-      clk_cnt_q <= 32'h0;
     end else begin
       pcl_int_q <= clk_en ? pcl_int_d : pcl_int_q;
-      clk_cnt_q <= clk_en ? clk_cnt_d : clk_cnt_q;
     end
   end
 
