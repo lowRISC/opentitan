@@ -108,6 +108,7 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 /**
  * Certificate data.
  */
+static hmac_digest_t kZeroDigest = {.digest = {0, 0, 0, 0, 0, 0, 0, 0}};
 static hmac_digest_t otp_creator_sw_cfg_measurement;
 static hmac_digest_t otp_owner_sw_cfg_measurement;
 static hmac_digest_t otp_rot_creator_auth_codesign_measurement;
@@ -359,15 +360,13 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
 }
 
 /**
- * Sets the attestation binding to the ROM_EXT measurement, and the sealing
- * binding to all zeros.
+ * Sets the attestation and sealing binding to all zeros.
  *
- * The sealing binding value is set to all zeros as it is unused in the current
- * personalization flow. This may be changed in the future.
+ * The attestation binding (and subsequently CDI_0) will be updated later when
+ * the ROM_EXT boots for the first time.
  */
-static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
-  memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
-         kDiceMeasurementSizeInBytes);
+static void compute_keymgr_owner_int_binding(void) {
+  memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // In the silicon_creator stage, we set the sealing binding to the
   // manifest->identifier of the ROM_EXT stage.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
@@ -375,22 +374,13 @@ static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
 }
 
 /**
- * Sets the attestation binding to a combination of the Owner firmware and
- * Ownership Manifest measurements, and the sealing binding to all zeros.
+ * Sets the attestation binding to all zeros as it (and subsequently CDI_1) will
+ * be updated later when the ROM_EXT boots for the first time.
  *
- * The sealing binding value is set to the TEST application key domain.
+ * The sealing binding value is set to the PROD application key domain.
  */
-static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
-  hmac_digest_t combined_measurements;
-  hmac_sha256_init();
-  hmac_sha256_update((unsigned char *)inputs->owner_measurement,
-                     kDiceMeasurementSizeInBytes);
-  hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
-                     kDiceMeasurementSizeInBytes);
-  hmac_sha256_process();
-  hmac_sha256_final(&combined_measurements);
-  memcpy(attestation_binding_value.data, combined_measurements.digest,
-         kDiceMeasurementSizeInBytes);
+static void compute_keymgr_owner_binding(void) {
+  memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // We expect the owner to use a Application Key binding  of
   // {`prod`, 0, ... }.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
@@ -562,16 +552,14 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
-  compute_keymgr_owner_int_binding(&certgen_inputs);
+  compute_keymgr_owner_int_binding();
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
                                      &curr_pubkey));
-  TRY(dice_cdi_0_cert_build((hmac_digest_t *)certgen_inputs.rom_ext_measurement,
-                            certgen_inputs.rom_ext_security_version,
-                            &cdi_0_key_ids, &curr_pubkey, all_certs,
-                            &curr_cert_size));
+  TRY(dice_cdi_0_cert_build(&kZeroDigest, 0, &cdi_0_key_ids, &curr_pubkey,
+                            all_certs, &curr_cert_size));
   cdi_0_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
@@ -582,17 +570,15 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
-  compute_keymgr_owner_binding(&certgen_inputs);
+  compute_keymgr_owner_binding();
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
                               &attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
-  TRY(dice_cdi_1_cert_build(
-      (hmac_digest_t *)certgen_inputs.owner_measurement,
-      (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
-      certgen_inputs.owner_security_version, kOwnerAppDomainProd,
-      &cdi_1_key_ids, &curr_pubkey, all_certs, &curr_cert_size));
+  TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, 0, kOwnerAppDomainProd,
+                            &cdi_1_key_ids, &curr_pubkey, all_certs,
+                            &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.

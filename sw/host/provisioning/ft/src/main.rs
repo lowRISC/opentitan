@@ -65,26 +65,6 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
     target_mission_mode_lc_state: DifLcCtrlState,
 
-    /// Measurement of the ROM_EXT image to be loaded onto the device.
-    #[arg(long)]
-    pub rom_ext_measurement: String,
-
-    /// Security version the ROM_EXT image to be loaded onto the device.
-    #[arg(long, default_value = "0")]
-    pub rom_ext_security_version: u32,
-
-    /// Measurement of the Ownership Manifest to be loaded onto the device.
-    #[arg(long)]
-    pub owner_manifest_measurement: String,
-
-    /// Measurement of the Owner image to be loaded onto the device.
-    #[arg(long)]
-    pub owner_measurement: String,
-
-    /// Security version the Owner image to be loaded onto the device.
-    #[arg(long, default_value = "0")]
-    pub owner_security_version: u32,
-
     /// Token Encryption public key (RSA) DER file path.
     #[arg(long)]
     token_encrypt_key_der_file: PathBuf,
@@ -196,15 +176,6 @@ fn main() -> Result<()> {
     }
 
     // Parse and prepare personalization ujson data payload.
-    let rom_ext_measurement =
-        hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.rom_ext_measurement.as_str())?;
-    let rom_ext_security_version = opts.provisioning_data.rom_ext_security_version;
-    let owner_manifest_measurement = hex_string_to_u32_arrayvec::<8>(
-        opts.provisioning_data.owner_manifest_measurement.as_str(),
-    )?;
-    let owner_measurement =
-        hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
-    let owner_security_version = opts.provisioning_data.owner_security_version;
     let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
     let ext_ca_key_id = if let Some(ext) = ca_cfgs.get("ext") {
         hex_string_to_u8_arrayvec::<20>(ext.key_id.as_str())?
@@ -212,11 +183,6 @@ fn main() -> Result<()> {
         ArrayVec::<u8, 20>::new()
     };
     let _perso_certgen_inputs = ManufCertgenInputs {
-        rom_ext_measurement: rom_ext_measurement.clone(),
-        rom_ext_security_version,
-        owner_manifest_measurement: owner_manifest_measurement.clone(),
-        owner_measurement: owner_measurement.clone(),
-        owner_security_version,
         dice_auth_key_key_id: dice_ca_key_id.clone(),
         ext_auth_key_key_id: ext_ca_key_id.clone(),
     };
