@@ -273,11 +273,6 @@ class OtDut():
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
             --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
-            --rom-ext-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --owner-manifest-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --owner-measurement="{_ZERO_256BIT_HEXSTR}" \
-            --rom-ext-security-version="0" \
-            --owner-security-version="0" \
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
