@@ -86,7 +86,7 @@ typedef struct boot_svc_ownership_activate_res {
   /**
    * Response status from the ROM_EXT.
    */
-  rom_error_t status;
+  uint32_t status;
 } boot_svc_ownership_activate_res_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_activate_res_t, header, 0);
