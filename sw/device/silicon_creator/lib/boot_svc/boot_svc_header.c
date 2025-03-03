@@ -64,25 +64,25 @@ static const uint32_t kCheckShares[kHmacDigestNumWords + 3] = {
 rom_error_t boot_svc_header_check(const boot_svc_header_t *header) {
   rom_error_t error = kErrorBootSvcBadHeader;
   hmac_digest_t digest;
-  boot_svc_header_digest_compute(header, &digest);
-
   size_t i = 0;
-  for (; launder32(i) < kHmacDigestNumWords; ++i) {
-    error ^= header->digest.digest[i] ^ digest.digest[i] ^ kCheckShares[i];
+  if (launder32(header->length) < CHIP_BOOT_SVC_MSG_HEADER_SIZE) {
+    return kErrorBootSvcBadHeader;
+  }
+  HARDENED_CHECK_GE(header->length, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
+  error ^= kCheckShares[i++];
+
+  if (launder32(header->length) > CHIP_BOOT_SVC_MSG_SIZE_MAX) {
+    return kErrorBootSvcBadHeader;
+  }
+  HARDENED_CHECK_LE(header->length, CHIP_BOOT_SVC_MSG_SIZE_MAX);
+  error ^= kCheckShares[i++];
+
+  boot_svc_header_digest_compute(header, &digest);
+  for (size_t j = 0; launder32(j) < kHmacDigestNumWords; ++i, ++j) {
+    error ^= header->digest.digest[j] ^ digest.digest[j] ^ kCheckShares[i];
   }
 
-  if (launder32(header->length) >= CHIP_BOOT_SVC_MSG_HEADER_SIZE) {
-    HARDENED_CHECK_GE(header->length, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
-    error ^= kCheckShares[i];
-  }
-
-  ++i;
-  if (launder32(header->length) <= CHIP_BOOT_SVC_MSG_SIZE_MAX) {
-    HARDENED_CHECK_LE(header->length, CHIP_BOOT_SVC_MSG_SIZE_MAX);
-    error ^= kCheckShares[i];
-  }
-
-  error ^= header->identifier ^ kCheckShares[++i];
+  error ^= header->identifier ^ kCheckShares[i];
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
     HARDENED_CHECK_EQ(i, ARRAYSIZE(kCheckShares) - 1);
