@@ -1067,6 +1067,8 @@ module chip_earlgrey_cw310 #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
     .HmacStub(1'b1),
+    .SpiHost0Stub(1'b1),
+    .SpiHost1Stub(1'b1),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
     .OtpMacroMemInitFile(OtpMacroMemInitFile),
