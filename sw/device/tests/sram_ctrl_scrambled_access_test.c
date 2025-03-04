@@ -11,12 +11,12 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"     // Generated.
@@ -373,8 +373,8 @@ static status_t sync_testbench(uint8_t prior_phase, uint8_t next_phase) {
     test_status_set(kTestStatusInWfi);
     test_status_set(kTestStatusInTest);
 
-    TRY(flash_ctrl_testutils_backdoor_wait_update(&kTestPhase, prior_phase,
-                                                  kTestPhaseTimeoutUsec));
+    IBEX_TRY_SPIN_FOR(OTTF_BACKDOOR_READ(kTestPhase) != prior_phase,
+                      kTestPhaseTimeoutUsec);
 
     TRY_CHECK(kTestPhase == next_phase);
   }
