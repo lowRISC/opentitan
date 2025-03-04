@@ -13,6 +13,9 @@ class gpio_base_vseq extends cip_base_vseq #(
   rand uint delay;
   bit  do_init_reset = 1;
 
+  // Sequencer used to run sub-sequences inside of a main sequence
+  uvm_sequencer#(.REQ(gpio_seq_item), .RSP(gpio_seq_item)) sqr_h;
+
   constraint delay_c {
     delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
   }

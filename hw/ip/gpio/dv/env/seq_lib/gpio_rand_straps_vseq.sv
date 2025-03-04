@@ -47,21 +47,48 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     join
   endtask : csr_strap_read
 
+  // Drive the strap_en_i input signal using the strap_en_seq sequence
+  task set_strap_en(bit strap_en);
+
+    string strap_seqr = "strap_sequencer";
+    strap_sequencer seqr;
+    gpio_strap_en_vseq strap_en_seq;
+
+    // Instantiate the strap_en sequence
+    strap_en_seq = gpio_strap_en_vseq::type_id::create("strap_en_seq");
+
+    if(!$cast(seqr, p_sequencer.get_sequencer(strap_seqr))) begin
+      `uvm_fatal(`gfn, "cast error getting the strap sequencer")
+    end
+
+    // Start the strap_en_seq sequence with the desired value.
+    if (seqr != null) begin
+      `uvm_info(`gfn, $sformatf("Driving strap_en = %0d", strap_en), UVM_HIGH)
+      strap_en_seq.strap_en = strap_en;
+      strap_en_seq.start(seqr);
+    end
+  endtask : set_strap_en
+
   task test_straps_gpio_in();
     // Drive the gpio_in
     drive_gpio_in(gpio_in);
 
-    // Random wait to drive the strap_en
-    // The strap feature should work from zero clock cycles
-    // after driving the gpio_i inputs into the interface.
-    short_wait(0);
+    // Wait at least one clock cycle to drive the strap_en
+    // Required because is required one clock cycle to update the gpio_in regsisters.
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
+    cfg.clk_rst_vif.wait_clks(delay);
 
     // Trigger the snapshot of gpio_in to be stored in the straps registers
     cfg.straps_vif_inst.tb_port.strap_en = 1;
     // Wait at least one clock cycle to update the strap register values.
     short_wait(1);
 
-    // Read the hw_straps_data_in registers and check the expected value in the scoreboard
+    // Wait some clock cycles to avoid race condition between the prediction value updated
+    // in the scoreboard happening together with the csr read transaction.
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
+    cfg.clk_rst_vif.wait_clks(delay);
+
+    // Read the hw_straps_data_in and check the expected value in the scoreboard
     csr_strap_read();
 
     // Random wait
@@ -74,9 +101,8 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     // Random wait
     short_wait(0);
 
-    // Read to make sure that if does not affect the straps registers after undrive the gpio_in
+    // Read again to make sure that if does not affect the straps registers after undrive the gpio_in
     csr_strap_read();
-
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
@@ -96,47 +122,44 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
 
   endtask : test_straps_gpio_out
 
-  // This task start the strap en test. First it will test the strap enable
-  // with the driven gpio_i. On a second step drive the gpio_out and check the strap
-  // registers based on that. And finally applies a second reset and check if the strap registers
-  // are reseted.
   task start_test();
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_out)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_oe)
 
-    // User case to test the straps output, with gpio_in data randomised
+    // User case to test the strap outputs, with gpio_in data randomised
     test_straps_gpio_in();
 
-    // User case to test the straps output/registers, with gpio_out data randomised
+    // User case to test the strap outputs, with gpio_out data randomised
     // The gpio_out should not affect the straps output/registers.
     test_straps_gpio_out();
 
     // Random wait
     short_wait(0);
 
+    // Disable the strap_en
+    set_strap_en('b0);
+
     // Set zero to the strap_en input.
     cfg.straps_vif_inst.tb_port.strap_en = 0;
     // Apply reset and make sure the strap registers are clean
     apply_reset();
 
-    // Random wait
-    // At least one clock cycle required to take the updated register values.
+    // Random wait, at least one clock cycle to avoid race condition
+    // between the reset and read transactions.
     short_wait(1);
-
     // Read the straps registers after reset
     csr_strap_read();
 
   endtask : start_test
 
   task body();
-    `uvm_info(`gfn, "Starting the test", UVM_HIGH)
-    // Just a minimum one clock cycle wait between more than one iteration if this
-    // test is executed into the stress_all virtual sequence.
-    short_wait(1);
-    start_test();
-    `uvm_info(`gfn, "End of the test", UVM_HIGH)
+      // Random wait
+      short_wait(0);
+      `uvm_info(`gfn, "Start of Test", UVM_HIGH)
+      start_test();
+      `uvm_info(`gfn, "End of Test", UVM_HIGH)
   endtask : body
 
 endclass : gpio_rand_straps_vseq
