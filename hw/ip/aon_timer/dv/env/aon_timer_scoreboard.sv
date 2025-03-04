@@ -59,7 +59,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   event sample_wdog_bite_timer_coverage;
   bit predicted_wkup_intr_q[$];
   bit predicted_wdog_intr_q[$];
-  bit ongoing_intr_state_read;
+  int unsigned ongoing_intr_state_read;
 
   // A write of 0 to wkup_cause may take some delay to arrive because of CDC crossing (from the TL
   // bus on the main clock to the register on the aon clock). This timing might overlap with an
@@ -80,6 +80,7 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   extern function new (string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
+  extern function void check_phase(uvm_phase phase);
   // Convenience task which keeps count of a given AON clock cycle. Currently only used to
   // distinguish the case when a write to wkup_cause occurs at the same time as a interrupt being
   // high
@@ -204,6 +205,14 @@ function void aon_timer_scoreboard::build_phase(uvm_phase phase);
   timed_regs.ral = ral;
   init_timed_regs();
 endfunction : build_phase
+
+function void aon_timer_scoreboard::check_phase(uvm_phase phase);
+  super.check_phase(phase);
+  if (ongoing_intr_state_read > 0) begin
+    `uvm_fatal(`gfn, $sformatf("%m - ongoing_intr_state_read=%0d should be 0",
+                               ongoing_intr_state_read))
+  end
+endfunction
 
 task aon_timer_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
@@ -501,9 +510,9 @@ task aon_timer_scoreboard::predict_intr_state(bit [1:0] pred_intr_state, bit fie
 
                 if (exit_loop)
                   break;
-             end
+              end
               // If the update occurs during the D-phase, we wait until the D-phase ends
-              if (ongoing_intr_state_read) begin
+              if (ongoing_intr_state_read > 0) begin
                 while (cfg.m_tl_agent_cfg.vif.d2h.d_valid) begin
                   if (cfg.m_tl_agent_cfg.vif.h2d.d_ready) begin
                     cfg.clk_rst_vif.wait_n_clks(1);
@@ -512,7 +521,6 @@ task aon_timer_scoreboard::predict_intr_state(bit [1:0] pred_intr_state, bit fie
                   end
                   cfg.clk_rst_vif.wait_n_clks(1);
                 end
-                ongoing_intr_state_read = 0;
               end
 
               if (!field_only) begin
@@ -685,13 +693,11 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
     end
   end
 
-  // Flag to let the model know if a current read is being carried out. Otherwise, the TB may
+  // Counter to let the model know if a current read is being carried out. Otherwise, the TB may
   // think the actual RTL intr_state value is different from the value being reported back if the
   // change happens right around the same time as the access
-  if (csr.get_name() == "intr_state" && !write)
-    ongoing_intr_state_read = 1;
-  else
-    ongoing_intr_state_read = 0;
+  if (csr.get_name() == "intr_state" && addr_phase_read)
+    ongoing_intr_state_read++;
 
   // process the csr req
   // for write, update local variable and fifo at address phase
@@ -865,7 +871,7 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
 
   // Unset flag at the end of the read phase
   if (csr.get_name() == "intr_state" && data_phase_read)
-    ongoing_intr_state_read = 0;
+    ongoing_intr_state_read--;
 
   // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
   if (data_phase_read) begin
