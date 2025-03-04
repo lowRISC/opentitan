@@ -15,6 +15,7 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/alert_handler:rtl_files",
         "//hw/top_earlgrey/ip_autogen/clkmgr:rtl_files",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:rtl_files",
+        "//hw/top_earlgrey/ip_autogen/gpio:rtl_files",
         "//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl_files",
         "//hw/top_earlgrey/ip_autogen/pinmux:rtl_files",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:rtl_files",

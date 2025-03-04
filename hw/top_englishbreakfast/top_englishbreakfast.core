@@ -20,7 +20,6 @@ filesets:
       - lowrisc:ip:sram_ctrl
       # Instantiated by topgen
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:gpio
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device
       - lowrisc:ip:spi_host
@@ -39,6 +38,7 @@ filesets:
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:opentitan:top_englishbreakfast_rstmgr
       - lowrisc:opentitan:top_englishbreakfast_rv_plic
+      - lowrisc:opentitan:top_englishbreakfast_gpio
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
       - lowrisc:tlul:headers

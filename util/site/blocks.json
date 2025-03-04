@@ -121,8 +121,8 @@
     },
     "gpio": {
         "name": "GPIO",
-        "data_file": "hw/ip/gpio/data/gpio.hjson",
-        "report": "/hw/ip/gpio/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/gpio/data/gpio.hjson",
+        "report": "/hw/top_earlgrey/ip_autogen/gpio/dv"
     },
     "i2c": {
         "name": "I2C",

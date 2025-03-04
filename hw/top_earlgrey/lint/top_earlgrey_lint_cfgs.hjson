@@ -101,9 +101,15 @@
                   ]
              },
              {    name: gpio
-                  fusesoc_core: lowrisc:ip:gpio
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_gpio
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/gpio/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/gpio/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              {    name: hmac
                   fusesoc_core: lowrisc:ip:hmac
