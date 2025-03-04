@@ -45,7 +45,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     hashfile = None
-    if ctx.attr.kind == "rom":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom":
         (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
             name = name,
@@ -56,7 +57,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
-    elif ctx.attr.kind == "ram":
+    elif kind == "ram":
         default = elf
         rom = None
 
@@ -67,7 +68,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
-    elif ctx.attr.kind == "flash":
+    elif kind == "flash":
         # First convert to VMEM, then scramble according to flash
         # scrambling settings.
         # When dvsim and bazel use different otp image which has different scramble option,
@@ -94,7 +95,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         default = vmem
         vmem = vmem_base
     else:
-        fail("Not implemented: kind ==", ctx.attr.kind)
+        fail("Not implemented: kind ==", kind)
 
     logs = extract_software_logs(
         ctx,
