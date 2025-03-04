@@ -993,6 +993,7 @@
     {
       name: gpio
       type: gpio
+      template_type: gpio
       clock_srcs:
       {
         clk_i: io_div4
@@ -1011,6 +1012,7 @@
         GpioAsHwStrapsEn: "0"
         GpioAsyncOn: "1"
       }
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
