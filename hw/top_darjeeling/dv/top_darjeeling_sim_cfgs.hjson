@@ -25,7 +25,6 @@
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/dma/dv/dma_sim_cfg.hjson",
              "{proj_root}/hw/ip/edn/dv/edn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
              "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",
@@ -52,6 +51,7 @@
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              // Top level IPs.
+             "{proj_root}/hw/top_darjeeling/ip_autogen/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",

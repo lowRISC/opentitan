@@ -84,11 +84,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/edn/lint/{tool}"
              },
-             {    name: gpio
-                  fusesoc_core: lowrisc:ip:gpio
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/gpio/lint/{tool}"
-             },
              {    name: hmac
                   fusesoc_core: lowrisc:ip:hmac
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -183,6 +178,17 @@
                   fusesoc_core: lowrisc:opentitan:top_darjeeling_rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/rstmgr/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
+             {    name: gpio
+                  fusesoc_core: lowrisc:opentitan:top_darjeeling_gpio
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_darjeeling/ip_autogen/gpio/lint/{tool}"
                   overrides: [
                     {
                       name: design_level

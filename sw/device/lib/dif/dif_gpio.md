@@ -1,6 +1,6 @@
 # GPIO DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [GPIO DIF](../../../../hw/ip/gpio/README.md).
+This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [GPIO DIF](../../../../hw/top_earlgrey/ip_autogen/gpio/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
 
 <h2>DIF Checklist</h2>

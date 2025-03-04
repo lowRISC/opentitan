@@ -27,7 +27,6 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/ip/csrng/data/csrng.hjson",
         REPO_TOP / "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
         REPO_TOP / "hw/ip/edn/data/edn.hjson",
-        REPO_TOP / "hw/ip/gpio/data/gpio.hjson",
         REPO_TOP / "hw/ip/hmac/data/hmac.hjson",
         REPO_TOP / "hw/ip/i2c/data/i2c.hjson",
         REPO_TOP / "hw/ip/keymgr/data/keymgr.hjson",
@@ -57,6 +56,7 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson",
         REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip/gpio/data/gpio.hjson",
     ],
 }
 

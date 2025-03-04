@@ -32,8 +32,6 @@ testlist = [
     # generating include define headers
     ["uart.h", False,
      "./regtool.py -D ../hw/ip/uart/data/uart.hjson > ", ""],
-    ["gpio.h", False,
-     "./regtool.py -D ../hw/ip/gpio/data/gpio.hjson > ", ""],
     ["spi_device.h", False,
      "./regtool.py -D ../hw/ip/spi_device/data/spi_device.hjson > ", ""]
 ]  # yapf: disable

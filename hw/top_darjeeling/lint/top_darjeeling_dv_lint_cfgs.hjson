@@ -74,9 +74,9 @@
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
              {    name: gpio
-                  fusesoc_core: lowrisc:dv:gpio_sim
+                  fusesoc_core: lowrisc:opentitan:top_darjeeling_gpio_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/gpio/dv/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip_autogen/gpio/dv/lint/{tool}"
              },
              {    name: hmac
                   fusesoc_core: lowrisc:dv:hmac_sim

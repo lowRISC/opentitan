@@ -12,7 +12,6 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_alert_handler_reg
       - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
@@ -50,6 +49,7 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_rstmgr
       - lowrisc:opentitan:top_darjeeling_rv_plic
       - lowrisc:opentitan:top_darjeeling_racl_ctrl
+      - lowrisc:opentitan:top_darjeeling_gpio
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

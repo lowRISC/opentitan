@@ -42,7 +42,6 @@ hw/ip/aon_timer/rtl/*
 hw/ip/csrng/rtl/*
 hw/ip/edn/rtl/*
 hw/ip/entropy_src/rtl/*
-hw/ip/gpio/rtl/*
 hw/ip/hmac/rtl/*
 hw/ip/i2c/rtl/*
 hw/ip/keymgr/rtl/*
@@ -86,7 +85,6 @@ hw/ip/hmac/data/hmac.hjson
 hw/ip/rv_dm/data/rv_dm.hjson
 hw/ip/kmac/data/kmac.hjson
 hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
-hw/ip/gpio/data/gpio.hjson
 hw/ip/otbn/data/otbn.hjson
 hw/ip/entropy_src/data/entropy_src.hjson
 hw/ip/aes/data/aes.hjson
@@ -118,6 +116,7 @@ hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
+hw/top_earlgrey/ip_autogen/gpio/rtl/gpio.hjson
 
 hw/top_earlgrey/data/top_earlgrey.hjson
 hw/top_earlgrey/data/xbar_main.hjson

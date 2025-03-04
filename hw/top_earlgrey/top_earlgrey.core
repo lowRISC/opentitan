@@ -12,7 +12,6 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_reg
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
@@ -48,6 +47,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:opentitan:top_earlgrey_rstmgr
       - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:opentitan:top_earlgrey_gpio
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
