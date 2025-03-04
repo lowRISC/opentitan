@@ -28,7 +28,7 @@ package ac_range_check_env_pkg;
   // Parameters
   parameter uint   NUM_ALERTS       = 2;
   parameter string LIST_OF_ALERTS[] = {"recov_ctrl_update_err", "fatal_fault"};
-  parameter uint   NUM_RANGES       = 32;
+  parameter uint   NUM_RANGES       = ${num_ranges};
 
   // Types
   typedef enum int {
