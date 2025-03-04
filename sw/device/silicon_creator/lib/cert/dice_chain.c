@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
@@ -395,7 +396,8 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
 
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
-    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding) {
+    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding,
+    owner_app_domain_t key_domain) {
   // Handles the certificates from the immutable rom_ext first.
   RETURN_IF_ERROR(dice_chain_attestation_check_uds());
   RETURN_IF_ERROR(dice_chain_attestation_check_cdi_0());
@@ -434,7 +436,7 @@ rom_error_t dice_chain_attestation_owner(
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
         (hmac_digest_t *)bl0_measurement, owner_measurement,
-        owner_manifest->security_version, &dice_chain.key_ids,
+        owner_manifest->security_version, key_domain, &dice_chain.key_ids,
         &dice_chain.subject_pubkey, dice_chain.scratch_cert,
         &updated_cert_size));
     RETURN_IF_ERROR(dice_chain_push_cert("CDI_1", dice_chain.scratch_cert,

@@ -323,8 +323,7 @@ static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
  * Sets the attestation binding to a combination of the Owner firmware and
  * Ownership Manifest measurements, and the sealing binding to all zeros.
  *
- * The sealing binding value is set to all zeros as it is unused in the current
- * personalization flow. This may be changed in the future.
+ * The sealing binding value is set to the TEST application key domain.
  */
 static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   hmac_digest_t combined_measurements;
@@ -338,6 +337,7 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   memcpy(attestation_binding_value.data, combined_measurements.digest,
          kDiceMeasurementSizeInBytes);
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
+  sealing_binding_value.data[0] = kOwnerAppDomainTest;
 }
 
 /**
@@ -530,8 +530,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(dice_cdi_1_cert_build(
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
-      certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
-      all_certs, &curr_cert_size));
+      certgen_inputs.owner_security_version, kOwnerAppDomainTest,
+      &cdi_1_key_ids, &curr_pubkey, all_certs, &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
