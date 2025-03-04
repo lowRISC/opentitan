@@ -362,7 +362,7 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   // We expect the owner to use a Application Key binding  of
   // {`prod`, 0, ... }.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
-  sealing_binding_value.data[0] = kOwnerAppDomainProd;
+  sealing_binding_value.data[0] = kOwnerAppDomainTest;
 }
 
 /**
@@ -557,7 +557,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(dice_cdi_1_cert_build(
       (hmac_digest_t *)certgen_inputs.owner_measurement,
       (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
-      certgen_inputs.owner_security_version, kOwnerAppDomainProd,
+      certgen_inputs.owner_security_version, kOwnerAppDomainTest,
       &cdi_1_key_ids, &curr_pubkey, all_certs, &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
