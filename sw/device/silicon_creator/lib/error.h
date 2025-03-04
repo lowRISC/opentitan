@@ -227,6 +227,7 @@ enum module_ {
   X(kErrorOwnershipFlashConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipFlashConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidRescueBounds, ERROR_(19, kModuleOwnership, kInvalidArgument)), \
   /* Group all of the tag version error codes together */ \
   X(kErrorOwnershipOWNRVersion,       ERROR_(0x70, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipAPPKVersion,       ERROR_(0x71, kModuleOwnership, kInvalidArgument)), \

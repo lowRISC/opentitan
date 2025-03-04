@@ -850,6 +850,10 @@ extern "C" {
 // for testing.
 hardened_bool_t rom_ext_flash_overlap(uint32_t, uint32_t);
 hardened_bool_t rom_ext_flash_exclusive(uint32_t, uint32_t);
+rom_error_t owner_block_application_key_check(
+    const owner_application_key_t *key);
+rom_error_t owner_block_flash_info_check(const owner_flash_info_config_t *info);
+rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue);
 }
 
 // Test the flash bounds checking functions.
@@ -879,6 +883,177 @@ testing::Values(
   FlashRegion{0x020, 0x100, /*overlap=*/false, /*exclusive=*/false}, // Full not ROM_EXT side A.
   FlashRegion{0x020, 0x101, /*overlap=*/true, /*exclusive=*/false}, // Side A intrudes in to RX_B.
   FlashRegion{0x000, 0x200, /*overlap=*/true, /*exclusive=*/false} // Full flash region.
+));
+// clang-format on
+
+struct OwnerBlockLengths {
+  tlv_tag_t tag;
+  int16_t length;
+  rom_error_t expect;
+};
+
+class OwnerBlockConfigCheckTest
+    : public OwnerBlockTest,
+      public testing::WithParamInterface<OwnerBlockLengths> {};
+
+// Tests that owner_block_parse checks the lengths of the TLV items in the owner
+// config block and returns errors for invalid lengths.
+TEST_P(OwnerBlockConfigCheckTest, ConfigBoundsTest) {
+  auto param = GetParam();
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+
+  if (param.length != -1) {
+    block.Find(param.tag)
+        .Seek(offsetof(tlv_header_t, length))
+        .Write(param.length);
+  }
+
+  rom_error_t error = owner_block_parse(
+      block.get(), /*check_only=*/kHardenedBoolTrue, nullptr, nullptr);
+  EXPECT_EQ(error, param.expect);
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(AllCases, OwnerBlockConfigCheckTest,
+testing::Values(
+    OwnerBlockLengths{kTlvTagApplicationKey, 40, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagApplicationKey, 512, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagFlashConfig, 4, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagInfoConfig, 4, kErrorOwnershipInvalidTagLength},
+    OwnerBlockLengths{kTlvTagRescueConfig, 12, kErrorOwnershipInvalidTagLength}
+));
+// clang-format on
+
+class ApplicationKeyCheckTest
+    : public OwnerBlockTest,
+      public testing::WithParamInterface<
+          std::tuple<ownership_key_alg_t, rom_error_t>> {};
+
+TEST_P(ApplicationKeyCheckTest, KeyAlgo) {
+  ownership_key_alg_t key_alg;
+  rom_error_t expect;
+  std::tie(key_alg, expect) = GetParam();
+
+  owner_application_key_t key = {
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = sizeof(owner_application_key_t),
+          },
+      .key_alg = key_alg,
+  };
+
+  rom_error_t error = owner_block_application_key_check(&key);
+  EXPECT_EQ(error, expect);
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(AllCases, ApplicationKeyCheckTest,
+testing::Values(
+    // Currently supported algorithms:
+    std::make_tuple(kOwnershipKeyAlgEcdsaP256, kErrorOk),
+    std::make_tuple(kOwnershipKeyAlgHybridSpxPure, kErrorOk),
+    std::make_tuple(kOwnershipKeyAlgHybridSpxPrehash, kErrorOk),
+    // Currently unsupported algorithms:
+    std::make_tuple(kOwnershipKeyAlgSpxPure, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgSpxPrehash, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgSq20Pure, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgSq20Prehash, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgHybridSq20Pure, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgHybridSq20Prehash, kErrorOwnershipInvalidAlgorithm),
+    std::make_tuple(kOwnershipKeyAlgRsa, kErrorOwnershipInvalidAlgorithm)
+));
+// clang-format on
+
+class RescueCheckTest : public OwnerBlockTest,
+                        public testing::WithParamInterface<
+                            std::tuple<uint16_t, uint16_t, rom_error_t>> {};
+
+TEST_P(RescueCheckTest, RescueBounds) {
+  uint16_t start, size;
+  rom_error_t expect;
+  std::tie(start, size, expect) = GetParam();
+
+  owner_rescue_config_t rescue = {
+      .header =
+          {
+              .tag = kTlvTagRescueConfig,
+              .length = sizeof(owner_rescue_config_t),
+          },
+      .start = start,
+      .size = size,
+  };
+
+  rom_error_t error = owner_block_rescue_check(&rescue);
+  EXPECT_EQ(error, expect);
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(AllCases, RescueCheckTest,
+testing::Values(
+    std::make_tuple(32, 224, kErrorOk),
+    // Starts in ROM_EXT region.
+    std::make_tuple(0, 224, kErrorOwnershipInvalidRescueBounds),
+    // Too big
+    std::make_tuple(32, 225, kErrorOwnershipInvalidRescueBounds)
+));
+// clang-format on
+
+class FlashInfoCheckTest : public OwnerBlockTest,
+                           public testing::WithParamInterface<
+                               std::tuple<uint8_t, uint8_t, rom_error_t>> {};
+
+TEST_P(FlashInfoCheckTest, ValidPage) {
+  uint16_t bank, page;
+  rom_error_t expect;
+  std::tie(bank, page, expect) = GetParam();
+
+  union {
+    owner_flash_info_config_t info;
+    uint8_t
+        memory[sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t)];
+  } data = {.info = {
+                .header =
+                    {
+                        .tag = kTlvTagInfoConfig,
+                        .length = sizeof(owner_flash_info_config_t) +
+                                  sizeof(owner_info_page_t),
+                    },
+            }};
+
+  data.info.config[0].bank = bank;
+  data.info.config[0].page = page;
+
+  rom_error_t error = owner_block_flash_info_check(&data.info);
+  EXPECT_EQ(error, expect);
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(AllCases, FlashInfoCheckTest,
+testing::Values(
+    // Bank 0 INFO pages:
+    std::make_tuple(0, 0, kErrorOwnershipBadInfoPage),
+    std::make_tuple(0, 1, kErrorOwnershipBadInfoPage),
+    std::make_tuple(0, 2, kErrorOwnershipBadInfoPage),
+    std::make_tuple(0, 3, kErrorOwnershipBadInfoPage),
+    std::make_tuple(0, 4, kErrorOwnershipBadInfoPage),
+    std::make_tuple(0, 5, kErrorOk),
+    std::make_tuple(0, 6, kErrorOk),
+    std::make_tuple(0, 7, kErrorOk),
+    std::make_tuple(0, 8, kErrorOk),
+    std::make_tuple(0, 9, kErrorOwnershipBadInfoPage),
+
+    // Bank 1 INFO pages:
+    std::make_tuple(1, 0, kErrorOwnershipBadInfoPage),
+    std::make_tuple(1, 1, kErrorOwnershipBadInfoPage),
+    std::make_tuple(1, 2, kErrorOwnershipBadInfoPage),
+    std::make_tuple(1, 3, kErrorOwnershipBadInfoPage),
+    std::make_tuple(1, 4, kErrorOwnershipBadInfoPage),
+    std::make_tuple(1, 5, kErrorOk),
+    std::make_tuple(1, 6, kErrorOk),
+    std::make_tuple(1, 7, kErrorOk),
+    std::make_tuple(1, 8, kErrorOk),
+    std::make_tuple(1, 9, kErrorOwnershipBadInfoPage)
 ));
 // clang-format on
 

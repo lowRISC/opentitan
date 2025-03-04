@@ -87,6 +87,84 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
   return kHardenedBoolFalse;
 }
 
+static inline hardened_bool_t is_owner_page(const owner_info_page_t *config) {
+  // On earlgrey_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
+  // for the owner.
+  if (config->page >= 5 && config->page <= 8) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
+// These checking functions aren't defined in owner_block.h because they aren't
+// meant to be public APIs.  They aren't static so we can access the symbols in
+// the unit test program.
+
+// Checks if the half-open range [start..end) overlaps with the ROM_EXT region.
+// The RomExt_Start/End constants are also expressed as half-open ranges.
+hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
+  return (start < kRomExtAEnd && end > kRomExtAStart) ||
+                 (start < kRomExtBEnd && end > kRomExtBStart)
+             ? kHardenedBoolTrue
+             : kHardenedBoolFalse;
+}
+
+// Checks if the half-open range [start..end) is exclusively within the ROM_EXT
+// region. The RomExt_Start/End constants are also expressed as half-open
+// ranges.
+hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
+  return (kRomExtAStart <= start && start < kRomExtAEnd &&
+          kRomExtAStart < end && end <= kRomExtAEnd) ||
+                 (kRomExtBStart <= start && start < kRomExtBEnd &&
+                  kRomExtBStart < end && end <= kRomExtBEnd)
+             ? kHardenedBoolTrue
+             : kHardenedBoolFalse;
+}
+
+rom_error_t owner_block_application_key_check(
+    const owner_application_key_t *key) {
+  if (key->header.length < offsetof(owner_application_key_t, data) ||
+      key->header.length > sizeof(owner_application_key_t)) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  switch (key->key_alg) {
+    case kOwnershipKeyAlgEcdsaP256:
+    case kOwnershipKeyAlgHybridSpxPure:
+    case kOwnershipKeyAlgHybridSpxPrehash:
+      break;
+    default:
+      return kErrorOwnershipInvalidAlgorithm;
+  }
+  return kErrorOk;
+}
+
+rom_error_t owner_block_flash_info_check(
+    const owner_flash_info_config_t *info) {
+  if (info->header.length < sizeof(owner_flash_info_config_t)) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+               sizeof(owner_info_page_t);
+  const owner_info_page_t *config = info->config;
+  for (size_t i = 0; i < len; ++i, ++config) {
+    if (is_owner_page(config) != kHardenedBoolTrue) {
+      return kErrorOwnershipBadInfoPage;
+    }
+  }
+  return kErrorOk;
+}
+
+rom_error_t owner_block_rescue_check(const owner_rescue_config_t *rescue) {
+  if (rescue->header.length < sizeof(owner_rescue_config_t)) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  uint32_t end = rescue->start + rescue->size;
+  if (rescue->start < kRomExtSizeInPages || end > kFlashBankSize) {
+    return kErrorOwnershipInvalidRescueBounds;
+  }
+  return kErrorOk;
+}
+
 void owner_config_default(owner_config_t *config) {
   // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
@@ -113,7 +191,7 @@ rom_error_t owner_block_parse(const owner_block_t *block,
 
   uint32_t remain = sizeof(block->data);
   uint32_t offset = 0;
-  while (remain) {
+  while (remain >= sizeof(tlv_header_t)) {
     const tlv_header_t *item = (const tlv_header_t *)(block->data + offset);
     if (item->tag == kTlvTagNotPresent) {
       break;
@@ -135,6 +213,9 @@ rom_error_t owner_block_parse(const owner_block_t *block,
             keyring->key[keyring->length++] =
                 (const owner_application_key_t *)item;
           }
+        } else {
+          HARDENED_RETURN_IF_ERROR(owner_block_application_key_check(
+              (const owner_application_key_t *)item));
         }
         break;
       case kTlvTagFlashConfig:
@@ -158,6 +239,9 @@ rom_error_t owner_block_parse(const owner_block_t *block,
           if ((hardened_bool_t)config->info != kHardenedBoolFalse)
             return kErrorOwnershipDuplicateItem;
           config->info = (const owner_flash_info_config_t *)item;
+        } else {
+          HARDENED_RETURN_IF_ERROR(owner_block_flash_info_check(
+              (const owner_flash_info_config_t *)item));
         }
         break;
       case kTlvTagRescueConfig:
@@ -168,6 +252,9 @@ rom_error_t owner_block_parse(const owner_block_t *block,
           if ((hardened_bool_t)config->rescue != kHardenedBoolFalse)
             return kErrorOwnershipDuplicateItem;
           config->rescue = (const owner_rescue_config_t *)item;
+        } else {
+          HARDENED_RETURN_IF_ERROR(
+              owner_block_rescue_check((const owner_rescue_config_t *)item));
         }
         break;
       default:
@@ -175,31 +262,6 @@ rom_error_t owner_block_parse(const owner_block_t *block,
     }
   }
   return kErrorOk;
-}
-
-// These functions aren't defined in owner_block.h because they aren't meant
-// to be public APIs.  They aren't static so we can access the symbols in the
-// unit test program.
-
-// Checks if the half-open range [start..end) overlaps with the ROM_EXT region.
-// The RomExt_Start/End constants are also expressed as half-open ranges.
-hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
-  return (start < kRomExtAEnd && end > kRomExtAStart) ||
-                 (start < kRomExtBEnd && end > kRomExtBStart)
-             ? kHardenedBoolTrue
-             : kHardenedBoolFalse;
-}
-
-// Checks if the half-open range [start..end) is exclusively within the ROM_EXT
-// region. The RomExt_Start/End constants are also expressed as half-open
-// ranges.
-hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
-  return (kRomExtAStart <= start && start < kRomExtAEnd &&
-          kRomExtAStart < end && end <= kRomExtAEnd) ||
-                 (kRomExtBStart <= start && start < kRomExtBEnd &&
-                  kRomExtBStart < end && end <= kRomExtBEnd)
-             ? kHardenedBoolTrue
-             : kHardenedBoolFalse;
 }
 
 static hardened_bool_t in_flash_slot(uint32_t bank_start, uint32_t start,
@@ -212,6 +274,9 @@ static hardened_bool_t in_flash_slot(uint32_t bank_start, uint32_t start,
 }
 
 rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
+  if (flash->header.length < sizeof(owner_flash_config_t)) {
+    return kErrorOwnershipInvalidTagLength;
+  }
   size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
                sizeof(owner_flash_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
@@ -335,15 +400,6 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
     }
   }
   return kErrorOk;
-}
-
-static inline hardened_bool_t is_owner_page(const owner_info_page_t *config) {
-  // On earlgrey_a1, in banks 0 and 1, pages 5-8 (inclusive) are reserved
-  // for the owner.
-  if (config->page >= 5 && config->page <= 8) {
-    return kHardenedBoolTrue;
-  }
-  return kHardenedBoolFalse;
 }
 
 rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
