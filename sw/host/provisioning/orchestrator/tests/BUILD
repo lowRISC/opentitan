@@ -129,9 +129,9 @@ sh_test(
             "changes_otp",
             "exclusive",
             "manuf",
-        ] + [fpga] + [
+        ] + [fpga] + ([
             "manual",
-        ] if cfg.get("offline", False) else [],
+        ] if cfg.get("offline", False) else []),
         toolchains = ["@rules_python//python:current_py_toolchain"],
     )
     for sku, cfg in EARLGREY_SKUS.items()
