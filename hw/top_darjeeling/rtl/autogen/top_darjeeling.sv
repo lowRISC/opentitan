@@ -3436,4 +3436,9 @@ module top_darjeeling #(
   // make sure scanmode_i is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
 
+  // TODO(#26288) : EnCsrngSwAppReadSize should not be present in Darjeeling; presently, this signal
+  // must be used to avoid a lint error.
+  logic unused_en_csrng;
+  assign unused_en_csrng = ^otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
+
 endmodule
