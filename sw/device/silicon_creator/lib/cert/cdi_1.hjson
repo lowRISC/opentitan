@@ -46,6 +46,10 @@
             exact-size: 4,
             tweak-msb: true,
         }
+        // Debug (whether owner FW is signed with PROD or DEV/TEST keys).
+        debug_flag: {
+            type: "boolean",
+        },
         // Certificate signature: the result of signing with ECDSA
         // are two integers named "r" and "s"
         cert_signature_r: {
@@ -103,7 +107,7 @@
                     not_configured: false,
                     not_secure: false,
                     recovery: false,
-                    debug: false,
+                    debug: { var: "debug_flag" },
                 }
             },
         ],
