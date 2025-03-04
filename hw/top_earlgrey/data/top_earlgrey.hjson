@@ -349,6 +349,7 @@
     },
     { name: "gpio",
       type: "gpio",
+      template_type: "gpio",
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "lc_io_div4"},
@@ -358,7 +359,8 @@
       param_decl: {
         GpioAsHwStrapsEn: "0",
         GpioAsyncOn: "1"
-      }
+      },
+      attr: "ipgen"
     },
     { name: "spi_device",
       type: "spi_device",
