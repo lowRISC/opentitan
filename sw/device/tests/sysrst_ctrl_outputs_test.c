@@ -9,7 +9,6 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -128,17 +127,15 @@ static void pinmux_setup(void) {
 // Waits for the kTestPhase variable to be changed by a backdoor overwrite
 // from the testbench in `chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv`. This will
 // indicate that the testbench is ready to proceed with the next phase of the
-// test. The function `flash_ctrl_testutils_backdoor_wait_update` is used to
-// deal with possible caching that can prevent the software to read the new
-// value of `kTestPhase` (in DV).
+// test.
 static void sync_with_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   if (kDeviceType == kDeviceSimDV) {
-    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-        &kTestPhaseDV, prior_phase, kTestPhaseTimeoutUsecDV));
+    OTTF_WAIT_FOR(OTTF_BACKDOOR_READ(kTestPhaseDV) != prior_phase,
+                  kTestPhaseTimeoutUsecDV);
   } else {
     OTTF_WAIT_FOR(prior_phase != kTestPhaseReal, kTestPhaseTimeoutUsecReal);
   }
