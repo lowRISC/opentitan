@@ -10,6 +10,7 @@ module aes
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
+  parameter bit          Stub                  = 1'b0,
   parameter bit          AES192Enable          = 1, // Can be 0 (disable), or 1 (enable).
   parameter bit          SecMasking            = 1, // Can be 0 (no masking), or
                                                     // 1 (first-order masking) of the cipher
@@ -175,6 +176,7 @@ module aes
 
   // AES core
   aes_core #(
+    .Stub                     ( Stub                     ),
     .AES192Enable             ( AES192Enable             ),
     .SecMasking               ( SecMasking               ),
     .SecSBoxImpl              ( SecSBoxImpl              ),

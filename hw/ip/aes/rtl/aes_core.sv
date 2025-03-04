@@ -10,6 +10,7 @@ module aes_core
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
+  parameter bit          Stub                 = 1'b0,
   parameter bit          AES192Enable         = 1,
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
@@ -55,6 +56,13 @@ module aes_core
   input  aes_reg2hw_t                 reg2hw,
   output aes_hw2reg_t                 hw2reg
 );
+
+  logic rst_n;
+  if (Stub) begin : gen_stubbed_reset
+    assign rst_n = '0;
+  end else begin : gen_no_stubbed_reset
+    assign rst_n = rst_ni;
+  end
 
   // Signals
   logic                                       ctrl_qe;
@@ -198,7 +206,7 @@ module aes_core
     .RndCnstSharePerm     ( RndCnstClearingSharePerm )
   ) u_aes_prng_clearing (
     .clk_i         ( clk_i                  ),
-    .rst_ni        ( rst_ni                 ),
+    .rst_ni        ( rst_n                  ),
 
     .data_req_i    ( prd_clearing_upd_req   ),
     .data_ack_o    ( prd_clearing_upd_ack   ),
@@ -322,8 +330,8 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_init_reg
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : key_init_reg
+    if (!rst_n) begin
       key_init_q <= '{default: '0};
     end else begin
       for (int s = 0; s < NumSharesKey; s++) begin
@@ -350,8 +358,8 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : iv_reg
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : iv_reg
+    if (!rst_n) begin
       iv_q <= '0;
     end else begin
       for (int i = 0; i < NumSlicesCtr; i++) begin
@@ -372,8 +380,8 @@ module aes_core
     endcase
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : data_in_prev_reg
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : data_in_prev_reg
+    if (!rst_n) begin
       data_in_prev_q <= '0;
     end else if (data_in_prev_we == SP2V_HIGH) begin
       data_in_prev_q <= data_in_prev_d;
@@ -386,7 +394,7 @@ module aes_core
 
   aes_ctr u_aes_ctr (
     .clk_i    ( clk_i     ),
-    .rst_ni   ( rst_ni    ),
+    .rst_ni   ( rst_n     ),
 
     .incr_i   ( ctr_incr  ),
     .ready_o  ( ctr_ready ),
@@ -473,7 +481,7 @@ module aes_core
     .RndCnstMaskingLfsrPerm ( RndCnstMaskingLfsrPerm )
   ) u_aes_cipher_core (
     .clk_i                ( clk_i                      ),
-    .rst_ni               ( rst_ni                     ),
+    .rst_ni               ( rst_n                      ),
 
     .in_valid_i           ( cipher_in_valid            ),
     .in_ready_o           ( cipher_in_ready            ),
@@ -592,7 +600,7 @@ module aes_core
     .SecStartTriggerDelay ( SecStartTriggerDelay )
   ) u_aes_control (
     .clk_i                     ( clk_i                                  ),
-    .rst_ni                    ( rst_ni                                 ),
+    .rst_ni                    ( rst_n                                  ),
 
     .ctrl_qe_i                 ( ctrl_qe                                ),
     .ctrl_we_o                 ( ctrl_we                                ),
@@ -712,7 +720,7 @@ module aes_core
     .EnSecBuf ( 1'b1        )
   ) u_aes_data_in_prev_sel_buf_chk (
     .clk_i  ( clk_i                 ),
-    .rst_ni ( rst_ni                ),
+    .rst_ni ( rst_n                 ),
     .sel_i  ( data_in_prev_sel_ctrl ),
     .sel_o  ( data_in_prev_sel_raw  ),
     .err_o  ( data_in_prev_sel_err  )
@@ -725,7 +733,7 @@ module aes_core
     .EnSecBuf ( 1'b1       )
   ) u_aes_state_in_sel_buf_chk (
     .clk_i  ( clk_i             ),
-    .rst_ni ( rst_ni            ),
+    .rst_ni ( rst_n             ),
     .sel_i  ( state_in_sel_ctrl ),
     .sel_o  ( state_in_sel_raw  ),
     .err_o  ( state_in_sel_err  )
@@ -738,7 +746,7 @@ module aes_core
     .EnSecBuf ( 1'b1          )
   ) u_aes_add_state_in_sel_buf_chk (
     .clk_i  ( clk_i                 ),
-    .rst_ni ( rst_ni                ),
+    .rst_ni ( rst_n                 ),
     .sel_i  ( add_state_in_sel_ctrl ),
     .sel_o  ( add_state_in_sel_raw  ),
     .err_o  ( add_state_in_sel_err  )
@@ -751,7 +759,7 @@ module aes_core
     .EnSecBuf ( 1'b1          )
   ) u_aes_add_state_out_sel_buf_chk (
     .clk_i  ( clk_i                  ),
-    .rst_ni ( rst_ni                 ),
+    .rst_ni ( rst_n                  ),
     .sel_i  ( add_state_out_sel_ctrl ),
     .sel_o  ( add_state_out_sel_raw  ),
     .err_o  ( add_state_out_sel_err  )
@@ -764,7 +772,7 @@ module aes_core
     .EnSecBuf ( 1'b1            )
   ) u_aes_key_init_sel_buf_chk (
     .clk_i  ( clk_i             ),
-    .rst_ni ( rst_ni            ),
+    .rst_ni ( rst_n             ),
     .sel_i  ( key_init_sel_ctrl ),
     .sel_o  ( key_init_sel_raw  ),
     .err_o  ( key_init_sel_err  )
@@ -777,7 +785,7 @@ module aes_core
     .EnSecBuf ( 1'b1       )
   ) u_aes_iv_sel_buf_chk (
     .clk_i  ( clk_i       ),
-    .rst_ni ( rst_ni      ),
+    .rst_ni ( rst_n       ),
     .sel_i  ( iv_sel_ctrl ),
     .sel_o  ( iv_sel_raw  ),
     .err_o  ( iv_sel_err  )
@@ -832,7 +840,7 @@ module aes_core
       .EnSecBuf ( Sp2VEnSecBuf[i] )
     ) u_aes_sp2v_sig_buf_chk_i (
       .clk_i  ( clk_i               ),
-      .rst_ni ( rst_ni              ),
+      .rst_ni ( rst_n               ),
       .sel_i  ( sp2v_sig[i]         ),
       .sel_o  ( sp2v_sig_chk_raw[i] ),
       .err_o  ( sp2v_sig_err[i]     )
@@ -858,8 +866,8 @@ module aes_core
 
   // We need to register the collected error signal to avoid circular loops in the core controller
   // related to iv_we and data_out_we.
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_sp_enc_err
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : reg_sp_enc_err
+    if (!rst_n) begin
       sp_enc_err_q <= 1'b0;
     end else if (sp_enc_err_d) begin
       sp_enc_err_q <= 1'b1;
@@ -870,8 +878,8 @@ module aes_core
   // Outputs //
   /////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : data_out_reg
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : data_out_reg
+    if (!rst_n) begin
       data_out_q <= '0;
     end else if (data_out_we == SP2V_HIGH) begin
       data_out_q <= data_out_d;
@@ -917,8 +925,8 @@ module aes_core
 
   // Fatal alert conditions need to remain asserted until reset.
   assign ctrl_err_storage_d = ctrl_reg_err_storage | shadowed_storage_err_i;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : ctrl_err_storage_reg
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin : ctrl_err_storage_reg
+    if (!rst_n) begin
       ctrl_err_storage_q <= 1'b0;
     end else if (ctrl_err_storage_d) begin
       ctrl_err_storage_q <= 1'b1;

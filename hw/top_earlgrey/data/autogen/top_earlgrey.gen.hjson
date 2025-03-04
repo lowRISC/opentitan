@@ -9072,6 +9072,15 @@
       param_list:
       [
         {
+          name: Stub
+          desc: Stub out the core of the AES logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: AesStub
+        }
+        {
           name: AES192Enable
           desc: Disable (0) or enable (1) support for 192-bit key lengths (AES-192).
           type: bit
