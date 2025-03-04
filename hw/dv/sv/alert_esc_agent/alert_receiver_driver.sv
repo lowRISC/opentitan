@@ -121,13 +121,24 @@ endtask : send_ping
 task alert_receiver_driver::rsp_alert();
   forever begin
     alert_esc_seq_item req, rsp;
-    wait(r_alert_rsp_q.size() > 0 && !under_reset);
+    wait(r_alert_rsp_q.size() > 0);
     req = r_alert_rsp_q.pop_front();
 
-    // If we get here then something should have been pushed onto the alert queue in response to
-    // an alert being generated. Wait a short time to allow the alert to propagate through the
-    // clocking blocks (which should only take a cycle, but give it a couple more to make sure).
-    // Stop early if we go into reset.
+    // We have just been told to ack an alert, but the under_reset flag might still be high. This
+    // would mean that alert system wasn't set up yet. This driver would be in do_alert_rx_init,
+    // watching the alert sender starting up, and the alert sender would still be doing its
+    // initialization.
+    //
+    // The item would have come from the monitor, which doesn't model this initialization phase and
+    // so believes a genuine alert just came out. We want to respond to say that we've handled it
+    // (but just discard the item). To avoid an infinite stream of these events, we inject a 1-cycle
+    // delay here.
+    if (under_reset) @(cfg.vif.receiver_cb);
+
+    // We got here because the monitor saw an alert and would like us to respond. Wait a short time
+    // to allow the alert to propagate through the clocking blocks (which should only take a cycle,
+    // but give it a couple more to make sure). Stop early if we go into reset (which might already
+    // be the case and this will consume no time).
     fork begin : isolation_fork_1
       fork
         wait(under_reset);
