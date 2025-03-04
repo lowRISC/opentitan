@@ -120,4 +120,4 @@ printf("0b%b", *GPIO_INTR_STATE);       // 0b00001100
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_gpio.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_gpio.h)

@@ -10,7 +10,7 @@
 
 This document specifies GPIO hardware IP functionality. This
 module conforms to the [Comportable guideline for peripheral device
-functionality](../../../doc/contributing/hw/comportability/README.md)
+functionality](../../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top
 level system.
 

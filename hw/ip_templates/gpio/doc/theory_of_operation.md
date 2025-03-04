@@ -87,7 +87,7 @@ This mechanism samples all 32 bits of the GPIO input data, regardless of the GPI
 The GPIO module provides 32 interrupt signals to the main processor.
 Each interrupt can be independently enabled, tested, and configured.
 Following the standard interrupt guidelines in the [Comportability
-Specification](../../../../doc/contributing/hw/comportability/README.md),
+Specification](../../../../../doc/contributing/hw/comportability/README.md),
 the 32 bits of the [`INTR_ENABLE`](registers.md#intr_enable) register determines whether the
 associated inputs are configured to detect interrupt events. If enabled
 via the various `INTR_CTRL_EN` registers, their current state can be
