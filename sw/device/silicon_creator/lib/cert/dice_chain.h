@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -51,12 +52,14 @@ rom_error_t dice_chain_attestation_creator(
  * @param owner_measurement Pointer to the measurement of the owner config.
  * @param sealing_binding Pointer to the owner's sealing diversification
  *        constant.
+ * @param key_domain Domain of the Owner SW signing key.
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
-    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding);
+    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding,
+    owner_app_domain_t key_domain);
 
 /**
  * Write back the certificate chain to flash if changed.

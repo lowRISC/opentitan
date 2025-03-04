@@ -20,6 +20,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
@@ -132,8 +133,12 @@ static uint8_t get_chip_mode_cdi0(void) {
   return (lifecycle_is_prod() ? 1 : 2);
 }
 
-static uint8_t get_chip_mode_cdi1(void) {
-  return ((lifecycle_state_get() == kLcStateProd) ? 1 : 2);
+static uint8_t get_chip_mode_cdi1(owner_app_domain_t key_domain) {
+  if (launder32(key_domain) != kOwnerAppDomainProd) {
+    return 2;
+  }
+  HARDENED_CHECK_EQ(key_domain, kOwnerAppDomainProd);
+  return 1;
 }
 
 static char issuer[kIssuerSubjectNameLength + 1] = {0};
@@ -318,6 +323,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
+                                  owner_app_domain_t key_domain,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
@@ -354,7 +360,7 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   hmac_sha256(kCborMap0, sizeof(kCborMap0), &auth_hash);
   util_reverse_bytes(auth_hash.digest, kHmacDigestNumBytes);
 
-  uint8_t mode = get_chip_mode_cdi1();
+  uint8_t mode = get_chip_mode_cdi1(key_domain);
   cwt_dice_chain_entry_payload_values_t cwt_dice_chain_entry_payload_params = {
       .auth_hash = (uint8_t *)&auth_hash.digest[0],
       .auth_hash_size = kHmacDigestNumBytes,
