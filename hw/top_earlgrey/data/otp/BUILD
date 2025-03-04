@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
+load("//rules:const.bzl", "CONST", "EARLGREY_LOC_ALERTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
