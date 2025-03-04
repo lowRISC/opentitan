@@ -52,7 +52,7 @@ interface i2c_if(
       @(posedge clk_i);
       sample.push_front(cb.sda_i);
       // Pop queue to make sure size doesnt exceed tSetupBit
-      if (sample.size() > tc.tSetupBit) sample.pop_back();
+      if (sample.size() > tc.tSetupBit) void'(sample.pop_back());
     end
     data = sample.pop_back();
   endtask // sample_target_data

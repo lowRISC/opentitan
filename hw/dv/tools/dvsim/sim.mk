@@ -127,13 +127,14 @@ ifneq (${sw_images},)
 				--noshow_progress \
 				--output=label_kind | cut -f1 -d' '); \
 			if [[ $${kind} == "opentitan_test" ]]; then \
-				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
+				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${bazel_opts} \
 					$${bazel_label} \
 					--ui_event_filters=-info \
 					--noshow_progress \
 					--output=starlark \
 					`# An opentitan_test rule has all of its needed files in its runfiles.` \
-					--starlark:expr='"\n".join([f.path for f in target.data_runfiles.files.to_list()])'); do \
+					--starlark:expr='"\n".join([f.path for f in target.data_runfiles.files.to_list()])' | \
+					grep -e "\.elf" -e "\.bin" -e "\.vmem"); do \
 						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
 						if [[ $$artifact == *.bin && \
 							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \
@@ -142,7 +143,7 @@ ifneq (${sw_images},)
 						fi; \
 				done; \
 			elif [[ $${kind} == "alias" || $${kind} == "opentitan_binary" ]]; then \
-				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
+				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${bazel_opts} \
 					$${bazel_label} \
 					--ui_event_filters=-info \
 					--noshow_progress \
@@ -157,7 +158,7 @@ ifneq (${sw_images},)
 						fi; \
 				done; \
 			else \
-				for dep in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
+				for dep in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${bazel_opts} \
 					$${bazel_cquery} \
 					--ui_event_filters=-info \
 					--noshow_progress \
@@ -167,7 +168,7 @@ ifneq (${sw_images},)
 					--starlark:expr='str(target.label)[1:] if str(target.label).startswith("@//") else target.label'); do \
 					if [[ $$dep == //hw/top_*/ip_autogen/otp_ctrl/data* ]] || \
 					  ([[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]); then \
-						for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${dep} \
+						for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${bazel_opts} $${dep} \
 							--ui_event_filters=-info \
 							--noshow_progress \
 							--output=starlark \

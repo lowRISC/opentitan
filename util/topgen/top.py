@@ -24,7 +24,7 @@ class Top:
 
     '''
 
-    def __init__(self, regwidth: int, addr_spaces: Set[str],
+    def __init__(self, name: str, regwidth: int, addr_spaces: Set[str],
                  blocks: Dict[str, IpBlock], instances: Dict[str, str],
                  if_addrs: Dict[Tuple[str, Optional[str]], Dict[str, int]],
                  windows: List[Window], attrs: Dict[str, str]):
@@ -51,6 +51,7 @@ class Top:
 
         '''
 
+        self.name = name
         self.regwidth = regwidth
         self.addr_spaces = addr_spaces
         self.blocks = blocks
