@@ -187,6 +187,23 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
+  // TODO: This appears to be necessary on Darjeeling to be able to access the IP blocks
+  // used below.
+  //
+  // Remove address space protections by configuring entry 15 as
+  // read-write-execute for the entire address space and then clearing
+  // all other entries.
+  // NOTE: This should happen before attemting to access any address outside
+  // the initial ePMP RX region at reset, e.g. `kDeviceType` which is in
+  // .rodata.
+  li   t0, (0x9f << 24) // Locked NAPOT read-write-execute.
+  csrw pmpcfg3, t0
+  li   t0, 0x7fffffff   // NAPOT encoded region covering entire 34-bit address space.
+  csrw pmpaddr15, t0
+  csrw pmpcfg0, zero
+  csrw pmpcfg1, zero
+  csrw pmpcfg2, zero
+
 #ifdef OPENTITAN_IS_EARLGREY
   // Check if AST initialization should be skipped.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
@@ -252,20 +269,6 @@ _start:
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_CMD_FIFO_RST_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
-
-  // Remove address space protections by configuring entry 15 as
-  // read-write-execute for the entire address space and then clearing
-  // all other entries.
-  // NOTE: This should happen before attemting to access any address outside
-  // the initial ePMP RX region at reset, e.g. `kDeviceType` which is in
-  // .rodata.
-  li   t0, (0x9f << 24) // Locked NAPOT read-write-execute.
-  csrw pmpcfg3, t0
-  li   t0, 0x7fffffff   // NAPOT encoded region covering entire 34-bit address space.
-  csrw pmpaddr15, t0
-  csrw pmpcfg0, zero
-  csrw pmpcfg1, zero
-  csrw pmpcfg2, zero
 
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
