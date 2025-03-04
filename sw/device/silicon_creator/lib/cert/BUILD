@@ -99,14 +99,11 @@ cc_library(
     srcs = ["cert.c"],
     hdrs = ["cert.h"],
     deps = [
-        ":asn1",
-        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
     ],
 )
 
