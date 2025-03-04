@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "dt/dt_sram_ctrl.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
@@ -125,10 +126,6 @@ OT_ASSERT_SIZE(retention_sram_t, 4096);
 
 enum {
   /**
-   * Base address of retention SRAM storage area.
-   */
-  kRetentionSramBase = 0x40600000,
-  /**
    * Engineering sample version.
    */
   kRetentionSramVersion1 = 0x72f4eb2e,
@@ -157,7 +154,10 @@ enum {
  */
 OT_WARN_UNUSED_RESULT
 inline retention_sram_t *retention_sram_get(void) {
-  return (retention_sram_t *)kRetentionSramBase;
+  // NOTE: this assumes that the retention SRAM is always using the name
+  // "ret_aon"
+  return (retention_sram_t *)dt_sram_ctrl_reg_block(kDtSramCtrlRetAon,
+                                                    kDtSramCtrlRegBlockRam);
 }
 
 /**
