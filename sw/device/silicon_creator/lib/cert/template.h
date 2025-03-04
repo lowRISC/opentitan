@@ -231,6 +231,69 @@ static inline void template_patch_size_be(template_state_t *state,
   template_patch_size_be_impl(memo, state->out_end);
 }
 
+/**
+ * Helpers for writing static assertions on variable array sizes.
+ */
+#define ASSERT_VAR_SIZE_EQ(actual, expected) \
+  static_assert(actual == expected, "Invalid variable size.");
+
+#define ASSERT_VAR_SIZE_GE(actual, expected) \
+  static_assert(actual >= expected, "Invalid variable size.");
+
+#define ASSERT_VAR_SIZE_LE(actual, expected) \
+  static_assert(actual <= expected, "Invalid variable size.");
+
+/**
+ * Check if the given variable is fixed-length.
+ *
+ * @param template The name defined in the hjson template in upper camel case.
+ * @param field The variable name in upper camel case.
+ */
+#define TEMPLATE_ASSERT_FIXED_LENGTH(template, field)    \
+  ASSERT_VAR_SIZE_EQ(k##template##Min##field##SizeBytes, \
+                     k##template##Max##field##SizeBytes);
+
+/**
+ * Check if the given size is within the range defined in the template.
+ *
+ * @param template The name defined in the hjson template in upper camel case.
+ * @param field The variable name in upper camel case.
+ * @param size The size of the variable value in bytes.
+ */
+#define TEMPLATE_CHECK_SIZE(template, field, size)                \
+  ASSERT_VAR_SIZE_GE((size), k##template##Min##field##SizeBytes); \
+  ASSERT_VAR_SIZE_LE((size), k##template##Max##field##SizeBytes);
+
+/**
+ * Set a template variable value and check its size.
+ *
+ * @param params Pointer to the generated *_values_t variable.
+ * @param template The name defined in the hjson template in upper camel case.
+ * @param field The variable name in upper camel case.
+ * @param value The value to set. It should be typed as a fixed size value.
+ */
+#define TEMPLATE_SET(params, template, field, value)      \
+  do {                                                    \
+    TEMPLATE_CHECK_SIZE(template, field, sizeof(value));  \
+    (params).k##template##Field##field = (void *)(value); \
+  } while (0)
+
+/**
+ * Set a template variable with the value array truncated to `size`.
+ *
+ * @param params Pointer to the generated *_values_t variable.
+ * @param template The name defined in the hjson template in upper camel case.
+ * @param field The variable name in upper camel case.
+ * @param value The value to set. It should be typed as a fixed size value.
+ * @param size The size after truncated.
+ */
+#define TEMPLATE_SET_TRUNCATED(params, template, field, value, size) \
+  do {                                                               \
+    ASSERT_VAR_SIZE_GE(sizeof(value), size);                         \
+    TEMPLATE_CHECK_SIZE(template, field, size);                      \
+    (params).k##template##Field##field = (void *)(value);            \
+  } while (0)
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
