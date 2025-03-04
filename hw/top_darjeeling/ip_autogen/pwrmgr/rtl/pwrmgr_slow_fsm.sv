@@ -26,15 +26,11 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   output logic rst_req_o,
   output logic fsm_invalid_o,
   input clr_req_i,
-  output logic usb_ip_clk_en_o,
-  input usb_ip_clk_status_i,
 
   // low power entry configuration
   input main_pd_ni,
+  input main_clk_en_i,
   input io_clk_en_i,
-  input core_clk_en_i,
-  input usb_clk_en_lp_i,
-  input usb_clk_en_active_i,
 
   // AST interface
   input pwr_ast_rsp_t ast_i,
@@ -55,9 +51,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   logic pd_nq, pd_nd;
   logic pwr_clamp_q, pwr_clamp_d;
   logic pwr_clamp_env_q, pwr_clamp_env_d;
-  logic core_clk_en_q, core_clk_en_d;
+  logic main_clk_en_q, main_clk_en_d;
   logic io_clk_en_q, io_clk_en_d;
-  logic usb_clk_en_q, usb_clk_en_d;
   logic fsm_invalid_q, fsm_invalid_d;
 
   logic all_clks_valid;
@@ -72,29 +67,30 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // all clocks sources are valid
   // if clocks (usb) not configured to be active, then just bypass check
-  assign all_clks_valid = ast_i.core_clk_val &
-                          ast_i.io_clk_val &
-                          (~usb_clk_en_active_i | ast_i.usb_clk_val);
+  assign all_clks_valid = (
+      ast_i.core_clk_val &
+      ast_i.io_clk_val
+  );
 
   // usb clock state during low power is not completely controlled by
   // input.
   // if main_pd_ni is 0, (ie power will be turned off), then the low power
   // state of usb is also off.  If main_pd_ni is 1 (power will be kept on),
   // then the low power state of usb is directly controlled.
-  logic usb_clk_en_lp;
-  assign usb_clk_en_lp = main_pd_ni & usb_clk_en_lp_i;
+  // Non-usb clocks are disabled when power is turned off.
 
-  // all other clocks are also diasbled when power is turned off.
-  logic core_clk_en;
+  logic main_clk_en;
+  assign main_clk_en = main_pd_ni & main_clk_en_i;
+
   logic io_clk_en;
-  assign core_clk_en = main_pd_ni & core_clk_en_i;
   assign io_clk_en = main_pd_ni & io_clk_en_i;
 
   // if clocks were configured to turn off, make sure val is invalid
   // if clocks were not configured to turn off, just bypass the check
-  assign all_clks_invalid = (core_clk_en | ~ast_i.core_clk_val) &
-                            (io_clk_en | ~ast_i.io_clk_val) &
-                            (usb_clk_en_lp | ~ast_i.usb_clk_val);
+  assign all_clks_invalid = (
+      (main_clk_en | ~ast_i.core_clk_val) &
+      (io_clk_en | ~ast_i.io_clk_val)
+  );
 
   // ensure that clock controls are constantly re-evaluated and not just
   // in one specific state
@@ -102,9 +98,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   // can forcibly reset the system.
   // In the event the clocks cannot be turned on even when forced, the fsm
   // invalid signal forces power to turn off.
-  assign core_clk_en_d = fsm_invalid_q | (clk_active | core_clk_en);
-  assign io_clk_en_d   = fsm_invalid_q | (clk_active | io_clk_en);
-  assign usb_clk_en_d  = fsm_invalid_q | (clk_active ? usb_clk_en_active_i : usb_clk_en_lp);
+  assign main_clk_en_d = fsm_invalid_q | (clk_active | main_clk_en);
+  assign io_clk_en_d = fsm_invalid_q | (clk_active | io_clk_en);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -113,9 +108,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       pd_nq          <= 1'b1;
       pwr_clamp_q    <= 1'b1;
       pwr_clamp_env_q <= 1'b1;
-      core_clk_en_q  <= 1'b0;
-      io_clk_en_q    <= 1'b0;
-      usb_clk_en_q   <= 1'b0;
+      main_clk_en_q  <= 1'b0;
+      io_clk_en_q  <= 1'b0;
       req_pwrup_q    <= 1'b0;
       ack_pwrdn_q    <= 1'b0;
       fsm_invalid_q  <= 1'b0;
@@ -125,9 +119,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       pd_nq          <= pd_nd;
       pwr_clamp_q    <= pwr_clamp_d;
       pwr_clamp_env_q <= pwr_clamp_env_d;
-      core_clk_en_q  <= core_clk_en_d;
-      io_clk_en_q    <= io_clk_en_d;
-      usb_clk_en_q   <= usb_clk_en_d;
+      main_clk_en_q  <= main_clk_en_d;
+      io_clk_en_q  <= io_clk_en_d;
       req_pwrup_q    <= req_pwrup_d;
       ack_pwrdn_q    <= ack_pwrdn_d;
       fsm_invalid_q  <= fsm_invalid_d;
@@ -317,22 +310,8 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
   assign ack_pwrdn_o = ack_pwrdn_q;
   assign fsm_invalid_o = fsm_invalid_q;
 
-  assign ast_o.core_clk_en = core_clk_en_q;
-  assign ast_o.io_clk_en = io_clk_en_q;
-  // usb's enable is handshake with pwr_fsm, as it can be turned on/off
-  // outside of the normal low power sequence
-  prim_flop #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_usb_clk_en (
-    .clk_i,
-    .rst_ni,
-    // immediate enable
-    // graceful disable when status is 0
-    .d_i(usb_clk_en_q | usb_ip_clk_status_i),
-    .q_o(ast_o.usb_clk_en)
-  );
-  assign usb_ip_clk_en_o = usb_clk_en_q;
+    assign ast_o.core_clk_en = main_clk_en_q;
+    assign ast_o.io_clk_en = io_clk_en_q;
 
   assign ast_o.main_pd_n = pd_nq;
   assign ast_o.pwr_clamp_env = pwr_clamp_env_q;

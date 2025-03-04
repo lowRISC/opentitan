@@ -23,31 +23,12 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   // Disabling escalation resets per comment above.
   constraint escalation_reset_c {escalation_reset == 0;}
 
-  // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
-  // transition to active state.
-  // ICEBOX(lowrisc/opentitan#18236) Consider adding checks to monitor fast state transitions are
-  // compliant with "ROM Integrity Checks" at
-  // https://opentitan.org/book/hw/top_earlgrey/ip_autogen/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
-  virtual task twirl_rom_response();
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-    @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
-    cfg.clk_rst_vif.wait_clks(10);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
-  endtask
-
   task body();
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
     wakeups_t enabled_wakeups;
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     check_reset_status('0);
     check_wake_status('0);
@@ -112,35 +93,24 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       if (cfg.en_cov) begin
         cov.reset_wakeup_distance_cg.sample(cycles_before_reset - cycles_before_wakeup);
       end
-      // twirl_rom_response has some waits, and so does the code to check wake_status,
+      // randomize_roms_response has some waits, and so does the code to check wake_status,
       // so we fork them to avoid conflicts.
       fork
         begin
           // At lowpower state, wait for clock comes back before check any csr
           @cfg.clk_rst_vif.cb;
-          // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
-          // This read will not work in the chip, since the processor will be asleep.
-          // Reset status cannot be reliably checked here since it is cleared when reset goes active.
+          // Check wake_status prior to actual wakeup, since the wakeup request will be reset.
           fast_check_wake_status(enabled_wakeups);
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
         end
-        twirl_rom_response();
+        randomize_roms_response();
       join
-
       wait_for_fast_fsm(FastFsmActive);
 
       check_reset_status('0);
 
       check_wake_info(.reasons(enabled_wakeups), .prior_reasons(1'b0), .fall_through(1'b0),
                       .prior_fall_through(1'b0), .abort(1'b0), .prior_abort(1'b0));
-
-      if (mubi_mode == PwrmgrMubiRomCtrl) begin
-        add_rom_rsp_noise();
-        cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-        cfg.clk_rst_vif.wait_clks(5);
-        cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
-      end
-
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
       // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
