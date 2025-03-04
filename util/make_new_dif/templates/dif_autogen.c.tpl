@@ -63,6 +63,7 @@ dif_result_t dif_${ip.name_snake}_init(
     return kDifBadArg;
   }
 
+  ${ip.name_snake}->dt = kDt${ip.name_camel}Count;
   ${ip.name_snake}->base_addr = base_addr;
 
   return kDifOk;
@@ -76,8 +77,19 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
     return kDifBadArg;
   }
 
+  ${ip.name_snake}->dt = dt;
   ${ip.name_snake}->base_addr = mmio_region_from_addr(dt_${ip.name_snake}_primary_reg_block(dt));
 
+  return kDifOk;
+}
+
+dif_result_t dif_${ip.name_snake}_get_dt(
+  const dif_${ip.name_snake}_t *${ip.name_snake},
+  dt_${ip.name_snake}_t *dt) {
+  if (${ip.name_snake}->dt == kDt${ip.name_camel}Count || dt == NULL) {
+    return kDifBadArg;
+  }
+  *dt = ${ip.name_snake}->dt;
   return kDifOk;
 }
 
