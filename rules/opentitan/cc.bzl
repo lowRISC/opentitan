@@ -337,6 +337,7 @@ common_binary_attrs = {
     ),
     "kind": attr.string(
         doc = "Binary kind: ctn, flash, ram or rom. If unspecified, will use the default kind of the execution environment.",
+        values = ["ctn", "flash", "ram", "rom"],
         default = KIND_USE_EXEC_ENV,
     ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but

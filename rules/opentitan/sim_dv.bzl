@@ -94,6 +94,16 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         rom = None
         default = vmem
         vmem = vmem_base
+    elif kind == "ctn":
+        # CTN images use unscrambled images.
+        vmem = convert_to_vmem(
+            ctx,
+            name = name,
+            src = signed_bin if signed_bin else binary,
+            word_size = 32,
+        )
+        rom = None
+        default = vmem
     else:
         fail("Not implemented: kind ==", kind)
 
