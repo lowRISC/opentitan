@@ -39,6 +39,7 @@ format expected by the image generation tool.
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top_darjeeling/data/otp:defs.bzl", "DARJEELING_STD_OTP_OVERLAYS")
 load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_OTP_SIGVERIFY_FAKE_KEYS", "EARLGREY_STD_OTP_OVERLAYS")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -400,6 +401,7 @@ OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top({
 
 STD_OTP_OVERLAYS = opentitan_select_top({
     "earlgrey": EARLGREY_STD_OTP_OVERLAYS,
+    "darjeeling": DARJEELING_STD_OTP_OVERLAYS,
 }, [])
 
 def otp_hex(v):
