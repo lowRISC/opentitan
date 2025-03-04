@@ -269,13 +269,14 @@ sim_qemu = rule(
 )
 
 def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfile):
-    if ctx.attr.kind == "rom":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom":
         default = elf
         rom = elf
-    elif ctx.attr.kind == "ram":
+    elif kind == "ram":
         default = elf
         rom = None
-    elif ctx.attr.kind == "flash":
+    elif kind == "flash":
         default = gen_flash(
             ctx,
             flashgen = exec_env.flashgen,
@@ -284,7 +285,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         rom = exec_env.rom[SimQemuBinaryInfo].rom
     else:
-        fail("Not implemented: kind == ", ctx.attr.kind)
+        fail("Not implemented: kind == ", kind)
 
     otp = gen_otp(
         ctx,

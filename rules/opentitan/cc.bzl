@@ -5,7 +5,7 @@
 load("@lowrisc_opentitan//rules:manifest.bzl", "update_manifest")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
-load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo", "KIND_USE_EXEC_ENV")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "obj_disassemble",
@@ -238,7 +238,7 @@ def _opentitan_binary(ctx):
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
 
-        kind = ctx.attr.kind
+        kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(kind = kind, **provides))
         default_info.append(provides["default"])
@@ -336,9 +336,9 @@ common_binary_attrs = {
         default = "{name}_{exec_env}",
     ),
     "kind": attr.string(
-        doc = "Binary kind: flash, ram or rom",
-        default = "flash",
-        values = ["flash", "ram", "rom"],
+        doc = "Binary kind: ctn, flash, ram or rom. If unspecified, will use the default kind of the execution environment.",
+        values = ["ctn", "flash", "ram", "rom"],
+        default = KIND_USE_EXEC_ENV,
     ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
@@ -406,7 +406,7 @@ def _opentitan_test(ctx):
     if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
-        kind = ctx.attr.kind
+        kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         p = exec_env.provider(**provides)
     else:
@@ -427,7 +427,7 @@ opentitan_test = rv_rule(
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label(
             providers = [ExecEnvInfo],
-            doc = "List of exeuction environments for this target.",
+            doc = "List of execution environments for this target.",
         ),
         "test_harness": attr.label(
             executable = True,

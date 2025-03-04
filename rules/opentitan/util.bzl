@@ -36,7 +36,7 @@ def get_override(obj, item, overrides):
 
 _unbound = struct(unbound = True)
 
-def get_fallback(obj, item, fallback):
+def get_fallback(obj, item, fallback, unset_value = _unbound):
     """Get an item from obj and fall back to `fallback` if falsy.
 
     Args:
@@ -44,12 +44,16 @@ def get_fallback(obj, item, fallback):
       item: An object path to the desired item (ie: `attr.srcs`).
       fallback: An object that contains a fallback value named by the last
                 component of the item path (ie: `srcs`).
+      unset_value: If the object path to the desired item exists but its
+                   value is `unset_value` then use the fallback value.
     """
     items = item.split(".")
     item = items[-1]
     for i in items:
-        obj = getattr(obj, i, _unbound)
-    if obj and obj != _unbound:
+        obj = getattr(obj, i, unset_value)
+    if item == "kind":
+        print("kind: unset_value={}, obj={}".format(unset_value, obj))
+    if obj and obj != unset_value:
         return obj
     return getattr(fallback, item)
 

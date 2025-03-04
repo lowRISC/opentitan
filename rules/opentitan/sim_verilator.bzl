@@ -42,7 +42,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     hashfile = None
-    if ctx.attr.kind == "rom":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom":
         (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
             name = name,
@@ -62,7 +63,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
-    elif ctx.attr.kind == "ram":
+    elif kind == "ram":
         default = elf
         rom = None
         rom32 = None
@@ -74,7 +75,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
-    elif ctx.attr.kind == "flash":
+    elif kind == "flash":
         vmem = convert_to_vmem(
             ctx,
             name = name,
@@ -85,7 +86,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         rom = None
         rom32 = None
     else:
-        fail("Not implemented: kind ==", ctx.attr.kind)
+        fail("Not implemented: kind ==", kind)
 
     return {
         "elf": elf,
@@ -110,7 +111,8 @@ def _test_dispatch(ctx, exec_env, firmware):
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
-    if ctx.attr.kind == "ram":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "ram":
         fail("verilator is not capable of executing RAM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
@@ -122,7 +124,7 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Get the pre-test_cmd args.
     args = get_fallback(ctx, "attr.args", exec_env)
-    if ctx.attr.kind == "rom":
+    if kind == "rom":
         # FIXME: This is a bit of inside-baseball: We know the opentitantool
         # args for a verilator based test will contain an argument with the
         # firmware substitution.  For a ROM test, we eliminate this arg because

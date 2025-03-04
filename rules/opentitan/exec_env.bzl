@@ -34,7 +34,12 @@ _FIELDS = {
     "rom_scramble_config": ("file.rom_scramble_config", False),
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
+    "kind": ("attr.default_kind", False),
 }
+
+# Special value that rule can use to indicate that they want to use the
+# default kind provided by the exec_env.
+KIND_USE_EXEC_ENV = "<kind not set, use exec_env>"
 
 ExecEnvInfo = provider(
     doc = "Execution Environment Info",
@@ -229,6 +234,11 @@ def exec_env_common_attrs(**kwargs):
             allow_single_file = True,
             doc = "OpenOCD adapter configuration for this environment",
         ),
+        "default_kind": attr.string(
+            # To stay backward compatible, we compile flash images by default.
+            default = kwargs.get("default_kind", "flash"),
+            doc = "Default kind of images built by opentitan_binary/test",
+        ),
     }
 
 def _do_update(name, file, data_files, param, action_param):
@@ -375,7 +385,8 @@ def common_test_setup(ctx, exec_env, firmware):
     otp = get_fallback(ctx, "attr.otp", exec_env)
     update_file_attr(ctx, "otp", otp, None, data_files, param, action_param)
 
-    if ctx.attr.kind == "rom" and firmware:
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom" and firmware:
         # If its a "rom" test, then the firmware built by the rule should be
         # loaded into ROM.
         update_file_provider("rom", firmware, data_files, param, action_param)

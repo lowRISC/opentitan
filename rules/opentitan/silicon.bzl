@@ -51,7 +51,8 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     hashfile = None
-    if ctx.attr.kind == "rom":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom":
         (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
             name = name,
@@ -62,11 +63,11 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         )
         default = rom
         vmem = rom
-    elif ctx.attr.kind == "ram":
+    elif kind == "ram":
         default = elf
         rom = None
         vmem = None
-    elif ctx.attr.kind == "flash":
+    elif kind == "flash":
         default = signed_bin if signed_bin else binary
         rom = None
 
@@ -89,7 +90,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             _tool = exec_env.flash_scramble_tool.files_to_run,
         )
     else:
-        fail("Not implemented: kind ==", ctx.attr.kind)
+        fail("Not implemented: kind ==", kind)
 
     logs = extract_software_logs(
         ctx,
@@ -120,7 +121,8 @@ def _test_dispatch(ctx, exec_env, firmware):
     Returns:
       (File, List[File]) The test script and needed runfiles.
     """
-    if ctx.attr.kind == "rom":
+    kind = get_fallback(ctx, "attr.kind", exec_env, KIND_USE_EXEC_ENV)
+    if kind == "rom":
         fail("Silicon is not capable of executing ROM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
