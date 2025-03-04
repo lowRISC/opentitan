@@ -41,6 +41,13 @@
 
   param_list: [
     # Regular parameters
+    { name:    "Stub",
+      type:    "bit",
+      default: "0",
+      desc:    "Stub out the core of the AES logic"
+      local:   "false",
+      expose:  "true"
+    },
     { name:    "AES192Enable",
       type:    "bit",
       default: "1'b1",
