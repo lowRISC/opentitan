@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
 
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 
@@ -71,5 +72,46 @@
  * ```
  */
 #define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata") volatile
+
+#if defined(OPENTITAN_IS_EARLGREY)
+
+static void ottf_backdoor_flush_read_buffers(void) {
+  // On earlgrey, some backdoor variables may live on flash, which
+  // has a read buffer that needs to be flushed to get up-to-date value.
+  //
+  // Cause read buffers to flush since it reads 32 bytes, which is the
+  // size of the read buffers.
+  enum { kBufferBytes = 32 };
+  static volatile const uint8_t kFlashFlusher[kBufferBytes];
+  for (int i = 0; i < sizeof(kFlashFlusher); ++i) {
+    (void)kFlashFlusher[i];
+  }
+}
+
+#elif defined(OPENTITAN_IS_DARJEELING)
+
+static void ottf_backdoor_flush_read_buffers(void) {}
+
+#else
+#error Unsupported top
+#endif
+
+/**
+ * Reads a backdoor variable.
+ *
+ * This function can work on both normal and DV-specific backdoor variables.
+ * This function has acquire semantics. All memory accesses after the read
+ * will not be reordered by compiler to happen before the read.
+ *
+ * @param var the variable to read from.
+ * @return the read value.
+ */
+#define OTTF_BACKDOOR_READ(var)                               \
+  ({                                                          \
+    ottf_backdoor_flush_read_buffers();                       \
+    typeof(var) _tmp = *(const volatile typeof(var) *)&(var); \
+    atomic_signal_fence(memory_order_acquire);                \
+    _tmp;                                                     \
+  })
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
