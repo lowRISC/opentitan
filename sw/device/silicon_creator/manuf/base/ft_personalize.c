@@ -367,14 +367,14 @@ static void compute_keymgr_owner_int_binding(void) {
  * Sets the attestation binding to all zeros as it (and subsequently CDI_1) will
  * be updated later when the ROM_EXT boots for the first time.
  *
- * The sealing binding value is set to the PROD application key domain.
+ * The sealing binding value is set to the TEST application key domain.
  */
 static void compute_keymgr_owner_binding(void) {
   memset(attestation_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   // We expect the owner to use a Application Key binding  of
   // {`prod`, 0, ... }.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
-  sealing_binding_value.data[0] = kOwnerAppDomainProd;
+  sealing_binding_value.data[0] = kOwnerAppDomainTest;
 }
 
 /**
@@ -567,8 +567,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                               /*max_key_version=*/0));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id,
                                      &curr_pubkey));
-  TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, 0, &cdi_1_key_ids,
-                            &curr_pubkey, all_certs, &curr_cert_size));
+  TRY(dice_cdi_1_cert_build(&kZeroDigest, &kZeroDigest, 0, kOwnerAppDomainTest,
+                            &cdi_1_key_ids, &curr_pubkey, all_certs,
+                            &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.

@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
@@ -84,6 +85,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
  * @param owner_measurement Pointer to the owner firmware measurement.
  * @param owner_manifest_measurement Pointer to the owner manifest measurement.
  * @param owner_security_version Owner firmware security version.
+ * @param key_domain Domain of the Owner SW signing key.
  * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param cdi_1_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated CDI_1 certificate.
@@ -96,6 +98,7 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
+                                  owner_app_domain_t key_domain,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size);
