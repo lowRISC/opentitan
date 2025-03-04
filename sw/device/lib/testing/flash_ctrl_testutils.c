@@ -296,31 +296,6 @@ status_t flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
   return OK_STATUS();
 }
 
-static void flash_ctrl_testutils_flush_read_buffers(void) {
-  // Cause read buffers to flush since it reads 32 bytes, which is the
-  // size of the read buffers.
-  enum { kBufferBytes = 32 };
-  static volatile const uint8_t kFlashFlusher[kBufferBytes];
-  for (int i = 0; i < sizeof(kFlashFlusher); ++i) {
-    (void)kFlashFlusher[i];
-  }
-}
-
-status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
-                                                   uint8_t prior_data,
-                                                   size_t timeout_usec) {
-  uint8_t new_data = 0;
-  const ibex_timeout_t timeout = ibex_timeout_init(timeout_usec);
-  do {
-    if (ibex_timeout_check(&timeout)) {
-      return DEADLINE_EXCEEDED();
-    }
-    flash_ctrl_testutils_flush_read_buffers();
-    new_data = addr[0];
-  } while (new_data == prior_data);
-  return OK_STATUS();
-}
-
 status_t flash_ctrl_testutils_show_faults(
     const dif_flash_ctrl_state_t *flash_ctrl) {
   dif_flash_ctrl_faults_t faults = {.memory_properties_error = false};
