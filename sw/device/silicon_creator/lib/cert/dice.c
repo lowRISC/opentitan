@@ -19,6 +19,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
@@ -43,6 +44,17 @@ static bool is_debug_exposed(void) {
     return false;
   }
   return true;
+}
+
+/**
+ * Returns true if the OwnerSw is booting outside of prod ladder.
+ */
+static bool get_debug_mode_cdi1(owner_app_domain_t key_domain) {
+  if (launder32(key_domain) != kOwnerAppDomainProd) {
+    return true;
+  }
+  HARDENED_CHECK_EQ(key_domain, kOwnerAppDomainProd);
+  return false;
 }
 
 rom_error_t dice_uds_tbs_cert_build(
@@ -136,6 +148,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   hmac_digest_t *owner_manifest_measurement,
                                   uint32_t owner_security_version,
+                                  owner_app_domain_t key_domain,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
@@ -154,6 +167,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                owner_manifest_hash.digest);
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerSecurityVersion,
                &owner_security_version_be);
+  TEMPLATE_SET(cdi_1_tbs_params, Cdi1, DebugFlag,
+               get_debug_mode_cdi1(key_domain));
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerPubKeyEcX, cdi_1_pubkey->x);
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerPubKeyEcY, cdi_1_pubkey->y);
 
