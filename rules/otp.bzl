@@ -45,50 +45,6 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 
-def get_otp_images():
-    """Returns a list of (otp_name, img_target) tuples.
-
-    Each tuple corresponds to an OTP image defined in //util/design/data. The
-    otp_name is a short, unique suffix of the image target, e.g. "rma". The
-    img_target is the full path of the OTP image target.
-    """
-
-    img_targets = [
-        "//hw/top_earlgrey/data/otp:img_dev",
-        "//hw/top_earlgrey/data/otp:img_rma",
-        "//hw/top_earlgrey/data/otp:img_test_locked0",
-        "//hw/top_earlgrey/data/otp:img_test_locked1",
-        "//hw/top_earlgrey/data/otp:img_test_locked2",
-        "//hw/top_earlgrey/data/otp:img_test_locked3",
-        "//hw/top_earlgrey/data/otp:img_test_locked4",
-        "//hw/top_earlgrey/data/otp:img_test_locked5",
-        "//hw/top_earlgrey/data/otp:img_test_locked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
-        "//hw/top_earlgrey/data/otp:img_prod",
-        "//hw/top_earlgrey/data/otp:img_prod_end",
-        "//hw/top_earlgrey/data/otp:img_exec_disabled",
-        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
-        "//hw/top_earlgrey/data/otp:img_raw",
-    ]
-
-    out = []
-    for img_target in img_targets:
-        [_, img_target_name] = img_target.rsplit(":")
-        otp_name = img_target_name.removeprefix("img_")
-        out.append((
-            otp_name,
-            img_target,
-        ))
-    return out
-
 def otp_partition(name, **kwargs):
     partition = {
         "name": name,

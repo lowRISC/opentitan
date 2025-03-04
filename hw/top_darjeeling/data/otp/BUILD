@@ -21,10 +21,6 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-# This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
-# That is, each OTP image referenced by the macro should have a definition in
-# this BUILD file.
-
 exports_files(["otp_ctrl_mmap.hjson"])
 
 otp_json(
