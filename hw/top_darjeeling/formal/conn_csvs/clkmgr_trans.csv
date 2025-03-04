@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_darjeeling/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# clkmgr trans clock connectivity
+CONNECTION,CLKMGR_TRANS_AES,      top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_aes,       top_darjeeling.u_aes,clk_i
+CONNECTION,CLKMGR_TRANS_AES_EDN,  top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_aes,       top_darjeeling.u_aes,clk_edn_i
+CONNECTION,CLKMGR_TRANS_HMAC,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_hmac,      top_darjeeling.u_hmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_darjeeling.u_kmac,clk_i
+CONNECTION,CLKMGR_TRANS_KMAC_EDN, top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_kmac,      top_darjeeling.u_kmac,clk_edn_i
+CONNECTION,CLKMGR_TRANS_OTBN,     top_darjeeling.u_clkmgr_aon, clocks_o.clk_main_otbn,      top_darjeeling.u_otbn,clk_i

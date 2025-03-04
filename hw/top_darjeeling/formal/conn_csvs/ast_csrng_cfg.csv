@@ -1,0 +1,14 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_darjeeling/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# ast -> csrng connectivity
+CONNECTION, AST_CSRNG_ES_REQ, top_darjeeling.u_csrng, entropy_src_hw_if_o.es_req, u_ast, es_req_i.es_req
+CONNECTION, AST_CSRNG_ES_RSP_ES_ACK,  u_ast, es_rsp_o.es_ack,  top_darjeeling.u_csrng, entropy_src_hw_if_i.es_ack
+CONNECTION, AST_CSRNG_ES_RSP_ES_BITS, u_ast, es_rsp_o.es_bits, top_darjeeling.u_csrng, entropy_src_hw_if_i.es_bits
+CONNECTION, AST_CSRNG_ES_RSP_ES_FIPS, u_ast, es_rsp_o.es_fips, top_darjeeling.u_csrng, entropy_src_hw_if_i.es_fips

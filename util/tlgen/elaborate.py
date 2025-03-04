@@ -48,7 +48,8 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
        b. Revise every edges to the node to have SOCKET_M1 node as end node.
        c. (New Edge) create a edge from SOCKET_M1 to the node.
        d. Repeat the algorithm with the node.
-    3. If a node has multiple edges having it as a start node and not SOCKET_1N:
+    3. If a node is a host or has multiple edges having it as a start node and
+       not SOCKET_1N:
        a. (New node) Create SOCKET_1N node.
        b. Revise every edges from the node to have SOCKET_1N node as start node.
        c. (New Edge) Create a edge from the node to SOCKET_1N node.
@@ -90,8 +91,11 @@ def process_node(node: Node, xbar: Xbar) -> Xbar:
         xbar.insert_node(new_sm1, node)
         process_node(new_sm1, xbar)
 
-    # If a node has multiple edges having it as a start node and not SOCKET_1N:
-    elif len(node.ds) > 1 and not isinstance(node, Socket1N):
+    # If a node is a host or has multiple edges having it as a start node and
+    # is not a not SOCKET_1N (We want every host to be connected to an S1N
+    # because it enforces the address boundaries of connected devices):
+    elif (isinstance(node, Host) or
+          (len(node.ds) > 1 and not isinstance(node, Socket1N))):
         # (New node) Create SOCKET_1N node
         new_s1n = Socket1N(dwidth=len(node.ds),
                            name="s1n_" + str(len(xbar.nodes)),
