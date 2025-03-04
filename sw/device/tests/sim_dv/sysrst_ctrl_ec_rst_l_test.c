@@ -9,10 +9,10 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -90,7 +90,7 @@ enum {
 };
 
 // Test phase written by testbench.
-static volatile const uint8_t kTestPhase[1] = {0};
+static volatile const uint8_t kTestPhase = 0;
 
 // Sets up the pinmux to assign input and output pads
 // to the sysrst_ctrl peripheral as required.
@@ -140,16 +140,14 @@ static void configure_combo_reset(void) {
 // Waits for the kTestPhase variable to be changed by a backdoor overwrite
 // from the testbench in `chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv`. This will
 // indicate that the testbench is ready to proceed with the next phase of the
-// test. The function `flash_ctrl_testutils_backdoor_wait_update` is used to
-// deal with possible caching that can prevent the software to read the new
-// value of `kTestPhase`.
+// test.
 static void sync_with_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
+  IBEX_SPIN_FOR(OTTF_BACKDOOR_READ(kTestPhase) != prior_phase,
+                kTestPhaseTimeoutUsec);
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows
@@ -191,7 +189,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));
 
-  uint8_t current_test_phase = kTestPhase[0];
+  uint8_t current_test_phase = kTestPhase;
   while (current_test_phase < kTestPhaseDone) {
     LOG_INFO("Test phase %d", current_test_phase);
     switch (current_test_phase) {
@@ -217,7 +215,7 @@ bool test_main(void) {
         break;
     }
     sync_with_testbench(current_test_phase);
-    current_test_phase = kTestPhase[0];
+    current_test_phase = kTestPhase;
   }
   return true;
 }
