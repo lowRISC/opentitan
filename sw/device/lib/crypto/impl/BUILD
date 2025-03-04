@@ -23,6 +23,20 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "aes_gcm",
+    srcs = ["aes_gcm.c"],
+    hdrs = ["//sw/device/lib/crypto/include:aes_gcm.h"],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/impl/aes_gcm",
         "//sw/device/lib/crypto/include:datatypes",
     ],

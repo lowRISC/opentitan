@@ -128,7 +128,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_mode }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_operation }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_tag_len }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_tag_len }}
 
 #### Elliptic curve data structures
 
@@ -187,14 +187,14 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 
 #### GCM - Authenticated Encryption and Decryption
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_init }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_init }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_aad }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_encrypted_data }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_final }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_final }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_update_aad }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_update_encrypted_data }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt_final }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt_final }}
 
 ## Hash functions
 
