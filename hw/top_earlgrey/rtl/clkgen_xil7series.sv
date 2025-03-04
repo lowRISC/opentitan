@@ -34,7 +34,7 @@ module clkgen_xil7series # (
     .DIVCLK_DIVIDE        (1),      // f_PFD = 100 MHz
     .CLKFBOUT_MULT_F      (12.000), // f_VCO = 1200 MHz
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE_F     (50.0),   // f_main = 24 MHz
+    .CLKOUT0_DIVIDE_F     (120.0),  // f_main = 10 MHz
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT1_DIVIDE       (25),
