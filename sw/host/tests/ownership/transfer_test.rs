@@ -60,8 +60,14 @@ struct Opts {
     )]
     rescue_after_activate: Option<PathBuf>,
 
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the firmware boots prior to ownership transfer")]
+    pre_transfer_boot_check: bool,
     #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
     dual_owner_boot_check: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "If true, this test is a non-transferring update")]
+    non_transfer_update: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the sealing keys")]
+    keygen_check: bool,
 
     #[arg(long, default_value = "Any", help = "Mode of the unlock operation")]
     unlock_mode: UnlockMode,
@@ -69,9 +75,36 @@ struct Opts {
     expected_error: Option<String>,
 }
 
+fn remember(haystack: &str, re: &str, memory: &mut Vec<String>) -> bool {
+    let re = Regex::new(re).expect("regex");
+    if let Some(cap) = re.captures(haystack) {
+        memory.push(cap[cap.len() - 1].into());
+        true
+    } else {
+        false
+    }
+}
+
 fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart));
+
+    let mut keygen = Vec::new();
+
+    if opts.pre_transfer_boot_check {
+        log::info!("###### Pre-transfer Boot Check ######");
+        let capture = UartConsole::wait_for(
+            &*uart,
+            r"(?msR)Starting.*ownership_state = (\w+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+            opts.timeout,
+        )?;
+        if capture[0].starts_with("BFV") {
+            return RomError(u32::from_str_radix(&capture[2], 16)?).into();
+        }
+        if opts.keygen_check && !remember(&capture[0], r"sw_key = (\w+)", &mut keygen) {
+            return Err(anyhow!("Failed to find sw_key"));
+        }
+    }
 
     log::info!("###### Get Boot Log (1/2) ######");
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
@@ -113,7 +146,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
         let capture = UartConsole::wait_for(
             &*uart,
-            r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+            r"(?msR)Starting.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
             opts.timeout,
         )?;
         if capture[0].starts_with("BFV") {
@@ -126,6 +159,9 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             _ => return Err(anyhow!("Unexpected ownership state: {}", capture[1])),
         }
         transfers0 = capture[2].parse::<u32>()?;
+        if opts.keygen_check && !remember(&capture[0], r"sw_key = (\w+)", &mut keygen) {
+            return Err(anyhow!("Failed to find sw_key"));
+        }
     }
 
     log::info!("###### Get Boot Log (2/2) ######");
@@ -153,15 +189,34 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
     let capture = UartConsole::wait_for(
         &*uart,
-        r"(?msR)ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+        r"(?msR)Starting.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
     if capture[0].starts_with("BFV") {
         return RomError(u32::from_str_radix(&capture[3], 16)?).into();
     }
+    if opts.keygen_check && !remember(&capture[0], r"sw_key = (\w+)", &mut keygen) {
+        return Err(anyhow!("Failed to find sw_key"));
+    }
     assert_eq!(capture[1], "OWND");
     let transfers1 = capture[2].parse::<u32>()?;
-    assert_eq!(transfers0 + 1, transfers1);
+
+    if opts.non_transfer_update {
+        assert_eq!(transfers0, transfers1);
+    } else {
+        assert_eq!(transfers0 + 1, transfers1);
+    }
+
+    if opts.keygen_check {
+        log::info!("###### Checking software keys ######");
+        log::info!("sw_keys = {keygen:?}");
+        for i in 0..keygen.len() {
+            for j in i + 1..keygen.len() {
+                log::info!("Checking that key[{i}] != key[{j}]");
+                assert_ne!(keygen[i], keygen[j]);
+            }
+        }
+    }
     Ok(())
 }
 

@@ -217,3 +217,13 @@ The following errors and error responses can occur during Xmodem-CRC.
 - An invalid start-of-packet: the transfer is aborted.
 - An invalid block number: the transfer is cancelled.
 - An invalid CRC checksum: the frame is NAKed and the sender should retry the frame.
+
+## Security Considerations
+
+The ownership configuration can contain a `RescueConfig` structure that specifies which rescue commands are allowed.
+When the `RescueConfig` is absent from the ownership configuration, all commands are allowed.
+When the `RescueConfig` is present in the ownership configuration, all commands are subject to the `command_allow` list in the rescue configuration except for the following:
+
+- The reboot (`REBO`) command is always allowed.
+- The disable automatic reboot (`WAIT`) command is always allowed.
+- The change serial data rate (`BAUD`) command is always allowed.

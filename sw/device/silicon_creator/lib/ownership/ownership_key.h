@@ -6,6 +6,8 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
@@ -29,6 +31,13 @@ typedef enum ownership_key {
   /** The silicon_creator no_owner_recovery key. */
   kOwnershipKeyRecovery = 0x8888,
 } ownership_key_t;
+
+typedef struct owner_secret_page {
+  /** Owner entropy. */
+  hmac_digest_t owner_secret;
+  /** Hash chain of previous owners. */
+  hmac_digest_t owner_history;
+} owner_secret_page_t;
 
 /**
  * Validate that a message was signed with a given owner key.
@@ -71,5 +80,20 @@ rom_error_t ownership_seal_page(size_t page);
  * @return Success or error code.
  */
 rom_error_t ownership_seal_check(size_t page);
+
+/**
+ * Replace the owner secret with new entropy and update the ownership history.
+ *
+ * @return Success or error code.
+ */
+rom_error_t ownership_secret_new(void);
+
+/**
+ * Retrieve the owner history digest from the OwnerSecret page.
+ *
+ * @param history Digest of all previous owner keys.
+ * @return Success or error code.
+ */
+rom_error_t ownership_history_get(hmac_digest_t *history);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_

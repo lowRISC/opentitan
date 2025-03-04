@@ -7,11 +7,23 @@
 
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
+
+/**
+ * Activate the owner configuration on owner page 1.
+ *
+ * @param bootdata A pointer to the current boot_data in RAM.
+ * @param write_both_pages Whether to write the activated page to both owner
+ *                         pages.
+ * @return rom_error_t
+ */
+rom_error_t ownership_activate(boot_data_t *bootdata,
+                               hardened_bool_t write_both_pages);
 
 /**
  * Process a boot_svc OwnershipActivate message.
@@ -20,6 +32,7 @@ extern "C" {
  * @param bootdata A pointer to the current boot_data in RAM.
  * @return rom_error_t
  */
+
 rom_error_t ownership_activate_handler(boot_svc_msg_t *msg,
                                        boot_data_t *bootdata);
 

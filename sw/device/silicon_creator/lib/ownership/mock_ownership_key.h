@@ -23,6 +23,7 @@ class MockOwnershipKey : public global_mock::GlobalMock<MockOwnershipKey> {
   MOCK_METHOD(rom_error_t, seal_init, ());
   MOCK_METHOD(rom_error_t, seal_page, (size_t));
   MOCK_METHOD(rom_error_t, seal_check, (size_t));
+  MOCK_METHOD(rom_error_t, secret_new, ());
 };
 
 }  // namespace internal

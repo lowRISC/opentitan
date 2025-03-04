@@ -12,21 +12,41 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
 static owner_page_status_t owner_page_validity_check(size_t page) {
   size_t sig_len =
       (uintptr_t)&owner_page[0].signature - (uintptr_t)&owner_page[0];
 
+  // Any non-constrained words of the owner block device_id field are required
+  // to be `kLockConstraintNone`.  We wipe the field and then fill in the
+  // relevant words from the lifecycle constroller.
+  //
+  // For node-locked owner configurations, this makes the device_id from the
+  // lifecycle controller relevant to the cryptographic verification.
+  memset(owner_page[page].device_id, 0, sizeof(owner_page[page].device_id));
+  lifecycle_device_id_t id;
+  lifecycle_device_id_get(&id);
+  for (uint32_t i = 0; i < ARRAYSIZE(owner_page[0].device_id); ++i) {
+    if (owner_page[page].lock_constraint & (1u << i)) {
+      owner_page[page].device_id[i] = id.device_id[i];
+    } else {
+      owner_page[page].device_id[i] = kLockConstraintNone;
+    }
+  }
+
   rom_error_t sealed = ownership_seal_check(page);
   if (sealed == kErrorOk) {
     HARDENED_CHECK_EQ(sealed, kErrorOk);
     return kOwnerPageStatusSealed;
   }
+
   hardened_bool_t result = ownership_key_validate(page, kOwnershipKeyOwner,
                                                   &owner_page[page].signature,
                                                   &owner_page[page], sig_len);
@@ -49,39 +69,20 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
                                      owner_application_keyring_t *keyring) {
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       owner_page_valid[1] == kOwnerPageStatusSigned &&
-      owner_page[0].update_mode == kOwnershipUpdateModeNewVersion &&
+      owner_block_newversion_mode() == kHardenedBoolTrue &&
+      owner_page[1].config_version > owner_page[0].config_version &&
       hardened_memeq(owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
                      ARRAYSIZE(owner_page[0].owner_key.raw)) ==
           kHardenedBoolTrue) {
-    // TODO(cfrantz): Consider refactoring this block along with the body
-    // of the `ownership_activate.c%activate` function into a common
-    // activation function.
-    owner_config_t tmpcfg;
-    owner_application_keyring_t tmpkey;
-    // Trial parse of the new page: it has to be valid to accept the update.
-    rom_error_t error = owner_block_parse(&owner_page[1], &tmpcfg, &tmpkey);
-    if (error == kErrorOk &&
-        owner_page[1].config_version > owner_page[0].config_version) {
-      // Page 1 parses and has a newer version: seal it into flash.
-      ownership_seal_page(/*page=*/1);
-      owner_page_valid[1] = kOwnerPageStatusSealed;
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
-          &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
-      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-          &kFlashCtrlInfoPageOwnerSlot1, 0,
-          sizeof(owner_page[1]) / sizeof(uint32_t), &owner_page[1]));
-
-      // If the new owner page resets the BL0 min_security_version, perform
-      // the reset now.
-      if (owner_page[1].min_security_version_bl0 != UINT32_MAX) {
-        bootdata->min_security_version_bl0 =
-            owner_page[1].min_security_version_bl0;
-        HARDENED_RETURN_IF_ERROR(boot_data_write(bootdata));
-      }
+    rom_error_t error =
+        ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
+    if (error == kErrorOk) {
+      HARDENED_CHECK_EQ(error, kErrorOk);
       // Thunk the status of page 0 to Invalid so the next set of validity
       // checks will copy the new page 1 content over to page 0 and establish a
       // redundant backup of the new configuration.
       owner_page_valid[0] = kOwnerPageStatusInvalid;
+      owner_page_valid[1] = kOwnerPageStatusSealed;
     } else {
       // If the new page wasn't good, we'll do nothing here and let the next set
       // of validity checks copy page 0 over to page 1 and re-establish a
@@ -184,6 +185,9 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot0, cfg);
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
+  // Set up the OwnerSecret page for ECC & Scrambling.  We won't
+  // turn on read/write/earse permissions until we need them.
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSecret, cfg);
 
   // We don't want to abort ownership setup if we fail to
   // read the INFO pages, so we discard the error result.
@@ -275,6 +279,18 @@ rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
 }
 
 void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
+#ifdef ROM_EXT_KLOBBER_ALLOWED
+  if (rescue == kHardenedBoolTrue) {
+    // If ROM_EXT_KLOBBER_ALLOWED and we're in rescue mode, we skip
+    // lockdown because the rescue protcol is permitted, on DEV chips
+    // only, to erase the ownership pages.  This exists to simulate
+    // disaster scenarios and test the disaster recovery mechanisms.
+    //
+    // Under normal circumstances, the ROM_EXT is not built with this
+    // capability.
+    return;
+  }
+#endif
   flash_ctrl_perms_t perm = {
       .read = kMultiBitBool4True,
       .write = kMultiBitBool4False,
@@ -295,9 +311,7 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
     return;
   }
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
-    if (owner_page[0].update_mode == kOwnershipUpdateModeNewVersion) {
-      HARDENED_CHECK_EQ(owner_page[0].update_mode,
-                        kOwnershipUpdateModeNewVersion);
+    if (owner_block_newversion_mode() == kHardenedBoolTrue) {
       // Leave page 1 unlocked if we're in "NewVersion" update mode.
     } else {
       // Otherwise, make the page read-only.
