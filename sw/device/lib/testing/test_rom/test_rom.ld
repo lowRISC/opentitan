@@ -17,15 +17,15 @@ __DYNAMIC = 0;
 
 INCLUDE OPENTITAN_TOP_MEMORY_LD
 
+#include "ottf_ld_top_config.ld"
+
 /**
  * Region aliases.
  */
 #ifdef OPENTITAN_IS_DARJEELING
 REGION_ALIAS("test_rom", rom0)
-REGION_ALIAS("test_code_region", ctn)
 #else
 REGION_ALIAS("test_rom", rom)
-REGION_ALIAS("test_code_region", eflash)
 #endif
 
 /**
@@ -35,11 +35,16 @@ REGION_ALIAS("test_code_region", eflash)
 _boot_address = ORIGIN(test_rom);
 
 /**
+ * Location of the manifest.
+ */
+_manifest_address = ORIGIN(ottf_storage);
+
+/**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
-ASSERT((_rom_ext_virtual_size <= (LENGTH(test_code_region) / 2)),
+ASSERT((_rom_ext_virtual_size <= (LENGTH(ottf_storage) / 2)),
   "Error: rom ext flash is bigger than slot.");
 
 _rom_digest_size = 32;
