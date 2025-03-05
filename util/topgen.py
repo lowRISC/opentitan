@@ -637,6 +637,9 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     else:
         alert_handler_vlnv = ""
 
+    # One crash dump per core
+    n_cores = top['num_cores']
+
     return {
         "clks": clks,
         "reqs": top["reset_requests"],
@@ -650,6 +653,7 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "alert_handler_vlnv": alert_handler_vlnv,
         "with_alert_handler": with_alert_handler,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
+        "num_cores": n_cores,
     }
 
 

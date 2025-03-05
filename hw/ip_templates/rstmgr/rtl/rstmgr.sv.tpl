@@ -51,7 +51,9 @@ module rstmgr
   input alert_handler_pkg::alert_crashdump_t alert_dump_i,
 
   // Interface to cpu crash dump
-  input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
+% for i in range(num_cores):
+  input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_${i}_i,
+% endfor
 
   // dft bypass
   input scan_rst_ni,
@@ -425,24 +427,28 @@ module rstmgr
     .slot_o(hw2reg.alert_info.d)
   );
 
-  rstmgr_crash_info #(
-    .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
-  ) u_cpu_info (
-    .clk_i(clk_por_i),
-    .rst_ni(rst_por_ni),
-    .dump_i(cpu_dump_i),
-    .dump_capture_i(dump_capture & reg2hw.cpu_info_ctrl.en.q),
-    .slot_sel_i(reg2hw.cpu_info_ctrl.index.q),
-    .slots_cnt_o(hw2reg.cpu_info_attr.d),
-    .slot_o(hw2reg.cpu_info.d)
-  );
-
   // once dump is captured, no more information is captured until
   // re-enabled by software.
   assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
   assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
-  assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.cpu_info_ctrl.en.de = dump_capture_halt;
+
+% for i in range(num_cores):
+  rstmgr_crash_info #(
+    .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
+  ) u_cpu_info_${i} (
+    .clk_i(clk_por_i),
+    .rst_ni(rst_por_ni),
+    .dump_i(cpu_dump_${i}_i),
+    .dump_capture_i(dump_capture & reg2hw.cpu_${i}_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.cpu_${i}_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.cpu_${i}_info_attr.d),
+    .slot_o(hw2reg.cpu_${i}_info.d)
+  );
+
+  assign hw2reg.cpu_${i}_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.cpu_${i}_info_ctrl.en.de = dump_capture_halt;
+
+% endfor
 
   ////////////////////////////////////////////////////
   // Exported resets                                //
