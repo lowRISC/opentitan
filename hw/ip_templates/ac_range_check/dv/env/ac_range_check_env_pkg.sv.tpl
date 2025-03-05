@@ -60,10 +60,10 @@ package ac_range_check_env_pkg;
   } tl_main_vars_t;
 
   typedef enum bit [1:0] {
-    AddrRead  = 0,
-    AddrWrite = 1,
-    DataRead  = 2,
-    DataWrite = 3
+    AChanRead  = 0,
+    AChanWrite = 1,
+    DChanRead  = 2,
+    DChanWrite = 3
   } tl_phase_e;
 
   typedef enum bit {
