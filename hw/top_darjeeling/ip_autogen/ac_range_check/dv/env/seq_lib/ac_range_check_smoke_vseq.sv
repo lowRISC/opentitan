@@ -7,6 +7,7 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
 
   // Constraints
   // extern constraint range_limit_c;
+  extern constraint num_trans_c;
   extern constraint range_racl_policy_c;
   extern constraint tmp_c;
 
@@ -14,6 +15,11 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   extern function new(string name="");
   extern task body();
 endclass : ac_range_check_smoke_vseq
+
+
+constraint ac_range_check_smoke_vseq::num_trans_c {
+  num_trans inside {[1:50]};
+}
 
 // TODO remove this temporary directed constraint
 constraint ac_range_check_smoke_vseq::tmp_c {
@@ -48,24 +54,25 @@ function ac_range_check_smoke_vseq::new(string name="");
 endfunction : new
 
 task ac_range_check_smoke_vseq::body();
+  tl_main_vars_t tl_main_vars_local;
+
   // TODO, remove this chunk and make it random later
-  dut_cfg.tl_main_vars.rand_write = 0;
-  dut_cfg.tl_main_vars.write      = 0;
-  dut_cfg.tl_main_vars.rand_addr  = 0;
-  dut_cfg.tl_main_vars.addr       = 'h7654_24FF;
-  dut_cfg.tl_main_vars.rand_mask  = 0;
-  dut_cfg.tl_main_vars.mask       = 'hF;
-  dut_cfg.tl_main_vars.rand_data  = 0;
-  dut_cfg.tl_main_vars.data       = 'hABCD_FE97;
+  tl_main_vars_local.rand_addr  = 0;
+  tl_main_vars_local.addr       = 'h7654_24F0;
+  tl_main_vars_local.rand_mask  = 0;
+  tl_main_vars_local.mask       = 'hF;
+  tl_main_vars_local.rand_data  = 0;
+  tl_main_vars_local.data       = 'hABCD_0000;
 
-  // Out of range address
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
+  for (int i=1; i<=num_trans; i++) begin
+    `uvm_info(`gfn, $sformatf("starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
-  // In range address
-  dut_cfg.tl_main_vars.data       = 'hFE99_6548;
-  dut_cfg.tl_main_vars.addr       = 'h7654_25F1;
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
-  dut_cfg.tl_main_vars.data       = 'h54FA_97C6;
-  dut_cfg.tl_main_vars.addr       = 'h7654_2500;
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
+    // TODO, remove this chunk and make it random later
+    tl_main_vars_local.addr++;
+    tl_main_vars_local.data++;
+
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(this, dut_cfg.tl_main_vars == tl_main_vars_local;)
+    ac_range_check_init();
+    send_single_tl_unfilt_tr(tl_main_vars_local);
+  end
 endtask : body
