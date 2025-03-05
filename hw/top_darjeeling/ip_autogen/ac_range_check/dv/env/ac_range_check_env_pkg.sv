@@ -66,6 +66,11 @@ package ac_range_check_env_pkg;
     DataWrite = 3
   } tl_phase_e;
 
+  typedef enum bit {
+    AccessDenied  = 0,
+    AccessGranted = 1
+  } access_decision_e;
+
   // Functions
   // Retrieve the index of the CSR based on its name
   function automatic int get_csr_idx(string csr_ral_name, string csr_name);
