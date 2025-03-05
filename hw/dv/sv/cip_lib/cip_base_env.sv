@@ -10,19 +10,36 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
 
   `uvm_component_param_utils(cip_base_env #(CFG_T, VIRTUAL_SEQUENCER_T, SCOREBOARD_T, COV_T))
 
+  // Methods
+
   extern function new (string name="", uvm_component parent=null);
 
   extern virtual function void build_phase(uvm_phase phase);
   extern virtual function void connect_phase(uvm_phase phase);
   extern virtual function void end_of_elaboration_phase(uvm_phase phase);
 
-  tl_agent                                           m_tl_agents[string];
-  tl_reg_adapter #(tl_seq_item)                      m_tl_reg_adapters[string];
-  alert_esc_agent                                    m_alert_agent[string];
-  push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent[];
+  // Types to represent a push/pull agent for an EDN interface and its cfg object type.
+  typedef push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))     edn_push_pull_agent_t;
+  typedef push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_push_pull_agent_cfg_t;
+
+  // Variables
+
+  // An associative array of TileLink agents, keyed by the name of the appropriate RAL model.
+  tl_agent                            m_tl_agents[string];
+
+  // An associative array of register adapters, keyed by the name of the RAL model whose TileLink
+  // bus is associated.
+  local tl_reg_adapter #(tl_seq_item) m_tl_reg_adapters[string];
+
+  // An associative array of alert/escalation agents, keyed by the names of the different possible
+  // alerts (from cfg.list_of_alerts).
+  local alert_esc_agent               m_alert_agent[string];
+
+  // A dynamic array of agents for EDN interfaces. This has cfg.num_edn items
+  local edn_push_pull_agent_t         m_edn_pull_agent[];
 endclass
 
-function cip_base_env::new (string name="", uvm_component parent=null);
+function cip_base_env::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction
 
@@ -86,10 +103,9 @@ function void cip_base_env::build_phase(uvm_phase phase);
     m_edn_pull_agent = new[cfg.num_edn];
     foreach (m_edn_pull_agent[i]) begin
       string agent_name = $sformatf("m_edn_pull_agent[%0d]", i);
-      m_edn_pull_agent[i] = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::
-                            type_id::create(agent_name, this);
-      uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::
-                    set(this, agent_name, "cfg", cfg.m_edn_pull_agent_cfgs[i]);
+      m_edn_pull_agent[i] = edn_push_pull_agent_t::type_id::create(agent_name, this);
+      uvm_config_db#(edn_push_pull_agent_cfg_t)::set(this, agent_name,
+                                                     "cfg", cfg.m_edn_pull_agent_cfgs[i]);
       cfg.m_edn_pull_agent_cfgs[i].en_cov = cfg.en_cov;
     end
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "edn_clk_rst_vif",
