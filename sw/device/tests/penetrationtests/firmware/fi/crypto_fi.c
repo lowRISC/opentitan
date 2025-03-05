@@ -229,6 +229,9 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralAes |
@@ -239,7 +242,7 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
   pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu();
+  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
 
   // Init the AES block.
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
