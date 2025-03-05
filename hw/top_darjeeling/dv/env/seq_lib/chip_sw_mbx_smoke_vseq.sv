@@ -82,12 +82,12 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
     uvm_reg_addr_t addr;
     uvm_mem mem;
     uvm_reg register;
-    bit mem_or_reg; // 0:reg, 1:mem
+    bit addr_is_reg;
     if ($cast(register, ptr)) begin
-      mem_or_reg = 1'b0;
+      addr_is_reg = 1'b1;
       addr = register.get_address();
     end else if ($cast(mem, ptr)) begin
-      mem_or_reg = 1'b1;
+      addr_is_reg = 1'b0;
       addr = mem.get_address();
     end else begin
       `uvm_fatal(`gfn, "uvm_object passed to access_wrapper not reg or mem!")
@@ -95,10 +95,10 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
 
     case (ral_access_method)
       tlul: begin
-        if (!mem_or_reg) begin // reg
+        if (addr_is_reg) begin
           if (read_or_write == rd) csr_rd(register, rdata);
           else                     csr_wr(register, wdata);
-        end else begin // mem
+        end else begin
           if (read_or_write == rd) mem_rd(mem, 0, rdata);
           else                     mem_wr(mem, 0, wdata);
         end
@@ -118,10 +118,6 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
                                  uvm_reg_data_t DWORDS [],
                                  wait_t poll_or_irq);
 
-    // Use some local copies of the mbx soc registers just to simplify decoding
-    mbx_soc_reg_soc_control soc_control;
-    mbx_soc_reg_soc_status soc_status;
-
     mbx_soc_reg_block mbx_ral = ralmap[mbxIdx].ral;
     string ralname = ralmap[mbxIdx].ralname;
 
@@ -133,11 +129,6 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
               $sformatf({"Too few DWORDS passed to fun, ",
                         "numDWORDS = %0d, DWORDS.size() = %0d"},
                         numDWORDS, DWORDS.size()));
-
-    soc_control = mbx_soc_reg_soc_control::type_id::create("soc_control");
-    soc_status = mbx_soc_reg_soc_status::type_id::create("soc_status");
-    soc_control.build();
-    soc_status.build();
 
     // Start the transaction : requester writes data into the imbx
     begin : requester_imbx_write
@@ -160,8 +151,8 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
       // - Set the .doe_intr_en bit if we are handling as an irq externally
 
       wdata = '0;
-      if (poll_or_irq == irq) wdata[soc_control.doe_intr_en.get_lsb_pos()] = 1'b1;
-      wdata[soc_control.go.get_lsb_pos()] = 1'b1;
+      if (poll_or_irq == irq) wdata[mbx_ral.soc_control.doe_intr_en.get_lsb_pos()] = 1'b1;
+      wdata[mbx_ral.soc_control.go.get_lsb_pos()] = 1'b1;
       access_wrapper(mbx_ral.soc_control, wr, rdata, wdata);
     end // requester_imbx_write
 
@@ -180,8 +171,7 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
           `DV_SPINWAIT(
             do begin
               access_wrapper(mbx_ral.soc_status, rd, rdata, wdata);
-              void'(soc_status.predict(rdata));
-            end while (`gmv(soc_status.ready) != 1'b1);,
+            end while (dv_base_reg_pkg::get_field_val(mbx_ral.soc_status.ready, rdata) != 1'b1);,
             "Timeout while polling for mbx.soc_status.ready = '1.")
         end
         irq: begin
@@ -193,8 +183,7 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
           // > Upon receiving an interrupt, it checks the DOE Status Register
           // > .ready bit to see if the object is ready.
           access_wrapper(mbx_ral.soc_status, rd, rdata, wdata);
-          void'(soc_status.predict(rdata));
-          if (`gmv(soc_status.ready) != 1'b1) begin
+          if (dv_base_reg_pkg::get_field_val(mbx_ral.soc_status.ready, rdata) != 1'b1) begin
             `uvm_fatal(`gfn, "soc_status.ready not set after interrupt!")
           end
         end
@@ -220,7 +209,7 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
       // - Even if soc_control.doe_intr_en = 1'b0, the irq asserts regardless.
       // - All other fields are RO, so we don't need to bother reading first.
       wdata = '0;
-      wdata[soc_status.doe_intr_status.get_lsb_pos()] = 1'b1;
+      wdata[mbx_ral.soc_status.doe_intr_status.get_lsb_pos()] = 1'b1;
       access_wrapper(mbx_ral.soc_status, wr, rdata, wdata);
     end // requester_ombx_read
 
@@ -268,7 +257,6 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
                              " with %0d DWORDS in mbx[%0d]"},
                             i, rNumTxns, numDWORDS, rMbxIdx),
                   UVM_LOW)
-        // if (rMbxIdx == 5) cfg.chip_vif.darjeeling_mbx_if.disconnect();
         // Set the following class variable, which is read by access_wrapper()
         ral_access_method = ralmap[rMbxIdx].ral_access_method;
         requester_mbx_txn(
