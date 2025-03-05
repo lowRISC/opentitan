@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_
 
+#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdnoreturn.h>
 
@@ -18,10 +19,6 @@
  *
  * @param cond: an expression that can be repeated tested for.
  * @param timeout_usec: timeout in microseconds.
- *
- * NOTE: all variables which appear in `cond` should be declared by
- * `OTTF_BACKDOOR_VAR` to prevent compiler optimization that could result
- * in unexpected behaviours.
  *
  * In DV, this function will simply spin since the DV environment can do
  * backdoor writes to make the condition true. On real device, this will wait
@@ -50,11 +47,15 @@
 /**
  * Declare a variable which can be used with `OTTF_WAIT_FOR`.
  *
- * This macro guarantees the following:
- * - This variable can be used within the condition of `OTTF_WAIT_FOR` and
- *   the compiler will not optimize the condition thinking that the variable
- *   is not modified, *even* if the program never writes to it.
- * - This variable will have an associated symbol in the final ELF binary.
+ * Variable declared this way will have an associated symbol in the final ELF
+ * binary. This will allow host test harness or DV to find the variable and
+ * manipulate it with backdoor access mechanism, via OTTF uJSON commands for
+ * SiVal or directly modifying the underlying memory for DV.
+ *
+ * This variable can be accessed directly if you're certain there'll be no
+ * concurrent DV modification. However, if a concurrent modification may occur,
+ * you need to use `OTTF_BACKDOOR_READ` to provide correct synchronization to
+ * avoid miscompilation.
  *
  * NOTE: this macro guarantees that the variable works in all non-DV
  * environments but may not work in DV.
@@ -64,12 +65,53 @@
  * OTTF_BACKDOOR_VAR bool sival_is_ready = false;
  * ```
  */
-#define OTTF_BACKDOOR_VAR OT_USED OT_SECTION(".data") volatile
+#define OTTF_BACKDOOR_VAR OT_USED OT_SECTION(".data")
 
 /**
  * Same as `OTTF_BACKDOOR_VAR` but for DV environments.
  * ```
  */
-#define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata") volatile
+#define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata")
+
+#if defined(OPENTITAN_IS_EARLGREY)
+
+static void ottf_backdoor_flush_read_buffers(void) {
+  // On earlgrey, some backdoor variables may live on flash, which
+  // has a read buffer that needs to be flushed to get up-to-date value.
+  //
+  // Cause read buffers to flush since it reads 32 bytes, which is the
+  // size of the read buffers.
+  enum { kBufferBytes = 32 };
+  static volatile const uint8_t kFlashFlusher[kBufferBytes];
+  for (int i = 0; i < sizeof(kFlashFlusher); ++i) {
+    (void)kFlashFlusher[i];
+  }
+}
+
+#elif defined(OPENTITAN_IS_DARJEELING)
+
+static void ottf_backdoor_flush_read_buffers(void) {}
+
+#else
+#error Unsupported top
+#endif
+
+/**
+ * Reads a backdoor variable.
+ *
+ * This function can work on both normal and DV-specific backdoor variables.
+ * This function has acquire semantics. All memory accesses after the read
+ * will not be reordered by compiler to happen before the read.
+ *
+ * @param var the variable to read from.
+ * @return the read value.
+ */
+#define OTTF_BACKDOOR_READ(var)                               \
+  ({                                                          \
+    ottf_backdoor_flush_read_buffers();                       \
+    typeof(var) _tmp = *(const volatile typeof(var) *)&(var); \
+    atomic_signal_fence(memory_order_acquire);                \
+    _tmp;                                                     \
+  })
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_UTILS_H_

@@ -11,7 +11,6 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
@@ -29,7 +28,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 // On DV, we must use variables in flash but on a real device,
 // we must use variables in RAM.
 OT_SECTION(".rodata")
-static volatile const uint8_t kTestPhaseDV[1];
+static volatile const uint8_t kTestPhaseDV;
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -134,17 +133,14 @@ static status_t wait_next_test_phase(uint8_t prior_phase) {
   test_status_set(kTestStatusInTest);
   LOG_INFO("wait_next_test_phase after %d", prior_phase);
   if (kDeviceType == kDeviceSimDV) {
-    status_t status = flash_ctrl_testutils_backdoor_wait_update(
-        &kTestPhaseDV[0], prior_phase, kTestPhaseTimeoutUsecDV);
-    if (status_ok(status)) {
-      LOG_INFO("Read test phase 0x%x", kTestPhaseDV[0]);
-    }
-    return status;
+    IBEX_TRY_SPIN_FOR(OTTF_BACKDOOR_READ(kTestPhaseDV) != prior_phase,
+                      kTestPhaseTimeoutUsecDV);
+    LOG_INFO("Read test phase 0x%x", kTestPhaseDV);
   } else {
     IBEX_TRY_SPIN_FOR(read_phase_pins() != prior_phase,
                       kTestPhaseTimeoutUsecReal);
-    return OK_STATUS();
   }
+  return OK_STATUS();
 }
 
 /**
@@ -221,7 +217,7 @@ bool test_main(void) {
 
   while (true) {
     uint8_t current_test_phase =
-        kDeviceType == kDeviceSimDV ? *kTestPhaseDV : read_phase_pins();
+        kDeviceType == kDeviceSimDV ? kTestPhaseDV : read_phase_pins();
     LOG_INFO("Test phase %d", current_test_phase);
     switch (current_test_phase) {
       case kTestPhaseInit:
