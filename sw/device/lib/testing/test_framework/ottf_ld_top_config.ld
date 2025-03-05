@@ -4,7 +4,12 @@
 
 /* TODO This configuration should be split into per-top headers */
 #ifdef OPENTITAN_IS_DARJEELING
-REGION_ALIAS("ottf_storage", ctn)
+MEMORY {
+    /* There is a 1MiB RAM within the CTN at offset 16MiB to hold the
+     * firmware under test in DV. */
+    ctn_ram(rwx) : ORIGIN = ORIGIN(ctn) + 0x1000000, LENGTH = 0x100000
+}
+REGION_ALIAS("ottf_storage", ctn_ram)
 #else
 REGION_ALIAS("ottf_storage", eflash)
 #endif
