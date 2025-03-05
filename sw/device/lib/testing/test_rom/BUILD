@@ -23,6 +23,7 @@ ld_library(
         "//hw/top:top_ld",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
+        "//sw/device/lib/testing/test_framework:ottf_ld_top_config",
     ],
 )
 
