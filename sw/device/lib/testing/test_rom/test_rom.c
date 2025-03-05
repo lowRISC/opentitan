@@ -68,10 +68,11 @@ static const dt_otp_ctrl_t kOtpCtrlDt = kDtOtpCtrl;
 
 /* These symbols are defined in
  * `opentitan/sw/device/lib/testing/test_rom/test_rom.ld`, and describes the
- * location of the flash header.
+ * location of the flash header and manifest.
  */
 extern char _rom_ext_virtual_start_address[];
 extern char _rom_ext_virtual_size[];
+extern char _manifest_address[];
 
 /**
  * Type alias for the OTTF entry point.
@@ -231,22 +232,15 @@ bool rom_test_main(void) {
   }
 #endif
 
-#if defined(HAS_FLASH_CTRL)
+#ifdef OPENTITAN_IS_EARLGREY
   CHECK_DIF_OK(
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
-
-  // Always select slot a and enable address translation if manifest says to.
-  const manifest_t *manifest = (const manifest_t *)dt_flash_ctrl_reg_block(
-      kFlashCtrlDt, kDtFlashCtrlRegBlockMem);
-#elif defined(OPENTITAN_IS_DARJEELING)
-  // Always select slot a and enable address translation if manifest says to.
-  const manifest_t *manifest = (const manifest_t *)dt_soc_proxy_reg_block(
-      kDtSocProxy, kDtSocProxyRegBlockCtn);
-#else
-#error I don't know how to find the test code on this platform!
 #endif
 
+  const manifest_t *manifest = (const manifest_t *)_manifest_address;
+
   uintptr_t entry_point = manifest_entry_point_get(manifest);
+  // Enable address translation if manifest says to
   if (manifest->address_translation == kHardenedBoolTrue) {
     dif_rv_core_ibex_addr_translation_mapping_t addr_map = {
         .matching_addr = (uintptr_t)_rom_ext_virtual_start_address,
