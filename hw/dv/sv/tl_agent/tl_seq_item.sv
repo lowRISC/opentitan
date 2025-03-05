@@ -202,6 +202,37 @@ class tl_seq_item extends uvm_sequence_item;
     return str;
   endfunction
 
+  // Note: the do_compare() method should only be coded for those properties which can be compared
+  // that's the reason why the following fields are not part it:
+  // req_abort_after_a_valid_len, rsp_abort_after_d_valid_len, req_completed, rsp_completed
+  function bit do_compare(uvm_object rhs, uvm_comparer comparer);
+    tl_seq_item rhs_;
+    // If the cast fails, comparison has also failed
+    // A check for null is not needed because that is done in the compare() function which
+    // calls do_compare()
+    if (!$cast(rhs_, rhs)) begin
+      return 0;
+    end
+
+    return (super.do_compare(rhs, comparer)                                    &&
+            (a_addr                      == rhs_.a_addr                      ) &&
+            (a_data                      == rhs_.a_data                      ) &&
+            (a_mask                      == rhs_.a_mask                      ) &&
+            (a_size                      == rhs_.a_size                      ) &&
+            (a_param                     == rhs_.a_param                     ) &&
+            (a_source                    == rhs_.a_source                    ) &&
+            (a_opcode                    == rhs_.a_opcode                    ) &&
+            (a_user                      == rhs_.a_user                      ) &&
+            (d_data                      == rhs_.d_data                      ) &&
+            (d_size                      == rhs_.d_size                      ) &&
+            (d_param                     == rhs_.d_param                     ) &&
+            (d_source                    == rhs_.d_source                    ) &&
+            (d_opcode                    == rhs_.d_opcode                    ) &&
+            (d_error                     == rhs_.d_error                     ) &&
+            (d_user                      == rhs_.d_user                      ) &&
+            (d_sink                      == rhs_.d_sink                      ));
+  endfunction : do_compare
+
   function void disable_a_chan_randomization();
     a_addr.rand_mode(0);
     a_data.rand_mode(0);
