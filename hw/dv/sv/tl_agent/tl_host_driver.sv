@@ -191,7 +191,7 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
   `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
                     wait(reset_asserted);)
 
-  while (!req_done && !req_abort) begin
+  while (!req_done && !req_abort && !reset_asserted) begin
     if (cfg.use_seq_item_a_valid_delay) begin
       a_valid_delay = req.a_valid_delay;
     end else begin
