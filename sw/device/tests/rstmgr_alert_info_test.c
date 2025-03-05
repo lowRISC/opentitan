@@ -2,12 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_alert_handler.h"  // Generated.
+#include "dt/dt_aon_timer.h"      // Generated.
+#include "dt/dt_flash_ctrl.h"     // Generated.
+#include "dt/dt_i2c.h"            // Generated.
+#include "dt/dt_kmac.h"           // Generated.
+#include "dt/dt_otp_ctrl.h"       // Generated.
+#include "dt/dt_pwrmgr.h"         // Generated.
+#include "dt/dt_rstmgr.h"         // Generated.
+#include "dt/dt_rv_core_ibex.h"   // Generated.
+#include "dt/dt_rv_plic.h"        // Generated.
+#include "dt/dt_spi_host.h"       // Generated.
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -21,8 +31,6 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
-#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -30,8 +38,15 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#ifdef OPENTITAN_IS_EARLGREY
+#include "dt/dt_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
+#endif  // OPENTITAN_IS_EARLGREY
+
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 /*
   RSTMGR ALERT_INFO Test
 
@@ -90,21 +105,44 @@ enum {
   kEventCounter = 0               // the retention sram counter tracking events
 };
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
-static dif_flash_ctrl_state_t flash_ctrl;
+static const uint32_t kPlicTarget = 0;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
-static dif_uart_t uart0, uart1, uart2, uart3;
+static dif_uart_t uart;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_spi_host_t spi_host;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
-static dif_i2c_t i2c0, i2c1, i2c2;
+static dif_i2c_t i2c;
+
+static const dt_rstmgr_t kRstmgrDt = 0;
+static const dt_alert_handler_t kAlertHandlerDt = 0;
+static const dt_otp_ctrl_t kOtpCtrlDt = 0;
+static const dt_spi_host_t kSpiHostDt = 0;
+static const dt_rv_plic_t kRvPlicDt = 0;
+static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
+static const dt_aon_timer_t kAonTimerDt = 0;
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+
+#ifdef OPENTITAN_IS_EARLGREY
+static dif_flash_ctrl_state_t flash_ctrl;
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+#endif  // OPENTITAN_IS_EARLGREY
+
+static_assert(kDtRstmgrCount > 0, "test requires a reset manager");
+static_assert(kDtAlertHandlerCount > 0, "test requires an alert handler");
+static_assert(kDtOtpCtrlCount > 0, "test requires an OTP controller");
+static_assert(kDtRvPlicCount > 0, "test requires a PLIC");
+static_assert(kDtRvCoreIbexCount > 0, "how did you make a top without a core?");
+static_assert(kDtAonTimerCount > 0, "test requires an AON timer");
+static_assert(kDtPwrmgrCount > 0, "test requires an pwrmgr timer");
+static_assert(kDtSpiHostCount > 0, "test requires at least one SPI host");
+static_assert(kDtI2cCount > 0, "test requires at least one I2C");
+static_assert(kDtUartCount > 0, "test requires at least one UART");
 
 typedef struct node {
-  const char *name;
   dif_alert_handler_alert_t alert;
   dif_alert_handler_class_t class;
 } node_t;
@@ -238,11 +276,50 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
         },
 };
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast];
+static node_t test_node(dt_instance_id_t inst_id) {
+  dt_device_type_t device_type = dt_device_type(inst_id);
+
+  switch (device_type) {
+    case kDtDeviceTypeSpiHost:
+      return (node_t){
+          .alert = dt_spi_host_alert_to_alert_id(
+              dt_spi_host_from_instance_id(inst_id), kDtSpiHostAlertFatalFault),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeOtpCtrl:
+      return (node_t){
+          .alert = dt_otp_ctrl_alert_to_alert_id(
+              dt_otp_ctrl_from_instance_id(inst_id),
+              kDtOtpCtrlAlertFatalBusIntegError),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeKmac:
+      return (node_t){
+          .alert = dt_kmac_alert_to_alert_id(dt_kmac_from_instance_id(inst_id),
+                                             kDtKmacAlertFatalFaultErr),
+          .class = kDifAlertHandlerClassB,
+      };
+    case kDtDeviceTypeUart:
+      return (node_t){
+          .alert = dt_uart_alert_to_alert_id(dt_uart_from_instance_id(inst_id),
+                                             kDtUartAlertFatalFault),
+          .class = kDifAlertHandlerClassC,
+      };
+    case kDtDeviceTypeI2c:
+      return (node_t){
+          .alert = dt_i2c_alert_to_alert_id(dt_i2c_from_instance_id(inst_id),
+                                            kDtI2cAlertFatalFault),
+          .class = kDifAlertHandlerClassA,
+      };
+    default:
+      CHECK(false, "unhandled device type");
+      abort();
+  }
+}
 
 static void set_extra_alert(volatile uint32_t *set) {
-  CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
-  CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
+  CHECK_DIF_OK(dif_uart_alert_force(&uart, kDifUartAlertFatalFault));
+  CHECK_DIF_OK(dif_i2c_alert_force(&i2c, kDifI2cAlertFatalFault));
   CHECK_DIF_OK(dif_spi_host_alert_force(&spi_host, kDifSpiHostAlertFatalFault));
   *set = 1;
 }
@@ -255,28 +332,21 @@ static void set_extra_alert(volatile uint32_t *set) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  top_earlgrey_plic_peripheral_t peripheral;
-  dif_rv_plic_irq_id_t irq_id;
-  uint32_t irq = 0;
+  dif_rv_plic_irq_id_t plic_irq;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+  dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq);
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
-
+  if (inst_id == dt_aon_timer_instance_id(kDtAonTimerAon)) {
+    dt_aon_timer_irq_t irq =
+        dt_aon_timer_irq_from_plic_id(kDtAonTimerAon, plic_irq);
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    irq = (irq_id -
-           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+  } else if (inst_id == dt_alert_handler_instance_id(kDtAlertHandler)) {
+    dt_alert_handler_irq_t irq =
+        dt_alert_handler_irq_from_plic_id(kDtAlertHandler, plic_irq);
 
     switch (irq) {
-      case 0:  // class a
+      case kDtAlertHandlerIrqClassa:
         LOG_INFO("IRQ: class A");
         CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
             &alert_handler, kDifI2cAlertFatalFault));
@@ -293,13 +363,13 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
 
         break;
-      case 1:
+      case kDtAlertHandlerIrqClassb:
         LOG_INFO("IRQ: class B %d", global_test_round);
         break;
-      case 2:
+      case kDtAlertHandlerIrqClassc:
         LOG_INFO("IRQ: class C");
         break;
-      case 3:
+      case kDtAlertHandlerIrqClassd:
         if (global_alert_called == 0) {
           set_extra_alert(&global_alert_called);
           LOG_INFO("IRQ: class D");
@@ -313,7 +383,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
 
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, plic_irq));
 }
 
 static void print_alert_cause(alert_handler_testutils_info_t info) {
@@ -331,10 +401,11 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
-  for (int i = kTopEarlgreyAlertPeripheralI2c0;
-       i < kTopEarlgreyAlertPeripheralI2c2 + 1; ++i) {
+  for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
+    dt_instance_id_t inst_id = dt_i2c_instance_id(i2c);
+    node_t node = test_node(inst_id);
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, test_node[i].alert, test_node[i].class,
+        &alert_handler, node.alert, node.class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
 
@@ -364,17 +435,19 @@ static void prgm_alert_handler_round2(void) {
       kConfigProfiles[kDifAlertHandlerClassC],
       kConfigProfiles[kDifAlertHandlerClassB]};
 
-  for (int i = kTopEarlgreyAlertPeripheralUart0;
-       i < kTopEarlgreyAlertPeripheralUart3 + 1; ++i) {
+  for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
+    dt_instance_id_t inst_id = dt_uart_instance_id(uart);
+    node_t node = test_node(inst_id);
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
-        &alert_handler, test_node[i].alert, test_node[i].class,
+        &alert_handler, node.alert, node.class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
-  CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, test_node[kTopEarlgreyAlertPeripheralOtpCtrl].alert,
-      test_node[kTopEarlgreyAlertPeripheralOtpCtrl].class,
-      /*enabled=*/kDifToggleEnabled,
-      /*locked=*/kDifToggleEnabled));
+  dt_instance_id_t otp_ctrl_id = dt_otp_ctrl_instance_id(kDtOtpCtrl);
+  node_t node = test_node(otp_ctrl_id);
+  CHECK_DIF_OK(dif_alert_handler_configure_alert(&alert_handler, node.alert,
+                                                 node.class,
+                                                 /*enabled=*/kDifToggleEnabled,
+                                                 /*locked=*/kDifToggleEnabled));
 
   for (int i = 0; i < ARRAYSIZE(alert_classes); ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_class(
@@ -397,18 +470,26 @@ static void prgm_alert_handler_round2(void) {
 static void prgm_alert_handler_round3(void) {
   // Enable all incoming alerts. This will create ping timeout event
   // for all possible alerts and will see the timeout more often.
-  dif_alert_handler_class_t alert_class;
+  for (dt_alert_id_t i = 0; i < kDtAlertCount; i++) {
+    dt_instance_id_t inst_id = dt_alert_id_to_instance_id(i);
+    dt_device_type_t device_type = dt_device_type(inst_id);
 
-  for (dif_alert_handler_alert_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    if (i == kTopEarlgreyAlertIdSpiHost0FatalFault) {
-      alert_class = kDifAlertHandlerClassB;
-    } else if (i == kTopEarlgreyAlertIdUart0FatalFault) {
-      alert_class = kDifAlertHandlerClassC;
-    } else if (i == kTopEarlgreyAlertIdI2c0FatalFault) {
-      alert_class = kDifAlertHandlerClassA;
-    } else {
-      alert_class = kDifAlertHandlerClassD;
+    dif_alert_handler_class_t alert_class;
+    switch (device_type) {
+      case kDtDeviceTypeSpiHost:
+        alert_class = kDifAlertHandlerClassB;
+        break;
+      case kDtDeviceTypeUart:
+        alert_class = kDifAlertHandlerClassC;
+        break;
+      case kDtDeviceTypeI2c:
+        alert_class = kDifAlertHandlerClassA;
+        break;
+      default:
+        alert_class = kDifAlertHandlerClassD;
+        break;
     }
+
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, i, alert_class, /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
@@ -512,31 +593,13 @@ static void prgm_alert_handler_round4(void) {
 }
 
 static void peripheral_init(void) {
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c0));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c1));
-  CHECK_DIF_OK(
-      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c2));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR), &uart1));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR), &uart2));
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR), &uart3));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_spi_host_init_from_dt(kSpiHostDt, &spi_host));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
+  CHECK_DIF_OK(dif_i2c_init_from_dt(kDtI2c0, &i2c));
+  CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart0, &uart));
 
   // Set pwrmgr reset_en
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
@@ -608,104 +671,42 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   }
 }
 
-static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
-    [kTopEarlgreyAlertPeripheralSpiHost0] =
-        {
-            .name = "SPIHOST0",
-            .alert = kTopEarlgreyAlertIdSpiHost0FatalFault,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralOtpCtrl] =
-        {
-            .name = "OTPCTRL",
-            .alert = kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralKmac] =
-        {
-            .name = "KMAC",
-            .alert = kTopEarlgreyAlertIdKmacFatalFaultErr,
-            .class = kDifAlertHandlerClassB,
-        },
-    [kTopEarlgreyAlertPeripheralUart0] =
-        {
-            .name = "UART0",
-            .alert = kTopEarlgreyAlertIdUart0FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart1] =
-        {
-            .name = "UART1",
-            .alert = kTopEarlgreyAlertIdUart1FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart2] =
-        {
-            .name = "UART2",
-            .alert = kTopEarlgreyAlertIdUart2FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralUart3] =
-        {
-            .name = "UART3",
-            .alert = kTopEarlgreyAlertIdUart3FatalFault,
-            .class = kDifAlertHandlerClassC,
-        },
-    [kTopEarlgreyAlertPeripheralI2c0] =
-        {
-            .name = "I2C0",
-            .alert = kTopEarlgreyAlertIdI2c0FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-    [kTopEarlgreyAlertPeripheralI2c1] =
-        {
-            .name = "I2C1",
-            .alert = kTopEarlgreyAlertIdI2c1FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-    [kTopEarlgreyAlertPeripheralI2c2] =
-        {
-            .name = "I2C2",
-            .alert = kTopEarlgreyAlertIdI2c2FatalFault,
-            .class = kDifAlertHandlerClassA,
-        },
-};
-
 static void init_expected_cause(void) {
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c1FatalFault] = 1;
-  kExpectedInfo[kRound1]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c2FatalFault] = 1;
+  for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
+    dt_alert_id_t alert_id =
+        dt_i2c_alert_to_alert_id(i2c, kDtI2cAlertFatalFault);
+    kExpectedInfo[kRound1].alert_info.alert_cause[alert_id] = 1;
+  }
 
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart1FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart2FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart3FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
-  kExpectedInfo[kRound3]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
+  for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
+    dt_alert_id_t alert_id =
+        dt_uart_alert_to_alert_id(uart, kDtUartAlertFatalFault);
+    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
+  }
+
+  dt_alert_id_t ibex_alert_id = dt_rv_core_ibex_alert_to_alert_id(
+      kDtRvCoreIbex, kDtRvCoreIbexAlertRecovSwErr);
+  dt_alert_id_t uart_alert_id =
+      dt_uart_alert_to_alert_id((dt_uart_t)0, kDtUartAlertFatalFault);
+  dt_alert_id_t i2c_alert_id =
+      dt_i2c_alert_to_alert_id((dt_i2c_t)0, kDtI2cAlertFatalFault);
+  dt_alert_id_t spi_alert_id = dt_spi_host_alert_to_alert_id(
+      (dt_spi_host_t)0, kDtSpiHostAlertFatalFault);
+  kExpectedInfo[kRound3].alert_info.alert_cause[ibex_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[uart_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[i2c_alert_id] = 1;
+  kExpectedInfo[kRound3].alert_info.alert_cause[spi_alert_id] = 1;
 }
 
 // Modify kExpectedInfo for runs without rom_ext, so non-owner stages. The
 // difference is that without rom_ext we expect an otp alert in round 2.
 static void init_expected_info_for_non_rom_ext(void) {
   if (kBootStage != kBootStageOwner) {
+    dt_alert_id_t alert_id = dt_otp_ctrl_alert_to_alert_id(
+        kDtOtpCtrl, kDtOtpCtrlAlertFatalBusIntegError);
     kExpectedInfo[kRound2].alert_info.class_accum_cnt[1] = 1;
     kExpectedInfo[kRound2].alert_info.class_esc_state[1] = kCstatePhase1;
-    kExpectedInfo[kRound2]
-        .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] =
-        1;
+    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
   }
 }
 
@@ -720,28 +721,33 @@ bool test_main(void) {
   init_expected_cause();
   init_expected_info_for_non_rom_ext();
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
+#ifdef OPENTITAN_IS_EARLGREY
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
   CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+#endif  // OPENTITAN_IS_EARLGREY
 
   peripheral_init();
 
+  ret_sram_testutils_init();
+
   // Enable all interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-  rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+  dt_plic_irq_id_t class_a_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassa);
+  dt_plic_irq_id_t class_d_irq = dt_alert_handler_irq_to_plic_id(
+      kDtAlertHandler, kDtAlertHandlerIrqClassd);
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, class_a_irq,
+                                     class_d_irq);
+
+  dt_plic_irq_id_t timer_expired_irq = dt_aon_timer_irq_to_plic_id(
+      kDtAonTimerAon, kDtAonTimerIrqWkupTimerExpired);
+  dt_plic_irq_id_t timer_bark_irq =
+      dt_aon_timer_irq_to_plic_id(kDtAonTimerAon, kDtAonTimerIrqWdogTimerBark);
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, timer_expired_irq,
+                                     timer_bark_irq);
 
   // enable alert info
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
@@ -760,6 +766,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
+
+#ifdef OPENTITAN_IS_EARLGREY
     // If not running rom_ext we need to initialize the info FLASH partitions
     // storing the Creator and Owner secrets to avoid getting the flash
     // controller into a fatal error state.
@@ -768,13 +776,16 @@ bool test_main(void) {
                                                   &kOwnerSecret));
     }
     CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
+#endif  // OPENTITAN_IS_EARLGREY
 
     global_test_round = kRound1;
     prgm_alert_handler_round1();
 
-    CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
-    CHECK_DIF_OK(dif_i2c_alert_force(&i2c1, kDifI2cAlertFatalFault));
-    CHECK_DIF_OK(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault));
+    for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
+      dif_i2c_t i2c_dif;
+      CHECK_DIF_OK(dif_i2c_init_from_dt(i2c, &i2c_dif));
+      CHECK_DIF_OK(dif_i2c_alert_force(&i2c_dif, kDifI2cAlertFatalFault));
+    }
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 
@@ -802,10 +813,11 @@ bool test_main(void) {
       CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
           &aon_timer, bark_cycles, bite_cycles, false));
 
-      CHECK_DIF_OK(dif_uart_alert_force(&uart0, kDifUartAlertFatalFault));
-      CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
-      CHECK_DIF_OK(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault));
-      CHECK_DIF_OK(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault));
+      for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
+        dif_uart_t uart_dif;
+        CHECK_DIF_OK(dif_uart_init_from_dt(uart, &uart_dif));
+        CHECK_DIF_OK(dif_uart_alert_force(&uart_dif, kDifUartAlertFatalFault));
+      }
       CHECK_DIF_OK(dif_otp_ctrl_alert_force(
           &otp_ctrl, kDifOtpCtrlAlertFatalBusIntegError));
       CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(

@@ -297,6 +297,8 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
 
+  ret_sram_testutils_init();
+
   CHECK(rst_info == kDifRstmgrResetInfoPor ||
             rst_info == kDifRstmgrResetInfoEscalation,
         "Wrong reset reason %02X", rst_info);

@@ -201,6 +201,8 @@ bool test_main(void) {
   rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
 
+  ret_sram_testutils_init();
+
   if (rst_info == kDifRstmgrResetInfoPor) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterEventIdx));
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterNumTests));
