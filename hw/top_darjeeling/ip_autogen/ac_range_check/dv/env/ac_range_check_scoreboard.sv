@@ -11,6 +11,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
 
   // Local variables
   ac_range_check_dut_cfg dut_cfg;
+  int matching_cnt = 0;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_unfilt_a_chan_fifo;
@@ -178,6 +179,8 @@ task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo();
 
     if (check_access(item) == AccessGranted) begin
       exp_tl_filt_q.push_back(item);
+    end else begin
+      `uvm_info(`gfn, "Transaction on tl_unfilt_a_chan has been filtered", UVM_LOW)
     end
   end
 endtask : process_tl_unfilt_a_chan_fifo
@@ -234,7 +237,8 @@ task ac_range_check_scoreboard::compare_tl_a_chan();
 
   // Compare DUT output on TL filtered A channel against the expected data
   if (act_item.compare(exp_item)) begin
-    `uvm_info(`gfn, "Transaction on tl_filt_a_chan is matching the prediction", UVM_LOW)
+    `uvm_info(`gfn, "Transaction on tl_filt_a_chan matched the prediction", UVM_LOW)
+    matching_cnt++;
   end else begin
     `uvm_error(`gfn, $sformatf({"Actual and expected tl_filt_a_chan items are not matching:",
                 "ACTUAL: \n%0s \nEXPECTED: \n%0s"}, act_item.sprint(), exp_item.sprint()))
@@ -375,5 +379,19 @@ endfunction : reset
 
 function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
-  // Post test checks - ensure that all local fifos and queues are empty
+
+  if (matching_cnt == 0) begin
+    `uvm_error(`gfn, {"No matching transaction found, it can be because all TL accesses have been",
+                      "filtered. Please check your DUT configuration and your sequence."})
+  end
+
+  if (act_tl_filt_q.size() > 0) begin
+    `uvm_error(`gfn, {"Queue act_tl_filt_q is not empty, all the received TL transaction haven't",
+                     "been compared."})
+  end
+
+  if (exp_tl_filt_q.size() > 0) begin
+    `uvm_error(`gfn, {"Queue exp_tl_filt_q is not empty, all the received TL transaction haven't",
+                     "been compared."})
+  end
 endfunction : check_phase
