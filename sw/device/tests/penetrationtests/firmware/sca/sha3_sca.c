@@ -594,6 +594,9 @@ status_t handle_sha3_pentest_init(ujson_t *uj) {
     fpga_mode = true;
   }
 
+  penetrationtest_cpuctrl_t uj_cpuctrl;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl));
+
   pentest_init(kPentestTriggerSourceKmac,
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
@@ -605,7 +608,8 @@ status_t handle_sha3_pentest_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  pentest_configure_cpu();
+  pentest_configure_cpu(uj_cpuctrl.icache_disable,
+                        uj_cpuctrl.dummy_instr_disable);
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;

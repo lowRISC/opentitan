@@ -1141,6 +1141,9 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 }
 
 status_t handle_otbn_fi_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
   TRY(pentest_configure_entropy_source_max_reseed_interval());
@@ -1165,7 +1168,7 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   pentest_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu();
+  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
 
   // The load integrity, key sideloading, and char_mem tests get initialized at
   // the first run.
