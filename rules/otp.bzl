@@ -38,53 +38,12 @@ format expected by the image generation tool.
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top_darjeeling/data/otp:defs.bzl", "DARJEELING_STD_OTP_OVERLAYS")
+load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_OTP_SIGVERIFY_FAKE_KEYS", "EARLGREY_STD_OTP_OVERLAYS")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-
-def get_otp_images():
-    """Returns a list of (otp_name, img_target) tuples.
-
-    Each tuple corresponds to an OTP image defined in //util/design/data. The
-    otp_name is a short, unique suffix of the image target, e.g. "rma". The
-    img_target is the full path of the OTP image target.
-    """
-
-    img_targets = [
-        "//hw/top_earlgrey/data/otp:img_dev",
-        "//hw/top_earlgrey/data/otp:img_rma",
-        "//hw/top_earlgrey/data/otp:img_test_locked0",
-        "//hw/top_earlgrey/data/otp:img_test_locked1",
-        "//hw/top_earlgrey/data/otp:img_test_locked2",
-        "//hw/top_earlgrey/data/otp:img_test_locked3",
-        "//hw/top_earlgrey/data/otp:img_test_locked4",
-        "//hw/top_earlgrey/data/otp:img_test_locked5",
-        "//hw/top_earlgrey/data/otp:img_test_locked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
-        "//hw/top_earlgrey/data/otp:img_prod",
-        "//hw/top_earlgrey/data/otp:img_prod_end",
-        "//hw/top_earlgrey/data/otp:img_exec_disabled",
-        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
-        "//hw/top_earlgrey/data/otp:img_raw",
-    ]
-
-    out = []
-    for img_target in img_targets:
-        [_, img_target_name] = img_target.rsplit(":")
-        otp_name = img_target_name.removeprefix("img_")
-        out.append((
-            otp_name,
-            img_target,
-        ))
-    return out
 
 def otp_partition(name, **kwargs):
     partition = {
@@ -277,7 +236,7 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -357,7 +316,7 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -389,31 +348,14 @@ otp_image_consts = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
-# The following overlays are used to generate a generic OTP image with fake
-# keys. This is useful for testing in dv_sim, fpga and verilator
-# environments.
-OTP_SIGVERIFY_FAKE_KEYS = [
-    "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
-]
+OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top({
+    "earlgrey": EARLGREY_OTP_SIGVERIFY_FAKE_KEYS,
+}, [])
 
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-# This set overlays does not include any of the SECRET[0-2] partitions.
-STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-]
-
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret0",
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
-]
+STD_OTP_OVERLAYS = opentitan_select_top({
+    "earlgrey": EARLGREY_STD_OTP_OVERLAYS,
+    "darjeeling": DARJEELING_STD_OTP_OVERLAYS,
+}, [])
 
 def otp_hex(v):
     return hex(v)

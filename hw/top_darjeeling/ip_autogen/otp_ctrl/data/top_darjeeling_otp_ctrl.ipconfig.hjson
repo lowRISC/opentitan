@@ -495,7 +495,7 @@
           name: OWNER_SW_CFG
           variant: Unbuffered
           absorb: false
-          size: 632
+          size: 648
           secret: false
           sw_digest: true
           hw_digest: false
@@ -548,7 +548,7 @@
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
-              size: 400
+              size: 412
               isdigest: false
               ismubi: false
               iskeymgr_creator: false
@@ -564,7 +564,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 800
+              offset: 812
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
@@ -574,7 +574,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 864
+              offset: 876
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
@@ -584,7 +584,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 880
+              offset: 892
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
@@ -594,7 +594,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 896
+              offset: 908
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
@@ -604,7 +604,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 960
+              offset: 972
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
@@ -614,7 +614,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 964
+              offset: 976
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
@@ -624,7 +624,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 968
+              offset: 980
             }
             {
               name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
@@ -634,7 +634,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 972
+              offset: 984
             }
             {
               name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
@@ -644,7 +644,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 976
+              offset: 988
             }
             {
               name: OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN
@@ -654,7 +654,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 980
+              offset: 992
             }
             {
               name: OWNER_SW_CFG_MANUF_STATE
@@ -664,7 +664,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 984
+              offset: 996
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
@@ -674,12 +674,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 988
+              offset: 1000
             }
             {
               name: OWNER_SW_CFG_DIGEST
               size: 8
-              offset: 1008
+              offset: 1024
               ismubi: false
               isdigest: true
               inv_default: 503838644190341903
@@ -729,7 +729,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1016
+              offset: 1032
             }
             {
               name: OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH
@@ -748,7 +748,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1032
+              offset: 1048
             }
             {
               name: OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH
@@ -771,7 +771,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1048
+              offset: 1064
             }
           ]
           desc:
@@ -801,7 +801,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 48
-          offset: 1016
+          offset: 1032
         }
         {
           name: ROT_CREATOR_AUTH
@@ -832,7 +832,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1064
+              offset: 1080
             }
             {
               name: ROT_CREATOR_AUTH_OWNERSHIP_STATE
@@ -849,7 +849,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1224
+              offset: 1240
             }
             {
               name: ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY
@@ -867,7 +867,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1228
+              offset: 1244
             }
             {
               name: ROT_CREATOR_AUTH_KEYMANIFEST_KEY
@@ -885,7 +885,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1388
+              offset: 1404
             }
             {
               name: ROT_CREATOR_AUTH_UNLOCK4XFER_KEY
@@ -903,7 +903,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1548
+              offset: 1564
             }
             {
               name: ROT_CREATOR_AUTH_IDENTITY_CERT
@@ -914,12 +914,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1708
+              offset: 1724
             }
             {
               name: ROT_CREATOR_AUTH_DIGEST
               size: 8
-              offset: 2480
+              offset: 2496
               ismubi: false
               isdigest: true
               inv_default: 4720744928697992353
@@ -931,7 +931,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 1424
-          offset: 1064
+          offset: 1080
         }
         {
           name: ROT_OWNER_AUTH_SLOT0
@@ -963,7 +963,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2488
+              offset: 2504
             }
             {
               name: ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -981,12 +981,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2648
+              offset: 2664
             }
             {
               name: ROT_OWNER_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 2808
+              offset: 2824
               ismubi: false
               isdigest: true
               inv_default: 4321159426593998838
@@ -998,7 +998,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 2488
+          offset: 2504
         }
         {
           name: ROT_OWNER_AUTH_SLOT1
@@ -1030,7 +1030,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2816
+              offset: 2832
             }
             {
               name: ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1048,12 +1048,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 2976
+              offset: 2992
             }
             {
               name: ROT_OWNER_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 3136
+              offset: 3152
               ismubi: false
               isdigest: true
               inv_default: 3300532900599057395
@@ -1065,7 +1065,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 2816
+          offset: 2832
         }
         {
           name: PLAT_INTEG_AUTH_SLOT0
@@ -1097,7 +1097,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3144
+              offset: 3160
             }
             {
               name: PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -1115,12 +1115,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3304
+              offset: 3320
             }
             {
               name: PLAT_INTEG_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 3464
+              offset: 3480
               ismubi: false
               isdigest: true
               inv_default: 6970134785508705831
@@ -1132,7 +1132,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 3144
+          offset: 3160
         }
         {
           name: PLAT_INTEG_AUTH_SLOT1
@@ -1164,7 +1164,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3472
+              offset: 3488
             }
             {
               name: PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1182,12 +1182,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3632
+              offset: 3648
             }
             {
               name: PLAT_INTEG_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 3792
+              offset: 3808
               ismubi: false
               isdigest: true
               inv_default: 13321159437274557062
@@ -1199,7 +1199,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 3472
+          offset: 3488
         }
         {
           name: PLAT_OWNER_AUTH_SLOT0
@@ -1231,7 +1231,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3800
+              offset: 3816
             }
             {
               name: PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
@@ -1249,12 +1249,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 3960
+              offset: 3976
             }
             {
               name: PLAT_OWNER_AUTH_SLOT0_DIGEST
               size: 8
-              offset: 4120
+              offset: 4136
               ismubi: false
               isdigest: true
               inv_default: 13771798441966885772
@@ -1266,7 +1266,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 3800
+          offset: 3816
         }
         {
           name: PLAT_OWNER_AUTH_SLOT1
@@ -1298,7 +1298,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4128
+              offset: 4144
             }
             {
               name: PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
@@ -1316,12 +1316,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4288
+              offset: 4304
             }
             {
               name: PLAT_OWNER_AUTH_SLOT1_DIGEST
               size: 8
-              offset: 4448
+              offset: 4464
               ismubi: false
               isdigest: true
               inv_default: 7227229721152720746
@@ -1333,7 +1333,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 4128
+          offset: 4144
         }
         {
           name: PLAT_OWNER_AUTH_SLOT2
@@ -1365,7 +1365,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4456
+              offset: 4472
             }
             {
               name: PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY
@@ -1383,12 +1383,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4616
+              offset: 4632
             }
             {
               name: PLAT_OWNER_AUTH_SLOT2_DIGEST
               size: 8
-              offset: 4776
+              offset: 4792
               ismubi: false
               isdigest: true
               inv_default: 388365934790665074
@@ -1400,7 +1400,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 4456
+          offset: 4472
         }
         {
           name: PLAT_OWNER_AUTH_SLOT3
@@ -1432,7 +1432,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4784
+              offset: 4800
             }
             {
               name: PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY
@@ -1450,12 +1450,12 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 4944
+              offset: 4960
             }
             {
               name: PLAT_OWNER_AUTH_SLOT3_DIGEST
               size: 8
-              offset: 5104
+              offset: 5120
               ismubi: false
               isdigest: true
               inv_default: 5138760742690312726
@@ -1467,7 +1467,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 328
-          offset: 4784
+          offset: 4800
         }
         {
           name: EXT_NVM
@@ -1499,14 +1499,14 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 5112
+              offset: 5128
             }
           ]
           desc: Anti-replay protection Strike Counters partition.
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 1024
-          offset: 5112
+          offset: 5128
         }
         {
           name: ROM_PATCH
@@ -1538,7 +1538,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 6136
+              offset: 6152
             }
             {
               name: ROM_PATCH_DIGEST
@@ -1554,8 +1554,8 @@
           desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 9784
-          offset: 6136
+          size: 9768
+          offset: 6152
         }
         {
           name: HW_CFG0
