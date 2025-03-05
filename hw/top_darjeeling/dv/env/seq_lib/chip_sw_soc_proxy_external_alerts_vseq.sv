@@ -64,8 +64,8 @@ class chip_sw_soc_proxy_external_alerts_vseq extends chip_sw_base_vseq;
 
       // Trigger the alert.
       `uvm_info(`gfn, $sformatf("Triggering fatal alert %0d.", i), UVM_LOW)
-      cfg.chip_vif.signal_probe_soc_fatal_alert_req(.kind(dv_utils_pkg::SignalProbeForce),
-                                                    .value(alert_req));
+      void'(cfg.chip_vif.signal_probe_soc_fatal_alert_req(.kind(dv_utils_pkg::SignalProbeForce),
+                                                          .value(alert_req)));
 
       // Ensure that the alert gets acknowledged.
       cfg.chip_vif.cpu_clk_rst_if.wait_clks(2);
@@ -83,7 +83,7 @@ class chip_sw_soc_proxy_external_alerts_vseq extends chip_sw_base_vseq;
       `uvm_info(`gfn, $sformatf("CPU reset asserted."), UVM_MEDIUM)
 
       // Release the alert.
-      cfg.chip_vif.signal_probe_soc_fatal_alert_req(.kind(dv_utils_pkg::SignalProbeRelease));
+      void'(cfg.chip_vif.signal_probe_soc_fatal_alert_req(.kind(dv_utils_pkg::SignalProbeRelease)));
 
       // Wait for reset release.
       `DV_SPINWAIT(cfg.chip_vif.cpu_clk_rst_if.wait_for_reset(.wait_negedge(1'b0),
@@ -107,8 +107,8 @@ class chip_sw_soc_proxy_external_alerts_vseq extends chip_sw_base_vseq;
 
       // Trigger the alert.
       `uvm_info(`gfn, $sformatf("Triggering recoverable alert %0d.", i), UVM_LOW)
-      cfg.chip_vif.signal_probe_soc_recov_alert_req(.kind(dv_utils_pkg::SignalProbeForce),
-                                                    .value(alert_req));
+      void'(cfg.chip_vif.signal_probe_soc_recov_alert_req(.kind(dv_utils_pkg::SignalProbeForce),
+                                                          .value(alert_req)));
 
       // Ensure that the alert gets acknowledged.
       cfg.chip_vif.cpu_clk_rst_if.wait_clks(2);
@@ -130,7 +130,7 @@ class chip_sw_soc_proxy_external_alerts_vseq extends chip_sw_base_vseq;
       join
 
       // Release the alert.
-      cfg.chip_vif.signal_probe_soc_recov_alert_req(.kind(dv_utils_pkg::SignalProbeRelease));
+      void'(cfg.chip_vif.signal_probe_soc_recov_alert_req(.kind(dv_utils_pkg::SignalProbeRelease)));
     end
   endtask
 

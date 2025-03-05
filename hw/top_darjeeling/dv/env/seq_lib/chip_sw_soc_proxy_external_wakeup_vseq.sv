@@ -19,13 +19,13 @@ class chip_sw_soc_proxy_external_wakeup_vseq extends chip_sw_base_vseq;
 
     // Trigger the external wakeup request.
     `uvm_info(`gfn, $sformatf("Triggering external wakeup request"), UVM_LOW)
-    cfg.chip_vif.signal_probe_soc_wkup_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                             .value(1'b1));
+    void'(cfg.chip_vif.signal_probe_soc_wkup_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                   .value(1'b1)));
 
     // Wait for software to confirm external wakeup request.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "External wakeup request detected.")
 
     // Release the external wakeup request.
-    cfg.chip_vif.signal_probe_soc_wkup_async(.kind(dv_utils_pkg::SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_soc_wkup_async(.kind(dv_utils_pkg::SignalProbeRelease)));
   endtask
 endclass
