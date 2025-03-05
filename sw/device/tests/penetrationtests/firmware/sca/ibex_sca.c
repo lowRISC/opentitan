@@ -113,6 +113,9 @@ static void generate_random(size_t num_iterations, uint32_t values[]) {
 }
 
 status_t handle_ibex_pentest_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   // Setup trigger and enable peripherals needed for the test.
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -122,7 +125,7 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
-  pentest_configure_cpu();
+  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
 
   // Key manager not initialized for the handle_ibex_sca_key_sideloading test.
   key_manager_init = false;
