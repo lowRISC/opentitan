@@ -73,6 +73,15 @@ ${helper.clock_enum.render()}
 ${helper.reset_req_enum.render()}
 
 % endif
+% if helper.has_resets():
+/**
+ * List of reset ports.
+ *
+ * Reset ports are guaranteed to be numbered consecutively from 0.
+ */
+${helper.reset_enum.render()}
+
+% endif
 % if helper.has_periph_io():
 /**
  * List of peripheral I/O.
@@ -228,6 +237,19 @@ dt_periph_io_t dt_${device_name}_periph_io(
 dt_clock_t dt_${device_name}_clock(
     dt_${device_name}_t dt,
     dt_${device_name}_clock_t clk);
+
+% endif
+% if helper.has_resets():
+/**
+ * Get the reset signal connected to a reset port of an instance.
+ *
+ * @param dt Instance of ${device_name}.
+ * @param sig Reset port.
+ * @return Reset signal.
+ */
+dt_reset_t dt_${device_name}_reset(
+    dt_${device_name}_t dt,
+    dt_${device_name}_reset_t rst);
 % endif
 
 ## Extension
