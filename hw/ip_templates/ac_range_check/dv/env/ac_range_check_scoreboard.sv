@@ -278,16 +278,18 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
                                                   string ral_name);
   uvm_reg        csr;
   string         csr_name;
-  int            csr_idx = -1;
+  int            csr_idx       = -1;
   bit            do_read_check = 1'b1;
   bit            write         = item.is_write();
   uvm_reg_addr_t csr_addr      = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
   tl_phase_e     tl_phase;
 
-  if (!write && channel == AddrChannel) tl_phase = AddrRead;
-  if ( write && channel == AddrChannel) tl_phase = AddrWrite;
-  if (!write && channel == DataChannel) tl_phase = DataRead;
-  if ( write && channel == DataChannel) tl_phase = DataWrite;
+  // Note: AddrChannel and DataChannel don't exist in the TL spec. There is a confusion as TileLink
+  //       defines 5 channels called A, B, C, D and E. But for TLUL version, only A and D are used.
+  if (!write && channel == AddrChannel) tl_phase = AChanRead;
+  if ( write && channel == AddrChannel) tl_phase = AChanWrite;
+  if (!write && channel == DataChannel) tl_phase = DChanRead;
+  if ( write && channel == DataChannel) tl_phase = DChanWrite;
 
   // If access was to a valid csr, get the csr handle
   if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -315,13 +317,13 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
   csr_idx = get_csr_idx(csr.get_name(), csr_name);
 
   // If incoming access is a write to a valid csr, then make updates right away
-  if (tl_phase == AddrWrite) begin
+  if (tl_phase == AChanWrite) begin
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
   end
 
-  // Process the csr req:
-  //  - for write, update local variable and fifo at address phase
-  //  - for read, update predication at address phase and compare at data phase
+  // Process the CSR req:
+  //  - for write, update local variable and FIFO at AChanWrite phase
+  //  - for read, update predication at AChanRead phase and compare at DChanRead phase
   case (csr_name)
     // Add individual case item for each csr
     "intr_state": begin
@@ -352,17 +354,17 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
       // FIXME TODO MVy
     end
     "range_base": begin
-      if (tl_phase == AddrWrite) begin
+      if (tl_phase == AChanWrite) begin
         dut_cfg.range_base[csr_idx] = `gmv(ral.range_base[csr_idx]);
       end
     end
     "range_limit": begin
-      if (tl_phase == AddrWrite) begin
+      if (tl_phase == AChanWrite) begin
         dut_cfg.range_limit[csr_idx] = `gmv(ral.range_limit[csr_idx]);
       end
     end
     "range_perm": begin
-      if (tl_phase == AddrWrite) begin
+      if (tl_phase == AChanWrite) begin
         dut_cfg.range_perm[csr_idx].log_denied_access =
           mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].log_denied_access));
         dut_cfg.range_perm[csr_idx].execute_access    =
@@ -376,7 +378,7 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
       end
     end
     "range_racl_policy_shadowed": begin
-      if (tl_phase == AddrWrite) begin
+      if (tl_phase == AChanWrite) begin
         dut_cfg.range_racl_policy[csr_idx].read_perm =
           `gmv(ral.range_racl_policy_shadowed[csr_idx].read_perm);
         dut_cfg.range_racl_policy[csr_idx].write_perm =
@@ -389,7 +391,7 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
   endcase
 
   // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-  if (tl_phase == DataRead) begin
+  if (tl_phase == DChanRead) begin
     if (do_read_check) begin
       `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                    $sformatf("reg name: %0s", csr.get_full_name()))
