@@ -735,6 +735,8 @@ bool test_main(void) {
 
   peripheral_init();
 
+  ret_sram_testutils_init();
+
   // Enable all interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
