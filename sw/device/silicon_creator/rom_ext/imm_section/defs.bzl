@@ -11,5 +11,5 @@ DEFAULT_EXEC_ENV = [
 ]
 
 # CAUTION: The message below should match the message defined in:
-#   //sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.c
+#   //sw/device/silicon_creator/rom_ext/imm_section/imm_section.c
 IMMUTABLE_HASH_UNENFORCED_MSG = "hash unenforced"

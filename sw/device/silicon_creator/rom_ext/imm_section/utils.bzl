@@ -5,7 +5,7 @@
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
-def _bin_to_imm_rom_ext_object_impl(ctx):
+def _bin_to_imm_section_object_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
 
     for src in ctx.files.src:
@@ -43,8 +43,8 @@ def _bin_to_imm_rom_ext_object_impl(ctx):
             ),
         ]
 
-bin_to_imm_rom_ext_object = rv_rule(
-    implementation = _bin_to_imm_rom_ext_object_impl,
+bin_to_imm_section_object = rv_rule(
+    implementation = _bin_to_imm_section_object_impl,
     attrs = {
         "src": attr.label(allow_files = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
@@ -52,9 +52,9 @@ bin_to_imm_rom_ext_object = rv_rule(
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
-def create_imm_rom_ext_targets(name, src):
+def create_imm_section_targets(name, src):
     object_target_name = name + "_object"
-    bin_to_imm_rom_ext_object(
+    bin_to_imm_section_object(
         name = object_target_name,
         src = src,
     )
