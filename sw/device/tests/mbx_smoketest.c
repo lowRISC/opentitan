@@ -208,17 +208,6 @@ static void init_interrupts(void) {
 }
 
 /**
- *  core.status.intr_status bit requires clearing separately to the standard
- *  'dif_*_acknowledge()' routines.
- *  This bit is 'W1C'.
- */
-void clear_mbx_irq_pending(const dif_mbx_t *mbx) {
-  uint32_t reg = mmio_region_read32(mbx->base_addr, MBX_STATUS_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, MBX_STATUS_SYS_INTR_STATE_BIT, 1u);
-  mmio_region_write32(mbx->base_addr, MBX_STATUS_REG_OFFSET, reg);
-}
-
-/**
  * External ISR handler for this test.
  * (Our overridden ottf_external_isr() calls this function only.)
  *
@@ -358,10 +347,6 @@ void responder_mbx_transaction(volatile mbx_test_handler_state_t *mbxths) {
 
   mbxths->txn_state = kStateCleaningUp;
 
-  // Clear the pending 'ready' interrupt now that the ombx is empty.
-  // Then we can re-enable the interrupt at the plic.
-  clear_mbx_irq_pending(
-      mbxths->mbx);  // Clears the special status.DOE_interrupt_status bit
   CHECK_DIF_OK(dif_mbx_irq_acknowledge(mbxths->mbx, kDtMbxIrqMbxReady));
   // Un-mask the interrupt.
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&rv_plic, mbxths->plic_irq_serviced,
