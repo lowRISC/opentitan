@@ -15,11 +15,30 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   // the `tl_agent_cfg` instance associated with this adapter instance.
   tl_agent_cfg cfg;
 
+  // Information about how to represent RACL role and uid values in the TL item. This has to be
+  // configured from the test environment (which can see the dut) because it depends on the
+  // top-level that is being modelled.
+  //
+  // The default is not to support either (so role and uid are both signalled as zero)
+  local int unsigned role_lsb, role_nbits;
+  local int unsigned uid_lsb, uid_nbits;
+
   extern function new(string name = "");
 
   // Standard uvm_reg_adapter functions
   extern function uvm_sequence_item reg2bus(const ref uvm_reg_bus_op rw);
   extern function void bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bus_op rw);
+
+  // Check that the requested bit indices for something will fit in the A channel's user field.
+  extern local function bit check_user_bit_idx(string       field_name,
+                                               int unsigned lsb,
+                                               int unsigned nbits);
+
+  // Configure how to represent RACL roles and uids
+  extern function void configure_racl_bits(int unsigned role_lsb,
+                                           int unsigned role_nbits,
+                                           int unsigned uid_lsb,
+                                           int unsigned uid_nbits);
 endclass
 
 function tl_reg_adapter::new(string name = "");
@@ -99,4 +118,31 @@ function void tl_reg_adapter::bus2reg(uvm_sequence_item bus_item, ref uvm_reg_bu
   // indicate if the item is completed successfully for upper level to update predict value
   rw.status  = !bus_rsp.req_completed ? UVM_NOT_OK : UVM_IS_OK;
   `uvm_info(`gfn, {"tl_reg_adapter::bus2reg: ", bus_rsp.convert2string()}, UVM_HIGH)
+endfunction
+
+function bit tl_reg_adapter::check_user_bit_idx(string       field_name,
+                                                int unsigned lsb,
+                                                int unsigned nbits);
+  if (nbits > 0 && lsb + nbits >= AUserWidth) begin
+    `uvm_error(this.get_name(),
+               $sformatf("Cannot represent RACL %s with lsb %0d and %0d bits: AUserWidth is %0d",
+                         field_name, lsb, nbits, AUserWidth))
+    return 0;
+  end
+  return 1;
+endfunction
+
+function void tl_reg_adapter::configure_racl_bits(int unsigned role_lsb,
+                                                  int unsigned role_nbits,
+                                                  int unsigned uid_lsb,
+                                                  int unsigned uid_nbits);
+  // Check that both sides can fit in the USER field for the A channel, zeroing out their width if
+  // not.
+  if (!check_user_bit_idx("role", role_lsb, role_nbits)) role_nbits = 0;
+  if (!check_user_bit_idx("uid", uid_lsb, uid_nbits)) uid_nbits = 0;
+
+  this.role_lsb = role_lsb;
+  this.role_nbits = role_nbits;
+  this.uid_lsb = uid_lsb;
+  this.uid_nbits = uid_nbits;
 endfunction
