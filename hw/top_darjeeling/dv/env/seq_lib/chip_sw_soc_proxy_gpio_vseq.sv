@@ -80,8 +80,8 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
                                 soc_proxy_pkg::NumSocGpio,
                                 gpo),
                 UVM_MEDIUM)
-      cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                              .value(gpo));
+      void'(cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                    .value(gpo)));
 
       // Check that the signal appears at the DIOs.
       `DV_SPINWAIT_EXIT(
@@ -101,7 +101,7 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
       )
 
       // Release drive.
-      cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeRelease));
+      void'(cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeRelease)));
     end
   endtask
 
@@ -156,8 +156,8 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
                                 soc_proxy_pkg::NumSocGpio,
                                 gpo),
                 UVM_MEDIUM)
-      cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                              .value(gpo));
+      void'(cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                    .value(gpo)));
 
       // Check that the signal appears at the MIOs.
       `DV_SPINWAIT_EXIT(
@@ -175,15 +175,15 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
       )
 
       // Release drive.
-      cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeRelease));
+      void'(cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeRelease)));
     end
   endtask
 
   task send_external_irq();
-    cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                             .value(1'b1));
+    void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                             .value(1'b1)));
     cfg.chip_vif.cpu_clk_rst_if.wait_clks(100);
-    cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease)));
   endtask
 
   task await_muxable_soc_gpis_mapped();
