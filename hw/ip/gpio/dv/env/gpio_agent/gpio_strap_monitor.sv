@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class gpio_strap_monitor extends dv_base_monitor #(.ITEM_T(uvm_sequence_item),
-                                                   .CFG_T(gpio_strap_agent_cfg));
+  .CFG_T(gpio_strap_agent_cfg));
 
   `uvm_component_utils(gpio_strap_monitor)
 

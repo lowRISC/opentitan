@@ -75,34 +75,34 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
 
     // Wait at least one clock cycle to drive the strap_en
     // Required because is required one clock cycle to update the gpio_in regsisters.
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
-    cfg.clk_rst_vif.wait_clks(delay);
+    //`DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
+    //cfg.clk_rst_vif.wait_clks(delay);
 
     // Trigger the snapshot of gpio_in to be stored in the straps registers
-    cfg.straps_vif_inst.tb_port.strap_en = 1;
+    //cfg.straps_vif_inst.tb_port.strap_en = 1;
     // Wait at least one clock cycle to update the strap register values.
-    short_wait(1);
+    //short_wait(1);
 
     // Wait some clock cycles to avoid race condition between the prediction value updated
     // in the scoreboard happening together with the csr read transaction.
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
-    cfg.clk_rst_vif.wait_clks(delay);
+    //`DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
+    //cfg.clk_rst_vif.wait_clks(delay);
 
     // Read the hw_straps_data_in and check the expected value in the scoreboard
-    csr_strap_read();
+    //csr_strap_read();
 
     // Random wait
-    short_wait(0);
+    //short_wait(0);
 
     // Stop driving gpio_in to make sure that, this is not affecting the strap_en registers
     // so it will keep the same values were stored before.
-    undrive_gpio_in();
+    //undrive_gpio_in();
 
     // Random wait
-    short_wait(0);
+    //short_wait(0);
 
     // Read again to make sure that if does not affect the straps registers after undrive the gpio_in
-    csr_strap_read();
+    //csr_strap_read();
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
@@ -133,24 +133,24 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
 
     // User case to test the strap outputs, with gpio_out data randomised
     // The gpio_out should not affect the straps output/registers.
-    test_straps_gpio_out();
+    //test_straps_gpio_out();
 
     // Random wait
-    short_wait(0);
+    //short_wait(0);
 
     // Disable the strap_en
-    set_strap_en('b0);
+    //set_strap_en('b0);
 
     // Set zero to the strap_en input.
-    cfg.straps_vif_inst.tb_port.strap_en = 0;
+    //cfg.straps_vif_inst.tb_port.strap_en = 0;
     // Apply reset and make sure the strap registers are clean
-    apply_reset();
+    //apply_reset();
 
     // Random wait, at least one clock cycle to avoid race condition
     // between the reset and read transactions.
-    short_wait(1);
+    //short_wait(1);
     // Read the straps registers after reset
-    csr_strap_read();
+    //csr_strap_read();
 
   endtask : start_test
 

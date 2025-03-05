@@ -53,6 +53,7 @@ package gpio_env_pkg;
 
   // package sources
   `include "gpio_agent/gpio_strap_agent_cfg.sv"
+  `include "gpio_agent/gpio_data_agent_cfg.sv"
   `include "gpio_env_cfg.sv"
   `include "seq_lib/gpio_seq_item.sv"
   `include "gpio_virtual_sequencer.sv"
@@ -65,6 +66,10 @@ package gpio_env_pkg;
   `include "gpio_agent/gpio_strap_monitor.sv"
   `include "gpio_agent/gpio_strap_driver.sv"
   `include "gpio_agent/gpio_strap_agent.sv"
+  `include "gpio_agent/gpio_data_driver.sv"
+  `include "gpio_agent/gpio_data_monitor.sv"
+  `include "gpio_agent/gpio_data_agent.sv"
+  `include "model/gpio_model.sv"
   `include "gpio_env_cov.sv"
   `include "gpio_vseq_list.sv"
   `include "gpio_scoreboard.sv"
