@@ -757,7 +757,7 @@ jobs:
           ./bazelisk.sh build                                \
             --build_tests_only=false                         \
             --//hw/top=darjeeling                            \
-            //sw/device/tests:uart_smoketest_sim_dv
+            //sw/device/tests/...
 
   qemu_smoketest:
     name: QEMU smoketest
