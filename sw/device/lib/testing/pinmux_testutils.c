@@ -43,21 +43,24 @@ static const dt_pad_t kPadStrap2 = kDtPadGpioGpio24;
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22), kPadStrap0));
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio23), kPadStrap1));
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio24), kPadStrap2));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22),
+      kDtPeriphIoDirIn, kPadStrap0));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio23),
+      kDtPeriphIoDirIn, kPadStrap1));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio24),
+      kDtPeriphIoDirIn, kPadStrap2));
 
   // Configure UART0 RX input.
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoRx), kPadUart0Rx));
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kPadUart0Rx,
-                                            kDtPeriphIoConstantHighZ));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoRx), kDtPeriphIoDirIn,
+      kPadUart0Rx));
   // Configure UART0 TX output.
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(
-      pinmux, kPadUart0Tx, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx)));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
+      kPadUart0Tx));
 
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
@@ -70,22 +73,20 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad_index(kPadUart0Rx),
-                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs_dt(pinmux, kPadUart0Rx, in_attr, &out_attr));
   };
 
 #ifdef HAS_UART1
   // Configure UART1 RX input.
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoRx), kPadUart1Rx));
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kPadUart1Rx,
-                                            kDtPeriphIoConstantHighZ));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoRx), kDtPeriphIoDirIn,
+      kPadUart1Rx));
   // Configure UART1 TX output.
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(
-      pinmux, kPadUart1Tx, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoTx)));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
+      kPadUart1Tx));
 #endif /* HAS_UART1 */
 
-  // TODO convert to multitop
 #ifdef OPENTITAN_IS_EARLGREY
   // Configure a higher drive strength for the USB_P and USB_N pads because we
   // must the pad drivers must be capable of overpowering the 'pull' signal
@@ -103,12 +104,10 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
     dif_pinmux_pad_attr_t in_attr = {
         .slew_rate = 0, .drive_strength = 1, .flags = 0};
 
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyDirectPadsUsbdevUsbDp,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyDirectPadsUsbdevUsbDn,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(pinmux, kDtPadUsbdevUsbDp,
+                                               in_attr, &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(pinmux, kDtPadUsbdevUsbDn,
+                                               in_attr, &out_attr));
   }
 
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
