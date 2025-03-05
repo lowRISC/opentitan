@@ -31,8 +31,8 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "External resets enabled.")
 
     // Trigger the external reset request.
-    cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                                .value(1'b1));
+    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                      .value(1'b1)));
 
     // Fork background threads to ensure that most reset domains do *not* get reset.
     fork
@@ -62,7 +62,7 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     )
 
     // Deactivate external reset request.
-    cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
 
     // Wait until SW confirms reset on external request.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Reset on external request.")
@@ -77,7 +77,8 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
 
       // Trigger external IRQ.
       `uvm_info(`gfn, $sformatf("Triggering %s.", irq_str), UVM_LOW)
-      cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce), .value(intr));
+      void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                     .value(intr)));
 
       fork
         begin
@@ -93,7 +94,7 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
 
       // Deactivate external IRQ.
       `uvm_info(`gfn, $sformatf("Releasing %s.", irq_str), UVM_LOW)
-      cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease));
+      void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease)));
     end
 
   endtask
