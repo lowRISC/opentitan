@@ -62,8 +62,10 @@ task ac_range_check_smoke_vseq::body();
   send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
 
   // In range address
+  dut_cfg.tl_main_vars.data       = 'hFE99_6548;
   dut_cfg.tl_main_vars.addr       = 'h7654_25F1;
   send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
+  dut_cfg.tl_main_vars.data       = 'h54FA_97C6;
   dut_cfg.tl_main_vars.addr       = 'h7654_2500;
   send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
 endtask : body
