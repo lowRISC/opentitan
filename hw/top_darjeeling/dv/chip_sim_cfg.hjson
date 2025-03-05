@@ -151,8 +151,14 @@
   // Add a default software build option to indicates that this is Darjeeling.
   sw_build_opts: ["--//hw/top=darjeeling"]
 
-  // Add a default build option to indicate it is a top-level DV testbench.
-  build_opts: ["+define+TOP_LEVEL_DV"]
+  build_opts: [
+    // Add a default build option to indicate it is a top-level DV testbench.
+    "+define+TOP_LEVEL_DV",
+
+    // Ensure that the RISC-V JTAG agent uses DMI rather than direct TL-UL;
+    // this is required by the JTAG mailbox interface.
+    "+define+USE_DMI_INTERFACE"
+  ]
 
   // Add build modes.
   build_modes: [
