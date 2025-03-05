@@ -92,6 +92,7 @@ opentitan_test(
         tags = ["broken"],
         test_cmd = """
             --exec="transport init"
+            --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set next slot via the rescue protocol
@@ -102,6 +103,7 @@ opentitan_test(
             --exec="gpio apply RESET"
             --exec="gpio remove RESET"
             --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
+            --exec="fpga clear-bitstream"
             no-op
         """,
     ),
@@ -121,6 +123,7 @@ opentitan_test(
         tags = ["broken"],
         test_cmd = """
             --exec="transport init"
+            --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set primary slot via the rescue protocol
@@ -135,6 +138,7 @@ opentitan_test(
             --exec="rescue boot-svc set-next-bl0-slot --primary=SlotA"
             # Check for firmware execution in slot A
             --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
+            --exec="fpga clear-bitstream"
             no-op
         """,
     ),

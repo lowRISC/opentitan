@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_H_
 
 #include <stdint.h>
 
@@ -54,4 +54,4 @@ rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
  */
 rom_error_t xmodem_send(void *iohandle, const void *data, size_t len);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_H_
