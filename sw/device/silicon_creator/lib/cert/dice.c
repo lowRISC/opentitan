@@ -23,6 +23,32 @@
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
+enum x509_cert_expectations {
+  // Size of the SerialNumber region header.
+  // Expects 1B tag + 1B len + 1B 0x00
+  kDiceX509SerialHeaderSizeBytes = 3,
+
+  // Total size in bytes of the SerialNumber region.
+  // Expects header + 20B key id with MSb set.
+  kDiceX509SerialSizeBytes =
+      kDiceX509SerialHeaderSizeBytes + kCertKeyIdSizeInBytes,
+
+  // Offset to the SerialNumber region including header.
+  // This offset is relative to the *begin* of signed cert.
+  kDiceX509SerialOffsetBytes = 13,
+
+  // All valid X509 cert should be longer than this size.
+  kDiceX509MinSizeBytes = kDiceX509SerialOffsetBytes + kDiceX509SerialSizeBytes,
+};
+
+// Reusable buffer for checking x509 serial number.
+static char expected_serial[kDiceX509SerialSizeBytes] = {
+    0x02,  // serialNumber tag
+    0x15,  // len = 1 + 20
+    0x00,  // zero pad when MSb == 1
+           // Remaining bytes will be filled during check.
+};
+
 static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
@@ -201,7 +227,25 @@ rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
   // For X.509, we only check the serial_number but not public key contents.
   OT_DISCARD(pubkey);
 
-  return cert_x509_asn1_check_serial_number(
-      cert_obj->cert_body_p, 0, (uint8_t *)pubkey_id->digest, cert_valid_output,
-      /*out_cert_size=*/NULL);
+  *cert_valid_output = kHardenedBoolFalse;
+
+  const size_t cert_size = cert_obj->cert_body_size;
+  if (cert_size < kDiceX509MinSizeBytes) {
+    return kErrorDiceCwtCoseKeyNotFound;
+  }
+
+  // Prepare expected serial number.
+  static_assert(sizeof(pubkey_id->digest) >= kCertKeyIdSizeInBytes,
+                "Pubkey Id is too short.");
+  memcpy(&expected_serial[kDiceX509SerialHeaderSizeBytes], pubkey_id->digest,
+         kCertKeyIdSizeInBytes);
+  expected_serial[kDiceX509SerialHeaderSizeBytes] |= 0x80;  // Tweak MSb.
+
+  // Check if serial number matches.
+  const uint8_t *serial = cert_obj->cert_body_p + kDiceX509SerialOffsetBytes;
+  if (memcmp(serial, expected_serial, sizeof(expected_serial)) == 0) {
+    *cert_valid_output = kHardenedBoolTrue;
+  }
+
+  return kErrorOk;
 }
