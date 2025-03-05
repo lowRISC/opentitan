@@ -412,9 +412,7 @@ module tb;
           .depth ($size(`RAM_CTN_MEM_HIER)),
           .n_bits($bits(`RAM_CTN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
-// TODO: build system is targeting this address at present.
-          .system_base_addr     (top_darjeeling_pkg::TOP_DARJEELING_CTN_BASE_ADDR));
-//          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
+          .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
       m_mem_bkdr_util[RamCtn0] = ram_ctn0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamCtn0], `RAM_CTN_MEM_HIER)
 
