@@ -266,6 +266,8 @@ static status_t external_isr(void) {
       CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
           &rv_plic, mbxths->plic_irq_serviced, kHart, kDifToggleDisabled));
 
+      // Declare the maximum number of DWORDs that we are prepared to accept.
+      mbxths->txn->nr_dwords = kMbxSizeDWORDS;
       // Read message from imbx memory region
       CHECK_DIF_OK(dif_mbx_process_request(mbxths->mbx, mbxths->txn));
       mbxths->txn_state = kStateReceivedRequest;
