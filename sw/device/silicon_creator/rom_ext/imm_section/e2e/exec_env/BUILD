@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
         name = "env_independent_{}_slot_{}_test".format(variation, slot),
         srcs = ["env_independent_test.py"],
         data = [
-            "//sw/device/silicon_creator/imm_rom_ext:main_binaries_{}_slot_{}".format(variation, slot),
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_binaries_{}_slot_{}".format(variation, slot),
         ],
         main = "env_independent_test.py",
     )

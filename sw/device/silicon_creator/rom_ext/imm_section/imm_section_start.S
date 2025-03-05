@@ -18,9 +18,9 @@
    * of the manifest.
    */
   .balign 4
-  .global _imm_rom_ext_start_boot
-  .type _imm_rom_ext_start_boot, @function
-_imm_rom_ext_start_boot:
+  .global _imm_section_start_boot
+  .type _imm_section_start_boot, @function
+_imm_section_start_boot:
 
   .option push
   .option norelax
@@ -84,8 +84,8 @@ _imm_rom_ext_start_boot:
   addi sp, sp, 8
 
   /**
-   * Jump to IMM_ROM_EXT.
+   * Jump to IMM_SECTION.
    */
-  tail imm_rom_ext_main
+  tail imm_section_main
 
-  .size _imm_rom_ext_start_boot, .-_imm_rom_ext_start_boot
+  .size _imm_section_start_boot, .-_imm_section_start_boot

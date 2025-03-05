@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext_epmp.h"
+#include "sw/device/silicon_creator/rom_ext/imm_section/imm_section_epmp.h"
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
@@ -43,7 +43,7 @@ static const epmp_region_t kImmTextRegion = {
     .end = (uintptr_t)_text_end,
 };
 
-rom_error_t imm_rom_ext_epmp_reconfigure(void) {
+rom_error_t imm_section_epmp_reconfigure(void) {
   // ePMP region 15 gives read/write access to RAM.
   // Leave it unchanged.
 
@@ -97,7 +97,7 @@ rom_error_t imm_rom_ext_epmp_reconfigure(void) {
   return kErrorOk;
 }
 
-rom_error_t imm_rom_ext_epmp_mutable_rx(const manifest_t *manifest) {
+rom_error_t imm_section_epmp_mutable_rx(const manifest_t *manifest) {
   // Immutable ROM_EXT TOR (8 & 9).
   epmp_region_t mutable_code_region = manifest_code_region_get(manifest);
 

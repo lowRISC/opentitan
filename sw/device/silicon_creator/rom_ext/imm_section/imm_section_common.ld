@@ -3,8 +3,8 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * TODO(#24368): Adapt the linker script for real IMM_ROM_EXT. This linker
- * script only works for hello-world IMM_ROM_EXT.
+ * TODO(#24368): Adapt the linker script for real IMM_SECTION. This linker
+ * script only works for hello-world ROM_EXT IMM_SECTION.
  */
 
 OUTPUT_ARCH(riscv)
@@ -17,7 +17,7 @@ __DYNAMIC = 0;
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x10000;
 
-ENTRY(_imm_rom_ext_start_boot)
+ENTRY(_imm_section_start_boot)
 
 SECTIONS {
   /**

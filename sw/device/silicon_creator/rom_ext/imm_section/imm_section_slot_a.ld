@@ -3,11 +3,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for an OpenTitan IMM_ROM_EXT.
+ * Linker script for an OpenTitan ROM_EXT IMM_SECTION.
  *
  * Portions of this file are Ibex-specific.
  *
- * The IMM_ROM_EXT is kept in the .rom_ext_immutable section in ROM, after the
+ * The IMM_SECTION is kept in the .rom_ext_immutable section in ROM, after the
  * .manifest section. This linker script targets to use slot A address, and
  * the addresses are similar to the linker script rom_ext_slot_a.ld that ROM_EXT
  * is using.
@@ -16,12 +16,12 @@
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
 /**
- * Symbols to be used in the setup of the address translation for IMM_ROM_EXT.
+ * Symbols to be used in the setup of the address translation for IMM_SECTION.
  */
 
 MEMORY {
-  imm_rom_ext_slot_a(rx) : ORIGIN = ORIGIN(eflash) + 0x400, LENGTH = LENGTH(eflash) / 2 - 0x400
+  imm_section_slot_a(rx) : ORIGIN = ORIGIN(eflash) + 0x400, LENGTH = LENGTH(eflash) / 2 - 0x400
 }
-REGION_ALIAS("rom_ext_flash", imm_rom_ext_slot_a);
+REGION_ALIAS("rom_ext_flash", imm_section_slot_a);
 
-INCLUDE sw/device/silicon_creator/imm_rom_ext/imm_rom_ext_common.ld
+INCLUDE sw/device/silicon_creator/rom_ext/imm_section/imm_section_common.ld
