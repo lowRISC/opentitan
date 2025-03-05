@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_IMM_ROM_EXT_IMM_ROM_EXT_EPMP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_IMM_ROM_EXT_IMM_ROM_EXT_EPMP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_IMM_SECTION_IMM_SECTION_EPMP_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_IMM_SECTION_IMM_SECTION_EPMP_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,7 +34,7 @@ extern "C" {
  *   15: RAM      NAPOT L-WR
  *
  * Mutable ROM_EXT segment (8 & 9) won't be configured by this function.
- * `imm_rom_ext_epmp_mutable_rx` will configure them when we are ready to
+ * `imm_section_epmp_mutable_rx` will configure them when we are ready to
  * jump back to ROM.
  *
  * Entries 6~12 can be recycled in Owner SW stage.
@@ -42,7 +42,7 @@ extern "C" {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t imm_rom_ext_epmp_reconfigure(void);
+rom_error_t imm_section_epmp_reconfigure(void);
 
 /**
  * Configure the Mutable ROM_EXT text segment with read-execute permissions.
@@ -57,10 +57,10 @@ rom_error_t imm_rom_ext_epmp_reconfigure(void);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t imm_rom_ext_epmp_mutable_rx(const manifest_t *manifest);
+rom_error_t imm_section_epmp_mutable_rx(const manifest_t *manifest);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_IMM_ROM_EXT_IMM_ROM_EXT_EPMP_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_IMM_SECTION_IMM_SECTION_EPMP_H_

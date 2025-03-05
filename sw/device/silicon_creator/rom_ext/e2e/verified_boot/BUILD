@@ -20,7 +20,7 @@ load(
     "opentitan_test",
 )
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMMUTABLE_HASH_UNENFORCED_MSG",
 )
 
