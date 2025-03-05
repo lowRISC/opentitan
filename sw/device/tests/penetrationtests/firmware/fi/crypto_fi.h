@@ -53,6 +53,17 @@ status_t handle_crypto_fi_kmac(ujson_t *uj);
 status_t handle_crypto_fi_kmac_state(ujson_t *uj);
 
 /**
+ * SHA256 FI test.
+ *
+ * Receive message & trigger configuration from host. Perform SHA256 operation
+ * and return the digest back to the host.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_crypto_fi_sha256(ujson_t *uj);
+
+/**
  * Shadow Register Access FI test.
  *
  * In this test, faults are injected when accessing KMAC shadow registers.
