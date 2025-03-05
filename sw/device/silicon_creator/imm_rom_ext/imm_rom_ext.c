@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
@@ -44,6 +45,12 @@ static rom_error_t imm_rom_ext_start(void) {
     //   //sw/device/silicon_creator/imm_rom_ext/defs.bzl
     dbg_puts("info: hash unenforced\r\n");
   }
+
+  // Lockdown the attestation seed to readonly as soon as possible to prevent
+  // key tampering and exfiltration.
+  flash_ctrl_cert_info_page_owner_restrict(
+      &kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
