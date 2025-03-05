@@ -1384,11 +1384,8 @@ module chip_darjeeling_cw310 #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    //
-    // TODO: Presently the software is being built to execute at the start of the window, so map
-    // the RAM there; it's supposed to be at an offset of 256MiB.
-    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) == 0) begin
-    //  (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
+        (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end
