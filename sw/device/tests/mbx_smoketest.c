@@ -31,8 +31,8 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_sram_ctrl_t sram_ctrl_mbox;
 static dif_rv_plic_t rv_plic;
 
-static dif_mbx_t gMbx[kDtMbxCount];
-static dif_mbx_transaction_t gTxn[kDtMbxCount];
+static dif_mbx_t mbx[kDtMbxCount];
+static dif_mbx_transaction_t txn[kDtMbxCount];
 
 // Define some test-state that allow multiple mailboxes transactions to
 // handled at the same time. We need to hold some global state to ensure
@@ -53,7 +53,7 @@ typedef struct mbx_test_handler_state {
   dif_mbx_irq_t mbx_irq_serviced;
   dif_rv_plic_irq_id_t plic_irq_serviced;
 } mbx_test_handler_state_t;
-static volatile mbx_test_handler_state_t gHandlerState[kDtMbxCount];
+static volatile mbx_test_handler_state_t handler_state[kDtMbxCount];
 static volatile bool is_finished = false;
 
 // CONSTANTS
@@ -93,7 +93,7 @@ static_assert(
 
 // Backing storage for objects used by the mailbox handler(s)
 // (dif_mbx_transaction_t)
-static uint32_t gDataDWORDS[kDtMbxCount][kMbxSizeDWORDS];
+static uint32_t data_dwords[kDtMbxCount][kMbxSizeDWORDS];
 
 /**
  * Setup the mailbox CSRs
@@ -104,10 +104,10 @@ static uint32_t gDataDWORDS[kDtMbxCount][kMbxSizeDWORDS];
 void configure_mbx_peripherals(void) {
   uint32_t mbx_size_bytes = kMbxSizeDWORDS * sizeof(uint32_t);
 
-  for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
+  for (dt_mbx_t mbx_idx = 0; mbx_idx < kDtMbxCount; mbx_idx++) {
     uint32_t sram_start =
         dt_sram_ctrl_reg_block(kDtSramCtrlMbox, kDtSramCtrlRegBlockRam);
-    uint32_t mbx_region_base = sram_start + (mbx_size_bytes * 2 * mbx);
+    uint32_t mbx_region_base = sram_start + (mbx_size_bytes * 2 * mbx_idx);
     // Set the memory ranges
     dif_mbx_range_config_t config = {
         .imbx_base_addr = mbx_region_base,
@@ -118,19 +118,17 @@ void configure_mbx_peripherals(void) {
             mbx_region_base + (mbx_size_bytes * 2) - sizeof(uint32_t),
     };
     // This DIF also writes the bit indicating the range configuration is valid.
-    CHECK_DIF_OK(dif_mbx_range_set(&gMbx[mbx], config));
+    CHECK_DIF_OK(dif_mbx_range_set(&mbx[mbx_idx], config));
 
     // Readback the range configuration registers, check they have been set as
     // expected.
     dif_mbx_range_config_t config_readback;
-    CHECK_DIF_OK(dif_mbx_range_get(&gMbx[mbx], &config_readback));
-    CHECK((config.imbx_base_addr == config_readback.imbx_base_addr) &&
-          (config.imbx_limit_addr == config_readback.imbx_limit_addr) &&
-          (config.ombx_base_addr == config_readback.ombx_base_addr) &&
-          (config.ombx_limit_addr == config_readback.ombx_limit_addr));
+    CHECK_DIF_OK(dif_mbx_range_get(&mbx[mbx_idx], &config_readback));
+    CHECK(memcmp(&config, &config_readback, sizeof(dif_mbx_range_config_t)) ==
+          0);
 
     // Clear the control register.
-    mmio_region_write32(gMbx[mbx].base_addr, MBX_CONTROL_REG_OFFSET, 0);
+    mmio_region_write32(mbx[mbx_idx].base_addr, MBX_CONTROL_REG_OFFSET, 0);
   }
 }
 
@@ -138,20 +136,20 @@ void configure_mbx_peripherals(void) {
  * Initialize the global state that synchronizes the main_thread/ISR
  */
 static void init_global_state(void) {
-  for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
+  for (dt_mbx_t mbx_idx = 0; mbx_idx < kDtMbxCount; mbx_idx++) {
     // Initialize storage for mbx transaction objects
-    gTxn[mbx].data_dwords = gDataDWORDS[mbx];
-    // Create an initial snapshop of the pending interrupts
+    txn[mbx_idx].data_dwords = data_dwords[mbx_idx];
+    // Create an initial snapshot of the pending interrupts
     dif_mbx_irq_state_snapshot_t snapshot;
-    CHECK_DIF_OK(dif_mbx_irq_get_state(&gMbx[mbx], &snapshot));
+    CHECK_DIF_OK(dif_mbx_irq_get_state(&mbx[mbx_idx], &snapshot));
     CHECK(snapshot == 0,
           "No interrupts should be pending yet! (mbx[%0d].snapshot = 0x%0x)",
-          mbx, snapshot);
+          mbx_idx, snapshot);
     // Setup the state objects
-    gHandlerState[mbx] =
-        (struct mbx_test_handler_state){.mbx = &gMbx[mbx],
+    handler_state[mbx_idx] =
+        (struct mbx_test_handler_state){.mbx = &mbx[mbx_idx],
                                         .irq_state = snapshot,
-                                        .txn = &gTxn[mbx],
+                                        .txn = &txn[mbx_idx],
                                         .txn_state = kStateIdle,
                                         .mbx_irq_serviced = kIrqVoid,
                                         .plic_irq_serviced = kIrqVoid};
@@ -170,8 +168,8 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
   CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMbox, &sram_ctrl_mbox));
 
-  for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
-    CHECK_DIF_OK(dif_mbx_init_from_dt(mbx, &gMbx[mbx]));
+  for (dt_mbx_t mbx_idx = 0; mbx_idx < kDtMbxCount; mbx_idx++) {
+    CHECK_DIF_OK(dif_mbx_init_from_dt(mbx_idx, &mbx[mbx_idx]));
   }
 
   // ADDITIONAL INITIALIZATION
@@ -192,15 +190,15 @@ static void init_interrupts(void) {
       dif_rv_plic_target_set_threshold(&rv_plic, kHart, kDifRvPlicMinPriority));
 
   // Enable each IRQ for each mailbox at the PLIC and the mailbox itself.
-  for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
+  for (dt_mbx_t mbx_idx = 0; mbx_idx < kDtMbxCount; mbx_idx++) {
     for (int i = 0; i < ARRAYSIZE(mbx_irq_ids); i++) {
-      dt_plic_irq_id_t plic_id = dt_mbx_irq_to_plic_id(mbx, mbx_irq_ids[i]);
+      dt_plic_irq_id_t plic_id = dt_mbx_irq_to_plic_id(mbx_idx, mbx_irq_ids[i]);
 
       CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&rv_plic, plic_id, kHart,
                                                kDifToggleEnabled));
       CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&rv_plic, plic_id,
                                                 kDifRvPlicMaxPriority));
-      CHECK_DIF_OK(dif_mbx_irq_set_enabled(&gMbx[mbx], mbx_irq_ids[i],
+      CHECK_DIF_OK(dif_mbx_irq_set_enabled(&mbx[mbx_idx], mbx_irq_ids[i],
                                            kDifToggleEnabled));
     }
   }
@@ -248,7 +246,7 @@ static status_t external_isr(void) {
   dt_mbx_t mbx = dt_mbx_from_instance_id(inst_id);
   dif_mbx_irq_t mbx_irq_id = dt_mbx_irq_from_plic_id(mbx, plic_irq_id);
 
-  mbxths = &gHandlerState[mbx];
+  mbxths = &handler_state[mbx];
   mbxths->mbx_irq_serviced = mbx_irq_id;
   mbxths->plic_irq_serviced = plic_irq_id;
 
@@ -257,10 +255,10 @@ static status_t external_isr(void) {
     case kDtMbxIrqMbxReady: {
       // First, mask the interrupt
       // - The interrupt will not be de-asserted by the peripheral until the
-      // requester
+      //   requester
       //   drains the response from the ombx. Until then, it cannot be cleared.
       // - The main thread will subsequently poll for the de-assertion of the
-      // status.busy to determine when this occurs.
+      //   status.busy to determine when this occurs.
       CHECK_DIF_OK(dif_mbx_irq_set_enabled(
           mbxths->mbx, mbxths->mbx_irq_serviced, kDifToggleDisabled));
       CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
@@ -275,11 +273,11 @@ static status_t external_isr(void) {
       break;
     }
     case kDtMbxIrqMbxAbort: {
-      CHECK(false, "Saw kDifMbxIrqMbxAbort, should not occur in this test!");
+      CHECK(false, "Saw kDtMbxIrqMbxAbort, should not occur in this test!");
       break;
     }
     case kDtMbxIrqMbxError: {
-      CHECK(false, "Saw kDifMbxIrqMbxError, should not occur in this test!");
+      CHECK(false, "Saw kDtMbxIrqMbxError, should not occur in this test!");
       break;
     }
     default: {
@@ -290,10 +288,9 @@ static status_t external_isr(void) {
 
   // (3) Clear the IRQ at the peripheral and at the PLIC.
   // - This section is lifted from the end of the isr_testutils autgenerated
-  // handler
+  //   handler.
   // - Only the plic_irq_complete() routine matters, since we cannot-yet clear
-  // the
-  //   INTR_STATE reg at the mbx as the event input is still asserted.
+  //   the INTR_STATE reg at the mbx as the event input is still asserted.
 
   // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
   dif_irq_type_t type;
@@ -307,7 +304,7 @@ static status_t external_isr(void) {
   CHECK_DIF_OK(
       dif_rv_plic_irq_complete(&rv_plic, kHart, mbxths->plic_irq_serviced));
 
-  // Set the boolean which allows ATOMIC_WAIT_FOR_INTERRUPT() to retun.
+  // Set the boolean which allows ATOMIC_WAIT_FOR_INTERRUPT() to return.
   is_finished = true;
 
   return OK_STATUS();
@@ -365,7 +362,7 @@ void responder_mbx_transaction(volatile mbx_test_handler_state_t *mbxths) {
   // Then we can re-enable the interrupt at the plic.
   clear_mbx_irq_pending(
       mbxths->mbx);  // Clears the special status.DOE_interrupt_status bit
-  CHECK_DIF_OK(dif_mbx_irq_acknowledge(mbxths->mbx, kDifMbxIrqMbxReady));
+  CHECK_DIF_OK(dif_mbx_irq_acknowledge(mbxths->mbx, kDtMbxIrqMbxReady));
   // Un-mask the interrupt.
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&rv_plic, mbxths->plic_irq_serviced,
                                            kHart, kDifToggleEnabled));
@@ -383,6 +380,7 @@ bool test_main(void) {
   init_interrupts();
   init_global_state();
 
+  // Used to syncronise with testbench.
   LOG_INFO("init_complete");
 
   // Wait for the testbench to set the number of transactions
@@ -390,6 +388,7 @@ bool test_main(void) {
   size_t numTxns = kNumTxns;
   LOG_INFO("sw will await %0d transactions before ending the test.", numTxns);
 
+  // Used to syncronise with testbench.
   LOG_INFO("received_tb_cfg");
 
   // Respond to transaction requests from the tb.
@@ -403,26 +402,21 @@ bool test_main(void) {
 
     // Find which mbx received the request
     for (dt_mbx_t mbx = 0; mbx < kDtMbxCount; mbx++) {
-      if (gHandlerState[mbx].txn_state == kStateReceivedRequest) {
-        if (got_mbx_id) {
-          // This test should only have one mailbox transaction (req+rsp) in
-          // flight at a time. The test is designed with this limitation in
-          // mind, and the sw is not robust to handling multiple in-flight
-          // transactions.
-          CHECK(false,
-                "After ISR set 'is_finished', multiple mbx's had received "
-                "requests.");
-        } else {
-          got_mbx_id = true;
-          mbx_id = mbx;
-        }
+      if (handler_state[mbx].txn_state == kStateReceivedRequest) {
+        // This test should only have one mailbox transaction (req+rsp) in
+        // flight at a time. The test is designed with this limitation in
+        // mind, and the sw is not robust to handling multiple in-flight
+        // transactions.
+        CHECK(!got_mbx_id,
+              "After ISR set 'is_finished', multiple mbx's had received "
+              "requests");
+        got_mbx_id = true;
+        mbx_id = mbx;
       }
     }
-    if (!got_mbx_id) {
-      // Should not be possible to return from the WFI loop and then fail this
-      // check.
-      CHECK(false, "Something went wrong. Aborting test.");
-    }
+    // Should not be possible to return from the WFI loop and then fail this
+    // check.
+    CHECK(got_mbx_id, "Something went wrong. Aborting test.");
 
     // Clear the interrupt indicator in preparation for the next request;
     // we must do this before sending the response because the sender expects
@@ -431,7 +425,7 @@ bool test_main(void) {
 
     // Complete the txn
     LOG_INFO("Test sw responding to pending request in mbx[%0d]", mbx_id);
-    responder_mbx_transaction(&gHandlerState[mbx_id]);
+    responder_mbx_transaction(&handler_state[mbx_id]);
   }
 
   LOG_INFO("End of test.");
