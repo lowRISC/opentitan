@@ -44,7 +44,8 @@ enum {
   /* non-DV variable in RAM. */                      \
   OTTF_BACKDOOR_VAR type name##Real = default_val;
 
-#define BACKDOOR_VAR(name) (kDeviceType == kDeviceSimDV ? name##DV : name##Real)
+#define BACKDOOR_VAR(name) \
+  (kDeviceType == kDeviceSimDV ? OTTF_BACKDOOR_READ(name##DV) : name##Real)
 
 // Following volatile const will be overwritten by
 // SV testbench with random values.

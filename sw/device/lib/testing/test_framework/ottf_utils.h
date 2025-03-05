@@ -20,10 +20,6 @@
  * @param cond: an expression that can be repeated tested for.
  * @param timeout_usec: timeout in microseconds.
  *
- * NOTE: all variables which appear in `cond` should be declared by
- * `OTTF_BACKDOOR_VAR` to prevent compiler optimization that could result
- * in unexpected behaviours.
- *
  * In DV, this function will simply spin since the DV environment can do
  * backdoor writes to make the condition true. On real device, this will wait
  * for host to send ujson message. The condition is check after each command.
@@ -51,11 +47,15 @@
 /**
  * Declare a variable which can be used with `OTTF_WAIT_FOR`.
  *
- * This macro guarantees the following:
- * - This variable can be used within the condition of `OTTF_WAIT_FOR` and
- *   the compiler will not optimize the condition thinking that the variable
- *   is not modified, *even* if the program never writes to it.
- * - This variable will have an associated symbol in the final ELF binary.
+ * Variable declared this way will have an associated symbol in the final ELF
+ * binary. This will allow host test harness or DV to find the variable and
+ * manipulate it with backdoor access mechanism, via OTTF uJSON commands for
+ * SiVal or directly modifying the underlying memory for DV.
+ *
+ * This variable can be accessed directly if you're certain there'll be no
+ * concurrent DV modification. However, if a concurrent modification may occur,
+ * you need to use `OTTF_BACKDOOR_READ` to provide correct synchronization to
+ * avoid miscompilation.
  *
  * NOTE: this macro guarantees that the variable works in all non-DV
  * environments but may not work in DV.
@@ -65,13 +65,13 @@
  * OTTF_BACKDOOR_VAR bool sival_is_ready = false;
  * ```
  */
-#define OTTF_BACKDOOR_VAR OT_USED OT_SECTION(".data") volatile
+#define OTTF_BACKDOOR_VAR OT_USED OT_SECTION(".data")
 
 /**
  * Same as `OTTF_BACKDOOR_VAR` but for DV environments.
  * ```
  */
-#define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata") volatile
+#define OTTF_BACKDOOR_VAR_DV OT_USED OT_SECTION(".rodata")
 
 #if defined(OPENTITAN_IS_EARLGREY)
 
