@@ -24,6 +24,9 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_lc_ctrl_t lc;
 
 status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
@@ -32,7 +35,7 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
 
   // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu();
+  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
