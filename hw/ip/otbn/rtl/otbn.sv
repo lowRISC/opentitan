@@ -236,7 +236,6 @@ module otbn
 
   logic imem_req;
   logic imem_write;
-  logic imem_wr_collision;
   logic imem_wpending;
   logic [ImemIndexWidth-1:0] imem_index;
   logic [38:0] imem_wdata;
@@ -357,7 +356,6 @@ module otbn
     .cfg_i    (ram_cfg_imem_i),
     .cfg_rsp_o(ram_cfg_rsp_imem_o),
 
-    .wr_collision_o   (imem_wr_collision),
     .write_pending_o  (imem_wpending),
 
     .alert_o ()
@@ -397,7 +395,6 @@ module otbn
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
-    .wr_collision_i             (imem_wr_collision),
     .write_pending_i            (imem_wpending)
   );
 
@@ -528,7 +525,6 @@ module otbn
   logic [31:0] dmem_wdata_narrow_bus;
   logic [top_pkg::TL_DBW-1:0] dmem_byte_mask_bus;
   logic dmem_rvalid_bus;
-  logic dmem_wr_collision;
   logic dmem_wpending;
   logic [1:0] dmem_rerror_bus;
 
@@ -568,7 +564,6 @@ module otbn
     .cfg_i    (ram_cfg_dmem_i),
     .cfg_rsp_o(ram_cfg_rsp_dmem_o),
 
-    .wr_collision_o   (dmem_wr_collision),
     .write_pending_o  (dmem_wpending),
 
     .alert_o ()
@@ -646,7 +641,6 @@ module otbn
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
-    .wr_collision_i             (dmem_wr_collision),
     .write_pending_i            (dmem_wpending)
   );
 
