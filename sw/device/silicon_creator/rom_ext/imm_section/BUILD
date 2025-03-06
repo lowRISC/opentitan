@@ -24,11 +24,9 @@ cc_library(
     deps = [
         ":imm_section_epmp",
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",

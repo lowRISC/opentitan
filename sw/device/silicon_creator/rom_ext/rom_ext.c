@@ -51,6 +51,7 @@
 
 #include "flash_ctrl_regs.h"                          // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include "otp_ctrl_regs.h"                            // Generated.
 #include "sram_ctrl_regs.h"                           // Generated.
 
 // Declaration for the ROM_EXT manifest start address, populated by the linker
@@ -579,6 +580,14 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   const manifest_t *self = rom_ext_manifest();
   dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
              self->version_minor);
+
+  uint32_t hash_enforcement =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
+  if (hash_enforcement != kHardenedBoolTrue) {
+    // CAUTION: The message below should match the message defined in:
+    //   //sw/device/silicon_creator/rom_ext/imm_section/defs.bzl
+    dbg_printf("info: imm_section hash unenforced\r\n");
+  }
 
   // Prepare dice chain builder for CDI_1.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
