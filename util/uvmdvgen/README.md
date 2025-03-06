@@ -19,7 +19,7 @@ pieces of common code which can be reused when setting up a new DV environment.
 Running the tool with `-h` switch provides a brief description of all available
 switches.
 ```console
-$ util/uvmdvgen/uvmdvgen.py -h
+$ util/uvmdvgen.py -h
 usage: uvmdvgen.py [-h] [-a] [-s] [-e] [-c] [-hr] [-hi] [-ha]
                    [-ea agt1 agt2 [agt1 agt2 ...]] [-ao [hw/dv/sv]]
                    [-eo [hw/ip/<ip>]] [-v VENDOR]
@@ -299,56 +299,56 @@ by supplying the `--vendor <vendor-name>` switch on the command line.
 
 #### Examples
 ```console
-$ util/uvmdvgen/uvmdvgen.py i2c -a
+$ util/uvmdvgen.py i2c -a
 ```
 This will create `./i2c/i2c_agent` and place all sources there.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py jtag -a -ao hw/dv/sv
+$ util/uvmdvgen.py jtag -a -ao hw/dv/sv
 ```
 This will create `hw/dv/sv/jtag_agent` directory and place all the sources
 there.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py i2c -a -s -ao hw/dv/sv
+$ util/uvmdvgen.py i2c -a -s -ao hw/dv/sv
 ```
 This will create the I2C agent with separate 'host' mode and 'device' mode drivers.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py i2c -e -c -hi -eo hw/ip/i2c/dv
+$ util/uvmdvgen.py i2c -e -c -hi -eo hw/ip/i2c/dv
 ```
 This is an illegal command, it is not allowed to specify that an IP testbench
 extends from CIP lib or has interrupts without specifying that it should support
 a RAL model using the `-hr` flag.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py i2c_host -e -c -hi -hr -ea i2c -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py i2c_host -e -c -hi -hr -ea i2c -eo hw/ip/i2c_host/dv
 ```
 This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`. It will also create and hook up the interrupt interface
 in the testbench.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py foo -e -c -hi -ha -hr -ea foo -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py foo -e -c -hi -ha -hr -ea foo -eo hw/ip/i2c_host/dv
 ```
 This will create the complete foo DV testbench extended from CIP lib and
 will instantiate `foo_agent`. It will also create and hook up the interrupt interface
 as well as alerts interface in the testbench.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py aes -e -c -hr -ea i2c -eo hw/ip/i2c_host/dv
+$ util/uvmdvgen.py aes -e -c -hr -ea i2c -eo hw/ip/i2c_host/dv
 ```
 This will create the complete `i2c_host` DV testbench extended from CIP lib and will
 instantiate `i2c_agent`.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py dma -e -eo hw/ip/dma/dv
+$ util/uvmdvgen.py dma -e -eo hw/ip/dma/dv
 ```
 This will create the complete dma DV testbench extended from DV lib. It does not
 instantiate any downstream agents due to absence of `-ea` switch.
 
 ```console
-$ util/uvmdvgen/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
+$ util/uvmdvgen.py chip -e -ea uart i2c jtag -eo hw/top_earlgrey/dv
 ```
 This will create the complete chip testbench DV lib and will instantiate
 `uart_agent`, `i2c_agent` and `jtag_agent` in the env.
