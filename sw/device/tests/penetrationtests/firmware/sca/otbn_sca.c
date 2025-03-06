@@ -473,9 +473,6 @@ status_t handle_otbn_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj) {
 }
 
 status_t handle_otbn_pentest_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
-
   // Configure the entropy complex for OTBN. Set the reseed interval to max
   // to avoid a non-constant trigger window.
   TRY(pentest_configure_entropy_source_max_reseed_interval());
@@ -496,7 +493,7 @@ status_t handle_otbn_pentest_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;

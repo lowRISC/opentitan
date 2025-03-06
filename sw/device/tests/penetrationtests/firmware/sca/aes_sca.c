@@ -599,10 +599,6 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
   if (uj_data.fpga_mode == 0x01) {
     fpga_mode = true;
   }
-
-  penetrationtest_cpuctrl_t uj_cpuctrl;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl));
-
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
 
@@ -617,8 +613,7 @@ status_t handle_aes_pentest_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  pentest_configure_cpu(uj_cpuctrl.icache_disable,
-                        uj_cpuctrl.dummy_instr_disable);
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
