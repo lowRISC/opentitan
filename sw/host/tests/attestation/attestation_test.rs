@@ -72,8 +72,12 @@ fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Re
     let SubjectPublicKeyInfo::EcPublicKey(info) = key;
 
     let mut material = Vec::new();
-    material.extend(&info.public_key.x.get_value().to_bytes_be());
-    material.extend(&info.public_key.y.get_value().to_bytes_be());
+    let x = &info.public_key.x.get_value().to_bytes_be();
+    let y = &info.public_key.y.get_value().to_bytes_be();
+    material.extend(vec![0; 32 - x.len()]);
+    material.extend(x);
+    material.extend(vec![0; 32 - y.len()]);
+    material.extend(y);
     let hash = sha256::sha256(&material).to_be_bytes();
     let keyid = &hash[..20];
     log::info!("computed id = {:?}", hex::encode(keyid));
