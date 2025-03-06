@@ -18,12 +18,14 @@
       type: "host",
       clock: "clk_main_i",
       reset: "rst_main_ni"
+      addr_space: "hart",
       xbar: false
     },
     { name: "h1",
       type: "host",
       clock: "clk_periph_i",
       reset: "rst_periph_ni"
+      addr_space: "hart",
       xbar: false
     },
     { name: "d0",
@@ -31,7 +33,9 @@
       clock: "clk_main_i",
       reset: "rst_main_ni",
       addr_range: [{
-        base_addr: "0x0000",
+        base_addrs: {
+          hart: 0x0000
+        },
         size_byte: "0x1000"
       }]
       xbar: false
@@ -41,7 +45,9 @@
       clock: "clk_main_i",
       reset: "rst_main_ni",
       addr_range: [{
-        base_addr: "0x1000",
+        base_addrs: {
+          hart: 0x1000
+        },
         size_byte: "0x1000"
       }]
       xbar: false
