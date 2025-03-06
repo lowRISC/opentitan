@@ -48,12 +48,11 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
       localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
-      localparam string PrimMemoryInitFile = (MemInitFile != "") ? string'(MemInitFile) : "none";
 
       xpm_memory_spram #(
         .ADDR_WIDTH_A(Aw),
         .BYTE_WRITE_WIDTH_A(PrimWidth), // Masks are not supported
-        .MEMORY_INIT_FILE(PrimMemoryInitFile),
+        .MEMORY_INIT_FILE((MemInitFile == "") ? "none" : MemInitFile),
         .MEMORY_SIZE(Depth * PrimWidth),
         .READ_DATA_WIDTH_A(PrimWidth),
         .READ_LATENCY_A(1),
