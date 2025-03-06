@@ -10,6 +10,12 @@
       default: ""
     }
     {
+      name:    "uniquified_modules"
+      desc:    "A dictionary mapping template_names to uniquified_names"
+      type:    "object"
+      default: {"clkmgr": "clkmgr1"}
+    }
+    {
       name:    "module_instance_name"
       desc:    "instance name in case there are multiple AC Range Check instances"
       type:    "string"

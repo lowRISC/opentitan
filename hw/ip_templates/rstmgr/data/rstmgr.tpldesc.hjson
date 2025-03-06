@@ -10,6 +10,12 @@
       default: ""
     }
     {
+      name: "uniquified_modules"
+      desc: "A dictionary mapping template_names to uniquified_names"
+      type: "object"
+      default: {"clkmgr": "clkmgr1"}
+    }
+    {
       name: "clks"
       desc: "List of source clocks, as in 'aon', 'io', 'io_div2'"
       type: "object"
@@ -118,20 +124,14 @@
       default: "1"
     }
     {
-      name: "alert_handler_vlnv_prefix"
-      desc: "Provides the VLNV prefix (for instance_vlnv) for the alert_handler used by this rstmgr"
-      type: "string"
-      default: ""
-    }
-    {
-      name: "pwrmgr_vlnv_prefix"
-      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr used by this rstmgr"
+      name: "alert_handler_vlnv"
+      desc: "Provides the vlnv for alert_handler_pkt used by this rstmgr"
       type: "string"
       default: ""
     }
     {
       name: "top_pkg_vlnv"
-      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      desc: "Provides the VLNV for the top_pkg used by this rstmgr"
       type: "string"
       default: "lowrisc:constants:top_pkg"
     }

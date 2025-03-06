@@ -24,7 +24,7 @@
                   rel_path: "hw/ip/aes/dv/lint/{tool}"
              },
              {    name: alert_handler
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:alert_handler_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/dv/lint/{tool}"
              },
@@ -34,7 +34,7 @@
                   rel_path: "hw/top_earlgrey/ip/aon_timer/dv/lint/{tool}"
              },
              {    name: clkmgr
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_clkmgr_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:clkmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/dv/lint/{tool}"
              },
@@ -59,12 +59,12 @@
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
              {    name: flash_ctrl
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_flash_ctrl_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:flash_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/lint/{tool}"
              },
              {    name: gpio
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_gpio_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:gpio_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/gpio/dv/lint/{tool}"
              },
@@ -96,7 +96,7 @@
                   rel_path: "hw/ip/lc_ctrl/dv/lint/{tool}"
              },
              {    name: otp_ctrl
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_otp_ctrl_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:otp_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/otp_ctrl/dv/lint/{tool}"
              },
@@ -131,7 +131,7 @@
                   rel_path: "hw/ip/prim/dv/prim_prince/lint/{tool}"
              },
              {    name: pwrmgr
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_pwrmgr_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:pwrmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/dv/lint/{tool}"
              },
@@ -141,7 +141,7 @@
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
              {    name: rstmgr
-                  fusesoc_core: lowrisc:opentitan:top_earlgrey_rstmgr_sim
+                  fusesoc_core: lowrisc:earlgrey_dv:rstmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/dv/lint/{tool}"
              },

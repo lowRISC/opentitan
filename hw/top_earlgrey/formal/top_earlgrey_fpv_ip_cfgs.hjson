@@ -23,7 +23,7 @@
              {
                name: pinmux_fpv
                dut: pinmux_tb
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux_fpv
+               fusesoc_core: lowrisc:earlgrey_fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
@@ -35,7 +35,7 @@
              {
                name: pinmux_chip_fpv
                dut: pinmux_chip_tb
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux_chip_fpv
+               fusesoc_core: lowrisc:earlgrey_fpv:pinmux_chip_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
@@ -46,7 +46,7 @@
              {
                name: rv_plic_fpv
                dut: rv_plic_tb
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
+               fusesoc_core: lowrisc:earlgrey_ip:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/{sub_flow}/{tool}"
                cov: true

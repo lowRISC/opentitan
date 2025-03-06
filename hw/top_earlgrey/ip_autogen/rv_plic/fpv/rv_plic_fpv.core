@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_earlgrey_rv_plic_fpv:0.1
+name: lowrisc:earlgrey_ip:rv_plic_fpv:0.1
 description: "FPV for RISC-V PLIC"
 
 filesets:
@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:prim:all
-      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:earlgrey_ip:rv_plic
       - lowrisc:fpv:csr_assert_gen
     files:
       - tb/rv_plic_bind_fpv.sv
@@ -24,7 +24,7 @@ generate:
     generator: csr_assert_gen
     parameters:
       spec: ../data/rv_plic.hjson
-      depend: lowrisc:opentitan:top_earlgrey_rv_plic
+      depend: lowrisc:earlgrey_ip:rv_plic
 
 targets:
   default: &default_target

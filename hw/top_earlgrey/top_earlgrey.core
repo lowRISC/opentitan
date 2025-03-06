@@ -9,8 +9,8 @@ filesets:
     depend:
       # Place the autogen packages first to avoid conflicts
       - lowrisc:systems:top_earlgrey_racl_pkg
-      - lowrisc:opentitan:top_earlgrey_alert_handler_reg
-      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
+      - lowrisc:earlgrey_ip:alert_handler_reg
+      - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
@@ -39,15 +39,15 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
-      - lowrisc:opentitan:top_earlgrey_alert_handler
-      - lowrisc:opentitan:top_earlgrey_clkmgr
-      - lowrisc:opentitan:top_earlgrey_flash_ctrl
-      - lowrisc:opentitan:top_earlgrey_otp_ctrl
-      - lowrisc:opentitan:top_earlgrey_pinmux
-      - lowrisc:opentitan:top_earlgrey_pwrmgr
-      - lowrisc:opentitan:top_earlgrey_rstmgr
-      - lowrisc:opentitan:top_earlgrey_rv_plic
-      - lowrisc:opentitan:top_earlgrey_gpio
+      - lowrisc:earlgrey_ip:alert_handler
+      - lowrisc:earlgrey_ip:clkmgr
+      - lowrisc:earlgrey_ip:flash_ctrl
+      - lowrisc:earlgrey_ip:gpio
+      - lowrisc:earlgrey_ip:otp_ctrl
+      - lowrisc:earlgrey_ip:pinmux
+      - lowrisc:earlgrey_ip:pwrmgr
+      - lowrisc:earlgrey_ip:rstmgr
+      - lowrisc:earlgrey_ip:rv_plic
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

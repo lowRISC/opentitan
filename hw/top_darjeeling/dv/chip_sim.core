@@ -18,9 +18,9 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:dv:top_darjeeling_chip_test
-      - lowrisc:opentitan:top_darjeeling_clkmgr_sva
-      - lowrisc:opentitan:top_darjeeling_pwrmgr_sva
-      - lowrisc:opentitan:top_darjeeling_rstmgr_sva
+      - lowrisc:darjeeling_dv:clkmgr_sva
+      - lowrisc:darjeeling_dv:pwrmgr_sva
+      - lowrisc:darjeeling_dv:rstmgr_sva
       - lowrisc:dv:top_darjeeling_sva
       - lowrisc:dv:top_darjeeling_xbar_dbg_bind
       - lowrisc:dv:top_darjeeling_xbar_main_bind

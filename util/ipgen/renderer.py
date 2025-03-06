@@ -98,20 +98,32 @@ class IpTemplateRendererBase:
                 strict_undefined=True)
         return self._lookup
 
-    def _tplfunc_instance_vlnv(self, template_vlnv_str: str, prefix: str = None) -> str:
+    def get_uniquified_name(self, name: str) -> str:
+        """Return the uniquified name or None if the name is not uniquified"""
+        return self.ip_config.param_values["uniquified_modules"].get(name)
+
+    def _replace_uniquified_prefix(self, core_name: str) -> str:
+        uniquified_modules = self.ip_config.param_values["uniquified_modules"]
+        for name, uniq_name in uniquified_modules.items():
+            if core_name.startswith(f'{name}_'):
+                return f'{uniq_name}_{core_name[len(name)+1:]}'
+            elif core_name == name:
+                return uniq_name
+        else:
+            return core_name
+
+    def _tplfunc_instance_vlnv(self, template_vlnv_str: str) -> str:
         """Makes a vlnv into an instance specific one.
 
         A vlnv is a string of the form vendor:library:name[:version] where
         the version is optional. This is transformed as follows:
-        - The vendor string becomes `lowrisc`.
-        - The library string becomes `opentitan`.
+        - The vendor string stays the same.
+        - The library string becomes `topname`_`<library>`.
         - The name is processed as follows:
-          - If the `module_instance_name` parameter exists, the name must start
-            with it as a prefix, and that is replaced by the `instance_name`
-            value.
-          - If the name starts with the template name, it is replaced by the
-            `instance_name` value.
-          - Otherwise the `instance_name` is prefixed to the name.
+          - If it matches a name to be uniquified it is replaced by the
+            uniquified name.
+          - Any prefix ending with a '_' for which there is a uniquified name
+            is replaced by the uniquified name.
         - The optional version is preserved.
 
         Raises exceptions for malformed vlnvs.
@@ -121,34 +133,24 @@ class IpTemplateRendererBase:
             raise TemplateRenderError(
                 f"{template_vlnv_str} isn't a valid FuseSoC VLNV. "
                 "Required format: 'vendor:library:name[:version]'")
-        template_core_name = template_vlnv[2]
-        template_core_version = (template_vlnv[3]
-                                 if len(template_vlnv) == 4 else None)
+        template_vendor = template_vlnv[0]
+        template_library = template_vlnv[1]
+        template_name = template_vlnv[2]
+        template_version = (template_vlnv[3]
+                            if len(template_vlnv) == 4 else None)
 
-        if prefix is None:
-            template_core_prefix = self.ip_config.instance_name
-        else:
-            template_core_prefix = prefix
+        topname = self.ip_config.param_values["topname"]
+        updated_library = f"{topname}_{template_library}"
+        updated_name = self._replace_uniquified_prefix(template_name)
 
-        if "module_instance_name" in self.ip_config.param_values:
-            if not template_core_name.startswith(
-                    self.ip_config.param_values["module_instance_name"]):
-                raise TemplateRenderError(
-                    f'The name field in {template_vlnv_str} must start with '
-                    f'{self.ip_config.param_values["module_instance_name"]}')
-            idx = len(self.ip_config.param_values["module_instance_name"])
-            template_core_name = template_core_name[idx:]
-        elif template_core_name.startswith(self.ip_template.name):
-            template_core_name = template_core_name[len(self.ip_template.name
-                                                        ):]
+        instance_vlnv = [template_vendor, updated_library, updated_name]
+        if template_version is not None:
+            instance_vlnv.append(template_version)
 
-        instance_core_name = template_core_prefix + template_core_name
-        instance_vlnv = ['lowrisc', 'opentitan', instance_core_name]
-
-        if template_core_version is not None:
-            instance_vlnv.append(template_core_version)
-
-        return ':'.join(instance_vlnv)
+        rewritten_vlnv = ':'.join(instance_vlnv)
+        log.info('vlnv {} renamed to {}'.format(template_vlnv_str,
+                                                rewritten_vlnv))
+        return rewritten_vlnv
 
     def _render_mako_template_to_str(self, template_filepath: Path) -> str:
         """ Render a template and return the rendered text. """

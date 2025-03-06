@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_darjeeling_otp_ctrl_sim:0.1
+  fusesoc_core: lowrisc:darjeeling_dv:otp_ctrl_sim:0.1
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/otp_ctrl_testplan.hjson"

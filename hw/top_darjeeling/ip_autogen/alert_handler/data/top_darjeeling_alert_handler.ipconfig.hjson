@@ -225,5 +225,12 @@
     ]
     top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
+    uniquified_modules:
+    {
+      racl_ctrl: racl_ctrl
+      ac_range_check: ac_range_check
+      alert_handler: alert_handler
+      rv_plic: rv_plic
+    }
   }
 }
