@@ -1155,7 +1155,7 @@
       'rom_ctrl.pwrmgr_data'    : ['pwrmgr_aon.rom_ctrl'],
       'rom_ctrl.keymgr_data'    : ['keymgr.rom_digest'],
       'flash_ctrl.keymgr'       : ['keymgr.flash'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump_0'],
       'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
 
       // LC RMA req/ack interface: LC --> Flash -> LC

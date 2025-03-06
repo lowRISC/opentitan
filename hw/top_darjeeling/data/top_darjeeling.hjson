@@ -1198,7 +1198,7 @@
       'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump_0'],
 
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],

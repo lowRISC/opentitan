@@ -47,10 +47,12 @@ module rstmgr
   // software initiated reset request
   output mubi4_t sw_rst_req_o,
 
-  // Interface to alert handler
-  input alert_handler_pkg::alert_crashdump_t alert_dump_i,
+  // Interface to alert handler(s') crash dump
+% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
+  input ${alert_handler_pkg_name}::alert_crashdump_t alert_dump_${i}_i,
+% endfor
 
-  // Interface to cpu crash dump
+  // Interface to cpu(s') crash dump
 % for i in range(num_cores):
   input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_${i}_i,
 % endfor
@@ -415,23 +417,25 @@ module rstmgr
   logic dump_capture_halt;
   assign dump_capture_halt = rst_hw_req;
 
+% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
   rstmgr_crash_info #(
-    .CrashDumpWidth($bits(alert_handler_pkg::alert_crashdump_t))
-  ) u_alert_info (
+    .CrashDumpWidth($bits(${alert_handler_pkg_name}::alert_crashdump_t))
+  ) u_alert_info_${i} (
     .clk_i(clk_por_i),
     .rst_ni(rst_por_ni),
-    .dump_i(alert_dump_i),
-    .dump_capture_i(dump_capture & reg2hw.alert_info_ctrl.en.q),
-    .slot_sel_i(reg2hw.alert_info_ctrl.index.q),
-    .slots_cnt_o(hw2reg.alert_info_attr.d),
-    .slot_o(hw2reg.alert_info.d)
+    .dump_i(alert_dump_${i}_i),
+    .dump_capture_i(dump_capture & reg2hw.alert_${i}_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.alert_${i}_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.alert_${i}_info_attr.d),
+    .slot_o(hw2reg.alert_${i}_info.d)
   );
 
   // once dump is captured, no more information is captured until
   // re-enabled by software.
-  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
+  assign hw2reg.alert_${i}_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.alert_${i}_info_ctrl.en.de = dump_capture_halt;
 
+% endfor
 % for i in range(num_cores):
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
@@ -445,11 +449,12 @@ module rstmgr
     .slot_o(hw2reg.cpu_${i}_info.d)
   );
 
+  // once dump is captured, no more information is captured until
+  // re-enabled by software.
   assign hw2reg.cpu_${i}_info_ctrl.en.d  = 1'b0;
   assign hw2reg.cpu_${i}_info_ctrl.en.de = dump_capture_halt;
 
 % endfor
-
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////

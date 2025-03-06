@@ -13,8 +13,9 @@
   total_resets = total_hw_resets + 3
 
   num_cores = reqs.get("num_cores", 1)
+  alert_handler_pkg_names = reqs.get("alert_handler_pkg_names", ["alert_handler_pkg"])
   # List of (prefix, count) pairs
-  crash_dump_srcs = [('alert', 1), ('cpu', num_cores)]
+  crash_dump_srcs = [('alert', len(alert_handler_pkg_names)), ('cpu', num_cores)]
 %>
 
 # RSTMGR register template
@@ -229,16 +230,18 @@
       '''
     },
 
+% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
     { struct:  "alert_crashdump",
       type:    "uni",
-      name:    "alert_dump",
+      name:    "alert_dump_${i}",
       act:     "rcv",
-      package: "alert_handler_pkg",
+      package: "${alert_handler_pkg_name}",
       desc:    '''
-        Crash dump info for alert handler.
+        Crash dump info for alert handler ${i}.
       '''
     },
 
+% endfor
 % for i in range(num_cores):
     { struct:  "cpu_crash_dump",
       type:    "uni",
@@ -249,8 +252,8 @@
         Crash dump info for CPU ${i}.
       '''
     },
-% endfor
 
+% endfor
     { struct:  "mubi4",
       type:    "uni",
       name:    "sw_rst_req",

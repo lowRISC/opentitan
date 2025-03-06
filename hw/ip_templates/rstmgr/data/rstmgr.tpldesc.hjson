@@ -147,5 +147,11 @@
       type: "int"
       default: 1
     }
+    {
+      name: "alert_handler_pkg_names"
+      desc: "Names of alert handlers' pkg names for crash dump type info."
+      type: "object"
+      default: ["alert_handler_pkg"]
+    }
   ]
 }

@@ -640,6 +640,12 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     # One crash dump per core
     n_cores = top['num_cores']
 
+    # Assemble list of alert handler pkg names
+    alert_handler_pkg_names = []
+    for alert_handler in lib.find_modules(top['module'], 'alert_handler'):
+        alert_handler_type = alert_handler["type"] # Not "name"
+        alert_handler_pkg_names.append(alert_handler_type + "_pkg")
+
     return {
         "clks": clks,
         "reqs": top["reset_requests"],
@@ -654,6 +660,7 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "with_alert_handler": with_alert_handler,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
         "num_cores": n_cores,
+        "alert_handler_pkg_names": alert_handler_pkg_names,
     }
 
 
