@@ -152,6 +152,7 @@ cc_test(
             ":rom_ext_boot_policy_ptrs",
             ":rom_ext_manifest",
             ":sigverify_keys",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//sw/device/lib/arch:device",

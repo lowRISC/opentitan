@@ -329,7 +329,6 @@ rom_error_t dice_chain_attestation_creator(
   // Check if the current CDI_0 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     static_dice_cdi_0.cert_size = sizeof(static_dice_cdi_0.cert_data);
     HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
@@ -478,7 +477,6 @@ rom_error_t dice_chain_flush_flash(void) {
         /*offset=*/0,
         /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
         dice_chain.data));
-    dbg_puts("info: flushed dice cert page\r\n");
     dice_chain.data_dirty = kHardenedBoolFalse;
   }
   return kErrorOk;
