@@ -559,17 +559,6 @@ pub fn check_slot_b_boot_up(
     transport.reset_target(init.bootstrap.options.reset_delay, true)?;
     let uart_console = transport.uart("console")?;
 
-    let result = UartConsole::wait_for(&*uart_console, r"IMM_SECTION[: ](.*)\r\n", timeout)?;
-    log::info!("ROM_EXT IMM_SECTION started.");
-    response.stats.log_string(
-        "imm_section-version",
-        result
-            .get(1)
-            .as_ref()
-            .map(|s| s.as_str())
-            .unwrap_or("unknown"),
-    );
-
     // The ROM_EXT used to print "Starting ROM_EXT 0.1", but we cleaned up the
     // ROM_EXT output.  It now prints "ROM_EXT:0.1".
     let result = UartConsole::wait_for(&*uart_console, r"(?:\n| )ROM_EXT[: ](.*)\r\n", timeout)?;
