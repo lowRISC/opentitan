@@ -12,10 +12,8 @@
   # por / low power exit / sw reset / hw resets
   total_resets = total_hw_resets + 3
 
-  num_cores = reqs.get("num_cores", 1)
-  alert_handler_pkg_names = reqs.get("alert_handler_pkg_names", ["alert_handler_pkg"])
   # List of (prefix, count) pairs
-  crash_dump_srcs = [('alert', len(alert_handler_pkg_names)), ('cpu', num_cores)]
+  crash_dump_srcs = [('alert', len(alert_handler_pkgs)), ('cpu', num_cores)]
 %>
 
 # RSTMGR register template
@@ -230,12 +228,12 @@
       '''
     },
 
-% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
+% for i, alert_handler_pkg in enumerate(alert_handler_pkgs):
     { struct:  "alert_crashdump",
       type:    "uni",
       name:    "alert_dump_${i}",
       act:     "rcv",
-      package: "${alert_handler_pkg_name}",
+      package: "${alert_handler_pkg}",
       desc:    '''
         Crash dump info for alert handler ${i}.
       '''

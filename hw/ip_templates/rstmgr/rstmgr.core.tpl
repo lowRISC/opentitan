@@ -8,9 +8,9 @@ description: "Reset manager RTL"
 filesets:
   files_rtl:
     depend:
-% if alert_handler_vlnv:
+% for alert_handler_vlnv in alert_handler_vlnvs:
       - ${alert_handler_vlnv}
-% endif
+% endfor
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2

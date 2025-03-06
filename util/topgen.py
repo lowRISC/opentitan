@@ -266,7 +266,7 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
     ipgen_render(module["template_type"], topname, params, out_path)
 
 
-def _get_alert_handler_params(top: ConfigT) -> ParamsT:
+def _get_alert_handler_params(top: ConfigT, type: str) -> ParamsT:
     """Returns parameters for alert_hander ipgen from top config."""
     topname = top["name"]
     # default values
@@ -319,7 +319,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
                         lpg_idx_format.format(lpg_prev_offset +
                                               int(alert["lpg_idx"])))
             lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
-    module = lib.find_module(top["module"], "alert_handler")
+    module = lib.find_module(top["module"], type, use_base_template_type=False)
     uniquified_modules.add_module(module["template_type"], module["type"])
 
     return {
@@ -338,7 +338,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
 def generate_alert_handler(top: ConfigT, module: ConfigT,
                            out_path: Path) -> None:
     log.info("Generating alert_handler with ipgen")
-    params = _get_alert_handler_params(top)
+    params = _get_alert_handler_params(top, module["type"])
     generate_ipgen(top, module, params, out_path)
 
 
@@ -626,25 +626,26 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     n_rstreqs = len(top["reset_requests"]["peripheral"])
 
     # Will connect to alert_handler
-    with_alert_handler = lib.find_module(top['module'],
-                                         'alert_handler') is not None
+    alert_handlers = lib.find_modules(top['module'], 'alert_handler')
+    with_alert_handler = len(alert_handlers) > 0
+
+    # Assemble list of alert handler VLNVs
+    alert_handler_vlnvs = []
+    alert_handler_pkgs = []
     if with_alert_handler:
-        alert_handler_vlnv = f"lowrisc:{topname}_ip:alert_handler_pkg"
+        for alert_handler in alert_handlers:
+            alert_handler_type = alert_handler["type"]
+            alert_handler_pkg = f"{alert_handler_type}_pkg"
+            alert_handler_vlnv = f"lowrisc:{topname}_ip:{alert_handler_pkg}"
+            alert_handler_vlnvs.append(alert_handler_vlnv)
+            alert_handler_pkgs.append(alert_handler_pkg)
     elif topname == "englishbreakfast":
         # TODO: Clean templates to not require alert_handler. English Breakfast
         # does not have one, so it uses types and constants from Earl Grey.
-        alert_handler_vlnv = "lowrisc:earlgrey_ip:alert_handler_pkg"
-    else:
-        alert_handler_vlnv = ""
+        alert_handler_vlnvs = ["lowrisc:earlgrey_ip:alert_handler_pkg"]
 
     # One crash dump per core
     n_cores = top['num_cores']
-
-    # Assemble list of alert handler pkg names
-    alert_handler_pkg_names = []
-    for alert_handler in lib.find_modules(top['module'], 'alert_handler'):
-        alert_handler_type = alert_handler["type"] # Not "name"
-        alert_handler_pkg_names.append(alert_handler_type + "_pkg")
 
     return {
         "clks": clks,
@@ -656,11 +657,11 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
-        "alert_handler_vlnv": alert_handler_vlnv,
+        "alert_handler_vlnvs": alert_handler_vlnvs,
+        "alert_handler_pkgs": alert_handler_pkgs,
         "with_alert_handler": with_alert_handler,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
         "num_cores": n_cores,
-        "alert_handler_pkg_names": alert_handler_pkg_names,
     }
 
 
@@ -1113,7 +1114,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     multi_instance_ipgens = []
     for inst in topcfg["module"]:
         if lib.is_ipgen(inst):
-            if inst["template_type"] in ipgen_instances:
+            if inst["template_type"] in ipgen_instances and inst["template_type"] != "alert_handler":
                 multi_instance_ipgens.append(inst)
             else:
                 ipgen_instances[inst["template_type"]].append(inst)
@@ -1162,8 +1163,8 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     # Add alert_handler
     amend_alert(topcfg, name_to_block, allow_missing_blocks=True)
     if "alert_handler" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["alert_handler"][0],
-                        _get_alert_handler_params(topcfg))
+        for ah in ipgen_instances["alert_handler"]:
+            insert_ip_attrs(ah, _get_alert_handler_params(topcfg, ah["type"]))
     # Add rv_plic
     amend_interrupt(topcfg, name_to_block, allow_missing_blocks=True)
     if "rv_plic" in ipgen_instances:
@@ -1222,7 +1223,7 @@ def _process_top(
     for alert_handler in alert_handlers:
         template_name = alert_handler["template_type"]
         module_name = alert_handler["type"]
-        params = _get_alert_handler_params(topcfg)
+        params = _get_alert_handler_params(topcfg, module_name)
         name_to_block[module_name] = create_ipgen_ip_block(
             topcfg["name"], template_name, module_name, params, alias_cfgs)
     return completecfg, name_to_block, name_to_hjson
@@ -1270,7 +1271,7 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     if not args.xbar_only:
         generate_modules("alert_handler",
                          generate_alert_handler,
-                         single_instance=True)
+                         single_instance=False)
     if args.alert_handler_only:
         sys.exit()
 

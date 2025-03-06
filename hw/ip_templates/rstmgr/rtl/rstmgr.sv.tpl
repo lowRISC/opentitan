@@ -48,8 +48,8 @@ module rstmgr
   output mubi4_t sw_rst_req_o,
 
   // Interface to alert handler(s') crash dump
-% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
-  input ${alert_handler_pkg_name}::alert_crashdump_t alert_dump_${i}_i,
+% for i, alert_handler_pkg in enumerate(alert_handler_pkgs):
+  input ${alert_handler_pkg}::alert_crashdump_t alert_dump_${i}_i,
 % endfor
 
   // Interface to cpu(s') crash dump
@@ -417,9 +417,9 @@ module rstmgr
   logic dump_capture_halt;
   assign dump_capture_halt = rst_hw_req;
 
-% for i, alert_handler_pkg_name in enumerate(alert_handler_pkg_names):
+% for i, alert_handler_pkg in enumerate(alert_handler_pkgs):
   rstmgr_crash_info #(
-    .CrashDumpWidth($bits(${alert_handler_pkg_name}::alert_crashdump_t))
+    .CrashDumpWidth($bits(${alert_handler_pkg}::alert_crashdump_t))
   ) u_alert_info_${i} (
     .clk_i(clk_por_i),
     .rst_ni(rst_por_ni),
