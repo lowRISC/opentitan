@@ -68,6 +68,14 @@ module gpio
     );
   end
 
+  // Detect rising and falling edges.
+  logic [NumIOs-1:0] data_in_q, event_rise, event_fall;
+  always_ff @(posedge clk_i) begin
+    data_in_q <= data_in_d;
+  end
+  assign event_rise = data_in_d & ~data_in_q;
+  assign event_fall = ~data_in_d & data_in_q;
+
   if (GpioAsHwStrapsEn) begin : gen_strap_sample
     // sample at gpio inputs at strap_en_i signal pulse.
     logic strap_en;
@@ -154,11 +162,6 @@ module gpio
     end
   end
 
-  logic [NumIOs-1:0] data_in_q;
-  always_ff @(posedge clk_i) begin
-    data_in_q <= data_in_d;
-  end
-
   logic [NumIOs-1:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
   logic [NumIOs-1:0] event_intr_combined;
 
@@ -177,10 +180,10 @@ module gpio
   );
 
   // detect four possible individual interrupts
-  assign event_intr_rise    = (~data_in_q &  data_in_d) & reg2hw.intr_ctrl_en_rising.q;
-  assign event_intr_fall    = ( data_in_q & ~data_in_d) & reg2hw.intr_ctrl_en_falling.q;
-  assign event_intr_acthigh =                data_in_d  & reg2hw.intr_ctrl_en_lvlhigh.q;
-  assign event_intr_actlow  =               ~data_in_d  & reg2hw.intr_ctrl_en_lvllow.q;
+  assign event_intr_rise    = event_rise & reg2hw.intr_ctrl_en_rising.q;
+  assign event_intr_fall    = event_fall & reg2hw.intr_ctrl_en_falling.q;
+  assign event_intr_acthigh =  data_in_d & reg2hw.intr_ctrl_en_lvlhigh.q;
+  assign event_intr_actlow  = ~data_in_d & reg2hw.intr_ctrl_en_lvllow.q;
 
   assign event_intr_combined = event_intr_rise   |
                                event_intr_fall   |
