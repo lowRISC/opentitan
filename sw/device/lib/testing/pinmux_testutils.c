@@ -117,6 +117,46 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
 #endif /* OPENTITAN_IS_EARLGREY* */
 }
 
+status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
+                                  dt_periph_io_t periph_io,
+                                  dt_periph_io_dir_t dir, dt_pad_t pad) {
+  switch (dt_periph_io_type(periph_io)) {
+    case kDtPeriphIoTypeMio:
+      if (dt_pad_type(pad) != kDtPadTypeMio) {
+        return INVALID_ARGUMENT();
+      }
+      // Configure input.
+      if (dir == kDtPeriphIoDirIn || dir == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_input(pinmux, periph_io, pad));
+      }
+      // Configure output as requested...
+      if (dir == kDtPeriphIoDirOut || dir == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_output(pinmux, pad, periph_io));
+      }
+      // ... or as high-Z.
+      else if (dt_periph_io_dir(periph_io) == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_output(pinmux, pad,
+                                         kDtPeriphIoConstantHighZ));
+      }
+      return OK_STATUS();
+    case kDtPeriphIoTypeDio:
+      // Nothing to do but to check that they are actually connected together.
+      if (dt_pad_type(pad) != kDtPadTypeDio ||
+          dt_periph_io_dio_pad(periph_io) != pad) {
+        return INVALID_ARGUMENT();
+      }
+      // Make sure that the directions are compatible.
+      dt_periph_io_dir_t io_dir = dt_periph_io_dir(periph_io);
+      if ((io_dir == kDtPeriphIoDirIn || io_dir == kDtPeriphIoDirOut) &&
+          dir != io_dir) {
+        return INVALID_ARGUMENT();
+      }
+      return OK_STATUS();
+    default:
+      return INVALID_ARGUMENT();
+  }
+}
+
 // Mapping of Chip IOs to the GPIO peripheral.
 //
 // Depending on the simulation platform, there may be a limitation to how chip

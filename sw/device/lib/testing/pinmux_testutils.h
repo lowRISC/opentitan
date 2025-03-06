@@ -47,6 +47,37 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux);
 extern const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins];
 
 /**
+ * Connect a peripheral I/O to a pad.
+ *
+ * This will try connect a peripheral I/O to a pad. More precisely,
+ * the behaviour depends on the type of the I/O and pad:
+ * - If both the peripheral I/O and the pad are of MIO type, this
+ *   function will configure the MIO to connect them. Depending on the
+ *   direction indicated by the `dir` argument, it will connect the input,
+ *   output or both. If the MIO pad is an input/output but the requested
+ *   direction is only an input, the MIO output will be configured as
+ *   high-Z.
+ * - If both are of DIO type, this function will not do anything but
+ *   it will check that this peripheral I/O is indeed directly connected
+ *   to this pad.
+ * - Any other combination will produce an error.
+ *
+ * In all cases, this function will return an error if the direction(s)
+ * passed as argument are incompatible with the direction(s) of the
+ * peripheral I/O and the pad.
+ *
+ * @param pinmux A pinmux handle
+ * @param pin A peripheral I/O.
+ * @param dir Direction(s) to configure.
+ * @param pad A pad.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
+                                  dt_periph_io_t periph_io,
+                                  dt_periph_io_dir_t dir, dt_pad_t pad);
+
+/**
  * Returns the mask of testable GPIO pins.
  *
  * Returns a simulation-device-specific mask that enables testing of only a
