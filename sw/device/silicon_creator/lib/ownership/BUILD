@@ -20,7 +20,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )

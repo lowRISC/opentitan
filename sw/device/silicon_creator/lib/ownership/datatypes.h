@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
 #ifdef __cplusplus
@@ -26,7 +25,7 @@ typedef struct hybrid_key {
  * An owner_key can be either a ECDSA P256 or SPX+ key.  The type of the key
  * material will be determined by a separate field on the owner block
  */
-typedef union owner_key {
+typedef union owner_key_data {
   /** ECDSA P256 public key */
   ecdsa_p256_public_key_t ecdsa;
   /** SPHINCS+ public key */
@@ -35,7 +34,9 @@ typedef union owner_key {
   hybrid_key_t hybrid;
   /** Enough space to hold an ECDSA key and a SPX+ key for hybrid schemes */
   uint32_t raw[16 + 8];
-} owner_key_t;
+  /** A key ID is the first 32-bit word of the key data */
+  uint32_t id;
+} owner_keydata_t;
 
 /**
  * An owner_signature is an ECDSA P256 signature.
@@ -60,8 +61,6 @@ typedef enum ownership_state {
 } ownership_state_t;
 
 typedef enum ownership_key_alg {
-  /** Key algorithm RSA: `RSA3` */
-  kOwnershipKeyAlgRsa = 0x33415352,
   /** Key algorithm ECDSA P-256: `P256` */
   kOwnershipKeyAlgEcdsaP256 = 0x36353250,
   /** Key algorithm SPX+ Pure: `S+Pu` */
@@ -180,11 +179,11 @@ typedef struct owner_block {
   /** Reserved space for future use. */
   uint32_t reserved[16];
   /** Owner public key. */
-  owner_key_t owner_key;
+  owner_keydata_t owner_key;
   /** Owner's Activate public key. */
-  owner_key_t activate_key;
+  owner_keydata_t activate_key;
   /** Owner's Unlock public key. */
-  owner_key_t unlock_key;
+  owner_keydata_t unlock_key;
   /** Data region to hold the other configuration structs. */
   uint8_t data[1536];
   /** Signature over the owner block with the Owner private key. */
@@ -251,13 +250,7 @@ typedef struct owner_application_key {
   /** Usage constraint must match manifest header's constraint */
   uint32_t usage_constraint;
   /** Key material.  Varies by algorithm type. */
-  union {
-    uint32_t id;
-    sigverify_rsa_key_t rsa;
-    sigverify_spx_key_t spx;
-    ecdsa_p256_public_key_t ecdsa;
-    hybrid_key_t hybrid;
-  } data;
+  owner_keydata_t data;
 } owner_application_key_t;
 
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, header, 0);
@@ -266,11 +259,9 @@ OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, key_domain, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, key_diversifier, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, usage_constraint, 44);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, data, 48);
-OT_ASSERT_SIZE(owner_application_key_t, 464);
+OT_ASSERT_SIZE(owner_application_key_t, 144);
 
 enum {
-  kTlvLenApplicationKeyRsa =
-      offsetof(owner_application_key_t, data) + sizeof(sigverify_rsa_key_t),
   kTlvLenApplicationKeySpx =
       offsetof(owner_application_key_t, data) + sizeof(sigverify_spx_key_t),
   kTlvLenApplicationKeyEcdsa =
