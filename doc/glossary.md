@@ -190,6 +190,10 @@ The 32-bit RISC-V core used in OpenTitan chips.
 
 Intellectual Property.
 
+#### IRQ
+
+Interrupt.
+
 #### IV
 
 Initialisation vector.
@@ -222,6 +226,10 @@ Multiplexer.
 
 A list of connections between nodes of a circuit.
 
+#### NMI
+
+Non-Maskable Interrupt.
+
 #### OTBN
 
 OpenTitan Big Number accelerator - a RISC-V-like programmable coprocessor for asymmetric cryptographic algorithms.
@@ -241,6 +249,10 @@ Pin Multiplexer.
 #### PKI
 
 Public Key Infrastructure.
+
+#### PLIC
+
+Platform Level Interrupt Controller.
 
 #### PMP
 
