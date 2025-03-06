@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
-      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:buf

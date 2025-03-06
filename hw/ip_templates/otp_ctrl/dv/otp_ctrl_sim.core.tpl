@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:dv:otp_ctrl_sim:0.1")}
 description: "OTP_CTRL DV sim target"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_sim
 
 filesets:
   files_rtl:

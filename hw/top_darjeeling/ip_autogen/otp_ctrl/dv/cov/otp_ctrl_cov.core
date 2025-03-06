@@ -2,16 +2,14 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_otp_ctrl_cov
+name: lowrisc:darjeeling_dv:otp_ctrl_cov
 description: "OTP_CTRL functional coverage and bind files"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_cov
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:opentitan:top_darjeeling_otp_ctrl_top_specific_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
+      - lowrisc:darjeeling_ip:otp_ctrl_top_specific_pkg
 
   files_dv:
     depend:

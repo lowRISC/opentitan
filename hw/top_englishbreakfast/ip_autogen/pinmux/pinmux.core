@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_pinmux:0.1
+name: lowrisc:englishbreakfast_ip:pinmux:0.1
 description: "Pin Multiplexer"
 
 filesets:
@@ -20,8 +20,8 @@ filesets:
       - lowrisc:prim:pad_attr
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:usbdev
-      - lowrisc:opentitan:top_englishbreakfast_pinmux_reg:0.1
-      - lowrisc:opentitan:top_englishbreakfast_pinmux_pkg:0.1
+      - lowrisc:englishbreakfast_ip:pinmux_reg:0.1
+      - lowrisc:englishbreakfast_ip:pinmux_pkg:0.1
     files:
       - rtl/pinmux_wkup.sv
       - rtl/pinmux_jtag_buf.sv

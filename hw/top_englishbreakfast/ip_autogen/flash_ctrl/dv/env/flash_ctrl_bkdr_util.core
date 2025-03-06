@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl_bkdr_util:0.1
+name: lowrisc:englishbreakfast_dv:flash_ctrl_bkdr_util:0.1
 description: "Backdoor read/write flash memory for DV"
 
 filesets:
@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_prince:0.1
       - lowrisc:dv:crypto_dpi_present:0.1
       - lowrisc:prim:secded:0.1
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_pkg
+      - lowrisc:englishbreakfast_ip:flash_ctrl_pkg
       - lowrisc:dv:mem_bkdr_util
     files:
       - flash_ctrl_bkdr_util_pkg.sv

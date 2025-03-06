@@ -10,5 +10,9 @@
     target: 1
     prio: 3
     topname: englishbreakfast
+    uniquified_modules:
+    {
+      rv_plic: rv_plic
+    }
   }
 }

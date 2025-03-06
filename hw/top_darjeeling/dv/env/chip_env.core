@@ -22,7 +22,7 @@ filesets:
       - lowrisc:dv:jtag_dmi_agent
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:dv:mem_bkdr_util
-      - lowrisc:opentitan:top_darjeeling_otp_ctrl_mem_bkdr_util
+      - lowrisc:darjeeling_dv:otp_ctrl_mem_bkdr_util
       - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
       - lowrisc:dv:str_utils
@@ -31,7 +31,7 @@ filesets:
       - lowrisc:dv:uart_agent
       - lowrisc:dv:i2c_agent
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
       - "fileset_partner ? (partner:systems:top_darjeeling_ast_pkg)"

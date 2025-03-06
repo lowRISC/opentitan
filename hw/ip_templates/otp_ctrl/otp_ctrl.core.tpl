@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:otp_ctrl:1.0")}
 description: "OTP Controller"
 virtual:
-  - lowrisc:ip_interfaces:otp_ctrl
+  - lowrisc:virtual_ip:otp_ctrl
 
 filesets:
   files_rtl:
@@ -25,7 +25,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
       - "fileset_partner  ? (partner:systems:ast_pkg)"

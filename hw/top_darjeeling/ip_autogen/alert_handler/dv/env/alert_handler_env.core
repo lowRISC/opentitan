@@ -2,13 +2,13 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_alert_handler_env:0.1
+name: lowrisc:darjeeling_dv:alert_handler_env:0.1
 description: "ALERT_HANDLER DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - lowrisc:opentitan:top_darjeeling_alert_handler_pkg:0.1
+      - lowrisc:darjeeling_ip:alert_handler_pkg:0.1
       - lowrisc:prim:mubi_pkg
       - lowrisc:constants:top_darjeeling_top_pkg
     files:

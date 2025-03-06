@@ -22,8 +22,8 @@ from design.lib.OtpMemMap import OtpMemMap
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
-from mako.template import Template
 from mako.lookup import TemplateLookup
+from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
@@ -67,6 +67,24 @@ IP_RAW_PATH = SRCTREE_TOP / "hw" / "ip"
 IP_TEMPLATES_PATH = SRCTREE_TOP / "hw" / "ip_templates"
 
 
+class UniquifiedModules(object):
+    """This holds the uniquified name for all uniquified modules."""
+
+    def __init__(self):
+        self.modules: Dict[str, str] = {}
+
+    def add_module(self, name: str, uniquified_name: str):
+        if (name in self.modules and uniquified_name != self.modules[name]):
+            raise SystemExit(f"Multiple renames for module {name}")
+        self.modules[name] = uniquified_name
+
+    def get_uniq_name(self, name: str) -> Optional[str]:
+        return self.modules.get(name)
+
+
+uniquified_modules = UniquifiedModules()
+
+
 class IpAttrs(NamedTuple):
     """Hold IP block, and path to hjson."""
     ip_block: IpBlock
@@ -81,10 +99,12 @@ def _ipgen_render_prelude(template_name: str, topname: str,
                    if params else template_name)
     top_name = f"top_{topname}"
     instance_name = f"{top_name}_{module_name}"
-
     ip_template = IpTemplate.from_template_path(IP_TEMPLATES_PATH /
                                                 template_name)
-    params.update({"topname": topname})
+    params.update({
+        "topname": topname,
+        "uniquified_modules": uniquified_modules.modules
+    })
 
     try:
         ip_config = IpConfig(ip_template.params, instance_name, params)
@@ -231,10 +251,18 @@ def generate_xbars(top: ConfigT, out_path: Path) -> None:
 def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
                    out_path: Path) -> None:
     topname = top["name"]
+    template_name = module["template_type"]
     module_name = module["type"]
     module_instance_name = params.get("module_instance_name")
-
-    assert not module_instance_name or module_instance_name == module_name
+    if module_instance_name and module_instance_name != module_name:
+        raise ValueError(
+            f"Unexpected module_instance_name: expected {module_name}, got "
+            f"{module_instance_name}")
+    uniq_name = uniquified_modules.get_uniq_name(template_name)
+    if uniq_name and uniq_name != module_instance_name:
+        raise ValueError(
+            f"Unexpected uniquified name: expected {module_instance_name}, "
+            f"got {uniq_name}")
     ipgen_render(module["template_type"], topname, params, out_path)
 
 
@@ -292,6 +320,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
                                               int(alert["lpg_idx"])))
             lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
     module = lib.find_module(top["module"], "alert_handler")
+    uniquified_modules.add_module(module["template_type"], module["type"])
 
     return {
         "module_instance_name": module["type"],
@@ -346,6 +375,7 @@ def _get_rv_plic_params(top: ConfigT) -> ParamsT:
     num_srcs = sum(
         [int(x["width"]) if "width" in x else 1 for x in top["interrupt"]]) + 1
     num_cores = int(top["num_cores"], 0) if "num_cores" in top else 1
+    uniquified_modules.add_module(module["template_type"], module["type"])
     return {
         "module_instance_name": module["type"],
         "src": num_srcs,
@@ -487,10 +517,9 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
         OrderedDict({name: vars(obj)
                      for name, obj in clocks.srcs.items()}),
         "derived_clks":
-        OrderedDict({
-            name: vars(obj)
-            for name, obj in clocks.derived_srcs.items()
-        }),
+        OrderedDict(
+            {name: vars(obj)
+             for name, obj in clocks.derived_srcs.items()}),
         "typed_clocks":
         OrderedDict({ty: d
                      for ty, d in typed_clks.items() if d}),
@@ -504,9 +533,6 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
         len(clocks.groups),
         "with_alert_handler":
         with_alert_handler,
-        # TODO: Register VLNVs and look this up instead of hard-coding.
-        "pwrmgr_vlnv_prefix":
-        f"top_{topname}_",
         "top_pkg_vlnv":
         f"lowrisc:constants:top_{topname}_top_pkg",
     }
@@ -603,13 +629,13 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
     if with_alert_handler:
-        alert_handler_vlnv_prefix = f"top_{topname}_"
+        alert_handler_vlnv = f"lowrisc:{topname}_ip:alert_handler_pkg"
     elif topname == "englishbreakfast":
         # TODO: Clean templates to not require alert_handler. English Breakfast
         # does not have one, so it uses types and constants from Earl Grey.
-        alert_handler_vlnv_prefix = "top_earlgrey_"
+        alert_handler_vlnv = "lowrisc:earlgrey_ip:alert_handler_pkg"
     else:
-        alert_handler_vlnv_prefix = ""
+        alert_handler_vlnv = ""
 
     return {
         "clks": clks,
@@ -621,9 +647,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
-        "alert_handler_vlnv_prefix": alert_handler_vlnv_prefix,
+        "alert_handler_vlnv": alert_handler_vlnv,
         "with_alert_handler": with_alert_handler,
-        "pwrmgr_vlnv_prefix": f"top_{topname}_",
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
@@ -654,8 +679,6 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
         "metadata_width": 12,
         "info_types": 3,
         "infos_per_bank": [10, 1, 2],
-        # TODO: Register VLNVs and look this up instead of hard-coding.
-        "pwrmgr_vlnv_prefix": f"top_{topname}_",
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     })
 
@@ -700,10 +723,11 @@ def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
         }
 
     # Get the AC Range Check instance
-    ac_ranges = lib.find_module(top['module'], 'ac_range_check')
+    module = lib.find_module(top['module'], 'ac_range_check')
+    uniquified_modules.add_module(module["template_type"], module["type"])
     params = {
-        "num_ranges": ac_ranges["ipgen_param"]["num_ranges"],
-        "module_instance_name": ac_ranges["type"]
+        "num_ranges": module["ipgen_param"]["num_ranges"],
+        "module_instance_name": module["type"]
     }
     params.update(racl_params)
     return params
@@ -719,13 +743,13 @@ def generate_ac_range_check(top: ConfigT, module: ConfigT,
 
 def _get_racl_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for racl_ctrl ipgen."""
-    racl_ctrl = lib.find_module(top["module"], "racl_ctrl")
+    module = lib.find_module(top["module"], "racl_ctrl")
     if len(top["racl"]["policies"]) == 1:
         # If there is only one set of policies, take the first one
         policies = list(top["racl"]["policies"].values())[0]
     else:
         # More than one policy, we need to find the matching set of policies
-        racl_group = racl_ctrl.get("racl_group", "Null")
+        racl_group = module.get("racl_group", "Null")
         policies = top["racl"]["policies"][racl_group]
 
     num_subscribing_ips = defaultdict(int)
@@ -735,8 +759,10 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
             racl_group = racl_mappings[if_name]["racl_group"]
             num_subscribing_ips[racl_group] += 1
 
+    uniquified_modules.add_module(module["template_type"], module["type"])
+
     return {
-        "module_instance_name": racl_ctrl["type"],
+        "module_instance_name": module["type"],
         "nr_role_bits": top["racl"]["nr_role_bits"],
         "nr_ctn_uid_bits": top["racl"]["nr_ctn_uid_bits"],
         "nr_policies": top["racl"]["nr_policies"],
@@ -1099,8 +1125,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
         insert_ip_attrs(instance, _get_flash_ctrl_params(topcfg))
     if "otp_ctrl" in ipgen_instances:
         instance = ipgen_instances["otp_ctrl"][0]
-        insert_ip_attrs(instance,
-                        _get_otp_ctrl_params(topcfg, cfg_path))
+        insert_ip_attrs(instance, _get_otp_ctrl_params(topcfg, cfg_path))
     if "ac_range_check" in ipgen_instances:
         instance = ipgen_instances["ac_range_check"][0]
         insert_ip_attrs(instance, _get_ac_range_check_params(topcfg))
@@ -1675,7 +1700,8 @@ def main():
                         topcfg=completecfg,
                         racl_config=racl_config)
         render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
-                        out_path / 'rtl' / 'autogen' / f'top_{topname}_racl_pkg.sv',
+                        out_path / 'rtl' / 'autogen' /
+                        f'top_{topname}_racl_pkg.sv',
                         gencmd=gencmd_sv,
                         topcfg=completecfg,
                         racl_config=racl_config)

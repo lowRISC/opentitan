@@ -2,16 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_otp_ctrl:1.0
+name: lowrisc:darjeeling_ip:otp_ctrl:1.0
 description: "OTP Controller"
 virtual:
-  - lowrisc:ip_interfaces:otp_ctrl
+  - lowrisc:virtual_ip:otp_ctrl
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:opentitan:top_darjeeling_otp_ctrl_top_specific_pkg
+      - lowrisc:darjeeling_ip:otp_ctrl_top_specific_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:ram_1p
@@ -25,7 +25,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
       - "fileset_partner  ? (partner:systems:ast_pkg)"

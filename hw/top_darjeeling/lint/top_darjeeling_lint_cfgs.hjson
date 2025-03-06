@@ -37,7 +37,7 @@
                   rel_path: "hw/ip/aes/lint/{tool}"
              },
              {    name: alert_handler
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_alert_handler
+                  fusesoc_core: lowrisc:darjeeling_ip:alert_handler
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/alert_handler/lint/{tool}"
                   overrides: [
@@ -64,7 +64,7 @@
                   ]
              },
              //{    name: clkmgr
-             //     fusesoc_core: lowrisc:opentitan:top_darjeeling_clkmgr
+             //     fusesoc_core: lowrisc:darjeeling_ip:clkmgr
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
              //     rel_path: "hw/top_darjeeling/ip_autogen/clkmgr/lint/{tool}",
              //     overrides: [
@@ -126,7 +126,7 @@
                   rel_path: "hw/ip/otbn/lint/{tool}"
              },
              {    name: otp_ctrl
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_otp_ctrl
+                  fusesoc_core: lowrisc:darjeeling_ip:otp_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/otp_ctrl/lint/{tool}"
                   overrides: [
@@ -137,7 +137,7 @@
                   ]
              },
              //{    name: pinmux
-             //     fusesoc_core: lowrisc:opentitan:top_darjeeling_pinmux
+             //     fusesoc_core: lowrisc:darjeeling_ip:pinmux
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
              //     rel_path: "hw/top_darjeeling/ip_autogen/pinmux/lint/{tool}"
              //     overrides: [
@@ -159,7 +159,7 @@
                   ]
              },
              {    name: pwrmgr
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_pwrmgr
+                  fusesoc_core: lowrisc:darjeeling_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/pwrmgr/lint/{tool}",
                   overrides: [
@@ -175,7 +175,7 @@
                   rel_path: "hw/ip/rom_ctrl/lint/{tool}"
              },
              {    name: rstmgr
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_rstmgr
+                  fusesoc_core: lowrisc:darjeeling_ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/rstmgr/lint/{tool}",
                   overrides: [
@@ -186,7 +186,7 @@
                   ]
              },
              {    name: gpio
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_gpio
+                  fusesoc_core: lowrisc:darjeeling_ip:gpio
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/gpio/lint/{tool}"
                   overrides: [
@@ -217,7 +217,7 @@
              //     rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
              //},
              {    name: top_darjeeling_rv_plic
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic
+                  fusesoc_core: lowrisc:darjeeling_ip:rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/rv_plic/lint/{tool}"
              },

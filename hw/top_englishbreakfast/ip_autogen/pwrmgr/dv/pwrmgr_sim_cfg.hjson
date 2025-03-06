@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_englishbreakfast_pwrmgr_sim:0.1
+  fusesoc_core: lowrisc:englishbreakfast_dv:pwrmgr_sim:0.1
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/pwrmgr_testplan.hjson"

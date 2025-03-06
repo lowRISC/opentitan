@@ -10,7 +10,7 @@ filesets:
       # otp_ctrl_prim_reg_top.sv should depend on generic items for now.
       # This may change and will require reworking the flow to generate
       # the otp prim.
-      - lowrisc:ip_interfaces:otp_ctrl_top_specific_pkg
+      - lowrisc:virtual_ip:otp_ctrl_top_specific_pkg
     files:
       - rtl/otp_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource

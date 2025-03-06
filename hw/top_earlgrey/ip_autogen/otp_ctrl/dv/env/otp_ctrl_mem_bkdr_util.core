@@ -2,10 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_earlgrey_otp_ctrl_mem_bkdr_util:0.1
+name: lowrisc:earlgrey_dv:otp_ctrl_mem_bkdr_util:0.1
 description: "OTP_CTRL mem_bkdr_util support package"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_mem_bkdr_util
 
 filesets:
   files_dv:
@@ -13,7 +11,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:crypto_dpi_present
       - lowrisc:dv:lc_ctrl_dv_utils
-      - lowrisc:opentitan:top_earlgrey_otp_ctrl_top_specific_pkg:1.0
+      - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg:1.0
     files:
       - otp_scrambler_pkg.sv
       - otp_ctrl_mem_bkdr_util_pkg.sv

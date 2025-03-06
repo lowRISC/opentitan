@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl_prim_reg_top:1.0")}
 description: "Generic register top for the FLASH wrapper"
 virtual:
-  - lowrisc:ip_interfaces:flash_ctrl_prim_reg_top
+  - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
 
 filesets:
   files_rtl:

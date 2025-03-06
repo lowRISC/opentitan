@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_ac_range_check_test:0.1
+name: lowrisc:darjeeling_dv:ac_range_check_test:0.1
 description: "AC_RANGE_CHECK DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:opentitan:top_darjeeling_ac_range_check_env
+      - lowrisc:darjeeling_dv:ac_range_check_env
     files:
       - ac_range_check_test_pkg.sv
       - ac_range_check_base_test.sv: {is_include_file: true}

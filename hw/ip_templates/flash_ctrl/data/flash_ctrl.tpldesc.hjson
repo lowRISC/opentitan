@@ -10,6 +10,12 @@
       default: ""
     }
     {
+      name: "uniquified_modules"
+      desc: "A dictionary mapping template_names to uniquified_names"
+      type: "object"
+      default: {"clkmgr": "clkmgr1"}
+    }
+    {
       name: "banks"
       desc: "Number of banks"
       type: "int"
@@ -86,12 +92,6 @@
       desc: "The total size in bytes"
       type: "int"
       default: "1048576"
-    }
-    {
-      name: "pwrmgr_vlnv_prefix"
-      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr_pkg used by this clkmgr"
-      type: "string"
-      default: ""
     }
     {
       name: "top_pkg_vlnv"
