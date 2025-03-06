@@ -23,9 +23,9 @@ load(
     "otp_partition",
 )
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMMUTABLE_HASH_UNENFORCED_MSG",
-    "IMM_ROM_EXT_VARIATIONS",
+    "IMM_SECTION_VARIATIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -50,7 +50,7 @@ filegroup(
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
         visibility = ["//visibility:private"],
     )
-    for name in IMM_ROM_EXT_VARIATIONS
+    for name in IMM_SECTION_VARIATIONS
 ]
 
 [
@@ -64,7 +64,7 @@ filegroup(
         ],
         visibility = ["//visibility:private"],
     )
-    for name in IMM_ROM_EXT_VARIATIONS
+    for name in IMM_SECTION_VARIATIONS
 ]
 
 _POSITIONS = {
@@ -142,7 +142,7 @@ _POSITIONS = {
         "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
         "otp_img": ":otp_img_with_{}_imm_romext_enabled".format(name),
     }
-    for name in IMM_ROM_EXT_VARIATIONS
+    for name in IMM_SECTION_VARIATIONS
 }
 
 [

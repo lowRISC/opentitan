@@ -12,8 +12,8 @@ load(
     "ROM_EXT_VERSION",
 )
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "IMM_ROM_EXT_VARIATIONS",
+    "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
+    "IMM_SECTION_VARIATIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -248,10 +248,10 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_a",
     ],
 )
 
@@ -275,10 +275,10 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_b",
     ],
 )
 
@@ -300,10 +300,10 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_virtual",
     ],
 )
 
@@ -328,10 +328,10 @@ opentitan_binary(
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner",
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
-            "//sw/device/silicon_creator/imm_rom_ext:{}_section_slot_virtual".format(imm_name),
+            "//sw/device/silicon_creator/rom_ext/imm_section:{}_section_slot_virtual".format(imm_name),
         ],
     )
-    for imm_name in IMM_ROM_EXT_VARIATIONS
+    for imm_name in IMM_SECTION_VARIATIONS
 ]
 
 # This binary is a test-only ROM_EXT that has ownership initialized in
@@ -349,10 +349,10 @@ opentitan_binary(
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner_update_mode_newversion",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_slot_a",
     ],
 )
 

@@ -140,7 +140,7 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  // Reclaim entries 0 ~ 7 from ROM and IMM_ROM_EXT.
+  // Reclaim entries 0 ~ 7 from ROM and ROM_EXT IMM_SECTION.
   for (int8_t i = 7; i >= 0; --i) {
     epmp_clear((uint8_t)i);
   }
