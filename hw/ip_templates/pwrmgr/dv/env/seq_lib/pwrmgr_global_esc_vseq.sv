@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Description:
 // This test asserts global escalation reset to dut
-// and check glocal escalation request is handled by
+// and check global escalation request is handled by
 // dut properly.
 class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_global_esc_vseq)

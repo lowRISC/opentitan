@@ -7,10 +7,9 @@
 interface clkmgr_if (
   input logic clk,
   input logic rst_n,
-  input logic clk_main,
+  input logic rst_aon_n,
   input logic rst_io_n,
-  input logic rst_main_n,
-  input logic rst_usb_n
+  input logic rst_main_n
 );
   import uvm_pkg::*;
   import clkmgr_env_pkg::*;
@@ -65,11 +64,9 @@ interface clkmgr_if (
   clk_enables_t clk_enables_csr;
   always_comb
     clk_enables_csr = '{
-    usb_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_usb_peri_en.q,
-    io_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_peri_en.q,
-    io_div2_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div2_peri_en.q,
-    io_div4_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div4_peri_en.q
-  };
+      io_div2_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div2_peri_en.q,
+      io_div4_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div4_peri_en.q
+    };
 
   clk_hints_t clk_hints_csr;
   always_comb
@@ -105,32 +102,6 @@ interface clkmgr_if (
     jitter_enable_csr = prim_mubi_pkg::mubi4_t'(`CLKMGR_HIER.reg2hw.jitter_enable.q);
   end
 
-  freq_measurement_t io_freq_measurement;
-  logic io_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_io_meas.u_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_io_meas.u_meas.valid_o) begin
-      io_freq_measurement = '{valid: `CLKMGR_HIER.u_io_meas.u_meas.valid_o,
-                              slow: `CLKMGR_HIER.u_io_meas.u_meas.slow_o,
-                              fast: `CLKMGR_HIER.u_io_meas.u_meas.fast_o};
-      `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrIo as %p", io_freq_measurement),
-                UVM_HIGH)
-    end
-  end
-  always_comb io_timeout_err = `CLKMGR_HIER.u_io_meas.timeout_err_o;
-
-  freq_measurement_t io_div2_freq_measurement;
-  logic io_div2_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_io_div2_meas.u_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_io_div2_meas.u_meas.valid_o) begin
-      io_div2_freq_measurement = '{valid: `CLKMGR_HIER.u_io_div2_meas.u_meas.valid_o,
-                                   slow: `CLKMGR_HIER.u_io_div2_meas.u_meas.slow_o,
-                                   fast: `CLKMGR_HIER.u_io_div2_meas.u_meas.fast_o};
-      `uvm_info("clkmgr_if", $sformatf(
-                "Sampled coverage for ClkMesrIoDiv2 as %p", io_div2_freq_measurement), UVM_HIGH)
-    end
-  end
-  always_comb io_div2_timeout_err = `CLKMGR_HIER.u_io_div2_meas.timeout_err_o;
-
   freq_measurement_t io_div4_freq_measurement;
   logic io_div4_timeout_err;
   always @(posedge `CLKMGR_HIER.u_io_div4_meas.u_meas.clk_i) begin
@@ -157,19 +128,6 @@ interface clkmgr_if (
   end
   always_comb main_timeout_err = `CLKMGR_HIER.u_main_meas.timeout_err_o;
 
-  freq_measurement_t usb_freq_measurement;
-  logic usb_timeout_err;
-  always @(posedge `CLKMGR_HIER.u_usb_meas.u_meas.clk_i) begin
-    if (`CLKMGR_HIER.u_usb_meas.u_meas.valid_o) begin
-      usb_freq_measurement = '{valid: `CLKMGR_HIER.u_usb_meas.u_meas.valid_o,
-                               slow: `CLKMGR_HIER.u_usb_meas.u_meas.slow_o,
-                               fast: `CLKMGR_HIER.u_usb_meas.u_meas.fast_o};
-      `uvm_info("clkmgr_if", $sformatf("Sampled coverage for ClkMesrUsb as %p", usb_freq_measurement
-                ), UVM_HIGH)
-    end
-  end
-  always_comb usb_timeout_err = `CLKMGR_HIER.u_usb_meas.timeout_err_o;
-
   function automatic void update_calib_rdy(prim_mubi_pkg::mubi4_t value);
     calib_rdy = value;
   endfunction
@@ -184,10 +142,6 @@ interface clkmgr_if (
 
   function automatic void update_main_ip_clk_en(bit value);
     pwr_i.main_ip_clk_en = value;
-  endfunction
-
-  function automatic void update_usb_ip_clk_en(bit value);
-    pwr_i.usb_ip_clk_en = value;
   endfunction
 
   function automatic void update_scanmode(prim_mubi_pkg::mubi4_t value);
@@ -221,11 +175,8 @@ interface clkmgr_if (
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
-      ClkMesrIo: `CLKMGR_HIER.u_io_meas.u_meas.cnt = '1;
-      ClkMesrIoDiv2: `CLKMGR_HIER.u_io_div2_meas.u_meas.cnt = '1;
       ClkMesrIoDiv4: `CLKMGR_HIER.u_io_div4_meas.u_meas.cnt = '1;
       ClkMesrMain: `CLKMGR_HIER.u_main_meas.u_meas.cnt = '1;
-      ClkMesrUsb: `CLKMGR_HIER.u_usb_meas.u_meas.cnt = '1;
       default: ;
     endcase
   endfunction
@@ -240,6 +191,7 @@ interface clkmgr_if (
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_debug_en(lc_debug_en);
     update_scanmode(scanmode);
+    update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
   endtask
 
   // Pipeline signals that go through synchronizers with the target clock domain's clock.
@@ -251,72 +203,40 @@ interface clkmgr_if (
 
   // Pipelines and clocking blocks for peripheral clocks.
 
-  logic [PIPELINE_DEPTH-1:0] clk_enable_div4_ffs;
-  logic [PIPELINE_DEPTH-1:0] ip_clk_en_div4_ffs;
+  logic [PIPELINE_DEPTH-1:0] clk_enable_io_div4_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_div4_ffs;
   always @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
-      clk_enable_div4_ffs <= {
-        clk_enable_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div4_peri_en
+      clk_enable_io_div4_ffs <= {
+        clk_enable_io_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div4_peri_en
       };
-      ip_clk_en_div4_ffs <= {ip_clk_en_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_div4_ffs <= {ip_clk_en_io_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
-      clk_enable_div4_ffs <= '0;
-      ip_clk_en_div4_ffs  <= '0;
+      clk_enable_io_div4_ffs <= '0;
+      ip_clk_en_io_div4_ffs  <= '0;
     end
   end
-  clocking peri_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
-    input ip_clk_en = ip_clk_en_div4_ffs[PIPELINE_DEPTH-1];
-    input clk_enable = clk_enable_div4_ffs[PIPELINE_DEPTH-1];
+  clocking peri_io_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
+    input ip_clk_en = ip_clk_en_io_div4_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_io_div4_ffs[PIPELINE_DEPTH-1];
   endclocking
 
-  logic [PIPELINE_DEPTH-1:0] clk_enable_div2_ffs;
-  logic [PIPELINE_DEPTH-1:0] ip_clk_en_div2_ffs;
+  logic [PIPELINE_DEPTH-1:0] clk_enable_io_div2_ffs;
+  logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_div2_ffs;
   always @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n) begin
     if (rst_io_n) begin
-      clk_enable_div2_ffs <= {
-        clk_enable_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
+      clk_enable_io_div2_ffs <= {
+        clk_enable_io_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
       };
-      ip_clk_en_div2_ffs <= {ip_clk_en_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_div2_ffs <= {ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
     end else begin
-      clk_enable_div2_ffs <= '0;
-      ip_clk_en_div2_ffs  <= '0;
+      clk_enable_io_div2_ffs <= '0;
+      ip_clk_en_io_div2_ffs  <= '0;
     end
   end
-  clocking peri_div2_cb @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n);
-    input ip_clk_en = ip_clk_en_div2_ffs[PIPELINE_DEPTH-1];
-    input clk_enable = clk_enable_div2_ffs[PIPELINE_DEPTH-1];
-  endclocking
-
-  logic [PIPELINE_DEPTH-1:0] clk_enable_io_ffs;
-  logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_ffs;
-  always @(posedge clocks_o.clk_io_powerup or negedge rst_io_n) begin
-    if (rst_io_n) begin
-      clk_enable_io_ffs <= {clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_peri_en};
-      ip_clk_en_io_ffs  <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
-    end else begin
-      clk_enable_io_ffs <= '0;
-      ip_clk_en_io_ffs  <= '0;
-    end
-  end
-  clocking peri_io_cb @(posedge clocks_o.clk_io_powerup or negedge rst_io_n);
-    input ip_clk_en = ip_clk_en_io_ffs[PIPELINE_DEPTH-1];
-    input clk_enable = clk_enable_io_ffs[PIPELINE_DEPTH-1];
-  endclocking
-
-  logic [PIPELINE_DEPTH-1:0] clk_enable_usb_ffs;
-  logic [PIPELINE_DEPTH-1:0] ip_clk_en_usb_ffs;
-  always @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n) begin
-    if (rst_usb_n) begin
-      clk_enable_usb_ffs <= {clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.usb_peri_en};
-      ip_clk_en_usb_ffs  <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.usb_ip_clk_en};
-    end else begin
-      clk_enable_usb_ffs <= '0;
-      ip_clk_en_usb_ffs  <= '0;
-    end
-  end
-  clocking peri_usb_cb @(posedge clocks_o.clk_usb_powerup or negedge rst_usb_n);
-    input ip_clk_en = ip_clk_en_usb_ffs[PIPELINE_DEPTH-1];
-    input clk_enable = clk_enable_usb_ffs[PIPELINE_DEPTH-1];
+  clocking peri_io_div2_cb @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n);
+    input ip_clk_en = ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-1];
+    input clk_enable = clk_enable_io_div2_ffs[PIPELINE_DEPTH-1];
   endclocking
 
   // Pipelining and clocking block for transactional unit clocks.

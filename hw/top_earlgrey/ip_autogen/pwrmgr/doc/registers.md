@@ -175,7 +175,7 @@ IO clock enable during low power state
 
 
 ### CONTROL . CORE_CLK_EN
-core clock enable during low power state
+Core clock enable during low power state
 
 | Value   | Name     | Description                                |
 |:--------|:---------|:-------------------------------------------|

@@ -27,8 +27,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   //
   // The exp_alert cip feature requires a single alert at a time, so we set at most one of the
   // clocks to fail measurement.
-  rand int clk_tested;
-  constraint clk_tested_c {clk_tested inside {[ClkMesrIo : ClkMesrUsb]};}
+  rand clk_mesr_e clk_tested;
+  constraint clk_tested_c {clk_tested != ClkMesrSize;}
 
   // If cause_saturation is active, force the initial measurement count of clk_tested to a high
   // value so the counter will saturate.
@@ -67,7 +67,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   constraint all_clk_en_c {
     io_ip_clk_en == 1;
     main_ip_clk_en == 1;
-    usb_ip_clk_en == 1;
   }
 
   function void post_randomize();
@@ -81,7 +80,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     forever begin
       @cfg.aon_clk_rst_vif.cbn;
       if (saturate) begin
-        control_meas_saturation_assert(clk_tested, 0);
         cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
       end
     end
@@ -143,7 +141,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
-      logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
+      logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Update calib_rdy input: if calibration is not ready the measurements
@@ -154,12 +152,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
                 calib_rdy,
                 ral.measure_ctrl_regwen.get()
                 ), UVM_MEDIUM)
-      `uvm_info(`gfn, "New round", UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("New round targetting %s", clk_tested), UVM_MEDIUM)
       // Allow calib_rdy to generate side-effects.
       cfg.clk_rst_vif.wait_clks(3);
       if (calib_rdy == MuBi4False) calibration_lost_checks();
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
-      if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
+      if (cause_saturation) begin
+        `uvm_info(`gfn, $sformatf(
+                  "Will cause saturation for %s, and disabling measurement assertions",
+                  clk_tested.name()), UVM_MEDIUM)
+        control_meas_saturation_assert(clk_tested, 0);
+      end
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         int min_threshold;
@@ -193,7 +196,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             wait_before_read_recov_err_code(expect_alert);
           join_any
           disable fork;
-          control_meas_saturation_assert(clk_tested, 1);
         end
       join
 
@@ -230,6 +232,9 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // by the alert agents so expected alerts are properly wound down.
       cfg.aon_clk_rst_vif.wait_clks(CyclesBetweenMeasurements);
       // And clear errors.
+      if (cause_saturation) begin
+        control_meas_saturation_assert(clk_tested, 1);
+      end
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
