@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:otp_ctrl_top_specific_pkg:1.0")}
 description: "OTP Controller Top Specific Packages"
 virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_top_specific_pkg
+  - lowrisc:virtual_ip:otp_ctrl_top_specific_pkg
 
 filesets:
   files_rtl:

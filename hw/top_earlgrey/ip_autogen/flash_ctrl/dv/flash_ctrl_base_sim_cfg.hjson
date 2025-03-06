@@ -12,7 +12,7 @@
   tb: tb
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_earlgrey_flash_ctrl_sim:0.1
+  fusesoc_core: lowrisc:earlgrey_dv:flash_ctrl_sim:0.1
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/flash_ctrl_testplan.hjson"

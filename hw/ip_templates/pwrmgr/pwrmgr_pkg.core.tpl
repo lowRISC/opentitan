@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
 description: "Power manager package"
 virtual:
-  - lowrisc:ip_interfaces:pwrmgr_pkg
+  - lowrisc:virtual_ip:pwrmgr_pkg
 
 filesets:
   files_rtl:

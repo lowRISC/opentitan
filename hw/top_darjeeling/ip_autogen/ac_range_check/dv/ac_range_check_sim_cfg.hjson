@@ -15,7 +15,7 @@
   tool: xcelium
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_darjeeling_ac_range_check_sim:0.1
+  fusesoc_core: lowrisc:darjeeling_dv:ac_range_check_sim:0.1
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/ac_range_check_testplan.hjson"

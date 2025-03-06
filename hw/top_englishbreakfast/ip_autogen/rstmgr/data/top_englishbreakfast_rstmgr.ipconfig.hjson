@@ -450,10 +450,13 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    alert_handler_vlnv_prefix: top_earlgrey_
+    alert_handler_vlnv: lowrisc:earlgrey_ip:alert_handler_pkg
     with_alert_handler: false
-    pwrmgr_vlnv_prefix: top_englishbreakfast_
     top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     topname: englishbreakfast
+    uniquified_modules:
+    {
+      rv_plic: rv_plic
+    }
   }
 }

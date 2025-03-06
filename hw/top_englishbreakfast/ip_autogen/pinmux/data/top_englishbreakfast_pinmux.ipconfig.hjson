@@ -18,5 +18,9 @@
     top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     scan_role_pkg_vlnv: lowrisc:systems:top_englishbreakfast_scan_role_pkg
     topname: englishbreakfast
+    uniquified_modules:
+    {
+      rv_plic: rv_plic
+    }
   }
 }

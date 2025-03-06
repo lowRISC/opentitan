@@ -7,5 +7,10 @@
   {
     module_instance_name: gpio
     topname: earlgrey
+    uniquified_modules:
+    {
+      alert_handler: alert_handler
+      rv_plic: rv_plic
+    }
   }
 }

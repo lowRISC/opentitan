@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg:0.1")}
 description: "Top specific flash package"
 virtual:
-  - lowrisc:ip_interfaces:flash_ctrl_pkg
+  - lowrisc:virtual_ip:flash_ctrl_pkg
 
 filesets:
   files_rtl:
@@ -13,7 +13,7 @@ filesets:
       - ${top_pkg_vlnv}
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
-      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:tlul:headers
