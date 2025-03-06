@@ -960,8 +960,7 @@ testing::Values(
     std::make_tuple(kOwnershipKeyAlgSq20Pure, kErrorOwnershipInvalidAlgorithm),
     std::make_tuple(kOwnershipKeyAlgSq20Prehash, kErrorOwnershipInvalidAlgorithm),
     std::make_tuple(kOwnershipKeyAlgHybridSq20Pure, kErrorOwnershipInvalidAlgorithm),
-    std::make_tuple(kOwnershipKeyAlgHybridSq20Prehash, kErrorOwnershipInvalidAlgorithm),
-    std::make_tuple(kOwnershipKeyAlgRsa, kErrorOwnershipInvalidAlgorithm)
+    std::make_tuple(kOwnershipKeyAlgHybridSq20Prehash, kErrorOwnershipInvalidAlgorithm)
 ));
 // clang-format on
 

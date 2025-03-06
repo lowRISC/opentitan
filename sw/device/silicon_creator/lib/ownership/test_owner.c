@@ -37,7 +37,7 @@
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                                    owner_config_t *config,
                                    owner_application_keyring_t *keyring) {
-  owner_key_t owner = (owner_key_t){
+  owner_keydata_t owner = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNER_ECDSA_P256};
@@ -73,11 +73,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   memset(owner_page[0].device_id, kLockConstraintNone,
          sizeof(owner_page[0].device_id));
   owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = (owner_key_t){
+  owner_page[0].activate_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = ACTIVATE_ECDSA_P256};
-  owner_page[0].unlock_key = (owner_key_t){
+  owner_page[0].unlock_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = UNLOCK_ECDSA_P256};
