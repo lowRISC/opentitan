@@ -50,7 +50,7 @@ static const char kGettysburgSignature[] =
     "365b08b78c57e3c3c11960fbc4a53fb63f61aecba3ddbda00059aebd08ad8f2c";
 // clang-format on
 
-static const owner_key_t kNoOwnerRecoveryKey = NO_OWNER_RECOVERY_ECDSA_P256;
+static const owner_keydata_t kNoOwnerRecoveryKey = NO_OWNER_RECOVERY_ECDSA_P256;
 
 void __assert_func(const char *file, int line, const char *func,
                    const char *expr) {
