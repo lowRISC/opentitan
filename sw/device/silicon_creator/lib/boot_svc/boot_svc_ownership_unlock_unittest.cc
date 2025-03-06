@@ -23,7 +23,7 @@ TEST_F(BootSvcOwnershipUnlockTest, ReqInit) {
   boot_svc_ownership_unlock_req_t msg{};
   constexpr uint32_t unlock_mode = kBootSvcUnlockAny;
   constexpr nonce_t nonce = {0x55555555, 0xAAAAAAAA};
-  constexpr owner_key_t next_owner_key = {
+  constexpr owner_keydata_t next_owner_key = {
       {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}};
   constexpr owner_signature_t signature = {{100, 101, 102, 103, 104, 105, 106,
                                             107, 108, 109, 110, 111, 112, 113,

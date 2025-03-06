@@ -61,7 +61,7 @@ typedef struct boot_svc_ownership_unlock_req {
   /**
    * The public key of the next owner (for endorsed mode).
    */
-  owner_key_t next_owner_key;
+  owner_keydata_t next_owner_key;
   /**
    * Signature over [unlock_mode..next_owner_key]
    */
@@ -109,7 +109,7 @@ OT_ASSERT_SIZE(boot_svc_ownership_unlock_res_t, 48);
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode, nonce_t nonce,
-                                        const owner_key_t *next_owner_key,
+                                        const owner_keydata_t *next_owner_key,
                                         const owner_signature_t *signature,
                                         boot_svc_ownership_unlock_req_t *msg);
 
