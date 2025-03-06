@@ -31,6 +31,7 @@ cc_library(
     name = "aes_gcm",
     srcs = ["aes_gcm.c"],
     hdrs = ["//sw/device/lib/crypto/include:aes_gcm.h"],
+    copts = ["-fno-strict-aliasing"],
     deps = [
         ":integrity",
         ":keyblob",

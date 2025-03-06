@@ -26,8 +26,7 @@ static_assert(sizeof(otcrypto_aes_gcm_context_t) >= sizeof(aes_gcm_context_t),
               "least as large as the context for the "
               "underlying implementation.");
 static_assert(alignof(aes_gcm_context_t) >= alignof(uint32_t),
-              "Internal AES-GCM context object must be word-aligned for use "
-              "with `hardened_memcpy`.");
+              "Internal AES-GCM context object must be word-aligned.");
 static_assert(sizeof(otcrypto_key_config_t) % sizeof(uint32_t) == 0,
               "Key configuration size should be a multiple of 32 bits");
 
@@ -35,7 +34,7 @@ static_assert(sizeof(otcrypto_key_config_t) % sizeof(uint32_t) == 0,
 // calculate the number of words.
 static_assert(sizeof(aes_gcm_context_t) % sizeof(uint32_t) == 0,
               "Internal AES-GCM context object must be a multiple of the word "
-              "size for use with `hardened_memcpy`.");
+              "size.");
 enum {
   kAesGcmContextNumWords = sizeof(aes_gcm_context_t) / sizeof(uint32_t),
 };
@@ -320,8 +319,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
     return OTCRYPTO_OK;
   }
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // NOTE: this cast technically violates C aliasing rules; use with
+  // -fno-strict-aliasing.
   aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+
+  // Restore the AES-GCM context object and load the key if needed.
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // Call the internal update operation.
@@ -345,8 +347,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     return OTCRYPTO_OK;
   }
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // NOTE: this cast technically violates C aliasing rules; use with
+  // -fno-strict-aliasing.
   aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+
+  // Restore the AES-GCM context object and load the key if needed.
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // The output buffer must be long enough to hold all full blocks that will
@@ -386,8 +391,11 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // NOTE: this cast technically violates C aliasing rules; use with
+  // -fno-strict-aliasing.
   aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+
+  // Restore the AES-GCM context object and load the key if needed.
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // If the partial block is nonempty, the output must be at least as long as
@@ -424,8 +432,11 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
-  // Restore the AES-GCM context object and load the key if needed.
+  // NOTE: this cast technically violates C aliasing rules; use with
+  // -fno-strict-aliasing.
   aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+
+  // Restore the AES-GCM context object and load the key if needed.
   HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // If the partial block is nonempty, the output must be at least as long as
