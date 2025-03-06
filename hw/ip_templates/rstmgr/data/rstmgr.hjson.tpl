@@ -235,19 +235,21 @@
       act:     "rcv",
       package: "alert_handler_pkg",
       desc:    '''
-        Alert handler crash dump information.
+        Crash dump info for alert handler.
       '''
     },
 
+% for i in range(num_cores):
     { struct:  "cpu_crash_dump",
       type:    "uni",
-      name:    "cpu_dump",
+      name:    "cpu_dump_${i}",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
-        Main processing element crash dump information.
+        Crash dump info for CPU ${i}.
       '''
     },
+% endfor
 
     { struct:  "mubi4",
       type:    "uni",
