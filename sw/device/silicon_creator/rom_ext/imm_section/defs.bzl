@@ -10,10 +10,10 @@ DEFAULT_EXEC_ENV = [
     "//hw/top_earlgrey:silicon_creator",
 ]
 
-IMM_ROM_EXT_VARIATIONS = [
+IMM_SECTION_VARIATIONS = [
     "main",
 ]
 
 # CAUTION: The message below should match the message defined in:
-#   //sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.c
+#   //sw/device/silicon_creator/rom_ext/imm_section/imm_section.c
 IMMUTABLE_HASH_UNENFORCED_MSG = "hash unenforced"

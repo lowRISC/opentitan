@@ -5,10 +5,10 @@
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//sw/device/silicon_creator/imm_rom_ext:defs.bzl", "DEFAULT_EXEC_ENV")
+load("//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl", "DEFAULT_EXEC_ENV")
 load(
-    "//sw/device/silicon_creator/imm_rom_ext:utils.bzl",
-    "create_imm_rom_ext_targets",
+    "//sw/device/silicon_creator/rom_ext/imm_section:utils.bzl",
+    "create_imm_section_targets",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -16,13 +16,13 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "main_lib",
     srcs = [
-        "imm_rom_ext.c",
-        "imm_rom_ext_start.S",
+        "imm_section.c",
+        "imm_section_start.S",
     ],
-    hdrs = ["imm_rom_ext.h"],
+    hdrs = ["imm_section.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":imm_rom_ext_epmp",
+        ":imm_section_epmp",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/arch:device",
@@ -46,9 +46,9 @@ cc_library(
 )
 
 cc_library(
-    name = "imm_rom_ext_epmp",
-    srcs = ["imm_rom_ext_epmp.c"],
-    hdrs = ["imm_rom_ext_epmp.h"],
+    name = "imm_section_epmp",
+    srcs = ["imm_section_epmp.c"],
+    hdrs = ["imm_section_epmp.h"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -63,7 +63,7 @@ cc_library(
 
 ld_library(
     name = "ld_common",
-    includes = ["imm_rom_ext_common.ld"],
+    includes = ["imm_section_common.ld"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
@@ -74,7 +74,7 @@ ld_library(
 
 ld_library(
     name = "ld_slot_a",
-    script = "imm_rom_ext_slot_a.ld",
+    script = "imm_section_slot_a.ld",
     deps = [
         ":ld_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
@@ -83,7 +83,7 @@ ld_library(
 
 ld_library(
     name = "ld_slot_b",
-    script = "imm_rom_ext_slot_b.ld",
+    script = "imm_section_slot_b.ld",
     deps = [
         ":ld_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
@@ -92,7 +92,7 @@ ld_library(
 
 ld_library(
     name = "ld_slot_virtual",
-    script = "imm_rom_ext_slot_virtual.ld",
+    script = "imm_section_slot_virtual.ld",
     deps = [
         ":ld_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
@@ -114,7 +114,7 @@ opentitan_binary(
     ],
 )
 
-create_imm_rom_ext_targets(
+create_imm_section_targets(
     name = "main_section_slot_a",
     src = ":main_binaries_slot_a",
 )
@@ -134,7 +134,7 @@ opentitan_binary(
     ],
 )
 
-create_imm_rom_ext_targets(
+create_imm_section_targets(
     name = "main_section_slot_b",
     src = ":main_binaries_slot_b",
 )
@@ -154,7 +154,7 @@ opentitan_binary(
     ],
 )
 
-create_imm_rom_ext_targets(
+create_imm_section_targets(
     name = "main_section_slot_virtual",
     src = ":main_binaries_slot_virtual",
 )

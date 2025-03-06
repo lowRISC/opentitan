@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_import(
-    name = "nop_imm_rom_ext",
+    name = "nop_imm_section",
     objects = ["nop.o"],
     alwayslink = 1,
 )
