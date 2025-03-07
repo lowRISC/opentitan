@@ -20,6 +20,8 @@ package ac_range_check_env_pkg;
 
   // Imports from packages
   import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_logic_test_true_strict;
   import prim_mubi_pkg::mubi8_t;
@@ -34,6 +36,13 @@ package ac_range_check_env_pkg;
   typedef enum int {
     DenyCntReached = 0
   } ac_range_check_intr_e;
+
+  typedef enum bit [1:0] {
+    AChanRead  = 0,
+    AChanWrite = 1,
+    DChanRead  = 2,
+    DChanWrite = 3
+  } tl_phase_e;
 
   typedef struct packed {
     bit log_denied_access;
@@ -59,12 +68,10 @@ package ac_range_check_env_pkg;
     bit [DataWidth-1:0] data;
   } tl_main_vars_t;
 
-  typedef enum bit [1:0] {
-    AChanRead  = 0,
-    AChanWrite = 1,
-    DChanRead  = 2,
-    DChanWrite = 3
-  } tl_phase_e;
+  typedef struct {
+    tl_seq_item item;
+    int         cnt;
+  } tl_filt_t;
 
   typedef enum bit {
     AccessDenied  = 0,
