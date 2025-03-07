@@ -20,8 +20,8 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  keyswap_set_bigendian = 0,
-  keyswap_set_littleendian = 1,
+  kKeyswapSetBigendian = 0,
+  kKeyswapSetLittleendian = 1,
 };
 
 static const dif_hmac_transaction_t kHmacconfig_littled_littlem = {
@@ -174,8 +174,6 @@ static void run_test_hmacmode_endianness(
       bitfield_bit32_write(cfg_reg, HMAC_CFG_KEY_SWAP_BIT, KEY_SWAP_BIT_VAL);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg_reg);
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(hmac, key, config));
-  //  uint32_t cfg_reg_read  = mmio_region_read32(hmac->base_addr,
-  //  HMAC_CFG_REG_OFFSET);
   CHECK_STATUS_OK(hmac_testutils_push_message(hmac, data, len));
   CHECK_STATUS_OK(hmac_testutils_fifo_empty_polled(hmac));
   CHECK_STATUS_OK(hmac_testutils_check_message_length(hmac, len * 8));
@@ -227,21 +225,21 @@ bool test_main(void) {
       "message with key_swap set to 0...");
   run_test_hmacmode_endianness(
       &hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey[0]),
-      kDifHmacEndiannessBig, kHmacconfig_littled_littlem, &kExpectedHmacDigest);
+      kKeyswapSetBigendian, kHmacconfig_littled_littlem, &kExpectedHmacDigest);
 
   LOG_INFO(
       "Running test HMAC pass little-endian digest and little-endian "
       "message with key_swap set to 1 and with key swapped..");
   run_test_hmacmode_endianness(
       &hmac, kData, sizeof(kData), (uint8_t *)(&kHmacKey_swapped[0]),
-      kDifHmacEndiannessLittle, kHmacconfig_littled_littlem,
+      kKeyswapSetLittleendian, kHmacconfig_littled_littlem,
       &kExpectedHmacDigest);
 
   LOG_INFO(
       "Running test HMAC pass big-endian digest and little-endian "
       "message with key_swap set to 0...");
   run_test_hmacmode_endianness(&hmac, kData, sizeof(kData),
-                               (uint8_t *)(&kHmacKey[0]), kDifHmacEndiannessBig,
+                               (uint8_t *)(&kHmacKey[0]), kKeyswapSetBigendian,
                                kHmacconfig_bigd_littlem,
                                &kExpectedHmacDigest_bigendian);
   return true;
