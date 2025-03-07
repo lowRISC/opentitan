@@ -238,6 +238,11 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
     ipgen_render(module["template_type"], topname, params, out_path)
 
 
+def get_ipgen_params(module: ConfigT) -> ParamsT:
+    """Return ipgen params, if defined for this module"""
+    return deepcopy(module.get("ipgen_param", {}))
+
+
 def _get_alert_handler_params(top: ConfigT) -> ParamsT:
     """Returns parameters for alert_hander ipgen from top config."""
     topname = top["name"]
@@ -291,10 +296,11 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
                         lpg_idx_format.format(lpg_prev_offset +
                                               int(alert["lpg_idx"])))
             lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
-    module = lib.find_module(top["module"], "alert_handler")
+    alert_handler = lib.find_module(top["module"], "alert_handler")
 
-    return {
-        "module_instance_name": module["type"],
+    params = get_ipgen_params(alert_handler)
+    params.update({
+        "module_instance_name": alert_handler["type"],
         "n_alerts": n_alerts,
         "esc_cnt_dw": esc_cnt_dw,
         "accu_cnt_dw": accu_cnt_dw,
@@ -303,7 +309,8 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         "n_lpg": n_lpgs,
         "lpg_map": lpg_map,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
-    }
+    })
+    return params
 
 
 def generate_alert_handler(top: ConfigT, module: ConfigT,
@@ -338,7 +345,7 @@ def generate_outgoing_alerts(top: ConfigT, out_path: Path) -> None:
 def _get_rv_plic_params(top: ConfigT) -> ParamsT:
     """Gets parameters for plic ipgen from top config."""
     # Get the PLIC instance
-    module = lib.find_module(top["module"], "rv_plic")
+    plic = lib.find_module(top["module"], "rv_plic")
 
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
@@ -346,12 +353,15 @@ def _get_rv_plic_params(top: ConfigT) -> ParamsT:
     num_srcs = sum(
         [int(x["width"]) if "width" in x else 1 for x in top["interrupt"]]) + 1
     num_cores = int(top["num_cores"], 0) if "num_cores" in top else 1
-    return {
-        "module_instance_name": module["type"],
+
+    params = get_ipgen_params(plic)
+    params.update({
+        "module_instance_name": plic["type"],
         "src": num_srcs,
         "target": num_cores,
         "prio": 3,
-    }
+    })
+    return params
 
 
 def generate_plic(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -436,7 +446,10 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     log.info("n_dio_periph_out: %d" % n_dio_periph_out)
     log.info("n_dio_pads:       %d" % n_dio_pads)
 
-    return {
+    # Get the pinmux instance
+    pinmux_module = lib.find_module(top["module"], "pinmux")
+    params = get_ipgen_params(pinmux_module)
+    params.update({
         "n_wkup_detect": num_wkup_detect,
         "wkup_cnt_width": wkup_cnt_width,
         "n_mio_pads": n_mio_pads,
@@ -449,7 +462,8 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
         "scan_role_pkg_vlnv": f"lowrisc:systems:top_{topname}_scan_role_pkg",
-    }
+    })
+    return params
 
 
 def generate_pinmux(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -482,7 +496,9 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
                                          'alert_handler') is not None
 
     topname = top["name"]
-    return {
+    clkmgr = lib.find_module(top["module"], "clkmgr")
+    params = get_ipgen_params(clkmgr)
+    params.update({
         "src_clks":
         OrderedDict({name: vars(obj)
                      for name, obj in clocks.srcs.items()}),
@@ -509,7 +525,8 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
         f"top_{topname}_",
         "top_pkg_vlnv":
         f"lowrisc:constants:top_{topname}_top_pkg",
-    }
+    })
+    return params
 
 
 # generate clkmgr with ipgen
@@ -550,7 +567,9 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     if top['power'].get('halt_ibex_via_rom_ctrl', False):
         n_rom_ctrl += 1
 
-    return {
+    pwrmgr = lib.find_module(top["module"], "pwrmgr")
+    params = get_ipgen_params(pwrmgr)
+    params.update({
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
         "NumRstReqs": n_rstreqs,
@@ -558,7 +577,8 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
-    }
+    })
+    return params
 
 
 def generate_pwrmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -611,7 +631,9 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     else:
         alert_handler_vlnv_prefix = ""
 
-    return {
+    rstmgr = lib.find_module(top["module"], "rstmgr")
+    params = get_ipgen_params(rstmgr)
+    params.update({
         "clks": clks,
         "reqs": top["reset_requests"],
         "power_domains": top["power"]["domains"],
@@ -625,7 +647,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "with_alert_handler": with_alert_handler,
         "pwrmgr_vlnv_prefix": f"top_{topname}_",
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
-    }
+    })
+    return params
 
 
 # generate rstmgr with ipgen
@@ -648,7 +671,8 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
             "In _get_flash_ctrl_params for design with no flash_ctrl")
 
     topname = top["name"]
-    params = vars(flash_mems[0]["memory"]["mem"]["config"])
+    params = get_ipgen_params(flash_mems[0])
+    params.update(vars(flash_mems[0]["memory"]["mem"]["config"]))
     # Additional parameters not provided in the top config.
     params.update({
         "metadata_width": 12,
@@ -675,7 +699,12 @@ def _get_otp_ctrl_params(top: ConfigT,
                          seed: int = None) -> ParamsT:
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
-    return {"otp_mmap": OtpMemMap.from_mmap_path(otp_mmap_path, seed).config}
+    otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
+    params = get_ipgen_params(otp_ctrl)
+    params.update({
+        "otp_mmap": OtpMemMap.from_mmap_path(otp_mmap_path, seed).config
+    })
+    return params
 
 
 def generate_otp_ctrl(top: ConfigT,
@@ -701,11 +730,11 @@ def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
 
     # Get the AC Range Check instance
     ac_ranges = lib.find_module(top['module'], 'ac_range_check')
-    params = {
-        "num_ranges": ac_ranges["ipgen_param"]["num_ranges"],
-        "module_instance_name": ac_ranges["type"]
-    }
+    params = get_ipgen_params(ac_ranges)
     params.update(racl_params)
+    params.update({
+        "module_instance_name": ac_ranges["type"]
+    })
     return params
 
 
@@ -735,14 +764,16 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
             racl_group = racl_mappings[if_name]["racl_group"]
             num_subscribing_ips[racl_group] += 1
 
-    return {
+    params = get_ipgen_params(racl_ctrl)
+    params.update({
         "module_instance_name": racl_ctrl["type"],
         "nr_role_bits": top["racl"]["nr_role_bits"],
         "nr_ctn_uid_bits": top["racl"]["nr_ctn_uid_bits"],
         "nr_policies": len(policies),
         'nr_subscribing_ips': num_subscribing_ips[racl_group],
         "policies": policies
-    }
+    })
+    return params
 
 
 # Generate RACL collateral
@@ -760,9 +791,10 @@ def _get_gpio_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for GPIO ipgen."""
 
     gpio = lib.find_module(top["module"], "gpio")
-    params = {
+    params = get_ipgen_params(gpio)
+    params.update({
         "module_instance_name": gpio["type"]
-    }
+    })
     return params
 
 
