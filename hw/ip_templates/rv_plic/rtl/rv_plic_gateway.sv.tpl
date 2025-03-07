@@ -21,7 +21,11 @@ module ${module_instance_name}_gateway #(
 
   logic [N_SOURCE-1:0] ia;    // Interrupt Active
 
-  logic [N_SOURCE-1:0] set;   // Set: (le_i) ? src_i & ~src_q : src_i ;
+  // The set[i] signal says that interrupt i is being requested. If the interrupt is level triggered
+  // (because le_i[i]=0) then this just asks that src_i[i] is true. If the interrupt is edge
+  // triggered (because le_i[i]=1) then we also ask that src_i[i] was false on the previous cycle
+  // (which is registered with src_q).
+  logic [N_SOURCE-1:0] set;
   logic [N_SOURCE-1:0] src_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -29,11 +33,7 @@ module ${module_instance_name}_gateway #(
     else         src_q <= src_i;
   end
 
-  always_comb begin
-    for (int i = 0 ; i < N_SOURCE; i++) begin
-      set[i] = (le_i[i]) ? src_i[i] & ~src_q[i] : src_i[i] ;
-    end
-  end
+  assign set = src_i & ~(src_q & le_i);
 
   // Interrupt pending is set by source (depends on le_i), cleared by claim_i.
   // Until interrupt is claimed, set doesn't affect ip_o.
