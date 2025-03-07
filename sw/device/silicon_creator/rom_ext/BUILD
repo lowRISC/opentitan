@@ -119,30 +119,6 @@ ld_library(
     ],
 )
 
-cc_library(
-    name = "sigverify_keys",
-    srcs = ["sigverify_keys.c"],
-    hdrs = ["sigverify_keys.h"],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
-)
-
-cc_test(
-    name = "sigverify_keys_unittest",
-    srcs = ["sigverify_keys_unittest.cc"],
-    deps = [
-        ":sigverify_keys",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
-    ],
-)
-
 [
     cc_library(
         name = "rom_ext_{}".format(variation_name),
