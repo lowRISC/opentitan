@@ -226,6 +226,8 @@ task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
     `uvm_info(`gfn, $sformatf("Received tl_filt_a_chan item #%0d:\n%0s",
                               act_filt_tr_cnt, tl_filt.item.sprint()), UVM_HIGH)
     act_tl_filt_q.push_back(tl_filt);
+    `uvm_info(`gfn, $sformatf({"Actual filtered item #%0d on tl_filt_a_chan has been ",
+              "pushed for comparison"}, act_filt_tr_cnt), UVM_LOW)
 
     // Spawn a thread and directly wait for the next item
     fork
@@ -268,6 +270,8 @@ task ac_range_check_scoreboard::compare_tl_a_chan();
               act_tl_filt.cnt), UVM_LOW)
     matching_cnt++;
   end else begin
+    `uvm_info(`gfn, $sformatf("Trying to compare ACTUAL item #%0d vs EXPECTED item #%0d",
+              act_tl_filt.cnt, exp_tl_filt.cnt), UVM_LOW)
     `uvm_error(`gfn, $sformatf({"Actual and expected tl_filt_a_chan items are not matching:",
                 "\nACTUAL: \n%0s \nEXPECTED: \n%0s"},
                 act_tl_filt.item.sprint(), exp_tl_filt.item.sprint()))

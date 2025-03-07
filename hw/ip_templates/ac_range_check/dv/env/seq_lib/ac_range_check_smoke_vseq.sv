@@ -28,7 +28,7 @@ constraint ac_range_check_smoke_vseq::tmp_c {
     dut_cfg.range_limit[i]                  == 32'h7654_2600;
     dut_cfg.range_perm[i].log_denied_access == 1;
     // dut_cfg.range_perm[i].execute_access    == 0;   // Note OK
-    // dut_cfg.range_perm[i].write_access      == 1;   // Note OK
+    dut_cfg.range_perm[i].write_access      == 0;   // Note when write_access is not permitted (=0) and mixed with the other types it causes issues
     // dut_cfg.range_perm[i].read_access       == 1;   // Note OK
     // dut_cfg.range_perm[i].enable            == 1;   // Note OK
   }
