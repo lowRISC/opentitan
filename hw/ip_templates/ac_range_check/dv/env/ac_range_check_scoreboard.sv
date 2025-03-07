@@ -11,7 +11,11 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
 
   // Local variables
   ac_range_check_dut_cfg dut_cfg;
-  int matching_cnt = 0;             // Number of transactions that matched the prediction
+  tl_seq_item latest_filtered_item;
+  int matching_cnt;                   // Number of transactions that matched the prediction
+  int unfilt_tr_cnt;
+  int act_filt_tr_cnt;
+  int exp_filt_tr_cnt;
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_unfilt_a_chan_fifo;
@@ -20,8 +24,8 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_d_chan_fifo;
 
   // Local queues to hold incoming packets pending comparison
-  tl_seq_item act_tl_filt_q[$];
-  tl_seq_item exp_tl_filt_q[$];
+  tl_filt_t act_tl_filt_q[$];
+  tl_filt_t exp_tl_filt_q[$];
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -94,6 +98,8 @@ endtask : run_phase
 //       matching range based on the register configuration order (index 0 has priority over 1 for
 //       example). Thus, directly return when a matching range is allowing the access.
 function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item item);
+  `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", unfilt_tr_cnt), UVM_MEDIUM)
+
   // Due to the note above, we should keep this loop starting from index 0
   for (int i=0; i<NUM_RANGES; i++) begin
     // Only consider the enabled ranges, continue when the range is not enabled
@@ -109,20 +115,20 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
       end else begin
         if (!item.is_write()) begin
           // Access is an EXECUTE (a_user contains this information if a_opcode indicates a read)
-          if (item.a_user) begin
+          if (item.a_user[tlul_pkg::InstrTypeMsbPos:tlul_pkg::InstrTypeLsbPos] == MuBi4True) begin
             if (!dut_cfg.range_perm[i].execute_access) begin
               `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                        "configured in range_perm index #%0d"}, item.a_addr, i), UVM_HIGH)
+                "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
               continue;  // Jump to the next index of the for loop
             end else begin
               // RACL policy READ permission should also be set
               if (!dut_cfg.range_racl_policy[i].read_perm) begin
                 `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                          "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
+                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
                 continue;  // Jump to the next index of the for loop
               end else begin
                 `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is GRANTED as ",
-                          "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
                 return AccessGranted;
               end
             end
@@ -130,17 +136,17 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
           end else begin
             if (!dut_cfg.range_perm[i].read_access) begin
               `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                        "configured in range_perm index #%0d"}, item.a_addr, i), UVM_HIGH)
+                "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
               continue;  // Jump to the next index of the for loop
             end else begin
               // RACL policy READ permission should also be set
               if (!dut_cfg.range_racl_policy[i].read_perm) begin
                 `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                          "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
+                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
                 continue;  // Jump to the next index of the for loop
               end else begin
                 `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is GRANTED as ",
-                          "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
                 return AccessGranted;
               end
             end
@@ -149,17 +155,17 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
         end else begin
           if (!dut_cfg.range_perm[i].write_access) begin
             `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-                      "configured in range index #%0d"}, item.a_addr, i), UVM_HIGH)
+              "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
             continue;  // Jump to the next index of the for loop
           end else begin
             // RACL policy WRITE permission should also be set
             if (!dut_cfg.range_racl_policy[i].write_perm) begin
               `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-                        "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
+                "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
               continue;  // Jump to the next index of the for loop
             end else begin
               `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is GRANTED as ",
-                        "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+                "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
               return AccessGranted;
             end
           end
@@ -167,20 +173,29 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
       end
     end
   end
-  `uvm_info(`gfn, $sformatf("No matching access found for address 0x%0h",item.a_addr), UVM_MEDIUM)
+  `uvm_info(`gfn, $sformatf("No matching range found for access #%0d to address 0x%0h",
+            unfilt_tr_cnt, item.a_addr), UVM_MEDIUM)
   return AccessDenied;
 endfunction : check_access
 
 task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo();
-  tl_seq_item item;
+  tl_filt_t tl_filt;
   forever begin
-    tl_unfilt_a_chan_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("Received tl_unfilt_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
+    tl_unfilt_a_chan_fifo.get(tl_filt.item);
+    unfilt_tr_cnt++;
+    `uvm_info(`gfn, $sformatf("Received tl_unfilt_a_chan unfiltered item #%0d:\n%0s",
+                              unfilt_tr_cnt, tl_filt.item.sprint()), UVM_HIGH)
 
-    if (check_access(item) == AccessGranted) begin
-      exp_tl_filt_q.push_back(item);
+    if (check_access(tl_filt.item) == AccessGranted) begin
+      exp_filt_tr_cnt++;
+      tl_filt.cnt = exp_filt_tr_cnt;
+      exp_tl_filt_q.push_back(tl_filt);
+      `uvm_info(`gfn, $sformatf({"EXPECTED filtered item #%0d/%0d on tl_unfilt_a_chan has been ",
+                "pushed for comparison"}, exp_filt_tr_cnt, unfilt_tr_cnt), UVM_LOW)
     end else begin
-      `uvm_info(`gfn, "Transaction on tl_unfilt_a_chan has been filtered", UVM_LOW)
+      `uvm_info(`gfn, $sformatf("Item #%0d from tl_unfilt_a_chan has been filtered",
+                unfilt_tr_cnt), UVM_LOW)
+      latest_filtered_item = tl_filt.item;
     end
   end
 endtask : process_tl_unfilt_a_chan_fifo
@@ -189,7 +204,8 @@ task ac_range_check_scoreboard::process_tl_unfilt_d_chan_fifo();
   tl_seq_item item;
   forever begin
     tl_unfilt_d_chan_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("Received tl_unfilt_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("Received tl_unfilt_d_chan unfiltered item:\n%0s",
+              item.sprint()), UVM_HIGH)
     // TODO MVy
     // // At this point, the TL transaction should have completed and the response will be in seq.rsp.
     // // The fetch was successful if d_error is false.
@@ -198,40 +214,16 @@ task ac_range_check_scoreboard::process_tl_unfilt_d_chan_fifo();
 endtask : process_tl_unfilt_d_chan_fifo
 
 task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
-  tl_seq_item item;
+  tl_filt_t tl_filt;
   forever begin
-    tl_unfilt_a_chan_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("Received tl_unfilt_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-
-    if (check_access(item) == AccessGranted) begin
-      exp_tl_filt_q.push_back(item);
-    end else begin
-      `uvm_info(`gfn, "Transaction on tl_unfilt_a_chan has been filtered", UVM_LOW)
-    end
-  end
-endtask : process_tl_unfilt_a_chan_fifo
-
-task ac_range_check_scoreboard::process_tl_unfilt_d_chan_fifo();
-  tl_seq_item item;
-  forever begin
-    tl_unfilt_d_chan_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("Received tl_unfilt_d_chan item:\n%0s", item.sprint()), UVM_HIGH)
-    // TODO MVy
-    // // At this point, the TL transaction should have completed and the response will be in seq.rsp.
-    // // The fetch was successful if d_error is false.
-    // `DV_CHECK(!seq.rsp.d_error, "Single TL unfiltered transaction failed")
-  end
-endtask : process_tl_unfilt_d_chan_fifo
-
-task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
-  tl_seq_item item;
-  forever begin
-    tl_filt_a_chan_fifo.get(item);
-    // `uvm_info(`gfn, $sformatf("Received tl_filt_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("Received tl_filt_a_chan item:\n%0s", item.sprint()), UVM_LOW)
-    tl_filt_a_chan_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("\nACTUAL tl_filt_a_chan item:\n%0s", item.sprint()), UVM_HIGH)
-    act_tl_filt_q.push_back(item);
+    tl_filt_a_chan_fifo.get(tl_filt.item);
+    act_filt_tr_cnt++;
+    tl_filt.cnt = act_filt_tr_cnt;
+    `uvm_info(`gfn, $sformatf("Received tl_filt_a_chan ACTUAL filtered item #%0d:\n%0s",
+                              act_filt_tr_cnt, tl_filt.item.sprint()), UVM_HIGH)
+    act_tl_filt_q.push_back(tl_filt);
+    `uvm_info(`gfn, $sformatf({"ACTUAL filtered item #%0d on tl_filt_a_chan has been ",
+              "pushed for comparison"}, act_filt_tr_cnt), UVM_LOW)
 
     // Spawn a thread and directly wait for the next item
     fork
@@ -249,27 +241,36 @@ task ac_range_check_scoreboard::process_tl_filt_d_chan_fifo();
 endtask : process_tl_filt_d_chan_fifo
 
 task ac_range_check_scoreboard::compare_tl_a_chan();
-  tl_seq_item act_item;
-  tl_seq_item exp_item;
+  tl_filt_t act_tl_filt;
+  tl_filt_t exp_tl_filt;
 
-  act_item = act_tl_filt_q.pop_front();
+  act_tl_filt = act_tl_filt_q.pop_front();
 
   // Delay a bit if the espected queue is still empty as tl_unfilt port can be fed shortly after
   // tl_filt for some reason
   if (exp_tl_filt_q.size() == 0) begin
-    `DV_SPINWAIT(wait(exp_tl_filt_q.size() > 0);, , 1_000, )
+    `DV_WAIT(exp_tl_filt_q.size() > 0,
+             $sformatf({"Unable to get any item from exp_tl_filt_q, it has probably been filtered.",
+                       " The lastest filtered item was the #%0d: \n%0s"}, unfilt_tr_cnt,
+                       latest_filtered_item.sprint()),
+             1_000, `gfn, 0)
   end
 
-  exp_item = exp_tl_filt_q.pop_front();
-  `uvm_info(`gfn, $sformatf("EXPECTED tl_filt_a_chan item:\n%0s", exp_item.sprint()), UVM_HIGH)
+  exp_tl_filt = exp_tl_filt_q.pop_front();
+  `uvm_info(`gfn, $sformatf("EXPECTED tl_filt_a_chan item:\n%0s",
+                            exp_tl_filt.item.sprint()), UVM_HIGH)
 
   // Compare DUT output on TL filtered A channel against the expected data
-  if (act_item.compare(exp_item)) begin
-    `uvm_info(`gfn, "Transaction on tl_filt_a_chan matched the prediction", UVM_LOW)
+  if (act_tl_filt.item.compare(exp_tl_filt.item)) begin
+    `uvm_info(`gfn, $sformatf("ACTUAL item matched the prediction for filtered item #%0d",
+              act_tl_filt.cnt), UVM_LOW)
     matching_cnt++;
   end else begin
-    `uvm_error(`gfn, $sformatf({"Actual and expected tl_filt_a_chan items are not matching:",
-                "ACTUAL: \n%0s \nEXPECTED: \n%0s"}, act_item.sprint(), exp_item.sprint()))
+    `uvm_info(`gfn, $sformatf("Trying to compare ACTUAL item #%0d vs EXPECTED item #%0d",
+              act_tl_filt.cnt, exp_tl_filt.cnt), UVM_LOW)
+    `uvm_error(`gfn, $sformatf({"ACTUAL and EXPECTED tl_filt_a_chan items are not matching:",
+                "\n\nACTUAL: \n%0s \nEXPECTED: \n%0s"},
+                act_tl_filt.item.sprint(), exp_tl_filt.item.sprint()))
   end
 endtask : compare_tl_a_chan
 
@@ -402,14 +403,19 @@ endtask : process_tl_access
 
 function void ac_range_check_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
-  // Reset local fifos queues and variables
+  act_tl_filt_q.delete();
+  exp_tl_filt_q.delete();
+  matching_cnt    = 0;
+  unfilt_tr_cnt   = 0;
+  exp_filt_tr_cnt = 0;
+  act_filt_tr_cnt = 0;
 endfunction : reset
 
 function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
 
   if (matching_cnt == 0) begin
-    `uvm_error(`gfn, {"No matching transaction found, it can be because all TL accesses have been",
+    `uvm_error(`gfn, {"No matching transaction found, it can be because all TL accesses have been ",
                       "filtered. Please check your DUT configuration and your sequence."})
   end
 
