@@ -41,60 +41,11 @@ OTTF_DEFINE_TEST_CONFIG();
 /* NUM_MIO_PADS */
 /* NUM_DIO_PADS */
 
-/* DioOptOut: Some of DIO PADs are input only or does not need to be tested as
- * they are alive in deep powerdown state. This lists out the PADs. Its entry
- * is the index of DIOs.
- *
- * ```systemverilog
- * localparam chip_io_e DioPads [NumDioPads] = '{
- *   UsbP,       // DIO 0                INOUT
- *   UsbN,       // DIO 1                INOUT
- *   SpiHostD0,  // DIO 2                INOUT
- *   SpiHostD1,  // DIO 3                INOUT
- *   SpiHostD2,  // DIO 4                INOUT
- *   SpiHostD3,  // DIO 5                INOUT
- *   SpiDevD0,   // DIO 6                INOUT
- *   SpiDevD1,   // DIO 7                INOUT
- *   SpiDevD2,   // DIO 8                INOUT
- *   SpiDevD3,   // DIO 9                INOUT
- *   IoR8,       // DIO 10 EC_RST_L      INOUT
- *   IoR9,       // DIO 11 FLASH_WP_L    INOUT
- *   SpiDevClk,  // DIO 12               INPUT
- *   SpiDevCsL,  // DIO 13               INPUT
- *   SpiHostClk, // DIO 14               OUTPUT
- *   SpiHostCsL  // DIO 15               OUTPUT
- * }
- * ```
- */
-
-typedef enum {
-  kDioUsbP,       /* DIO 0                INOUT  */
-  kDioUsbN,       /* DIO 1                INOUT  */
-  kDioSpiHostD0,  /* DIO 2                INOUT  */
-  kDioSpiHostD1,  /* DIO 3                INOUT  */
-  kDioSpiHostD2,  /* DIO 4                INOUT  */
-  kDioSpiHostD3,  /* DIO 5                INOUT  */
-  kDioSpiDevD0,   /* DIO 6                INOUT  */
-  kDioSpiDevD1,   /* DIO 7                INOUT  */
-  kDioSpiDevD2,   /* DIO 8                INOUT  */
-  kDioSpiDevD3,   /* DIO 9                INOUT  */
-  kDioIoR8,       /* DIO 10 EC_RST_L      INOUT  */
-  kDioIoR9,       /* DIO 11 FLASH_WP_L    INOUT  */
-  kDioSpiDevClk,  /* DIO 12               INPUT  */
-  kDioSpiDevCsL,  /* DIO 13               INPUT  */
-  kDioSpiHostClk, /* DIO 14               OUTPUT */
-  kDioSpiHostCsL  /* DIO 15               OUTPUT */
-} dio_pad_idx_t;
-
 enum { kNumOptOutDio = 2 };
-static const uint8_t kOptOutDio[kNumOptOutDio] = {kDioSpiDevClk, kDioSpiDevCsL};
-
-typedef enum {
-  kMioIoR0 = 35,
-  kMioIoR2 = 37,
-  kMioIoR3 = 38,
-  kMioIoR4 = 39
-} mio_pad_idx_t;
+static const uint8_t kOptOutDio[kNumOptOutDio] = {
+    kTopEarlgreyDirectPadsSpiDeviceSck,
+    kTopEarlgreyDirectPadsSpiDeviceCsb,
+};
 
 /**
  * If certain MIOs need to be skipped due to tied functionality, specify here.
