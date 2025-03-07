@@ -84,6 +84,8 @@ typedef enum ownership_key_alg {
 
   /** Key algorithm category mask */
   kOwnershipKeyAlgCategoryMask = 0xFF,
+  /** Key algorithm category for ECDSA: `P...` */
+  kOwnershipKeyAlgCategoryEcdsa = 0x50,
   /** Key algorithm category for Sphincs+: `S...` */
   kOwnershipKeyAlgCategorySpx = 0x53,
   /** Key algorithm category for Hybrid: `H...` */
