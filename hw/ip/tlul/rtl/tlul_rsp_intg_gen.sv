@@ -24,7 +24,8 @@
 module tlul_rsp_intg_gen import tlul_pkg::*; #(
   parameter bit EnableRspIntgGen = 1'b1,
   parameter bit EnableDataIntgGen = 1'b1,
-  parameter bit UserInIsZero = 1'b0
+  parameter bit UserInIsZero = 1'b0,
+  parameter bit RspIntgInIsZero = UserInIsZero
 ) (
   // TL-UL interface
   input  tl_d2h_t tl_i,
@@ -42,7 +43,7 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
       .data_i(D2HRspMaxWidth'(rsp)),
       .data_o({rsp_intg, unused_payload})
     );
-  end else if (UserInIsZero) begin : gen_zero_rsp_intg
+  end else if (RspIntgInIsZero) begin : gen_zero_rsp_intg
     assign rsp_intg = 0;
   end else begin : gen_passthrough_rsp_intg
     assign rsp_intg = tl_i.d_user.rsp_intg;
@@ -73,5 +74,16 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
 
   `ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
   `ASSERT_INIT(DataWidthCheck_A, $bits(tl_i.d_data) <= DataMaxWidth)
+
+// the code below is not meant to be synthesized,
+// but it is intended to be used in simulation and FPV
+`ifndef SYNTHESIS
+  always_comb begin
+    if (tl_i.d_valid) begin
+      `ASSERT_I(RspZero_A, RspIntgInIsZero -> ~|tl_i.d_user.rsp_intg)
+      `ASSERT_I(UserZero_A, UserInIsZero -> ~|tl_i.d_user)
+    end
+  end
+`endif
 
 endmodule // tlul_rsp_intg_gen

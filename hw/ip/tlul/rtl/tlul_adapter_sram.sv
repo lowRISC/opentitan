@@ -188,7 +188,8 @@ module tlul_adapter_sram
 
   tlul_rsp_intg_gen #(
     .EnableRspIntgGen(EnableRspIntgGen),
-    .EnableDataIntgGen(EnableDataIntgGen)
+    .EnableDataIntgGen(EnableDataIntgGen),
+    .RspIntgInIsZero(1'b1)
   ) u_rsp_gen (
     .tl_i(tl_out),
     .tl_o
