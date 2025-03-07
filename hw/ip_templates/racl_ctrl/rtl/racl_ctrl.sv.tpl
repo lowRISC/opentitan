@@ -123,8 +123,16 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   assign policy_${policy['name'].lower()}.write_perm = reg2hw.policy_${policy['name'].lower()}${"_shadowed" if enable_shadow_reg else ""}.write_perm.q;
 
 % endfor
+<% assert nr_policies >= len(policies) %>\
+% if nr_policies > len(policies):
+  localparam racl_policy_t UnusedPolicy = '0;
+
+% endif
   // Broadcast all policies via policy vector
   assign racl_policies_o = {
+% for _ in range(max(nr_policies - len(policies), 0)):
+    UnusedPolicy,
+% endfor
 % for policy in list(reversed(policies)):
     policy_${policy['name'].lower()}${',' if not loop.last else ''}
 % endfor

@@ -739,7 +739,7 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
         "module_instance_name": racl_ctrl["type"],
         "nr_role_bits": top["racl"]["nr_role_bits"],
         "nr_ctn_uid_bits": top["racl"]["nr_ctn_uid_bits"],
-        "nr_policies": len(policies),
+        "nr_policies": top["racl"]["nr_policies"],
         'nr_subscribing_ips': num_subscribing_ips[racl_group],
         "policies": policies
     }
