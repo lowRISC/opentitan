@@ -308,6 +308,8 @@ cc_args(
         "-Wno-missing-field-initializers",
         "-Wno-sign-compare",
         "-Wno-unused-parameter",
+        "-Wno-gnu-empty-initializer",
+        "-Wno-zero-length-array",
         "-Wstrict-prototypes",
         "-Wswitch-default",
         "-Wtype-limits",
