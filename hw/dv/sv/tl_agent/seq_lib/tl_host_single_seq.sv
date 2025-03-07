@@ -5,6 +5,7 @@
 // Extend host seq to send single specific item constructed by the caller
 class tl_host_single_seq #(type REQ_T = tl_seq_item) extends tl_host_seq #(REQ_T);
     rand bit                    write;
+    rand bit                    instr_type;
     rand bit [AddrWidth-1:0]    addr;
     rand bit [OpcodeWidth-1:0]  opcode;
     rand bit [SizeWidth-1:0]    size;
@@ -42,8 +43,15 @@ class tl_host_single_seq #(type REQ_T = tl_seq_item) extends tl_host_seq #(REQ_T
             a_opcode  == tlul_pkg::Get;
           }
         }
+        // TODO see with Rupert why it doesn't  have any effect
+        // a_user[tlul_pkg::InstrTypeMsbPos:tlul_pkg::InstrTypeLsbPos] == instr_type;
         })) begin
       `uvm_fatal(`gfn, "Cannot randomize req")
+    end
+    // Overwrite part of a_user field to randomly make it as an "instruction" (execute command)
+    if (req.a_opcode == tlul_pkg::Get) begin
+      prim_mubi_pkg::mubi4_t instr_type = prim_mubi_pkg::mubi4_bool_to_mubi(instr_type);
+      req.a_user[tlul_pkg::InstrTypeMsbPos:tlul_pkg::InstrTypeLsbPos] = instr_type;
     end
   endfunction
 
