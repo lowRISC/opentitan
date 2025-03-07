@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@//rules:repo.bzl", "http_archive_or_local")
+load("//rules:host.bzl", "HOST_ARCHS")
 
 _CLANG_BUILD_FILE = """\
 load("@rules_cc//cc:defs.bzl", "cc_import")
@@ -72,16 +73,27 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     # release and instantiate the bindgen toolchain with the prebuilt
     # binaries.
     # Releases @ http://releases.llvm.org/download.html
-    http_archive_or_local(
-        name = "bindgen_clang_linux",
-        urls = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"],
-        strip_prefix = "clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04",
-        sha256 = "b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843",
-        build_file_content = _CLANG_BUILD_FILE.format(
-            version = "10.0.0",
-            suffix = "so",
-        ),
-    )
+
+    sha256_by_arch = {
+        "x86_64": "b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843",
+        "aarch64": "c2072390dc6c8b4cc67737f487ef384148253a6a97b38030e012c4d7214b7295",
+    }
+    filename_by_arch = {
+        "x86_64": "clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04",
+        "aarch64": "clang+llvm-10.0.0-aarch64-linux-gnu",
+    }
+
+    for host_arch in HOST_ARCHS:
+        http_archive_or_local(
+            name = "bindgen_clang_linux_" + host_arch,
+            urls = ["https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/{}.tar.xz".format(filename_by_arch[host_arch])],
+            strip_prefix = filename_by_arch[host_arch],
+            sha256 = sha256_by_arch[host_arch],
+            build_file_content = _CLANG_BUILD_FILE.format(
+                version = "10.0.0",
+                suffix = "so",
+            ),
+        )
 
     # If an appropriate version of `libstdc++.so.6` is not available as part of
     # the default system libraries (e.g. if running on an old OS because of
@@ -103,9 +115,9 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     http_archive_or_local(
         name = "lowrisc_safe_ftdi",
         local = safe_ftdi,
-        sha256 = "2dc6744f4bf6f95fbe51befb9316a0a33f70291856fef8bd85157a387659e527",
-        strip_prefix = "safe-ftdi-bazel-20230213_01",
-        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20230213_01.tar.gz",
+        sha256 = "f71d2dc694c7325029f450dfc356ac0734b1daac614126bfdda043a86307d338",
+        strip_prefix = "safe-ftdi-20250303_01",
+        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/20250303_01.tar.gz",
     )
 
     http_archive_or_local(

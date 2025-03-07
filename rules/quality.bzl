@@ -9,6 +9,7 @@ load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules:rv.bzl", "rv_rule")
+load("//rules:host_cpu.bzl", "get_host_cpu")
 
 def _ensure_tag(tags, *tag):
     for t in tag:
@@ -63,7 +64,7 @@ clang_format_attrs = {
         doc = "Command to execute to display diffs",
     ),
     "clang_format": attr.label(
-        default = "@lowrisc_rv32imcb_files//:bin/clang-format",
+        default = "@lowrisc_rv32imcb_{}_files//:bin/clang-format".format(get_host_cpu()),
         allow_single_file = True,
         cfg = "host",
         executable = True,
@@ -191,7 +192,7 @@ def _cc_aspect_impl(target, ctx, action_callback):
 
 # To see which checks clang-tidy knows about, run this command:
 #
-#  ./bazelisk.sh run @lowrisc_rv32imcb_files//:bin/clang-tidy -- --checks='*' --list-checks
+#  ./bazelisk.sh run @lowrisc_rv32imcb_$(uname -m)_files//:bin/clang-tidy -- --checks='*' --list-checks
 _CLANG_TIDY_CHECKS = [
     "clang-analyzer-core.*",
     # Disable advice to replace `memcpy` with `mempcy_s`.
@@ -264,7 +265,7 @@ def _make_clang_tidy_aspect(enable_fix):
                 executable = True,
             ),
             "_clang_tidy": attr.label(
-                default = "@lowrisc_rv32imcb_files//:bin/clang-tidy",
+                default = "@lowrisc_rv32imcb_{}_files//:bin/clang-tidy".format(get_host_cpu()),
                 allow_single_file = True,
                 cfg = "host",
                 executable = True,
