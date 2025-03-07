@@ -573,10 +573,10 @@ module security_island
 
    pulp_cluster
    #(
-      .NB_CORES                     ( `NB_CORES                       ),
+      .NB_CORES                     ( 8                               ),
       .NB_HWPE_PORTS                ( 9                               ),
-      .NB_DMAS                      ( `NB_DMAS                        ),
-      .HWPE_PRESENT                 ( `REDMULE                        ),
+      .NB_DMAS                      ( 4                               ),
+      .HWPE_PRESENT                 ( 0                               ),
       .TCDM_SIZE                    ( 256*1024                        ),
       .NB_TCDM_BANKS                ( 16                              ),
       .SET_ASSOCIATIVE              ( 4                               ),
@@ -591,10 +591,10 @@ module security_island
       .ROM_BOOT_ADDR                ( 32'h1A000000                    ),
       .BOOT_ADDR                    ( 32'h1C002080                    ),
       .INSTR_RDATA_WIDTH            ( 32                              ),
-      .CLUST_FPU                    ( `CLUST_FPU                      ),
-      .CLUST_FP_DIVSQRT             ( `CLUST_FP_DIVSQRT               ),
-      .CLUST_SHARED_FP              ( `CLUST_SHARED_FP                ),
-      .CLUST_SHARED_FP_DIVSQRT      ( `CLUST_SHARED_FP_DIVSQRT        ),
+      .CLUST_FPU                    ( 1                               ),
+      .CLUST_FP_DIVSQRT             ( 1                               ),
+      .CLUST_SHARED_FP              ( 0                               ),
+      .CLUST_SHARED_FP_DIVSQRT      ( 0                               ),
       .AXI_ADDR_WIDTH               ( AxiAddrWidth                    ),
       .AXI_DATA_IN_WIDTH            ( AxiOutDataWidth                 ),
       .AXI_DATA_OUT_WIDTH           ( AxiDataWidth                    ),

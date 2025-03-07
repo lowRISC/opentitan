@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -41,11 +41,16 @@ def _pip_wheel_impl(rctx):
         "install",
         "-U",
         "--ignore-installed",
+        "--user",
         "wheel",
     ]
     rctx.report_progress("Installing the Python wheel package")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -58,6 +63,7 @@ def _pip_wheel_impl(rctx):
         "-m",
         "pip",
         "wheel",
+        "--use-pep517",
         "-r",
         rctx.path(rctx.attr.requirements),
         "-w",
@@ -66,6 +72,10 @@ def _pip_wheel_impl(rctx):
     rctx.report_progress("Pre-building Python wheels")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
     )
@@ -81,6 +91,10 @@ def _pip_wheel_impl(rctx):
     rctx.report_progress("Generating sanitzed requirements file")
     result = rctx.execute(
         args,
+        environment = {
+            "SOURCE_DATE_EPOCH": "315532800",
+            "PYTHONHASHSEED": "0",
+        },
         timeout = rctx.attr.timeout,
         quiet = rctx.attr.quiet,
         working_directory = "./",
