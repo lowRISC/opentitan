@@ -48,6 +48,7 @@ static rom_error_t imm_section_start(void) {
 
   // Lockdown the attestation seed to readonly as soon as possible to prevent
   // key tampering and exfiltration.
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_cert_info_page_owner_restrict(
       &kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
