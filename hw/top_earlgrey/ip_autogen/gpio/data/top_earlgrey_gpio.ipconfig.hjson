@@ -5,10 +5,10 @@
   instance_name: top_earlgrey_gpio
   param_values:
   {
-    num_inp_period_counters: 0
     module_instance_name: gpio
     topname: earlgrey
     uniquified_modules: {}
+    num_inp_period_counters: 0
   }
   dtgen:
   {

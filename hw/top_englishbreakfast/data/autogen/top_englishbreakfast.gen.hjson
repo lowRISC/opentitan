@@ -4259,9 +4259,9 @@
       type: rv_core_ibex
       template_type: rv_core_ibex
       attr: ipgen
-      ipgen_param:
+      ipgen_params:
       {
-        NumRegions: 2
+        num_regions: 2
       }
       param_decl:
       {

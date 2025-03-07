@@ -644,7 +644,7 @@
         GpioAsHwStrapsEn: "1"
         GpioAsyncOn: "1"
       }
-      ipgen_param:
+      ipgen_params:
       {
         num_inp_period_counters: 8
       }
@@ -10528,7 +10528,7 @@
           domain: "0"
         }
       }
-      ipgen_param:
+      ipgen_params:
       {
         num_ranges: 32
       }
@@ -10871,9 +10871,9 @@
       type: rv_core_ibex
       template_type: rv_core_ibex
       attr: ipgen
-      ipgen_param:
+      ipgen_params:
       {
-        NumRegions: 32
+        num_regions: 32
       }
       param_decl:
       {
