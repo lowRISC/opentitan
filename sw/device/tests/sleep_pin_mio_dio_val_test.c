@@ -35,14 +35,12 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 
 #if defined(OPENTITAN_IS_EARLGREY)
-enum { kNumOptOut = 2 };
 static const dt_pad_t kOptOut[] = {
     kDtPadSpiDeviceSck,
     kDtPadSpiDeviceCsb,
 };
 #elif defined(OPENTITAN_IS_DARJEELING)
-enum { kNumOptOut = 0 };
-static const dt_pad_t kOptOut[1] = {0};
+static const dt_pad_t kOptOut[] = {};
 #else
 #error Unsupported top
 #endif
@@ -143,7 +141,7 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
 
   LOG_INFO("Selecting PADs retention modes...");
 
-  draw_pinmux_ret(kDtPadCount, kPads, kOptOut, kNumOptOut);
+  draw_pinmux_ret(kDtPadCount, kPads, kOptOut, ARRAYSIZE(kOptOut));
 
   print_chosen_values();
 
