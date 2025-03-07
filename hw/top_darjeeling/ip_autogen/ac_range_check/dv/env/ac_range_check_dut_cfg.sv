@@ -7,7 +7,6 @@
 // be contained in this file, but directly in the files where they are needed as this may lead to
 // some conflicts.
 class ac_range_check_dut_cfg extends uvm_object;
-  rand tl_main_vars_t  tl_main_vars;
   rand bit [TL_DW-1:0] range_base[NUM_RANGES];  // Granularity is 32-bit words, 2-LSBs are ignored
   rand bit [TL_DW-1:0] range_limit[NUM_RANGES]; // Granularity is 32-bit words, 2-LSBs are ignored
   rand range_perm_t    range_perm[NUM_RANGES];
@@ -40,9 +39,6 @@ endfunction : post_randomize
 function void ac_range_check_dut_cfg::do_print(uvm_printer printer);
   `uvm_info(this.get_name(), "do_print function has been called", UVM_DEBUG);
   super.do_print(printer);
-
-  printer.print_generic("tl_main_vars", "tl_main_vars_t", $bits(tl_main_vars),
-                        $sformatf("%p", tl_main_vars));
 
   foreach (range_perm[i]) begin
     printer.print_field($sformatf("range_perm[%0d]", i), "range_perm_t", $bits(range_perm[i]),
