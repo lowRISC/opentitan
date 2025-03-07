@@ -9,6 +9,11 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
+py_library(
+    name = "autogen_banner",
+    srcs = ["autogen_banner.py"],
+)
+
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],
@@ -51,20 +56,6 @@ py_binary(
         "//util/reggen:ip_block",
         "//util/reggen:version",
         requirement("tabulate"),
-    ],
-)
-
-py_binary(
-    name = "autogen_dif",
-    srcs = ["autogen_dif.py"],
-    data = [
-        "//util/make_new_dif:tpl_files",
-    ],
-    deps = [
-        ":repo_top",
-        "//util/make_new_dif:ip",
-        requirement("hjson"),
-        requirement("mako"),
     ],
 )
 

@@ -1,26 +1,24 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 <%doc>
     This file is the "auto-generated DIF library header template", which
     provides some mandatory DIFs prototypes, that are similar across all IPs.
-    This template is rendered into a .inc file that is included by the semi-
-    auto-generated DIF header file (see util/make_new_dif/dif_template.h.tpl).
-    Note, since this template is designed to manifest as a non-standalone header
-    it has the file extension, .inc.
-
-    For more information, see: https://github.com/lowRISC/opentitan/issues/8142
 
     Note, this template requires the following Python objects to be passed:
-
-    1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
+    - ipcfg: path to the IP's Hjson file
 </%doc>
+
+<%
+    from make_new_dif.ip import Ip
+    from pathlib import Path
+
+    ip_hjson = Path(ipcfg)
+    ip = Ip(ip_hjson.stem, "AUTOGEN", ip_hjson)
+%>
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_AUTOGEN_DIF_${ip.name_upper}_AUTOGEN_H_
-
-${autogen_banner}
 
 /**
  * @file
