@@ -20,9 +20,6 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   // Configuration variables
   rand ac_range_check_dut_cfg dut_cfg;
 
-  // Constraints
-  extern constraint tl_main_vars_c;
-
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -38,13 +35,6 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
     int rsp_abort_pct = 25, int d_error_pct = 0, int d_chan_intg_err_pct = 0);
 endclass : ac_range_check_base_vseq
 
-
-constraint ac_range_check_base_vseq::tl_main_vars_c {
-  soft dut_cfg.tl_main_vars.rand_write == 1;
-  soft dut_cfg.tl_main_vars.rand_addr  == 1;
-  soft dut_cfg.tl_main_vars.rand_mask  == 1;
-  soft dut_cfg.tl_main_vars.rand_data  == 1;
-}
 
 function ac_range_check_base_vseq::new(string name="");
   super.new(name);
@@ -133,10 +123,10 @@ task ac_range_check_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       
                                                         int d_chan_intg_err_pct = 0);
   cip_tl_device_seq tl_filt_device_seq;
   tl_filt_device_seq = cip_tl_device_seq::type_id::create("tl_filt_device_seq");
-  tl_filt_device_seq.min_rsp_delay = min_rsp_delay;
-  tl_filt_device_seq.max_rsp_delay = max_rsp_delay;
-  tl_filt_device_seq.rsp_abort_pct = rsp_abort_pct;
-  tl_filt_device_seq.d_error_pct = d_error_pct;
+  tl_filt_device_seq.min_rsp_delay       = min_rsp_delay;
+  tl_filt_device_seq.max_rsp_delay       = max_rsp_delay;
+  tl_filt_device_seq.rsp_abort_pct       = rsp_abort_pct;
+  tl_filt_device_seq.d_error_pct         = d_error_pct;
   tl_filt_device_seq.d_chan_intg_err_pct = d_chan_intg_err_pct;
   `DV_CHECK_RANDOMIZE_FATAL(tl_filt_device_seq)
   `uvm_info(`gfn, "Starting tl_filt_device_seq", UVM_MEDIUM)
