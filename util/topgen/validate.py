@@ -278,7 +278,7 @@ module_optional = {
         'l', 'optional list of paths to incoming alert configurations for the '
         'alert_handler'
     ],
-    'ipgen_param': ['g', 'Optional ipgen parameters for that instance'],
+    'ipgen_params': ['g', 'Optional ipgen parameters for that instance'],
     'template_type': ['s', 'Base template type of ipgen IPs'],
     'racl_group': [
         's', 'Only valid for racl_ctrl IPs. Defines the RACL group this '

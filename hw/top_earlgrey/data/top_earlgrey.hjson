@@ -1013,8 +1013,8 @@
       type: "rv_core_ibex",
       template_type: "rv_core_ibex",
       attr: "ipgen",
-      ipgen_param: {
-        NumRegions: 2
+      ipgen_params: {
+        num_regions: 2
       }
       param_decl: {PMPEnable: "1",
                    PMPGranularity: "0",

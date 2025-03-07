@@ -5,11 +5,11 @@
   instance_name: top_englishbreakfast_rv_core_ibex
   param_values:
   {
-    racl_support: false
     num_regions: 2
     module_instance_name: rv_core_ibex
     topname: englishbreakfast
     uniquified_modules: {}
+    racl_support: false
   }
   dtgen:
   {
