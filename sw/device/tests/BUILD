@@ -7299,6 +7299,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     fpga = fpga_params(

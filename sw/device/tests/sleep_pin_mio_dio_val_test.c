@@ -34,11 +34,18 @@ OTTF_DEFINE_TEST_CONFIG();
  * the expected and measured values.
  */
 
+#if defined(OPENTITAN_IS_EARLGREY)
 enum { kNumOptOut = 2 };
 static const dt_pad_t kOptOut[] = {
     kDtPadSpiDeviceSck,
     kDtPadSpiDeviceCsb,
 };
+#elif defined(OPENTITAN_IS_DARJEELING)
+enum { kNumOptOut = 0 };
+static const dt_pad_t kOptOut[1] = {0};
+#else
+#error Unsupported top
+#endif
 
 static uint8_t kPads[kDtPadCount] = {0};
 
@@ -173,12 +180,18 @@ bool test_main(void) {
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
     bool deepsleep = (deep_powerdown_en) ? true : false;
 
+#if defined(OPENTITAN_IS_EARLGREY)
     // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
     // disabled for this test. Remove this later.
     dif_pinmux_pad_attr_t out_attr;
     dif_pinmux_pad_attr_t in_attr = {0};
     CHECK_DIF_OK(
         dif_pinmux_pad_write_attrs_dt(&pinmux, kDtPadIoc3, in_attr, &out_attr));
+#elif defined(OPENTITAN_IS_DARJEELING)
+    // Nothing to be done
+#else
+#error Unsupported top
+#endif
 
     if (!deepsleep) {
       // Enable all the AON interrupts used in this test.
