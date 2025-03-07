@@ -7176,9 +7176,11 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_darjeeling:sim_dv": None,
+        },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
