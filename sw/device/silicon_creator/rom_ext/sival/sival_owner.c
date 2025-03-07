@@ -67,11 +67,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   memset(owner_page[0].device_id, kLockConstraintNone,
          sizeof(owner_page[0].device_id));
   owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = (owner_key_t){
+  owner_page[0].activate_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNERSHIP_ACTIVATE_KEY};
-  owner_page[0].unlock_key = (owner_key_t){
+  owner_page[0].unlock_key = (owner_keydata_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
       .raw = OWNERSHIP_UNLOCK_KEY};

@@ -255,3 +255,16 @@ cc_library(
     ],
     alwayslink = True,
 )
+
+cc_library(
+    name = "owner_verify",
+    srcs = ["owner_verify.c"],
+    hdrs = ["owner_verify.h"],
+    deps = [
+        ":datatypes",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
+)
