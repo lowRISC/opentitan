@@ -142,6 +142,8 @@ static_assert(kDtSpiHostCount > 0, "test requires at least one SPI host");
 static_assert(kDtI2cCount > 0, "test requires at least one I2C");
 static_assert(kDtUartCount > 0, "test requires at least one UART");
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+
 typedef struct node {
   dif_alert_handler_alert_t alert;
   dif_alert_handler_class_t class;

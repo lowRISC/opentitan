@@ -3549,8 +3549,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
+        "//hw/top:dt",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
@@ -6140,7 +6139,6 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:access_after_wakeup",
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:alert_handler",
@@ -6346,7 +6344,6 @@ opentitan_test(
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/testing:i2c_testutils",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/json:command",
