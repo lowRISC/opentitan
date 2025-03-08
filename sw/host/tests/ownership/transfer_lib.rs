@@ -42,12 +42,13 @@ pub fn ownership_unlock(
     unlock_key: &Path,
     next_owner: Option<&Path>,
 ) -> Result<()> {
-    let unlock = OwnershipUnlockParams {
+    let (unlock, _) = OwnershipUnlockParams {
         mode: Some(mode),
         nonce: Some(nonce),
         din: Some(din),
         next_owner: next_owner.map(|p| p.into()),
-        sign: Some(unlock_key.into()),
+        algorithm: OwnershipKeyAlg::EcdsaP256,
+        ecdsa_key: Some(unlock_key.into()),
         ..Default::default()
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
@@ -89,10 +90,11 @@ pub fn ownership_activate(
     din: u64,
     activate_key: &Path,
 ) -> Result<()> {
-    let activate = OwnershipActivateParams {
+    let (activate, _) = OwnershipActivateParams {
         nonce: Some(nonce),
         din: Some(din),
-        sign: Some(activate_key.into()),
+        algorithm: OwnershipKeyAlg::EcdsaP256,
+        ecdsa_key: Some(activate_key.into()),
         ..Default::default()
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;

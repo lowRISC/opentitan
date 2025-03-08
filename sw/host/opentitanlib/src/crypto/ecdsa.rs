@@ -77,7 +77,7 @@ impl EcdsaPrivateKey {
     }
 }
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Clone, Deserialize, Annotate)]
 pub struct EcdsaRawSignature {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -142,7 +142,7 @@ impl EcdsaRawSignature {
         }
     }
 
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+    pub fn write(&self, dest: &mut impl Write) -> Result<usize> {
         ensure!(
             self.r.len() == 32,
             Error::InvalidSignature(anyhow!("bad r length: {}", self.r.len()))
@@ -153,7 +153,7 @@ impl EcdsaRawSignature {
         );
         dest.write_all(&self.r)?;
         dest.write_all(&self.s)?;
-        Ok(())
+        Ok(64)
     }
 
     pub fn to_vec(&self) -> Result<Vec<u8>> {
