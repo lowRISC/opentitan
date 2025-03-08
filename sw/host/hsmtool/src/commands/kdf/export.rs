@@ -6,7 +6,7 @@ use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 
@@ -27,7 +27,7 @@ pub struct Export {
     #[arg(long)]
     wrap: Option<String>,
     #[arg(long, default_value = "rsa-pkcs")]
-    wrap_mechanism: Wrap,
+    wrap_mechanism: Option<Wrap>,
     #[arg(short, long)]
     output: Option<PathBuf>,
 }
@@ -46,7 +46,14 @@ impl Dispatch for Export {
 
         let secret = Secret::GenericSecret;
         let key = if self.wrap.is_some() {
-            secret.wrap_key(session, object, self.wrap.as_deref(), &self.wrap_mechanism)?
+            secret.wrap_key(
+                session,
+                object,
+                self.wrap.as_deref(),
+                self.wrap_mechanism
+                    .as_ref()
+                    .ok_or(anyhow!("wrap_mechanism is required when wrap is specified"))?,
+            )?
         } else {
             secret.export(session, object)?
         };
