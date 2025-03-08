@@ -63,12 +63,11 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
   // Check the activation key and the nonce.
   size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
                (uintptr_t)&msg->ownership_activate_req.primary_bl0_slot;
-  if (ownership_key_validate(/*page=*/1, kOwnershipKeyActivate,
-                             &msg->ownership_activate_req.signature,
-                             &msg->ownership_activate_req.primary_bl0_slot,
-                             len) == kHardenedBoolFalse) {
-    return kErrorOwnershipInvalidSignature;
-  }
+  HARDENED_RETURN_IF_ERROR(ownership_key_validate(
+      /*page=*/1, kOwnershipKeyActivate, msg->header.type, &bootdata->nonce,
+      &msg->ownership_activate_req.signature,
+      &msg->ownership_activate_req.primary_bl0_slot, len));
+
   if (!nonce_equal(&msg->ownership_activate_req.nonce, &bootdata->nonce)) {
     return kErrorOwnershipInvalidNonce;
   }

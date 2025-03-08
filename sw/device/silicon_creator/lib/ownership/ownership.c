@@ -21,7 +21,8 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
-static owner_page_status_t owner_page_validity_check(size_t page) {
+static owner_page_status_t owner_page_validity_check(size_t page,
+                                                     boot_data_t *bootdata) {
   size_t sig_len =
       (uintptr_t)&owner_page[0].signature - (uintptr_t)&owner_page[0];
 
@@ -48,10 +49,10 @@ static owner_page_status_t owner_page_validity_check(size_t page) {
     return kOwnerPageStatusSealed;
   }
 
-  hardened_bool_t result = ownership_key_validate(page, kOwnershipKeyOwner,
-                                                  &owner_page[page].signature,
-                                                  &owner_page[page], sig_len);
-  if (result == kHardenedBoolFalse) {
+  rom_error_t result = ownership_key_validate(
+      page, kOwnershipKeyOwner, kTlvTagOwner, &bootdata->nonce,
+      &owner_page[page].signature, &owner_page[page], sig_len);
+  if (result != kErrorOk) {
     // If the page is bad, destroy the RAM copy.
     memset(&owner_page[page], 0x5a, sizeof(owner_page[0]));
     return kOwnerPageStatusInvalid;
@@ -204,7 +205,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot0, 0,
                            sizeof(owner_page[0]) / sizeof(uint32_t),
                            &owner_page[0]) == kErrorOk) {
-    owner_page_valid[0] = owner_page_validity_check(0);
+    owner_page_valid[0] = owner_page_validity_check(0, bootdata);
   } else {
     owner_page_valid[0] = kOwnerPageStatusInvalid;
     memset(&owner_page[0], 0xff, sizeof(owner_page[0]));
@@ -212,7 +213,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   if (flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSlot1, 0,
                            sizeof(owner_page[1]) / sizeof(uint32_t),
                            &owner_page[1]) == kErrorOk) {
-    owner_page_valid[1] = owner_page_validity_check(1);
+    owner_page_valid[1] = owner_page_validity_check(1, bootdata);
   } else {
     owner_page_valid[1] = kOwnerPageStatusInvalid;
     memset(&owner_page[1], 0xff, sizeof(owner_page[1]));
