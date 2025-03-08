@@ -262,7 +262,7 @@ extern "C" {
  * address between #TOP_DARJEELING_CLKMGR_AON_BASE_ADDR and
  * `TOP_DARJEELING_CLKMGR_AON_BASE_ADDR + TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x80u
+#define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for pinmux_aon in top darjeeling.
@@ -1649,8 +1649,7 @@ typedef enum top_darjeeling_power_manager_reset_requests {
 typedef enum top_darjeeling_gateable_clocks {
   kTopDarjeelingGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
   kTopDarjeelingGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopDarjeelingGateableClocksUsbPeri = 2, /**< Clock clk_usb_peri in group peri */
-  kTopDarjeelingGateableClocksLast = 2, /**< \internal Last Valid Gateable Clock */
+  kTopDarjeelingGateableClocksLast = 1, /**< \internal Last Valid Gateable Clock */
 } top_darjeeling_gateable_clocks_t;
 
 /**

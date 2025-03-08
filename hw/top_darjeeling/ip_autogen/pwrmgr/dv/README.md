@@ -52,8 +52,6 @@ Some of them in use are:
 
   typedef struct packed {
     logic main_pd_n;
-    logic usb_clk_en_active;
-    logic usb_clk_en_lp;
     logic io_clk_en;
     logic main_clk_en;
   } control_enables_t;

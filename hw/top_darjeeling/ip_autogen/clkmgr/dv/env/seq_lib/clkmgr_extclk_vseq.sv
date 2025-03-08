@@ -15,7 +15,6 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   // The extclk cannot be manipulated in low power mode.
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1;}
   constraint main_ip_clk_en_on_c {main_ip_clk_en == 1;}
-  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1;}
 
 
   // This randomizes the time when the extclk_ctrl CSR write and the lc_clk_byp_req

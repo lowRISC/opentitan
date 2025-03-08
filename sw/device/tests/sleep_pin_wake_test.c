@@ -202,8 +202,8 @@ bool test_main(void) {
         &pinmux, wakeup_detector_selected, wakeup_cfg));
 
     if (deep_powerdown_en == 0) {
-      pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
-                          kDifPwrmgrDomainOptionUsbClockInActivePower;
+      CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &pwrmgr_domain_cfg));
+      pwrmgr_domain_cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
     }
 
     if (kDeviceType != kDeviceSimDV) {

@@ -62,7 +62,6 @@
     srcs: [
       { name: "main", aon: "no",  freq: "1000000000" }
       { name: "io",   aon: "no",  freq: "1000000000" }
-      { name: "usb",  aon: "no",  freq: "1000000000" }
       { name: "aon",  aon: "yes", freq: "62500000", ref: true}
     ],
 
@@ -159,13 +158,11 @@
       { name: "por_io",         gen: true,  type: "top", parent: "por_aon", clock: "io"      }
       { name: "por_io_div2",    gen: true , type: "top", parent: "por_aon", clock: "io_div2" }
       { name: "por_io_div4",    gen: true , type: "top", parent: "por_aon", clock: "io_div4" }
-      { name: "por_usb",        gen: true , type: "top", parent: "por_aon", clock: "usb" }
       { name: "lc",             gen: true,  type: "top", parent: "lc_src",  clock: "main"    }
       { name: "lc_aon",         gen: true,  type: "top", parent: "lc_src",  clock: "aon"     }
       { name: "lc_io",          gen: true,  type: "top", parent: "lc_src",  clock: "io"      }
       { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div2" }
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div4" }
-      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clock: "usb"     }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clock: "main"    }
       { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clock: "io_div4" }
       { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
@@ -462,7 +459,7 @@
           clock: "io_div4",
           group: "powerup"
         },
-        clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+        clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io",
         clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"
       },
       clock_group: "powerup",
@@ -495,10 +492,6 @@
           group: "ast",
           clock: "io"
         },
-        clk_usb_i: {
-          group: "ast",
-          clock: "usb"
-        },
         clk_aon_i: {
           group: "ast",
           clock: "aon"
@@ -511,13 +504,11 @@
                           rst_io_div2_ni: "lc_io_div2",
                           rst_io_div4_ni: "lc_io_div4",
                           rst_main_ni: "lc",
-                          rst_usb_ni: "lc_usb",
                           rst_root_ni: "por_io_div4",
                           rst_root_io_ni: "por_io",
                           rst_root_io_div2_ni: "por_io_div2",
                           rst_root_io_div4_ni: "por_io_div4",
                           rst_root_main_ni: "por",
-                          rst_root_usb_ni: "por_usb",
                          },
       domain: ["Aon"],
       base_addr: {
@@ -573,10 +564,6 @@
           clock: "main",
           group: "secure"
         }
-        clk_ast_usb_i: {
-          clock: "usb",
-          group: "peri"
-        }
       },
       clock_group: "secure",
       reset_connections: {
@@ -600,10 +587,6 @@
           name: "lc",
           domain: "0",
         },
-        rst_ast_usb_ni: {
-          name: "por_usb",
-          domain: "0"
-        }
       },
       domain: ["Aon", "0"],
       base_addr: {
@@ -1496,13 +1479,11 @@
   xbar: [
     { name: "main",
       clock_srcs: {clk_main_i: "main",
-                   clk_fixed_i: "io_div4",
-                   clk_usb_i: "usb"},
+                   clk_fixed_i: "io_div4"},
       clock_group: "infra",
       reset: "lc",
       reset_connections: {rst_main_ni: "lc",
-                          rst_fixed_ni: "lc_io_div4",
-                          rst_usb_ni: "lc_usb"}
+                          rst_fixed_ni: "lc_io_div4"}
     },
     { name: "peri",
       clock_srcs: {clk_peri_i: "io_div4", },

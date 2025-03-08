@@ -51,7 +51,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int               cycles_between_clks_ok;
   rand int               cycles_before_main_status;
   rand int               cycles_before_io_status;
-  rand int               cycles_before_usb_status;
   rand int               cycles_before_rst_lc_src;
   rand int               cycles_before_rst_sys_src;
   rand int               cycles_before_otp_done;
@@ -62,7 +61,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Slow responder delays.
   rand int               cycles_before_main_clk_en;
   rand int               cycles_before_io_clk_en;
-  rand int               cycles_before_usb_clk_en;
   rand int               cycles_before_main_pok;
 
   // This tracks the local objection count from these responders. We do not use UVM
@@ -75,7 +73,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
   constraint cycles_before_main_status_c {cycles_before_main_status inside {[0 : 4]};}
   constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
-  constraint cycles_before_usb_status_c {cycles_before_usb_status inside {[0 : 4]};}
   constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
   constraint cycles_before_rst_sys_src_base_c {cycles_before_rst_sys_src inside {[0 : 4]};}
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
@@ -87,9 +84,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   }
   constraint cycles_before_io_clk_en_c {
     cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 2]};
-  }
-  constraint cycles_before_usb_clk_en_c {
-    cycles_before_usb_clk_en inside {[1 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : MaxCyclesBeforeEnable]};}
 
@@ -107,7 +101,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task stop_randomizing_cycles();
     cycles_before_main_clk_en.rand_mode(0);
     cycles_before_io_clk_en.rand_mode(0);
-    cycles_before_usb_clk_en.rand_mode(0);
     cycles_before_main_pok.rand_mode(0);
   endtask
 
@@ -330,7 +323,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task slow_responder();
     logic [MaxCyclesBeforeEnable:0] main_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] io_clk_val_sr;
-    logic [MaxCyclesBeforeEnable:0] usb_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
     fork
       `SLOW_DETECT("main_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
@@ -368,11 +360,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val <= new_value;
           drop_slow_objection("io_clk_val");
         end
-
-      `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en)
-      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
-      `SLOW_ASSIGN("usb_clk_val", cycles_before_usb_clk_en, usb_clk_val_sr,
-                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
 
       `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
@@ -475,14 +462,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           drop_fast_objection("io_status");
         end
       forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
-          raise_fast_objection("usb_status");
-          `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
-                                cycles_before_main_status)
-          drop_fast_objection("usb_status");
-        end
-      forever
         @cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init begin
           raise_fast_objection("lc_done");
           `FAST_RESPONSE_ACTION("lc_done", cfg.pwrmgr_vif.fast_cb.pwr_lc_rsp.lc_done,
@@ -562,8 +541,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       begin
         ral.control.core_clk_en.set(control_enables.main_clk_en);
         ral.control.io_clk_en.set(control_enables.io_clk_en);
-        ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
-        ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
         ral.control.main_pd_n.set(control_enables.main_pd_n);
         ral.control.low_power_hint.set(low_power_hint);
         // Disable assertions when main power is down.
