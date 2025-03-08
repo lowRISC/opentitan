@@ -24,6 +24,7 @@ with_unknown! {
         FlashConfig = u32::from_le_bytes(*b"FLSH"),
         FlashInfoConfig = u32::from_le_bytes(*b"INFO"),
         Rescue = u32::from_le_bytes(*b"RESQ"),
+        DetachedSignature = u32::from_le_bytes(*b"SIGN"),
         NotPresent = u32::from_le_bytes(*b"ZZZZ"),
     }
 
@@ -35,6 +36,34 @@ with_unknown! {
         SpxPrehash = u32::from_le_bytes(*b"S+S2"),
         HybridSpxPure = u32::from_le_bytes(*b"H+Pu"),
         HybridSpxPrehash = u32::from_le_bytes(*b"H+S2"),
+    }
+}
+
+impl OwnershipKeyAlg {
+    pub fn is_detached(self) -> bool {
+        !matches!(self, Self::EcdsaP256)
+    }
+
+    pub fn is_ecdsa(self) -> bool {
+        matches!(
+            self,
+            Self::EcdsaP256 | Self::HybridSpxPure | Self::HybridSpxPrehash
+        )
+    }
+
+    pub fn is_spx(self) -> bool {
+        matches!(
+            self,
+            Self::SpxPure | Self::SpxPrehash | Self::HybridSpxPure | Self::HybridSpxPrehash
+        )
+    }
+
+    pub fn is_hybrid(self) -> bool {
+        matches!(self, Self::HybridSpxPure | Self::HybridSpxPrehash)
+    }
+
+    pub fn is_prehashed(self) -> bool {
+        matches!(self, Self::SpxPrehash | Self::HybridSpxPrehash)
     }
 }
 
