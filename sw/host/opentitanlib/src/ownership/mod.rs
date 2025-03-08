@@ -10,13 +10,15 @@ mod flash_info;
 mod misc;
 pub mod owner;
 mod rescue;
+mod signature;
 
 pub use application_key::{ApplicationKeyDomain, OwnerApplicationKey};
 pub use flash::{FlashFlags, OwnerFlashConfig, OwnerFlashRegion};
 pub use flash_info::{OwnerFlashInfoConfig, OwnerInfoPage};
-pub use misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
+pub use misc::{HybridRawPublicKey, KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
 pub use owner::{OwnerBlock, OwnerConfigItem, SramExecMode};
 pub use rescue::{CommandTag, OwnerRescueConfig, RescueProtocol};
+pub use signature::DetachedSignature;
 
 pub struct GlobalFlags;
 
