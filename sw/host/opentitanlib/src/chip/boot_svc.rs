@@ -7,6 +7,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::Serialize;
 use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
+use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
@@ -14,6 +15,7 @@ use super::ChipDataError;
 use crate::chip::boolean::HardenedBool;
 use crate::chip::rom_error::RomError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
+use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
 use crate::with_unknown;
 
 with_unknown! {
@@ -501,6 +503,25 @@ impl OwnershipUnlockRequest {
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
     }
+
+    pub fn detached_sign(
+        &mut self,
+        algorithm: OwnershipKeyAlg,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            BootSvcKind::OwnershipUnlockRequest.into(),
+            algorithm,
+            self.nonce,
+            ecdsa_key,
+            spx_key,
+        )
+    }
 }
 
 impl TryFrom<&[u8]> for OwnershipUnlockResponse {
@@ -557,6 +578,25 @@ impl OwnershipActivateRequest {
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        algorithm: OwnershipKeyAlg,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            BootSvcKind::OwnershipActivateRequest.into(),
+            algorithm,
+            self.nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 }
 

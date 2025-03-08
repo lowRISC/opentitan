@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, ensure, Result};
 use clap::{Args, Subcommand, ValueEnum};
 use std::any::Any;
 use std::fs::{File, OpenOptions};
@@ -100,6 +100,8 @@ impl CommandDispatch for OwnershipConfigCommand {
 pub struct OwnershipUnlockCommand {
     #[command(flatten)]
     params: OwnershipUnlockParams,
+    #[arg(short, long, help = "Filename to write the detached signature")]
+    detached: Option<PathBuf>,
     #[arg(short, long, help = "A file containing a binary unlock request")]
     input: Option<PathBuf>,
     #[arg(
@@ -115,7 +117,7 @@ impl CommandDispatch for OwnershipUnlockCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let unlock = self
+        let (unlock, signature) = self
             .params
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
         if let Some(output) = &self.output {
@@ -124,8 +126,27 @@ impl CommandDispatch for OwnershipUnlockCommand {
                 .create(true)
                 .truncate(true)
                 .open(output)?;
+
             unlock.write(&mut f)?;
         }
+        if self.params.algorithm.is_detached() && signature.is_some() && self.detached.is_none() {
+            log::warn!("The algorithm {} requires a detached signature, but no detach signature file was specified.", self.params.algorithm);
+        }
+        if let Some(detached) = &self.detached {
+            ensure!(
+                signature.is_some(),
+                anyhow!(
+                    "Requested to save the detached signature, but there is no detached signature."
+                )
+            );
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(detached)?;
+            signature.unwrap().write(&mut f)?;
+        }
+
         Ok(Some(Box::new(unlock)))
     }
 }
@@ -134,6 +155,8 @@ impl CommandDispatch for OwnershipUnlockCommand {
 pub struct OwnershipActivateCommand {
     #[command(flatten)]
     params: OwnershipActivateParams,
+    #[arg(short, long, help = "Filename to write the detached signature")]
+    detached: Option<PathBuf>,
     #[arg(short, long, help = "A file containing a binary unlock request")]
     input: Option<PathBuf>,
     #[arg(
@@ -149,12 +172,33 @@ impl CommandDispatch for OwnershipActivateCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let activate = self
+        let (activate, signature) = self
             .params
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
         if let Some(output) = &self.output {
-            let mut f = OpenOptions::new().write(true).create(true).open(output)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(output)?;
             activate.write(&mut f)?;
+        }
+        if self.params.algorithm.is_detached() && signature.is_some() && self.detached.is_none() {
+            log::warn!("The algorithm {} requires a detached signature, but no detach signature file was specified.", self.params.algorithm);
+        }
+        if let Some(detached) = &self.detached {
+            ensure!(
+                signature.is_some(),
+                anyhow!(
+                    "Requested to save the detached signature, but there is no detached signature."
+                )
+            );
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(detached)?;
+            signature.unwrap().write(&mut f)?;
         }
         Ok(Some(Box::new(activate)))
     }
