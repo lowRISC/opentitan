@@ -30,7 +30,7 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  parameter int NUM_PERI = 3;
+  parameter int NUM_PERI = 2;
   parameter int NUM_TRANS = 4;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
@@ -40,7 +40,6 @@ package clkmgr_env_pkg;
 
   parameter int MainClkHz = 1_000_000_000;
   parameter int IoClkHz = 1_000_000_000;
-  parameter int UsbClkHz = 1_000_000_000;
   parameter int AonClkHz = 62_500_000;
   parameter int IoDiv2ClkHz = 500_000_000;
   parameter int IoDiv4ClkHz = 250_000_000;
@@ -58,11 +57,9 @@ package clkmgr_env_pkg;
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
     PeriIoDiv4,
-    PeriIoDiv2,
-    PeriUsb
+    PeriIoDiv2
   } peri_e;
   typedef struct packed {
-    logic usb_peri_en;
     logic io_div2_peri_en;
     logic io_div4_peri_en;
   } clk_enables_t;
@@ -90,7 +87,6 @@ package clkmgr_env_pkg;
   typedef enum int {
     ClkMesrIoDiv4,
     ClkMesrMain,
-    ClkMesrUsb,
     ClkMesrSize
   } clk_mesr_e;
 
@@ -116,14 +112,12 @@ package clkmgr_env_pkg;
   // These must be after the declaration of clk_mesr_e for sizing.
   parameter int ClkInHz[ClkMesrSize] = {
     IoDiv4ClkHz,
-    MainClkHz,
-    UsbClkHz
+    MainClkHz
   };
 
   parameter int ExpectedCounts[ClkMesrSize] = {
     ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,
-    ClkInHz[ClkMesrMain] / AonClkHz - 1,
-    ClkInHz[ClkMesrUsb] / AonClkHz - 1
+    ClkInHz[ClkMesrMain] / AonClkHz - 1
   };
 
   // functions

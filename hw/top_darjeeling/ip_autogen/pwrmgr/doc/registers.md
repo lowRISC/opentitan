@@ -117,26 +117,24 @@ ACTIVE state) for any reason.
 ## CONTROL
 Control register
 - Offset: `0x14`
-- Reset default: `0x180`
-- Reset mask: `0x1f1`
+- Reset default: `0x40`
+- Reset mask: `0x71`
 - Register enable: [`CTRL_CFG_REGWEN`](#ctrl_cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LOW_POWER_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "CORE_CLK_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IO_CLK_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "USB_CLK_EN_LP", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "USB_CLK_EN_ACTIVE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MAIN_PD_N", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "LOW_POWER_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "CORE_CLK_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IO_CLK_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MAIN_PD_N", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                             |
-|:------:|:------:|:-------:|:-------------------------------------------------|
-|  31:9  |        |         | Reserved                                         |
-|   8    |   rw   |   0x1   | [MAIN_PD_N](#control--main_pd_n)                 |
-|   7    |   rw   |   0x1   | [USB_CLK_EN_ACTIVE](#control--usb_clk_en_active) |
-|   6    |   rw   |   0x0   | [USB_CLK_EN_LP](#control--usb_clk_en_lp)         |
-|   5    |   rw   |   0x0   | [IO_CLK_EN](#control--io_clk_en)                 |
-|   4    |   rw   |   0x0   | [CORE_CLK_EN](#control--core_clk_en)             |
-|  3:1   |        |         | Reserved                                         |
-|   0    |   rw   |   0x0   | [LOW_POWER_HINT](#control--low_power_hint)       |
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+|  31:7  |        |         | Reserved                                   |
+|   6    |   rw   |   0x1   | [MAIN_PD_N](#control--main_pd_n)           |
+|   5    |   rw   |   0x0   | [IO_CLK_EN](#control--io_clk_en)           |
+|   4    |   rw   |   0x0   | [CORE_CLK_EN](#control--core_clk_en)       |
+|  3:1   |        |         | Reserved                                   |
+|   0    |   rw   |   0x0   | [LOW_POWER_HINT](#control--low_power_hint) |
 
 ### CONTROL . MAIN_PD_N
 Active low, main power domain power down
@@ -145,24 +143,6 @@ Active low, main power domain power down
 |:--------|:-----------|:----------------------------------------------------------|
 | 0x0     | Power down | Main power domain is powered down during low power state. |
 | 0x1     | Power up   | Main power domain is kept powered during low power state  |
-
-
-### CONTROL . USB_CLK_EN_ACTIVE
-USB clock enable during active power state
-
-| Value   | Name     | Description                                  |
-|:--------|:---------|:---------------------------------------------|
-| 0x0     | Disabled | USB clock disabled during active power state |
-| 0x1     | Enabled  | USB clock enabled during active power state  |
-
-
-### CONTROL . USB_CLK_EN_LP
-USB clock enable during low power state
-
-| Value   | Name     | Description                                                                                                                   |
-|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Disabled | USB clock disabled during low power state                                                                                     |
-| 0x1     | Enabled  | USB clock enabled during low power state. However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled during low power state. |
 
 
 ### CONTROL . IO_CLK_EN

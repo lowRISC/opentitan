@@ -132,14 +132,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
-      forever
-        @cfg.clkmgr_vif.peri_usb_cb begin
-          if (cfg.usb_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
-                                             cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                             cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
     join
   endtask
 
@@ -196,13 +188,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
           posedge cfg.clkmgr_vif.main_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrMain, cfg.clkmgr_vif.main_freq_measurement,
                                       cfg.clkmgr_vif.main_timeout_err);
-        end
-
-      forever
-        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.usb_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrUsb, cfg.clkmgr_vif.usb_freq_measurement,
-                                      cfg.clkmgr_vif.usb_timeout_err);
         end
 
     join_none
@@ -330,8 +315,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "main_meas_ctrl_en": begin
       end
-      "usb_meas_ctrl_en": begin
-      end
       "io_meas_ctrl_shadowed": begin
       end
       "io_div2_meas_ctrl_shadowed": begin
@@ -339,8 +322,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "io_div4_meas_ctrl_shadowed": begin
       end
       "main_meas_ctrl_shadowed": begin
-      end
-      "usb_meas_ctrl_shadowed": begin
       end
       "recov_err_code": begin
         do_read_check = 1'b0;

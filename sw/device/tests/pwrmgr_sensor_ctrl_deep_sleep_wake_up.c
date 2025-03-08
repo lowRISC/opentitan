@@ -68,7 +68,6 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
 }
 
 bool test_main(void) {
-  dif_pwrmgr_domain_config_t cfg;
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -91,13 +90,10 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
     CHECK_DIF_OK(dif_pwrmgr_wakeup_request_recording_set_enabled(
         &pwrmgr, kDifToggleEnabled));
-
-    CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-    cfg &= (kDifPwrmgrDomainOptionIoClockInLowPower |
-            kDifPwrmgrDomainOptionUsbClockInLowPower |
-            kDifPwrmgrDomainOptionUsbClockInActivePower);
+    // This enters deep sleep, so the clock control bits are irrelevant since
+    // they are reset on wakeup.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, cfg));
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, 0));
     LOG_INFO("Issue WFI to enter sensor_ctrl sleep");
     wait_for_interrupt();
 

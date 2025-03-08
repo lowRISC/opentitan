@@ -55,12 +55,6 @@ package pwrmgr_reg_pkg;
     } main_pd_n;
     struct packed {
       logic        q;
-    } usb_clk_en_active;
-    struct packed {
-      logic        q;
-    } usb_clk_en_lp;
-    struct packed {
-      logic        q;
     } io_clk_en;
     struct packed {
       logic        q;
@@ -179,11 +173,11 @@ package pwrmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [32:32]
-    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [31:31]
-    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [30:29]
-    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [28:27]
-    pwrmgr_reg2hw_control_reg_t control; // [26:21]
+    pwrmgr_reg2hw_intr_state_reg_t intr_state; // [30:30]
+    pwrmgr_reg2hw_intr_enable_reg_t intr_enable; // [29:29]
+    pwrmgr_reg2hw_intr_test_reg_t intr_test; // [28:27]
+    pwrmgr_reg2hw_alert_test_reg_t alert_test; // [26:25]
+    pwrmgr_reg2hw_control_reg_t control; // [24:21]
     pwrmgr_reg2hw_cfg_cdc_sync_reg_t cfg_cdc_sync; // [20:19]
     pwrmgr_reg2hw_wakeup_en_mreg_t [3:0] wakeup_en; // [18:15]
     pwrmgr_reg2hw_reset_en_mreg_t [1:0] reset_en; // [14:13]
@@ -264,7 +258,7 @@ package pwrmgr_reg_pkg;
     4'b 0001, // index[ 2] PWRMGR_INTR_TEST
     4'b 0001, // index[ 3] PWRMGR_ALERT_TEST
     4'b 0001, // index[ 4] PWRMGR_CTRL_CFG_REGWEN
-    4'b 0011, // index[ 5] PWRMGR_CONTROL
+    4'b 0001, // index[ 5] PWRMGR_CONTROL
     4'b 0001, // index[ 6] PWRMGR_CFG_CDC_SYNC
     4'b 0001, // index[ 7] PWRMGR_WAKEUP_EN_REGWEN
     4'b 0001, // index[ 8] PWRMGR_WAKEUP_EN

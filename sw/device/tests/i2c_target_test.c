@@ -234,8 +234,8 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
     TRY(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
     // Configure the power domains for normal sleep.
-    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
-                        kDifPwrmgrDomainOptionUsbClockInActivePower;
+    TRY(dif_pwrmgr_get_domain_config(&pwrmgr, &pwrmgr_domain_cfg));
+    pwrmgr_domain_cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
   }
 
   TRY(pwrmgr_testutils_enable_low_power(

@@ -20,7 +20,6 @@ module rstmgr_bind;
     .clk_io_div2_i,
     .clk_io_div4_i,
     .clk_main_i,
-    .clk_usb_i,
     .por_n_i,
     .scan_rst_ni,
     .scanmode_i,
@@ -83,7 +82,6 @@ module rstmgr_bind;
     .clk_io_div2_i,
     .clk_io_div4_i,
     .clk_main_i,
-    .clk_usb_i,
     .rst_por_ni(rst_por_ni)
   );
 
