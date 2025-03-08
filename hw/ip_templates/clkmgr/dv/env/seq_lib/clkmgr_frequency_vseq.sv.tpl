@@ -83,7 +83,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     forever begin
       @cfg.aon_clk_rst_vif.cbn;
       if (saturate) begin
-        control_meas_saturation_assert(clk_tested, 0);
         cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
       end
     end
@@ -156,12 +155,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
                 calib_rdy,
                 ral.measure_ctrl_regwen.get()
                 ), UVM_MEDIUM)
-      `uvm_info(`gfn, "New round", UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("New round targetting %s", clk_tested), UVM_MEDIUM)
       // Allow calib_rdy to generate side-effects.
       cfg.clk_rst_vif.wait_clks(3);
       if (calib_rdy == MuBi4False) calibration_lost_checks();
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
-      if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
+      if (cause_saturation) begin
+        `uvm_info(`gfn, $sformatf(
+                  "Will cause saturation for %s so disable measurement assertions",
+                  clk_tested.name()), UVM_MEDIUM)
+        control_meas_saturation_assert(clk_tested, 0);
+      end
       foreach (ExpectedCounts[clk]) begin
         clk_mesr_e clk_mesr = clk_mesr_e'(clk);
         int min_threshold;
@@ -195,7 +199,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             wait_before_read_recov_err_code(expect_alert);
           join_any
           disable fork;
-          control_meas_saturation_assert(clk_tested, 1);
         end
       join
 
@@ -231,6 +234,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // Wait enough time for measurements to complete, and for alerts to get processed
       // by the alert agents so expected alerts are properly wound down.
       cfg.aon_clk_rst_vif.wait_clks(CyclesBetweenMeasurements);
+      if (cause_saturation) begin
+        `uvm_info(`gfn, "Enable measurement assertions", UVM_MEDIUM)
+        control_meas_saturation_assert(clk_tested, 1);
+      end
       // And clear errors.
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
