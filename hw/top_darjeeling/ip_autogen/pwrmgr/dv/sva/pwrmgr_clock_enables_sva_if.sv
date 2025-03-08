@@ -14,14 +14,10 @@ interface pwrmgr_clock_enables_sva_if (
   input logic                        main_pd_ni,
   input logic                        main_clk_en_i,
   input logic                        io_clk_en_i,
-  input logic                        usb_clk_en_lp_i,
-  input logic                        usb_clk_en_active_i,
-  input logic                        usb_ip_clk_status_i,
   // The output enables.
   input logic                        main_pd_n,
   input logic                        main_clk_en,
-  input logic                        io_clk_en,
-  input logic                        usb_clk_en
+  input logic                        io_clk_en
 );
 
   bit disable_sva;
@@ -38,21 +34,9 @@ interface pwrmgr_clock_enables_sva_if (
 
   `ASSERT(MainClkPwrUp_A, transitionUp_S |=> main_clk_en == 1'b1, clk_i, reset_or_disable)
   `ASSERT(IoClkPwrUp_A, transitionUp_S |=> io_clk_en == 1'b1, clk_i, reset_or_disable)
-  `ASSERT(UsbClkPwrUp_A, transitionUp_S |=> usb_clk_en == usb_clk_en_active_i, clk_i,
-          reset_or_disable)
-
-  // This deals with transitions while the fast fsm is active.
-  // Allow the usb enable to be slower since it also depends on usb clk_status.
-  sequence usbActiveTransition_S;
-    ##[0:7] !fast_is_active || usb_clk_en == (usb_clk_en_active_i | usb_ip_clk_status_i);
-  endsequence
-  `ASSERT(UsbClkActive_A, fast_is_active && $changed(usb_clk_en_active_i) |=> usbActiveTransition_S,
-          clk_i, reset_or_disable)
 
   `ASSERT(MainClkPwrDown_A, transitionDown_S |=> main_clk_en == (main_clk_en_i && main_pd_ni),
           clk_i, reset_or_disable)
   `ASSERT(IoClkPwrDown_A, transitionDown_S |=> io_clk_en == (io_clk_en_i && main_pd_ni),
-          clk_i, reset_or_disable)
-  `ASSERT(UsbClkPwrDown_A, transitionDown_S |=> usb_clk_en == (usb_clk_en_lp_i && main_pd_ni),
           clk_i, reset_or_disable)
 endinterface

@@ -19,10 +19,8 @@
 | clkmgr.[`IO_DIV4_MEAS_CTRL_SHADOWED`](#io_div4_meas_ctrl_shadowed) | 0x2c     |        4 | Configuration controls for io_div4 measurement.                            |
 | clkmgr.[`MAIN_MEAS_CTRL_EN`](#main_meas_ctrl_en)                   | 0x30     |        4 | Enable for measurement control                                             |
 | clkmgr.[`MAIN_MEAS_CTRL_SHADOWED`](#main_meas_ctrl_shadowed)       | 0x34     |        4 | Configuration controls for main measurement.                               |
-| clkmgr.[`USB_MEAS_CTRL_EN`](#usb_meas_ctrl_en)                     | 0x38     |        4 | Enable for measurement control                                             |
-| clkmgr.[`USB_MEAS_CTRL_SHADOWED`](#usb_meas_ctrl_shadowed)         | 0x3c     |        4 | Configuration controls for usb measurement.                                |
-| clkmgr.[`RECOV_ERR_CODE`](#recov_err_code)                         | 0x40     |        4 | Recoverable Error code                                                     |
-| clkmgr.[`FATAL_ERR_CODE`](#fatal_err_code)                         | 0x44     |        4 | Error code                                                                 |
+| clkmgr.[`RECOV_ERR_CODE`](#recov_err_code)                         | 0x38     |        4 | Recoverable Error code                                                     |
+| clkmgr.[`FATAL_ERR_CODE`](#fatal_err_code)                         | 0x3c     |        4 | Error code                                                                 |
 
 ## ALERT_TEST
 Alert Test Register
@@ -171,19 +169,18 @@ Enable jittery clock
 Clock enable for software gateable clocks.
 These clocks are directly controlled by software.
 - Offset: `0x18`
-- Reset default: `0x7`
-- Reset mask: `0x7`
+- Reset default: `0x3`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                                    |
 |:------:|:------:|:-------:|:--------------------|:---------------------------------------------------------------|
-|  31:3  |        |         |                     | Reserved                                                       |
-|   2    |   rw   |   0x1   | CLK_USB_PERI_EN     | 0 CLK_USB_PERI is disabled. 1 CLK_USB_PERI is enabled.         |
+|  31:2  |        |         |                     | Reserved                                                       |
 |   1    |   rw   |   0x1   | CLK_IO_DIV2_PERI_EN | 0 CLK_IO_DIV2_PERI is disabled. 1 CLK_IO_DIV2_PERI is enabled. |
 |   0    |   rw   |   0x1   | CLK_IO_DIV4_PERI_EN | 0 CLK_IO_DIV4_PERI is disabled. 1 CLK_IO_DIV4_PERI is enabled. |
 
@@ -336,72 +333,30 @@ there is room to adjust for measurement inaccuracies.
 |  11:6  |   rw   |   0x6   | LO     | Min threshold for main measurement |
 |  5:0   |   rw   |  0x1a   | HI     | Max threshold for main measurement |
 
-## USB_MEAS_CTRL_EN
-Enable for measurement control
-- Offset: `0x38`
-- Reset default: `0x9`
-- Reset mask: `0xf`
-- Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                |
-|:------:|:------:|:-------:|:-------|:---------------------------|
-|  31:4  |        |         |        | Reserved                   |
-|  3:0   |   rw   |   0x9   | EN     | Enable measurement for usb |
-
-## USB_MEAS_CTRL_SHADOWED
-Configuration controls for usb measurement.
-
-The threshold fields are made wider than required (by 1 bit) to ensure
-there is room to adjust for measurement inaccuracies.
-- Offset: `0x3c`
-- Reset default: `0x19a`
-- Reset mask: `0xfff`
-- Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "HI", "bits": 6, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-| 31:12  |        |         |        | Reserved                          |
-|  11:6  |   rw   |   0x6   | LO     | Min threshold for usb measurement |
-|  5:0   |   rw   |  0x1a   | HI     | Max threshold for usb measurement |
-
 ## RECOV_ERR_CODE
 Recoverable Error code
-- Offset: `0x40`
+- Offset: `0x38`
 - Reset default: `0x0`
-- Reset mask: `0x7f`
+- Reset mask: `0x1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SHADOW_UPDATE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "USB_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "USB_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "SHADOW_UPDATE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                              |
 |:------:|:------:|:-------:|:--------------------|:---------------------------------------------------------|
-|  31:7  |        |         |                     | Reserved                                                 |
-|   6    |  rw1c  |   0x0   | USB_TIMEOUT_ERR     | usb has timed out.                                       |
-|   5    |  rw1c  |   0x0   | MAIN_TIMEOUT_ERR    | main has timed out.                                      |
-|   4    |  rw1c  |   0x0   | IO_DIV4_TIMEOUT_ERR | io_div4 has timed out.                                   |
-|   3    |  rw1c  |   0x0   | USB_MEASURE_ERR     | usb has encountered a measurement error.                 |
+|  31:5  |        |         |                     | Reserved                                                 |
+|   4    |  rw1c  |   0x0   | MAIN_TIMEOUT_ERR    | main has timed out.                                      |
+|   3    |  rw1c  |   0x0   | IO_DIV4_TIMEOUT_ERR | io_div4 has timed out.                                   |
 |   2    |  rw1c  |   0x0   | MAIN_MEASURE_ERR    | main has encountered a measurement error.                |
 |   1    |  rw1c  |   0x0   | IO_DIV4_MEASURE_ERR | io_div4 has encountered a measurement error.             |
 |   0    |  rw1c  |   0x0   | SHADOW_UPDATE_ERR   | One of the shadow registers encountered an update error. |
 
 ## FATAL_ERR_CODE
 Error code
-- Offset: `0x44`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 

@@ -20,7 +20,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   localparam int IO_DIV2_FREQ_MHZ = 500;
   localparam int IO_DIV4_FREQ_MHZ = 250;
   localparam int MAIN_FREQ_MHZ = 1000;
-  localparam int USB_FREQ_MHZ = 1000;
 
   // POR needs to be stable not less than 32 clock cycles, plus some extra, before it
   // propagates to the rest of the logic.
@@ -97,7 +96,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     bit [5:0] io_div2_delay;
     bit [5:0] io_div4_delay;
     bit [5:0] main_delay;
-    bit [5:0] usb_delay;
   } clock_delays_in_ns_t;
 
   // What to expect when testing resets.
@@ -340,13 +338,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.start_clk();
       #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
-      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.start_clk();
     join else fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
       #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.stop_clk();
       #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
-      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.stop_clk();
     join
   endtask
 
@@ -467,7 +463,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       cfg.io_div2_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.usb_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
     join
   endtask
 
@@ -529,7 +524,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.io_div2_clk_rst_vif.set_freq_mhz(IO_DIV2_FREQ_MHZ);
     cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
-    cfg.usb_clk_rst_vif.set_freq_mhz(USB_FREQ_MHZ);
     // Initial values for some input pins.
     cfg.rstmgr_vif.scanmode_i  = prim_mubi_pkg::MuBi4False;
     cfg.rstmgr_vif.scan_rst_ni = scan_rst_ni;

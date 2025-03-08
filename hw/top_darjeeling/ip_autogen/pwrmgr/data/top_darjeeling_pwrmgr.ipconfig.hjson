@@ -77,7 +77,6 @@
     [
       main
       io
-      usb
     ]
     topname: darjeeling
     uniquified_modules:
