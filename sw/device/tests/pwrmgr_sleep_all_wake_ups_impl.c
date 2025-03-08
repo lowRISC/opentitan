@@ -436,10 +436,11 @@ bool execute_test(size_t wakeup_unit, bool deep_sleep) {
   src->config(wakeup);
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
-        (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
+  if (deep_sleep) {
+    cfg &= ~kDifPwrmgrDomainOptionMainPowerInLowPower;
+  } else {
+    cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
+  }
   CHECK_STATUS_OK(
       pwrmgr_testutils_enable_low_power(&pwrmgr, 1 << wakeup_unit, cfg));
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_unit);

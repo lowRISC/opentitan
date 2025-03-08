@@ -22,7 +22,6 @@ interface rstmgr_cascading_sva_if (
   input logic clk_io_div2_i,
   input logic clk_io_div4_i,
   input logic clk_main_i,
-  input logic clk_usb_i,
   input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,
   input [rstmgr_pkg::PowerDomains-1:0] rst_lc_req,
@@ -168,8 +167,6 @@ interface rstmgr_cascading_sva_if (
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
 
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUsb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
-                    resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
 
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],

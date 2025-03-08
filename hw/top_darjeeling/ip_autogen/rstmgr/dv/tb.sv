@@ -49,12 +49,6 @@ module tb;
     .rst_n()
   );
 
-  wire clk_usb;
-  clk_rst_if usb_clk_rst_if (
-    .clk  (clk_usb),
-    .rst_n()
-  );
-
 
   tl_if tl_if (
     .clk,
@@ -74,7 +68,6 @@ module tb;
     io_div2_clk_rst_if.set_active();
     io_div4_clk_rst_if.set_active();
     main_clk_rst_if.set_active();
-    usb_clk_rst_if.set_active();
   end
 
   `DV_ALERT_IF_CONNECT()
@@ -90,7 +83,6 @@ module tb;
     .clk_io_div2_i(clk_io_div2),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
-    .clk_usb_i    (clk_usb),
     .clk_por_i    (clk_io_div4),
     .rst_por_ni   (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
@@ -130,8 +122,6 @@ module tb;
                                             io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif",
                                             main_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif",
-                                            usb_clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",

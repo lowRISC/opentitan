@@ -225,10 +225,8 @@
 module xbar_main (
   input clk_main_i,
   input clk_fixed_i,
-  input clk_usb_i,
   input rst_main_ni,
   input rst_fixed_ni,
-  input rst_usb_ni,
 
   // Host interfaces
   input  tlul_pkg::tl_h2d_t tl_rv_core_ibex__corei_i,

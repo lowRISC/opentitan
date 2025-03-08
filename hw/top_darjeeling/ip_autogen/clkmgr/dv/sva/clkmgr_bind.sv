@@ -27,13 +27,6 @@ module clkmgr_bind;
     .status(pwr_o.io_status)
   );
 
-  bind clkmgr clkmgr_pwrmgr_sva_if #(.IS_USB(1)) clkmgr_pwrmgr_usb_sva_if (
-    .clk_i,
-    .rst_ni,
-    .clk_en(pwr_i.usb_ip_clk_en),
-    .status(pwr_o.usb_status)
-  );
-
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div4_peri_sva_if (
     .clk(clocks_o.clk_io_div4_powerup),
     .rst_n(rst_io_div4_ni),
@@ -50,15 +43,6 @@ module clkmgr_bind;
     .sw_clk_en(clk_io_div2_peri_sw_en),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_io_div2_peri)
-  );
-
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_usb_peri_sva_if (
-    .clk(clocks_o.clk_usb_powerup),
-    .rst_n(rst_usb_ni),
-    .ip_clk_en(pwr_i.usb_ip_clk_en),
-    .sw_clk_en(clk_usb_peri_sw_en),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_usb_peri)
   );
 
   // Assertions for transactional clocks.
@@ -168,10 +152,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.main_powerup == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_usb_powerup (
-    .cg_en(cg_en_o.usb_powerup == prim_mubi_pkg::MuBi4True)
-  );
-
   // Non-AON clock gating enables with no software control.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_infra (
     .clk(clk_io_div4),
@@ -218,15 +198,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.main_secure == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_usb_infra (
-    .clk(clk_usb),
-    .rst_n(rst_usb_ni),
-    .ip_clk_en(clk_usb_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.usb_infra == prim_mubi_pkg::MuBi4True)
-  );
-
   // Software controlled gating enables.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_peri (
     .clk(clk_io_div4),
@@ -244,15 +215,6 @@ module clkmgr_bind;
     .sw_clk_en(clk_io_div2_peri_sw_en),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_usb_peri (
-    .clk(clk_usb),
-    .rst_n(rst_usb_ni),
-    .ip_clk_en(clk_usb_en),
-    .sw_clk_en(clk_usb_peri_sw_en),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.usb_peri == prim_mubi_pkg::MuBi4True)
   );
 
   // Hint controlled gating enables.
@@ -312,13 +274,6 @@ module clkmgr_bind;
     .rst_n(rst_ni),
     .calib_rdy(calib_rdy_i),
     .meas_ctrl_en(u_reg.main_meas_ctrl_en_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_usb_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.usb_meas_ctrl_en_qs)
   );
 
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (

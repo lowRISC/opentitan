@@ -300,7 +300,6 @@ module top_darjeeling #(
   // All externally supplied clocks
   input clk_main_i,
   input clk_io_i,
-  input clk_usb_i,
   input clk_aon_i,
 
   // All clocks forwarded to ast
@@ -924,21 +923,15 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_cg_en_2;
     assign unused_cg_en_2 = clkmgr_aon_cg_en.io_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_3;
-    assign unused_cg_en_3 = clkmgr_aon_cg_en.usb_powerup;
+    assign unused_cg_en_3 = clkmgr_aon_cg_en.io_div2_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_4;
-    assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
+    assign unused_cg_en_4 = clkmgr_aon_cg_en.aon_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_5;
-    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_infra;
+    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_peri;
     prim_mubi_pkg::mubi4_t unused_cg_en_6;
-    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_peri;
+    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_timers;
     prim_mubi_pkg::mubi4_t unused_cg_en_7;
-    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_timers;
-    prim_mubi_pkg::mubi4_t unused_cg_en_8;
-    assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_div2_peri;
-    prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.usb_peri;
+    assign unused_cg_en_7 = clkmgr_aon_cg_en.io_div2_peri;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -958,47 +951,39 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_rst_en_8;
     assign unused_rst_en_8 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_9;
-    assign unused_rst_en_9 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_9 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_10;
-    assign unused_rst_en_10 = rstmgr_aon_rst_en.por_usb[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_10 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_11;
-    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_12;
-    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_13;
-    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_14;
-    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_15;
-    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_16;
-    assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_17;
-    assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_18;
-    assign unused_rst_en_18 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_18 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_19;
-    assign unused_rst_en_19 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_19 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_20;
-    assign unused_rst_en_20 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_20 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_21;
-    assign unused_rst_en_21 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_21 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_22;
-    assign unused_rst_en_22 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_22 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_23;
-    assign unused_rst_en_23 = rstmgr_aon_rst_en.lc_usb[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_23 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_24;
-    assign unused_rst_en_24 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_24 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_25;
-    assign unused_rst_en_25 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_26;
-    assign unused_rst_en_26 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_27;
-    assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_28;
-    assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_25 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
 //VCS coverage on
 // pragma coverage on
 
@@ -1485,7 +1470,6 @@ module top_darjeeling #(
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_aon_clocks.clk_main_powerup),
       .clk_io_i (clkmgr_aon_clocks.clk_io_powerup),
-      .clk_usb_i (clkmgr_aon_clocks.clk_usb_powerup),
       .clk_io_div2_i (clkmgr_aon_clocks.clk_io_div2_powerup),
       .clk_io_div4_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -1524,7 +1508,6 @@ module top_darjeeling #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_main_i (clk_main_i),
       .clk_io_i (clk_io_i),
-      .clk_usb_i (clk_usb_i),
       .clk_aon_i (clk_aon_i),
       .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_io_div4_shadowed_n[rstmgr_pkg::DomainAonSel]),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -1533,13 +1516,11 @@ module top_darjeeling #(
       .rst_io_div2_ni (rstmgr_aon_resets.rst_lc_io_div2_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_div4_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_main_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel]),
-      .rst_usb_ni (rstmgr_aon_resets.rst_lc_usb_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_io_ni (rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_io_div2_ni (rstmgr_aon_resets.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_io_div4_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-      .rst_root_main_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel]),
-      .rst_root_usb_ni (rstmgr_aon_resets.rst_por_usb_n[rstmgr_pkg::DomainAonSel])
+      .rst_root_main_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel])
   );
   pinmux #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:19]),
@@ -2876,10 +2857,8 @@ module top_darjeeling #(
   xbar_main u_xbar_main (
     .clk_main_i (clkmgr_aon_clocks.clk_main_infra),
     .clk_fixed_i (clkmgr_aon_clocks.clk_io_div4_infra),
-    .clk_usb_i (clkmgr_aon_clocks.clk_usb_infra),
     .rst_main_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
     .rst_fixed_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
-    .rst_usb_ni (rstmgr_aon_resets.rst_lc_usb_n[rstmgr_pkg::Domain0Sel]),
 
     // port: tl_rv_core_ibex__corei
     .tl_rv_core_ibex__corei_i(main_tl_rv_core_ibex__corei_req),

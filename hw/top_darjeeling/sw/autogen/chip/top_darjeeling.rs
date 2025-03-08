@@ -201,7 +201,7 @@ pub const CLKMGR_AON_BASE_ADDR: usize = 0x30420000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #CLKMGR_AON_BASE_ADDR and
 /// `CLKMGR_AON_BASE_ADDR + CLKMGR_AON_SIZE_BYTES`.
-pub const CLKMGR_AON_SIZE_BYTES: usize = 0x80;
+pub const CLKMGR_AON_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for pinmux_aon in top darjeeling.
 ///
@@ -2793,8 +2793,6 @@ pub enum GateableClocks {
     IoDiv4Peri = 0,
     /// Clock clk_io_div2_peri in group peri
     IoDiv2Peri = 1,
-    /// Clock clk_usb_peri in group peri
-    UsbPeri = 2,
 }
 
 /// Clock Manager Software-Hinted Clocks.

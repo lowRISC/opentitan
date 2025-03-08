@@ -10,7 +10,6 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
 
   constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
   constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
-  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
   constraint all_busy_c {idle == IdleAllBusy;}
 
   task body();

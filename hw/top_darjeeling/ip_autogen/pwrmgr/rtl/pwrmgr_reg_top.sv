@@ -142,10 +142,6 @@ module pwrmgr_reg_top (
   logic control_core_clk_en_wd;
   logic control_io_clk_en_qs;
   logic control_io_clk_en_wd;
-  logic control_usb_clk_en_lp_qs;
-  logic control_usb_clk_en_lp_wd;
-  logic control_usb_clk_en_active_qs;
-  logic control_usb_clk_en_active_wd;
   logic control_main_pd_n_qs;
   logic control_main_pd_n_wd;
   logic cfg_cdc_sync_we;
@@ -393,61 +389,7 @@ module pwrmgr_reg_top (
     .qs     (control_io_clk_en_qs)
   );
 
-  //   F[usb_clk_en_lp]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_control_usb_clk_en_lp (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (control_gated_we),
-    .wd     (control_usb_clk_en_lp_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.control.usb_clk_en_lp.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (control_usb_clk_en_lp_qs)
-  );
-
-  //   F[usb_clk_en_active]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_control_usb_clk_en_active (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (control_gated_we),
-    .wd     (control_usb_clk_en_active_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.control.usb_clk_en_active.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (control_usb_clk_en_active_qs)
-  );
-
-  //   F[main_pd_n]: 8:8
+  //   F[main_pd_n]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1177,11 +1119,7 @@ module pwrmgr_reg_top (
 
   assign control_io_clk_en_wd = reg_wdata[5];
 
-  assign control_usb_clk_en_lp_wd = reg_wdata[6];
-
-  assign control_usb_clk_en_active_wd = reg_wdata[7];
-
-  assign control_main_pd_n_wd = reg_wdata[8];
+  assign control_main_pd_n_wd = reg_wdata[6];
   assign cfg_cdc_sync_we = addr_hit[6] & reg_we & !reg_error;
 
   assign cfg_cdc_sync_wd = reg_wdata[0];
@@ -1267,9 +1205,7 @@ module pwrmgr_reg_top (
         reg_rdata_next[0] = control_low_power_hint_qs;
         reg_rdata_next[4] = control_core_clk_en_qs;
         reg_rdata_next[5] = control_io_clk_en_qs;
-        reg_rdata_next[6] = control_usb_clk_en_lp_qs;
-        reg_rdata_next[7] = control_usb_clk_en_active_qs;
-        reg_rdata_next[8] = control_main_pd_n_qs;
+        reg_rdata_next[6] = control_main_pd_n_qs;
       end
 
       addr_hit[6]: begin

@@ -67,7 +67,6 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   constraint all_clk_en_c {
     io_ip_clk_en == 1;
     main_ip_clk_en == 1;
-    usb_ip_clk_en == 1;
   }
 
   function void post_randomize();

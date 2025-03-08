@@ -148,12 +148,14 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
   // Configure pwrmgr to deep powerdown.
   configure_pad_retention_types(pinmux);
 
-  if (!deepsleep) {
-    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
-                        kDifPwrmgrDomainOptionUsbClockInActivePower;
+  CHECK_DIF_OK(dif_pwrmgr_get_domain_config(pwrmgr, &pwrmgr_domain_cfg));
+  if (deepsleep) {
+    pwrmgr_domain_cfg &= ~kDifPwrmgrDomainOptionMainPowerInLowPower;
+  } else {
+    pwrmgr_domain_cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
   }
   CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, pwrmgr_domain_cfg,
-                                            kDifToggleEnabled));
+                                            kDifToggleDisabled));
   CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled,
                                                 kDifToggleEnabled));
 
