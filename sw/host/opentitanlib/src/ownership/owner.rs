@@ -2,16 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, anyhow, ensure};
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde::Deserialize;
 use serde_annotate::Annotate;
+use sphincsplus::SpxSecretKey;
 use std::convert::TryFrom;
 use std::io::{Read, Write};
 
 use super::GlobalFlags;
 use super::misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
-use super::{OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerRescueConfig};
+use super::{
+    DetachedSignature, OwnerApplicationKey, OwnerFlashConfig, OwnerFlashInfoConfig,
+    OwnerRescueConfig,
+};
+use crate::crypto::Error as CryptoError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaRawSignature};
 use crate::with_unknown;
 
@@ -219,10 +224,36 @@ impl OwnerBlock {
         })
     }
     pub fn sign(&mut self, key: &EcdsaPrivateKey) -> Result<()> {
+        ensure!(
+            self.ownership_key_alg == OwnershipKeyAlg::EcdsaP256,
+            CryptoError::SignFailed(anyhow!(
+                "Algorithm {} requires a detached signature",
+                self.ownership_key_alg
+            ))
+        );
         let mut data = Vec::new();
         self.write(&mut data)?;
         self.signature = key.digest_and_sign(&data[..Self::SIGNATURE_OFFSET])?;
         Ok(())
+    }
+
+    pub fn detached_sign(
+        &mut self,
+        nonce: u64,
+        ecdsa_key: Option<&EcdsaPrivateKey>,
+        spx_key: Option<&SpxSecretKey>,
+    ) -> Result<DetachedSignature> {
+        self.signature = Default::default();
+        let mut data = Vec::new();
+        self.write(&mut data)?;
+        DetachedSignature::new(
+            &data[..Self::SIGNATURE_OFFSET],
+            TlvTag::Owner.into(),
+            self.ownership_key_alg,
+            nonce,
+            ecdsa_key,
+            spx_key,
+        )
     }
 
     pub fn is_default_constraint(d: &[u32; 8]) -> bool {

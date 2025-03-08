@@ -120,6 +120,7 @@ rust_library(
         "src/ownership/mod.rs",
         "src/ownership/owner.rs",
         "src/ownership/rescue.rs",
+        "src/ownership/signature.rs",
         "src/rescue/mod.rs",
         "src/rescue/serial.rs",
         "src/rescue/xmodem.rs",

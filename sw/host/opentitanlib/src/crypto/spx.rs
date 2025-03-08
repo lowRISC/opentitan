@@ -34,6 +34,13 @@ impl TryFrom<&sphincsplus::SpxPublicKey> for SpxRawPublicKey {
     }
 }
 
+impl TryFrom<sphincsplus::SpxPublicKey> for SpxRawPublicKey {
+    type Error = Error;
+    fn try_from(v: SpxPublicKey) -> Result<Self, Self::Error> {
+        (&v).try_into()
+    }
+}
+
 impl FromStr for SpxRawPublicKey {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
