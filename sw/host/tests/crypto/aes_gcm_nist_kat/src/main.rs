@@ -66,7 +66,7 @@ fn run_aes_gcm_testcase(
         "encrypt" => CryptotestAesGcmOperation::Encrypt.send(spi_console)?,
         "decrypt" => CryptotestAesGcmOperation::Decrypt.send(spi_console)?,
         _ => panic!("Invalid AES-GCM operation"),
-    }
+    };
 
     let mut iv: ArrayVec<u8, AES_BLOCK_BYTES> = ArrayVec::new();
     iv.try_extend_from_slice(&test_case.iv)?;

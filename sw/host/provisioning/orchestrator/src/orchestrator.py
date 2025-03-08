@@ -117,6 +117,12 @@ def main(args_in):
         help="If set, the FPGA bitsream will not be cleared before CP.",
     )
     parser.add_argument(
+        "--log-ujson-payloads",
+        action="store_true",
+        default=False,
+        help="Log UJSON host-->device payloads to console for ATE development.",
+    )
+    parser.add_argument(
         "--non-interactive",
         action="store_true",
         default=False,
@@ -179,6 +185,7 @@ def main(args_in):
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
                 fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
+                log_ujson_payloads=args.log_ujson_payloads,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     if args.cp_only:

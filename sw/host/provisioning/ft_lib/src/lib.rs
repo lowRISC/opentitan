@@ -34,6 +34,7 @@ use ot_certs::x509::parse_certificate;
 use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
+use ujson_lib::UjsonPayloads;
 use ujson_lib::provisioning_data::{LcTokenHash, ManufCertgenInputs, PersoBlob, SerdesSha256Hash};
 use util_lib::hash_lc_token;
 
@@ -82,6 +83,7 @@ pub fn test_unlock(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn run_sram_ft_individualize(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
@@ -177,6 +179,7 @@ fn send_rma_unlock_token_hash(
     rma_unlock_token: &ArrayVec<u32, 4>,
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
+    ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
     let rma_token_hash = LcTokenHash {
         hash: hash_lc_token(rma_unlock_token.as_bytes())?,
@@ -188,7 +191,10 @@ fn send_rma_unlock_token_hash(
         r"Waiting For RMA Unlock Token Hash ...",
         timeout,
     )?;
-    rma_token_hash.send_with_crc(spi_console)?;
+    ujson_payloads.dut_in.insert(
+        "FT_PERSO_RMA_TOKEN_HASH".to_string(),
+        rma_token_hash.send_with_crc(spi_console)?,
+    );
     Ok(())
 }
 
@@ -297,6 +303,7 @@ fn provision_certificates(
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
+    ujson_payloads: &mut UjsonPayloads,
     response: &mut PersonalizeResponse,
 ) -> Result<()> {
     // Send attestation TCB measurements for generating DICE certificates.
@@ -305,7 +312,10 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-wait-ready", t0);
 
     let t0 = Instant::now();
-    perso_certgen_inputs.send(spi_console)?;
+    ujson_payloads.dut_in.insert(
+        "FT_PERSO_CERTGEN_INPUTS".to_string(),
+        perso_certgen_inputs.send(spi_console)?,
+    );
     response.stats.log_elapsed_time("perso-certgen-inputs", t0);
 
     // Wait until the device exports the TBS certificates.
@@ -436,7 +446,10 @@ fn provision_certificates(
     };
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Importing endorsed certificates ...", timeout)?;
-    manuf_perso_data_back.send(spi_console)?;
+    ujson_payloads.dut_in.insert(
+        "FT_PERSO_DATA_IN".to_string(),
+        manuf_perso_data_back.send(spi_console)?,
+    );
     let _ = UartConsole::wait_for(spi_console, r"Finished importing certificates.", timeout)?;
     response.stats.log_elapsed_time("perso-import-certs", t0);
 
@@ -500,6 +513,7 @@ pub fn run_ft_personalize(
     perso_certgen_inputs: &ManufCertgenInputs,
     second_bootstrap: PathBuf,
     spi_console: &SpiConsoleDevice,
+    ujson_payloads: &mut UjsonPayloads,
     timeout: Duration,
     response: &mut PersonalizeResponse,
 ) -> Result<()> {
@@ -521,7 +535,7 @@ pub fn run_ft_personalize(
     // Send RMA unlock token digest to device.
     let second_t0 = Instant::now();
     let t0 = second_t0;
-    send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console)?;
+    send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console, ujson_payloads)?;
     response.stats.log_elapsed_time("send-rma-unlock-token", t0);
 
     // Provision all device certificates.
@@ -532,6 +546,7 @@ pub fn run_ft_personalize(
         perso_certgen_inputs,
         timeout,
         spi_console,
+        ujson_payloads,
         response,
     )?;
     response.stats.log_elapsed_time("perso-all-certs-done", t0);
