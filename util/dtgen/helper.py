@@ -458,17 +458,13 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 if pad["port_type"] in ["output", "inout", "`INOUT_AO"]:
                     pad_insel = \
                         Name.from_snake_case(f"top_{topname}_pinmux_insel_{padname}").as_c_enum()
-            elif pad["connection"] == "direct":
+            # Follow the same logic as in toplevel_pkg.sv.tpl and topgen/lib.py: the pads
+            # non-muxed enumerated from pinmux.ios are all direct pads for the pinmux.
+            else:
                 pad_type = Name.from_snake_case("dio")
                 pad_mio_out_or_direct_pad = \
                     Name.from_snake_case(f"top_{topname}_direct_pads_{padname}").as_c_enum()
                 pad_insel = "0"
-            else:
-                assert pad["connection"] == "manual", \
-                    "unexpected connection type '{}'".format(pad["connection"])
-                pad_mio_out_or_direct_pad = "0"
-                pad_insel = "0"
-                pad_type = Name.from_snake_case("unspecified")
             self.pad_dt_values[Name.from_snake_case(padname)] = {
                 self.DT_PAD_TYPE_FIELD_NAME: pad_type,
                 self.DT_PAD_MIO_OUT_DIO_FIELD_NAME: pad_mio_out_or_direct_pad,
