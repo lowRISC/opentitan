@@ -42,6 +42,8 @@ package clkmgr_env_pkg;
   parameter int IoClkHz = 96_000_000;
   parameter int UsbClkHz = 48_000_000;
   parameter int AonClkHz = 200_000;
+  parameter int IoDiv2ClkHz = 48_000_000;
+  parameter int IoDiv4ClkHz = 24_000_000;
   parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
@@ -55,10 +57,10 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-    PeriDiv4,
-    PeriDiv2,
-    PeriUsb,
-    PeriIo
+    PeriIoDiv4,
+    PeriIoDiv2,
+    PeriIo,
+    PeriUsb
   } peri_e;
   typedef struct packed {
     logic usb_peri_en;
@@ -74,7 +76,7 @@ package clkmgr_env_pkg;
     TransOtbn
   } trans_e;
   typedef struct packed {
-    logic otbn_main;
+    logic otbn;
     logic kmac;
     logic hmac;
     logic aes;
@@ -92,7 +94,8 @@ package clkmgr_env_pkg;
     ClkMesrIoDiv2,
     ClkMesrIoDiv4,
     ClkMesrMain,
-    ClkMesrUsb
+    ClkMesrUsb,
+    ClkMesrSize
   } clk_mesr_e;
 
   // Mubi test mode
@@ -106,7 +109,7 @@ package clkmgr_env_pkg;
   } clkmgr_mubi_e;
 
   // This is to examine separately the measurement and timeout recoverable error bits.
-  typedef logic [ClkMesrUsb:0] recov_bits_t;
+  typedef logic [ClkMesrSize-1:0] recov_bits_t;
 
   typedef struct packed {
     recov_bits_t timeouts;
@@ -115,9 +118,15 @@ package clkmgr_env_pkg;
   } clkmgr_recov_err_t;
 
   // These must be after the declaration of clk_mesr_e for sizing.
-  parameter int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
+  parameter int ClkInHz[ClkMesrSize] = {
+    IoClkHz,
+    IoDiv2ClkHz,
+    IoDiv4ClkHz,
+    MainClkHz,
+    UsbClkHz
+  };
 
-  parameter int ExpectedCounts[ClkMesrUsb+1] = {
+  parameter int ExpectedCounts[ClkMesrSize] = {
     ClkInHz[ClkMesrIo] / AonClkHz - 1,
     ClkInHz[ClkMesrIoDiv2] / AonClkHz - 1,
     ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,

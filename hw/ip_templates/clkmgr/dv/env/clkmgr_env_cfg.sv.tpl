@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<%
+all_src_names = sorted(s['name'] for s in src_clks.values())
+all_derived_names = sorted(s['name'] for s in derived_clks.values())
+%>\
 class clkmgr_env_cfg extends cip_base_env_cfg #(
   .RAL_T(clkmgr_reg_block)
 );
@@ -14,14 +18,18 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
   // ext interfaces
   virtual clkmgr_if      clkmgr_vif;
   virtual clkmgr_csrs_if clkmgr_csrs_vif;
-  virtual clk_rst_if     main_clk_rst_vif;
-  virtual clk_rst_if     io_clk_rst_vif;
-  virtual clk_rst_if     usb_clk_rst_vif;
-  virtual clk_rst_if     aon_clk_rst_vif;
+% for src_name in all_src_names:
+  virtual clk_rst_if     ${src_name}_clk_rst_vif;
+% endfor
+% for src_name in all_derived_names:
+  virtual clk_rst_if     ${src_name}_clk_rst_vif;
+% endfor
 
-  virtual clk_rst_if root_io_clk_rst_vif;
-  virtual clk_rst_if root_main_clk_rst_vif;
-  virtual clk_rst_if root_usb_clk_rst_vif;
+% for clk_family in parent_child_clks.values():
+  % for src in clk_family:
+  virtual clk_rst_if root_${src}_clk_rst_vif;
+  % endfor
+% endfor
 
   `uvm_object_utils_begin(clkmgr_env_cfg)
   `uvm_object_utils_end

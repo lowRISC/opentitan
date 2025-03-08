@@ -23,9 +23,11 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
   rand hintables_t initial_hints;
 
   // The clk_hints CSR cannot be manipulated in low power mode.
-  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
-  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
-  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
+% for src in sorted(src_clks.values(), key=lambda s: s['name']):
+  % if not src['aon']:
+  constraint ${src['name']}_ip_clk_en_on_c {${src['name']}_ip_clk_en == 1'b1;}
+  % endif
+% endfor
 
   task body();
     for (int i = 0; i < num_trans; ++i) begin

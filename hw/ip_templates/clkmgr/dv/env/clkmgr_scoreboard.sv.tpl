@@ -1,6 +1,15 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+  from itertools import chain
+  from topgen.lib import Name
+  rg_srcs = list(sorted({sig['src_name'] for sig
+                         in typed_clocks['rg_clks'].values()}))
+
+  def to_camel_case(s: str):
+    return Name.from_snake_case(s).as_camel_case()
+%>\
 
 // The scoreboard checks the jitter_an_o output, and processes CSR checks.
 // It also samples most functional coverage groups.
@@ -116,38 +125,29 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
   task sample_peri_covs();
     fork
+% for clk in typed_clocks['sw_clks'].values():
+<%
+  clk_name = clk['src_name']
+  if clk_name in derived_clks:
+    root_name = derived_clks[clk_name]['src']['name']
+  else:
+    root_name = clk_name
+%>\
       forever
-        @cfg.clkmgr_vif.peri_io_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
-                                            cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
-                                            cfg.clkmgr_vif.scanmode_i == MuBi4True);
+        @cfg.clkmgr_vif.peri_${clk_name}_cb begin
+          if (cfg.${root_name}_clk_rst_vif.rst_n && cfg.en_cov) begin
+<%
+  spc = " " * (len("            ") +
+               len("cov.peri_cg_wrap[Peri") +
+	       len(to_camel_case(clk_name)) +
+	       len("].sample("))
+%>\
+            cov.peri_cg_wrap[Peri${to_camel_case(clk_name)}].sample(cfg.clkmgr_vif.peri_${clk_name}_cb.clk_enable,
+${spc}cfg.clkmgr_vif.peri_${clk_name}_cb.ip_clk_en,
+${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
-      forever
-        @cfg.clkmgr_vif.peri_div2_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriDiv2].sample(cfg.clkmgr_vif.peri_div2_cb.clk_enable,
-                                              cfg.clkmgr_vif.peri_div2_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      forever
-        @cfg.clkmgr_vif.peri_div4_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriDiv4].sample(cfg.clkmgr_vif.peri_div4_cb.clk_enable,
-                                              cfg.clkmgr_vif.peri_div4_cb.ip_clk_en,
-                                              cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      forever
-        @cfg.clkmgr_vif.peri_usb_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriUsb].sample(cfg.clkmgr_vif.peri_usb_cb.clk_enable,
-                                             cfg.clkmgr_vif.peri_usb_cb.ip_clk_en,
-                                             cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
+% endfor
     join
   endtask
 
@@ -192,38 +192,15 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
   task sample_freq_measurement_covs();
     fork
+% for src in rg_srcs:
       forever
-        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIo, cfg.clkmgr_vif.io_freq_measurement,
-                                      cfg.clkmgr_vif.io_timeout_err);
+        @(posedge cfg.clkmgr_vif.${src}_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.${src}_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesr${to_camel_case(src)}, cfg.clkmgr_vif.${src}_freq_measurement,
+                                      cfg.clkmgr_vif.${src}_timeout_err);
         end
 
-      forever
-        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_div2_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIoDiv2, cfg.clkmgr_vif.io_div2_freq_measurement,
-                                      cfg.clkmgr_vif.io_div2_timeout_err);
-
-        end
-      forever
-        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
-                                      cfg.clkmgr_vif.io_div4_timeout_err);
-        end
-      forever
-        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.main_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrMain, cfg.clkmgr_vif.main_freq_measurement,
-                                      cfg.clkmgr_vif.main_timeout_err);
-        end
-      forever
-        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.usb_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrUsb, cfg.clkmgr_vif.usb_freq_measurement,
-                                      cfg.clkmgr_vif.usb_timeout_err);
-        end
+%endfor
     join_none
   endtask
 
@@ -232,17 +209,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       forever
         @cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr if (cfg.en_cov) begin
           cov.recov_err_cg.sample(
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[10],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[9],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[8],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[7],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[6],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[5],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[4],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[3],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[2],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[1],
-              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[0]);
+% for i in list(reversed(range(1 + 2 * len(rg_srcs)))):
+<% sep = ');' if loop.last else ',' %>\
+              cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr[${i}]${sep}
+% endfor
           `uvm_info(`gfn, $sformatf(
                     "Recoverable errors sampled: 0x%x", cfg.clkmgr_csrs_vif.csrs_cb.recov_err_csr),
                     UVM_MEDIUM)
@@ -341,26 +311,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "measure_ctrl_regwen": begin
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
-      "io_meas_ctrl_en": begin
+% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+      "${clk}_meas_ctrl_en": begin
       end
-      "io_div2_meas_ctrl_en": begin
+% endfor
+% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+      "${clk}_meas_ctrl_shadowed": begin
       end
-      "io_div4_meas_ctrl_en": begin
-      end
-      "main_meas_ctrl_en": begin
-      end
-      "usb_meas_ctrl_en": begin
-      end
-      "io_meas_ctrl_shadowed": begin
-      end
-      "io_div2_meas_ctrl_shadowed": begin
-      end
-      "io_div4_meas_ctrl_shadowed": begin
-      end
-      "main_meas_ctrl_shadowed": begin
-      end
-      "usb_meas_ctrl_shadowed": begin
-      end
+% endfor
       "recov_err_code": begin
         do_read_check = 1'b0;
       end

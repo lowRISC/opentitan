@@ -1,7 +1,18 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+  from topgen.lib import Name
+  rg_srcs = list(sorted({sig['src_name'] for sig
+                         in typed_clocks['rg_clks'].values()}))
+  clk_freqs = {v['name']: v['freq'] for v in src_clks.values()}
+  clk_freqs.update({v['name']: v['freq'] for v in derived_clks.values()})
+  hint_targets = [sig['endpoint_ip'] for sig in typed_clocks['hint_clks'].values()]
 
+  def to_camel_case(s: str):
+    return Name.from_snake_case(s).as_camel_case()
+
+%>
 package clkmgr_env_pkg;
   // dep packages
   import uvm_pkg::*;
@@ -30,18 +41,17 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  parameter int NUM_PERI = 4;
-  parameter int NUM_TRANS = 4;
+  parameter int NUM_PERI = ${len(typed_clocks['sw_clks'])};
+  parameter int NUM_TRANS = ${len(hint_names)};
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
   typedef logic [NUM_TRANS-1:0] hintables_t;
   typedef mubi4_t [NUM_TRANS-1:0] mubi_hintables_t;
   parameter mubi_hintables_t IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
-  parameter int MainClkHz = 100_000_000;
-  parameter int IoClkHz = 96_000_000;
-  parameter int UsbClkHz = 48_000_000;
-  parameter int AonClkHz = 200_000;
+% for clk, freq in clk_freqs.items():
+  parameter int ${to_camel_case(clk)}ClkHz = ${f"{freq:_}"};
+% endfor
   parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
@@ -55,29 +65,27 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-    PeriDiv4,
-    PeriDiv2,
-    PeriUsb,
-    PeriIo
+% for clk in typed_clocks['sw_clks'].values():
+<% sep = "" if loop.last else "," %>\
+    Peri${to_camel_case(clk['src_name'])}${sep}
+% endfor
   } peri_e;
   typedef struct packed {
-    logic usb_peri_en;
-    logic io_peri_en;
-    logic io_div2_peri_en;
-    logic io_div4_peri_en;
+% for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
+    logic ${clk['src_name']}_peri_en;
+% endfor
   } clk_enables_t;
 
   typedef enum int {
-    TransAes,
-    TransHmac,
-    TransKmac,
-    TransOtbn
+% for target in hint_targets:
+<% sep = "" if loop.last else "," %>\
+    Trans${target.capitalize()}${sep}
+% endfor
   } trans_e;
   typedef struct packed {
-    logic otbn_main;
-    logic kmac;
-    logic hmac;
-    logic aes;
+% for target in reversed(hint_targets):
+    logic ${target};
+% endfor
   } clk_hints_t;
 
   typedef struct {
@@ -88,11 +96,10 @@ package clkmgr_env_pkg;
 
   // These are ordered per the bits in the recov_err_code register.
   typedef enum int {
-    ClkMesrIo,
-    ClkMesrIoDiv2,
-    ClkMesrIoDiv4,
-    ClkMesrMain,
-    ClkMesrUsb
+% for src in rg_srcs:
+    ClkMesr${to_camel_case(src)},
+% endfor
+    ClkMesrSize
   } clk_mesr_e;
 
   // Mubi test mode
@@ -106,7 +113,7 @@ package clkmgr_env_pkg;
   } clkmgr_mubi_e;
 
   // This is to examine separately the measurement and timeout recoverable error bits.
-  typedef logic [ClkMesrUsb:0] recov_bits_t;
+  typedef logic [ClkMesrSize-1:0] recov_bits_t;
 
   typedef struct packed {
     recov_bits_t timeouts;
@@ -115,14 +122,18 @@ package clkmgr_env_pkg;
   } clkmgr_recov_err_t;
 
   // These must be after the declaration of clk_mesr_e for sizing.
-  parameter int ClkInHz[ClkMesrUsb+1] = {IoClkHz, IoClkHz / 2, IoClkHz / 4, MainClkHz, UsbClkHz};
+  parameter int ClkInHz[ClkMesrSize] = {
+% for src in rg_srcs:
+<% sep = "" if loop.last else "," %>\
+    ${to_camel_case(src)}ClkHz${sep}
+% endfor
+  };
 
-  parameter int ExpectedCounts[ClkMesrUsb+1] = {
-    ClkInHz[ClkMesrIo] / AonClkHz - 1,
-    ClkInHz[ClkMesrIoDiv2] / AonClkHz - 1,
-    ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,
-    ClkInHz[ClkMesrMain] / AonClkHz - 1,
-    ClkInHz[ClkMesrUsb] / AonClkHz - 1
+  parameter int ExpectedCounts[ClkMesrSize] = {
+% for src in rg_srcs:
+<% sep = "" if loop.last else "," %>\
+    ClkInHz[ClkMesr${to_camel_case(src)}] / AonClkHz - 1${sep}
+% endfor
   };
 
   // functions

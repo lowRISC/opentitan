@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 <%
 from collections import OrderedDict
 num_hints = len(hint_names)
@@ -9,7 +8,7 @@ all_clocks = OrderedDict({clk: None for clk in typed_clocks['ft_clks'].keys()})
 all_clocks.update({clk: None for clk in typed_clocks['hint_clks'].keys()})
 all_clocks.update({clk: None for clk in typed_clocks['rg_clks'].keys()})
 all_clocks.update({clk: None for clk in typed_clocks['sw_clks'].keys()})
-%>
+%>\
 
 package clkmgr_pkg;
 
