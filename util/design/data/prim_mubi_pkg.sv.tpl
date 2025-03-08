@@ -44,12 +44,19 @@ from mubi import prim_mubi
     return (val ? MuBi${nbits}True : MuBi${nbits}False);
   endfunction : mubi${nbits}_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi${nbits}_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi${nbits}_test_true_strict(mubi${nbits}_t val);
     return MuBi${nbits}True == val;
   endfunction : mubi${nbits}_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi${nbits}_logic_test_true_strict(logic [${nbits-1}:0] val);
+    return MuBi${nbits}True == val;
+  endfunction : mubi${nbits}_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires

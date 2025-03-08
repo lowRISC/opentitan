@@ -37,12 +37,19 @@ package prim_mubi_pkg;
     return (val ? MuBi4True : MuBi4False);
   endfunction : mubi4_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi4_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi4_test_true_strict(mubi4_t val);
     return MuBi4True == val;
   endfunction : mubi4_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi4_logic_test_true_strict(logic [3:0] val);
+    return MuBi4True == val;
+  endfunction : mubi4_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -169,12 +176,19 @@ package prim_mubi_pkg;
     return (val ? MuBi8True : MuBi8False);
   endfunction : mubi8_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi8_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi8_test_true_strict(mubi8_t val);
     return MuBi8True == val;
   endfunction : mubi8_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi8_logic_test_true_strict(logic [7:0] val);
+    return MuBi8True == val;
+  endfunction : mubi8_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -301,12 +315,19 @@ package prim_mubi_pkg;
     return (val ? MuBi12True : MuBi12False);
   endfunction : mubi12_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi12_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi12_test_true_strict(mubi12_t val);
     return MuBi12True == val;
   endfunction : mubi12_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi12_logic_test_true_strict(logic [11:0] val);
+    return MuBi12True == val;
+  endfunction : mubi12_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -433,12 +454,19 @@ package prim_mubi_pkg;
     return (val ? MuBi16True : MuBi16False);
   endfunction : mubi16_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi16_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi16_test_true_strict(mubi16_t val);
     return MuBi16True == val;
   endfunction : mubi16_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi16_logic_test_true_strict(logic [15:0] val);
+    return MuBi16True == val;
+  endfunction : mubi16_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -565,12 +593,19 @@ package prim_mubi_pkg;
     return (val ? MuBi20True : MuBi20False);
   endfunction : mubi20_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi20_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi20_test_true_strict(mubi20_t val);
     return MuBi20True == val;
   endfunction : mubi20_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi20_logic_test_true_strict(logic [19:0] val);
+    return MuBi20True == val;
+  endfunction : mubi20_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -697,12 +732,19 @@ package prim_mubi_pkg;
     return (val ? MuBi24True : MuBi24False);
   endfunction : mubi24_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi24_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi24_test_true_strict(mubi24_t val);
     return MuBi24True == val;
   endfunction : mubi24_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi24_logic_test_true_strict(logic [23:0] val);
+    return MuBi24True == val;
+  endfunction : mubi24_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -829,12 +871,19 @@ package prim_mubi_pkg;
     return (val ? MuBi28True : MuBi28False);
   endfunction : mubi28_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi28_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi28_test_true_strict(mubi28_t val);
     return MuBi28True == val;
   endfunction : mubi28_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi28_logic_test_true_strict(logic [27:0] val);
+    return MuBi28True == val;
+  endfunction : mubi28_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
@@ -961,12 +1010,19 @@ package prim_mubi_pkg;
     return (val ? MuBi32True : MuBi32False);
   endfunction : mubi32_bool_to_mubi
 
-  // Test whether the multibit value signals an "enabled" condition.
+  // Test whether the multibit value of type "mubi32_t" signals an "enabled" condition.
   // The strict version of this function requires
   // the multibit value to equal True.
   function automatic logic mubi32_test_true_strict(mubi32_t val);
     return MuBi32True == val;
   endfunction : mubi32_test_true_strict
+
+  // Test whether the multibit value of type "logic vector" signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi32_logic_test_true_strict(logic [31:0] val);
+    return MuBi32True == val;
+  endfunction : mubi32_logic_test_true_strict
 
   // Test whether the multibit value signals a "disabled" condition.
   // The strict version of this function requires
