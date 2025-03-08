@@ -100,6 +100,8 @@ enum module_ {
   X(kErrorSigverifyBadAuthPartition,  ERROR_(8, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadEcdsaKey,       ERROR_(9, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadSpxConfig,      ERROR_(10, kModuleSigverify, kInvalidArgument)), \
+  X(kErrorSigverifyEcdsaNotFound,     ERROR_(11, kModuleSigverify, kNotFound)), \
+  X(kErrorSigverifySpxNotFound,       ERROR_(12, kModuleSigverify, kNotFound)), \
   \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
   \
@@ -229,6 +231,7 @@ enum module_ {
   X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipFlashConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidRescueBounds, ERROR_(19, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipSignatureNotFound, ERROR_(20, kModuleOwnership, kNotFound)), \
   /* Group all of the tag version error codes together */ \
   X(kErrorOwnershipOWNRVersion,       ERROR_(0x70, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipAPPKVersion,       ERROR_(0x71, kModuleOwnership, kInvalidArgument)), \
