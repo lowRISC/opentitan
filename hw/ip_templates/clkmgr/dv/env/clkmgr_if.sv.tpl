@@ -194,6 +194,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_debug_en(lc_debug_en);
     update_scanmode(scanmode);
+    update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
   endtask
 
   // Pipeline signals that go through synchronizers with the target clock domain's clock.
