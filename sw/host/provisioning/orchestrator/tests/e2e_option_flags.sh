@@ -32,5 +32,6 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --enable-alerts \
   --use-ext-clk \
   --patch-ast \
+  --log-ujson-payloads \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite
