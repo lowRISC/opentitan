@@ -292,10 +292,13 @@ impl CommandDispatch for OwnershipUnlock {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let unlock = self
+        let (unlock, signature) = self
             .unlock
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
+        if self.unlock.algorithm.is_detached() && signature.is_some() {
+            log::warn!("The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.", self.unlock.algorithm);
+        }
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -341,10 +344,13 @@ impl CommandDispatch for OwnershipActivate {
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let activate = self
+        let (activate, signature) = self
             .activate
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
+        if self.activate.algorithm.is_detached() && signature.is_some() {
+            log::warn!("The algorithm {} requires a detached signature, but rescue cannot deliver the detached signature as part of boot services.", self.activate.algorithm);
+        }
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
