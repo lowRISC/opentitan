@@ -9,6 +9,11 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
+py_library(
+    name = "autogen_banner",
+    srcs = ["autogen_banner.py"],
+)
+
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],
