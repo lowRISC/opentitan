@@ -1,3 +1,6 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 # CLKMGR DV document
 
 ## Goals
@@ -42,8 +45,8 @@ All common types and methods defined at the package level can be found in
 `clkmgr_env_pkg`. Some of them in use are:
 
 ```systemverilog
-  localparam int NUM_PERI = 4;
-  localparam int NUM_TRANS = 5;
+  localparam int NUM_PERI = 3;
+  localparam int NUM_TRANS = 4;
   localparam int NUM_ALERTS = 2;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
@@ -51,8 +54,12 @@ All common types and methods defined at the package level can be found in
 
   typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
-  typedef enum int {PeriDiv4, PeriDiv2, PeriIo, PeriUsb} peri_e;
-  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbnIoDiv4, TransOtbnMain} trans_e;
+  typedef enum int {
+    PeriIoDiv4,
+    PeriIoDiv2,
+    PeriUsb
+  } peri_e;
+  typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
 ```
 
 ### TL_agent

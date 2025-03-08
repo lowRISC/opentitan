@@ -25,10 +25,10 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
   rand peri_enables_t initial_enables;
 
   // The clk_enables CSR cannot be manipulated in low power mode.
-  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1'b1;}
-  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1'b1;}
-  // ICEBOX(#17963) randomize the usb clk enable.
-  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1'b1;}
+  // ICEBOX(#17963) randomize the usb clk enable if there is one.
+  constraint io_ip_clk_en_on_c {io_ip_clk_en == 1;}
+  constraint main_ip_clk_en_on_c {main_ip_clk_en == 1;}
+  constraint usb_ip_clk_en_on_c {usb_ip_clk_en == 1;}
 
   task body();
     for (int i = 0; i < num_trans; ++i) begin

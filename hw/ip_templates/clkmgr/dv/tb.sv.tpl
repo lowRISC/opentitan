@@ -2,6 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+<%
+all_src_names = sorted(s['name'] for s in src_clks.values())
+all_derived_names = sorted(s['name'] for s in derived_clks.values())
+rg_srcs = list(sorted({sig['src_name'] for sig
+                       in typed_clocks['rg_clks'].values()}))
+%>\
 module tb;
   // dep packages
   import uvm_pkg::*;
@@ -13,46 +19,36 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n, rst_shadowed_n;
-  wire clk_main, rst_main_n;
-  wire clk_io, rst_io_n;
-  wire clk_usb, rst_usb_n;
-  wire clk_aon, rst_aon_n;
-
   // clock interfaces
+  wire clk, rst_n, rst_shadowed_n;
   clk_rst_if clk_rst_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
-  clk_rst_if main_clk_rst_if (
-    .clk  (clk_main),
-    .rst_n(rst_main_n)
-  );
-  clk_rst_if io_clk_rst_if (
-    .clk  (clk_io),
-    .rst_n(rst_io_n)
-  );
-  clk_rst_if usb_clk_rst_if (
-    .clk  (clk_usb),
-    .rst_n(rst_usb_n)
-  );
-  clk_rst_if aon_clk_rst_if (
-    .clk  (clk_aon),
-    .rst_n(rst_aon_n)
-  );
-  clk_rst_if root_io_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_io_n)
-  );
-  clk_rst_if root_main_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_main_n)
-  );
-  clk_rst_if root_usb_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_usb_n)
+
+% for src_name in all_src_names:
+  wire clk_${src_name}, rst_${src_name}_n;
+  clk_rst_if ${src_name}_clk_rst_if (
+    .clk  (clk_${src_name}),
+    .rst_n(rst_${src_name}_n)
   );
 
+% endfor
+% for src_name in all_derived_names:
+  wire rst_${src_name}_n;
+  clk_rst_if ${src_name}_clk_rst_if (
+    .clk  (),
+    .rst_n(rst_${src_name}_n)
+  );
+% endfor
+% for clk_family in parent_child_clks.values():
+  % for src in clk_family:
+  clk_rst_if root_${src}_clk_rst_if (
+    .clk  (),
+    .rst_n(rst_root_${src}_n)
+  );
+  % endfor
+% endfor
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
@@ -62,25 +58,21 @@ module tb;
   clkmgr_if clkmgr_if (
     .clk(clk),
     .rst_n(rst_n),
-    .clk_main(clk_main),
-    .rst_io_n(rst_io_n),
-    .rst_main_n(rst_main_n),
-    .rst_usb_n(rst_usb_n)
+% for src_name in all_src_names:
+<% sep = "" if loop.last else "," %>\
+    .rst_${src_name}_n(rst_${src_name}_ni)${sep}
+% endfor
   );
 
   bind clkmgr clkmgr_csrs_if clkmgr_csrs_if (
     .clk(clk_i),
     .recov_err_csr({
-        u_reg.u_recov_err_code_usb_timeout_err.qs,
-        u_reg.u_recov_err_code_main_timeout_err.qs,
-        u_reg.u_recov_err_code_io_div4_timeout_err.qs,
-        u_reg.u_recov_err_code_io_div2_timeout_err.qs,
-        u_reg.u_recov_err_code_io_timeout_err.qs,
-        u_reg.u_recov_err_code_usb_measure_err.qs,
-        u_reg.u_recov_err_code_main_measure_err.qs,
-        u_reg.u_recov_err_code_io_div4_measure_err.qs,
-        u_reg.u_recov_err_code_io_div2_measure_err.qs,
-        u_reg.u_recov_err_code_io_measure_err.qs,
+% for src in sorted(rg_srcs, reverse=True):
+        u_reg.u_recov_err_code_${src}_timeout_err.qs,
+% endfor
+% for src in sorted(rg_srcs, reverse=True):
+        u_reg.u_recov_err_code_${src}_measure_err.qs,
+% endfor
         u_reg.u_recov_err_code_shadow_update_err.qs
     }),
     .fatal_err_csr({
@@ -89,10 +81,10 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
-        reg2hw.clk_enables.clk_usb_peri_en.q,
-        reg2hw.clk_enables.clk_io_peri_en.q,
-        reg2hw.clk_enables.clk_io_div2_peri_en.q,
-        reg2hw.clk_enables.clk_io_div4_peri_en.q}),
+% for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
+<% sep = "})," if loop.last else "," %>\
+        reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+% endfor
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,
         reg2hw.clk_hints.clk_main_kmac_hint.q,
@@ -109,14 +101,17 @@ module tb;
     // Clocks must be set to active at time 0. The rest of the clock configuration happens
     // in clkmgr_base_vseq.sv.
     clk_rst_if.set_active();
-    main_clk_rst_if.set_active();
-    io_clk_rst_if.set_active();
-    usb_clk_rst_if.set_active();
-    aon_clk_rst_if.set_active();
-
-    root_io_clk_rst_if.set_active();
-    root_main_clk_rst_if.set_active();
-    root_usb_clk_rst_if.set_active();
+% for src_name in all_src_names:
+    ${src_name}_clk_rst_if.set_active();
+% endfor
+% for src_name in all_derived_names:
+    ${src_name}_clk_rst_if.set_active();
+% endfor
+% for clk_family in parent_child_clks.values():
+  % for src in clk_family:
+    root_${src}_clk_rst_if.set_active();
+  % endfor
+% endfor
   end
 
   `DV_ALERT_IF_CONNECT()
@@ -127,26 +122,20 @@ module tb;
     .rst_ni(rst_n),
     .rst_shadowed_ni(rst_shadowed_n),
 
-    .clk_main_i (clk_main),
-    .rst_main_ni(rst_main_n),
-    .clk_io_i   (clk_io),
-    // ICEBOX(#17934): differentiate the io resets to check they generate the
-    // expected side-effects. Probably doable with a very simple test.
-    .rst_io_ni  (rst_io_n),
-    .rst_io_div2_ni(rst_io_n),
-    .rst_io_div4_ni(rst_io_n),
-    .clk_usb_i  (clk_usb),
-    .rst_usb_ni (rst_usb_n),
-    .clk_aon_i  (clk_aon),
-    .rst_aon_ni (rst_aon_n),
-
+% for src_name in all_src_names:
+    .clk_${src_name}_i (clk_${src_name}),
+    .rst_${src_name}_ni(rst_${src_name}_n),
+% endfor
+% for src_name in all_derived_names:
+    .rst_${src_name}_ni(rst_${src_name}_n),
+% endfor
     // ICEBOX(#17934): differentiate the root resets as mentioned for rst_io_ni above.
     .rst_root_ni(rst_root_io_n),
-    .rst_root_io_ni(rst_root_io_n),
-    .rst_root_io_div2_ni(rst_root_io_n),
-    .rst_root_io_div4_ni(rst_root_io_n),
-    .rst_root_main_ni(rst_root_main_n),
-    .rst_root_usb_ni(rst_root_usb_n),
+% for clk_family in parent_child_clks.values():
+  % for src in clk_family:
+    .rst_root_${src}_ni(rst_root_${src}_n),
+  % endfor
+% endfor
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
@@ -181,18 +170,23 @@ module tb;
   initial begin
     // Register interfaces with uvm.
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif", io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
-
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_clk_rst_vif",
-                                            root_io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_main_clk_rst_vif",
-                                            root_main_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_usb_clk_rst_vif",
-                                            root_usb_clk_rst_if);
-
+% for src_name in all_src_names:
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "${src_name}_clk_rst_vif", ${src_name}_clk_rst_if);
+% endfor
+% for src_name in all_derived_names:
+    % if len(src_name) > len("main"):
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "${src_name}_clk_rst_vif",
+                                            ${src_name}_clk_rst_if);
+    % else:
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "${src_name}_clk_rst_vif", ${src_name}_clk_rst_if);
+    % endif
+% endfor
+% for clk_family in parent_child_clks.values():
+  % for src in clk_family:
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_${src}_clk_rst_vif",
+                                            root_${src}_clk_rst_if);
+  % endfor
+% endfor
     uvm_config_db#(virtual clkmgr_if)::set(null, "*.env", "clkmgr_vif", clkmgr_if);
 
     uvm_config_db#(virtual clkmgr_csrs_if)::set(null, "*.env", "clkmgr_csrs_vif",

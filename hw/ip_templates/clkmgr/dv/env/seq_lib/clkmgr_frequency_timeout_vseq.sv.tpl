@@ -1,6 +1,14 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+  from collections import defaultdict
+  from topgen.lib import Name
+  rg_srcs = list(sorted({sig['src_name'] for sig
+                         in typed_clocks['rg_clks'].values()}))
+  def to_camel_case(s: str):
+    return Name.from_snake_case(s).as_camel_case()
+%>\
 
 // The frequency timeout vseq exercises the frequency measurement counters. More details
 // in the clkmgr_testplan.hjson file.
@@ -22,13 +30,15 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       0 := 1
     };
   }
-  rand int clk_timeout;
-  constraint clk_timeout_c {clk_timeout inside {[ClkMesrIo : ClkMesrUsb]};}
+  rand clk_mesr_e clk_timeout;
+  constraint clk_timeout_c {clk_timeout != ClkMesrSize;}
 
   constraint all_clk_en_c {
-    io_ip_clk_en == 1;
-    main_ip_clk_en == 1;
-    usb_ip_clk_en == 1;
+% for src in sorted(src_clks.values(), key=lambda s: s['name']):
+  % if not src['aon']:
+    ${src['name']}_ip_clk_en == 1;
+  % endif
+% endfor
   }
 
   // The clock that will be disabled.
@@ -64,7 +74,7 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
-      logic [ClkMesrUsb:0] expected_recov_timeout_err = '0;
+      logic [ClkMesrSize-1:0] expected_recov_timeout_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
@@ -88,15 +98,32 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       if (cause_timeout) begin
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
-        if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4}) begin
-          // All these clocks are derived from io so that gets disabled, and all derived
-          // clocks will get a timeout.
-          expected_recov_timeout_err[ClkMesrIo] = 1;
-          expected_recov_timeout_err[ClkMesrIoDiv2] = 1;
-          expected_recov_timeout_err[ClkMesrIoDiv4] = 1;
+<%
+multi_children = defaultdict(list)
+childless = []
+for p, cs in parent_child_clks.items():
+  if len(cs) > 1:
+    for c in cs:
+      if c in rg_srcs:
+        multi_children[p].append(c)
+  elif p in rg_srcs:
+    childless.append(p)
+%>\
+% for i, (p, cs) in enumerate(multi_children.items()):
+        if (clk_mesr_timeout inside {${', '.join("ClkMesr{}".format(to_camel_case(c)) for c in cs)}}) begin
+  % for c in cs:
+          expected_recov_timeout_err[ClkMesr${to_camel_case(c)}] = 1;
+  % endfor
+  % if i < len(multi_children) - 1:
+        end else
+  % elif len(childless) > 0:
         end else begin
+  % endif
+% endfor
+% if len(childless) > 0:
           expected_recov_timeout_err[clk_mesr_timeout] = 1;
         end
+% endif
         disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b0));
       end
       wait_before_read_recov_err_code();
