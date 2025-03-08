@@ -135,6 +135,12 @@ def main(args_in):
         help="Use AST patch in flash info page 0 during FT individualize step.",
     )
     parser.add_argument(
+        "--log-ujson-payloads",
+        action="store_true",
+        default=False,
+        help="Log UJSON host-->device payloads to console for ATE development.",
+    )
+    parser.add_argument(
         "--non-interactive",
         action="store_true",
         default=False,
@@ -200,6 +206,7 @@ def main(args_in):
                 enable_alerts=args.enable_alerts,
                 use_ext_clk=args.use_ext_clk,
                 patch_ast=args.patch_ast,
+                log_ujson_payloads=args.log_ujson_payloads,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     if args.cp_only:

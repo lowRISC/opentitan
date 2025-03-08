@@ -29,4 +29,5 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --fpga=${FPGA} \
   --ast-cfg-version=0 \
   --non-interactive \
+  "$@" \
   --db-path=$TEST_TMPDIR/registry.sqlite
