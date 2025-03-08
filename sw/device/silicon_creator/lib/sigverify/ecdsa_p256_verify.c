@@ -126,6 +126,9 @@ rom_error_t sigverify_ecdsa_p256_start(const ecdsa_p256_signature_t *signature,
 
 rom_error_t sigverify_ecdsa_p256_finish(const ecdsa_p256_signature_t *signature,
                                         uint32_t *flash_exec) {
+  if (signature == NULL) {
+    return kErrorSigverifyEcdsaNotFound;
+  }
   ecdsa_p256_signature_t recovered_r;
   rom_error_t error = otbn_boot_sigverify_finish((uint32_t *)&recovered_r);
   if (launder32(error) != kErrorOk) {

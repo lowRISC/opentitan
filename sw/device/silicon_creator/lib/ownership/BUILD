@@ -19,6 +19,7 @@ cc_library(
     hdrs = ["datatypes.h"],
     deps = [
         "//sw/device/lib/base:bitfield",
+        "//sw/device/silicon_creator/lib:nonce",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
@@ -75,7 +76,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            ":ecdsa",
+            ":owner_verify",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:hardened_memory",
             "//sw/device/silicon_creator/lib/drivers:rnd",
