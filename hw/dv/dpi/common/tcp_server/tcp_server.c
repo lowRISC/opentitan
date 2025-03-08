@@ -372,7 +372,7 @@ static void *server_create(void *ctx_void) {
 
     // New client data
     if (FD_ISSET(ctx->cfd, &read_fds)) {
-      while (get_byte(ctx, &xfer_data)) {
+      while (!tcp_buffer_is_full(ctx->buf_in) && get_byte(ctx, &xfer_data)) {
         tcp_buffer_put_byte(ctx->buf_in, xfer_data);
       }
     }
