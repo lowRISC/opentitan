@@ -21,13 +21,6 @@
         freq: 1000000000
         ref: false
       }
-      usb:
-      {
-        name: usb
-        aon: false
-        freq: 1000000000
-        ref: false
-      }
       aon:
       {
         name: aon
@@ -83,11 +76,6 @@
           src_name: io
           endpoint_ip: clkmgr_aon
         }
-        clk_usb_i:
-        {
-          src_name: usb
-          endpoint_ip: clkmgr_aon
-        }
         clk_aon_i:
         {
           src_name: aon
@@ -114,11 +102,6 @@
         clk_io_powerup:
         {
           src_name: io
-          endpoint_ip: rstmgr_aon
-        }
-        clk_usb_powerup:
-        {
-          src_name: usb
           endpoint_ip: rstmgr_aon
         }
         clk_io_div2_powerup:
@@ -154,11 +137,6 @@
           src_name: main
           endpoint_ip: soc_proxy
         }
-        clk_usb_infra:
-        {
-          src_name: usb
-          endpoint_ip: main
-        }
         clk_io_div4_secure:
         {
           src_name: io_div4
@@ -186,11 +164,6 @@
         {
           src_name: io_div2
           endpoint_ip: spi_device
-        }
-        clk_usb_peri:
-        {
-          src_name: usb
-          endpoint_ip: ast
         }
       }
       hint_clks:
@@ -235,10 +208,6 @@
         io
         io_div2
         io_div4
-      ]
-      usb:
-      [
-        usb
       ]
     }
     exported_clks: {}

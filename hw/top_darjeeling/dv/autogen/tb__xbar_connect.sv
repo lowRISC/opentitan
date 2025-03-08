@@ -28,8 +28,6 @@
 
 wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
-wire clk_usb;
-clk_rst_if clk_rst_if_usb(.clk(clk_usb), .rst_n(rst_n));
 wire clk_io_div4;
 clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
@@ -132,7 +130,6 @@ initial begin
     // bypass clkmgr, force clocks directly
     force tb.dut.top_darjeeling.u_xbar_main.clk_main_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_main.clk_fixed_i = clk_io_div4;
-    force tb.dut.top_darjeeling.u_xbar_main.clk_usb_i = clk_usb;
     force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
     force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_dbg.clk_dbg_i = clk_main;
@@ -141,7 +138,6 @@ initial begin
     // bypass rstmgr, force resets directly
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_main.rst_fixed_ni = rst_n;
-    force tb.dut.top_darjeeling.u_xbar_main.rst_usb_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_peri.rst_peri_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_mbx.rst_mbx_ni = rst_n;
     force tb.dut.top_darjeeling.u_xbar_dbg.rst_dbg_ni = rst_n;
@@ -239,8 +235,6 @@ initial begin
 
     clk_rst_if_main.set_active(.drive_rst_n_val(0));
     clk_rst_if_main.set_freq_khz(1000000000 / 1000);
-    clk_rst_if_usb.set_active(.drive_rst_n_val(0));
-    clk_rst_if_usb.set_freq_khz(1000000000 / 1000);
     clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
     clk_rst_if_io_div4.set_freq_khz(250000000 / 1000);
 

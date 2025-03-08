@@ -87,15 +87,12 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
   covergroup control_cg with function sample (control_enables_t control_enables, bit sleep);
     main_cp: coverpoint control_enables.main_clk_en;
     io_cp: coverpoint control_enables.io_clk_en;
-    usb_lp_cp: coverpoint control_enables.usb_clk_en_lp;
-    usb_active_cp: coverpoint control_enables.usb_clk_en_active;
     main_pd_n_cp: coverpoint control_enables.main_pd_n;
     sleep_cp: coverpoint sleep;
 
     control_cross: cross
       main_cp,
       io_cp,
-      usb_lp_cp, usb_active_cp,
       main_pd_n_cp, sleep_cp;
   endgroup
 
