@@ -22,6 +22,9 @@ static rom_error_t owner_spx_verify(
     const sigverify_spx_signature_t *signature, const void *msg_prefix_1,
     size_t msg_prefix_1_len, const void *msg_prefix_2, size_t msg_prefix_2_len,
     const void *msg, size_t msg_len, hmac_digest_t digest) {
+  if (signature == NULL) {
+    return kErrorSigverifySpxNotFound;
+  }
   /*
    * Shares for producing kErrorOk if SPHINCS+ verification succeeds.  The first
    * three shares are generated using the `sparse-fsm-encode` script while the
