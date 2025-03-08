@@ -131,8 +131,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidVersion) {
   MakePage1Valid(true);
   owner_page[1].header.version.major = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -147,8 +147,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidSignature) {
   // We want to pass the page 1 validity test to check the signature on the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolFalse));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOwnershipInvalidSignature));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -162,8 +162,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidNonce) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
   rom_error_t error = ownership_activate_handler(&message_, &bootdata_);
@@ -176,8 +176,8 @@ TEST_P(OwnershipActivateValidStateTest, InvalidActivateDin) {
   // We want to pass the page 1 validity test to check the nonce of the
   // message.
   MakePage1Valid(true);
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0, 1, 1}));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
@@ -228,8 +228,8 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
   bootdata_.next_owner[0] = 12345;
   MakePage1Valid(true);
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 
@@ -297,8 +297,8 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
   MakePage1Valid(true);
   owner_page[1].min_security_version_bl0 = 5;
 
-  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _))
-      .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_CALL(ownership_key_, validate(1, kOwnershipKeyActivate, _, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
 

@@ -46,14 +46,17 @@ typedef struct owner_secret_page {
  *
  * @param page Owner-page on which the key resides.
  * @param key Which key (or keys) to use to validate the message.
+ * @param command The bootsvc command or entity this validate is for.
+ * @param nonce The current ROM_EXT nonce.
  * @param signature The signature over the message.
  * @param message Pointer to the message.
  * @param len Size of the message.
- * @return kHardenedBoolTrue if the message is valid.
+ * @return kErrorOk if the message is valid.
  */
-hardened_bool_t ownership_key_validate(size_t page, ownership_key_t key,
-                                       const owner_signature_t *signature,
-                                       const void *message, size_t len);
+rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
+                                   uint32_t command, const nonce_t *nonce,
+                                   const owner_signature_t *signature,
+                                   const void *message, size_t len);
 
 /**
  * Initialize sealing.
