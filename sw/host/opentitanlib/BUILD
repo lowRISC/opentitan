@@ -132,6 +132,7 @@ rust_library(
         "src/ownership/mod.rs",
         "src/ownership/owner.rs",
         "src/ownership/rescue.rs",
+        "src/ownership/signature.rs",
         "src/proxy/errors.rs",
         "src/proxy/handler.rs",
         "src/proxy/mod.rs",
