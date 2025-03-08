@@ -26,16 +26,12 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output logic slow_main_pd_no,
   output logic slow_main_clk_en_o,
   output logic slow_io_clk_en_o,
-  output logic slow_usb_clk_en_lp_o,
-  output logic slow_usb_clk_en_active_o,
   output logic slow_req_pwrdn_o,
   output logic slow_ack_pwrup_o,
   output pwr_ast_rsp_t slow_ast_o,
   output pwr_peri_t slow_peri_reqs_o,
   input pwr_peri_t slow_peri_reqs_masked_i,
   output logic slow_clr_req_o,
-  input slow_usb_ip_clk_en_i,
-  output slow_usb_ip_clk_status_o,
 
   // fast domain signals
   input req_pwrdn_i,
@@ -46,8 +42,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   input main_pd_ni,
   input main_clk_en_i,
   input io_clk_en_i,
-  input usb_clk_en_lp_i,
-  input usb_clk_en_active_i,
   output logic ack_pwrdn_o,
   output logic fsm_invalid_o,
   output logic req_pwrup_o,
@@ -55,8 +49,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_peri_t peri_reqs_o,
   output logic cdc_sync_done_o,
   input clr_slow_req_i,
-  output logic usb_ip_clk_en_o,
-  input usb_ip_clk_status_i,
 
   // peripheral inputs, mixed domains
   input pwr_peri_t peri_i,
@@ -126,14 +118,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o    (slow_peri_reqs_o)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_ip_clk_status_sync (
-    .clk_i  (clk_slow_i),
-    .rst_ni (rst_slow_ni),
-    .d_i    (usb_ip_clk_status_i),
-    .q_o    (slow_usb_ip_clk_status_o)
-  );
 
   // Some of the AST signals are multi-bits themselves (such as clk_val)
   // thus they need to be delayed one more stage to check for stability
@@ -176,16 +160,12 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
       slow_main_pd_no <= '1;
       slow_main_clk_en_o <= '0;
       slow_io_clk_en_o <= '0;
-      slow_usb_clk_en_lp_o <= '0;
-      slow_usb_clk_en_active_o <= 1'b1;
     end else if (slow_cdc_sync) begin
       slow_wakeup_en_o <= wakeup_en_i;
       slow_reset_en_o <= reset_en_i;
       slow_main_pd_no <= main_pd_ni;
       slow_main_clk_en_o <= main_clk_en_i;
       slow_io_clk_en_o <= io_clk_en_i;
-      slow_usb_clk_en_lp_o <= usb_clk_en_lp_i;
-      slow_usb_clk_en_active_o <= usb_clk_en_active_i;
     end
   end
 
@@ -232,14 +212,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(pwrup_cause_toggle_q)
   );
 
-  prim_flop_2sync # (
-    .Width(1)
-  ) u_ip_clk_en_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(slow_usb_ip_clk_en_i),
-    .q_o(usb_ip_clk_en_o)
-  );
 
   prim_flop_2sync # (
     .Width(1)
