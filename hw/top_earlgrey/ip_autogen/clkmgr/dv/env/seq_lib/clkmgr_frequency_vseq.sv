@@ -27,8 +27,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   //
   // The exp_alert cip feature requires a single alert at a time, so we set at most one of the
   // clocks to fail measurement.
-  rand int clk_tested;
-  constraint clk_tested_c {clk_tested inside {[ClkMesrIo : ClkMesrUsb]};}
+  rand clk_mesr_e clk_tested;
+  constraint clk_tested_c {clk_tested != ClkMesrSize;}
 
   // If cause_saturation is active, force the initial measurement count of clk_tested to a high
   // value so the counter will saturate.
@@ -143,7 +143,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
-      logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
+      logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Update calib_rdy input: if calibration is not ready the measurements
