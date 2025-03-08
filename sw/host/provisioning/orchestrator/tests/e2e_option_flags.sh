@@ -30,5 +30,6 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --package=${PACKAGE} \
   --fpga=cw310 \
   --ast-cfg-version=0 \
+  --log-ujson-payloads \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite

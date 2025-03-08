@@ -185,6 +185,7 @@ opentitan_test(
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:pinmux_testutils",
+            "//sw/device/lib/testing/json:provisioning_data",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_console",
             "//sw/device/lib/testing/test_framework:ottf_test_config",

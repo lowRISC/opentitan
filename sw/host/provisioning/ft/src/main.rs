@@ -12,6 +12,7 @@ use base64ct::{Base64, Encoding};
 use clap::{Args, Parser};
 use elliptic_curve::SecretKey;
 use elliptic_curve::pkcs8::DecodePrivateKey;
+use indexmap::IndexMap;
 use p256::NistP256;
 
 use cert_lib::{CaConfig, CaKey, CaKeyType};
@@ -25,6 +26,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ot_hal::dif::lc_ctrl::DifLcCtrlState;
+use ujson_lib::UjsonPayloads;
 use ujson_lib::provisioning_data::ManufCertgenInputs;
 use util_lib::{
     encrypt_token, hex_string_to_u8_arrayvec, hex_string_to_u32_arrayvec, load_rsa_public_key,
@@ -89,12 +91,19 @@ struct Opts {
     /// Owner's firmware string indicating successful start up.
     #[arg(long)]
     owner_success_text: Option<String>,
+
+    /// UJSON payload logging.
+    #[arg(long)]
+    log_ujson_payloads: bool,
 }
 
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
 
+    let mut ujson_payloads = UjsonPayloads {
+        dut_in: IndexMap::<String, String>::new(),
+    };
     let mut response = PersonalizeResponse::default();
 
     // We call the below functions, instead of calling `opts.init.init_target()` since we do not
@@ -235,6 +244,7 @@ fn main() -> Result<()> {
         &_perso_certgen_inputs,
         opts.second_bootstrap,
         &spi_console_device,
+        &mut ujson_payloads,
         opts.timeout,
         &mut response,
     )?;
@@ -265,6 +275,20 @@ fn main() -> Result<()> {
         serde_json::to_string(&response)?
     };
     println!("PROVISIONING_DATA: {doc}");
+
+    // Log UJSON payloads.
+    if opts.log_ujson_payloads {
+        println!();
+        println!("UJSON Payloads:");
+        for (name, payload) in ujson_payloads.dut_in.into_iter() {
+            print!("{:}: ", name);
+            for byte in payload.clone().into_bytes() {
+                print!("{:02x}", byte);
+            }
+            println!();
+        }
+        println!();
+    }
 
     Ok(())
 }

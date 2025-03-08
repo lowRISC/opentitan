@@ -57,6 +57,7 @@ class OtDut():
     test_exit_token: str
     fpga: str
     fpga_dont_clear_bitstream: bool
+    log_ujson_payloads: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -277,6 +278,10 @@ class OtDut():
             # Add owner FW boot success message check.
             if self.sku_config.owner_fw_boot_str:
                 cmd += f"--owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
+
+            # Enable UJSON message logging.
+            if self.log_ujson_payloads:
+                cmd += " --log-ujson-payloads"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")

@@ -19,8 +19,8 @@ pub trait ConsoleSend<T>
 where
     T: ConsoleDevice + ?Sized,
 {
-    fn send(&self, device: &T) -> Result<()>;
-    fn send_with_crc(&self, device: &T) -> Result<()>;
+    fn send(&self, device: &T) -> Result<String>;
+    fn send_with_crc(&self, device: &T) -> Result<String>;
 }
 
 impl<T, U> ConsoleSend<T> for U
@@ -28,21 +28,22 @@ where
     T: ConsoleDevice + ?Sized,
     U: Serialize,
 {
-    fn send(&self, device: &T) -> Result<()> {
+    fn send(&self, device: &T) -> Result<String> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
         device.write(s.as_bytes())?;
-        Ok(())
+        Ok(s)
     }
 
-    fn send_with_crc(&self, device: &T) -> Result<()> {
+    fn send_with_crc(&self, device: &T) -> Result<String> {
         let s = serde_json::to_string(self)?;
         log::info!("Sending: {}", s);
         device.write(s.as_bytes())?;
         let actual_crc = OttfCrc {
             crc: Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(s.as_bytes()),
         };
-        actual_crc.send(device)
+        let crc_s = actual_crc.send(device)?;
+        Ok(s + &crc_s)
     }
 }
 
