@@ -106,6 +106,8 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   assign policy_soc_rot.read_perm = reg2hw.policy_soc_rot_shadowed.read_perm.q;
   assign policy_soc_rot.write_perm = reg2hw.policy_soc_rot_shadowed.write_perm.q;
 
+  localparam racl_policy_t UnusedPolicy = '0;
+
   // Broadcast all policies via policy vector
   assign racl_policies_o = {
     policy_soc_rot,
