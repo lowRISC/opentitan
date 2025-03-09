@@ -11,10 +11,12 @@ use std::time::Duration;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::rom_error::RomError;
+use opentitanlib::ownership::OwnershipKeyAlg;
 use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
+use transfer_lib::HybridPair;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -25,13 +27,13 @@ struct Opts {
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
     #[arg(long, help = "Next Owner private key (ECDSA P256)")]
-    next_owner_key: PathBuf,
+    next_owner_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner public key (ECDSA P256)")]
     next_owner_key_pub: Option<PathBuf>,
     #[arg(long, help = "Next Owner activate private key (ECDSA P256)")]
-    next_activate_key: PathBuf,
+    next_activate_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner unlock private key (ECDSA P256)")]
-    next_unlock_key: PathBuf,
+    next_unlock_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner's application public key (ECDSA P256)")]
     next_application_key: PathBuf,
     #[arg(
@@ -74,9 +76,11 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transfer_lib::create_owner(
         transport,
         &rescue,
-        &opts.next_owner_key,
-        &opts.next_activate_key,
-        &opts.next_unlock_key,
+        /*nonce=*/ 0,
+        OwnershipKeyAlg::EcdsaP256,
+        HybridPair::load(opts.next_owner_key.as_deref(), None)?,
+        HybridPair::load(opts.next_activate_key.as_deref(), None)?,
+        HybridPair::load(opts.next_unlock_key.as_deref(), None)?,
         &opts.next_application_key,
         opts.config_kind,
         /*customize=*/
