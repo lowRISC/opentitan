@@ -9,13 +9,16 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
@@ -34,13 +37,42 @@
 #define TEST_OWNER_UPDATE_MODE kOwnershipUpdateModeOpen
 #endif
 
+#if defined(TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE) || \
+    defined(TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH)
+#ifdef TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgHybridSpxPure
+#endif
+#ifdef TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgHybridSpxPrehash
+#endif
+#define OWNER_KEYDATA                                        \
+  (owner_keydata_t) {                                        \
+    .hybrid = {.ecdsa = OWNER_ECDSA_P256, .spx = OWNER_SPX } \
+  }
+#define ACTIVATE_KEYDATA                                           \
+  (owner_keydata_t) {                                              \
+    .hybrid = {.ecdsa = ACTIVATE_ECDSA_P256, .spx = ACTIVATE_SPX } \
+  }
+#define UNLOCK_KEYDATA                                         \
+  (owner_keydata_t) {                                          \
+    .hybrid = {.ecdsa = UNLOCK_ECDSA_P256, .spx = UNLOCK_SPX } \
+  }
+#endif
+
+#ifndef TEST_OWNER_KEY_ALG
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgEcdsaP256
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .ecdsa = OWNER_ECDSA_P256 }
+#define ACTIVATE_KEYDATA \
+  (owner_keydata_t) { .ecdsa = ACTIVATE_ECDSA_P256 }
+#define UNLOCK_KEYDATA \
+  (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
+#endif
+
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                                    owner_config_t *config,
                                    owner_application_keyring_t *keyring) {
-  owner_keydata_t owner = (owner_keydata_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = OWNER_ECDSA_P256};
+  owner_keydata_t owner = OWNER_KEYDATA;
   ownership_state_t state = bootdata->ownership_state;
 
   if (state == kOwnershipStateUnlockedSelf ||
@@ -66,21 +98,15 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   owner_page[0].header.version = (struct_version_t){0, 0};
   owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
   owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
-  owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
+  owner_page[0].ownership_key_alg = TEST_OWNER_KEY_ALG;
   owner_page[0].update_mode = TEST_OWNER_UPDATE_MODE;
   owner_page[0].min_security_version_bl0 = UINT32_MAX;
   owner_page[0].lock_constraint = 0;
   memset(owner_page[0].device_id, kLockConstraintNone,
          sizeof(owner_page[0].device_id));
   owner_page[0].owner_key = owner;
-  owner_page[0].activate_key = (owner_keydata_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = ACTIVATE_ECDSA_P256};
-  owner_page[0].unlock_key = (owner_keydata_t){
-      // Although this is an ECDSA key, we initialize the `raw` member of the
-      // union to zero-initialize the unused space.
-      .raw = UNLOCK_ECDSA_P256};
+  owner_page[0].activate_key = ACTIVATE_KEYDATA;
+  owner_page[0].unlock_key = UNLOCK_KEYDATA;
 
   owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
   *app = (owner_application_key_t){
