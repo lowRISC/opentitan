@@ -85,14 +85,26 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
 
   // This collects coverage on the clock and power control functionality.
   covergroup control_cg with function sample (control_enables_t control_enables, bit sleep);
-    core_cp: coverpoint control_enables.core_clk_en;
-    io_cp: coverpoint control_enables.io_clk_en;
+% for clk in src_clks:
+  % if clk == 'usb':
     usb_lp_cp: coverpoint control_enables.usb_clk_en_lp;
     usb_active_cp: coverpoint control_enables.usb_clk_en_active;
+  % else:
+    ${clk}_cp: coverpoint control_enables.${clk}_clk_en;
+  % endif
+% endfor
     main_pd_n_cp: coverpoint control_enables.main_pd_n;
     sleep_cp: coverpoint sleep;
 
-    control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
+    control_cross: cross
+% for clk in src_clks:
+  % if clk == 'usb':
+      usb_lp_cp, usb_active_cp,
+  % else:
+      ${clk}_cp,
+  % endif
+% endfor
+      main_pd_n_cp, sleep_cp;
   endgroup
 
   covergroup hw_reset_0_cg with function sample (logic reset, logic enable, bit sleep);
@@ -149,21 +161,30 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
 
   // This covers the rom inputs that should prevent entering the active state.
   covergroup rom_active_blockers_cg with function sample (
-      logic [3:0] done, logic [3:0] good, logic [3:0] dft, logic [3:0] debug
+% for r in range(NumRomInputs):
+      logic [3:0] done_${r}, logic [3:0] good_${r},
+% endfor
+      logic [3:0] dft, logic [3:0] debug
   );
-    done_cp: coverpoint done {
+% for r in range(NumRomInputs):
+    done_${r}_cp: coverpoint done_${r} {
       `DV_MUBI4_CP_BINS
     }
-    good_cp: coverpoint good {
+    good_${r}_cp: coverpoint good_${r} {
       `DV_MUBI4_CP_BINS
     }
+% endfor
     dft_cp: coverpoint dft {
       `DV_LC_TX_T_CP_BINS
     }
     debug_cp: coverpoint debug {
       `DV_LC_TX_T_CP_BINS
     }
-    blockers_cross: cross done_cp, good_cp, dft_cp, debug_cp;
+    blockers_cross: cross
+% for r in range(NumRomInputs):
+      done_${r}_cp, good_${r}_cp,
+% endfor
+      dft_cp, debug_cp;
   endgroup
 
   function new(string name, uvm_component parent);

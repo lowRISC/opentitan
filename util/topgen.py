@@ -550,6 +550,10 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     if top['power'].get('halt_ibex_via_rom_ctrl', False):
         n_rom_ctrl += 1
 
+    clocks = top["clocks"]
+    assert isinstance(clocks, Clocks)
+    src_clks = [obj.name for obj in clocks.srcs.values() if not obj.aon]
+
     return {
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
@@ -558,6 +562,8 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
+        "has_aon_clk": any(obj.aon for obj in clocks.srcs.values()),
+        "src_clks": src_clks,
     }
 
 
@@ -583,13 +589,19 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
 
     # unique clocks
     clks = reset_obj.get_clocks()
+    clocks = top["clocks"]
+    assert isinstance(clocks, Clocks)
+    src_freqs = {sv.name: sv.freq for sv in clocks.srcs.values()}
+    src_freqs.update({dv.name: dv.freq for dv in clocks.derived_srcs.values()})
+    # Create a dictionary indexed by clks containing their frequency.
+    clk_freqs = {clk: src_freqs[clk] for clk in clks}
 
     # resets sent to reset struct
     output_rsts = reset_obj.get_top_resets()
 
-    # sw controlled resets
-    sw_rsts = reset_obj.get_sw_resets()
-
+    # sw controlled resets: dict indexed by device containing the clock
+    sw_rsts = OrderedDict([(r.name, r.clock.name)
+                           for r in reset_obj.get_sw_resets()])
     # rst_ni
     rst_ni = get_rst_ni(top)
 
@@ -612,7 +624,7 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         alert_handler_vlnv_prefix = ""
 
     return {
-        "clks": clks,
+        "clk_freqs": clk_freqs,
         "reqs": top["reset_requests"],
         "power_domains": top["power"]["domains"],
         "num_rstreqs": n_rstreqs,

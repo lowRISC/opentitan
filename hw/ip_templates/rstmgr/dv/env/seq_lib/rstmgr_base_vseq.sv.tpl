@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<% sorted_clks = sorted(list(clk_freqs.keys())) %>\
 
 class rstmgr_base_vseq extends cip_base_vseq #(
   .RAL_T              (rstmgr_reg_block),
@@ -16,11 +17,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // Set clock frequencies per spec, except the aon is 200kHZ, which is
   // too slow and could slow testing down for no good reason.
   localparam int AON_FREQ_MHZ = 3;
-  localparam int IO_FREQ_MHZ = 96;
-  localparam int IO_DIV2_FREQ_MHZ = 48;
-  localparam int IO_DIV4_FREQ_MHZ = 24;
-  localparam int MAIN_FREQ_MHZ = 100;
-  localparam int USB_FREQ_MHZ = 48;
+% for clk in sorted_clks:
+  % if clk != 'aon':
+  localparam int ${clk.upper()}_FREQ_MHZ = ${clk_freqs[clk] // 1_000_000};
+  % endif
+% endfor
 
   // POR needs to be stable not less than 32 clock cycles, plus some extra, before it
   // propagates to the rest of the logic.
@@ -93,11 +94,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   // This is used to randomize the delays for the clocks to start and stop.
   typedef struct {
-    bit [5:0] io_delay;
-    bit [5:0] io_div2_delay;
-    bit [5:0] io_div4_delay;
-    bit [5:0] main_delay;
-    bit [5:0] usb_delay;
+% for clk in sorted_clks:
+  % if clk != 'aon':
+    bit [5:0] ${clk}_delay;
+  % endif
+% endfor
   } clock_delays_in_ns_t;
 
   // What to expect when testing resets.
@@ -336,17 +337,17 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     clock_delays_in_ns_t delays;
     `DV_CHECK_STD_RANDOMIZE_FATAL(delays)
     if (enable) fork
-      #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.start_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.start_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
-      #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
-      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.start_clk();
+% for clk in sorted_clks:
+  % if clk != 'aon':
+      #(delays.${clk}_delay * 1ns) cfg.${clk}_clk_rst_vif.start_clk();
+  % endif
+% endfor
     join else fork
-      #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.stop_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
-      #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
-      #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.stop_clk();
+% for clk in sorted_clks:
+  % if clk != 'aon':
+      #(delays.${clk}_delay * 1ns) cfg.${clk}_clk_rst_vif.stop_clk();
+  % endif
+% endfor
     join
   endtask
 
@@ -462,12 +463,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   local task start_clocks();
     control_all_clocks(.enable(1));
     fork
-      cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div2_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.usb_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+% for clk in sorted_clks:
+      cfg.${clk}_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
+% endfor
     join
   endtask
 
@@ -524,12 +522,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // versions of each other and have no clock domain crossings.
     // Notice they may still end up out of phase due to the way they get started.
     cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
-    cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
-    cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
-    cfg.io_div2_clk_rst_vif.set_freq_mhz(IO_DIV2_FREQ_MHZ);
-    cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
-    cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
-    cfg.usb_clk_rst_vif.set_freq_mhz(USB_FREQ_MHZ);
+% for clk in sorted_clks:
+    cfg.${clk}_clk_rst_vif.set_freq_mhz(${clk.upper()}_FREQ_MHZ);
+% endfor
     // Initial values for some input pins.
     cfg.rstmgr_vif.scanmode_i  = prim_mubi_pkg::MuBi4False;
     cfg.rstmgr_vif.scan_rst_ni = scan_rst_ni;

@@ -20,7 +20,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
   task body();
     logic [TL_DW-1:0] value;
     resets_t enabled_resets;
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     check_reset_status('0);
     for (int i = 0; i < num_trans; ++i) begin
@@ -62,7 +62,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
       `uvm_info(`gfn, "Started to process reset", UVM_MEDIUM)
 
-      wait_for_fast_fsm(FastFsmActive);
+      wait_for_rom_and_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
 
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));

@@ -18,10 +18,15 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
   constraint resets_c {resets != 0;}
 
   constraint control_enables_c {
-    control_enables.core_clk_en == ral.control.core_clk_en.get_reset();
-    control_enables.io_clk_en == ral.control.io_clk_en.get_reset();
+% for clk in src_clks:
+  % if clk == 'usb':
     control_enables.usb_clk_en_lp == ral.control.usb_clk_en_lp.get_reset();
     control_enables.usb_clk_en_active == ral.control.usb_clk_en_active.get_reset();
+  % else:
+  <% ral_clk = 'core' if clk == 'main' else clk %>\
+    control_enables.${clk}_clk_en == ral.control.${ral_clk}_clk_en.get_reset();
+  % endif
+% endfor
     control_enables.main_pd_n == ral.control.main_pd_n.get_reset();
   }
 
@@ -29,7 +34,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     wakeups_t wakeup_en;
     resets_t reset_en;
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     set_nvms_idle();
     setup_interrupt(.enable(1'b1));
 
@@ -51,7 +56,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "smoke back from wakeup", UVM_MEDIUM)
 
     check_wake_status(wakeups & wakeup_en);
@@ -74,7 +79,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Now bring it back: the slow fsm doesn't participate on this, so we cannot
     // rely on the ctrl_cfg_regwen CSR. Wait for the reset status to clear.
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     // The reset_status CSR should be clear since the unit requesting reset
     // should have been reset, so the incoming reset should have cleared.

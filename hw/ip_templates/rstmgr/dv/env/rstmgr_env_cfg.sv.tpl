@@ -16,12 +16,9 @@ class rstmgr_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
-  virtual clk_rst_if aon_clk_rst_vif;
-  virtual clk_rst_if io_clk_rst_vif;
-  virtual clk_rst_if io_div2_clk_rst_vif;
-  virtual clk_rst_if io_div4_clk_rst_vif;
-  virtual clk_rst_if main_clk_rst_vif;
-  virtual clk_rst_if usb_clk_rst_vif;
+% for clk in sorted(list(clk_freqs.keys())):
+  virtual clk_rst_if ${clk}_clk_rst_vif;
+% endfor
   virtual pwrmgr_rstmgr_sva_if #(.PowerDomains(rstmgr_pkg::PowerDomains)) pwrmgr_rstmgr_sva_vif;
   virtual rstmgr_cascading_sva_if rstmgr_cascading_sva_vif;
   virtual rstmgr_if rstmgr_vif;

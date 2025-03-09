@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<% sorted_clks = sorted(list(clk_freqs.keys())) %>\
 // This has assertions that check the reset outputs of rstmgr cascade properly.
 // This means higher level resets always cause the lower level ones to assert.
 // The hierarchy is
@@ -17,12 +18,9 @@
 // require additional inputs.
 interface rstmgr_cascading_sva_if (
   input logic clk_i,
-  input logic clk_aon_i,
-  input logic clk_io_div2_i,
-  input logic clk_io_div4_i,
-  input logic clk_io_i,
-  input logic clk_main_i,
-  input logic clk_usb_i,
+% for clk in sorted_clks:
+  input logic clk_${clk}_i,
+% endfor
   input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,
   input [rstmgr_pkg::PowerDomains-1:0] rst_lc_req,
@@ -73,18 +71,18 @@ interface rstmgr_cascading_sva_if (
   bit disable_sva;
 
   // Macros to avoid excessive boiler-plate code below.
-  `define FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
-    `ASSERT(_name``AboveFall_A, \
-            $fell(_from) |-> ##[_cycles.fall.min:_cycles.fall.max] _from || !_to, _clk, \
+  `define FALL_ASSERT(_name, _from, _to, _cycles, _clk) ${"\\"}
+    `ASSERT(_name``AboveFall_A, ${"\\"}
+            $fell(_from) |-> ##[_cycles.fall.min:_cycles.fall.max] _from || !_to, _clk, ${"\\"}
             disable_sva)
 
-  `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) \
-    `ASSERT(_name``AboveRise_A, \
-            $rose(_from) ##1 _from [* _cycles.rise.min] |=> ##[0:_cycles.rise.max-_cycles.rise.min] (!_from || _to), _clk, \
-            disable_sva) \
+  `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) ${"\\"}
+    `ASSERT(_name``AboveRise_A, ${"\\"}
+            $rose(_from) ##1 _from [* _cycles.rise.min] |=> ##[0:_cycles.rise.max-_cycles.rise.min] (!_from || _to), _clk, ${"\\"}
+            disable_sva)
 
-  `define CASCADED_ASSERTS(_name, _from, _to, _cycles, _clk) \
-      `FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
+  `define CASCADED_ASSERTS(_name, _from, _to, _cycles, _clk) ${"\\"}
+      `FALL_ASSERT(_name, _from, _to, _cycles, _clk) ${"\\"}
       `RISE_ASSERTS(_name, _from, _to, _cycles, _clk)
 
   // A fall in por_n_i leads to a fall in rst_por_aon_n[0].
@@ -167,8 +165,11 @@ interface rstmgr_cascading_sva_if (
                     resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+
+% if 'usb' in clk_freqs:
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorUsb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
+% endif
 
   // Controlled by rst_lc_src_n.
   `CASCADED_ASSERTS(CascadeLcToLcAon, rst_lc_src_n[rstmgr_pkg::DomainAonSel],
