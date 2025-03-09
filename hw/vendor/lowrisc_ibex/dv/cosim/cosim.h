@@ -85,7 +85,15 @@ class Cosim {
 
   // Set the value of MIP.
   //
-  // At the next call of `step`, the MIP value will take effect (i.e. if it's a
+  // Two versions of MIP must be supplied the `pre_mip` and the `post_mip`. The
+  // `pre_mip` is the value of MIP that is used to determine if an interrupt is
+  // pending. The `post_mip` is the value of MIP that the next instruction
+  // executed (which will be the first instruction of the interrupt vector when
+  // an interrupt ir triggered) observes. These will be different in the case
+  // where an interrupt is raised triggering an interrupt handler but then
+  // drops before the first instruction of the handler has executed.
+  //
+  // At the next call of `step`, the MIP values will take effect (i.e. if it's a
   // new interrupt that is enabled it will step straight to that handler).
   virtual void set_mip(uint32_t pre_mip, uint32_t post_mip) = 0;
 
