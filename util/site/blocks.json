@@ -141,8 +141,8 @@
     },
     "pwm": {
         "name": "PWM",
-        "data_file": "hw/ip/pwm/data/pwm.hjson",
-        "report": "/hw/ip/pwm/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/pwm/data/pwm.hjson",
+        "report": "/hw/top_earlgrey/ip_autogen/pwm/dv"
     },
     "retention-sram": {
         "name": "Retention SRAM",
