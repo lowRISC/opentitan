@@ -18,6 +18,7 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/gpio:rtl_files",
         "//hw/top_earlgrey/ip_autogen/otp_ctrl:rtl_files",
         "//hw/top_earlgrey/ip_autogen/pinmux:rtl_files",
+        "//hw/top_earlgrey/ip_autogen/pwm:rtl_files",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:rtl_files",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rtl_files",
         "//hw/top_earlgrey/ip_autogen/rv_core_ibex:rtl_files",

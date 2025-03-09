@@ -38,7 +38,7 @@ block_level_urls = {
     "otbn": "hw/ip/otbn/dv/uvm/latest/",
     "otp-fuse-controller": "hw/top_earlgrey/ip_autogen/otp_ctrl/dv/latest/",
     "pattern-generators": "hw/ip/pattgen/dv/latest/",
-    "pwm": "hw/ip/pwm/dv/latest/",
+    "pwm": "hw/top_earlgrey/ip_autogen/pwm/dv/latest/",
     "power-manager": "hw/top_earlgrey/ip_autogen/pwrmgr/dv/latest/",
     "rom": "hw/ip/rom_ctrl/dv/latest/",
     "debug-module": "hw/ip/rv_dm/dv/latest/",
