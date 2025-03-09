@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Name of the sim cfg - typically same as the name of the DUT.
-  name: pwm
+  name: ${module_instance_name}
 
   // Top level dut name (sv module).
-  dut: pwm
+  dut: ${module_instance_name}
 
   // Top level testbench name (sv module).
   tb: tb
@@ -15,13 +15,13 @@
   tool: xcelium
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:pwm_sim:0.1
+  fusesoc_core: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sim:0.1")}
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/pwm/data/pwm_testplan.hjson"
+  testplan: "{self_dir}/../data/pwm_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/ip/pwm/data/pwm.hjson"
+  ral_spec: "{self_dir}/../data/${module_instance_name}.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -34,17 +34,17 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["pwm_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["${module_instance_name}_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Coverage exclusion
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"]
+  xcelium_cov_refine_files: ["{self_dir}/cov/pwm_unr_excl.vRefine"]
 
   overrides: [
     {
       // Override the base ccf coverage configuration file for the "default" build mode (used for tests
       // other than the CSR tests). This will include the default cover.ccf file as its first item.
       name: default_xcelium_cov_cfg_file
-      value: "{proj_root}/hw/ip/pwm/dv/cov/cover.ccf"
+      value: "{self_dir}/cov/cover.ccf"
     }
   ]
 

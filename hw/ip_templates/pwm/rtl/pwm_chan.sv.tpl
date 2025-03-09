@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module pwm_chan #(
+module ${module_instance_name}_chan #(
   parameter int CntDw = 16,
 
   localparam int unsigned DcResnDw = $clog2(CntDw)
@@ -247,4 +247,4 @@ module pwm_chan #(
   end
   assign pwm_o = pwm_q;
 
-endmodule : pwm_chan
+endmodule : ${module_instance_name}_chan

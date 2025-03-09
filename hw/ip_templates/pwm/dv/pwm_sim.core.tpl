@@ -2,18 +2,18 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwm_sim:0.1"
-description: "PWM DV sim target"
+name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sim:0.1")}
+description: "${module_instance_name.upper()} DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:pwm:0.1
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
       - lowrisc:prim:assert
 
   files_dv:
     depend:
-      - lowrisc:dv:pwm_test
-      - lowrisc:dv:pwm_sva
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_test")}
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
     files:
       - tb.sv
     file_type: systemVerilogSource

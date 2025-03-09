@@ -13,7 +13,5 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ) + [
-        "//hw/ip/pwm/data:all_files",
-    ],
+    ),
 )
