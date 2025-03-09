@@ -828,7 +828,23 @@ def generate_rv_core_ibex(topcfg: Dict[str, object], module: Dict[str, object],
     generate_ipgen(topcfg, module, params, out_path)
 
 
-# def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
+def _get_pwm_params(top: ConfigT) -> ParamsT:
+    """Extracts parameters for PWM ipgen."""
+
+    pwm = lib.find_module(top["module"], "pwm")
+    params = {
+        "module_instance_name": pwm["type"]
+    }
+    return params
+
+
+def generate_pwm(top: ConfigT, module: ConfigT,
+                 out_path: Path) -> None:
+    log.info('Generating PWM with ipgen')
+    params = _get_pwm_params(top)
+    generate_ipgen(top, module, params, out_path)
+
+
 def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
                       alt_hjson_path: str) -> None:
     """Generate the regfile for top_only IPs."""
@@ -1139,6 +1155,9 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     if "gpio" in ipgen_instances:
         instance = ipgen_instances["gpio"][0]
         insert_ip_attrs(instance, _get_gpio_params(topcfg))
+    if "pwm" in ipgen_instances:
+        instance = ipgen_instances["pwm"][0]
+        insert_ip_attrs(instance, _get_pwm_params(topcfg))
     if "racl_config" in topcfg:
         amend_racl(topcfg, name_to_block, allow_missing_blocks=True)
         assert "racl_ctrl" in ipgen_instances
@@ -1320,6 +1339,8 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # Generate rv_core_ibex if there is an instance
     generate_modules("rv_core_ibex", generate_rv_core_ibex,
                      single_instance=True)
+    # Generate pwm if there is an instance
+    generate_modules("pwm", generate_pwm, single_instance=True)
 
     # Generate ac_range_check
     generate_modules("ac_range_check",
