@@ -83,6 +83,7 @@ module ibex_decoder #(
   // CSRs
   output logic                 csr_access_o,          // access to CSR
   output ibex_pkg::csr_op_e    csr_op_o,              // operation to perform on CSR
+  output ibex_pkg::csr_num_e   csr_addr_o,            // CSR address
 
   // LSU
   output logic                 data_req_o,            // start transaction to data memory
@@ -137,6 +138,8 @@ module ibex_decoder #(
   assign imm_b_type_o = { {19{instr[31]}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0 };
   assign imm_u_type_o = { instr[31:12], 12'b0 };
   assign imm_j_type_o = { {12{instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0 };
+
+  assign csr_addr_o = csr_num_e'(instr[31:20]);
 
   // immediate for CSR manipulation (zero extended)
   assign zimm_rs1_type_o = { 27'b0, instr_rs1 }; // rs1
@@ -1168,9 +1171,10 @@ module ibex_decoder #(
           alu_op_b_mux_sel_o = OP_B_IMM;
         end else begin
           // instruction to read/modify CSR
-          alu_op_b_mux_sel_o = OP_B_IMM;
           imm_a_mux_sel_o    = IMM_A_Z;
-          imm_b_mux_sel_o    = IMM_B_I;  // CSR address is encoded in I imm
+
+          // No need for operand/immediate B mux selection. The CSR address is fed out as csr_addr_o
+          // as the CSR address always comes from the same field in the instruction.
 
           if (instr_alu[14]) begin
             // rs1 field is used as immediate
