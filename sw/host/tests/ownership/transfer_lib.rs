@@ -5,21 +5,23 @@
 #![allow(clippy::bool_assert_comparison)]
 use anyhow::{Result, anyhow};
 use clap::ValueEnum;
+use sphincsplus::{DecodeKey, SpxPublicKey, SpxSecretKey};
+use std::path::{Path, PathBuf};
+
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_log::BootLog;
+use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::boot_svc::{Message, UnlockMode};
 use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
 use opentitanlib::ownership::{
-    ApplicationKeyDomain, CommandTag, FlashFlags, KeyMaterial, OwnerApplicationKey, OwnerBlock,
-    OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerFlashRegion, OwnerInfoPage,
-    OwnerRescueConfig, OwnershipKeyAlg,
+    ApplicationKeyDomain, CommandTag, FlashFlags, HybridRawPublicKey, KeyMaterial,
+    OwnerApplicationKey, OwnerBlock, OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig,
+    OwnerFlashRegion, OwnerInfoPage, OwnerRescueConfig, OwnershipKeyAlg,
 };
 use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
-
-use std::path::Path;
 
 pub const TEST_OWNER_CONFIG_VERSION: u32 = 1;
 
@@ -33,28 +35,38 @@ pub fn get_device_info(
 }
 
 /// Prepares an UnlockOwnership command, sends it to the chip and gets the response.
+#[allow(clippy::too_many_arguments)]
 pub fn ownership_unlock(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
     mode: UnlockMode,
     nonce: u64,
     din: u64,
-    unlock_key: &Path,
+    algorithm: OwnershipKeyAlg,
+    ecdsa_key: Option<PathBuf>,
+    spx_key: Option<PathBuf>,
     next_owner: Option<&Path>,
 ) -> Result<()> {
-    let (unlock, _) = OwnershipUnlockParams {
+    let (unlock, detached_sig) = OwnershipUnlockParams {
         mode: Some(mode),
         nonce: Some(nonce),
         din: Some(din),
         next_owner: next_owner.map(|p| p.into()),
-        algorithm: OwnershipKeyAlg::EcdsaP256,
-        ecdsa_key: Some(unlock_key.into()),
+        algorithm,
+        ecdsa_key,
+        spx_key,
         ..Default::default()
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
     rescue.enter(transport, /*reset=*/ true)?;
+    rescue.wait()?;
+    if algorithm.is_detached() {
+        let sig = detached_sig.expect("algorithm is detached");
+        rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
+    }
     rescue.ownership_unlock(unlock)?;
+    rescue.reboot()?;
     rescue.enter(transport, /*reset=*/ false)?;
     let result = rescue.get_boot_svc()?;
     match result.message {
@@ -69,7 +81,9 @@ pub fn ownership_unlock_any(
     rescue: &RescueSerial,
     nonce: u64,
     din: u64,
-    unlock_key: &Path,
+    algorithm: OwnershipKeyAlg,
+    ecdsa_key: Option<PathBuf>,
+    spx_key: Option<PathBuf>,
 ) -> Result<()> {
     ownership_unlock(
         transport,
@@ -77,7 +91,9 @@ pub fn ownership_unlock_any(
         UnlockMode::Any,
         nonce,
         din,
-        unlock_key,
+        algorithm,
+        ecdsa_key,
+        spx_key,
         None,
     )
 }
@@ -88,19 +104,28 @@ pub fn ownership_activate(
     rescue: &RescueSerial,
     nonce: u64,
     din: u64,
-    activate_key: &Path,
+    algorithm: OwnershipKeyAlg,
+    ecdsa_key: Option<PathBuf>,
+    spx_key: Option<PathBuf>,
 ) -> Result<()> {
-    let (activate, _) = OwnershipActivateParams {
+    let (activate, detached_sig) = OwnershipActivateParams {
         nonce: Some(nonce),
         din: Some(din),
-        algorithm: OwnershipKeyAlg::EcdsaP256,
-        ecdsa_key: Some(activate_key.into()),
+        algorithm,
+        ecdsa_key,
+        spx_key,
         ..Default::default()
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
     rescue.enter(transport, /*reset=*/ true)?;
+    rescue.wait()?;
+    if algorithm.is_detached() {
+        let sig = detached_sig.expect("algorithm is detached");
+        rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
+    }
     rescue.ownership_activate(activate)?;
+    rescue.reboot()?;
     rescue.enter(transport, /*reset=*/ false)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
@@ -189,14 +214,62 @@ impl OwnerConfigKind {
     }
 }
 
+pub struct HybridPair {
+    pub ecdsa: Option<EcdsaPrivateKey>,
+    pub spx: Option<SpxSecretKey>,
+}
+
+impl HybridPair {
+    pub fn load(ecdsa: Option<&Path>, spx: Option<&Path>) -> Result<Self> {
+        Ok(Self {
+            ecdsa: ecdsa.map(EcdsaPrivateKey::load).transpose()?,
+            spx: spx.map(SpxSecretKey::read_pem_file).transpose()?,
+        })
+    }
+
+    pub fn check(&self, key_alg: OwnershipKeyAlg, name: &str) -> Result<()> {
+        if key_alg.is_ecdsa() && self.ecdsa.is_none() {
+            return Err(anyhow!("{name} using {key_alg} requires an ECDSA key"));
+        }
+        if !key_alg.is_ecdsa() && self.ecdsa.is_some() {
+            return Err(anyhow!(
+                "{name} using {key_alg} has an ECDSA key, but doesn't need one"
+            ));
+        }
+        if key_alg.is_spx() && self.spx.is_none() {
+            return Err(anyhow!("{name} using {key_alg} requires an SPX key"));
+        }
+        if !key_alg.is_spx() && self.spx.is_some() {
+            return Err(anyhow!(
+                "{name} using {key_alg} has an SPX key, but doesn't need one"
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn key_material(&self) -> Result<KeyMaterial> {
+        match (&self.ecdsa, &self.spx) {
+            (Some(ecdsa), None) => Ok(KeyMaterial::Ecdsa(ecdsa.public_key().try_into()?)),
+            (None, Some(spx)) => Ok(KeyMaterial::Spx(SpxPublicKey::from(spx).try_into()?)),
+            (Some(ecdsa), Some(spx)) => Ok(KeyMaterial::Hybrid(HybridRawPublicKey {
+                ecdsa: ecdsa.public_key().try_into()?,
+                spx: SpxPublicKey::from(spx).try_into()?,
+            })),
+            _ => Err(anyhow!("No keys to load")),
+        }
+    }
+}
+
 /// Prepares an OwnerBlock and sends it to the chip.
 #[allow(clippy::too_many_arguments)]
 pub fn create_owner<F>(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
-    owner_key: &Path,
-    activate_key: &Path,
-    unlock_key: &Path,
+    nonce: u64,
+    key_alg: OwnershipKeyAlg,
+    owner_key: HybridPair,
+    activate_key: HybridPair,
+    unlock_key: HybridPair,
     app_key: &Path,
     config: OwnerConfigKind,
     customize: F,
@@ -204,10 +277,10 @@ pub fn create_owner<F>(
 where
     F: Fn(&mut OwnerBlock),
 {
+    owner_key.check(key_alg, "owner key")?;
+    activate_key.check(key_alg, "activate key")?;
+    unlock_key.check(key_alg, "unlock key")?;
     let cfg = config as u32;
-    let owner_key = EcdsaPrivateKey::load(owner_key)?;
-    let activate_key = EcdsaPrivateKey::load(activate_key)?;
-    let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
     let app_key = EcdsaPublicKey::load(app_key)?;
     let constraint = if cfg & CFG_APP_CONSTRAINT == 0 {
         0
@@ -216,10 +289,10 @@ where
         0x6
     };
     let mut owner = OwnerBlock {
-        ownership_key_alg: OwnershipKeyAlg::EcdsaP256,
-        owner_key: KeyMaterial::Ecdsa(owner_key.public_key().try_into()?),
-        activate_key: KeyMaterial::Ecdsa(activate_key.public_key().try_into()?),
-        unlock_key: KeyMaterial::Ecdsa(unlock_key.public_key().try_into()?),
+        ownership_key_alg: key_alg,
+        owner_key: owner_key.key_material()?,
+        activate_key: activate_key.key_material()?,
+        unlock_key: unlock_key.key_material()?,
         data: vec![OwnerConfigItem::ApplicationKey(OwnerApplicationKey {
             key_alg: OwnershipKeyAlg::EcdsaP256,
             usage_constraint: constraint,
@@ -283,13 +356,27 @@ where
         owner.data.push(OwnerConfigItem::RescueConfig(rescue));
     }
     customize(&mut owner);
-    owner.sign(&owner_key)?;
+    let mut detached_sig =
+        owner.detached_sign(nonce, owner_key.ecdsa.as_ref(), owner_key.spx.as_ref())?;
     if cfg & CFG_CORRUPT != 0 {
-        owner.signature.r[0] += 1;
+        if let Some(val) = detached_sig.ecdsa.as_mut() {
+            val.r[0] ^= 1;
+        }
+        if let Some(val) = detached_sig.spx.as_mut() {
+            val[0] ^= 1;
+        }
+    }
+    if !key_alg.is_detached() {
+        owner.signature = detached_sig.ecdsa.clone().expect("ecdsa signature");
     }
     let mut owner_config = Vec::new();
     owner.write(&mut owner_config)?;
     rescue.enter(transport, /*reset=*/ true)?;
+    rescue.wait()?;
+    if key_alg.is_detached() {
+        rescue.update_firmware(BootSlot::SlotB, detached_sig.to_vec()?.as_slice())?;
+    }
     rescue.set_owner_config(&owner_config)?;
+    rescue.reboot()?;
     Ok(())
 }
