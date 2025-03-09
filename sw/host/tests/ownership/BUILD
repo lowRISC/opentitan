@@ -12,6 +12,7 @@ rust_library(
     srcs = ["transfer_lib.rs"],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/sphincsplus",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:log",
