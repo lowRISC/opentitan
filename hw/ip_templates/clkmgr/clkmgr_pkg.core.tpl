@@ -2,10 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:systems:clkmgr_pkg:0.1")}
+name: ${instance_vlnv("lowrisc:ip:clkmgr_pkg:0.1")}
 description: "Top specific clock manager package"
 virtual:
-  - lowrisc:ip_interfaces:clkmgr_pkg
+  - lowrisc:virtual_ip:clkmgr_pkg
 
 filesets:
   files_rtl:

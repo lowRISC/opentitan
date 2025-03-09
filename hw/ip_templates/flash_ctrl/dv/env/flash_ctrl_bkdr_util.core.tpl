@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_prince:0.1
       - lowrisc:dv:crypto_dpi_present:0.1
       - lowrisc:prim:secded:0.1
-      - ${instance_vlnv("lowrisc:ip_interfaces:flash_ctrl_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - lowrisc:dv:mem_bkdr_util
     files:
       - flash_ctrl_bkdr_util_pkg.sv

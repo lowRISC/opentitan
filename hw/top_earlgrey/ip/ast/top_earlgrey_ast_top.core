@@ -7,11 +7,11 @@ description: "Pseudo top-level for Earl Grey's ast"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:opentitan:top_earlgrey_alert_handler_pkg
-      - lowrisc:opentitan:top_earlgrey_clkmgr_pkg
-      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
-      - lowrisc:opentitan:top_earlgrey_rstmgr_pkg
-      - lowrisc:opentitan:top_earlgrey_pinmux_pkg
+      - lowrisc:earlgrey_ip:alert_handler_pkg
+      - lowrisc:earlgrey_ip:clkmgr_pkg
+      - lowrisc:earlgrey_ip:pwrmgr_pkg
+      - lowrisc:earlgrey_ip:rstmgr_pkg
+      - lowrisc:earlgrey_ip:pinmux_pkg
       - lowrisc:systems:top_earlgrey_ast
 
 parameters:

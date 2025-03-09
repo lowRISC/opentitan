@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl_prim_reg_top:1.0
+name: lowrisc:englishbreakfast_ip:flash_ctrl_prim_reg_top:1.0
 description: "Generic register top for the FLASH wrapper"
 virtual:
-  - lowrisc:ip_interfaces:flash_ctrl_prim_reg_top
+  - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_pkg
+      - lowrisc:englishbreakfast_ip:flash_ctrl_pkg
     files:
       - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource

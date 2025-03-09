@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_clkmgr_reg:0.1
+name: lowrisc:darjeeling_ip:clkmgr_reg:0.1
 description: "Clock manager registers"
 
 filesets:

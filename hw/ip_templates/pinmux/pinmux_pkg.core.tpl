@@ -5,7 +5,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:pinmux_pkg:0.1")}
 description: "Pinmux package"
 virtual:
-  - lowrisc:ip_interfaces:pinmux_pkg
+  - lowrisc:virtual_ip:pinmux_pkg
 
 filesets:
   files_rtl:

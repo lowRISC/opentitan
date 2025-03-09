@@ -12,8 +12,8 @@ filesets:
       - lowrisc:prim:ram_1p
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - lowrisc:ip_interfaces:flash_ctrl_pkg
-      - lowrisc:ip_interfaces:flash_ctrl_prim_reg_top
+      - lowrisc:virtual_ip:flash_ctrl_pkg
+      - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
     files:
       - rtl/prim_generic_flash_bank.sv
       - rtl/prim_generic_flash.sv

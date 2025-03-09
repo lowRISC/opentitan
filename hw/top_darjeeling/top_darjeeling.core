@@ -9,8 +9,8 @@ filesets:
     depend:
       # Place the autogen packages first to avoid conflicts
       - lowrisc:systems:top_darjeeling_racl_pkg
-      - lowrisc:opentitan:top_darjeeling_alert_handler_reg
-      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
+      - lowrisc:darjeeling_ip:alert_handler_reg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
@@ -40,16 +40,16 @@ filesets:
       - lowrisc:top_darjeeling:xbar_main
       - lowrisc:top_darjeeling:xbar_mbx
       - lowrisc:top_darjeeling:xbar_peri
-      - lowrisc:opentitan:top_darjeeling_ac_range_check
-      - lowrisc:opentitan:top_darjeeling_alert_handler
-      - lowrisc:opentitan:top_darjeeling_clkmgr
-      - lowrisc:opentitan:top_darjeeling_otp_ctrl
-      - lowrisc:opentitan:top_darjeeling_pinmux
-      - lowrisc:opentitan:top_darjeeling_pwrmgr
-      - lowrisc:opentitan:top_darjeeling_rstmgr
-      - lowrisc:opentitan:top_darjeeling_rv_plic
-      - lowrisc:opentitan:top_darjeeling_racl_ctrl
-      - lowrisc:opentitan:top_darjeeling_gpio
+      - lowrisc:darjeeling_ip:ac_range_check
+      - lowrisc:darjeeling_ip:alert_handler
+      - lowrisc:darjeeling_ip:clkmgr
+      - lowrisc:darjeeling_ip:otp_ctrl
+      - lowrisc:darjeeling_ip:pinmux
+      - lowrisc:darjeeling_ip:pwrmgr
+      - lowrisc:darjeeling_ip:rstmgr
+      - lowrisc:darjeeling_ip:rv_plic
+      - lowrisc:darjeeling_ip:racl_ctrl
+      - lowrisc:darjeeling_ip:gpio
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

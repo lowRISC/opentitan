@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - ${instance_vlnv("lowrisc:ip:clkmgr_pkg")}
       - ${top_pkg_vlnv}
     files:

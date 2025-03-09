@@ -10,6 +10,12 @@
       default: ""
     }
     {
+      name: "uniquified_modules"
+      desc: "A dictionary mapping template_names to uniquified_names"
+      type: "object"
+      default: {"clkmgr": "clkmgr1"}
+    }
+    {
       name: "src_clks"
       desc: "The source clocks"
       type: "object"
@@ -91,12 +97,6 @@
       desc: "Generate outputs for a clkmgr that would connect to an alert handler"
       type: "bool"
       default: "1"
-    }
-    {
-      name: "pwrmgr_vlnv_prefix"
-      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr_pkg used by this clkmgr"
-      type: "string"
-      default: ""
     }
     {
       name: "top_pkg_vlnv"
