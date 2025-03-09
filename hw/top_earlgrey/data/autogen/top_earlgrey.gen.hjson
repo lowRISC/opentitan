@@ -4689,6 +4689,7 @@
     {
       name: pwm_aon
       type: pwm
+      template_type: pwm
       clock_srcs:
       {
         clk_i: io_div4
@@ -4712,6 +4713,7 @@
       [
         Aon
       ]
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
