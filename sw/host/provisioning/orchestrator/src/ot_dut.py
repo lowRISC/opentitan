@@ -54,6 +54,7 @@ class OtDut():
     enable_alerts: bool
     use_ext_clk: bool
     patch_ast: bool
+    log_ujson_payloads: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -286,6 +287,10 @@ class OtDut():
             # individualization if requested.
             if self.patch_ast:
                 cmd += " --use-ast-patch-during-individualize"
+
+            # Enable UJSON message logging.
+            if self.log_ujson_payloads:
+                cmd += " --log-ujson-payloads"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
