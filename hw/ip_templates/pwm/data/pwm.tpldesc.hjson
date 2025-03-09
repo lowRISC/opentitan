@@ -15,5 +15,11 @@
       type: "string"
       default: "pwm"
     }
+    {
+      name: "nr_output_channels"
+      desc: "Number of output channels"
+      type: "int"
+      default: "6"
+    }
   ]
 }
