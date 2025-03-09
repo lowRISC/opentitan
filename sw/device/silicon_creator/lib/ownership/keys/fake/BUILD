@@ -11,13 +11,16 @@ cc_library(
     testonly = True,
     hdrs = [
         "activate_ecdsa_p256.h",
+        "activate_spx.h",
         "app_dev_ecdsa_p256.h",
         "app_dev_spx.h",
         "app_prod_ecdsa_p256.h",
         "app_prod_spx.h",
         "app_test_ecdsa_p256.h",
         "owner_ecdsa_p256.h",
+        "owner_spx.h",
         "unlock_ecdsa_p256.h",
+        "unlock_spx.h",
     ],
 )
 
@@ -58,6 +61,26 @@ filegroup(
 filegroup(
     name = "unlock_key",
     srcs = ["unlock_ecdsa_p256.der"],
+)
+
+filegroup(
+    name = "owner_key_spx",
+    srcs = ["owner_spx.pem"],
+)
+
+filegroup(
+    name = "owner_key_spx_pub",
+    srcs = ["owner_spx.pub.pem"],
+)
+
+filegroup(
+    name = "activate_key_spx",
+    srcs = ["activate_spx.pem"],
+)
+
+filegroup(
+    name = "unlock_key_spx",
+    srcs = ["unlock_spx.pem"],
 )
 
 filegroup(
