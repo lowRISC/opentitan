@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwm:0.1"
+name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 description: "pwm"
 filesets:
   files_rtl:
@@ -12,11 +12,11 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:systems:top_racl_pkg
     files:
-      - rtl/pwm_reg_pkg.sv
-      - rtl/pwm_reg_top.sv
-      - rtl/pwm_chan.sv
-      - rtl/pwm_core.sv
-      - rtl/pwm.sv
+      - rtl/${module_instance_name}_reg_pkg.sv
+      - rtl/${module_instance_name}_reg_top.sv
+      - rtl/${module_instance_name}_chan.sv
+      - rtl/${module_instance_name}_core.sv
+      - rtl/${module_instance_name}.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -56,7 +56,7 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: pwm
+    toplevel: ${module_instance_name}
 
   lint:
     <<: *default_target

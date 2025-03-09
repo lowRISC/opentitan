@@ -2,26 +2,26 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwm_sva:0.1"
-description: "PWM assertion modules and bind file."
+name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva:0.1")}
+description: "${module_instance_name.upper()} assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
-      - pwm_bind.sv
+      - ${module_instance_name}_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
     depend:
-      - lowrisc:ip:pwm
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/pwm.hjson
+      spec: ../../data/${module_instance_name}.hjson
 
 targets:
   default: &default_target
@@ -35,4 +35,4 @@ targets:
     filesets:
       - files_formal
       - files_dv
-    toplevel: pwm
+    toplevel: ${module_instance_name}
