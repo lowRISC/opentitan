@@ -21,5 +21,11 @@
       type: "object"
       default: {"clkmgr": "clkmgr1"}
     }
+    {
+      name: "nr_output_channels"
+      desc: "Number of output channels"
+      type: "int"
+      default: "6"
+    }
   ]
 }

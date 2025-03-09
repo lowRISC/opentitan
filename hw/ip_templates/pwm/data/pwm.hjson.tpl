@@ -38,7 +38,7 @@
     { name: "NOutputs",
       desc: "Number of PWM outputs",
       type: "int",
-      default: "6",
+      default: "${nr_output_channels}",
     }
   ]
   available_output_list: [
