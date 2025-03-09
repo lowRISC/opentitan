@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name:               "pwm",
+  name:               "${module_instance_name}",
   human_name:         "Pulse Width Modulator",
   one_line_desc:      "Transmission of pulse-width modulated output signals with adjustable duty cycle",
   one_paragraph_desc: '''

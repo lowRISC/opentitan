@@ -9,7 +9,7 @@
 # Overview
 
 This document specifies PWM hardware IP (HWIP) functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
+This module conforms to the [Comportable guideline for peripheral functionality.](../../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top-level system.
 
 ## Features

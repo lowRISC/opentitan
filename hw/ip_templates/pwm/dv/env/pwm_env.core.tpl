@@ -2,14 +2,14 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwm_env:0.1"
-description: "PWM DV UVM environment"
+name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_env:0.1")}
+description: "${module_instance_name.upper()} DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip:pwm
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
       - lowrisc:dv:pwm_monitor
     files:
       - pwm_env_pkg.sv

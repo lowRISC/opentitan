@@ -4,7 +4,7 @@
 //
 // Description: PWM Core Module
 
-module pwm_core #(
+module ${module_instance_name}_core #(
   parameter int unsigned NOutputs = 6,
   parameter int unsigned PhaseCntDw = 16,
   parameter int unsigned BeatCntDw = 27
@@ -149,7 +149,7 @@ module pwm_core #(
     // PWM Channel Instantiation
     //
 
-    pwm_chan #(.CntDw(PhaseCntDw)) u_chan (
+    ${module_instance_name}_chan #(.CntDw(PhaseCntDw)) u_chan (
       .clk_i            (clk_core_i),
       .rst_ni           (rst_core_ni),
       .pwm_en_i         (reg2hw.pwm_en[ii].q),
@@ -175,4 +175,4 @@ module pwm_core #(
   logic unused_reg;
   assign unused_reg = ^reg2hw.alert_test;
 
-endmodule : pwm_core
+endmodule : ${module_instance_name}_core

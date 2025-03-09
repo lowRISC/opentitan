@@ -4,8 +4,8 @@
 
 `include "prim_assert.sv"
 
-module pwm
-  import pwm_reg_pkg::*;
+module ${module_instance_name}
+  import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
   parameter bit                             EnableRacl                = 1'b0,
@@ -34,10 +34,10 @@ module pwm
   output logic [NOutputs-1:0] cio_pwm_en_o
 );
 
-  pwm_reg_pkg::pwm_reg2hw_t reg2hw;
+  ${module_instance_name}_reg_pkg::pwm_reg2hw_t reg2hw;
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  pwm_reg_top #(
+  ${module_instance_name}_reg_top #(
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVec)
@@ -78,7 +78,7 @@ module pwm
 
   assign cio_pwm_en_o = {NOutputs{1'b1}};
 
-  pwm_core #(
+  ${module_instance_name}_core #(
     .NOutputs(NOutputs),
     .PhaseCntDw(PhaseCntDw),
     .BeatCntDw(BeatCntDw)
@@ -101,4 +101,4 @@ module pwm
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
-endmodule : pwm
+endmodule : ${module_instance_name}
