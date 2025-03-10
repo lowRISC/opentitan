@@ -23,7 +23,8 @@
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                                    owner_config_t *config,
                                    owner_application_keyring_t *keyring) {
-  const owner_key_t *owner = &((const owner_block_t *)sival_owner)->owner_key;
+  const owner_keydata_t *owner =
+      &((const owner_block_t *)sival_owner)->owner_key;
   uint32_t config_version =
       ((const owner_block_t *)sival_owner)->config_version;
   ownership_state_t state = bootdata->ownership_state;

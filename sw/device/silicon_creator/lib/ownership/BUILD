@@ -19,47 +19,9 @@ cc_library(
     hdrs = ["datatypes.h"],
     deps = [
         "//sw/device/lib/base:bitfield",
+        "//sw/device/silicon_creator/lib:nonce",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
-    ],
-)
-
-cc_library(
-    name = "ecdsa",
-    srcs = ["ecdsa.c"],
-    hdrs = ["ecdsa.h"],
-    defines = [
-        "USE_OTBN=1",
-        #"USE_CRYPTOC=1",
-    ],
-    deps = [
-        ":datatypes",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
-        #"//sw/vendor:cryptoc",
-    ],
-)
-
-opentitan_test(
-    name = "ecdsa_functest",
-    srcs = ["ecdsa_functest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
-    deps = [
-        ":ecdsa",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:hexstr",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
 
@@ -75,7 +37,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            ":ecdsa",
+            ":owner_verify",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:hardened_memory",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
@@ -102,7 +64,6 @@ cc_library(
     hdrs = ["ownership.h"],
     deps = [
         ":datatypes",
-        ":ecdsa",
         ":owner_block",
         ":ownership_activate",
         ":ownership_key",
@@ -236,6 +197,24 @@ cc_library(
 )
 
 cc_library(
+    name = "test_owner_hybrid",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        "TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE=1",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "test_owner_update_mode_newversion",
     testonly = True,
     srcs = ["test_owner.c"],
@@ -251,4 +230,17 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
     ],
     alwayslink = True,
+)
+
+cc_library(
+    name = "owner_verify",
+    srcs = ["owner_verify.c"],
+    hdrs = ["owner_verify.h"],
+    deps = [
+        ":datatypes",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
 )
