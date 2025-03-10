@@ -8,9 +8,9 @@ module tb;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
-  import ${module_instance_name}_env_pkg::*;
-  import ${module_instance_name}_test_pkg::*;
-  import ${module_instance_name}_reg_pkg::*;
+  import gpio_env_pkg::*;
+  import gpio_test_pkg::*;
+  import gpio_reg_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -33,7 +33,7 @@ module tb;
     .rst_n(rst_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
-  ${module_instance_name}_straps_if straps_if_inst (
+  gpio_straps_if straps_if_inst (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -44,7 +44,7 @@ module tb;
   pins_if #(NUM_GPIOS) gpio_if (.pins(gpio_pins));
 
   // dut
-  ${module_instance_name} #(
+  gpio #(
     // We have two build modes in this testbench: one with CDC synchronizers enabled, and one
     // where they are disabled.
 `ifdef GPIO_ASYNC_ON
@@ -88,7 +88,7 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
-    uvm_config_db#(virtual ${module_instance_name}_straps_if)::set(null, "*.*", "straps_vif", straps_if_inst);
+    uvm_config_db#(virtual gpio_straps_if)::set(null, "*.*", "straps_vif", straps_if_inst);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
