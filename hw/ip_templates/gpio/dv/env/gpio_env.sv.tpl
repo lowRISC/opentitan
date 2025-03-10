@@ -10,16 +10,42 @@ class ${module_instance_name}_env extends cip_base_env #(
 );
   `uvm_component_utils(${module_instance_name}_env)
 
-  `uvm_component_new
+  ${module_instance_name}_strap_agent   m_strap_agent;
+  straps_vif         m_straps_vif;
+  virtual clk_rst_if m_clk_rst_vif;
+  ${module_instance_name}_vif           m_${module_instance_name}_vif;
+
+  function new (string name, uvm_component parent = null);
+    super.new (name, parent);
+  endfunction
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(gpio_vif)::get(this, "", "gpio_vif", cfg.gpio_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get gpio_vif from uvm_config_db")
+
+    // Create and configure the ${module_instance_name}_strap_agent
+    m_strap_agent = ${module_instance_name}_strap_agent::type_id::create("m_strap_agent", this);
+
+    if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", m_straps_vif)) begin
+      `uvm_fatal("${module_instance_name}_strap_driver", "Could not get m_straps_vif from uvm_config_db ")
     end
-    if (!uvm_config_db#(straps_vif)::get(this, "", "straps_vif", cfg.straps_vif_inst)) begin
-      `uvm_fatal(get_full_name(), "Virtual interface straps_vif_inst is not set")
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "clk_rst_vif", m_clk_rst_vif)) begin
+      `uvm_fatal("${module_instance_name}_strap_driver", "Could not get m_clk_rst_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(${module_instance_name}_vif)::get(this, "", "${module_instance_name}_vif", m_${module_instance_name}_vif)) begin
+      `uvm_fatal("${module_instance_name}_strap_driver", "Could not get m_${module_instance_name}_vif from uvm_config_db")
+    end
+    // Set these interfaces instances to the environment configuration object.
+    cfg.${module_instance_name}_vif        = m_${module_instance_name}_vif;
+    cfg.straps_vif_inst = m_straps_vif;
+    cfg.clk_rst_vif     = m_clk_rst_vif;
   endfunction
 
+  virtual function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    // Connect the strap monitor to the scoreboard
+    m_strap_agent.strap_monitor.mon_ap.connect(scoreboard.analysis_port);
+    // Register a strap agent sub-sequencer into the virtual sequencer
+    // to be able to access it through the main sequence test.
+    virtual_sequencer.register_sequencer("strap_sequencer", m_strap_agent.strap_sqr);
+  endfunction
 endclass

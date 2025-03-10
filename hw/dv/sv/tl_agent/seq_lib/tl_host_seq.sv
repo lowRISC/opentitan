@@ -61,12 +61,12 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
         for (int i = 0; i < req_cnt; i++) begin
           req = REQ::type_id::create("req");
           pre_start_item(req);
-          start_item(req);
+          start_item(req, 100);
           reqs_started++;
           randomize_req(req, i);
           post_randomize_req(req, i);
           pending_req.push_back(req); // in case of device same cycle response
-          finish_item(req);
+          finish_item(req, 100);
           `uvm_info(`gfn, $sformatf("Sent req[%0d] : %0s",
                                      i, req.convert2string()), UVM_HIGH)
         end

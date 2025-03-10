@@ -18,6 +18,10 @@ class dv_base_seq #(type REQ         = uvm_sequence_item,
     cfg = p_sequencer.cfg;
   endtask
 
+  virtual task set_priority_item(int m_priority = -1);
+    this.set_priority(m_priority);
+  endtask
+
   task body();
     `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
   endtask : body
