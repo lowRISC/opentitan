@@ -10,14 +10,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name           | Package::Struct    | Type    | Act   |   Width | Description   |
-|:--------------------|:-------------------|:--------|:------|--------:|:--------------|
-| nmi_wdog_timer_bark | logic              | uni     | req   |       1 |               |
-| wkup_req            | logic              | uni     | req   |       1 |               |
-| aon_timer_rst_req   | logic              | uni     | req   |       1 |               |
-| lc_escalate_en      | lc_ctrl_pkg::lc_tx | uni     | rcv   |       1 |               |
-| sleep_mode          | logic              | uni     | rcv   |       1 |               |
-| tl                  | tlul_pkg::tl       | req_rsp | rsp   |       1 |               |
+| Port Name           | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
+|:--------------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
+| nmi_wdog_timer_bark | logic                         | uni     | req   |       1 |                                                                                                                                      |
+| wkup_req            | logic                         | uni     | req   |       1 |                                                                                                                                      |
+| aon_timer_rst_req   | logic                         | uni     | req   |       1 |                                                                                                                                      |
+| lc_escalate_en      | lc_ctrl_pkg::lc_tx            | uni     | rcv   |       1 |                                                                                                                                      |
+| sleep_mode          | logic                         | uni     | rcv   |       1 |                                                                                                                                      |
+| racl_policies       | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error          | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| tl                  | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Interrupts
 
