@@ -81,7 +81,7 @@
 
 - [Top Darjeeling](./hw/top_darjeeling/README.md)
   - [Datasheet](./hw/top_darjeeling/doc/datasheet.md)
-  - [AC Range Check](./hw/top_darjeeling/ip_autogen/ac_range_check/dv/README.md)
+  - [AC Range Check](./hw/top_darjeeling/ip_autogen/ac_range_check/README.md)
     - [Theory of Operation](./hw/top_darjeeling/ip_autogen/ac_range_check/doc/theory_of_operation.md)
     - [Design Verification](./hw/top_darjeeling/ip_autogen/ac_range_check/dv/README.md)
       - [Testplan](./hw/top_darjeeling/ip_autogen/ac_range_check/data/ac_range_check_testplan.hjson)
