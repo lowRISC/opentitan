@@ -493,7 +493,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
             scramble: true,
             ecc: true,
             high_endurance: true,
-            protect_when_primary: false,
+            protect_when_active: false,
             lock: false
           },
           {
@@ -505,7 +505,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
             scramble: true,
             ecc: true,
             high_endurance: true,
-            protect_when_primary: false,
+            protect_when_active: false,
             lock: false
           }
         ]
@@ -524,7 +524,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
             scramble: true,
             ecc: true,
             high_endurance: true,
-            protect_when_primary: false,
+            protect_when_active: false,
             lock: false
           },
           {
@@ -537,7 +537,7 @@ r#"00000000: 4f 57 4e 52 00 08 00 00 00 00 00 00 4c 4e 45 58  OWNR........LNEX
             scramble: true,
             ecc: true,
             high_endurance: true,
-            protect_when_primary: false,
+            protect_when_active: false,
             lock: false
           }
         ]

@@ -258,7 +258,7 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_boot(boot_data_t *boot_data,
+static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
@@ -365,7 +365,8 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data,
   ibex_addr_remap_lockdown(1);
 
   // Lock the flash according to the ownership configuration.
-  HARDENED_RETURN_IF_ERROR(ownership_flash_lockdown(boot_data, &owner_config));
+  HARDENED_RETURN_IF_ERROR(
+      ownership_flash_lockdown(boot_data, boot_log->bl0_slot, &owner_config));
 
   dbg_print_epmp();
 
@@ -554,7 +555,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(rom_ext_boot(boot_data, manifests.ordered[i]));
+    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifests.ordered[i]));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;
