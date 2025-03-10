@@ -20,7 +20,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
 )
@@ -251,4 +250,17 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
     ],
     alwayslink = True,
+)
+
+cc_library(
+    name = "owner_verify",
+    srcs = ["owner_verify.c"],
+    hdrs = ["owner_verify.h"],
+    deps = [
+        ":datatypes",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
 )

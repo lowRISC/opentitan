@@ -16,7 +16,7 @@
  * recovery of a device should it get into the Recovery state (ie:
  * a state where there is no valid owner).
  */
-extern const owner_key_t *const kNoOwnerRecoveryKey;
+extern const owner_keydata_t *const kNoOwnerRecoveryKey;
 
 typedef enum ownership_key {
   /** The owner_key in the owner page. */

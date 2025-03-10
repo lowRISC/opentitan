@@ -114,30 +114,6 @@ ld_library(
     ],
 )
 
-cc_library(
-    name = "sigverify_keys",
-    srcs = ["sigverify_keys.c"],
-    hdrs = ["sigverify_keys.h"],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-    ],
-)
-
-cc_test(
-    name = "sigverify_keys_unittest",
-    srcs = ["sigverify_keys_unittest.cc"],
-    deps = [
-        ":sigverify_keys",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
-    ],
-)
-
 [
     cc_library(
         name = "rom_ext_{}".format(variation_name),
@@ -151,7 +127,6 @@ cc_test(
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
             ":rom_ext_manifest",
-            ":sigverify_keys",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
@@ -186,6 +161,7 @@ cc_test(
             "//sw/device/silicon_creator/lib/drivers:rnd",
             "//sw/device/silicon_creator/lib/drivers:uart",
             "//sw/device/silicon_creator/lib/ownership",
+            "//sw/device/silicon_creator/lib/ownership:owner_verify",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
