@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
-  .RAL_T(gpio_reg_block)
+  .RAL_T(${module_instance_name}_reg_block)
 );
 
   // flag to indicate if weak pullup has been introduced on gpio
@@ -12,8 +12,8 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
   // flag to indicate if weak pulldown has been introduced on gpio
   rand bit pulldown_en;
   // gpio virtual interface
-  gpio_vif gpio_vif;
-  // gpio straps interface
+  ${module_instance_name}_vif ${module_instance_name}_vif;
+  // straps virtual interface
   straps_vif straps_vif_inst;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
@@ -35,6 +35,6 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
 
     // Used to allow reset operation during a stress all tests and check the CSR after that.
     can_reset_with_csr_accesses = 1'b1;
-  endfunction : initialize
 
+  endfunction : initialize
 endclass
