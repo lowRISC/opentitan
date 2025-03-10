@@ -17,4 +17,5 @@
 `include "${module_instance_name}_random_long_reg_writes_reg_reads_vseq.sv"
 `include "${module_instance_name}_full_random_vseq.sv"
 `include "${module_instance_name}_stress_all_vseq.sv"
+`include "${module_instance_name}_strap_en_vseq.sv"
 `include "${module_instance_name}_rand_straps_vseq.sv"

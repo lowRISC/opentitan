@@ -27,29 +27,29 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
     if (do_init_reset) begin
       // Check for weak pullup or weak pulldown requirement
       if (cfg.pullup_en) begin
-        cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b1}});
-        //cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
-        `uvm_info(`gfn, "weak pullup applied to gpio's", UVM_LOW)
+        cfg.${module_instance_name}_vif.set_pullup_en({NUM_GPIOS{1'b1}});
+        //cfg.${module_instance_name}_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
+        `uvm_info(`gfn, "weak pullup applied to ${module_instance_name}'s", UVM_LOW)
       end else if (cfg.pulldown_en) begin
-        //cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b0}});
-        cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
-        `uvm_info(`gfn, "weak pulldown applied to gpio's", UVM_LOW)
+        //cfg.${module_instance_name}_vif.set_pullup_en({NUM_GPIOS{1'b0}});
+        cfg.${module_instance_name}_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
+        `uvm_info(`gfn, "weak pulldown applied to ${module_instance_name}'s", UVM_LOW)
       end
       super.dut_init(reset_kind);
     end else begin
       // since stress_all_with_rand_reset test have to turn off the reset here,
-      // this step makes sure that we reset out and oe pins to avoid drive x in gpio_in
-      drive_gpio_out('0);
-      drive_gpio_oe('0);
+      // this step makes sure that we reset out and oe pins to avoid drive x in ${module_instance_name}_in
+      drive_${module_instance_name}_out('0);
+      drive_${module_instance_name}_oe('0);
     end
   endtask : dut_init
 
-  // Function: set_gpio_pulls
-  // This function is meant to override gpio pullup or pulldown value
+  // Function: set_${module_instance_name}_pulls
+  // This function is meant to override ${module_instance_name} pullup or pulldown value
   // from extended sequence.
   // Note: This function does not check whether only one of 'pu' and 'pd' is passed 1.
-  //       If we pass both pu and pd to be 1, gpio pullup will be used.
-  protected function void set_gpio_pulls(bit pu = 1'b1, bit pd = 1'b0);
+  //       If we pass both pu and pd to be 1, ${module_instance_name} pullup will be used.
+  protected function void set_${module_instance_name}_pulls(bit pu = 1'b1, bit pd = 1'b0);
     bit no_pullup_pulldown;
     cfg.pullup_en   = pu;
     cfg.pulldown_en = pd;
@@ -65,37 +65,37 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask
 
-  // Task: drive_gpio_in
-  // task to drive dut gpio inputs (gpio_en_o from dut must be configured to 0)
-  virtual task drive_gpio_in(bit [NUM_GPIOS-1:0] val);
+  // Task: drive_${module_instance_name}_in
+  // task to drive dut ${module_instance_name} inputs (${module_instance_name}_en_o from dut must be configured to 0)
+  virtual task drive_${module_instance_name}_in(bit [NUM_GPIOS-1:0] val);
     ral.direct_oe.set('0);
     csr_update(ral.direct_oe);
-    cfg.gpio_vif.drive(val);
+    cfg.${module_instance_name}_vif.drive(val);
   endtask
 
-  // Task: undrive_gpio_in
-  virtual task undrive_gpio_in();
-    cfg.gpio_vif.drive_en('0);
-  endtask : undrive_gpio_in
+  // Task: undrive_${module_instance_name}_in
+  virtual task undrive_${module_instance_name}_in();
+    cfg.${module_instance_name}_vif.drive_en('0);
+  endtask : undrive_${module_instance_name}_in
 
-  // Task: drive_gpio_out
-  // task to drive dut gpio outputs
-  virtual task drive_gpio_out(bit [NUM_GPIOS-1:0] val);
+  // Task: drive_${module_instance_name}_out
+  // task to drive dut ${module_instance_name} outputs
+  virtual task drive_${module_instance_name}_out(bit [NUM_GPIOS-1:0] val);
     ral.direct_out.set(val);
     csr_update(ral.direct_out);
   endtask
 
-  // Task: drive_gpio_oe
-  // task to drive dut gpio output enables
-  virtual task drive_gpio_oe(bit [NUM_GPIOS-1:0] val);
+  // Task: drive_${module_instance_name}_oe
+  // task to drive dut ${module_instance_name} output enables
+  virtual task drive_${module_instance_name}_oe(bit [NUM_GPIOS-1:0] val);
     ral.direct_oe.set(val);
     csr_update(ral.direct_oe);
   endtask
 
-  // Task: sample_gpio
-  // task to sample gpio pins
-  virtual task sample_gpio(ref bit [NUM_GPIOS-1:0] val);
-    val = cfg.gpio_vif.sample();
+  // Task: sample_${module_instance_name}
+  // task to sample ${module_instance_name} pins
+  virtual task sample_${module_instance_name}(ref bit [NUM_GPIOS-1:0] val);
+    val = cfg.${module_instance_name}_vif.sample();
   endtask
 
   // Task : pgm_intr_regs
