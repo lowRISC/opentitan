@@ -28,7 +28,7 @@ class dma_abort_vseq extends dma_generic_vseq;
   virtual function bit [15:0] choose_abort_delay();
     bit raise_abort;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(raise_abort, raise_abort dist { 0 := 20, 1 := 80};)
-    return raise_abort ? $urandom_range(1, 16'h3FF) : 16'b0;
+    return raise_abort ? 16'($urandom_range(1, 'h3FF)) : 16'h0;
   endfunction
 
   // Transaction is commencing

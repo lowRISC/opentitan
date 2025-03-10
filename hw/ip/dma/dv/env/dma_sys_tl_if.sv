@@ -114,7 +114,7 @@ interface dma_sys_tl_if
 `ifdef INC_ASSERT
   // Not expected to handle simultaneous write and read requests with the current DMA implementation
   // and the behavior in this case has not been publicly specified.
-  `ASSERT_NEVER(DisjointReadAndWrite_A, sys_h2d.vld_vec[SysCmdWrite] & sys_h2d.vld_vec[SysCmdRead]);
+  `ASSERT_NEVER(DisjointReadAndWrite_A, sys_h2d.vld_vec[SysCmdWrite] & sys_h2d.vld_vec[SysCmdRead])
 `else
   // Not currently required; combinational logic only
   logic unused_clk = clk_i;
