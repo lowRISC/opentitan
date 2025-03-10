@@ -1,0 +1,79 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Lint waivers for Verilator
+// See https://verilator.org/guide/latest/exe_verilator.html#configuration-files
+// for documentation.
+//
+// Important: This file must included *before* any other Verilog file is read.
+// Otherwise, only global waivers are applied, but not file-specific waivers.
+
+`verilator_config
+lint_off -rule PINCONNECTEMPTY
+
+// We have some boolean top-level parameters in e.g. ibex_core_tracing.sv.
+// When building with fusesoc, these get set with defines like
+// -GRV32M=1 (rather than -GRV32M=1'b1), leading to warnings like:
+//
+//   Operator VAR '<varname>' expects 1 bits on the Initial value, but
+//   Initial value's CONST '32'h1' generates 32 bits.
+//
+// This signoff rule ignores errors like this. Note that it only
+// matches when you set a 1-bit value to a literal 1, so it won't hide
+// silly mistakes like setting it to 2.
+//
+lint_off -rule WIDTH -file "*/rtl/ibex_top_tracing.sv"
+         -match "*expects 1 bits*Initial value's CONST '32'h1'*"
+
+// Operator expects 1 bit on initial value but initial value's CONST generates
+// 32 bits, need a specific RV32B waiver as it uses enums so the above catch-all
+// waiver doesn't work.
+lint_off -rule WIDTH -file "*/rtl/ibex_top_tracing.sv" -match "*'RV32B'*"
+
+// Bits of signal are not used: be_i[3:1]
+// Bits of signal are not used: addr_i[31:10,1:0]
+// Bits of signal are not used: wdata_i[31:8]
+//
+// simulator_ctrl exposes a 32-bit write-only interface to its control
+// registers, but actually only looks at the bottom byte and rounds addresses
+// down to be 4-byte aligned.
+//
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'be_i'[3:1]*"
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'addr_i'[31:10,1:0]*"
+lint_off -rule UNUSED -file "*/rtl/sim/simulator_ctrl.sv" -match "*'wdata_i'[31:8]*"
+
+// Bits of signal are not used: timer_addr_i[31:10]
+//
+// The upper bits of this address are used to select whether the timer is
+// addressed at all (encoded in the timer_req_i input). However, we pass the
+// entire 32-bit address around to make the code a bit cleaner.
+lint_off -rule UNUSED -file "*/rtl/timer.sv" -match "*'timer_addr_i'[31:10]*"
+
+// Signal is not used: clk_i
+// leaving clk and reset connected in-case we want to add assertions
+lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*clk_i*"
+lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*clk_i*"
+
+// Signal is not used: rst_ni
+// leaving clk and reset connected in-case we want to add assertions
+lint_off -rule UNUSED -file "*/rtl/ibex_pmp.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*rst_ni*"
+lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*rst_ni*"
+
+// Don't worry about the fact that decoded_str and data_accessed appear to be
+// written by multiple processes that might race with each other. They can't
+// race with each other (everything is a descendent of the always_comb block),
+// but Verilator doesn't notice this.
+lint_off -rule MULTIDRIVEN -file "*/rtl/ibex_tracer.sv" -match "*decoded_str*"
+lint_off -rule MULTIDRIVEN -file "*/rtl/ibex_tracer.sv" -match "*data_accessed*"
+
+// Temporary waivers until OpenTitan primitives are lint-clean
+// https://github.com/lowRISC/opentitan/issues/2313
+lint_off -file "*/lowrisc_prim_*/rtl/*.sv"
+
+lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrSeed*"
+lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrPerm*"

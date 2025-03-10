@@ -6,7 +6,7 @@
     },
     "ibex": {
         "name": "Ibex",
-        "data_file": "hw/ip/rv_core_ibex/data/rv_core_ibex.hjson",
+        "data_file": "hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson",
         "report": null
     },
     "interrupt-controller": {

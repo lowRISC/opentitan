@@ -102,7 +102,6 @@ hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked1.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_prod.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked2.hjson
-hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
 hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson
 
@@ -117,6 +116,7 @@ hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 hw/top_earlgrey/ip_autogen/gpio/rtl/gpio.hjson
+hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson
 
 hw/top_earlgrey/data/top_earlgrey.hjson
 hw/top_earlgrey/data/xbar_main.hjson

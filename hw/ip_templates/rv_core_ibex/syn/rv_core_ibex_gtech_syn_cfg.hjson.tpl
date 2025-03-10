@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Top level dut name (sv module).
+  name: ${module_instance_name}
+
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}")}:0.1
+
+  import_cfgs: [// Project wide common GTECH synthesis config file
+                "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
+
+  overrides: [
+    { // Deletes black-boxed hierarchies before writing out the unmapped netlist
+      name: post_elab_script
+      value: "{proj_root}/hw/ip/{name}/syn/post_elab_gtech.tcl"
+    }
+  ]
+}
