@@ -226,6 +226,13 @@ filegroup(
 cc_library(
     name = "personalize_ext",
     hdrs = ["personalize_ext.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/silicon_creator/lib/cert",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
 )
 
 cc_library(
