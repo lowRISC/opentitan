@@ -4,7 +4,6 @@
 
 #include "dt/dt_alert_handler.h"  // Generated.
 #include "dt/dt_aon_timer.h"      // Generated.
-#include "dt/dt_flash_ctrl.h"     // Generated.
 #include "dt/dt_i2c.h"            // Generated.
 #include "dt/dt_kmac.h"           // Generated.
 #include "dt/dt_otp_ctrl.h"       // Generated.
