@@ -43,21 +43,24 @@ static const dt_pad_t kPadStrap2 = kDtPadGpioGpio24;
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22), kPadStrap0));
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio23), kPadStrap1));
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio24), kPadStrap2));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22),
+      kDtPeriphIoDirIn, kPadStrap0));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio23),
+      kDtPeriphIoDirIn, kPadStrap1));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio24),
+      kDtPeriphIoDirIn, kPadStrap2));
 
   // Configure UART0 RX input.
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoRx), kPadUart0Rx));
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kPadUart0Rx,
-                                            kDtPeriphIoConstantHighZ));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoRx), kDtPeriphIoDirIn,
+      kPadUart0Rx));
   // Configure UART0 TX output.
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(
-      pinmux, kPadUart0Tx, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx)));
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
+      kPadUart0Tx));
 
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
@@ -70,19 +73,18 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad_index(kPadUart0Rx),
-                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs_dt(pinmux, kPadUart0Rx, in_attr, &out_attr));
   };
 
 #ifdef HAS_UART1
-  // Configure UART1 RX input.
-  CHECK_DIF_OK(dif_pinmux_mio_select_input(
-      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoRx), kPadUart1Rx));
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kPadUart1Rx,
-                                            kDtPeriphIoConstantHighZ));
-  // Configure UART1 TX output.
-  CHECK_DIF_OK(dif_pinmux_mio_select_output(
-      pinmux, kPadUart1Tx, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoTx)));
+  // Configure UART0 RX input.
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoRx), kDtPeriphIoDirIn,
+      kPadUart1Rx));
+  // Configure UART0 TX output.
+  CHECK_STATUS_OK(pinmux_testutils_connect(
+      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
+      kPadUart1Tx));
 #endif /* HAS_UART1 */
 
   // TODO convert to multitop
@@ -103,18 +105,56 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
     dif_pinmux_pad_attr_t in_attr = {
         .slew_rate = 0, .drive_strength = 1, .flags = 0};
 
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyDirectPadsUsbdevUsbDp,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
-    CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyDirectPadsUsbdevUsbDn,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(pinmux, kDtPadUsbdevUsbDp,
+                                               in_attr, &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(pinmux, kDtPadUsbdevUsbDn,
+                                               in_attr, &out_attr));
   }
 
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
   CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kDtPadIoc7,
                                             kDtPeriphIoConstantHighZ));
 #endif /* OPENTITAN_IS_EARLGREY* */
+}
+
+status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
+                                  dt_periph_io_t periph_io,
+                                  dt_periph_io_dir_t dir, dt_pad_t pad) {
+  switch (dt_periph_io_type(periph_io)) {
+    case kDtPeriphIoTypeMio:
+      if (dt_pad_type(pad) != kDtPadTypeMio) {
+        return INVALID_ARGUMENT();
+      }
+      // Configure input.
+      if (dir == kDtPeriphIoDirIn || dir == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_input(pinmux, periph_io, pad));
+      }
+      // Configure output as requested...
+      if (dir == kDtPeriphIoDirOut || dir == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_output(pinmux, pad, periph_io));
+      }
+      // ... or as high-Z.
+      else if (dt_periph_io_dir(periph_io) == kDtPeriphIoDirInout) {
+        TRY(dif_pinmux_mio_select_output(pinmux, pad,
+                                         kDtPeriphIoConstantHighZ));
+      }
+      return OK_STATUS();
+    case kDtPeriphIoTypeDio:
+      // Nothing to do but to check that they are actually connected together.
+      if (dt_pad_type(pad) != kDtPadTypeDio ||
+          dt_periph_io_dio_pad(periph_io) != pad) {
+        return INVALID_ARGUMENT();
+      }
+      // Make sure that the directions are compatible.
+      dt_periph_io_dir_t io_dir = dt_periph_io_dir(periph_io);
+      if ((io_dir == kDtPeriphIoDirIn || io_dir == kDtPeriphIoDirOut) &&
+          dir != io_dir) {
+        return INVALID_ARGUMENT();
+      }
+      return OK_STATUS();
+    default:
+      return INVALID_ARGUMENT();
+  }
 }
 
 // Mapping of Chip IOs to the GPIO peripheral.
