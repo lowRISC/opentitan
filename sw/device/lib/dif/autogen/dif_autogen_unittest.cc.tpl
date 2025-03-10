@@ -1,6 +1,13 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+    from make_new_dif.ip import Ip
+    from pathlib import Path
+
+    ip_hjson = Path(ipcfg)
+    ip = Ip(ip_hjson.stem, "AUTOGEN", ip_hjson)
+%>
 
 <%doc>
     This file is the "auto-generated DIF library unit test template", which
@@ -13,8 +20,6 @@
 
     1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
 </%doc>
-
-${autogen_banner}
 
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
