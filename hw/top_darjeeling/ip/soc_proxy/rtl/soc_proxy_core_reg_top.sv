@@ -166,7 +166,8 @@ module soc_proxy_core_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -194,7 +195,8 @@ module soc_proxy_core_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

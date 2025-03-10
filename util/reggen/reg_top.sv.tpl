@@ -1124,7 +1124,8 @@ ${bits.msb}\
     .DW      (${field.bits.width()}),
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
     .RESVAL  (${resval_expr}),
-    .Mubi    (${mubi_expr})
+    .Mubi    (${mubi_expr}),
+    .UsesDs  (1'b1)
   ) u_${finst_name} (
       % if reg.sync_clk:
     // sync clock and reset required for this register

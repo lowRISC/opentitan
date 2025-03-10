@@ -394,7 +394,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_es_entropy_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -421,7 +422,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_es_health_test_failed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -448,7 +450,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_es_observe_fifo_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -475,7 +478,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_es_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -504,7 +508,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_es_entropy_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -531,7 +536,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_es_health_test_failed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -558,7 +564,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_es_observe_fifo_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -585,7 +592,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_es_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -719,7 +727,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_me_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -747,7 +756,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_regupd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -775,7 +785,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -820,7 +831,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_module_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -852,7 +864,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_fips_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -879,7 +892,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_fips_flag (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -906,7 +920,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_rng_fips (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -933,7 +948,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_rng_bit_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -960,7 +976,8 @@ module entropy_src_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_conf_rng_bit_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -987,7 +1004,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_threshold_scope (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1014,7 +1032,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_conf_entropy_data_reg_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1046,7 +1065,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1073,7 +1093,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1121,7 +1142,8 @@ module entropy_src_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h200),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_health_test_windows_fips_window (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1148,7 +1170,8 @@ module entropy_src_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h60),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_health_test_windows_bypass_window (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1972,7 +1995,8 @@ module entropy_src_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h2),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_threshold_alert_threshold (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1999,7 +2023,8 @@ module entropy_src_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'hfffd),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_threshold_alert_threshold_inv (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2186,7 +2211,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2213,7 +2239,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2241,7 +2268,8 @@ module entropy_src_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_fw_ov_sha3_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2285,7 +2313,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fw_ov_rd_fifo_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2352,7 +2381,8 @@ module entropy_src_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h10),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_observe_fifo_thresh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2519,7 +2549,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_fips_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2546,7 +2577,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_entropy_data_reg_en_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2573,7 +2605,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_module_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2600,7 +2633,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_threshold_scope_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2627,7 +2661,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_rng_bit_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2654,7 +2689,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_fw_ov_sha3_start_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2681,7 +2717,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_fw_ov_mode_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2708,7 +2745,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_fw_ov_entropy_insert_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2735,7 +2773,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_route_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2762,7 +2801,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_type_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2789,7 +2829,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_main_sm_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2816,7 +2857,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_bus_cmp_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2843,7 +2885,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_thresh_cfg_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2870,7 +2913,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_fw_ov_wr_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2897,7 +2941,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_es_fw_ov_disable_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2924,7 +2969,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_fips_flag_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2951,7 +2997,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_rng_fips_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2978,7 +3025,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_sts_postht_entropy_drop_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3007,7 +3055,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sfifo_esrng_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3034,7 +3083,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sfifo_distr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3061,7 +3111,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sfifo_observe_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3088,7 +3139,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sfifo_esfinal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3115,7 +3167,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_es_ack_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3142,7 +3195,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_es_main_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3169,7 +3223,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_es_cntr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3196,7 +3251,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sha3_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3223,7 +3279,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_sha3_rst_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3250,7 +3307,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3277,7 +3335,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3304,7 +3363,8 @@ module entropy_src_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3343,7 +3403,8 @@ module entropy_src_reg_top (
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_test (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3372,7 +3433,8 @@ module entropy_src_reg_top (
     .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (9'hf5),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_main_sm_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

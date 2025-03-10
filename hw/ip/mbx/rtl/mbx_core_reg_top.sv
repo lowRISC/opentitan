@@ -191,7 +191,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_mbx_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -218,7 +219,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_mbx_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -245,7 +247,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_mbx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -274,7 +277,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_mbx_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -301,7 +305,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_mbx_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -328,7 +333,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_mbx_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -561,7 +567,8 @@ module mbx_core_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_address_range_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -600,7 +607,8 @@ module mbx_core_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_address_range_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -634,7 +642,8 @@ module mbx_core_reg_top (
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (30'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -667,7 +676,8 @@ module mbx_core_reg_top (
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (30'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -716,7 +726,8 @@ module mbx_core_reg_top (
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (30'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_outbound_base_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -749,7 +760,8 @@ module mbx_core_reg_top (
     .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (30'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_outbound_limit_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -804,7 +816,8 @@ module mbx_core_reg_top (
     .DW      (11),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (11'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_outbound_object_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

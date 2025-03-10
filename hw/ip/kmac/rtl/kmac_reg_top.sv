@@ -381,7 +381,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -408,7 +409,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -435,7 +437,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -464,7 +467,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -491,7 +495,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_fifo_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -518,7 +523,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_kmac_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -667,7 +673,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_kmac_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -704,7 +711,8 @@ module kmac_reg_top (
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_kstrength (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -741,7 +749,8 @@ module kmac_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -778,7 +787,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_msg_endianness (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -815,7 +825,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_state_endianness (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -852,7 +863,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_sideload (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -889,7 +901,8 @@ module kmac_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_entropy_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -926,7 +939,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_entropy_fast_process (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -963,7 +977,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_msg_mask (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1000,7 +1015,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_entropy_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1037,7 +1053,8 @@ module kmac_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_shadowed_en_unsupported_modestrength (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1270,7 +1287,8 @@ module kmac_reg_top (
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_entropy_period_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1297,7 +1315,8 @@ module kmac_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_entropy_period_wait_timer (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1325,7 +1344,8 @@ module kmac_reg_top (
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_entropy_refresh_hash_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1357,7 +1377,8 @@ module kmac_reg_top (
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_entropy_refresh_threshold_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2185,7 +2206,8 @@ module kmac_reg_top (
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_key_len (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2217,7 +2239,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2249,7 +2272,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2281,7 +2305,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2313,7 +2338,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2345,7 +2371,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2377,7 +2404,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2409,7 +2437,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2441,7 +2470,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2473,7 +2503,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2505,7 +2536,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2537,7 +2569,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prefix_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2565,7 +2598,8 @@ module kmac_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

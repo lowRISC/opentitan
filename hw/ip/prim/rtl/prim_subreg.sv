@@ -10,7 +10,8 @@ module prim_subreg
   parameter int            DW       = 32,
   parameter sw_access_e    SwAccess = SwAccessRW,
   parameter logic [DW-1:0] RESVAL   = '0 ,   // reset value
-  parameter bit            Mubi     = 1'b0
+  parameter bit            Mubi     = 1'b0,
+  parameter bit            UsesDs   = 1'b1
 ) (
   input clk_i,
   input rst_ni,
@@ -60,8 +61,13 @@ module prim_subreg
     end
   end
 
-  // feed back out for consolidation
-  assign ds = wr_en ? wr_data : qs;
+  // feed back out for consolidation. Note that this isn't driven at all if UsesDs is false (the
+  // place this is instantiated claims that it doesn't read the value, so it's probably sensible to
+  // leave it as 'x to aid debugging).
+  if (UsesDs) begin
+    assign ds = wr_en ? wr_data : qs;
+  end
+
   assign qe = wr_en;
 
   if (SwAccess == SwAccessRC) begin : gen_rc

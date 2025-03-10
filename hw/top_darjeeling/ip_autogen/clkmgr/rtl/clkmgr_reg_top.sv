@@ -528,7 +528,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_extclk_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -560,7 +561,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_extclk_ctrl_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -587,7 +589,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_extclk_ctrl_hi_speed_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -631,7 +634,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_jitter_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -662,7 +666,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_jitter_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -691,7 +696,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_enables_clk_io_div4_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -718,7 +724,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_enables_clk_io_div2_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -745,7 +752,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_enables_clk_usb_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -774,7 +782,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_clk_main_aes_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -801,7 +810,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_clk_main_hmac_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -828,7 +838,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_clk_main_kmac_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -855,7 +866,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_clk_main_otbn_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -884,7 +896,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_status_clk_main_aes_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -911,7 +924,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_status_clk_main_hmac_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -938,7 +952,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_status_clk_main_kmac_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -965,7 +980,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_clk_hints_status_clk_main_otbn_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -993,7 +1009,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_measure_ctrl_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1027,7 +1044,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_io_div4_meas_ctrl_en (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
@@ -1083,7 +1101,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'he),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_io_div4_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
@@ -1142,7 +1161,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_io_div4_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div4_i),
     .rst_ni  (rst_io_div4_ni),
@@ -1185,7 +1205,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_main_meas_ctrl_en (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
@@ -1241,7 +1262,8 @@ module clkmgr_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h1a),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_main_meas_ctrl_shadowed_hi (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
@@ -1300,7 +1322,8 @@ module clkmgr_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h6),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_main_meas_ctrl_shadowed_lo (
     .clk_i   (clk_main_i),
     .rst_ni  (rst_main_ni),
@@ -1342,7 +1365,8 @@ module clkmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_usb_meas_ctrl_en (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
@@ -1398,7 +1422,8 @@ module clkmgr_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h1a),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_usb_meas_ctrl_shadowed_hi (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
@@ -1457,7 +1482,8 @@ module clkmgr_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h6),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_usb_meas_ctrl_shadowed_lo (
     .clk_i   (clk_usb_i),
     .rst_ni  (rst_usb_ni),
@@ -1495,7 +1521,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_shadow_update_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1522,7 +1549,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_io_div4_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1549,7 +1577,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_main_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1576,7 +1605,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_usb_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1603,7 +1633,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_io_div4_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1630,7 +1661,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_main_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1657,7 +1689,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_err_code_usb_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1686,7 +1719,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_err_code_reg_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1713,7 +1747,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_err_code_idle_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1740,7 +1775,8 @@ module clkmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_err_code_shadow_storage_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

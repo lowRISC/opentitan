@@ -12,7 +12,8 @@ module prim_subreg_shadow
   parameter int            DW       = 32,
   parameter sw_access_e    SwAccess = SwAccessRW,
   parameter logic [DW-1:0] RESVAL   = '0,    // reset value
-  parameter bit            Mubi     = 1'b0
+  parameter bit            Mubi     = 1'b0,
+  parameter bit            UsesDs   = 1'b1
 ) (
   input clk_i,
   input rst_ni,
@@ -117,7 +118,8 @@ module prim_subreg_shadow
     .DW       ( DW             ),
     .SwAccess ( StagedSwAccess ),
     .RESVAL   ( ~RESVAL        ),
-    .Mubi     ( Mubi           )
+    .Mubi     ( Mubi           ),
+    .UsesDs   ( 1'b0           )
   ) staged_reg (
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
@@ -143,7 +145,8 @@ module prim_subreg_shadow
     .DW       ( DW               ),
     .SwAccess ( InvertedSwAccess ),
     .RESVAL   ( ~RESVAL          ),
-    .Mubi     ( Mubi             )
+    .Mubi     ( Mubi             ),
+    .UsesDs   ( 1'b0             )
   ) shadow_reg (
     .clk_i    ( clk_i           ),
     .rst_ni   ( rst_shadowed_ni ),
@@ -166,7 +169,8 @@ module prim_subreg_shadow
     .DW       ( DW       ),
     .SwAccess ( SwAccess ),
     .RESVAL   ( RESVAL   ),
-    .Mubi     ( Mubi     )
+    .Mubi     ( Mubi     ),
+    .UsesDs   ( UsesDs   )
   ) committed_reg (
     .clk_i    ( clk_i        ),
     .rst_ni   ( rst_ni       ),

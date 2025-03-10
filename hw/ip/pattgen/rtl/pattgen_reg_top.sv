@@ -188,7 +188,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_done_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -215,7 +216,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_done_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -244,7 +246,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_done_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -271,7 +274,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_done_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -357,7 +361,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_enable_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -384,7 +389,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_enable_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -411,7 +417,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_polarity_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -438,7 +445,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_polarity_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -465,7 +473,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_inactive_level_pcl_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -492,7 +501,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_inactive_level_pda_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -519,7 +529,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_inactive_level_pcl_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -546,7 +557,8 @@ module pattgen_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_inactive_level_pda_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -574,7 +586,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prediv_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -602,7 +615,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_prediv_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -631,7 +645,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_data_ch0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -660,7 +675,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_data_ch0_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -689,7 +705,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_data_ch1_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -718,7 +735,8 @@ module pattgen_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_data_ch1_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -747,7 +765,8 @@ module pattgen_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_size_len_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -774,7 +793,8 @@ module pattgen_reg_top (
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_size_reps_ch0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -801,7 +821,8 @@ module pattgen_reg_top (
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_size_len_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -828,7 +849,8 @@ module pattgen_reg_top (
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_size_reps_ch1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

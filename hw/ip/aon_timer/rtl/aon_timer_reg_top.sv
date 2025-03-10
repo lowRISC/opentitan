@@ -614,7 +614,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_ctrl_enable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -641,7 +642,8 @@ module aon_timer_reg_top (
     .DW      (12),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (12'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_ctrl_prescaler (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -670,7 +672,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_thold_hi (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -698,7 +701,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_thold_lo (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -728,7 +732,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_count_hi (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -758,7 +763,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_count_lo (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -786,7 +792,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -818,7 +825,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_ctrl_enable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -845,7 +853,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_ctrl_pause_in_sleep (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -876,7 +885,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_bark_thold (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -907,7 +917,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_bite_thold (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -937,7 +948,8 @@ module aon_timer_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wdog_count (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -966,7 +978,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_wkup_timer_expired (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -993,7 +1006,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_wdog_timer_bark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1060,7 +1074,8 @@ module aon_timer_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_wkup_cause (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),

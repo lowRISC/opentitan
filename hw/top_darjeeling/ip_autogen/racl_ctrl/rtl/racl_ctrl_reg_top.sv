@@ -182,7 +182,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_all_rd_wr_shadowed_read_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -218,7 +219,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_all_rd_wr_shadowed_write_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -256,7 +258,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_rot_private_shadowed_read_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -292,7 +295,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_rot_private_shadowed_write_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -330,7 +334,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h5),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_soc_rot_shadowed_read_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -366,7 +371,8 @@ module racl_ctrl_reg_top
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h5),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_policy_soc_rot_shadowed_write_perm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -452,7 +458,8 @@ module racl_ctrl_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -480,7 +487,8 @@ module racl_ctrl_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -507,7 +515,8 @@ module racl_ctrl_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_read_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -534,7 +543,8 @@ module racl_ctrl_reg_top
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_role (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -561,7 +571,8 @@ module racl_ctrl_reg_top
     .DW      (5),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_ctn_uid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -593,7 +604,8 @@ module racl_ctrl_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_error_log_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

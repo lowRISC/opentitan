@@ -308,7 +308,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -335,7 +336,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_init_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -364,7 +366,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_io_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -391,7 +394,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_init_status_change (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -493,7 +497,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cfg_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -523,7 +528,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -550,7 +556,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -577,7 +584,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -604,7 +612,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -631,7 +640,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -658,7 +668,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -685,7 +696,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -712,7 +724,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -739,7 +752,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -766,7 +780,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -793,7 +808,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_trig_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -825,7 +841,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -857,7 +874,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -889,7 +907,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -921,7 +940,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -953,7 +973,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -985,7 +1006,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1017,7 +1039,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1049,7 +1072,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1081,7 +1105,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1113,7 +1138,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1145,7 +1171,8 @@ module sensor_ctrl_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h6),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_alert_en_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1178,7 +1205,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1205,7 +1233,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1232,7 +1261,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1259,7 +1289,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1286,7 +1317,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1313,7 +1345,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1340,7 +1373,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1367,7 +1401,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1394,7 +1429,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1421,7 +1457,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1448,7 +1485,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_en_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1478,7 +1516,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1505,7 +1544,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1532,7 +1572,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1559,7 +1600,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1586,7 +1628,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1613,7 +1656,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1640,7 +1684,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1667,7 +1712,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1694,7 +1740,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1721,7 +1768,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1748,7 +1796,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_recov_alert_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1778,7 +1827,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1805,7 +1855,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1832,7 +1883,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1859,7 +1911,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1886,7 +1939,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1913,7 +1967,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1940,7 +1995,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1967,7 +2023,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1994,7 +2051,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2021,7 +2079,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2048,7 +2107,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2075,7 +2135,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_val_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2104,7 +2165,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_status_ast_init_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2131,7 +2193,8 @@ module sensor_ctrl_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_status_io_pok (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2160,7 +2223,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_manual_pad_attr_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2189,7 +2253,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_manual_pad_attr_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2218,7 +2283,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_manual_pad_attr_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2247,7 +2313,8 @@ module sensor_ctrl_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_manual_pad_attr_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

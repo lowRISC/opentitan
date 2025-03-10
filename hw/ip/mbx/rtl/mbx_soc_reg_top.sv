@@ -282,7 +282,8 @@ module mbx_soc_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_status_busy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -309,7 +310,8 @@ module mbx_soc_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_status_doe_intr_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -336,7 +338,8 @@ module mbx_soc_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_status_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -363,7 +366,8 @@ module mbx_soc_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_status_doe_async_msg_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -390,7 +394,8 @@ module mbx_soc_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_status_ready (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -418,7 +423,8 @@ module mbx_soc_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_doe_intr_msg_addr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -446,7 +452,8 @@ module mbx_soc_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_soc_doe_intr_msg_data (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

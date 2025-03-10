@@ -248,7 +248,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -276,7 +277,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -401,7 +403,8 @@ module otbn_reg_top (
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h4),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -691,7 +694,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_imem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -718,7 +722,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_dmem_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -745,7 +750,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_reg_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -772,7 +778,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_bus_intg_violation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -799,7 +806,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_bad_internal_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -826,7 +834,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_illegal_bus_access (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -853,7 +862,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_lifecycle_escalation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -880,7 +890,8 @@ module otbn_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fatal_alert_cause_fatal_software (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

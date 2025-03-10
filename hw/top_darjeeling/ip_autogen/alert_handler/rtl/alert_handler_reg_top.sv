@@ -2559,7 +2559,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_classa (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2586,7 +2587,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_classb (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2613,7 +2615,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_classc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2640,7 +2643,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state_classd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2669,7 +2673,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_classa (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2696,7 +2701,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_classb (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2723,7 +2729,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_classc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2750,7 +2757,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable_classd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2847,7 +2855,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ping_timer_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2878,7 +2887,8 @@ module alert_handler_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h100),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ping_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2918,7 +2928,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ping_timer_en_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2956,7 +2967,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2985,7 +2997,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3014,7 +3027,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3043,7 +3057,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3072,7 +3087,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3101,7 +3117,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3130,7 +3147,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3159,7 +3177,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3188,7 +3207,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3217,7 +3237,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3246,7 +3267,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3275,7 +3297,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3304,7 +3327,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3333,7 +3357,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3362,7 +3387,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3391,7 +3417,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3420,7 +3447,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3449,7 +3477,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3478,7 +3507,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3507,7 +3537,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3536,7 +3567,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3565,7 +3597,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3594,7 +3627,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3623,7 +3657,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3652,7 +3687,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3681,7 +3717,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3710,7 +3747,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3739,7 +3777,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3768,7 +3807,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3797,7 +3837,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3826,7 +3867,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3855,7 +3897,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3884,7 +3927,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3913,7 +3957,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3942,7 +3987,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3971,7 +4017,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4000,7 +4047,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4029,7 +4077,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4058,7 +4107,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4087,7 +4137,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4116,7 +4167,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4145,7 +4197,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4174,7 +4227,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4203,7 +4257,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4232,7 +4287,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4261,7 +4317,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4290,7 +4347,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4319,7 +4377,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4348,7 +4407,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4377,7 +4437,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4406,7 +4467,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4435,7 +4497,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4464,7 +4527,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4493,7 +4557,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4522,7 +4587,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4551,7 +4617,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4580,7 +4647,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4609,7 +4677,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4638,7 +4707,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4667,7 +4737,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4696,7 +4767,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4725,7 +4797,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4754,7 +4827,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4783,7 +4857,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4812,7 +4887,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4841,7 +4917,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4870,7 +4947,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4899,7 +4977,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4928,7 +5007,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4957,7 +5037,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4986,7 +5067,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5015,7 +5097,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5044,7 +5127,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5073,7 +5157,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5102,7 +5187,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5131,7 +5217,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5160,7 +5247,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5189,7 +5277,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5218,7 +5307,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5247,7 +5337,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5276,7 +5367,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5305,7 +5397,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5334,7 +5427,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5363,7 +5457,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5392,7 +5487,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5421,7 +5517,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5450,7 +5547,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5479,7 +5577,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5508,7 +5607,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5537,7 +5637,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5566,7 +5667,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5595,7 +5697,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5624,7 +5727,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5653,7 +5757,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5682,7 +5787,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5711,7 +5817,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5740,7 +5847,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5769,7 +5877,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5798,7 +5907,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5827,7 +5937,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5856,7 +5967,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5885,7 +5997,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5914,7 +6027,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5946,7 +6060,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5987,7 +6102,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6028,7 +6144,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6069,7 +6186,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6110,7 +6228,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6151,7 +6270,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6192,7 +6312,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6233,7 +6354,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6274,7 +6396,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6315,7 +6438,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6356,7 +6480,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6397,7 +6522,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6438,7 +6564,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6479,7 +6606,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6520,7 +6648,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6561,7 +6690,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6602,7 +6732,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6643,7 +6774,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6684,7 +6816,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6725,7 +6858,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6766,7 +6900,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6807,7 +6942,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6848,7 +6984,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6889,7 +7026,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6930,7 +7068,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6971,7 +7110,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7012,7 +7152,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7053,7 +7194,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7094,7 +7236,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7135,7 +7278,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7176,7 +7320,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7217,7 +7362,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7258,7 +7404,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7299,7 +7446,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7340,7 +7488,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7381,7 +7530,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7422,7 +7572,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7463,7 +7614,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7504,7 +7656,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7545,7 +7698,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7586,7 +7740,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7627,7 +7782,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7668,7 +7824,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7709,7 +7866,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7750,7 +7908,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7791,7 +7950,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7832,7 +7992,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7873,7 +8034,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7914,7 +8076,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7955,7 +8118,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7996,7 +8160,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8037,7 +8202,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8078,7 +8244,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8119,7 +8286,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8160,7 +8328,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8201,7 +8370,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8242,7 +8412,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8283,7 +8454,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8324,7 +8496,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8365,7 +8538,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8406,7 +8580,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8447,7 +8622,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8488,7 +8664,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8529,7 +8706,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8570,7 +8748,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8611,7 +8790,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8652,7 +8832,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8693,7 +8874,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8734,7 +8916,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8775,7 +8958,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8816,7 +9000,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8857,7 +9042,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8898,7 +9084,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8939,7 +9126,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8980,7 +9168,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9021,7 +9210,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9062,7 +9252,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9103,7 +9294,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9144,7 +9336,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9185,7 +9378,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9226,7 +9420,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9267,7 +9462,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9308,7 +9504,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9349,7 +9546,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9390,7 +9588,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9431,7 +9630,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9472,7 +9672,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9513,7 +9714,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9554,7 +9756,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9595,7 +9798,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9636,7 +9840,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9677,7 +9882,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9718,7 +9924,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9759,7 +9966,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9800,7 +10008,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9841,7 +10050,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9882,7 +10092,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9923,7 +10134,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -9964,7 +10176,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10005,7 +10218,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10046,7 +10260,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10087,7 +10302,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10128,7 +10344,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_en_shadowed_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10169,7 +10386,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10210,7 +10428,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10251,7 +10470,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10292,7 +10512,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10333,7 +10554,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10374,7 +10596,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10415,7 +10638,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10456,7 +10680,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10497,7 +10722,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10538,7 +10764,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10579,7 +10806,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10620,7 +10848,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10661,7 +10890,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10702,7 +10932,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10743,7 +10974,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10784,7 +11016,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10825,7 +11058,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10866,7 +11100,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10907,7 +11142,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10948,7 +11184,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -10989,7 +11226,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11030,7 +11268,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11071,7 +11310,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11112,7 +11352,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11153,7 +11394,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11194,7 +11436,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11235,7 +11478,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11276,7 +11520,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11317,7 +11562,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11358,7 +11604,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11399,7 +11646,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11440,7 +11688,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11481,7 +11730,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11522,7 +11772,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11563,7 +11814,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11604,7 +11856,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11645,7 +11898,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11686,7 +11940,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11727,7 +11982,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11768,7 +12024,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11809,7 +12066,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11850,7 +12108,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11891,7 +12150,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11932,7 +12192,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -11973,7 +12234,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12014,7 +12276,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12055,7 +12318,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12096,7 +12360,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12137,7 +12402,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12178,7 +12444,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12219,7 +12486,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12260,7 +12528,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12301,7 +12570,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12342,7 +12612,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12383,7 +12654,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12424,7 +12696,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12465,7 +12738,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12506,7 +12780,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12547,7 +12822,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12588,7 +12864,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12629,7 +12906,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12670,7 +12948,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12711,7 +12990,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12752,7 +13032,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12793,7 +13074,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12834,7 +13116,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12875,7 +13158,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12916,7 +13200,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12957,7 +13242,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -12998,7 +13284,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13039,7 +13326,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13080,7 +13368,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13121,7 +13410,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13162,7 +13452,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13203,7 +13494,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13244,7 +13536,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13285,7 +13578,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13326,7 +13620,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13367,7 +13662,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13408,7 +13704,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13449,7 +13746,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13490,7 +13788,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13531,7 +13830,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13572,7 +13872,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13613,7 +13914,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13654,7 +13956,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13695,7 +13998,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13736,7 +14040,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13777,7 +14082,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13818,7 +14124,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13859,7 +14166,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13900,7 +14208,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13941,7 +14250,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -13982,7 +14292,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14023,7 +14334,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14064,7 +14376,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14105,7 +14418,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14146,7 +14460,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14187,7 +14502,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14228,7 +14544,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14269,7 +14586,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14310,7 +14628,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14351,7 +14670,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_class_shadowed_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14389,7 +14709,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14418,7 +14739,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14447,7 +14769,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14476,7 +14799,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14505,7 +14829,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14534,7 +14859,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14563,7 +14889,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14592,7 +14919,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14621,7 +14949,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14650,7 +14979,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14679,7 +15009,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14708,7 +15039,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14737,7 +15069,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_12 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14766,7 +15099,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_13 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14795,7 +15129,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_14 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14824,7 +15159,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_15 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14853,7 +15189,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_16 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14882,7 +15219,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_17 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14911,7 +15249,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_18 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14940,7 +15279,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_19 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14969,7 +15309,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_20 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -14998,7 +15339,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_21 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15027,7 +15369,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_22 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15056,7 +15399,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_23 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15085,7 +15429,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_24 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15114,7 +15459,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_25 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15143,7 +15489,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_26 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15172,7 +15519,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_27 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15201,7 +15549,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_28 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15230,7 +15579,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_29 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15259,7 +15609,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_30 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15288,7 +15639,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_31 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15317,7 +15669,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_32 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15346,7 +15699,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_33 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15375,7 +15729,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_34 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15404,7 +15759,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_35 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15433,7 +15789,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_36 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15462,7 +15819,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_37 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15491,7 +15849,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_38 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15520,7 +15879,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_39 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15549,7 +15909,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_40 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15578,7 +15939,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_41 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15607,7 +15969,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_42 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15636,7 +15999,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_43 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15665,7 +16029,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_44 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15694,7 +16059,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_45 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15723,7 +16089,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_46 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15752,7 +16119,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_47 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15781,7 +16149,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_48 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15810,7 +16179,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_49 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15839,7 +16209,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_50 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15868,7 +16239,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_51 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15897,7 +16269,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_52 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15926,7 +16299,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_53 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15955,7 +16329,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_54 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -15984,7 +16359,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_55 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16013,7 +16389,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_56 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16042,7 +16419,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_57 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16071,7 +16449,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_58 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16100,7 +16479,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_59 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16129,7 +16509,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_60 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16158,7 +16539,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_61 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16187,7 +16569,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_62 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16216,7 +16599,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_63 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16245,7 +16629,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_64 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16274,7 +16659,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_65 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16303,7 +16689,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_66 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16332,7 +16719,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_67 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16361,7 +16749,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_68 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16390,7 +16779,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_69 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16419,7 +16809,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_70 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16448,7 +16839,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_71 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16477,7 +16869,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_72 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16506,7 +16899,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_73 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16535,7 +16929,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_74 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16564,7 +16959,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_75 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16593,7 +16989,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_76 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16622,7 +17019,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_77 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16651,7 +17049,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_78 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16680,7 +17079,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_79 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16709,7 +17109,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_80 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16738,7 +17139,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_81 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16767,7 +17169,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_82 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16796,7 +17199,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_83 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16825,7 +17229,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_84 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16854,7 +17259,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_85 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16883,7 +17289,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_86 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16912,7 +17319,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_87 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16941,7 +17349,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_88 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16970,7 +17379,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_89 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -16999,7 +17409,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_90 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17028,7 +17439,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_91 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17057,7 +17469,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_92 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17086,7 +17499,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_93 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17115,7 +17529,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_94 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17144,7 +17559,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_95 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17173,7 +17589,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_96 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17202,7 +17619,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_97 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17231,7 +17649,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_98 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17260,7 +17679,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_99 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17289,7 +17709,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_100 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17318,7 +17739,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_101 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17347,7 +17769,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_cause_102 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17376,7 +17799,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17405,7 +17829,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17434,7 +17859,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17463,7 +17889,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17492,7 +17919,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17521,7 +17949,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17550,7 +17979,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_regwen_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17582,7 +18012,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17623,7 +18054,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17664,7 +18096,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17705,7 +18138,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17746,7 +18180,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17787,7 +18222,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17828,7 +18264,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_en_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17870,7 +18307,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17912,7 +18350,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17954,7 +18393,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -17996,7 +18436,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18038,7 +18479,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18080,7 +18522,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18122,7 +18565,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_class_shadowed_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18160,7 +18604,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18189,7 +18634,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18218,7 +18664,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18247,7 +18694,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18276,7 +18724,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18305,7 +18754,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18334,7 +18784,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_loc_alert_cause_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18362,7 +18813,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18394,7 +18846,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18430,7 +18883,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18466,7 +18920,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18502,7 +18957,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18538,7 +18994,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18574,7 +19031,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18610,7 +19068,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18646,7 +19105,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18682,7 +19142,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h2),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18718,7 +19179,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h3),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18755,7 +19217,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18797,7 +19260,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18854,7 +19318,8 @@ module alert_handler_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18894,7 +19359,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18935,7 +19401,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_crashdump_trigger_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -18975,7 +19442,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19015,7 +19483,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19055,7 +19524,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19095,7 +19565,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classa_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19164,7 +19635,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19196,7 +19668,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19232,7 +19705,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19268,7 +19742,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19304,7 +19779,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19340,7 +19816,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19376,7 +19853,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19412,7 +19890,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19448,7 +19927,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19484,7 +19964,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h2),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19520,7 +20001,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h3),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19557,7 +20039,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19599,7 +20082,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19656,7 +20140,8 @@ module alert_handler_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19696,7 +20181,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19737,7 +20223,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_crashdump_trigger_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19777,7 +20264,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19817,7 +20305,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19857,7 +20346,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19897,7 +20387,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classb_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19966,7 +20457,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -19998,7 +20490,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20034,7 +20527,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20070,7 +20564,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20106,7 +20601,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20142,7 +20638,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20178,7 +20675,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20214,7 +20712,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20250,7 +20749,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20286,7 +20786,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h2),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20322,7 +20823,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h3),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20359,7 +20861,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20401,7 +20904,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20458,7 +20962,8 @@ module alert_handler_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20498,7 +21003,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20539,7 +21045,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_crashdump_trigger_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20579,7 +21086,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20619,7 +21127,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20659,7 +21168,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20699,7 +21209,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classc_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20768,7 +21279,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20800,7 +21312,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20836,7 +21349,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20872,7 +21386,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_en_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20908,7 +21423,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_en_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20944,7 +21460,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_en_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -20980,7 +21497,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_en_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21016,7 +21534,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_map_e0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21052,7 +21571,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_map_e1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21088,7 +21608,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h2),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_map_e2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21124,7 +21645,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h3),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_ctrl_shadowed_map_e3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21161,7 +21683,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_clr_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21203,7 +21726,8 @@ module alert_handler_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_clr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21260,7 +21784,8 @@ module alert_handler_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_accum_thresh_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21300,7 +21825,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_timeout_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21341,7 +21867,8 @@ module alert_handler_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_crashdump_trigger_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21381,7 +21908,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_phase0_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21421,7 +21949,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_phase1_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21461,7 +21990,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_phase2_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -21501,7 +22031,8 @@ module alert_handler_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_classd_phase3_cyc_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

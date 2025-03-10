@@ -309,7 +309,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -337,7 +338,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -405,7 +407,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -621,7 +624,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_ctrl_en_rising (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -649,7 +653,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_ctrl_en_falling (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -677,7 +682,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_ctrl_en_lvlhigh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -705,7 +711,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_ctrl_en_lvllow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -733,7 +740,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_ctrl_en_input_filter (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -761,7 +769,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_hw_straps_data_in_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -789,7 +798,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_hw_straps_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -819,7 +829,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_0_enable_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -846,7 +857,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_0_continuous_mode_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -873,7 +885,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_0_polarity_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -900,7 +913,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_0_input_select_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -927,7 +941,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_0_prescaler_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -957,7 +972,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_1_enable_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -984,7 +1000,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_1_continuous_mode_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1011,7 +1028,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_1_polarity_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1038,7 +1056,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_1_input_select_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1065,7 +1084,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_1_prescaler_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1095,7 +1115,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_2_enable_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1122,7 +1143,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_2_continuous_mode_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1149,7 +1171,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_2_polarity_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1176,7 +1199,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_2_input_select_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1203,7 +1227,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_2_prescaler_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1233,7 +1258,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_3_enable_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1260,7 +1286,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_3_continuous_mode_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1287,7 +1314,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_3_polarity_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1314,7 +1342,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_3_input_select_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1341,7 +1370,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_3_prescaler_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1371,7 +1401,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_4_enable_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1398,7 +1429,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_4_continuous_mode_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1425,7 +1457,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_4_polarity_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1452,7 +1485,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_4_input_select_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1479,7 +1513,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_4_prescaler_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1509,7 +1544,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_5_enable_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1536,7 +1572,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_5_continuous_mode_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1563,7 +1600,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_5_polarity_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1590,7 +1628,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_5_input_select_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1617,7 +1656,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_5_prescaler_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1647,7 +1687,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_6_enable_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1674,7 +1715,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_6_continuous_mode_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1701,7 +1743,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_6_polarity_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1728,7 +1771,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_6_input_select_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1755,7 +1799,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_6_prescaler_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1785,7 +1830,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_7_enable_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1812,7 +1858,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_7_continuous_mode_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1839,7 +1886,8 @@ module gpio_reg_top
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_7_polarity_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1866,7 +1914,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_7_input_select_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1893,7 +1942,8 @@ module gpio_reg_top
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_ctrl_7_prescaler_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1922,7 +1972,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1951,7 +2002,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1980,7 +2032,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2009,7 +2062,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2038,7 +2092,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2067,7 +2122,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2096,7 +2152,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2125,7 +2182,8 @@ module gpio_reg_top
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_inp_prd_cnt_val_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

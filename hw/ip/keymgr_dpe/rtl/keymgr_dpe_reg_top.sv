@@ -346,7 +346,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -374,7 +375,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -478,7 +480,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_start (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -510,7 +513,8 @@ module keymgr_dpe_reg_top (
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_control_shadowed_operation (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -546,7 +550,8 @@ module keymgr_dpe_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_control_shadowed_dest_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -582,7 +587,8 @@ module keymgr_dpe_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_control_shadowed_slot_src_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -618,7 +624,8 @@ module keymgr_dpe_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_control_shadowed_slot_dst_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -658,7 +665,8 @@ module keymgr_dpe_reg_top (
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sideload_clear (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -686,7 +694,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reseed_interval_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -718,7 +727,8 @@ module keymgr_dpe_reg_top (
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h100),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reseed_interval_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -779,7 +789,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_slot_policy_allow_child (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -806,7 +817,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_slot_policy_exportable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -833,7 +845,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_slot_policy_retain_parent (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -885,7 +898,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -917,7 +931,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -949,7 +964,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -981,7 +997,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1013,7 +1030,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1045,7 +1063,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1077,7 +1096,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1109,7 +1129,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_binding_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1141,7 +1162,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1173,7 +1195,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1205,7 +1228,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1237,7 +1261,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1269,7 +1294,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1301,7 +1327,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1333,7 +1360,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1365,7 +1393,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_salt_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1397,7 +1426,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_key_version (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1448,7 +1478,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_max_key_ver_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1486,7 +1517,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1515,7 +1547,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1544,7 +1577,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1573,7 +1607,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1602,7 +1637,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1631,7 +1667,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1660,7 +1697,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1689,7 +1727,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share0_output_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1718,7 +1757,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1747,7 +1787,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1776,7 +1817,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1805,7 +1847,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1834,7 +1877,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1863,7 +1907,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1892,7 +1937,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1921,7 +1967,8 @@ module keymgr_dpe_reg_top (
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
     .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_share1_output_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1949,7 +1996,8 @@ module keymgr_dpe_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_working_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1977,7 +2025,8 @@ module keymgr_dpe_reg_top (
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (2'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_op_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2006,7 +2055,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_invalid_op (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2033,7 +2083,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_invalid_kmac_input (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2060,7 +2111,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_invalid_shadow_update (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2089,7 +2141,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_cmd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2116,7 +2169,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_kmac_fsm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2143,7 +2197,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_kmac_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2170,7 +2225,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_kmac_op (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2197,7 +2253,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_kmac_out (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2224,7 +2281,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_regfile_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2251,7 +2309,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_shadow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2278,7 +2337,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_ctrl_fsm_intg (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2305,7 +2365,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_ctrl_fsm_chk (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2332,7 +2393,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_ctrl_fsm_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2359,7 +2421,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_reseed_cnt (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2386,7 +2449,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_side_ctrl_fsm (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2413,7 +2477,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_side_ctrl_sel (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2440,7 +2505,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_fault_status_key_ecc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2469,7 +2535,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_creator_seed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2496,7 +2563,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_owner_seed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2523,7 +2591,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_dev_id (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2550,7 +2619,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_health_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2577,7 +2647,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_key_version (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2604,7 +2675,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2631,7 +2703,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_digest (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2658,7 +2731,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_invalid_root_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2685,7 +2759,8 @@ module keymgr_dpe_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_debug_inactive_lc_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

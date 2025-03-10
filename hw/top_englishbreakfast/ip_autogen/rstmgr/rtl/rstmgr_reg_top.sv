@@ -229,7 +229,8 @@ module rstmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+    .Mubi    (1'b1),
+    .UsesDs  (1'b1)
   ) u_reset_req (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -258,7 +259,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reset_info_por (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -286,7 +288,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reset_info_low_power_exit (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -314,7 +317,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reset_info_sw_reset (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -342,7 +346,8 @@ module rstmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_reset_info_hw_req (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -371,7 +376,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -403,7 +409,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_info_ctrl_en (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -431,7 +438,8 @@ module rstmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_alert_info_ctrl_index (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -492,7 +500,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cpu_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -524,7 +533,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cpu_info_ctrl_en (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -552,7 +562,8 @@ module rstmgr_reg_top (
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_cpu_info_ctrl_index (
     // sync clock and reset required for this register
     .clk_i   (clk_por_i),
@@ -614,7 +625,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_regwen_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -643,7 +655,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_regwen_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -672,7 +685,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_regwen_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -704,7 +718,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_ctrl_n_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -736,7 +751,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_ctrl_n_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -768,7 +784,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_sw_rst_ctrl_n_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -797,7 +814,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -824,7 +842,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_reset_consistency_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -851,7 +870,8 @@ module rstmgr_reg_top (
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .Mubi    (1'b0),
+    .UsesDs  (1'b1)
   ) u_err_code_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
