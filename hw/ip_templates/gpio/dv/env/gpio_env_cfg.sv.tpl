@@ -6,14 +6,14 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
   .RAL_T(${module_instance_name}_reg_block)
 );
 
-  // flag to indicate if weak pullup has been introduced on ${module_instance_name}
+  // flag to indicate if weak pullup has been introduced on gpio
   // By default, weak pull up is always present
   rand bit pullup_en;
-  // flag to indicate if weak pulldown has been introduced on ${module_instance_name}
+  // flag to indicate if weak pulldown has been introduced on gpio
   rand bit pulldown_en;
-  // ${module_instance_name} virtual interface
+  // gpio virtual interface
   ${module_instance_name}_vif ${module_instance_name}_vif;
-  // ${module_instance_name} straps virtual interface
+  // straps virtual interface
   straps_vif straps_vif_inst;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
