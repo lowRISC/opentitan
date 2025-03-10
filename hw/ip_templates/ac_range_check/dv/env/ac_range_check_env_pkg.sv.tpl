@@ -26,6 +26,8 @@ package ac_range_check_env_pkg;
   import prim_mubi_pkg::mubi4_logic_test_true_strict;
   import prim_mubi_pkg::mubi8_t;
   import prim_mubi_pkg::MuBi8False;
+  import tl_agent_pkg::InstrTypeLsbPos;
+  import tl_agent_pkg::InstrTypeMsbPos;
 
   // Parameters
   parameter uint   NUM_ALERTS       = 2;
