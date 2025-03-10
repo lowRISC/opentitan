@@ -20,4 +20,14 @@ module ${module_instance_name}_bind;
     .d2h    (tl_o)
   );
 
+  bind ${module_instance_name} ${module_instance_name}_strap_check #(.NUM_GPIOS($bits(cio_${module_instance_name}_i)))
+  ${module_instance_name}_strap_assert (
+    .clk_i,
+    .rst_ni,
+    .strap_en_i,
+    .strap_valid(sampled_straps_o.valid),
+    .strap_data(sampled_straps_o.data),
+    .${module_instance_name}_i(cio_${module_instance_name}_i)
+  );
+
 endmodule
