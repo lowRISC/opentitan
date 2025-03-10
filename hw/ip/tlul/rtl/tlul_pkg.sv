@@ -206,4 +206,24 @@ package tlul_pkg;
     return ~data_intg;
   endfunction // get_bad_data_intg
 
+  // Declare these parameters that far as require some previous things
+  parameter int InstrTypeLsbPos = get_instr_type_lsb_pos();
+  parameter int InstrTypeMsbPos = get_instr_type_msb_pos();
+
+  // Extract the LSB position of the instr_type field from struct tl_a_user_t
+  function automatic int get_instr_type_lsb_pos();
+    int lsb_pos;
+    tl_a_user_t tl_a_user = '0;
+    tl_a_user.instr_type = prim_mubi_pkg::mubi4_t'(1);
+    lsb_pos = $clog2(tl_a_user);
+    return lsb_pos;
+  endfunction : get_instr_type_lsb_pos
+
+  // Extract the MSB position of the instr_type field from struct tl_a_user_t
+  function automatic int get_instr_type_msb_pos();
+    int msb_pos;
+    tl_a_user_t tl_a_user;
+    msb_pos = get_instr_type_lsb_pos()+$size(tl_a_user.instr_type)-1;
+    return msb_pos;
+  endfunction : get_instr_type_msb_pos
 endpackage
