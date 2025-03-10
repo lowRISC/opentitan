@@ -20,7 +20,6 @@ filesets:
       - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
-      - lowrisc:ip:pwm
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
@@ -48,6 +47,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_rstmgr
       - lowrisc:opentitan:top_earlgrey_rv_plic
       - lowrisc:opentitan:top_earlgrey_gpio
+      - lowrisc:opentitan:top_earlgrey_pwm
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

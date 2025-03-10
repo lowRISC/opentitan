@@ -21,7 +21,6 @@
 | [`mbx`]          | DOE mailbox for use as an integrated OpenTitan communication channel.                                                             |
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
-| [`pwm`]          | Transmission of pulse-width modulated output signals with adjustable duty cycle                                                   |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
 | [`rv_core_ibex`] | Dual-core lockstep 32-bit RISC-V processor running application and control software                                               |
 | [`rv_dm`]        | Enables debug support for Ibex, access protected by life cycle                                                                    |
@@ -54,7 +53,6 @@
 [`mbx`]: ./mbx/README.md
 [`otbn`]: ./otbn/README.md
 [`pattgen`]: ./pattgen/README.md
-[`pwm`]: ./pwm/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
 [`rv_core_ibex`]: ./rv_core_ibex/README.md
 [`rv_dm`]: ./rv_dm/README.md
