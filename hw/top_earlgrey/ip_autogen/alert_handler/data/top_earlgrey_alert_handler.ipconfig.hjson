@@ -149,5 +149,10 @@
     ]
     top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
+    uniquified_modules:
+    {
+      alert_handler: alert_handler
+      rv_plic: rv_plic
+    }
   }
 }

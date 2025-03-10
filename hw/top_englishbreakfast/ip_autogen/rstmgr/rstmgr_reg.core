@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_rstmgr_reg:0.1
+name: lowrisc:englishbreakfast_ip:rstmgr_reg:0.1
 description: "Reset manager registers"
 
 filesets:
@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:prim:subreg
-      - lowrisc:opentitan:top_englishbreakfast_rstmgr_pkg
+      - lowrisc:englishbreakfast_ip:rstmgr_pkg
     files:
       - rtl/rstmgr_reg_top.sv
     file_type: systemVerilogSource

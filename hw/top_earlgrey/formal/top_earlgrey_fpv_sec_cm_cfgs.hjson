@@ -44,7 +44,7 @@
              {
                name: alert_handler_sec_cm
                dut: alert_handler
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sva
+               fusesoc_core: lowrisc:earlgrey_dv:alert_handler_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/{sub_flow}/{tool}"
                stopats: ["*u_state_regs.state_o"]
@@ -53,7 +53,7 @@
              {
                name: clkmgr_sec_cm
                dut: clkmgr
-               fusesoc_core: lowrisc:dv:clkmgr_sva
+               fusesoc_core: lowrisc:earlgrey_dv:clkmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/{sub_flow}/{tool}"
                task: "FpvSecCm"
@@ -88,7 +88,7 @@
              {
                name: flash_ctrl_sec_cm
                dut: flash_ctrl
-               fusesoc_core: lowrisc:dv:flash_ctrl_sva
+               fusesoc_core: lowrisc:earlgrey_dv:flash_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/{sub_flow}/{tool}"
                overrides: [
@@ -133,7 +133,7 @@
              {
                name: otp_ctrl_sec_cm
                dut: otp_ctrl
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_otp_ctrl_sva
+               fusesoc_core: earlgrey_dv:otp_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/otp_ctrl/{sub_flow}/{tool}"
                stopats: ["*u_state_regs.state_o"]
@@ -151,7 +151,7 @@
              {
                name: pwrmgr_sec_cm
                dut: pwrmgr
-               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               fusesoc_core: lowrisc:earlgrey_dv:pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/{sub_flow}/{tool}"
                overrides: [
@@ -175,7 +175,7 @@
              {
                name: rstmgr_sec_cm
                dut: rstmgr
-               fusesoc_core: lowrisc:dv:rstmgr_sva
+               fusesoc_core: lowrisc:earlgrey_dv:rstmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/{sub_flow}/{tool}"
                overrides: [
@@ -215,7 +215,7 @@
              {
                name: pinmux_sec_cm
                dut: pinmux
-               fusesoc_core: lowrisc:ip_interfaces:pinmux
+               fusesoc_core: lowrisc:earlgrey_ip:pinmux
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pinmux/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
@@ -229,7 +229,7 @@
               {
                name: rv_plic_sec_cm
                dut: rv_plic
-               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
+               fusesoc_core: lowrisc:earlgrey_ip:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip/rv_plic/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
@@ -279,7 +279,7 @@
              {
                name: pwrmgr_esc_unstoppable
                dut: pwrmgr
-               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               fusesoc_core: lowrisc:earlgrey_dv:pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/{sub_flow}/{tool}"
                overrides: [

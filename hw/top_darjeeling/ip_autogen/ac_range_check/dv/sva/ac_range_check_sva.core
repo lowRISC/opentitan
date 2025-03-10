@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_ac_range_check_sva:0.1
+name: lowrisc:darjeeling_dv:ac_range_check_sva:0.1
 description: "AC_RANGE_CHECK assertion modules and bind file."
 filesets:
   files_dv:
@@ -15,7 +15,7 @@ filesets:
 
   files_formal:
     depend:
-      - lowrisc:opentitan:top_darjeeling_ac_range_check
+      - lowrisc:darjeeling_ip:ac_range_check
 
 generate:
   csr_assert_gen:

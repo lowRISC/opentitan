@@ -19,7 +19,7 @@ fusesoc_build(
         "mmi": ["synth-vivado/memories.mmi"],
         "logs": ["synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.runs/"],
     },
-    systems = ["lowrisc:systems:chip_englishbreakfast_cw305"],
+    systems = ["lowrisc:systems:chip_englishbreakfast_cw305:0.1"],
     tags = ["manual"],
     target = "synth",
 )

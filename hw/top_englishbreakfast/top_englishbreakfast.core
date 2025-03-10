@@ -7,8 +7,8 @@ description: "Technology-independent English Breakfast toplevel"
 filesets:
   files_rtl_generic:
     depend:
-      - lowrisc:opentitan:top_englishbreakfast_pwrmgr_pkg
-      - lowrisc:opentitan:top_earlgrey_alert_handler_pkg
+      - lowrisc:englishbreakfast_ip:pwrmgr_pkg
+      - lowrisc:earlgrey_ip:alert_handler_pkg
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
@@ -32,13 +32,13 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri
-      - lowrisc:opentitan:top_englishbreakfast_clkmgr
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl
-      - lowrisc:opentitan:top_englishbreakfast_pinmux
-      - lowrisc:opentitan:top_englishbreakfast_pwrmgr
-      - lowrisc:opentitan:top_englishbreakfast_rstmgr
-      - lowrisc:opentitan:top_englishbreakfast_rv_plic
-      - lowrisc:opentitan:top_englishbreakfast_gpio
+      - lowrisc:englishbreakfast_ip:clkmgr
+      - lowrisc:englishbreakfast_ip:flash_ctrl
+      - lowrisc:englishbreakfast_ip:pinmux
+      - lowrisc:englishbreakfast_ip:pwrmgr
+      - lowrisc:englishbreakfast_ip:rstmgr
+      - lowrisc:englishbreakfast_ip:rv_plic
+      - lowrisc:englishbreakfast_ip:gpio
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
       - lowrisc:tlul:headers

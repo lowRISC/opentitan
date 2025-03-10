@@ -8,5 +8,9 @@
     num_inp_period_counters: 0
     module_instance_name: gpio
     topname: englishbreakfast
+    uniquified_modules:
+    {
+      rv_plic: rv_plic
+    }
   }
 }

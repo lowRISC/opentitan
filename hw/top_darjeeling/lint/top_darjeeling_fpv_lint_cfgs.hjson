@@ -22,13 +22,13 @@
   use_cfgs: [
             // {
             //   name: alert_handler_esc_timer_fpv
-            //   fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_esc_timer_fpv
+            //   fusesoc_core: lowrisc:earlgrey_fpv:alert_handler_esc_timer_fpv
             //   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
             //   rel_path: "hw/ip/alert_handler/alert_handler_esc_timer_fpv/lint/{tool}"
             //  }
             //  {
             //   name: alert_handler_ping_timer_fpv
-            //   fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_ping_timer_fpv
+            //   fusesoc_core: lowrisc:earlgrey_fpv:alert_handler_ping_timer_fpv
             //   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
             //   rel_path: "hw/ip/alert_handler/alert_handler_ping_timer_fpv/lint/{tool}"
             // }
@@ -148,7 +148,7 @@
              }
             //  {
             //     name: top_darjeeling_rv_plic_fpv
-            //     fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic_fpv
+            //     fusesoc_core: lowrisc:darjeeling_ip:rv_plic_fpv
             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
             //     rel_path: "hw/top_darjeeling/ip_autogen/rv_plic/fpv/lint/{tool}"
             //  }

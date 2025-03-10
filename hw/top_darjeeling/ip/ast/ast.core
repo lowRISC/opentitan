@@ -16,7 +16,7 @@ filesets:
       - lowrisc:prim:clock_inv
       - lowrisc:prim:lc_dec
       - lowrisc:prim:lfsr
-      - lowrisc:opentitan:top_darjeeling_pinmux_pkg
+      - lowrisc:darjeeling_ip:pinmux_pkg
       - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
@@ -24,9 +24,9 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:entropy_src_pkg
-      - lowrisc:opentitan:top_darjeeling_alert_handler_pkg
-      - lowrisc:opentitan:top_darjeeling_clkmgr_pkg
-      - lowrisc:opentitan:top_darjeeling_rstmgr_pkg
+      - lowrisc:darjeeling_ip:alert_handler_pkg
+      - lowrisc:darjeeling_ip:clkmgr_pkg
+      - lowrisc:darjeeling_ip:rstmgr_pkg
       - lowrisc:systems:top_darjeeling_ast_pkg
     files:
       - rtl/ast_reg_pkg.sv

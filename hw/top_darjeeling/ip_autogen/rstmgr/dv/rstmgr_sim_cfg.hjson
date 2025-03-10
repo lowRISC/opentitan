@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:opentitan:top_darjeeling_rstmgr_sim:0.1
+  fusesoc_core: lowrisc:darjeeling_dv:rstmgr_sim:0.1
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/rstmgr_testplan.hjson"

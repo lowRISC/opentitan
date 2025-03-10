@@ -2,18 +2,18 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_gpio_sim:0.1
+name: lowrisc:darjeeling_dv:gpio_sim:0.1
 description: "GPIO DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:opentitan:top_darjeeling_gpio:0.1
+      - lowrisc:darjeeling_ip:gpio:0.1
 
   files_dv:
     depend:
-      - lowrisc:opentitan:top_darjeeling_gpio_test
-      - lowrisc:opentitan:top_darjeeling_gpio_sva
-      - lowrisc:opentitan:top_darjeeling_gpio_if
+      - lowrisc:darjeeling_dv:gpio_test
+      - lowrisc:darjeeling_dv:gpio_sva
+      - lowrisc:darjeeling_dv:gpio_if
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

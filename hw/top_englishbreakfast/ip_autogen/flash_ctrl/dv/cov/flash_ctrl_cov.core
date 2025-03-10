@@ -2,14 +2,14 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl_cov
+name: lowrisc:englishbreakfast_dv:flash_ctrl_cov
 description: "FLASH_CTRL functional coverage interface & bind."
 
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl
+      - lowrisc:englishbreakfast_ip:flash_ctrl
     files:
       - flash_ctrl_cov_bind.sv
       - flash_ctrl_phy_cov_if.sv

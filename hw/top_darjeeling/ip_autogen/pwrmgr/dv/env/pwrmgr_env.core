@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_darjeeling_pwrmgr_env:0.1
+name: lowrisc:darjeeling_dv:pwrmgr_env:0.1
 description: "PWRMGR DV UVM environment"
 filesets:
   files_dv:
@@ -10,7 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:ip:rv_core_ibex_pkg
-      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:constants:top_darjeeling_top_pkg
     files:
       - pwrmgr_env_pkg.sv

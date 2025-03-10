@@ -2,22 +2,22 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl_sim:0.1
+name: lowrisc:englishbreakfast_dv:flash_ctrl_sim:0.1
 description: "FLASH_CTRL DV sim target"
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:constants:top_englishbreakfast_top_pkg
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl:0.1
+      - lowrisc:englishbreakfast_ip:flash_ctrl:0.1
     file_type: systemVerilogSource
 
   files_dv:
     depend:
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_bkdr_util
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_test
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_sva
-      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_cov
+      - lowrisc:englishbreakfast_dv:flash_ctrl_bkdr_util
+      - lowrisc:englishbreakfast_dv:flash_ctrl_test
+      - lowrisc:englishbreakfast_dv:flash_ctrl_sva
+      - lowrisc:englishbreakfast_dv:flash_ctrl_cov
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
