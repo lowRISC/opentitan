@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Verify the straps data/valid ouput expected values based on the strap_en and ${module_instance_name}_in inputs:
-//    - Drive ${module_instance_name}_in input with random values.
+// Verify the straps data/valid ouput expected values based on the strap_en and gpio_in inputs:
+//    - Drive gpio_in input with random values.
 //    - Set the strap_en high for at least one clock cycle.
 //    - Read the registers hw_straps_data_in and hw_straps_data_in_valid.
 //    - The data read and sampled_straps_o will be checked in the scoreboard.
-//    - Drive the ${module_instance_name}_out to make sure that has no impact on straps registers.
-//    - Read to make sure that if does not affect the straps registers after drive the ${module_instance_name}_out.
+//    - Drive the gpio_out to make sure that has no impact on straps registers.
+//    - Read to make sure that if does not affect the straps registers after drive the gpio_out.
 //    - Apply reset and make sure the strap registers are clean.
 //    - Read straps registers after reset.
 //    - Iterate again the same flow, with new random values.
@@ -16,14 +16,14 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
 
   `uvm_object_utils(${module_instance_name}_rand_straps_vseq)
 
-  // ${module_instance_name} input to drive
-  rand bit [NUM_GPIOS-1:0] ${module_instance_name}_in;
-  // ${module_instance_name} output to program in register
-  rand bit [NUM_GPIOS-1:0] ${module_instance_name}_out;
-  // ${module_instance_name} output enable to program in register
-  rand bit [NUM_GPIOS-1:0] ${module_instance_name}_oe;
+  // gpio input to drive
+  rand bit [NUM_GPIOS-1:0] gpio_in;
+  // gpio output to program in register
+  rand bit [NUM_GPIOS-1:0] gpio_out;
+  // gpio output enable to program in register
+  rand bit [NUM_GPIOS-1:0] gpio_oe;
 
-  function new(string name = "${module_instance_name}_rand_straps_vseq");
+  function new(string name = "gpio_rand_straps_vseq");
     super.new(name);
   endfunction
 
@@ -47,16 +47,16 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
     join
   endtask : csr_strap_read
 
-  task test_straps_${module_instance_name}_in();
-    // Drive the ${module_instance_name}_in
-    drive_${module_instance_name}_in(${module_instance_name}_in);
+  task test_straps_gpio_in();
+    // Drive the gpio_in
+    drive_gpio_in(gpio_in);
 
     // Random wait to drive the strap_en
     // The strap feature should work from zero clock cycles
-    // after driving the ${module_instance_name}_i inputs into the interface.
+    // after driving the gpio_i inputs into the interface.
     short_wait(0);
 
-    // Trigger the snapshot of ${module_instance_name}_in to be stored in the straps registers
+    // Trigger the snapshot of gpio_in to be stored in the straps registers
     cfg.straps_vif_inst.tb_port.strap_en = 1;
     // Wait at least one clock cycle to update the strap register values.
     short_wait(1);
@@ -67,51 +67,51 @@ class ${module_instance_name}_rand_straps_vseq extends ${module_instance_name}_b
     // Random wait
     short_wait(0);
 
-    // Stop driving ${module_instance_name}_in to make sure that, this is not affecting the strap_en registers
+    // Stop driving gpio_in to make sure that, this is not affecting the strap_en registers
     // so it will keep the same values were stored before.
-    undrive_${module_instance_name}_in();
+    undrive_gpio_in();
 
     // Random wait
     short_wait(0);
 
-    // Read to make sure that if does not affect the straps registers after undrive the ${module_instance_name}_in
+    // Read to make sure that if does not affect the straps registers after undrive the gpio_in
     csr_strap_read();
 
-  endtask : test_straps_${module_instance_name}_in
+  endtask : test_straps_gpio_in
 
-  task test_straps_${module_instance_name}_out();
+  task test_straps_gpio_out();
 
     // Additional verification
-    // Drive the ${module_instance_name}_out to make sure that has no impact on straps registers.
-    // then read the ${module_instance_name} strap registers again
-    cfg.${module_instance_name}_vif.drive_en('0);
-    csr_wr(ral.direct_out, ${module_instance_name}_out);
-    csr_wr(ral.direct_oe, ${module_instance_name}_oe);
+    // Drive the gpio_out to make sure that has no impact on straps registers.
+    // then read the gpio strap registers again
+    cfg.gpio_vif.drive_en('0);
+    csr_wr(ral.direct_out, gpio_out);
+    csr_wr(ral.direct_oe, gpio_oe);
 
     // Random wait
     short_wait(0);
 
-    // Read to make sure that if does not affect the straps registers after drive the ${module_instance_name}_out
+    // Read to make sure that if does not affect the straps registers after drive the gpio_out
     csr_strap_read();
 
-  endtask : test_straps_${module_instance_name}_out
+  endtask : test_straps_gpio_out
 
   // This task start the strap en test. First it will test the strap enable
-  // with the driven ${module_instance_name}_i. On a second step drive the ${module_instance_name}_out and check the strap
+  // with the driven gpio_i. On a second step drive the gpio_out and check the strap
   // registers based on that. And finally applies a second reset and check if the strap registers
   // are reseted.
   task start_test();
 
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(${module_instance_name}_in)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(${module_instance_name}_out)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(${module_instance_name}_oe)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_out)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_oe)
 
-    // User case to test the strap outputs, with ${module_instance_name}_in data randomised
-    test_straps_${module_instance_name}_in();
+    // User case to test the strap outputs, with gpio_in data randomised
+    test_straps_gpio_in();
 
-    // User case to test the strap outputs, with ${module_instance_name}_out data randomised
-    // The ${module_instance_name}_out should not affect the straps output/registers.
-    test_straps_${module_instance_name}_out();
+    // User case to test the strap outputs, with gpio_out data randomised
+    // The gpio_out should not affect the straps output/registers.
+    test_straps_gpio_out();
 
     // Random wait
     short_wait(0);
