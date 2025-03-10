@@ -874,7 +874,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_pkt_received (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -902,7 +902,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_pkt_sent (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -930,7 +930,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_disconnected (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -958,7 +958,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_host_lost (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -986,7 +986,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_link_reset (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1014,7 +1014,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_link_suspend (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1042,7 +1042,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_link_resume (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1070,7 +1070,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_av_out_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1098,7 +1098,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1126,7 +1126,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_av_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1154,7 +1154,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_link_in_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1182,7 +1182,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_crc_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1210,7 +1210,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_pid_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1238,7 +1238,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_bitstuff_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1266,7 +1266,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_frame (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1294,7 +1294,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_powered (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1322,7 +1322,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_link_out_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1350,7 +1350,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_av_setup_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1380,7 +1380,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_pkt_received (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1408,7 +1408,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_pkt_sent (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1436,7 +1436,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_disconnected (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1464,7 +1464,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_host_lost (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1492,7 +1492,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_link_reset (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1520,7 +1520,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_link_suspend (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1548,7 +1548,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_link_resume (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1576,7 +1576,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_av_out_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1604,7 +1604,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1632,7 +1632,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_av_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1660,7 +1660,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_link_in_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1688,7 +1688,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_crc_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1716,7 +1716,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_pid_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1744,7 +1744,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_bitstuff_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1772,7 +1772,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_frame (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1800,7 +1800,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_powered (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1828,7 +1828,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_link_out_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1856,7 +1856,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_av_setup_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2210,7 +2210,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_usbctrl_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2238,7 +2238,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_usbctrl_resume_link_active (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2267,7 +2267,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_usbctrl_device_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2298,7 +2298,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2326,7 +2326,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2354,7 +2354,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2382,7 +2382,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2410,7 +2410,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2438,7 +2438,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2466,7 +2466,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2494,7 +2494,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2522,7 +2522,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2550,7 +2550,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2578,7 +2578,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2606,7 +2606,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_out_enable_enable_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2637,7 +2637,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2665,7 +2665,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2693,7 +2693,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2721,7 +2721,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2749,7 +2749,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2777,7 +2777,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2805,7 +2805,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2833,7 +2833,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2861,7 +2861,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2889,7 +2889,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2917,7 +2917,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2945,7 +2945,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ep_in_enable_enable_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3230,7 +3230,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3258,7 +3258,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3286,7 +3286,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3314,7 +3314,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3342,7 +3342,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3370,7 +3370,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3398,7 +3398,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3426,7 +3426,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3454,7 +3454,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3482,7 +3482,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3510,7 +3510,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3538,7 +3538,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_setup_setup_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3569,7 +3569,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3597,7 +3597,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3625,7 +3625,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3653,7 +3653,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3681,7 +3681,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3709,7 +3709,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3737,7 +3737,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3765,7 +3765,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3793,7 +3793,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3821,7 +3821,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3849,7 +3849,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3877,7 +3877,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rxenable_out_out_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3908,7 +3908,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3936,7 +3936,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3964,7 +3964,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3992,7 +3992,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4020,7 +4020,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4048,7 +4048,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4076,7 +4076,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4104,7 +4104,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4132,7 +4132,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4160,7 +4160,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4188,7 +4188,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4216,7 +4216,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_set_nak_out_enable_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4247,7 +4247,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4275,7 +4275,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4303,7 +4303,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4331,7 +4331,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4359,7 +4359,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4387,7 +4387,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4415,7 +4415,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4443,7 +4443,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4471,7 +4471,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4499,7 +4499,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4527,7 +4527,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4555,7 +4555,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_sent_sent_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4586,7 +4586,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4614,7 +4614,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4642,7 +4642,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4670,7 +4670,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4698,7 +4698,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4726,7 +4726,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4754,7 +4754,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4782,7 +4782,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4810,7 +4810,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4838,7 +4838,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4866,7 +4866,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4894,7 +4894,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_stall_endpoint_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4925,7 +4925,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4953,7 +4953,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4981,7 +4981,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5009,7 +5009,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5037,7 +5037,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5065,7 +5065,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5093,7 +5093,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5121,7 +5121,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5149,7 +5149,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5177,7 +5177,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5205,7 +5205,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5233,7 +5233,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_stall_endpoint_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5264,7 +5264,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_0_buffer_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5292,7 +5292,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_0_size_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5320,7 +5320,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_0_sending_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5348,7 +5348,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_0_pend_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5376,7 +5376,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_0_rdy_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5407,7 +5407,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_1_buffer_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5435,7 +5435,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_1_size_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5463,7 +5463,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_1_sending_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5491,7 +5491,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_1_pend_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5519,7 +5519,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_1_rdy_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5550,7 +5550,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_2_buffer_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5578,7 +5578,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_2_size_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5606,7 +5606,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_2_sending_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5634,7 +5634,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_2_pend_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5662,7 +5662,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_2_rdy_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5693,7 +5693,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_3_buffer_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5721,7 +5721,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_3_size_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5749,7 +5749,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_3_sending_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5777,7 +5777,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_3_pend_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5805,7 +5805,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_3_rdy_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5836,7 +5836,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_4_buffer_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5864,7 +5864,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_4_size_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5892,7 +5892,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_4_sending_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5920,7 +5920,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_4_pend_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5948,7 +5948,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_4_rdy_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -5979,7 +5979,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_5_buffer_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6007,7 +6007,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_5_size_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6035,7 +6035,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_5_sending_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6063,7 +6063,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_5_pend_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6091,7 +6091,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_5_rdy_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6122,7 +6122,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_6_buffer_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6150,7 +6150,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_6_size_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6178,7 +6178,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_6_sending_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6206,7 +6206,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_6_pend_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6234,7 +6234,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_6_rdy_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6265,7 +6265,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_7_buffer_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6293,7 +6293,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_7_size_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6321,7 +6321,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_7_sending_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6349,7 +6349,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_7_pend_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6377,7 +6377,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_7_rdy_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6408,7 +6408,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_8_buffer_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6436,7 +6436,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_8_size_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6464,7 +6464,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_8_sending_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6492,7 +6492,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_8_pend_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6520,7 +6520,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_8_rdy_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6551,7 +6551,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_9_buffer_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6579,7 +6579,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_9_size_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6607,7 +6607,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_9_sending_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6635,7 +6635,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_9_pend_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6663,7 +6663,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_9_rdy_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6694,7 +6694,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_10_buffer_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6722,7 +6722,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_10_size_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6750,7 +6750,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_10_sending_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6778,7 +6778,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_10_pend_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6806,7 +6806,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_10_rdy_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6837,7 +6837,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_11_buffer_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6865,7 +6865,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_11_size_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6893,7 +6893,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_11_sending_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6921,7 +6921,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_11_pend_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6949,7 +6949,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_configin_11_rdy_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6980,7 +6980,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7008,7 +7008,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7036,7 +7036,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7064,7 +7064,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7092,7 +7092,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7120,7 +7120,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7148,7 +7148,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7176,7 +7176,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7204,7 +7204,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7232,7 +7232,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7260,7 +7260,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7288,7 +7288,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_out_iso_iso_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7319,7 +7319,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7347,7 +7347,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7375,7 +7375,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7403,7 +7403,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7431,7 +7431,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7459,7 +7459,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7487,7 +7487,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7515,7 +7515,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7543,7 +7543,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7571,7 +7571,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_9 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7599,7 +7599,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_10 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7627,7 +7627,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_in_iso_iso_11 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7868,7 +7868,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_dp_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7896,7 +7896,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_dn_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7924,7 +7924,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_d_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7952,7 +7952,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_se0_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -7980,7 +7980,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_oe_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8008,7 +8008,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_rx_enable_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8036,7 +8036,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_dp_pullup_en_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8064,7 +8064,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_dn_pullup_en_o (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8092,7 +8092,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_pins_drive_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8122,7 +8122,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_use_diff_rcvr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8150,7 +8150,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_tx_use_d_se0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8178,7 +8178,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_eop_single_bit (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8206,7 +8206,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_pinflip (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8234,7 +8234,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_usb_ref_disable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8262,7 +8262,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_phy_config_tx_osc_test_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8456,7 +8456,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_avout_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8485,7 +8485,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_avsetup_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -8514,7 +8514,7 @@ module usbdev_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_rx_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

@@ -1828,7 +1828,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1857,7 +1857,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1926,7 +1926,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1958,7 +1958,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7d0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ec_rst_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -1991,7 +1991,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h1f40),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ulp_ac_debounce_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2024,7 +2024,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h1f40),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ulp_lid_debounce_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2057,7 +2057,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h1f40),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ulp_pwrb_debounce_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2086,7 +2086,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ulp_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2115,7 +2115,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ulp_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2179,7 +2179,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key0_in (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2207,7 +2207,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key0_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2235,7 +2235,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key1_in (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2263,7 +2263,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key1_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2291,7 +2291,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key2_in (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2319,7 +2319,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_key2_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2347,7 +2347,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_pwrb_in (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2375,7 +2375,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_pwrb_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2403,7 +2403,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_ac_present (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2431,7 +2431,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2459,7 +2459,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_lid_open (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2487,7 +2487,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_invert_ctl_z3_wakeup (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2520,7 +2520,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_bat_disable_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2548,7 +2548,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_ec_rst_l_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2576,7 +2576,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_pwrb_out_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2604,7 +2604,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key0_out_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2632,7 +2632,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key1_out_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2660,7 +2660,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key2_out_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2688,7 +2688,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_z3_wakeup_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2716,7 +2716,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_flash_wp_l_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2744,7 +2744,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_bat_disable_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2772,7 +2772,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_ec_rst_l_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2800,7 +2800,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_pwrb_out_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2828,7 +2828,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key0_out_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2856,7 +2856,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key1_out_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2884,7 +2884,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_key2_out_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2912,7 +2912,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_z3_wakeup_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2940,7 +2940,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_allowed_ctl_flash_wp_l_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2970,7 +2970,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -2998,7 +2998,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_ec_rst_l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3026,7 +3026,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_pwrb_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3054,7 +3054,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_key0_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3082,7 +3082,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_key1_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3110,7 +3110,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_key2_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3138,7 +3138,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_z3_wakeup (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3166,7 +3166,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_ctl_flash_wp_l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3196,7 +3196,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_bat_disable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3224,7 +3224,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_ec_rst_l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3252,7 +3252,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_pwrb_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3280,7 +3280,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_key0_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3308,7 +3308,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_key1_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3336,7 +3336,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_key2_out (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3364,7 +3364,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_z3_wakeup (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3392,7 +3392,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_out_value_flash_wp_l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3422,7 +3422,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_pwrb_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3450,7 +3450,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_key0_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3478,7 +3478,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_key1_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3506,7 +3506,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_key2_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3534,7 +3534,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_lid_open (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3562,7 +3562,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_ac_present (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3590,7 +3590,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_ec_rst_l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3618,7 +3618,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pin_in_value_flash_wp_l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -3651,7 +3651,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_pwrb_in_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3679,7 +3679,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key0_in_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3707,7 +3707,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key1_in_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3735,7 +3735,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key2_in_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3763,7 +3763,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_ac_present_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3791,7 +3791,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_ec_rst_l_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3819,7 +3819,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_flash_wp_l_h2l (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3847,7 +3847,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_pwrb_in_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3875,7 +3875,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key0_in_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3903,7 +3903,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key1_in_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3931,7 +3931,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_key2_in_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3959,7 +3959,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_ac_present_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -3987,7 +3987,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_ec_rst_l_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4015,7 +4015,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_ctl_flash_wp_l_l2h (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4048,7 +4048,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7d0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_debounce_ctl (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4082,7 +4082,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7d0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_debounce_ctl_debounce_timer (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4110,7 +4110,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_debounce_ctl_auto_block_enable (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4144,7 +4144,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key0_out_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4172,7 +4172,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key1_out_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4200,7 +4200,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key2_out_sel (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4228,7 +4228,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key0_out_value (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4256,7 +4256,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key1_out_value (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4284,7 +4284,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_auto_block_out_ctl_key2_out_value (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4318,7 +4318,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_0_key0_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4346,7 +4346,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_0_key1_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4374,7 +4374,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_0_key2_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4402,7 +4402,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_0_pwrb_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4430,7 +4430,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_0_ac_present_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4464,7 +4464,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_1_key0_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4492,7 +4492,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_1_key1_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4520,7 +4520,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_1_key2_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4548,7 +4548,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_1_pwrb_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4576,7 +4576,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_1_ac_present_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4610,7 +4610,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_2_key0_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4638,7 +4638,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_2_key1_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4666,7 +4666,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_2_key2_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4694,7 +4694,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_2_pwrb_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4722,7 +4722,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_2_ac_present_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4756,7 +4756,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_3_key0_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4784,7 +4784,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_3_key1_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4812,7 +4812,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_3_key2_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4840,7 +4840,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_3_pwrb_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4868,7 +4868,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_sel_ctl_3_ac_present_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4901,7 +4901,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_det_ctl_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4934,7 +4934,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_det_ctl_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -4967,7 +4967,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_det_ctl_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5000,7 +5000,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_pre_det_ctl_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5034,7 +5034,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_0_key0_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5062,7 +5062,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_0_key1_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5090,7 +5090,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_0_key2_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5118,7 +5118,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_0_pwrb_in_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5146,7 +5146,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_0_ac_present_sel_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5180,7 +5180,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_1_key0_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5208,7 +5208,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_1_key1_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5236,7 +5236,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_1_key2_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5264,7 +5264,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_1_pwrb_in_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5292,7 +5292,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_1_ac_present_sel_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5326,7 +5326,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_2_key0_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5354,7 +5354,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_2_key1_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5382,7 +5382,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_2_key2_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5410,7 +5410,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_2_pwrb_in_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5438,7 +5438,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_2_ac_present_sel_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5472,7 +5472,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_3_key0_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5500,7 +5500,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_3_key1_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5528,7 +5528,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_3_key2_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5556,7 +5556,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_3_pwrb_in_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5584,7 +5584,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_sel_ctl_3_ac_present_sel_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5617,7 +5617,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_det_ctl_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5650,7 +5650,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_det_ctl_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5683,7 +5683,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_det_ctl_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5716,7 +5716,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_det_ctl_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5750,7 +5750,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_0_bat_disable_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5778,7 +5778,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_0_interrupt_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5806,7 +5806,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_0_ec_rst_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5834,7 +5834,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_0_rst_req_0 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5868,7 +5868,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_1_bat_disable_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5896,7 +5896,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_1_interrupt_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5924,7 +5924,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_1_ec_rst_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5952,7 +5952,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_1_rst_req_1 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -5986,7 +5986,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_2_bat_disable_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6014,7 +6014,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_2_interrupt_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6042,7 +6042,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_2_ec_rst_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6070,7 +6070,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_2_rst_req_2 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6104,7 +6104,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_3_bat_disable_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6132,7 +6132,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_3_interrupt_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6160,7 +6160,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_3_ec_rst_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6188,7 +6188,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_com_out_ctl_3_rst_req_3 (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
@@ -6218,7 +6218,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_combo_intr_status_combo0_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6246,7 +6246,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_combo_intr_status_combo1_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6274,7 +6274,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_combo_intr_status_combo2_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6302,7 +6302,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_combo_intr_status_combo3_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6332,7 +6332,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_pwrb_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6360,7 +6360,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key0_in_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6388,7 +6388,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key1_in_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6416,7 +6416,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key2_in_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6444,7 +6444,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_ac_present_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6472,7 +6472,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_ec_rst_l_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6500,7 +6500,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_flash_wp_l_h2l (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6528,7 +6528,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_pwrb_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6556,7 +6556,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key0_in_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6584,7 +6584,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key1_in_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6612,7 +6612,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_key2_in_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6640,7 +6640,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_ac_present_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6668,7 +6668,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_ec_rst_l_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -6696,7 +6696,7 @@ module sysrst_ctrl_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_key_intr_status_flash_wp_l_l2h (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

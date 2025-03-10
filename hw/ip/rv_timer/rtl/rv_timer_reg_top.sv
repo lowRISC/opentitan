@@ -180,7 +180,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -210,7 +210,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -240,7 +240,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -291,7 +291,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (12'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg0_prescale (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -319,7 +319,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg0_step (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -348,7 +348,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_timer_v_lower0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -377,7 +377,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_timer_v_upper0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -417,7 +417,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hffffffff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_compare_lower0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -458,7 +458,7 @@ module rv_timer_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hffffffff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_compare_upper0_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

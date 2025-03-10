@@ -156,7 +156,7 @@ module rv_dm_regs_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_late_debug_enable_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -188,7 +188,7 @@ module rv_dm_regs_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h69696969),
     .Mubi    (1'b1),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_late_debug_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

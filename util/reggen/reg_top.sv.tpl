@@ -1059,6 +1059,7 @@ ${bits.msb}\
     async_suffix = '_int' if reg.async_clk else ''
     qs_expr = f'{clk_base_name}{finst_name}_qs{async_suffix}' if field.swaccess.allows_read() else ''
     ds_expr = f'{clk_base_name}{finst_name}_ds{async_suffix}' if reg.async_clk and reg.is_hw_writable() else ''
+    uses_ds = "1'b1" if ds_expr else "1'b0"
 
 %>\
   % if reg.hwext:       ## if hwext, instantiate prim_subreg_ext
@@ -1125,7 +1126,7 @@ ${bits.msb}\
     .SwAccess(prim_subreg_pkg::SwAccess${field.swaccess.value[1].name.upper()}),
     .RESVAL  (${resval_expr}),
     .Mubi    (${mubi_expr}),
-    .UsesDs  (1'b1)
+    .UsesDs  (${uses_ds})
   ) u_${finst_name} (
       % if reg.sync_clk:
     // sync clock and reset required for this register

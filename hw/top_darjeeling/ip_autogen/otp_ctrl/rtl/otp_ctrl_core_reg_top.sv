@@ -438,7 +438,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_otp_operation_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -466,7 +466,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_otp_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -496,7 +496,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_otp_operation_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -524,7 +524,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_otp_error (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1629,7 +1629,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (14'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_direct_access_address (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1662,7 +1662,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_direct_access_wdata_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1695,7 +1695,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_direct_access_wdata_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1758,7 +1758,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_check_trigger_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1827,7 +1827,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_check_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1859,7 +1859,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_check_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1891,7 +1891,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_integrity_check_period (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1923,7 +1923,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_consistency_check_period (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1955,7 +1955,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_vendor_test_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1987,7 +1987,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_creator_sw_cfg_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2019,7 +2019,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_owner_sw_cfg_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2052,7 +2052,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ownership_slot_state_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2085,7 +2085,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rot_creator_auth_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2118,7 +2118,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rot_owner_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2151,7 +2151,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rot_owner_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2184,7 +2184,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_integ_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2217,7 +2217,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_integ_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2250,7 +2250,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_owner_auth_slot0_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2283,7 +2283,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_owner_auth_slot1_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2316,7 +2316,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_owner_auth_slot2_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2349,7 +2349,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_plat_owner_auth_slot3_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2381,7 +2381,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ext_nvm_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -2413,7 +2413,7 @@ module otp_ctrl_core_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_rom_patch_read_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

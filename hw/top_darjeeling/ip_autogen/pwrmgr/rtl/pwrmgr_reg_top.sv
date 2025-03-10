@@ -202,7 +202,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -231,7 +231,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -320,7 +320,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_low_power_hint (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -348,7 +348,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_core_clk_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -376,7 +376,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_io_clk_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -404,7 +404,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_usb_clk_en_lp (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -432,7 +432,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_usb_clk_en_active (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -460,7 +460,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_control_main_pd_n (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -500,7 +500,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg_cdc_sync (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -530,7 +530,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wakeup_en_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -564,7 +564,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wakeup_en_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -592,7 +592,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wakeup_en_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -620,7 +620,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wakeup_en_en_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -648,7 +648,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wakeup_en_en_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -679,7 +679,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wake_status_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -707,7 +707,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wake_status_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -735,7 +735,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wake_status_val_2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -763,7 +763,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wake_status_val_3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -792,7 +792,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_reset_en_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -826,7 +826,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_reset_en_en_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -854,7 +854,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_reset_en_en_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -885,7 +885,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_reset_status_val_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -913,7 +913,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_reset_status_val_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -942,7 +942,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_escalate_reset_status (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -971,7 +971,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wake_info_capture_dis (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1054,7 +1054,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fault_status_reg_intg_err (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),
@@ -1083,7 +1083,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fault_status_esc_timeout (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),
@@ -1112,7 +1112,7 @@ module pwrmgr_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fault_status_main_pd_glitch (
     // sync clock and reset required for this register
     .clk_i   (clk_lc_i),

@@ -207,7 +207,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_edn_cmd_req_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -235,7 +235,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_edn_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -265,7 +265,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_edn_cmd_req_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -293,7 +293,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_edn_fatal_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -396,7 +396,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -429,7 +429,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
     .Mubi    (1'b1),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_edn_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -457,7 +457,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
     .Mubi    (1'b1),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_boot_req_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -485,7 +485,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
     .Mubi    (1'b1),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_auto_req_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -513,7 +513,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
     .Mubi    (1'b1),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_cmd_fifo_rst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -542,7 +542,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h901),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_boot_ins_cmd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -571,7 +571,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hfff003),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_boot_gen_cmd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -621,7 +621,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_sw_cmd_sts_cmd_reg_rdy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -649,7 +649,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -677,7 +677,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_sw_cmd_sts_cmd_ack (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -705,7 +705,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (3'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -735,7 +735,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_cmd_sts_boot_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -763,7 +763,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_cmd_sts_auto_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -791,7 +791,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (4'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_cmd_sts_cmd_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -819,7 +819,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_cmd_sts_cmd_ack (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -847,7 +847,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (3'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -927,7 +927,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_max_num_reqs_between_reseeds (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -958,7 +958,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_edn_enable_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -986,7 +986,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_boot_req_mode_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1014,7 +1014,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_auto_req_mode_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1042,7 +1042,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_cmd_fifo_rst_field_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1070,7 +1070,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_edn_bus_cmp_alert (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1098,7 +1098,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_recov_alert_sts_csrng_ack_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1128,7 +1128,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_sfifo_rescmd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1156,7 +1156,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_sfifo_gencmd_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1184,7 +1184,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_edn_ack_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1212,7 +1212,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_edn_main_sm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1240,7 +1240,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_edn_cntr_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1268,7 +1268,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1296,7 +1296,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1324,7 +1324,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1364,7 +1364,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_err_code_test (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1394,7 +1394,7 @@ module edn_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (9'hc1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_main_sm_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

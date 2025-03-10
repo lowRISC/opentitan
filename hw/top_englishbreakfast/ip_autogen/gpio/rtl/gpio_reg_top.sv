@@ -198,7 +198,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -227,7 +227,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -296,7 +296,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -513,7 +513,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_ctrl_en_rising (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -542,7 +542,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_ctrl_en_falling (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -571,7 +571,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_ctrl_en_lvlhigh (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -600,7 +600,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_ctrl_en_lvllow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -629,7 +629,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_en_input_filter (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -658,7 +658,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_straps_data_in_valid (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -687,7 +687,7 @@ module gpio_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_hw_straps_data_in (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

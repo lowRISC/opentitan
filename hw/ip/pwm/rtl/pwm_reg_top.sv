@@ -1122,7 +1122,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_regwen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1166,7 +1166,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (27'h8000),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg_clk_div (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1195,7 +1195,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h7),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg_dc_resn (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1224,7 +1224,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_cfg_cntr_en (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1270,7 +1270,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1299,7 +1299,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1328,7 +1328,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1357,7 +1357,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1386,7 +1386,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1415,7 +1415,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_en_en_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1461,7 +1461,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1490,7 +1490,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1519,7 +1519,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1548,7 +1548,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1577,7 +1577,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1606,7 +1606,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_invert_invert_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1652,7 +1652,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_0_phase_delay_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1681,7 +1681,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_0_htbt_en_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1710,7 +1710,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_0_blink_en_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1756,7 +1756,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_1_phase_delay_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1785,7 +1785,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_1_htbt_en_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1814,7 +1814,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_1_blink_en_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1860,7 +1860,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_2_phase_delay_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1889,7 +1889,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_2_htbt_en_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1918,7 +1918,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_2_blink_en_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1964,7 +1964,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_3_phase_delay_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -1993,7 +1993,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_3_htbt_en_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2022,7 +2022,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_3_blink_en_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2068,7 +2068,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_4_phase_delay_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2097,7 +2097,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_4_htbt_en_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2126,7 +2126,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_4_blink_en_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2172,7 +2172,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_5_phase_delay_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2201,7 +2201,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_5_htbt_en_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2230,7 +2230,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_pwm_param_5_blink_en_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2276,7 +2276,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_0_a_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2305,7 +2305,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_0_b_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2351,7 +2351,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_1_a_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2380,7 +2380,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_1_b_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2426,7 +2426,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_2_a_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2455,7 +2455,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_2_b_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2501,7 +2501,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_3_a_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2530,7 +2530,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_3_b_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2576,7 +2576,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_4_a_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2605,7 +2605,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_4_b_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2651,7 +2651,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_5_a_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2680,7 +2680,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_duty_cycle_5_b_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2726,7 +2726,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_0_x_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2755,7 +2755,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_0_y_0 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2801,7 +2801,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_1_x_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2830,7 +2830,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_1_y_1 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2876,7 +2876,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_2_x_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2905,7 +2905,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_2_y_2 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2951,7 +2951,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_3_x_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -2980,7 +2980,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_3_y_3 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -3026,7 +3026,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_4_x_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -3055,7 +3055,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_4_y_4 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -3101,7 +3101,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_5_x_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),
@@ -3130,7 +3130,7 @@ module pwm_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_blink_param_5_y_5 (
     .clk_i   (clk_core_i),
     .rst_ni  (rst_core_ni),

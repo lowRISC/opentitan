@@ -240,7 +240,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -268,7 +268,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -296,7 +296,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_tx_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -324,7 +324,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -352,7 +352,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_frame_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -380,7 +380,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_break_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -408,7 +408,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -436,7 +436,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_rx_parity_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -464,7 +464,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_state_tx_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -494,7 +494,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -522,7 +522,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -550,7 +550,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_tx_done (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -578,7 +578,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_overflow (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -606,7 +606,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_frame_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -634,7 +634,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_break_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -662,7 +662,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_timeout (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -690,7 +690,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_rx_parity_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -718,7 +718,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_intr_enable_tx_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -917,7 +917,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_tx (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -945,7 +945,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_rx (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -973,7 +973,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_nf (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1001,7 +1001,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_slpbk (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1029,7 +1029,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_llpbk (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1057,7 +1057,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_parity_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1085,7 +1085,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_parity_odd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1113,7 +1113,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_rxblvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1141,7 +1141,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ctrl_nco (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1289,7 +1289,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (8'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_wdata (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1331,7 +1331,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_rxrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1360,7 +1360,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_txrst (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1389,7 +1389,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_rxilvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1418,7 +1418,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_fifo_ctrl_txilvl (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1481,7 +1481,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ovrd_txen (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1509,7 +1509,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_ovrd_txval (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1555,7 +1555,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (24'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_timeout_ctrl_val (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -1583,7 +1583,7 @@ module uart_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0),
-    .UsesDs  (1'b1)
+    .UsesDs  (1'b0)
   ) u_timeout_ctrl_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
