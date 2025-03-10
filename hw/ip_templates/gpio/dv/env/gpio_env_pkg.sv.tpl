@@ -12,13 +12,13 @@ package ${module_instance_name}_env_pkg;
   import tl_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
-  import ${module_instance_name}_ral_pkg::*;
+  import gpio_ral_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // no. of ${module_instance_name} pins
+  // no. of gpio pins
   parameter uint NUM_GPIOS     = 32;
   // no. of cycles for noise filter
   parameter uint FILTER_CYCLES = 16;
@@ -39,9 +39,9 @@ package ${module_instance_name}_env_pkg;
   typedef struct packed {
     bit transition_occurred;
     bit is_rising_edge;
-  } ${module_instance_name}_transition_t;
+  } gpio_transition_t;
 
-  // structure to indicate whether or not register update is due for particular ${module_instance_name} register
+  // structure to indicate whether or not register update is due for particular gpio register
   // needs_update: 1-update is due, 0-update is not due
   // reg_value: value to be updated when update is due
   // eval_time: time stamp of event, which triggered interrupt update
@@ -49,7 +49,7 @@ package ${module_instance_name}_env_pkg;
     bit needs_update;
     bit [TL_DW-1:0] reg_value;
     time eval_time;
-  } ${module_instance_name}_reg_update_due_t;
+  } gpio_reg_update_due_t;
 
   // package sources
   `include "${module_instance_name}_agent/${module_instance_name}_strap_agent_cfg.sv"
