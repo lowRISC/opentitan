@@ -15,10 +15,15 @@ filesets:
       - gpio_env_cfg.sv: {is_include_file: true}
       - gpio_env_cov.sv: {is_include_file: true}
       - gpio_virtual_sequencer.sv: {is_include_file: true}
+      - model/gpio_model.sv: {is_include_file: true}
       - gpio_agent/gpio_strap_agent_cfg.sv: {is_include_file: true}
       - gpio_agent/gpio_strap_driver.sv: {is_include_file: true}
       - gpio_agent/gpio_strap_monitor.sv: {is_include_file: true}
       - gpio_agent/gpio_strap_agent.sv: {is_include_file: true}
+      - gpio_agent/gpio_data_agent_cfg.sv: {is_include_file: true}
+      - gpio_agent/gpio_data_agent.sv: {is_include_file: true}
+      - gpio_agent/gpio_data_driver.sv: {is_include_file: true}
+      - gpio_agent/gpio_data_monitor.sv: {is_include_file: true}
       - gpio_scoreboard.sv: {is_include_file: true}
       - gpio_env.sv: {is_include_file: true}
       - seq_lib/gpio_vseq_list.sv: {is_include_file: true}

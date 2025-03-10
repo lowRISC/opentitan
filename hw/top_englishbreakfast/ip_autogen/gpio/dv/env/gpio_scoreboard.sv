@@ -40,9 +40,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   string common_seq_type;
 
+  // gpio model
+  gpio_model model;
+
+  // Used to get the gpio strap data from the monitor.
+  uvm_analysis_imp_strap #(gpio_seq_item, gpio_scoreboard) strap_analysis_port;
   // Used to get the gpio data inputs/outputs from the monitor.
-  uvm_analysis_imp #(gpio_seq_item,
-                     gpio_scoreboard) analysis_port;
+  uvm_analysis_imp_data #(gpio_seq_item, gpio_scoreboard) data_analysis_port;
 
   `uvm_component_utils(gpio_scoreboard)
 
@@ -53,7 +57,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    analysis_port = new("analysis_port", this);
+    strap_analysis_port = new("strap_analysis_port", this);
+    data_analysis_port  = new("data_analysis_port", this);
+
+    // Get the gpio_model from the environment configuration object.
+    if (!uvm_config_db#(gpio_model)::get(this, "", "gpio_model", model)) begin
+      `uvm_fatal(`gfn, "Could not get gpio_model from uvm_config_db")
+    end
   endfunction
 
   // Task: run_phase
