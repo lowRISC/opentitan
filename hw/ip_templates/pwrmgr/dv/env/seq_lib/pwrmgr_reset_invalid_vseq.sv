@@ -40,7 +40,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
     string path = "tb.dut.u_fsm.fsm_invalid_i";
     int    num_of_target_states = 11;
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     check_reset_status('0);
     $assertoff(0, "tb.dut.u_cdc.u_clr_reqack.SyncReqAckHoldReq");
 
@@ -68,7 +68,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "All good, resetting for next round", UVM_MEDIUM)
       repeat (10) @cfg.clk_rst_vif.cb;
       apply_reset();
-      reset_index=reset_index.next();
+      reset_index = reset_index.next();
       wait_for_fast_fsm(FastFsmActive);
     end
   endtask
