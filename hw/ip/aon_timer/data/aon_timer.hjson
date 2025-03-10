@@ -29,7 +29,7 @@
     {clock: "clk_aon_i", reset: "rst_aon_ni"}
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device"}
+    { protocol: "tlul", direction: "device", racl_support: true }
   ],
   interrupt_list: [
     { name: "wkup_timer_expired",
@@ -93,6 +93,26 @@
       package: "",
       struct:  "logic",
       width:   "1"
+    },
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "rcv",
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming RACL policy vector from a racl_ctrl instance.
+        The policy selection vector (parameter) selects the policy for each register.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "req",
+      width:   "1"
+      package: "top_racl_pkg",
+      desc:    '''
+        RACL error log information of this module.
+      '''
     }
   ],
   features: [

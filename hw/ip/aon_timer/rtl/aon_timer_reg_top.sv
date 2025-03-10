@@ -6,7 +6,13 @@
 
 `include "prim_assert.sv"
 
-module aon_timer_reg_top (
+module aon_timer_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[aon_timer_reg_pkg::NumRegs] =
+      '{aon_timer_reg_pkg::NumRegs{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input clk_aon_i,
@@ -16,6 +22,10 @@ module aon_timer_reg_top (
   // To HW
   output aon_timer_reg_pkg::aon_timer_reg2hw_t reg2hw, // Write
   input  aon_timer_reg_pkg::aon_timer_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -112,7 +122,8 @@ module aon_timer_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o.valid))
   );
 
   // cdc oversampling signals
@@ -1085,8 +1096,32 @@ module aon_timer_reg_top (
 
 
   logic [13:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [13:0] racl_addr_hit_read;
+  logic [13:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[ 0] = (reg_addr == AON_TIMER_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == AON_TIMER_WKUP_CTRL_OFFSET);
     addr_hit[ 2] = (reg_addr == AON_TIMER_WKUP_THOLD_HI_OFFSET);
@@ -1101,67 +1136,95 @@ module aon_timer_reg_top (
     addr_hit[11] = (reg_addr == AON_TIMER_INTR_STATE_OFFSET);
     addr_hit[12] = (reg_addr == AON_TIMER_INTR_TEST_OFFSET);
     addr_hit[13] = (reg_addr == AON_TIMER_WKUP_CAUSE_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 14; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit, access, but failed the RACL check
+  assign racl_error_o.valid = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
+                                           (reg_we & ~|racl_addr_hit_write));
+  assign racl_error_o.request_address = top_pkg::TL_AW'(reg_addr);
+  assign racl_error_o.racl_role       = racl_role;
+  assign racl_error_o.overflow        = 1'b0;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_o.ctn_uid     = '0;
+    assign racl_error_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(AON_TIMER_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(AON_TIMER_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(AON_TIMER_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(AON_TIMER_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(AON_TIMER_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(AON_TIMER_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(AON_TIMER_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(AON_TIMER_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(AON_TIMER_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(AON_TIMER_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(AON_TIMER_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(AON_TIMER_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(AON_TIMER_PERMIT[13] & ~reg_be)))));
+              ((racl_addr_hit_write[ 0] & (|(AON_TIMER_PERMIT[ 0] & ~reg_be))) |
+               (racl_addr_hit_write[ 1] & (|(AON_TIMER_PERMIT[ 1] & ~reg_be))) |
+               (racl_addr_hit_write[ 2] & (|(AON_TIMER_PERMIT[ 2] & ~reg_be))) |
+               (racl_addr_hit_write[ 3] & (|(AON_TIMER_PERMIT[ 3] & ~reg_be))) |
+               (racl_addr_hit_write[ 4] & (|(AON_TIMER_PERMIT[ 4] & ~reg_be))) |
+               (racl_addr_hit_write[ 5] & (|(AON_TIMER_PERMIT[ 5] & ~reg_be))) |
+               (racl_addr_hit_write[ 6] & (|(AON_TIMER_PERMIT[ 6] & ~reg_be))) |
+               (racl_addr_hit_write[ 7] & (|(AON_TIMER_PERMIT[ 7] & ~reg_be))) |
+               (racl_addr_hit_write[ 8] & (|(AON_TIMER_PERMIT[ 8] & ~reg_be))) |
+               (racl_addr_hit_write[ 9] & (|(AON_TIMER_PERMIT[ 9] & ~reg_be))) |
+               (racl_addr_hit_write[10] & (|(AON_TIMER_PERMIT[10] & ~reg_be))) |
+               (racl_addr_hit_write[11] & (|(AON_TIMER_PERMIT[11] & ~reg_be))) |
+               (racl_addr_hit_write[12] & (|(AON_TIMER_PERMIT[12] & ~reg_be))) |
+               (racl_addr_hit_write[13] & (|(AON_TIMER_PERMIT[13] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign wkup_ctrl_we = addr_hit[1] & reg_we & !reg_error;
+  assign wkup_ctrl_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
 
-  assign wkup_thold_hi_we = addr_hit[2] & reg_we & !reg_error;
+  assign wkup_thold_hi_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
-  assign wkup_thold_lo_we = addr_hit[3] & reg_we & !reg_error;
+  assign wkup_thold_lo_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
-  assign wkup_count_hi_we = addr_hit[4] & reg_we & !reg_error;
+  assign wkup_count_hi_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
-  assign wkup_count_lo_we = addr_hit[5] & reg_we & !reg_error;
+  assign wkup_count_lo_we = racl_addr_hit_write[5] & reg_we & !reg_error;
 
-  assign wdog_regwen_we = addr_hit[6] & reg_we & !reg_error;
+  assign wdog_regwen_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign wdog_regwen_wd = reg_wdata[0];
-  assign wdog_ctrl_we = addr_hit[7] & reg_we & !reg_error;
+  assign wdog_ctrl_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
 
-  assign wdog_bark_thold_we = addr_hit[8] & reg_we & !reg_error;
+  assign wdog_bark_thold_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
-  assign wdog_bite_thold_we = addr_hit[9] & reg_we & !reg_error;
+  assign wdog_bite_thold_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
-  assign wdog_count_we = addr_hit[10] & reg_we & !reg_error;
+  assign wdog_count_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
-  assign intr_state_we = addr_hit[11] & reg_we & !reg_error;
+  assign intr_state_we = racl_addr_hit_write[11] & reg_we & !reg_error;
 
   assign intr_state_wkup_timer_expired_wd = reg_wdata[0];
 
   assign intr_state_wdog_timer_bark_wd = reg_wdata[1];
-  assign intr_test_we = addr_hit[12] & reg_we & !reg_error;
+  assign intr_test_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
   assign intr_test_wkup_timer_expired_wd = reg_wdata[0];
 
   assign intr_test_wdog_timer_bark_wd = reg_wdata[1];
-  assign wkup_cause_we = addr_hit[13] & reg_we & !reg_error;
+  assign wkup_cause_we = racl_addr_hit_write[13] & reg_we & !reg_error;
 
 
   // Assign write-enables to checker logic vector.
@@ -1187,52 +1250,52 @@ module aon_timer_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next = DW'(wkup_ctrl_qs);
       end
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next = DW'(wkup_thold_hi_qs);
       end
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next = DW'(wkup_thold_lo_qs);
       end
-      addr_hit[4]: begin
+      racl_addr_hit_read[4]: begin
         reg_rdata_next = DW'(wkup_count_hi_qs);
       end
-      addr_hit[5]: begin
+      racl_addr_hit_read[5]: begin
         reg_rdata_next = DW'(wkup_count_lo_qs);
       end
-      addr_hit[6]: begin
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[0] = wdog_regwen_qs;
       end
 
-      addr_hit[7]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next = DW'(wdog_ctrl_qs);
       end
-      addr_hit[8]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next = DW'(wdog_bark_thold_qs);
       end
-      addr_hit[9]: begin
+      racl_addr_hit_read[9]: begin
         reg_rdata_next = DW'(wdog_bite_thold_qs);
       end
-      addr_hit[10]: begin
+      racl_addr_hit_read[10]: begin
         reg_rdata_next = DW'(wdog_count_qs);
       end
-      addr_hit[11]: begin
+      racl_addr_hit_read[11]: begin
         reg_rdata_next[0] = intr_state_wkup_timer_expired_qs;
         reg_rdata_next[1] = intr_state_wdog_timer_bark_qs;
       end
 
-      addr_hit[12]: begin
+      racl_addr_hit_read[12]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[13]: begin
+      racl_addr_hit_read[13]: begin
         reg_rdata_next = DW'(wkup_cause_qs);
       end
       default: begin
@@ -1296,6 +1359,8 @@ module aon_timer_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)

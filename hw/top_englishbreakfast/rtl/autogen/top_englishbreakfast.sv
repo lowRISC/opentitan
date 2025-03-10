@@ -1040,6 +1040,8 @@ module top_englishbreakfast #(
       .aon_timer_rst_req_o(pwrmgr_aon_rstreqs),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
       .sleep_mode_i(pwrmgr_aon_low_power),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
       .tl_i(tlul_pkg::TL_H2D_DEFAULT),
       .tl_o(),
 
