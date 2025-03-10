@@ -213,8 +213,6 @@ task pattgen_base_vseq::setup_pattgen_channel(int unsigned ch);
   // Pick a random configuration for the channel, storing it into channel_cfg
   channel_cfg[ch] = get_random_channel_config(.channel(ch));
 
-  ral.size.get_field_by_name($sformatf("len_ch%0d", ch));
-
   // Now perform register writes to configure the channel as desired. Annoyingly, this always uses
   // registers or fields with the index in their name, so lots of the work is done by child tasks.
   update_size_for_channel(ch, channel_cfg[ch].len, channel_cfg[ch].reps);
