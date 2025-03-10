@@ -94,9 +94,11 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
 endtask : run_phase
 
 // Check whether the current TL access is granted.
-// Note: if ranges are configured in a contradictory way, the priority is given to the first
-//       matching range based on the register configuration order (index 0 has priority over 1 for
-//       example). Thus, directly return when a matching range is allowing the access.
+// Note: if a request matches multiple ranges with conflicting permissions enabled, the priority is
+//       given to the first enabled matching range based on the register configuration order (index
+//       0 has priority over 1 for example). Thus, directly return when an enabled matching range is
+//       granting or denying the access.
+// TODO: check if RACL policies control is OK as done below
 function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item item);
   `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", unfilt_tr_cnt), UVM_MEDIUM)
 
@@ -115,11 +117,11 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
       end else begin
         if (!item.is_write()) begin
           // Access is an EXECUTE (a_user contains this information if a_opcode indicates a read)
-          if (item.a_user[tlul_pkg::InstrTypeMsbPos:tlul_pkg::InstrTypeLsbPos] == MuBi4True) begin
+          if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
             if (!dut_cfg.range_perm[i].execute_access) begin
               `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
                 "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              continue;  // Jump to the next index of the for loop
+              return AccessDenied;
             end else begin
               // RACL policy READ permission should also be set
               if (!dut_cfg.range_racl_policy[i].read_perm) begin
@@ -137,7 +139,7 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
             if (!dut_cfg.range_perm[i].read_access) begin
               `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
                 "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              continue;  // Jump to the next index of the for loop
+              return AccessDenied;
             end else begin
               // RACL policy READ permission should also be set
               if (!dut_cfg.range_racl_policy[i].read_perm) begin
@@ -156,7 +158,7 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
           if (!dut_cfg.range_perm[i].write_access) begin
             `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
               "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-            continue;  // Jump to the next index of the for loop
+            return AccessDenied;
           end else begin
             // RACL policy WRITE permission should also be set
             if (!dut_cfg.range_racl_policy[i].write_perm) begin
