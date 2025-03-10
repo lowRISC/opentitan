@@ -43,7 +43,7 @@ ${"###"} Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 
 ${"###"} Global types & methods
-All common types and methods defined at the package level can be found in `ac_range_check_env_pkg`.
+All common types and methods defined at the package level can be found in `${module_instance_name}_env_pkg`.
 Some of them in use are:
 ```systemverilog
 [list a few parameters, types & methods; no need to mention all]
@@ -77,7 +77,7 @@ This helps increase the likelihood of hitting the design corners that would othe
 This object aims to provide such run-time controls.
 
 ${"####"} Env cfg
-The `ac_range_check_env_cfg`, environment configuration object provides access to the following elements:
+The `${module_instance_name}_env_cfg`, environment configuration object provides access to the following elements:
 * Build-time controls to configure the UVM environment composition during the `build_phase`
 * Downstream agent configuration objects for ease of lookup from any environment component
   * This includes the `tl_agent_cfg` objects for both TL interfaces

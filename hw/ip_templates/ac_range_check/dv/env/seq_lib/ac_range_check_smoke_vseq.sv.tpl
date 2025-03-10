@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
-  `uvm_object_utils(ac_range_check_smoke_vseq)
+class ${module_instance_name}_smoke_vseq extends ${module_instance_name}_base_vseq;
+  `uvm_object_utils(${module_instance_name}_smoke_vseq)
 
   // Constraints
   // extern constraint range_limit_c;
@@ -13,10 +13,10 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   // Standard SV/UVM methods
   extern function new(string name="");
   extern task body();
-endclass : ac_range_check_smoke_vseq
+endclass : ${module_instance_name}_smoke_vseq
 
 // TODO remove this temporary directed constraint
-constraint ac_range_check_smoke_vseq::tmp_c {
+constraint ${module_instance_name}_smoke_vseq::tmp_c {
   foreach (dut_cfg.range_base[i]) {
     dut_cfg.range_base[i]                   == 32'h7654_2500;
     dut_cfg.range_limit[i]                  == 32'h7654_2600;
@@ -29,25 +29,25 @@ constraint ac_range_check_smoke_vseq::tmp_c {
 }
 
 // TODO uncomment that constraint
-// constraint ac_range_check_smoke_vseq::range_limit_c {
+// constraint ${module_instance_name}_smoke_vseq::range_limit_c {
 //   solve dut_cfg.range_base before dut_cfg.range_limit;
 //   foreach (dut_cfg.range_limit[i]) {
 //     dut_cfg.range_limit[i] > dut_cfg.range_base[i];
 //   }
 // }
 
-constraint ac_range_check_smoke_vseq::range_racl_policy_c {
+constraint ${module_instance_name}_smoke_vseq::range_racl_policy_c {
   foreach (dut_cfg.range_racl_policy[i]) {
     soft dut_cfg.range_racl_policy[i].write_perm == 16'hFFFF;
     soft dut_cfg.range_racl_policy[i].read_perm  == 16'hFFFF;
   }
 }
 
-function ac_range_check_smoke_vseq::new(string name="");
+function ${module_instance_name}_smoke_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
-task ac_range_check_smoke_vseq::body();
+task ${module_instance_name}_smoke_vseq::body();
   // TODO, remove this chunk and make it random later
   dut_cfg.tl_main_vars.rand_write = 0;
   dut_cfg.tl_main_vars.write      = 0;
