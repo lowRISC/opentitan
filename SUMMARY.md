@@ -582,6 +582,7 @@
 
 - [Contributing to Hardware](./doc/contributing/hw/README.md)
   - [Comportability](./doc/contributing/hw/comportability/README.md)
+  - [RACL](./doc/contributing/hw/racl/README.md)
   - [Hardware Design](./doc/contributing/hw/design.md)
   - [Design Methodology](./doc/contributing/hw/methodology.md)
   - [Vendoring in Hardware](./doc/contributing/hw/vendor.md)
