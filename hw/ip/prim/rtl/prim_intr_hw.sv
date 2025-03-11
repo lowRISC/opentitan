@@ -36,7 +36,7 @@ module prim_intr_hw # (
   //   - INTR_STATE for *status* interrupts is RO (it simply presents the raw HW input signal).
   //   - If the root_cause is cleared, INTR_STATE/intr_o also clears automatically.
   // More details about the interrupt type distinctions can be found in the comportability docs.
-  parameter              IntrT = "Event" // Event or Status
+  parameter string       IntrT = "Event" // Event or Status
 ) (
   // event
   input  clk_i,
