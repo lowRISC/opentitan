@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
@@ -39,7 +41,35 @@ opentitan_test(
     },
     fpga = fpga_params(
         binaries = {
-            ":ate_gpio_toggle_test": "firmware",
+            "//sw/device/silicon_creator/rom/e2e/ate/binaries:ate_gpio_toggle_test": "firmware",
         },
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
     ),
+)
+
+offline_presigning_artifacts(
+    name = "ate_gpio_toggle_test_presigning",
+    testonly = True,
+    srcs = [":ate_gpio_toggle_test"],
+    ecdsa_key = {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    spx_key = {},
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "digests",
+    testonly = True,
+    srcs = [":ate_gpio_toggle_test_presigning"],
+    mode = "0644",
+    tags = ["manual"],
+)
+
+offline_signature_attach(
+    name = "signed",
+    testonly = True,
+    srcs = [":ate_gpio_toggle_test_presigning"],
+    ecdsa_signatures = ["//sw/device/silicon_creator/rom/e2e/ate/signatures:ecdsa_signatures"],
+    spx_signatures = [],
+    tags = ["manual"],
 )
