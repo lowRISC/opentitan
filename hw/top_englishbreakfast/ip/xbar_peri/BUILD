@@ -14,6 +14,6 @@ filegroup(
             "README.md",
         ],
     ) + [
-        "//hw/top_englishbreakfast/ip/ast/data:all_files",
+        "//hw/top_englishbreakfast/ip/xbar_peri/data:all_files",
     ],
 )

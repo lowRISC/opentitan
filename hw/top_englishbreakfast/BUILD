@@ -10,13 +10,7 @@ filegroup(
     srcs = glob(
         ["**"],
     ) + [
-        "//hw/top_englishbreakfast/ip_autogen/clkmgr:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/flash_ctrl:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/gpio:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/pinmux:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/pwrmgr:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/rstmgr:rtl_files",
-        "//hw/top_englishbreakfast/ip_autogen/rv_plic:rtl_files",
+        "//hw/top_englishbreakfast/ip:rtl_files",
     ],
     visibility = ["//visibility:public"],
 )

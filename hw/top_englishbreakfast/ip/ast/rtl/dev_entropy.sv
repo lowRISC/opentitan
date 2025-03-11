@@ -1,0 +1,1 @@
+../../../../top_earlgrey/ip/ast/rtl/dev_entropy.sv

@@ -1,0 +1,1 @@
+../../../../top_earlgrey/ip/ast/rtl/aon_clk.sv
