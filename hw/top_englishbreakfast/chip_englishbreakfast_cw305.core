@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim_xilinx:prim_xilinx_default_pkg
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:top_englishbreakfast_pkg
-      - lowrisc:systems:top_earlgrey_ast
+      - lowrisc:systems:top_englishbreakfast_ast
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:systems:top_earlgrey_scan_role_pkg
     files:
