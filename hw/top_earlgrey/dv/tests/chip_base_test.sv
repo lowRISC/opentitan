@@ -76,6 +76,10 @@ class chip_base_test extends cip_base_test #(
     // Knob to skip ROM backdoor logging (for sims that use ROM macro).
     void'($value$plusargs("skip_rom_bkdr_load=%0b", cfg.skip_rom_bkdr_load));
 
+    // Knob to skip backdoor loading of flash (for sims that use mask ROM but
+    // want to also perform SPI bootstrap operation).
+    void'($value$plusargs("skip_flash_bkdr_load=%0b", cfg.skip_flash_bkdr_load));
+
     // Knob to add vendor flash write latency
     void'($value$plusargs("flash_write_latency_in_us=%d", cfg.flash_write_latency_in_us));
 

@@ -193,6 +193,9 @@ module tb;
   // Knob to skip ROM backdoor logging (for sims that use ROM macro). Set below.
   logic skip_rom_bkdr_load;
 
+  // Knob to skip flash backdoor loading. Set below.
+  logic skip_flash_bkdr_load;
+
   // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
   bit en_sim_sram = 1'b1;
   wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
@@ -477,7 +480,11 @@ module tb;
           .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
+      // Knob to skip flash backdoor loading (for ATE sims).
+      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) skip_flash_bkdr_load = 0;
+      if (!skip_flash_bkdr_load) begin
+        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
+      end
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Data] = new(
@@ -488,7 +495,11 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
               top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
+      // Knob to skip flash backdoor loading (for ATE sims).
+      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) skip_flash_bkdr_load = 0;
+      if (!skip_flash_bkdr_load) begin
+        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
+      end
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 info", UVM_MEDIUM)
       m_mem_bkdr_util[FlashBank1Info] = new(

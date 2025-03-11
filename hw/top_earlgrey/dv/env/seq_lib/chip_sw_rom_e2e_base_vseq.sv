@@ -54,12 +54,14 @@ class chip_sw_rom_e2e_base_vseq extends chip_sw_base_vseq;
     // prevent X's propagating as a result of multiple drivers on pins IOC3 and IOC4 (due to DFT
     // strap sampling in TestUnlocked* and RMA lifecycle states). Once the retention SRAM is
     // initialized, we have made it to `rom_main()`.
+    `uvm_info(`gfn, "Waiting for SRAM initialization to complete.", UVM_LOW)
     `DV_WAIT(cfg.chip_vif.sram_ret_init_done == 1,
              $sformatf({"Timeout occurred when waiting for SRAM initialization; ",
                         "Current sram_ret_init_done = 1'%0b, Timeout value = %0dns"},
                         cfg.chip_vif.sram_ret_init_done,
                         cfg.sw_test_timeout_ns),
              cfg.sw_test_timeout_ns)
+    `uvm_info(`gfn, "ROM SRAM initialization done.", UVM_LOW)
   endtask
 
 endclass : chip_sw_rom_e2e_base_vseq
