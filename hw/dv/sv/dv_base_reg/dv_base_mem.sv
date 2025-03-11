@@ -6,9 +6,6 @@
 
 class dv_base_mem extends uvm_mem;
 
-  // uvm_mem::m_access is local variable. Create it again in order to use "access" in current class
-  local string m_access;
-
   // if mem doesn't support partial write, doing that will result d_error = 1
   local bit mem_partial_write_support;
 
@@ -21,6 +18,9 @@ class dv_base_mem extends uvm_mem;
   // data integrity
   local bit data_intg_passthru;
 
+  // Create a new instance of the memory abstraction class.
+  //
+  // The only access types supported are RW, RO and WO.
   extern function new(string           name,
                       longint unsigned size,
                       int unsigned     n_bits,
@@ -39,8 +39,10 @@ class dv_base_mem extends uvm_mem;
   extern function void set_read_to_wo_mem_ok(bit ok);
   extern function bit get_read_to_wo_mem_ok();
 
-  // This overrides uvm_mem::configure (which is *not* a virtual function), loosening the check that
+  // This overrides uvm_mem::configure (which is *not* a virtual function), removing the check that
   // the requested "access" is RW or RO, because we want to support WO as well.
+  //
+  // *That* check is now done in the constructor, where we can see the requested "access".
   extern function void configure(uvm_reg_block parent, string hdl_path="");
 endclass
 
@@ -50,7 +52,8 @@ function dv_base_mem::new(string           name,
                           string           access = "RW",
                           int              has_coverage = UVM_NO_COVERAGE);
   super.new(name, size, n_bits, access, has_coverage);
-  m_access = access;
+  if (!(access inside {"RW", "RO", "WO"}))
+    `uvm_error("RegModel", $sformatf("Memory '%0s' can only be RW, RO or WO", get_full_name()))
 endfunction
 
 function void dv_base_mem::set_mem_partial_write_support(bit enable);
@@ -85,16 +88,13 @@ function bit dv_base_mem::get_read_to_wo_mem_ok();
   return read_to_wo_mem_ok;
 endfunction
 
-// Note: This is a copied version of uvm_mem::configure, but tweaked to loosen the check on m_access
+// Note: This is a copied version of uvm_mem::configure, but tweaked to remove the check on m_access
+// (loosened slightly and now moved to the constructor)
 function void dv_base_mem::configure(uvm_reg_block parent, string hdl_path="");
    if (parent == null)
      `uvm_fatal("REG/NULL_PARENT","configure: parent argument is null")
 
    set_parent(parent);
-
-   if (!(m_access inside {"RW", "RO", "WO"})) begin
-      `uvm_error("RegModel", {"Memory '",get_full_name(),"' can only be RW, RO or WO"})
-   end
 
    begin
       uvm_mem_mam_cfg cfg = new;
