@@ -112,20 +112,22 @@ class chip_sw_base_vseq extends chip_base_vseq;
 `endif
     end
 
-    if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-      if (cfg.use_spi_load_bootstrap) begin
-        `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
-        spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
-        cfg.use_spi_load_bootstrap = 1'b0;
-      end else begin
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-            {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+    if (cfg.skip_flash_bkdr_load == 0) begin
+      if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
+        if (cfg.use_spi_load_bootstrap) begin
+          `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
+          spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+          cfg.use_spi_load_bootstrap = 1'b0;
+        end else begin
+          cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
+              {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
+        end
       end
-    end
-    if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-      // TODO: support bootstrapping entire flash address space, not just slot A.
-      cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
-          {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
+      if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
+        // TODO: support bootstrapping entire flash address space, not just slot A.
+        cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
+            {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
+      end
     end
 
     config_jitter();
@@ -519,9 +521,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
     cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
+    `uvm_info(`gfn, "Configuring SPI flash commands.", UVM_LOW)
     // Configure the spi_agent for flash mode and add command info.
     spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
 
+    `uvm_info(`gfn, "Wait for SPI flash commands to be ready.", UVM_LOW)
     // Wait for the commands to be ready
     csr_spinwait(
       .ptr(ral.spi_device.cmd_info[spi_device_pkg::CmdInfoReadSfdp].opcode),
@@ -539,15 +543,20 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .backdoor(1),
       .spinwait_delay_ns(5000));
 
+    `uvm_info(`gfn, "Reading SW image frames ...", UVM_LOW)
     read_sw_frames(sw_image, sw_byte_q);
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
     m_spi_host_seq.opcode = SpiFlashChipErase;
+    `uvm_info(`gfn, "Sending SPI flash erase command ...", UVM_LOW)
     spi_host_flash_issue_write_cmd(
       .write_command(m_spi_host_seq),
       .busy_timeout_ns(200_000_000),
       .busy_poll_interval_ns(1_000_000));
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
+    `uvm_info(`gfn, "Sending page program commands ...", UVM_LOW)
     while (sw_byte_q.size > byte_cnt) begin
       `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
       m_spi_host_seq.opcode = SpiFlashPageProgram;
@@ -563,7 +572,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       spi_host_flash_issue_write_cmd(m_spi_host_seq);
       byte_cnt += bytes_to_write;
     end
+    `uvm_info(`gfn, "Done.", UVM_LOW)
 
+    `uvm_info(`gfn, "Resetting SW straps and chip.", UVM_LOW)
     cfg.chip_vif.sw_straps_if.drive(3'h0);
     assert_por_reset();
   endtask
