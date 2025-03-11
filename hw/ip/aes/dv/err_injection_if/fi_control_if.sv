@@ -37,6 +37,7 @@ interface fi_control_if
     $sformatf("%s.%s", par_hier, "ctr_we_i"),
     $sformatf("%s.%s", par_hier, "key_init_we_o"),
     $sformatf("%s.%s", par_hier, "iv_we_o"),
+    $sformatf("%s.%s", par_hier, "data_out_sel_o"),
     $sformatf("%s.%s", par_hier, "data_in_prev_sel_o"),
     $sformatf("%s.%s", par_hier, "state_in_sel_o"),
     $sformatf("%s.%s", par_hier, "add_state_in_sel_o"),
