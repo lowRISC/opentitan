@@ -27,8 +27,13 @@ class chip_sw_rom_e2e_ate_smoke_vseq extends
              cfg.sw_test_timeout_ns)
     `uvm_info(`gfn, "ROM SRAM initialization done.", UVM_LOW)
 
-    // TODO(timothytrippel): add wait for GPIO toggle.
+    // Wait for GPIO 0 (IOA5) to toggle.
+    `DV_WAIT(cfg.chip_vif.mios[top_earlgrey_pkg::MioPadIoa5] == '1,
+             $sformatf("Timed out waiting for IOA5 to go high."),
+             cfg.sw_test_timeout_ns)
 
+    // Set test passed.
+    override_test_status_and_finish(.passed(1'b1));
   endtask
 
 endclass : chip_sw_rom_e2e_ate_smoke_vseq

@@ -41,7 +41,7 @@ opentitan_test(
     },
     fpga = fpga_params(
         binaries = {
-            "//sw/device/silicon_creator/rom/e2e/ate/binaries:ate_gpio_toggle_test": "firmware",
+            "//sw/device/silicon_creator/rom/e2e/ate/binaries:ate_gpio_toggle_test_bins": "firmware",
         },
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
     ),
