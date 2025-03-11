@@ -116,7 +116,9 @@ module prim_diff_decode #(
         // we remain here as long as
         // the diff pair is correctly encoded
         IsStd: begin
-          if (diff_check_ok) begin
+          if (!diff_check_ok)
+            state_d = IsSkewed;
+          else begin
             level_d = level;
             if (diff_p_edge && diff_n_edge) begin
               if (level) begin
@@ -124,13 +126,6 @@ module prim_diff_decode #(
               end else begin
                 fall_o = 1'b1;
               end
-            end
-          end else begin
-            if (diff_p_edge || diff_n_edge) begin
-              state_d = IsSkewed;
-            end else begin
-              state_d = SigInt;
-              sigint_o = 1'b1;
             end
           end
         end
