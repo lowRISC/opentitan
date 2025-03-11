@@ -417,6 +417,17 @@ dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle) {
   return kDifOk;
 }
 
+dif_result_t dif_rstmgr_get_sw_reset_index(dt_rstmgr_t dt, dt_reset_t reset,
+                                           size_t *sw_rst_idx) {
+  size_t sw_reset_count = dt_rstmgr_sw_reset_count(dt);
+  for (*sw_rst_idx = 0; *sw_rst_idx < sw_reset_count; ++(*sw_rst_idx)) {
+    if (dt_rstmgr_sw_reset(dt, *sw_rst_idx) == reset) {
+      return kDifOk;
+    }
+  }
+  return kDifBadArg;
+}
+
 dif_result_t dif_rstmgr_fatal_err_code_get_codes(
     const dif_rstmgr_t *rstmgr, dif_rstmgr_fatal_err_codes_t *codes) {
   if (rstmgr == NULL || codes == NULL) {
