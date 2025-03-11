@@ -56,7 +56,7 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson",
         REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
-        REPO_TOP / "hw/top_earlgrey/ip/gpio/data/gpio.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/gpio/data/gpio.hjson",
     ],
 }
 
