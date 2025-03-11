@@ -32,7 +32,7 @@ load(
     "verilator_params",
 )
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
-load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -3703,6 +3703,11 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_darjeeling:sim_dv": None,
         },
+    ),
+    local_defines = opentitan_if_ip(
+        "usbdev",
+        ["OT_HAS_USBDEV"],
+        [],
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [

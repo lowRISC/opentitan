@@ -3,20 +3,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #if defined(OPENTITAN_IS_EARLGREY)
-#include "dt/dt_usbdev.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
+#include "dt/dt_usbdev.h"                  // Generated
+#include "sw/device/lib/dif/dif_usbdev.h"  // Generated
 
-#include "usbdev_regs.h"
+#include "usbdev_regs.h"  // Generated
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have a USB device
 #else
 #error "rstmgr_sw_rst_ctrl_test does not support this top"
 #endif
 
-#include "dt/dt_i2c.h"
-#include "dt/dt_rstmgr.h"
-#include "dt/dt_spi_device.h"
-#include "dt/dt_spi_host.h"
+#include "dt/dt_i2c.h"         // Generated
+#include "dt/dt_rstmgr.h"      // Generated
+#include "dt/dt_spi_device.h"  // Generated
+#include "dt/dt_spi_host.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -29,9 +29,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "i2c_regs.h"
-#include "spi_device_regs.h"
-#include "spi_host_regs.h"
+#include "i2c_regs.h"         // Generated
+#include "spi_device_regs.h"  // Generated
+#include "spi_host_regs.h"    // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -72,34 +72,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * multiple rounds, one per peripheral.
  */
 
-/**
- * TODO: temporary workaround embedded conditional top-specific constants
- * whilst per-IP DT customization is not enabled (which would define
- * an interface for getting the software resets of the rstmgr).
- */
-#if defined(OPENTITAN_IS_EARLGREY)
-typedef enum sw_resets {
-  kResetManagerSwResetsSpiDevice = 0,
-  kResetManagerSwResetsSpiHost0 = 1,
-  kResetManagerSwResetsSpiHost1 = 2,
-  kResetManagerSwResetsUsb = 3,
-  kResetManagerSwResetsUsbAon = 4,
-  kResetManagerSwResetsI2c0 = 5,
-  kResetManagerSwResetsI2c1 = 6,
-  kResetManagerSwResetsI2c2 = 7,
-  kResetManagerSwResetsLast = 7,
-} sw_resets_t;
-#elif defined(OPENTITAN_IS_DARJEELING)
-typedef enum sw_resets {
-  kResetManagerSwResetsSpiDevice = 0,
-  kResetManagerSwResetsSpiHost0 = 1,
-  kResetManagerSwResetsI2c0 = 2,
-  kResetManagerSwResetsLast = 2,
-} sw_resets_t;
-#else
-#error "rstmgr_sw_rst_ctrl_test does not support this top"
-#endif
-
 #define MAKE_INIT_FUNC(ip_)                                          \
   void ip_##_init(void *ip_, int32_t dt) {                           \
     CHECK_DIF_OK(dif##_##ip_##_init_from_dt((dt_##ip_##_t)dt, ip_)); \
@@ -111,21 +83,24 @@ typedef enum sw_resets {
                                 (dt_##ip_##_reg_block_t)reg_block); \
   }
 
-#if defined(OPENTITAN_IS_EARLGREY)
-MAKE_INIT_FUNC(usbdev);
-MAKE_BASE_ADDR_FUNC(usbdev)
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have a USB device
-#else
-#error "rstmgr_sw_rst_ctrl_test does not support this top"
-#endif
+#define MAKE_RSTMGR_RESET_FUNC(ip_)                                 \
+  dt_reset_t ip_##_rstmgr_reset(int32_t dt, int32_t device_reset) { \
+    return dt_##ip_##_reset((dt_##ip_##_t)dt,                       \
+                            (dt_##ip_##_reset_t)device_reset);      \
+  }
 
-MAKE_INIT_FUNC(spi_device);
-MAKE_BASE_ADDR_FUNC(spi_device);
-MAKE_INIT_FUNC(spi_host);
-MAKE_BASE_ADDR_FUNC(spi_host);
-MAKE_INIT_FUNC(i2c);
-MAKE_BASE_ADDR_FUNC(i2c);
+#define MAKE_TEST_FUNCS(ip_) \
+  MAKE_INIT_FUNC(ip_);       \
+  MAKE_BASE_ADDR_FUNC(ip_);  \
+  MAKE_RSTMGR_RESET_FUNC(ip_);
+
+#if defined(OT_HAS_USBDEV)
+MAKE_TEST_FUNCS(usbdev);
+#endif  // defined(OT_HAS_USBDEV)
+
+MAKE_TEST_FUNCS(spi_device);
+MAKE_TEST_FUNCS(spi_host);
+MAKE_TEST_FUNCS(i2c);
 
 static void spi_device_config(void *dif) {
   uintptr_t handle_address =
@@ -270,9 +245,18 @@ typedef struct test {
    */
   uint32_t program_val;
   /**
-   * The index in the reset manager for this device.
+   * The device-local DT reset index for this device. By using the
+   * corresponding dt instance, this is used to retrieve the correct
+   * index in the reset manager for this device.
    */
-  uint32_t reset_index;
+  int32_t reset_index;
+  /**
+   * The DT function for getting the reset manager index of the
+   * corresponding device for this test using the reset index.
+   *
+   * Cannot be `NULL`.
+   */
+  dt_reset_t (*get_rstmgr_rst_index)(int32_t dt, int32_t reset_index);
 } test_t;
 
 static const test_t kPeripherals[] = {
@@ -286,7 +270,8 @@ static const test_t kPeripherals[] = {
         .init = spi_device_init,
         .config = spi_device_config,
         .program_val = 0x3f0c,
-        .reset_index = kResetManagerSwResetsSpiDevice,
+        .reset_index = kDtSpiDeviceResetRst,
+        .get_rstmgr_rst_index = spi_device_rstmgr_reset,
     },
     {
         .name = "SPI_HOST0",
@@ -298,7 +283,8 @@ static const test_t kPeripherals[] = {
         .init = spi_host_init,
         .config = spi_host0_config,
         .program_val = 0x3210000,
-        .reset_index = kResetManagerSwResetsSpiHost0,
+        .reset_index = kDtSpiHostResetRst,
+        .get_rstmgr_rst_index = spi_host_rstmgr_reset,
     },
 #if defined(OPENTITAN_IS_EARLGREY)
     {
@@ -311,7 +297,8 @@ static const test_t kPeripherals[] = {
         .init = spi_host_init,
         .config = spi_host1_config,
         .program_val = 0x6540000,
-        .reset_index = kResetManagerSwResetsSpiHost1,
+        .reset_index = kDtSpiHostResetRst,
+        .get_rstmgr_rst_index = spi_host_rstmgr_reset,
     },
     {
         .name = "USB",
@@ -322,7 +309,8 @@ static const test_t kPeripherals[] = {
         .dif = &usbdev,
         .init = usbdev_init,
         .program_val = 0xc3,
-        .reset_index = kResetManagerSwResetsUsb,
+        .reset_index = kDtUsbdevResetRst,
+        .get_rstmgr_rst_index = usbdev_rstmgr_reset,
     },
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling does not have a USB Device, and only has 1 SPI Host
@@ -339,7 +327,8 @@ static const test_t kPeripherals[] = {
         .init = i2c_init,
         .config = i2c0_config,
         .program_val = 0x8b00cfe,
-        .reset_index = kResetManagerSwResetsI2c0,
+        .reset_index = kDtI2cResetRst,
+        .get_rstmgr_rst_index = i2c_rstmgr_reset,
     },
 #if defined(OPENTITAN_IS_EARLGREY)
     {
@@ -352,7 +341,8 @@ static const test_t kPeripherals[] = {
         .init = i2c_init,
         .config = i2c1_config,
         .program_val = 0x114010d8,
-        .reset_index = kResetManagerSwResetsI2c1,
+        .reset_index = kDtI2cResetRst,
+        .get_rstmgr_rst_index = i2c_rstmgr_reset,
     },
     {
         .name = "I2C2",
@@ -364,7 +354,8 @@ static const test_t kPeripherals[] = {
         .init = i2c_init,
         .config = i2c2_config,
         .program_val = 0x19ec1595,
-        .reset_index = kResetManagerSwResetsI2c2,
+        .reset_index = kDtI2cResetRst,
+        .get_rstmgr_rst_index = i2c_rstmgr_reset,
     },
 #elif defined(OPENTITAN_IS_DARJEELING)
 // Darjeeling only has 1 I2C Controller
@@ -385,16 +376,16 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
 
-#if defined(OPENTITAN_IS_EARLGREY)
+#if defined(OT_HAS_USBDEV)
   // For completeness reset USB_AON first, expecting no side-effects. The lame
   // check is that the rest of the test goes through with no problem.
-  CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, kResetManagerSwResetsUsbAon,
+  dt_reset_t reset = dt_usbdev_reset((dt_usbdev_t)0, kDtUsbdevResetRst);
+  size_t sw_reset_index;
+  CHECK_DIF_OK(
+      dif_rstmgr_get_sw_reset_index(kDtRstmgrAon, reset, &sw_reset_index));
+  CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, sw_reset_index,
                                          kDifRstmgrSoftwareReset));
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling has no USB Device to be reset.
-#else
-#error "rstmgr_sw_rst_ctrl_test does not support this top"
-#endif
+#endif  // defined(OT_HAS_USBDEV)
 
   uint32_t reset_vals[ARRAYSIZE(kPeripherals)];
   for (size_t i = 0; i < ARRAYSIZE(kPeripherals); ++i) {
@@ -422,7 +413,12 @@ bool test_main(void) {
   }
 
   for (size_t i = 0; i < ARRAYSIZE(kPeripherals); ++i) {
-    CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, kPeripherals[i].reset_index,
+    dt_reset_t reset_index = kPeripherals[i].get_rstmgr_rst_index(
+        kPeripherals[i].dt, kPeripherals[i].reset_index);
+    size_t sw_reset_index;
+    CHECK_DIF_OK(dif_rstmgr_get_sw_reset_index(kDtRstmgrAon, reset_index,
+                                               &sw_reset_index));
+    CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr, sw_reset_index,
                                            kDifRstmgrSoftwareReset));
 
     uint32_t got = read_test_reg(&kPeripherals[i]);
