@@ -825,16 +825,18 @@
       name: rom_e2e_bootstrap_ate_smoke
       uvm_test_seq: chip_sw_rom_e2e_ate_smoke_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/ate:ate_gpio_toggle_test:1:ot_flash_binary",
-        "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma:4"
+        // This test can also be run with the silicon_creator image, which uses a slower UART baudrate.
+        // "//sw/device/silicon_creator/rom/e2e/ate/binaries:ate_gpio_toggle_test:1:silicon_creator:signed",
+        "//sw/device/silicon_creator/rom/e2e/ate/binaries:ate_gpio_toggle_test:1:new_rules:signed",
+        "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized:4"
       ]
       en_run_modes: ["sw_test_mode_mask_rom"]
       run_opts: [
-        "+sw_test_timeout_ns=40000000",
+        "+sw_test_timeout_ns=1000000000",
         "+use_otp_image=OtpTypeCustom",
         "+skip_flash_bkdr_load=1",
       ]
-      run_timeout_mins: 480
+      run_timeout_mins: 800
     }
 
     // ROM func tests to be run with test ROM.

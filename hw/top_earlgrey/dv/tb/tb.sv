@@ -481,7 +481,9 @@ module tb;
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
       // Knob to skip flash backdoor loading (for ATE sims).
-      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) skip_flash_bkdr_load = 0;
+      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) begin
+        skip_flash_bkdr_load = 0;
+      end
       if (!skip_flash_bkdr_load) begin
         `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
       end
@@ -496,7 +498,9 @@ module tb;
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
               top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
       // Knob to skip flash backdoor loading (for ATE sims).
-      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) skip_flash_bkdr_load = 0;
+      if (!$value$plusargs("skip_flash_bkdr_load=%0b", skip_flash_bkdr_load)) begin
+        skip_flash_bkdr_load = 0;
+      end
       if (!skip_flash_bkdr_load) begin
         `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
       end
