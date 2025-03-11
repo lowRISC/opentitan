@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 module tlul_assert #(
-  parameter EndpointType = "Device" // can be either "Host" or "Device"
+  parameter string EndpointType = "Device" // can be either "Host" or "Device"
 ) (
   input clk_i,
   input rst_ni,
