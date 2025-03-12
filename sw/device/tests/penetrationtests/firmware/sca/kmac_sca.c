@@ -474,15 +474,18 @@ status_t handle_kmac_pentest_init(ujson_t *uj) {
 
   kmac_block_until_idle();
 
-  // Disable the instruction cache and dummy instructions for better SCA
-  // measurements.
-  pentest_configure_cpu(uj_cpuctrl.icache_disable,
-                        uj_cpuctrl.dummy_instr_disable);
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_cpuctrl.icache_disable, uj_cpuctrl.dummy_instr_disable,
+      uj_cpuctrl.enable_jittery_clock, uj_cpuctrl.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
   TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }
