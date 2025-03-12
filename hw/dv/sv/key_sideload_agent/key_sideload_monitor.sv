@@ -9,7 +9,7 @@ class key_sideload_monitor #(
     .CFG_T  (key_sideload_agent_cfg#(KEY_T)),
     .COV_T  (key_sideload_agent_cov#(KEY_T))
   );
-  `uvm_component_utils(key_sideload_monitor#(KEY_T))
+  `uvm_component_param_utils(key_sideload_monitor#(KEY_T))
 
   // the base class provides the following handles for use:
   // key_sideload_agent_cfg: cfg

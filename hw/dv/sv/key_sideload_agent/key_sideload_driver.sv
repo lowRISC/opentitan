@@ -6,7 +6,7 @@ class key_sideload_driver#(
     parameter type KEY_T = keymgr_pkg::hw_key_req_t
 ) extends dv_base_driver #(.ITEM_T(key_sideload_item#(KEY_T)),
                            .CFG_T (key_sideload_agent_cfg#(KEY_T)));
-  `uvm_component_utils(key_sideload_driver#(KEY_T))
+  `uvm_component_param_utils(key_sideload_driver#(KEY_T))
 
   // the base class provides the following handles for use:
   // key_sideload_agent_cfg: cfg
