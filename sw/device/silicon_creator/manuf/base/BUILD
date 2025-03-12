@@ -407,17 +407,17 @@ offline_signature_attach(
     ],
     ecdsa_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:ecdsa_signatures",
-    ] + [
+    ] + depset([
         "{}:ecdsa_signatures".format(data["signature_prefix"])
         for sku, data in EARLGREY_SKUS.items()
         if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
-    ],
+    ]).to_list(),
     spx_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:spx_signatures",
-    ] + [
+    ] + depset([
         "{}:spx_signatures".format(data["signature_prefix"])
         for sku, data in EARLGREY_SKUS.items()
         if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
-    ],
+    ]).to_list(),
     tags = ["manual"],
 )
