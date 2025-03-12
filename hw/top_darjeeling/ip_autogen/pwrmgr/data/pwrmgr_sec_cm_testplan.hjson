@@ -68,7 +68,7 @@
               tb.dut.rom_ctrl_i
             '''
       stage: V2S
-      tests: ["pwrmgr_sec_cm_rom_ctrl_intersig_mubi"]
+      tests: ["pwrmgr_wakeup_reset", "pwrmgr_repeat_wakeup_reset"]
     }
     {
       name: sec_cm_rstmgr_intersig_mubi

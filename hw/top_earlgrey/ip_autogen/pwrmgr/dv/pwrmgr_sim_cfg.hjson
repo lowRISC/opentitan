@@ -101,11 +101,6 @@
       run_opts: ["+test_timeout_ns=3000000", "+pwrmgr_mubi_mode=PwrmgrMubiLcCtrl"]
     }
     {
-      name: pwrmgr_sec_cm_rom_ctrl_intersig_mubi
-      uvm_test_seq: pwrmgr_repeat_wakeup_reset_vseq
-      run_opts: ["+test_timeout_ns=4000000", "+pwrmgr_mubi_mode=PwrmgrMubiRomCtrl"]
-    }
-    {
       name: pwrmgr_sec_cm_rstmgr_intersig_mubi
       uvm_test_seq: pwrmgr_sw_reset_vseq
       run_opts: ["+test_timeout_ns=1000000"]
