@@ -2388,8 +2388,14 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler();
 
-  // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_data.icache_disable, uj_data.dummy_instr_disable,
+      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
@@ -2407,9 +2413,8 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
       &rv_core_ibex));
 
   // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
   TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
