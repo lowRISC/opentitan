@@ -66,7 +66,7 @@ package aes_env_pkg;
   } cfg_error_type_t;
 
   // used in FI verification seq and if
-  localparam int StateWidth = 6;
+  localparam int StateWidth = GhashStateWidth;
 
 
   // Pick a name for this interface, under which it will be registered with the UVM DB. This is
