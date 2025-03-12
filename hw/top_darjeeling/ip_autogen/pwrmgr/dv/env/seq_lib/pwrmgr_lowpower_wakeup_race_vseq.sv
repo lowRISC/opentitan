@@ -31,7 +31,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     wakeups_t prior_reasons = '0;
     bit prior_fall_through = '0;
     bit prior_abort = '0;
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
@@ -84,21 +84,24 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
 
       wait_for_fast_fsm(FastFsmInactive);
 
-      // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
-      // This read will not work in the chip, since the processor will be asleep.
-      // We wait until the cycle following the fast fsm lc_rst release.
-      if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
-        wait_for_lc_rst_release();
-        check_wake_status(wakeups & wakeups_en);
-        `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
-      end
-      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
+      fork
+        wait_for_rom_and_active();
+        begin
+          // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
+          // This read will not work in the chip, since the processor will be asleep.
+          // We wait until the cycle following the fast fsm lc_rst release.
+          if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
+            wait_for_lc_rst_release();
+            check_wake_status(wakeups & wakeups_en);
+            `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
+          end
+          wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
-      // Send more wakeups to make sure they are reported in CSRs. With this all enabled
-      // wakeups should be registered.
-      cfg.pwrmgr_vif.update_wakeups('1);
-
-      wait_for_fast_fsm(FastFsmActive);
+          // Send more wakeups to make sure they are reported in CSRs. With this all enabled
+          // wakeups should be registered.
+          cfg.pwrmgr_vif.update_wakeups('1);
+        end
+      join
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
       // make this check parallel.
@@ -115,6 +118,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
                                .prior_fall_through(prior_fall_through), .prior_abort(prior_abort));
         end
       join
+      `uvm_info(`gfn, "done with checks for reset and wakeup", UVM_MEDIUM)
       // This is the expected side-effect of the low power entry reset, since the source of the
       // non-aon wakeup sources will deassert it as a consequence of their reset.
       // Some aon wakeups may remain active until software clears them. If they didn't, such wakeups
@@ -130,6 +134,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
 
       // Wait for interrupt to be generated whether or not it is enabled.
       cfg.slow_clk_rst_vif.wait_clks(10);
+      `uvm_info(`gfn, "in check_and_clear_interrupt", UVM_MEDIUM)
       check_and_clear_interrupt(.expected(1'b1));
     end
     clear_wake_info();

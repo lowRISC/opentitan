@@ -18,6 +18,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   localparam int MaxCyclesBeforeEnable = 12;
 
+  import pwrmgr_reg_pkg::NumRomInputs;
+
   typedef enum int {
     FastFsmActive,
     FastFsmInactive
@@ -47,9 +49,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Random delays.
   rand int               cycles_before_clks_ok;
   rand int               cycles_between_clks_ok;
-  rand int               cycles_before_io_status;
-  rand int               cycles_before_main_status;
-  rand int               cycles_before_usb_status;
+% for clk in src_clks:
+  rand int               cycles_before_${clk}_status;
+% endfor
   rand int               cycles_before_rst_lc_src;
   rand int               cycles_before_rst_sys_src;
   rand int               cycles_before_otp_done;
@@ -58,9 +60,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int               cycles_before_reset;
 
   // Slow responder delays.
-  rand int               cycles_before_core_clk_en;
-  rand int               cycles_before_io_clk_en;
-  rand int               cycles_before_usb_clk_en;
+% for clk in src_clks:
+  rand int               cycles_before_${clk}_clk_en;
+% endfor
   rand int               cycles_before_main_pok;
 
   // This tracks the local objection count from these responders. We do not use UVM
@@ -71,28 +73,25 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
-  constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
-  constraint cycles_before_main_status_c {cycles_before_main_status inside {[0 : 4]};}
-  constraint cycles_before_usb_status_c {cycles_before_usb_status inside {[0 : 4]};}
+% for clk in src_clks:
+  constraint cycles_before_${clk}_status_c {cycles_before_${clk}_status inside {[0 : 4]};}
+% endfor
   constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
   constraint cycles_before_rst_sys_src_base_c {cycles_before_rst_sys_src inside {[0 : 4]};}
   constraint cycles_before_otp_done_base_c {cycles_before_otp_done inside {[0 : 4]};}
   constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
   constraint cycles_before_reset_c {cycles_before_reset inside {[2 : 6]};}
-  constraint cycles_before_core_clk_en_c {
-    cycles_before_core_clk_en inside {[1 : MaxCyclesBeforeEnable]};
+% for clk in src_clks:
+<% adjustment = ' - 2' if clk == 'io' else '' %>\
+  constraint cycles_before_${clk}_clk_en_c {
+    cycles_before_${clk}_clk_en inside {[1 : MaxCyclesBeforeEnable${adjustment}]};
   }
-  constraint cycles_before_io_clk_en_c {
-    cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 2]};
-  }
-  constraint cycles_before_usb_clk_en_c {
-    cycles_before_usb_clk_en inside {[1 : MaxCyclesBeforeEnable]};
-  }
+% endfor
   constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : MaxCyclesBeforeEnable]};}
 
   // This is used to trigger a software reset, as per rstmgr's `reset_req` CSR.
-  prim_mubi_pkg::mubi4_t sw_rst_from_rstmgr = prim_mubi_pkg::MuBi4False;
+  mubi4_t sw_rst_from_rstmgr = MuBi4False;
 
   bit do_pwrmgr_init = 1'b1;
   // This static variable is incremented in each pre_start and decremented in each post_start.
@@ -103,9 +102,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // This stops randomizing cycles counts that select from a pipeline, since
   // changes can lead to missing or unexpected transitions.
   task stop_randomizing_cycles();
-    cycles_before_core_clk_en.rand_mode(0);
-    cycles_before_io_clk_en.rand_mode(0);
-    cycles_before_usb_clk_en.rand_mode(0);
+% for clk in src_clks:
+    cycles_before_${clk}_clk_en.rand_mode(0);
+% endfor
     cycles_before_main_pok.rand_mode(0);
   endtask
 
@@ -159,15 +158,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     end
 
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
-
-    // There is tb lock up case
-    // when reset come while rom_ctrl = {false, false}.
-    // So we need rom_ctrl driver runs in parallel with
-    // wait_for_fast_fsm(FastFsmActive)
-    fork
-      wait_for_fast_fsm(FastFsmActive);
-      init_rom_response();
-    join
+    update_roms_response(.done(MuBi4True), .good(MuBi4True));
+    wait_for_fast_fsm(FastFsmActive);
     // And drive the cpu not sleeping.
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
   endtask
@@ -215,8 +207,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     // And wait until the responders settle with all okay from the AST.
     `DV_WAIT(
         cfg.pwrmgr_vif.pwr_ast_rsp.main_pok &&
-             cfg.pwrmgr_vif.pwr_ast_rsp.core_clk_val &&
-             cfg.pwrmgr_vif.pwr_ast_rsp.io_clk_val)
+% for clk in [c for c in src_clks if c != 'usb']:
+<%
+  ast_clk = 'core' if clk == 'main' else clk
+  op = ')' if loop.last else ' &&'
+%>\
+             cfg.pwrmgr_vif.pwr_ast_rsp.${ast_clk}_clk_val${op}
+% endfor
     `uvm_info(`gfn, $sformatf("Out of apply_reset kind='%0s'", kind), UVM_MEDIUM)
   endtask
 
@@ -305,46 +302,44 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Uses macros because VCS flags an error for assignments to automatic variables,
   // even if the variable is a ref to an interface variable.
 
-  `define SLOW_DETECT(rsp_name_, req_) \
-      forever \
-        @req_ begin \
-          raise_slow_objection(rsp_name_); \
-          `uvm_info(`gfn, $sformatf( \
-                    "slow_responder: Will drive %0s to %b", rsp_name_, req_), UVM_MEDIUM) \
+  `define SLOW_DETECT(rsp_name_, req_) ${"\\"}
+      forever ${"\\"}
+        @req_ begin ${"\\"}
+          raise_slow_objection(rsp_name_); ${"\\"}
+          `uvm_info(`gfn, $sformatf( ${"\\"}
+                    "slow_responder: Will drive %0s to %b", rsp_name_, req_), UVM_MEDIUM) ${"\\"}
         end
 
-  `define SLOW_SHIFT_SR(req_, rsp_sr_) \
-      forever \
-        @cfg.slow_clk_rst_vif.cb begin \
-          rsp_sr_ = {rsp_sr_[MaxCyclesBeforeEnable-1:0], req_}; \
+  `define SLOW_SHIFT_SR(req_, rsp_sr_) ${"\\"}
+      forever ${"\\"}
+        @cfg.slow_clk_rst_vif.cb begin ${"\\"}
+          rsp_sr_ = {rsp_sr_[MaxCyclesBeforeEnable-1:0], req_}; ${"\\"}
         end
 
-  `define SLOW_ASSIGN(rsp_name_, cycles_, rsp_sr_, rsp_) \
-      forever \
-        @(rsp_sr_[cycles_]) begin \
-          `uvm_info(`gfn, $sformatf( \
-                    "slow_responder: Driving %0s to %b after %0d AON cycles.", \
-                    rsp_name_, \
-                    rsp_sr_[cycles_], \
-                    cycles_ \
-                    ), UVM_MEDIUM) \
-          rsp_ <= rsp_sr_[cycles_]; \
-          drop_slow_objection(rsp_name_); \
+  `define SLOW_ASSIGN(rsp_name_, cycles_, rsp_sr_, rsp_) ${"\\"}
+      forever ${"\\"}
+        @(rsp_sr_[cycles_]) begin ${"\\"}
+          `uvm_info(`gfn, $sformatf( ${"\\"}
+                    "slow_responder: Driving %0s to %b after %0d AON cycles.", ${"\\"}
+                    rsp_name_, ${"\\"}
+                    rsp_sr_[cycles_], ${"\\"}
+                    cycles_ ${"\\"}
+                    ), UVM_MEDIUM) ${"\\"}
+          rsp_ <= rsp_sr_[cycles_]; ${"\\"}
+          drop_slow_objection(rsp_name_); ${"\\"}
         end
 
   task slow_responder();
-    logic [MaxCyclesBeforeEnable:0] core_clk_val_sr;
-    logic [MaxCyclesBeforeEnable:0] io_clk_val_sr;
-    logic [MaxCyclesBeforeEnable:0] usb_clk_val_sr;
+% for clk in src_clks:
+    logic [MaxCyclesBeforeEnable:0] ${clk}_clk_val_sr;
+% endfor
     logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
     fork
-      `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
-      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
-      `SLOW_ASSIGN("core_clk_val", cycles_before_core_clk_en, core_clk_val_sr,
-                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
-
-      `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en)
-      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
+% for clk in src_clks:
+<% ast_clk = 'core' if clk == 'main' else clk %>\
+      `SLOW_DETECT("${clk}_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.${ast_clk}_clk_en)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.${ast_clk}_clk_en, ${clk}_clk_val_sr)
+  % if clk == 'io':
       // Notice this splits updates due to io_clk_en in two processes: with a single process
       // and a wait inside a quick sequence of changes would cause skipping some update, per
       // SV scheduling semantics.
@@ -373,12 +368,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val <= new_value;
           drop_slow_objection("io_clk_val");
         end
+  % else:
+      `SLOW_ASSIGN("${clk}_clk_val", cycles_before_${clk}_clk_en, ${clk}_clk_val_sr,
+                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.${ast_clk}_clk_val)
+  % endif
 
-      `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en)
-      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
-      `SLOW_ASSIGN("usb_clk_val", cycles_before_usb_clk_en, usb_clk_val_sr,
-                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
-
+% endfor
       `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
       `SLOW_ASSIGN("main_pok", cycles_before_main_pok, main_pd_val_sr,
@@ -397,13 +392,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // - Completes handshake with lc and otp: *_done needs to track *_init.
   // Macros for the same reason as the slow responder.
 
-  `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) \
-          `uvm_info(`gfn, $sformatf( \
-                    "fast_responder %s: Will drive %0s to %b in %0d fast clock cycles", \
-                    rsp_name, rsp_name, req, cycles), UVM_HIGH) \
-          cfg.clk_rst_vif.wait_clks(cycles); \
-          rsp <= req; \
-          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), UVM_HIGH) \
+  `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) ${"\\"}
+          `uvm_info(`gfn, $sformatf( ${"\\"}
+                    "fast_responder %s: Will drive %0s to %b in %0d fast clock cycles", ${"\\"}
+                    rsp_name, rsp_name, req, cycles), UVM_HIGH) ${"\\"}
+          cfg.clk_rst_vif.wait_clks(cycles); ${"\\"}
+          rsp <= req; ${"\\"}
+          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), UVM_HIGH) ${"\\"}
 
 
   task fast_responder();
@@ -434,7 +429,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             clear_escalation_reset();
             clear_ndm_reset();
             cfg.pwrmgr_vif.update_resets('0);
-            cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
+            cfg.pwrmgr_vif.update_sw_rst_req(MuBi4False);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_fast_objection("rst_lc_src_n");
@@ -449,6 +444,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           drop_fast_objection("rst_sys_src_n");
         end
 
+% for clk in src_clks:
+  % if clk == 'io':
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
           logic new_value = cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en;
@@ -471,23 +468,17 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     ), UVM_HIGH)
           drop_fast_objection("io_status");
         end
-
+  % else:
       forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
-          raise_fast_objection("main_status");
-          `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.${clk}_ip_clk_en begin
+          raise_fast_objection("${clk}_status");
+          `FAST_RESPONSE_ACTION("${clk}_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.${clk}_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.${clk}_ip_clk_en,
                                 cycles_before_main_status)
-          drop_fast_objection("main_status");
+          drop_fast_objection("${clk}_status");
         end
-      forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
-          raise_fast_objection("usb_status");
-          `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
-                                cycles_before_usb_status)
-          drop_fast_objection("usb_status");
-        end
+  % endif
+% endfor
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init begin
           raise_fast_objection("lc_done");
@@ -566,10 +557,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task update_control_csr();
     fork
       begin
-        ral.control.core_clk_en.set(control_enables.core_clk_en);
-        ral.control.io_clk_en.set(control_enables.io_clk_en);
+% for clk in src_clks:
+<% ral_clk = 'core' if clk == 'main' else clk %>\
+  % if clk == 'usb':
         ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
         ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
+  % else:
+        ral.control.${ral_clk}_clk_en.set(control_enables.${clk}_clk_en);
+  % endif
+% endfor
         ral.control.main_pd_n.set(control_enables.main_pd_n);
         ral.control.low_power_hint.set(low_power_hint);
         // Disable assertions when main power is down.
@@ -599,6 +595,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.update_lc_idle(lc_idle);
     cfg.pwrmgr_vif.update_otp_idle(otp_idle);
   endtask
+
+  // This checks the CPU is enabled, use it to start CSR activity.
+  function bit cpu_is_enabled();
+    return cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On;
+  endfunction
 
   // Waits for the fast fsm becoming active or inactive, indicated by the
   // fetch_en output going On or Off respectively.
@@ -785,59 +786,71 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.glitch_power_reset();
   endtask
 
-  // bad_bits = {done, good}
-  task add_rom_rsp_noise();
-    bit [MUBI4W*2-1:0] bad_bits;
-    int delay;
-
-    repeat (10) begin
-      delay = $urandom_range(5, 10);
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_bits,
-                                         bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4True;
-                                         bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4False;
-                                         bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4False;
-                                         bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4True;)
-      `uvm_info(`gfn, $sformatf("add_rom_rsp_noise to 0x%x", bad_bits), UVM_HIGH)
-      cfg.pwrmgr_vif.rom_ctrl[0] = bad_bits;
-      #(delay * 10ns);
+  // This sets rom_ctrl responses.
+  function void update_roms_response(mubi4_t done = MuBi4True, mubi4_t good = MuBi4True);
+    // Set all to true.
+    for (int r = 0; r < NumRomInputs; ++r) begin
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, r);
     end
-  endtask : add_rom_rsp_noise
+  endfunction
 
-  // Drive rom_ctrl at post reset stage
-  virtual task init_rom_response();
-    if (cfg.pwrmgr_vif.rom_ctrl[0].done != prim_mubi_pkg::MuBi4True) begin
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(10);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-      cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
+  // Randomize roms response.
+  // This can be called after a reset before the fast fsm is active to check the
+  // rom response handling.
+  task randomize_roms_response();
+    mubi4_t done;
+    mubi4_t good;
+    int rom_index;
+    // Randomize all without setting done to True.
+    repeat (5) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rom_index, rom_index inside {[0:NumRomInputs-1]};)
+      done = get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(1));
+      good = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, rom_index);
+      cfg.clk_rst_vif.wait_clks(5);
     end
+    // Set done to true and randomize good without setting it to True.
+    // Notice this can lead to a transition to active state depending on some lc inputs.
+    update_roms_response(.done(MuBi4True), .good(MuBi4False));
+    `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
+    repeat (5) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rom_index, rom_index inside {[0:NumRomInputs-1]};)
+      done = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      good = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, rom_index);
+      cfg.clk_rst_vif.wait_clks(5);
+    end
+    // Set all to true.
+    update_roms_response(.done(MuBi4True), .good(MuBi4True));
     `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
+  endtask : randomize_roms_response
+
+  // Drive rom_ctrl during a reset to randomly check rom responses.
+  virtual task wait_for_rom_and_active();
+    // Do nothing if the fast fsm is active and cpu is enabled.
+    if (cpu_is_enabled()) return;
+    // First make sure the rom will block transition to active.
+    `uvm_info(`gfn, "Started wait_for_rom_and_active", UVM_MEDIUM)
+    cfg.pwrmgr_vif.update_rom_ctrl('{default: MuBi4False}, 0);
+    fork
+      randomize_roms_response();
+      wait_for_fast_fsm(FastFsmActive);
+    join
+    `uvm_info(`gfn, "Finished wait_for_rom_and_active", UVM_MEDIUM)
+  endtask
+
+  // Control assertions in rom_ctrl synchronizers since they check for stability and the rom_ctrl
+  // randomization can trip them.
+  task control_rom_ctrl_sync_assertions(bit enable);
+    if (enable) begin
+  % for rom in range(NumRomInputs):
+      $asserton(0, "tb.dut.u_cdc.gen_rom_inputs[${rom}].u_sync_rom_ctrl");
+% endfor
+    end else begin
+  % for rom in range(NumRomInputs):
+      $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[${rom}].u_sync_rom_ctrl");
+% endfor
+    end
   endtask
 
 endclass : pwrmgr_base_vseq

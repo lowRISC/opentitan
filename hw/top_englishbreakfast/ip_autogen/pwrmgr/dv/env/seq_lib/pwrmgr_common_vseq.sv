@@ -37,6 +37,14 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(1));
   endtask : rand_reset_eor_clean_up
 
+  // SVA control to handle side-effects of fault injections.
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    if (!uvm_re_match("*.u_fsm.u_state_regs*", if_proxy.path)) begin
+      if (!enable) $assertoff(0, "tb.dut.pwrmgr_sec_cm_checker_assert.RomBlockActiveState_A");
+      else         $asserton(0, "tb.dut.pwrmgr_sec_cm_checker_assert.RomBlockActiveState_A");
+    end
+  endfunction
+
   // pwrmgr has three alert events
   // REG_INTG_ERR, ESC_TIMEOUT and MAIN_PD_GLITCH
   // all others will trigger only reset.

@@ -533,20 +533,20 @@
 
         { bits: "4",
           name: "CORE_CLK_EN",
-          desc: "core clock enable during low power state",
-          resval: "0"
+          desc: "Core clock enable during low power state",
+          resval: "0",
           enum: [
             { value: "0",
               name: "Disabled",
               desc: '''
-                Core clock disabled during low power state
-                '''
+                    Core clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                Core clock enabled during low power state
-                '''
+	            Core clock enabled during low power state
+		    '''
             },
           ]
         },
@@ -554,19 +554,19 @@
         { bits: "5",
           name: "IO_CLK_EN",
           desc: "IO clock enable during low power state",
-          resval: "0"
+          resval: "0",
           enum: [
             { value: "0",
               name: "Disabled",
               desc: '''
-                IO clock disabled during low power state
-                '''
+                    IO clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                IO clock enabled during low power state
-                '''
+	            IO clock enabled during low power state
+		    '''
             },
           ]
         },
@@ -579,17 +579,17 @@
             { value: "0",
               name: "Disabled",
               desc: '''
-                USB clock disabled during low power state
-                '''
+                    USB clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                USB clock enabled during low power state.
+	            USB clock enabled during low power state.
 
-                However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled
-                during low power state.
-                '''
+                    However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled
+                    during low power state.
+		    '''
             },
           ]
         },
@@ -633,8 +633,6 @@
             },
           ]
         },
-
-
       ],
     },
 
