@@ -24,7 +24,7 @@ package ${module_instance_name}_env_pkg;
   parameter uint FILTER_CYCLES = 16;
   // No. of alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
   // No. of input period counters
   parameter uint NUM_INP_PRD_CNT = ${num_inp_period_counters};
 

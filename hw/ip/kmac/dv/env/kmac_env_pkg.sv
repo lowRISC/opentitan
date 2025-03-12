@@ -67,7 +67,7 @@ package kmac_env_pkg;
   parameter uint HASH_CNT_WIDTH = 10;
   // alerts
   parameter uint NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"recov_operation_err", "fatal_fault_err"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_operation_err", "fatal_fault_err"};
 
   parameter uint NUM_EDN = 1;
 

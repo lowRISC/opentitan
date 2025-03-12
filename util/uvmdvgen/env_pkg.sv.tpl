@@ -28,8 +28,8 @@ package ${name}_env_pkg;
   // parameters
 % if has_alerts:
   // TODO: add the names of alerts in order
-  parameter string LIST_OF_ALERTS[] = {};
   parameter uint   NUM_ALERTS = ;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {};
 % endif
 
   // types
