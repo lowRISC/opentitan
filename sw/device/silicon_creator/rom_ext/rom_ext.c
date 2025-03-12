@@ -59,7 +59,7 @@ extern char _rom_ext_start_address[];
 extern const char _rom_chip_info_start[];
 
 // Life cycle state of the chip.
-lifecycle_state_t lc_state = kLcStateProd;
+lifecycle_state_t lc_state;
 
 // Owner configuration details parsed from the onwer info pages.
 owner_config_t owner_config;
