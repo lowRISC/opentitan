@@ -6,35 +6,39 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   `uvm_object_utils(ac_range_check_smoke_vseq)
 
   // Constraints
-  // extern constraint range_limit_c;
-  extern constraint range_racl_policy_c;
+  extern constraint num_trans_c;
   extern constraint tmp_c;
+  extern constraint range_c;
+  extern constraint range_racl_policy_c;
+  extern constraint tl_main_vars_addr_c;
+  extern constraint tl_main_vars_mask_c;
 
   // Standard SV/UVM methods
   extern function new(string name="");
   extern task body();
 endclass : ac_range_check_smoke_vseq
 
+
+constraint ac_range_check_smoke_vseq::num_trans_c {
+  num_trans inside {[50:100]};
+}
+
 // TODO remove this temporary directed constraint
 constraint ac_range_check_smoke_vseq::tmp_c {
   foreach (dut_cfg.range_base[i]) {
-    dut_cfg.range_base[i]                   == 32'h7654_2500;
-    dut_cfg.range_limit[i]                  == 32'h7654_2600;
     dut_cfg.range_perm[i].log_denied_access == 1;
-    dut_cfg.range_perm[i].execute_access    == 1;
-    dut_cfg.range_perm[i].write_access      == 1;
-    dut_cfg.range_perm[i].read_access       == 1;
-    dut_cfg.range_perm[i].enable            == 1;
   }
 }
 
-// TODO uncomment that constraint
-// constraint ac_range_check_smoke_vseq::range_limit_c {
-//   solve dut_cfg.range_base before dut_cfg.range_limit;
-//   foreach (dut_cfg.range_limit[i]) {
-//     dut_cfg.range_limit[i] > dut_cfg.range_base[i];
-//   }
-// }
+constraint ac_range_check_smoke_vseq::range_c {
+  solve dut_cfg.range_base before dut_cfg.range_limit;
+  foreach (dut_cfg.range_limit[i]) {
+    // Limit always greater than base
+    dut_cfg.range_limit[i] > dut_cfg.range_base[i];
+    // Range size in 32-bit words, it shouldn't be too large and let it be 1 word size
+    ((dut_cfg.range_limit[i] - dut_cfg.range_base[i]) >> 2) inside {[1:49]};
+  }
+}
 
 constraint ac_range_check_smoke_vseq::range_racl_policy_c {
   foreach (dut_cfg.range_racl_policy[i]) {
@@ -43,27 +47,37 @@ constraint ac_range_check_smoke_vseq::range_racl_policy_c {
   }
 }
 
+constraint ac_range_check_smoke_vseq::tl_main_vars_addr_c {
+  solve dut_cfg.range_base before tl_main_vars;
+  solve dut_cfg.range_limit before tl_main_vars;
+  solve range_idx before tl_main_vars;
+  tl_main_vars.addr dist {
+    // 98% more or less inside range, this will allow us to also test the range boundaries, as this
+    // is usually where bug are found (+/-2*32-bit words -> -8 for the range_base and +4 for the
+    // range_limit as range_limit is exclusive)
+    [dut_cfg.range_base[range_idx]-8  : dut_cfg.range_limit[range_idx]+4] :/ 98,
+    // 1% on the lowest part of the range
+    [0                                : 9                               ] :/ 1,
+    // 1% on the uppermost part of the range
+    [2^NUM_RANGES-10                  : 2^NUM_RANGES-1                  ] :/ 1
+  };
+};
+
+constraint ac_range_check_smoke_vseq::tl_main_vars_mask_c {
+  soft tl_main_vars.mask == 'hF;
+};
+
 function ac_range_check_smoke_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
 task ac_range_check_smoke_vseq::body();
-  // TODO, remove this chunk and make it random later
-  dut_cfg.tl_main_vars.rand_write = 0;
-  dut_cfg.tl_main_vars.write      = 0;
-  dut_cfg.tl_main_vars.rand_addr  = 0;
-  dut_cfg.tl_main_vars.addr       = 'h7654_24FF;
-  dut_cfg.tl_main_vars.rand_mask  = 0;
-  dut_cfg.tl_main_vars.mask       = 'hF;
-  dut_cfg.tl_main_vars.rand_data  = 0;
-  dut_cfg.tl_main_vars.data       = 'hABCD_FE97;
+  for (int i=1; i<=num_trans; i++) begin
+    `uvm_info(`gfn, $sformatf("Starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
-  // Out of range address
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
-
-  // In range address
-  dut_cfg.tl_main_vars.addr       = 'h7654_25F1;
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
-  dut_cfg.tl_main_vars.addr       = 'h7654_2500;
-  send_single_tl_unfilt_tr(dut_cfg.tl_main_vars);
+    `DV_CHECK_RANDOMIZE_FATAL(this)
+    ac_range_check_init();
+    send_single_tl_unfilt_tr();
+    $display("\n");
+  end
 endtask : body
