@@ -223,11 +223,9 @@
       desc: '''
             Verify the countermeasure(s) GHASH.FSM.SPARSE.
             It is ensured that upon forcing the state register of the GHASH FSM to an invalid value, the DUT stops processing data, locks up and triggers a fatal alert.
-
-            Note: The corresponding DV changes to enable testing this countermeasure are upstreamed in a different PR.
             '''
       stage: V2S
-      tests: ["TODO"]
+      tests: ["aes_fi"]
     }
     {
       name: sec_cm_ctrl_sparse

@@ -6,7 +6,7 @@
 // CTR mode FSMs. Each of these FSMs is replicated three times (multi-rail control logic). The
 // FSMs themselves use sparse state encodings.
 // The test then checks that the DUT triggers a fatal alert and cannot proceed until a reset
-// is triggered.
+// is triggered. The GHASH FSM is also forced but this one is currently not replicated.
 class aes_fi_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_fi_vseq)
 
@@ -17,7 +17,7 @@ class aes_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
-  typedef enum int { main_fsm = 0, cipher_fsm = 1, ctr_fsm = 2 } fi_t;
+  typedef enum int { main_fsm = 0, cipher_fsm = 1, ctr_fsm = 2, ghash_fsm = 3} fi_t;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
@@ -38,18 +38,35 @@ class aes_fi_vseq extends aes_base_vseq;
       begin: isolation_fork
         fork
           error: begin
-            // avoid forcing IDLE
-            if (!randomize(force_state) with { force_state != 6'b100100;}) begin
-              `uvm_fatal(`gfn, $sformatf("Randomization failed"))
-            end
             if (!randomize(if_num) with { if_num inside { [0:2] };}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             if (!randomize(fi_target)) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
+            if (fi_target != ghash_fsm) begin
+              // For the main, cipher core and CTR mode FSMs, we can force any rail to any value
+              // to trigger an alert.
+              if (!randomize(force_state)) begin
+                `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+              end
+            end else begin
+              // For the GHASH FSM, we have to force an invalid value to trigger an alert.
+              if (!randomize(force_state)
+                  with { !(force_state inside { GHASH_IDLE,
+                                                GHASH_MULT,
+                                                GHASH_ADD_S,
+                                                GHASH_OUT,
+                                                GHASH_MASKED_INIT,
+                                                GHASH_MASKED_ADD_STATE_SHARES,
+                                                GHASH_MASKED_ADD_CORR,
+                                                GHASH_MASKED_SETTLE});}) begin
+                `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+              end
+            end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
-            `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_state, if_num), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf("FORCING target %0d on if[%0d] to %h",
+                                      fi_target, if_num, force_state), UVM_MEDIUM)
             force_signal(fi_target, FORCE, if_num);
             wait_for_alert_clear = 1;
             cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
@@ -93,6 +110,10 @@ class aes_fi_vseq extends aes_base_vseq;
       ctr_fsm: begin
         if (!rel) cfg.aes_ctr_fi_vif[if_num].force_state(force_state);
         else cfg.aes_ctr_fi_vif[if_num].release_state();
+      end
+
+      ghash_fsm: begin
+        cfg.aes_ghash_fi_vif.force_signal(0, rel, force_state);
       end
 
       default: begin
