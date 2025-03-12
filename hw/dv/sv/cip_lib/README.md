@@ -375,8 +375,8 @@ from this CIP library class, please follow the steps below:
   Please make sure the alert names and order are correct.
   For example in `otp_ctrl_env_pkg.sv`:
   ```systemverilog
-  parameter string LIST_OF_ALERTS[] = {"fatal_macro_error", "fatal_check_error"};
-  parameter uint NUM_ALERTS         = 2;
+  parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_macro_error", "fatal_check_error"};
   ```
 * **${ip_name}_env_cfg.sv**: In function `initialize()`, assign `LIST_OF_ALERTS`
   parameter to `list_of_alerts` variable which is created in `cip_base_env_cfg.sv`.

@@ -25,7 +25,7 @@ package mbx_env_pkg;
 
   // parameters
   parameter int unsigned NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault", "recov_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault", "recov_fault"};
 
   parameter int unsigned MBX_DV_DW_SIZE_BYTES = 4;
   parameter int unsigned MBX_DV_MAX_DW = 1024;

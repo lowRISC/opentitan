@@ -24,7 +24,7 @@ package dma_env_pkg;
 
   // parameters
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   parameter uint CTN_ADDR_WIDTH = 32;
   parameter uint CTN_DATA_WIDTH = 32;

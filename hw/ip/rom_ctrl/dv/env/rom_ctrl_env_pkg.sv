@@ -27,8 +27,8 @@ package rom_ctrl_env_pkg;
   parameter bit [63:0]  RND_CNST_SCR_NONCE = 64'h0123456789ABCDEF;
   parameter bit [127:0] RND_CNST_SCR_KEY   = 128'hFEDCBA9876543210FEDCBA9876543210;
 
-  parameter string LIST_OF_ALERTS[] = {"fatal"};
   parameter uint   NUM_ALERTS = 1;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal"};
 
   // The top bytes in memory hold the digest
   // KMAC's max digest size is larger than what is required, so declare the size here.
