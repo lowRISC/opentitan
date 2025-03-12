@@ -160,6 +160,13 @@ status_t clkmgr_testutils_enable_external_clock_blocking(
 /**
  * Set and verifies the given clock state.
  *
+ * Note: The clkmgr register access occurs on a clock that is circa 4 times
+ *       slower than the hintable clock being manipulated, which means that
+ *       reading back immediately runs the risk of the hint state not yet
+ *       having taken effect.
+ *       Conversely if we delay too long - say one microsecond - then the
+ *       controlled IP block may have returned to its idle state.
+ *
  * @param clkmgr A clkmgr DIF handle.
  * @param clock_id The transactional clock ID.
  * @param new_state Clock state to be set.
@@ -169,15 +176,26 @@ status_t clkmgr_testutils_enable_external_clock_blocking(
 #define CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(clkmgr, clock_id, new_state, \
                                                   expected_state)              \
   ({                                                                           \
-    /* The hintable clock shall be read immediately after setting it, so we    \
-     * handle the error afterwards.*/                                          \
+    /* The hintable clock shall be read _almost_ immediately after setting it, \
+     * so we check for any errors afterwards. */                               \
     dif_result_t set_res =                                                     \
         dif_clkmgr_hintable_clock_set_hint(&clkmgr, clock_id, new_state);      \
+    dif_toggle_t hint_state;                                                   \
+    /* This read back mainly serves to introduce a sub-microsecond delay to    \
+     * accommodate the fact that clkmgr register access occurs on a clock that \
+     * is circa 4 times slower than the software-hintable clock. */            \
+    dif_result_t hint_get_res =                                                \
+        dif_clkmgr_hintable_clock_get_hint(&clkmgr, clock_id, &hint_state);    \
+    /* Now check the new clock enable state. */                                \
     dif_toggle_t clock_state;                                                  \
     dif_result_t get_res = dif_clkmgr_hintable_clock_get_enabled(              \
         &clkmgr, clock_id, &clock_state);                                      \
     TRY(set_res);                                                              \
+    TRY(hint_get_res);                                                         \
     TRY(get_res);                                                              \
+    TRY_CHECK(hint_state == new_state,                                         \
+              "Clock hint state is (%d) and not as requested (%d).",           \
+              hint_state, new_state);                                          \
     TRY_CHECK(clock_state == expected_state,                                   \
               "Clock enabled state is (%d) and not as expected (%d).",         \
               clock_state, expected_state);                                    \
