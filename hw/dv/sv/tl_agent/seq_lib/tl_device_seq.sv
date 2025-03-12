@@ -31,7 +31,7 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
   // chance to set d_error
   int                      d_error_pct = 0;
 
-  `uvm_object_param_utils(tl_device_seq #(REQ))
+  `uvm_object_param_utils(tl_device_seq #(REQ, AddrWidth))
   `uvm_object_new
 
   constraint en_req_abort_after_d_valid_len_c {
