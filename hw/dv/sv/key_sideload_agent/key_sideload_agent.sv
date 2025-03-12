@@ -12,7 +12,7 @@ class key_sideload_agent#(
   .COV_T          (key_sideload_agent_cov#(KEY_T))
 );
 
-  `uvm_component_utils(key_sideload_agent#(KEY_T))
+  `uvm_component_param_utils(key_sideload_agent#(KEY_T))
 
   `uvm_component_new
 
