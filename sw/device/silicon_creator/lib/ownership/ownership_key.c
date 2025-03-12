@@ -94,9 +94,9 @@ static void reverse(void *buf, size_t len) {
 
 static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
   flash_ctrl_perms_t perm = {
-      .read = read,
-      .write = write,
-      .erase = write,
+      .read = (uint8_t)read,
+      .write = (uint8_t)write,
+      .erase = (uint8_t)write,
   };
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSecret, perm);
 }
