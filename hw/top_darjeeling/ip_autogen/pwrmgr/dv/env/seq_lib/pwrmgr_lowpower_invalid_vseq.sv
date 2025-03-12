@@ -45,13 +45,13 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     // by disable fork, we have to disable spurious interrup check.
     cfg.invalid_st_test = 1;
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "At body start", UVM_MEDIUM)
     check_wake_status('0);
     reset_index = DVWaitFallThrough;
 
     for (int i = 0; i < num_of_target_states; ++i) begin
-      `uvm_info(`gfn, $sformatf("Starting new round%0d %s", i, reset_index.name), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Starting new round %0d %s", i, reset_index.name), UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
       fork
@@ -74,8 +74,9 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
       repeat (10) @cfg.clk_rst_vif.cb;
 
       apply_reset();
-      reset_index=reset_index.next();
+      reset_index = reset_index.next();
       wait_for_fast_fsm(FastFsmActive);
+      `uvm_info(`gfn, $sformatf("Done with round %0d", i), UVM_MEDIUM)
     end  // for (int i = 0; i < 4; ++i)
   endtask
 
@@ -110,7 +111,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     // wakeups should be registered.
     cfg.pwrmgr_vif.update_wakeups('1);
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
   endtask : start_lowpower_transition
 

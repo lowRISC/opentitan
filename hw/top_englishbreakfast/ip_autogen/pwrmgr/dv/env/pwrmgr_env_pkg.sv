@@ -58,7 +58,7 @@ package pwrmgr_env_pkg;
     logic usb_clk_en_active;
     logic usb_clk_en_lp;
     logic io_clk_en;
-    logic core_clk_en;
+    logic main_clk_en;
   } control_enables_t;
 
   typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;

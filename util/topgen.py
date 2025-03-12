@@ -574,6 +574,10 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     if top['power'].get('halt_ibex_via_rom_ctrl', False):
         n_rom_ctrl += 1
 
+    clocks = top["clocks"]
+    assert isinstance(clocks, Clocks)
+    src_clks = [obj.name for obj in clocks.srcs.values() if not obj.aon]
+
     return {
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
@@ -581,6 +585,8 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
         "rst_reqs": top["reset_requests"],
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
+        "has_aon_clk": any(obj.aon for obj in clocks.srcs.values()),
+        "src_clks": src_clks,
     }
 
 

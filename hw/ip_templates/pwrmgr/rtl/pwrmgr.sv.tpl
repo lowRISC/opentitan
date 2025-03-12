@@ -4,6 +4,7 @@
 //
 // Power Manager
 //
+<% longest_src_clk = max(len(c) for c in src_clks) %>\
 
 `include "prim_assert.sv"
 
@@ -264,8 +265,10 @@ module pwrmgr
   logic ack_pwrdn;
   logic fsm_invalid;
   logic clr_slow_req;
+% if 'usb' in src_clks:
   logic usb_ip_clk_en;
   logic usb_ip_clk_status;
+% endif
   pwrup_cause_e pwrup_cause;
 
   logic low_power_fall_through;
@@ -302,13 +305,17 @@ module pwrmgr
   logic slow_ack_pwrdn;
   logic slow_fsm_invalid;
   logic slow_main_pd_n;
-  logic slow_io_clk_en;
-  logic slow_core_clk_en;
+% for clk in src_clks:
+  % if clk == 'usb':
   logic slow_usb_clk_en_lp;
   logic slow_usb_clk_en_active;
-  logic slow_clr_req;
   logic slow_usb_ip_clk_en;
   logic slow_usb_ip_clk_status;
+  % else:
+  logic slow_${clk}_clk_en;
+  % endif
+% endfor
+  logic slow_clr_req;
 
 
 
@@ -426,18 +433,24 @@ module pwrmgr
     .slow_wakeup_en_o(slow_wakeup_en),
     .slow_reset_en_o(slow_reset_en),
     .slow_main_pd_no(slow_main_pd_n),
-    .slow_io_clk_en_o(slow_io_clk_en),
-    .slow_core_clk_en_o(slow_core_clk_en),
+% for clk in src_clks:
+  % if clk == 'usb':
     .slow_usb_clk_en_lp_o(slow_usb_clk_en_lp),
     .slow_usb_clk_en_active_o(slow_usb_clk_en_active),
+  % else:
+    .slow_${clk}_clk_en_o(slow_${clk}_clk_en),
+  % endif
+% endfor
     .slow_req_pwrdn_o(slow_req_pwrdn),
     .slow_ack_pwrup_o(slow_ack_pwrup),
     .slow_ast_o(slow_ast),
     .slow_peri_reqs_o(slow_peri_reqs),
     .slow_peri_reqs_masked_i(slow_peri_reqs_masked),
     .slow_clr_req_o(slow_clr_req),
+% if 'usb' in src_clks:
     .slow_usb_ip_clk_en_i(slow_usb_ip_clk_en),
     .slow_usb_ip_clk_status_o(slow_usb_ip_clk_status),
+% endif
 
     // fast domain signals
     .req_pwrdn_i(req_pwrdn),
@@ -447,18 +460,25 @@ module pwrmgr
     .wakeup_en_i(reg2hw.wakeup_en),
     .reset_en_i(reg2hw.reset_en),
     .main_pd_ni(reg2hw.control.main_pd_n.q),
-    .io_clk_en_i(reg2hw.control.io_clk_en.q),
-    .core_clk_en_i(reg2hw.control.core_clk_en.q),
+% for clk in src_clks:
+  % if clk == 'usb':
     .usb_clk_en_lp_i(reg2hw.control.usb_clk_en_lp.q),
     .usb_clk_en_active_i(reg2hw.control.usb_clk_en_active.q),
+  % else:
+<% ral_clk = 'core' if clk == 'main' else clk %>\
+    .${clk}_clk_en_i(reg2hw.control.${ral_clk}_clk_en.q),
+  % endif
+% endfor
     .ack_pwrdn_o(ack_pwrdn),
     .fsm_invalid_o(fsm_invalid),
     .req_pwrup_o(req_pwrup),
     .pwrup_cause_o(pwrup_cause),
     .peri_reqs_o(peri_reqs_masked),
     .clr_slow_req_i(clr_slow_req),
+% if 'usb' in src_clks:
     .usb_ip_clk_en_o(usb_ip_clk_en),
     .usb_ip_clk_status_i(usb_ip_clk_status),
+% endif
 
     // AST signals
     .ast_i(pwr_ast_i),
@@ -577,14 +597,21 @@ module pwrmgr
     .rst_req_o            (slow_rst_req),
     .fsm_invalid_o        (slow_fsm_invalid),
     .clr_req_i            (slow_clr_req),
+% if 'usb' in src_clks:
     .usb_ip_clk_en_o      (slow_usb_ip_clk_en),
     .usb_ip_clk_status_i  (slow_usb_ip_clk_status),
+% endif
 
     .main_pd_ni           (slow_main_pd_n),
-    .io_clk_en_i          (slow_io_clk_en),
-    .core_clk_en_i        (slow_core_clk_en),
+% for clk in src_clks:
+  % if clk != 'usb':
+<% sep = " " * (12 - len(clk)) %>\
+    .${clk}_clk_en_i${sep}(slow_${clk}_clk_en),
+  % else:
     .usb_clk_en_lp_i      (slow_usb_clk_en_lp),
     .usb_clk_en_active_i  (slow_usb_clk_en_active),
+  % endif
+% endfor
 
     // outputs to AST - These are on the slow clock domain
     // TBD - need to check this with partners
@@ -630,8 +657,10 @@ module pwrmgr
     .reset_reqs_i        (peri_reqs_masked.rstreqs),
     .fsm_invalid_i       (fsm_invalid),
     .clr_slow_req_o      (clr_slow_req),
+% if 'usb' in src_clks:
     .usb_ip_clk_en_i     (usb_ip_clk_en),
     .usb_ip_clk_status_o (usb_ip_clk_status),
+% endif
 
     // cfg
     .main_pd_ni        (reg2hw.control.main_pd_n.q),

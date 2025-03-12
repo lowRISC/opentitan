@@ -52,10 +52,14 @@ Some of them in use are:
 
   typedef struct packed {
     logic main_pd_n;
+% for clk in reversed(src_clks):
+  % if clk == 'usb':
     logic usb_clk_en_active;
     logic usb_clk_en_lp;
-    logic io_clk_en;
-    logic core_clk_en;
+  % else:
+    logic ${clk}_clk_en;
+  % endif
+% endfor
   } control_enables_t;
 
   typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;
@@ -79,10 +83,10 @@ All test sequences reside in [`hw/${top_name}/ip_autogen/pwrmgr/dv/env/seq_lib`]
 The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks used by the test sequences.
 Some of the most commonly used tasks and functions are as follows:
-* task `wait_for_fast_fsm`:
-  Waits for the fast fsm to be active or inactive, indicated by whether the `fetch_en_o` output become On or Off respectively.
+* task `wait_for_rom_and_active`:
+  Randomize rom_ctrls and waits for the fast fsm to be active or inactive, indicated by whether the `fetch_en_o` output become On or Off respectively.
   We mostly call this expecting it to be active before the tests can start, since any CSR accesses require the CPU to be running.
-  Due to complexities in the UVM sequences this task is called in the virtual post_apply_reset task of dv_base_vseq.
+  The rom_ctrl inputs are randomized repeatedly, but in such a way that they end up allowing transitions to active.
 * task `wait_for_csr_to_propagate_to_slow_domain`:
   Waits for `cfg_cdc_sync` CSR to be clear, indicating the CDC to the slow clock has completed.
 * task `wait_for_reset_cause`:
@@ -100,11 +104,11 @@ Being based on outputs means the inputs are in accordance to the implicit protoc
 The tasks in question are:
 * task `slow_responder`:
   Handles required input changes from AST for the slow state machine.
-  For the various `<clk>_en` outputs it changes the `<clk>_val` as required, for `core`, `io`, `main`, and `usb` clocks.
+  For the various `<clk>_en` outputs it changes the `<clk>_val` as required, for the non-aon clocks from the ast.
 * task `fast_responder`:
   Handles input changes for the fast state machine.
   * Completes the handshake with rstmgr for lc and sys resets: some random cycles after an output reset is requested the corresponding reset src input must go low.
-  * Completes the handshake with clkmgr: the various `<clk>_status` inputs need to match the corresponding `<clk>_ip_clk_en` output after some cycles, for `io`, `main`, and `usb` clocks.
+  * Completes the handshake with clkmgr: the various `<clk>_status` inputs need to match the corresponding `<clk>_ip_clk_en` output after some cycles, for the non-aon clocks from the ast.
   * Completes the handshake with lc and otp: both *_done inputs must match the corresponding *_init outputs after some cycles.
 
 These tasks are started by the parent sequence's `pre_start` task, and terminated gracefully in the parent sequence's `post_start` task.

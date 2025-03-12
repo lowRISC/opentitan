@@ -81,6 +81,13 @@
     }
     wait_for_external_reset: false
     NumRomInputs: 1
+    has_aon_clk: true
+    src_clks:
+    [
+      main
+      io
+      usb
+    ]
     topname: earlgrey
     uniquified_modules: {}
   }

@@ -76,5 +76,17 @@
       type: "string"
       default: "pwrmgr"
     }
+    {
+      name: "has_aon_clk"
+      desc: "true if there is an input aon clock"
+      type: "bool"
+      default: True
+    }
+    {
+      name: "src_clks"
+      desc: "the source clock names for this top, as in 'main', 'io', 'usb'"
+      type: "object"
+      default: ["main", "io", "usb"]
+    }
   ]
 }
