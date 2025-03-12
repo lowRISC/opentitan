@@ -10,5 +10,6 @@
   },
   product_ids: {
     earlgrey_a1: "0x0002",
+    earlgrey_a2: "0x0002",  # A1 and A2 share same product IDs.
   },
 }
