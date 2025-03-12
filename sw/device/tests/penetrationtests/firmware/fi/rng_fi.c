@@ -397,8 +397,14 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
                    kPentestPeripheralCsrng | kPentestPeripheralEdn);
 
-  // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_data.icache_disable, uj_data.dummy_instr_disable,
+      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -418,9 +424,8 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
 
   // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
   TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   firmware_override_init = false;
 
@@ -595,8 +600,14 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
 
-  // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu(uj_data.icache_disable, uj_data.dummy_instr_disable);
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_data.icache_disable, uj_data.dummy_instr_disable,
+      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -613,9 +624,8 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
   TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }

@@ -27,6 +27,7 @@ cc_library(
     deps = [
         "//hw/ip/aes:model",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -44,6 +45,7 @@ cc_library(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:irq",
