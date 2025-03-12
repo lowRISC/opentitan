@@ -25,8 +25,8 @@ package aes_env_pkg;
 
   typedef virtual key_sideload_if   sideload_vif;
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint NUM_EDN = 1;
 
   typedef enum int {
