@@ -455,21 +455,27 @@ rom_error_t flash_ctrl_info_erase(const flash_ctrl_info_page_t *info_page,
  * flash_ctrl config registers use 4-bits for boolean values. Use
  * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
  * permissions.
+ *
+ * The bitfields in this stuct match up with the bitfields in the peripheral
+ * register.
  */
 typedef struct flash_ctrl_perms {
+  uint32_t _pad0 : 4;
   /**
    * Read.
    */
-  multi_bit_bool_t read;
+  uint32_t read : 4;
   /**
    * Write.
    */
-  multi_bit_bool_t write;
+  uint32_t write : 4;
   /**
    * Erase.
    */
-  multi_bit_bool_t erase;
+  uint32_t erase : 4;
+  uint32_t _pad1 : 16;
 } flash_ctrl_perms_t;
+OT_ASSERT_SIZE(flash_ctrl_perms_t, 4);
 
 /**
  * Sets default access permissions for the data partition.
@@ -508,27 +514,26 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
  * `kMultiBitBool4True` to enable and `kMultiBitBool4False` to disable
  * these settings.
  *
- * This struct has no padding, so it is safe to `memcmp()` without invoking UB.
+ * The bitfields in this stuct match up with the bitfields in the peripheral
+ * register.
  */
 typedef struct flash_ctrl_cfg {
+  uint32_t _pad0 : 16;
   /**
    * Scrambling.
    */
-  multi_bit_bool_t scrambling;
+  uint32_t scrambling : 4;
   /**
    * ECC.
    */
-  multi_bit_bool_t ecc;
+  uint32_t ecc : 4;
   /**
    * High endurance.
    */
-  multi_bit_bool_t he;
+  uint32_t he : 4;
+  uint32_t _pad1 : 4;
 } flash_ctrl_cfg_t;
-
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, scrambling, 0);
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, ecc, 4);
-OT_ASSERT_MEMBER_OFFSET(flash_ctrl_cfg_t, he, 8);
-OT_ASSERT_SIZE(flash_ctrl_cfg_t, 12);
+OT_ASSERT_SIZE(flash_ctrl_cfg_t, 4);
 
 /**
  * Sets default configuration settings for the data partition.
