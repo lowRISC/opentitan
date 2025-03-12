@@ -289,10 +289,15 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
         if (data_phase_write) begin
           low_power_hint = get_field_val(ral.control.low_power_hint, item.a_data);
           control_enables = '{
-              core_clk_en: get_field_val(ral.control.core_clk_en, item.a_data),
-              io_clk_en: get_field_val(ral.control.io_clk_en, item.a_data),
+% for clk in src_clks:
+  % if clk == 'usb':
               usb_clk_en_lp: get_field_val(ral.control.usb_clk_en_lp, item.a_data),
               usb_clk_en_active: get_field_val(ral.control.usb_clk_en_active, item.a_data),
+  % else:
+  <% clk_core = 'core' if clk == 'main' else clk %>\
+              ${clk}_clk_en: get_field_val(ral.control.${clk_core}_clk_en, item.a_data),
+  % endif
+% endfor
               main_pd_n: get_field_val(ral.control.main_pd_n, item.a_data)
           };
           `uvm_info(`gfn, $sformatf("Writing low power hint=%b", low_power_hint), UVM_MEDIUM)

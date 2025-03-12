@@ -21,7 +21,7 @@ module pwrmgr_bind;
     .slow_state(u_slow_fsm.state_q),
     // The synchronized control CSR bits.
     .main_pd_ni(slow_main_pd_n),
-    .core_clk_en_i(slow_core_clk_en),
+    .main_clk_en_i(slow_main_clk_en),
     .io_clk_en_i(slow_io_clk_en),
     .usb_clk_en_lp_i(slow_usb_clk_en_lp),
     .usb_clk_en_active_i(slow_usb_clk_en_active),
@@ -29,16 +29,9 @@ module pwrmgr_bind;
     // The main power control.
     .main_pd_n(pwr_ast_o.main_pd_n),
     // The output enables.
-    .core_clk_en(pwr_ast_o.core_clk_en),
+    .main_clk_en(pwr_ast_o.core_clk_en),
     .io_clk_en(pwr_ast_o.io_clk_en),
     .usb_clk_en(pwr_ast_o.usb_clk_en)
-  );
-
-  bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_io_sva_if (
-    .clk_i,
-    .rst_ni,
-    .clk_en(pwr_clk_o.io_ip_clk_en),
-    .status(pwr_clk_i.io_status)
   );
 
   bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_main_sva_if (
@@ -46,6 +39,13 @@ module pwrmgr_bind;
     .rst_ni,
     .clk_en(pwr_clk_o.main_ip_clk_en),
     .status(pwr_clk_i.main_status)
+  );
+
+  bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(0)) clkmgr_pwrmgr_io_sva_if (
+    .clk_i,
+    .rst_ni,
+    .clk_en(pwr_clk_o.io_ip_clk_en),
+    .status(pwr_clk_i.io_status)
   );
 
   bind pwrmgr clkmgr_pwrmgr_sva_if #(.IS_USB(1)) clkmgr_pwrmgr_usb_sva_if (
