@@ -23,6 +23,7 @@ interface prim_count_if #(
   string signal_forced;
 
   class prim_count_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
+    `uvm_object_utils(prim_count_if_proxy)
     `uvm_object_new
 
     logic [Width-1:0] orig_value;
