@@ -76,8 +76,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   // A macro used for coverpoints for mnemonics. This expands to entries like
   //
-  //    bins mnem_add = {mnem_add};
-`define DEF_MNEM_BIN(NAME) bins NAME = {NAME}
+  //    bins mnem_add = {"mnem_add"};
+`define DEF_MNEM_BIN(NAME) bins NAME = {`"NAME`"}
 
   // Generate a bin for each mnemonic except ECALL
 `define DEF_MNEM_BINS_EXCEPT_ECALL                                     \
@@ -116,7 +116,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   `DEF_CSR(csr_load_checksum, "load_checksum");
   `DEF_CSR(csr_ctrl, "ctrl");
 `undef DEF_CSR
-`define DEF_CSR_BIN(NAME) bins NAME = {NAME}
+`define DEF_CSR_BIN(NAME) bins NAME = {`"NAME`"}
 
   // Cross one, two or three coverpoints with mnemonic_cp.
   //
