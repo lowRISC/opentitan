@@ -15,13 +15,15 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(ac_range_check_base_vseq)
 
   // Various knobs to enable certain routines
-  bit do_ac_range_check_init = 1'b1;
+  bit do_ac_range_check_init = 1;
 
   // Configuration variables
   rand ac_range_check_dut_cfg dut_cfg;
+  rand tl_main_vars_t tl_main_vars;
+  rand int range_idx;
 
   // Constraints
-  extern constraint tl_main_vars_c;
+  extern constraint range_idx_c;
 
   // Standard SV/UVM methods
   extern function new(string name="");
@@ -33,17 +35,14 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   extern task cfg_range_limit();
   extern task cfg_range_perm();
   extern task cfg_range_racl_policy();
-  extern task send_single_tl_unfilt_tr(tl_main_vars_t main_vars);
+  extern task send_single_tl_unfilt_tr();
   extern task tl_filt_device_auto_resp(int min_rsp_delay = 0, int max_rsp_delay = 80,
     int rsp_abort_pct = 25, int d_error_pct = 0, int d_chan_intg_err_pct = 0);
 endclass : ac_range_check_base_vseq
 
 
-constraint ac_range_check_base_vseq::tl_main_vars_c {
-  soft dut_cfg.tl_main_vars.rand_write == 1;
-  soft dut_cfg.tl_main_vars.rand_addr  == 1;
-  soft dut_cfg.tl_main_vars.rand_mask  == 1;
-  soft dut_cfg.tl_main_vars.rand_data  == 1;
+constraint ac_range_check_base_vseq::range_idx_c {
+  range_idx inside {[0:NUM_RANGES-1]};
 }
 
 function ac_range_check_base_vseq::new(string name="");
@@ -111,14 +110,14 @@ task ac_range_check_base_vseq::cfg_range_racl_policy();
   end
 endtask : cfg_range_racl_policy
 
-task ac_range_check_base_vseq::send_single_tl_unfilt_tr(tl_main_vars_t main_vars);
+task ac_range_check_base_vseq::send_single_tl_unfilt_tr();
   tl_host_single_seq tl_unfilt_host_seq;
   `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
-  `DV_CHECK_RANDOMIZE_WITH_FATAL( tl_unfilt_host_seq,
-                                  (!main_vars.rand_write) -> (write == main_vars.write);
-                                  (!main_vars.rand_addr ) -> (addr  == main_vars.addr);
-                                  (!main_vars.rand_mask ) -> (mask  == main_vars.mask);
-                                  (!main_vars.rand_data ) -> (data  == main_vars.data);)
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_unfilt_host_seq,
+                                 write == tl_main_vars.write;
+                                 addr  == tl_main_vars.addr;
+                                 mask  == tl_main_vars.mask;
+                                 data  == tl_main_vars.data;)
 
   csr_utils_pkg::increment_outstanding_access();
   `uvm_info(`gfn, "Starting tl_unfilt_host_seq", UVM_MEDIUM)
@@ -133,10 +132,10 @@ task ac_range_check_base_vseq::tl_filt_device_auto_resp(int min_rsp_delay       
                                                         int d_chan_intg_err_pct = 0);
   cip_tl_device_seq tl_filt_device_seq;
   tl_filt_device_seq = cip_tl_device_seq::type_id::create("tl_filt_device_seq");
-  tl_filt_device_seq.min_rsp_delay = min_rsp_delay;
-  tl_filt_device_seq.max_rsp_delay = max_rsp_delay;
-  tl_filt_device_seq.rsp_abort_pct = rsp_abort_pct;
-  tl_filt_device_seq.d_error_pct = d_error_pct;
+  tl_filt_device_seq.min_rsp_delay       = min_rsp_delay;
+  tl_filt_device_seq.max_rsp_delay       = max_rsp_delay;
+  tl_filt_device_seq.rsp_abort_pct       = rsp_abort_pct;
+  tl_filt_device_seq.d_error_pct         = d_error_pct;
   tl_filt_device_seq.d_chan_intg_err_pct = d_chan_intg_err_pct;
   `DV_CHECK_RANDOMIZE_FATAL(tl_filt_device_seq)
   `uvm_info(`gfn, "Starting tl_filt_device_seq", UVM_MEDIUM)
