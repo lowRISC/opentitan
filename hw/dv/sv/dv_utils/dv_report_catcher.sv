@@ -16,7 +16,7 @@ class dv_report_catcher extends uvm_report_catcher;
     string id = get_id();
     if (m_changed_sev.exists(id)) begin
       string report_msg = get_message();
-      foreach (m_changed_sev[id][msg]) begin
+      foreach (m_changed_sev[id, msg]) begin
         if (uvm_re_match(msg, report_msg)) begin
           set_severity(m_changed_sev[id][msg]);
         end
