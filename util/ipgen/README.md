@@ -67,21 +67,41 @@ Templates are written in the [Mako templating language](https://www.makotemplate
 All template parameters are available in the rendering context.
 For example, a template parameter `src` can be used in the template as `${src}`.
 
-### VLNV support
+### Ipgen Uniquification
+
+FuseSoC core files should be written in a way that upholds the principle "same name, same public interface".
+This means if a FuseSoC core has the same name as another one containing code that became different after template processing, and will be part of the same device, it must also provide the same public interface.
+
+Since SystemVerilog does not provide strong control over which symbols become part of the public API, developers must carefully evaluate their source code.
+At least, the public interface is comprised of
+- module header(s), e.g. parameter names, ports (names, data types),
+- package names, and all identifiers within it, including enum values (but not the values assigned to them),
+- defines
+
+If any of those aspects of a source file are templated differently within the same device, the core name referencing the files, the file name itself, and the name of the contained SystemVerilog construct must be made instance-specific.
+For example, if file `rtl/flash_ctrl.sv` contained within core `flash_ctrl.core` has two instances that diverge then the following should happen:
+- the core files for the two IPs will be renamed
+- the rtl files in question will be renamed
+- the module within the flash_ctrl.sv files will be renamed
+
+This is typically implemented via an extra parameter that holds the new name for the template objects, is named `module_instance_name`, and is passed to the template expansion.
+This uniquification also needs to be handled by VLNV renaming as explained below.
+
+### VLNV Renaming
 
 The `instance_vlnv` function is available to process VLNV strings, which is useful for template core files.
+It modifies the vlnv so it becomes top-specific, and also supports uniquification.
 A VLNV string has the form vendor:library:name[:version] where the version is optional.
-The `instance_vlnv` function is given a vlnv and outputs a transformed vlnv as follows:
+The `instance_vlnv` function is given a vlnv and has handles to objects that provide the `topname` and a dictionary holding new names for templates needing uniquification.
+Notice if the `module_instance_name` parameter is given, it should also be contained in the uniquification dictionary.
+The given vlnv is transformed as follows:
 
-- The vendor string becomes `lowrisc`.
-- The library string becomes `opentitan`.
+- The vendor string is unchanged.
+- The library string gets `topname` as a prefix.
 - The name is processed as follows:
-  - If the `module_instance_name` parameter exists, the name must start
-    with it as a prefix, and that is replaced by the `instance_name`
-    renderer value.
-  - If the name starts with the template name, it is replaced by the
-    `instance_name` value.
-  - Otherwise the `instance_name` is pefixed to the name.
+  - If the name is a key in the uniquification dictionary it is replaced by the corresponding value.
+  - If the name starts with a string matching a key in the uniquification dictionary followed by `_`, the string is replaced by the corresponding value.
+  - Otherwise the name stays the same.
 - The optional version is preserved.
 
 For example, a `rv_plic.core.tpl` file could look like this:
@@ -91,25 +111,14 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:rv_plic")}
 ```
 
-After processing, the VLNV could become `lowrisc:opentitan:top_earlgrey_rv_plic`.
+If `topname` was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
+Similarly, the VLNV `lowrisc:dv:rv_plic_sim` will become `lowrisc:earlgrey_dv:rv_plic_1_sim`.
 
 The following rules should be applied when creating IP templates:
 
 * Template and use an instance-specific name for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
 * Template and use an instance-specific name at least the top-level FuseSoC core.
-* If a FuseSoC core with an instance-specific name exposes a well-defined public interface (see below), add a `virtual: lowrisc:ip_interfaces:<name>` line to the core file to allow non-instance-specific cores to refer to it without knowing the actual core name.
-
-#### Templating core files to uphold the "same name, same interface" principle
-
-FuseSoC core files should be written in a way that upholds the principle "same name, same public interface", i.e. if a FuseSoC core has the same name as another one, it must also provide the same public interface.
-
-Since SystemVerilog does not provide strong control over which symbols become part of the public API, developers must carefully evaluate their source code.
-At least, the public interface is comprised of
-- module header(s), e.g. parameter names, ports (names, data types),
-- package names, and all identifiers within it, including enum values (but not the values assigned to them),
-- defines
-
-If any of those aspects of a source file are templated, the core name referencing the files must be made instance-specific.
+* Avoid having generic IPs depend on top-specific core files, since that would require using virtual cores, which can be very problematic.
 
 ## Library usage
 
