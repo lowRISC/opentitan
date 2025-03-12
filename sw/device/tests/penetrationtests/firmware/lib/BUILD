@@ -27,6 +27,7 @@ cc_library(
     deps = [
         "//hw/ip/aes:model",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
