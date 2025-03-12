@@ -85,14 +85,26 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
 
   // This collects coverage on the clock and power control functionality.
   covergroup control_cg with function sample (control_enables_t control_enables, bit sleep);
-    core_cp: coverpoint control_enables.core_clk_en;
-    io_cp: coverpoint control_enables.io_clk_en;
+% for clk in src_clks:
+  % if clk == 'usb':
     usb_lp_cp: coverpoint control_enables.usb_clk_en_lp;
     usb_active_cp: coverpoint control_enables.usb_clk_en_active;
+  % else:
+    ${clk}_cp: coverpoint control_enables.${clk}_clk_en;
+  % endif
+% endfor
     main_pd_n_cp: coverpoint control_enables.main_pd_n;
     sleep_cp: coverpoint sleep;
 
-    control_cross: cross core_cp, io_cp, usb_lp_cp, usb_active_cp, main_pd_n_cp, sleep_cp;
+    control_cross: cross
+% for clk in src_clks:
+  % if clk == 'usb':
+      usb_lp_cp, usb_active_cp,
+  % else:
+      ${clk}_cp,
+  % endif
+% endfor
+      main_pd_n_cp, sleep_cp;
   endgroup
 
   covergroup hw_reset_0_cg with function sample (logic reset, logic enable, bit sleep);
