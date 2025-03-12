@@ -13,6 +13,8 @@
 // the memory element and its size and depth information is available. Pass the instance to the UVM
 // side via uvm_config_db.
 class mem_bkdr_util extends uvm_object;
+  `uvm_object_utils(mem_bkdr_util)
+
   // Hierarchical path to the memory.
   protected string path;
 

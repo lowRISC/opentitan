@@ -49,6 +49,8 @@ interface prim_onehot_check_if #(
     logic [AddrWidth-1:0]   addr_orig_value;
     logic                   en_orig_value;
 
+    `uvm_object_utils(prim_onehot_check_if_proxy)
+
     function new(string name = "");
       super.new(name);
     endfunction : new
@@ -137,6 +139,7 @@ interface prim_onehot_check_if #(
   endclass : prim_onehot_check_if_proxy
 
   class prim_onehot_check_with_addr_fault_if_proxy extends prim_onehot_check_if_proxy;
+    `uvm_object_utils(prim_onehot_check_with_addr_fault_if_proxy)
 
     covergroup onehot_with_addr_fault_cg (string name) with function sample(
           onehot_fault_type_e onehot_fault_type);
@@ -170,6 +173,7 @@ interface prim_onehot_check_if #(
   endclass : prim_onehot_check_with_addr_fault_if_proxy
 
   class prim_onehot_check_without_addr_fault_if_proxy extends prim_onehot_check_if_proxy;
+    `uvm_object_utils(prim_onehot_check_without_addr_fault_if_proxy)
 
     covergroup onehot_without_addr_fault_cg (string name) with function sample(
           onehot_fault_type_e onehot_fault_type);

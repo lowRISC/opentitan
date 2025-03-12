@@ -28,6 +28,8 @@ interface prim_singleton_fifo_if #(
   class prim_singleton_fifo_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
     logic orig_value;
 
+    `uvm_object_utils(prim_singleton_fifo_if_proxy)
+
     function new(string name="");
       super.new(name);
     endfunction
