@@ -52,10 +52,14 @@ Some of them in use are:
 
   typedef struct packed {
     logic main_pd_n;
+% for clk in reversed(src_clks):
+  % if clk == 'usb':
     logic usb_clk_en_active;
     logic usb_clk_en_lp;
-    logic io_clk_en;
-    logic core_clk_en;
+  % else:
+    logic ${clk}_clk_en;
+  % endif
+% endfor
   } control_enables_t;
 
   typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;
@@ -100,11 +104,11 @@ Being based on outputs means the inputs are in accordance to the implicit protoc
 The tasks in question are:
 * task `slow_responder`:
   Handles required input changes from AST for the slow state machine.
-  For the various `<clk>_en` outputs it changes the `<clk>_val` as required, for `core`, `io`, `main`, and `usb` clocks.
+  For the various `<clk>_en` outputs it changes the `<clk>_val` as required, for the non-aon clocks from the ast.
 * task `fast_responder`:
   Handles input changes for the fast state machine.
   * Completes the handshake with rstmgr for lc and sys resets: some random cycles after an output reset is requested the corresponding reset src input must go low.
-  * Completes the handshake with clkmgr: the various `<clk>_status` inputs need to match the corresponding `<clk>_ip_clk_en` output after some cycles, for `io`, `main`, and `usb` clocks.
+  * Completes the handshake with clkmgr: the various `<clk>_status` inputs need to match the corresponding `<clk>_ip_clk_en` output after some cycles, for the non-aon clocks from the ast.
   * Completes the handshake with lc and otp: both *_done inputs must match the corresponding *_init outputs after some cycles.
 
 These tasks are started by the parent sequence's `pre_start` task, and terminated gracefully in the parent sequence's `post_start` task.

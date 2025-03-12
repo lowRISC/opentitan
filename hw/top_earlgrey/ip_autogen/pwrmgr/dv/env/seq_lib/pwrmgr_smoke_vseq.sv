@@ -18,8 +18,8 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
   constraint resets_c {resets != 0;}
 
   constraint control_enables_c {
-    control_enables.core_clk_en == ral.control.core_clk_en.get_reset();
-    control_enables.io_clk_en == ral.control.io_clk_en.get_reset();
+      control_enables.main_clk_en == ral.control.core_clk_en.get_reset();
+      control_enables.io_clk_en == ral.control.io_clk_en.get_reset();
     control_enables.usb_clk_en_lp == ral.control.usb_clk_en_lp.get_reset();
     control_enables.usb_clk_en_active == ral.control.usb_clk_en_active.get_reset();
     control_enables.main_pd_n == ral.control.main_pd_n.get_reset();

@@ -18,6 +18,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   localparam int MaxCyclesBeforeEnable = 12;
 
+  import pwrmgr_reg_pkg::NumRomInputs;
+
   typedef enum int {
     FastFsmActive,
     FastFsmInactive
@@ -47,8 +49,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // Random delays.
   rand int               cycles_before_clks_ok;
   rand int               cycles_between_clks_ok;
-  rand int               cycles_before_io_status;
   rand int               cycles_before_main_status;
+  rand int               cycles_before_io_status;
   rand int               cycles_before_usb_status;
   rand int               cycles_before_rst_lc_src;
   rand int               cycles_before_rst_sys_src;
@@ -58,7 +60,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int               cycles_before_reset;
 
   // Slow responder delays.
-  rand int               cycles_before_core_clk_en;
+  rand int               cycles_before_main_clk_en;
   rand int               cycles_before_io_clk_en;
   rand int               cycles_before_usb_clk_en;
   rand int               cycles_before_main_pok;
@@ -71,8 +73,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
-  constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
   constraint cycles_before_main_status_c {cycles_before_main_status inside {[0 : 4]};}
+  constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
   constraint cycles_before_usb_status_c {cycles_before_usb_status inside {[0 : 4]};}
   constraint cycles_before_rst_lc_src_base_c {cycles_before_rst_lc_src inside {[0 : 4]};}
   constraint cycles_before_rst_sys_src_base_c {cycles_before_rst_sys_src inside {[0 : 4]};}
@@ -80,8 +82,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_lc_done_base_c {cycles_before_lc_done inside {[0 : 4]};}
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
   constraint cycles_before_reset_c {cycles_before_reset inside {[2 : 6]};}
-  constraint cycles_before_core_clk_en_c {
-    cycles_before_core_clk_en inside {[1 : MaxCyclesBeforeEnable]};
+  constraint cycles_before_main_clk_en_c {
+    cycles_before_main_clk_en inside {[1 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_io_clk_en_c {
     cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 2]};
@@ -92,7 +94,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : MaxCyclesBeforeEnable]};}
 
   // This is used to trigger a software reset, as per rstmgr's `reset_req` CSR.
-  prim_mubi_pkg::mubi4_t sw_rst_from_rstmgr = prim_mubi_pkg::MuBi4False;
+  mubi4_t sw_rst_from_rstmgr = MuBi4False;
 
   bit do_pwrmgr_init = 1'b1;
   // This static variable is incremented in each pre_start and decremented in each post_start.
@@ -103,7 +105,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // This stops randomizing cycles counts that select from a pipeline, since
   // changes can lead to missing or unexpected transitions.
   task stop_randomizing_cycles();
-    cycles_before_core_clk_en.rand_mode(0);
+    cycles_before_main_clk_en.rand_mode(0);
     cycles_before_io_clk_en.rand_mode(0);
     cycles_before_usb_clk_en.rand_mode(0);
     cycles_before_main_pok.rand_mode(0);
@@ -333,14 +335,14 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
         end
 
   task slow_responder();
-    logic [MaxCyclesBeforeEnable:0] core_clk_val_sr;
+    logic [MaxCyclesBeforeEnable:0] main_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] io_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] usb_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
     fork
-      `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
-      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
-      `SLOW_ASSIGN("core_clk_val", cycles_before_core_clk_en, core_clk_val_sr,
+      `SLOW_DETECT("main_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
+      `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, main_clk_val_sr)
+      `SLOW_ASSIGN("main_clk_val", cycles_before_main_clk_en, main_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
 
       `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en)
@@ -434,7 +436,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             clear_escalation_reset();
             clear_ndm_reset();
             cfg.pwrmgr_vif.update_resets('0);
-            cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
+            cfg.pwrmgr_vif.update_sw_rst_req(MuBi4False);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_fast_objection("rst_lc_src_n");
@@ -449,6 +451,14 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           drop_fast_objection("rst_sys_src_n");
         end
 
+      forever
+        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
+          raise_fast_objection("main_status");
+          `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
+                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
+                                cycles_before_main_status)
+          drop_fast_objection("main_status");
+        end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
           logic new_value = cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en;
@@ -471,21 +481,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     ), UVM_HIGH)
           drop_fast_objection("io_status");
         end
-
-      forever
-        @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
-          raise_fast_objection("main_status");
-          `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
-                                cycles_before_main_status)
-          drop_fast_objection("main_status");
-        end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
           raise_fast_objection("usb_status");
           `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
-                                cycles_before_usb_status)
+                                cycles_before_main_status)
           drop_fast_objection("usb_status");
         end
       forever
@@ -566,7 +567,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task update_control_csr();
     fork
       begin
-        ral.control.core_clk_en.set(control_enables.core_clk_en);
+        ral.control.core_clk_en.set(control_enables.main_clk_en);
         ral.control.io_clk_en.set(control_enables.io_clk_en);
         ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
         ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
@@ -599,6 +600,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.update_lc_idle(lc_idle);
     cfg.pwrmgr_vif.update_otp_idle(otp_idle);
   endtask
+
+  // This checks the CPU is enabled, use it to start CSR activity.
+  function bit cpu_is_enabled();
+    return cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On;
+  endfunction
 
   // Waits for the fast fsm becoming active or inactive, indicated by the
   // fetch_en output going On or Off respectively.

@@ -6,65 +6,69 @@
 //
 // Samples some internal signals to help coverage collection:
 interface pwrmgr_if (
-  input logic clk,
-  input logic rst_n,
-  input logic clk_slow,
-  input logic rst_slow_n
+    input logic clk,
+    input logic rst_n,
+    input logic clk_slow,
+    input logic rst_slow_n
 );
   import uvm_pkg::*;
+  import pwrmgr_reg_pkg::NumWkups;
+  import pwrmgr_reg_pkg::NumRstReqs;
+  import pwrmgr_reg_pkg::NumRomInputs;
   import pwrmgr_env_pkg::*;
 
   // Ports to the dut side.
 
-  logic                                                        rst_main_n;
+  logic                                                            rst_main_n;
 
-  pwrmgr_pkg::pwr_ast_req_t                                    pwr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t                                    pwr_ast_rsp;
+  pwrmgr_pkg::pwr_ast_req_t                                        pwr_ast_req;
+  pwrmgr_pkg::pwr_ast_rsp_t                                        pwr_ast_rsp;
 
-  pwrmgr_pkg::pwr_rst_req_t                                    pwr_rst_req;
-  pwrmgr_pkg::pwr_rst_rsp_t                                    pwr_rst_rsp;
+  pwrmgr_pkg::pwr_rst_req_t                                        pwr_rst_req;
+  pwrmgr_pkg::pwr_rst_rsp_t                                        pwr_rst_rsp;
 
-  pwrmgr_pkg::pwr_clk_req_t                                    pwr_clk_req;
-  pwrmgr_pkg::pwr_clk_rsp_t                                    pwr_clk_rsp;
+  pwrmgr_pkg::pwr_clk_req_t                                        pwr_clk_req;
+  pwrmgr_pkg::pwr_clk_rsp_t                                        pwr_clk_rsp;
 
-  pwrmgr_pkg::pwr_otp_req_t                                    pwr_otp_req;
-  pwrmgr_pkg::pwr_otp_rsp_t                                    pwr_otp_rsp;
+  pwrmgr_pkg::pwr_otp_req_t                                        pwr_otp_req;
+  pwrmgr_pkg::pwr_otp_rsp_t                                        pwr_otp_rsp;
 
-  pwrmgr_pkg::pwr_lc_req_t                                     pwr_lc_req;
-  pwrmgr_pkg::pwr_lc_rsp_t                                     pwr_lc_rsp;
+  pwrmgr_pkg::pwr_lc_req_t                                         pwr_lc_req;
+  pwrmgr_pkg::pwr_lc_rsp_t                                         pwr_lc_rsp;
 
-  pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
+  pwrmgr_pkg::pwr_flash_t                                          pwr_flash;
 
-  pwrmgr_pkg::pwrmgr_cpu_t                                     cpu_i;
-  rv_core_ibex_pkg::cpu_pwrmgr_t                               pwr_cpu;
+  pwrmgr_pkg::pwrmgr_cpu_t                                         cpu_i;
+  rv_core_ibex_pkg::cpu_pwrmgr_t                                   pwr_cpu;
 
-  lc_ctrl_pkg::lc_tx_t                                         fetch_en;
-  lc_ctrl_pkg::lc_tx_t                                         lc_hw_debug_en;
-  lc_ctrl_pkg::lc_tx_t                                         lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t                                             fetch_en;
+  lc_ctrl_pkg::lc_tx_t                                             lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t                                             lc_dft_en;
 
-  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
-  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
+  logic                                         [    NumWkups-1:0] wakeups_i;
+  logic                                         [  NumRstReqs-1:0] rstreqs_i;
 
-  logic                                                          strap;
-  logic                                                          low_power;
-  rom_ctrl_pkg::pwrmgr_data_t [pwrmgr_reg_pkg::NumRomInputs-1:0] rom_ctrl;
+  logic                                                            strap;
+  logic                                                            low_power;
 
-  prim_mubi_pkg::mubi4_t                                       sw_rst_req_i;
+  rom_ctrl_pkg::pwrmgr_data_t                   [NumRomInputs-1:0] rom_ctrl;
 
-  logic                                                        intr_wakeup;
+  prim_mubi_pkg::mubi4_t                                           sw_rst_req_i;
+
+  logic                                                            intr_wakeup;
 
   // Relevant CSR values.
-  logic                                                        wakeup_en_regwen;
-  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_en;
-  logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeup_status;
-  logic                                                        wakeup_capture_en;
+  logic                                                            wakeup_en_regwen;
+  logic                                         [    NumWkups-1:0] wakeup_en;
+  logic                                         [    NumWkups-1:0] wakeup_status;
+  logic                                                            wakeup_capture_en;
 
-  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en;
-  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_q;
-  logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_status;
+  logic                                         [  NumRstReqs-1:0] reset_en;
+  logic                                         [  NumRstReqs-1:0] reset_en_q;
+  logic                                         [  NumRstReqs-1:0] reset_status;
 
-  logic                                                        lowpwr_cfg_wen;
-  pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t                wake_info;
+  logic                                                            lowpwr_cfg_wen;
+  pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t                    wake_info;
 
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
@@ -83,10 +87,12 @@ interface pwrmgr_if (
   always_comb lowpwr_cfg_wen = `PATH_TO_DUT.lowpwr_cfg_wen;
 
   // reset status
-  always_comb reset_status = {`PATH_TO_DUT.u_reg.reset_status_val_1_qs,
-                              `PATH_TO_DUT.u_reg.reset_status_val_0_qs};
-  always_comb reset_en_q = {`PATH_TO_DUT.u_reg.reset_en_en_1_qs,
-                            `PATH_TO_DUT.u_reg.reset_en_en_0_qs};
+  always_comb
+    reset_status = {
+      `PATH_TO_DUT.u_reg.reset_status_val_1_qs, `PATH_TO_DUT.u_reg.reset_status_val_0_qs
+    };
+  always_comb
+    reset_en_q = {`PATH_TO_DUT.u_reg.reset_en_en_1_qs, `PATH_TO_DUT.u_reg.reset_en_en_0_qs};
   always_comb
     wakeup_en = {
       `PATH_TO_DUT.reg2hw.wakeup_en[5].q,
@@ -154,16 +160,15 @@ interface pwrmgr_if (
     pwr_cpu.core_sleeping = value;
   endfunction
 
-  function automatic void update_wakeups(logic [pwrmgr_reg_pkg::NumWkups-1:0] wakeups);
+  function automatic void update_wakeups(logic [NumWkups-1:0] wakeups);
     wakeups_i = wakeups;
   endfunction
 
-  function automatic void update_resets(logic [pwrmgr_reg_pkg::NumRstReqs-1:0] resets);
+  function automatic void update_resets(logic [NumRstReqs-1:0] resets);
     rstreqs_i = resets;
   endfunction
 
-  function automatic void update_reset_en(
-      logic [pwrmgr_reg_pkg::NumRstReqs-1:0] reset_en_value);
+  function automatic void update_reset_en(logic [NumRstReqs-1:0] reset_en_value);
     reset_en = reset_en_value;
   endfunction
 
