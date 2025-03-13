@@ -158,7 +158,11 @@ class flash_ctrl_scoreboard #(
                 "Received eflash_tl d_chan item:\n%0s", item.sprint(uvm_default_line_printer)),
                 UVM_HIGH)
       // check tl packet integrity
-      void'(item.is_ok());
+      if (!item.is_ok()) begin
+        `uvm_error(`gfn,
+                   $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
+                             item.a_source, item.d_source))
+      end
 
       // check that address phase for this read is done
       `DV_CHECK_GT_FATAL(eflash_addr_phase_queue.size(), 0)
