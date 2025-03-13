@@ -57,7 +57,7 @@ static rom_error_t owner_spx_verify(
   sigverify_spx_root_t actual_root;
   sigverify_spx_root_t expected_root;
   spx_public_key_root(key->data, expected_root.data);
-  size_t i;
+  uint32_t i;
   for (i = 0; launder32(i) < kSigverifySpxRootNumWords; ++i) {
     expected_root.data[i] ^= shares[i];
   }
