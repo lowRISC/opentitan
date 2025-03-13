@@ -104,7 +104,6 @@ interface alert_esc_if(input clk, input rst_n);
   assign alert_rx_final = alert_rx_sync_dly2;
 
   clocking sender_cb @(posedge async_clk);
-    input  rst_n;
     output alert_tx_int;
     input  alert_rx;
     output esc_tx_int;
@@ -112,7 +111,6 @@ interface alert_esc_if(input clk, input rst_n);
   endclocking
 
   clocking receiver_cb @(posedge async_clk);
-    input  rst_n;
     input  alert_tx;
     output alert_rx_int;
     input  esc_tx;
@@ -120,7 +118,6 @@ interface alert_esc_if(input clk, input rst_n);
   endclocking
 
   clocking monitor_cb @(posedge clk);
-    input rst_n;
     input alert_tx_final;
     input alert_rx_final;
     input esc_tx;
