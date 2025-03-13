@@ -249,11 +249,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     debugger.num_harts = rv_dm_reg_pkg::NrHarts;
     debugger.num_triggers = 4;  // TODO: wire this from `top_darjeeling_pkg`.
 
-    // This TL agent is used in stub_cpu mode and connected with ibex data port.
-    // It can have up to 3 outstanding items, because req/rsp fifo can each hold 1 and
-    // there can also be a pending response in the peripheral.
-    // However, the actual ibex data port can only support 1 outstanding item.
-    m_tl_agent_cfg.max_outstanding_req = 3;
+    // This TL agent is used in stub_cpu mode and connected in place of the ibex data port;
+    // do not limit the number of outstanding requests because there are many devices and
+    // the xbar fabric is itself quite complex for Darjeeling.
+    // An actual CPU most likely imposes its own much lower limit on outstanding requests.
+    m_tl_agent_cfg.max_outstanding_req = 0;
 
     // Set the number of RAM tiles (1 each).
     num_ram_main_tiles = 1;
