@@ -93,8 +93,9 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
   xmodem_recv_start(iohandle);
   while (true) {
     HARDENED_RETURN_IF_ERROR(handle_send_modes(state, bootdata));
-    result = xmodem_recv_frame(iohandle, state->frame,
-                               state->data + state->offset, &rxlen, &command);
+    result = xmodem_recv_frame(
+        iohandle, state->frame, state->data + state->offset,
+        sizeof(state->data) - state->offset, &rxlen, &command);
     if (state->frame == 1 && result == kErrorXModemTimeoutStart) {
       xmodem_recv_start(iohandle);
       continue;
