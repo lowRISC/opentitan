@@ -252,9 +252,12 @@ def _opentitan_binary(ctx):
             default_info.extend(provides["logs"])
 
         # FIXME: vmem is a special case for ram targets used in ROM e2e test
-        # cases.
+        # cases. Some tops like Darjeeling expect a different word size than
+        # Earlgrey.
         if provides.get("vmem"):
             default_info.append(provides["vmem"])
+        if provides.get("vmem32"):
+            default_info.append(provides["vmem32"])
 
         # FIXME(cfrantz): Special case: The englishbreakfast verilator model
         # requires a non-scrambled ROM image.
