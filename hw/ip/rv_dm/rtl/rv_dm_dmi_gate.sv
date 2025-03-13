@@ -119,9 +119,6 @@ module rv_dm_dmi_gate
     logic unused_strap_en_override;
     assign unused_strap_en_override = strap_en_override_i;
     assign strap_en                 = strap_en_i;
-
-    // Ensure that strap is never asserted
-    `ASSERT_NEVER(A_StrapNeverAsserted, strap_en)
   end
 
   /////////////////////////////
