@@ -35,12 +35,14 @@ void xmodem_cancel(void *iohandle);
  * @param iohandle An opaque user point associated with the io device.
  * @param frame The frame number expected (start at 1).
  * @param data Buffer to receive the data into.
+ * @param len_available Available space in the data buffer.
  * @param rxlen The length of data received.
  * @param unknown_rx The byte received when the error is kErrorXmodemUnknown.
  * @return Error value.
  */
 rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
-                              size_t *rxlen, uint8_t *unknown_rx);
+                              size_t len_available, size_t *rxlen,
+                              uint8_t *unknown_rx);
 
 /**
  * Send data using Xmodem-CRC.

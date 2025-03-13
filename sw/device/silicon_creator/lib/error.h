@@ -186,6 +186,7 @@ enum module_ {
   X(kErrorXModemUnknown,              ERROR_(9, kModuleXModem, kUnknown)), \
   X(kErrorXModemProtocol,             ERROR_(10, kModuleXModem, kInvalidArgument)), \
   X(kErrorXModemTooManyErrors,        ERROR_(11, kModuleXModem, kFailedPrecondition)), \
+  X(kErrorXModemBadLength,            ERROR_(12, kModuleXModem, kInvalidArgument)), \
   \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
