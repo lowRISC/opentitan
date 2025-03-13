@@ -14,7 +14,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/ujson/private_status.h"
 
-static bool is_space(int c) { return c == ' ' || (unsigned)c - '\t' < 5; }
+static bool is_space(int c) { return c == ' ' || (c >= '\t' && c < '\t' + 5); }
 
 ujson_t ujson_init(void *context, status_t (*getc)(void *),
                    status_t (*putbuf)(void *, const char *, size_t)) {
@@ -170,7 +170,13 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   }
   status_t s;
   while (ch >= '0' && ch <= '9') {
+    if (value > UINT64_MAX / 10) {
+      return OUT_OF_RANGE();
+    }
     value *= 10;
+    if (value > UINT64_MAX - (ch - '0')) {
+      return OUT_OF_RANGE();
+    }
     value += ch - '0';
     s = ujson_getc(uj);
     if (status_err(s))
