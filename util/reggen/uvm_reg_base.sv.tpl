@@ -453,7 +453,6 @@ reg_field_name, field)">\
 % if field.alias_target is not None:
       ${fname}.set_alias_name("${field.alias_target.lower()}");
 % endif
-      ${fname}.set_original_access("${field_access}");
 % if field.mubi:
       ${fname}.set_mubi_width(${field_size});
 % endif

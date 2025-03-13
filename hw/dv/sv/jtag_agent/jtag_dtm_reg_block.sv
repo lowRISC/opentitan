@@ -50,9 +50,6 @@ class jtag_dtm_reg_bypass extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    bypass.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dtm_reg_bypass
 
@@ -86,8 +83,6 @@ class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    rsvd.set_original_access("RO");
-
     // Note: The reset value of manufld must be set based on the design.
     manufld = (dv_base_reg_field::type_id::create("manufld"));
     manufld.configure(
@@ -101,8 +96,6 @@ class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    manufld.set_original_access("RO");
 
     // Note: The reset value of partnumber must be set based on the design.
     partnumber = (dv_base_reg_field::type_id::create("partnumber"));
@@ -118,8 +111,6 @@ class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    partnumber.set_original_access("RO");
-
     // Note: The reset value of version must be set based on the design.
     version = (dv_base_reg_field::type_id::create("version"));
     version.configure(
@@ -133,9 +124,6 @@ class jtag_dtm_reg_idcode extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    version.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dtm_reg_idcode
 
@@ -173,8 +161,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    version.set_original_access("RO");
-
     // Note: The reset value of abits must be set based on the design.
     abits = (dv_base_reg_field::type_id::create("abits"));
     abits.configure(
@@ -193,8 +179,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    abits.set_original_access("RO");
-
     dmistat = (dv_base_reg_field::type_id::create("dmistat"));
     dmistat.configure(
       .parent(this),
@@ -207,8 +191,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    dmistat.set_original_access("RO");
 
     idle = (dv_base_reg_field::type_id::create("idle"));
     idle.configure(
@@ -223,8 +205,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    idle.set_original_access("RO");
-
     zero0 = (dv_base_reg_field::type_id::create("zero0"));
     zero0.configure(
       .parent(this),
@@ -237,8 +217,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    zero0.set_original_access("RO");
 
     dmireset = (dv_base_reg_field::type_id::create("dmireset"));
     dmireset.configure(
@@ -253,8 +231,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    dmireset.set_original_access("W1C");
-
     dmihardreset = (dv_base_reg_field::type_id::create("dmihardreset"));
     dmihardreset.configure(
       .parent(this),
@@ -268,7 +244,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    dmihardreset.set_original_access("W1C");
     // Writing 1 to this field will clear the dmi register, causing read-check mismatches.
     csr_excl.add_excl(dmihardreset.get_full_name(), CsrExclWrite, CsrNonInitTests);
 
@@ -284,9 +259,6 @@ class jtag_dtm_reg_dtmcs extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(0),
       .individually_accessible(0));
-
-    zero1.set_original_access("RO");
-
   endfunction : build
 endclass : jtag_dtm_reg_dtmcs
 
@@ -323,8 +295,6 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
       .is_rand(1),
       .individually_accessible(0));
 
-    op.set_original_access("RW");
-
     data = (dv_base_reg_field::type_id::create("data"));
     data.configure(
       .parent(this),
@@ -337,8 +307,6 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    data.set_original_access("RW");
 
     address = (dv_base_reg_field::type_id::create("address"));
     address.configure(
@@ -356,9 +324,6 @@ class jtag_dtm_reg_dmi extends jtag_dtm_base_reg;
       .has_reset(1),
       .is_rand(1),
       .individually_accessible(0));
-
-    address.set_original_access("RW");
-
   endfunction : build
 
   // On reads, we do not want to write the op field.
