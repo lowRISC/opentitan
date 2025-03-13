@@ -248,6 +248,10 @@ module top_earlgrey #(
   localparam int SpiHost0NumCS = 1;
   // local parameters for spi_host1
   localparam int SpiHost1NumCS = 1;
+  // local parameters for sram_ctrl_ret_aon
+  localparam int SramCtrlRetAonOutstanding = 2;
+  // local parameters for sram_ctrl_main
+  localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
@@ -2162,7 +2166,8 @@ module top_earlgrey #(
     .InstSize(SramCtrlRetAonInstSize),
     .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlRetAonOutstanding)
   ) u_sram_ctrl_ret_aon (
       // [34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
@@ -2649,7 +2654,8 @@ module top_earlgrey #(
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlMainOutstanding)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),

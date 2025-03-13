@@ -163,6 +163,8 @@ module top_englishbreakfast #(
   // Local Parameters
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
+  // local parameters for sram_ctrl_main
+  localparam int SramCtrlMainOutstanding = 2;
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = 4;
   localparam int unsigned RvCoreIbexWidthPingCounter = 16;
@@ -1190,7 +1192,8 @@ module top_englishbreakfast #(
     .InstSize(SramCtrlMainInstSize),
     .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
-    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
+    .Outstanding(SramCtrlMainOutstanding)
   ) u_sram_ctrl_main (
       // [22]: fatal_error
       .alert_tx_o  ( alert_tx[22:22] ),
