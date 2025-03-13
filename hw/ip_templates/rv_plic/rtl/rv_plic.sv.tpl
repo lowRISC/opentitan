@@ -276,6 +276,9 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 % endif
   `ASSERT_KNOWN(IrqKnownO_A, irq_o)
   `ASSERT_KNOWN(MsipKnownO_A, msip_o)
+`ifdef FPV_ON
+  `ASSERT(FatalAlertNeverLow_A, ##1 !$fell(alerts[0]))
+`endif
   for (genvar k = 0; k < NumTarget; k++) begin : gen_irq_id_known
     `ASSERT_KNOWN(IrqIdKnownO_A, irq_id_o[k])
   end
