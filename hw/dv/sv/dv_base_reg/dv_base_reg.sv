@@ -443,9 +443,9 @@ class dv_base_reg extends uvm_reg;
       shadow_update_err = 0;
       shadow_wr_staged  = 0;
       shadow_fatal_lock = 0;
-      // in case reset is issued during shadowed writes
-      void'(atomic_en_shadow_wr.try_get(1));
-      atomic_en_shadow_wr.put(1);
+      // Make a new copy of the shadow write semaphore, so that we don't need a shadowed write
+      // operation to complete if a reset happens in the middle of one.
+      atomic_en_shadow_wr = new(1);
     end
   endfunction
 
