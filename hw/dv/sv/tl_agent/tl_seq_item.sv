@@ -216,14 +216,9 @@ class tl_seq_item extends uvm_sequence_item;
   // Return true if this sequence item is a write (as opposed to a read).
   extern function bit is_write();
 
-  // Return true if d_opcode is appropriate with a response for the A channel message detailed in
-  // the a_* fields. If throw_error is true then this generates a uvm_error if the opcode is not
-  // appropriate.
-  extern function bit check_opcodes(bit throw_error);
-
-  // Return true if the fields of the D channel message are appropriate as a response to the A
-  // channel message. If throw_error is true (the default) then this generates a uvm_error if not.
-  extern function bit is_ok(bit throw_error = 1'b1);
+  // Return true if the values in the fields of the D channel message are appropriate as a response
+  // to the A channel message.
+  extern function bit is_ok();
 
   // Compute and check the integrity of the a_channel payload.
   //
@@ -452,23 +447,12 @@ function bit tl_seq_item::is_write();
   return (a_opcode inside {PutFullData, PutPartialData});
 endfunction
 
-function bit tl_seq_item::check_opcodes(bit throw_error);
-  // for read, return AccessAckData; for write or error opcode, return AccessAck
-  tl_d_op_e exp_d_opcode = a_opcode == Get ? tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
-  check_opcodes = (d_opcode == int'(exp_d_opcode));
-  if (!check_opcodes && throw_error) begin
-    `uvm_error(`gfn, $sformatf("d_opcode: %0d & exp_d_opcode: %0d mismatch",
-                                d_opcode, exp_d_opcode))
-  end
-endfunction
-
-function bit tl_seq_item::is_ok(bit throw_error = 1'b1);
-  is_ok = 1'b1;
-  is_ok &= check_opcodes(throw_error);
-  // addr and data channels should have the same source
-  is_ok &= (a_source == d_source);
-  if (!is_ok && throw_error)
-    `uvm_error(`gfn, $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch", a_source, d_source))
+function bit tl_seq_item::is_ok();
+  // For this to be an appropriate response, the D channel has to hold something that could be a
+  // response to the request on the A channel. For a Get, TileLink expects an AccessAckData; for a
+  // write or error opcode, it expects AccessAck
+  tl_d_op_e exp_d_opcode = (a_opcode == Get) ? tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
+  return (d_opcode == exp_d_opcode) && (a_source == d_source);
 endfunction
 
 function bit tl_seq_item::is_a_chan_intg_ok(bit throw_error = 1'b1);
