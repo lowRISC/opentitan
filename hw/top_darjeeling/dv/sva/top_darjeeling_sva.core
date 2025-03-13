@@ -7,7 +7,7 @@ description: "TOP_DARJEELING assertion modules and bind file."
 filesets:
   files_dv:
     depend:
-      - lowrisc:darjeeing_ip:pwrmgr_pkg
+      - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:prim:assert
       - lowrisc:systems:top_darjeeling
     files:
