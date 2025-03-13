@@ -60,6 +60,7 @@ package ac_range_check_env_pkg;
   } racl_policy_t;
 
   typedef struct packed {
+    bit                 instr_type;
     bit                 write;
     bit [AddrWidth-1:0] addr;
     bit [MaskWidth-1:0] mask;
