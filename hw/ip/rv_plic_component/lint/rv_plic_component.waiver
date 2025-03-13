@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+waive -rules EXPLICIT_BITLEN -location {rv_plic_target.sv} -regexp {Bit length .* '1'} \
+      -comment "i + 1 is assumed as constant and guarded by SRCW"
+
+waive -rules INTEGER -location {rv_plic_target.sv} -regexp {'i' of type int used as} \
+      -comment "int i is static and only assigned to irq_id_next when it hits condition"
+
+waive -rules TWOS_COMP -location {rv_plic_target.sv} -regexp {Explicit two's complement with terms} \
+      -comment "This is permissible in this context"

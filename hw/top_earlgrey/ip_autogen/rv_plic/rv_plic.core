@@ -8,8 +8,8 @@ description: "RISC-V Platform Interrupt Controller (PLIC)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:earlgrey_ip:rv_plic_component:0.1
       - lowrisc:ip:tlul
+      - lowrisc:ip:rv_plic_component
       - lowrisc:prim:subreg
     files:
       - rtl/rv_plic_reg_pkg.sv
