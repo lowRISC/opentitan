@@ -416,19 +416,24 @@ endfunction : reset
 function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
 
-  if (matching_cnt == 0) begin
-    `uvm_error(`gfn, {"No matching transaction found, it can be because all TL accesses have been ",
-                      "filtered. Please check your DUT configuration and your sequence."})
-  end
+  // This condition seems useless, but the way the environment builds the scoreboard, it doesn't
+  // care about this configuration field for some reason. We don't need to check the following
+  // things when the ran test is related to the CSR checks in particular.
+  if (cfg.en_scb) begin
+    if (matching_cnt == 0) begin
+      `uvm_error(`gfn, {"No matching transaction found, it can be because all the TL accesses have",
+                        " been filtered. Please check your DUT configuration and your sequence."})
+    end
 
-  if (act_tl_filt_q.size() > 0) begin
-    `uvm_error(`gfn, {"Queue act_tl_filt_q is not empty: not all the received TL transactions have",
-                      " been compared."})
-  end
+    if (act_tl_filt_q.size() > 0) begin
+      `uvm_error(`gfn, {"Queue act_tl_filt_q is not empty: not all the received TL transactions",
+                        " have been compared."})
+    end
 
-  if (exp_tl_filt_q.size() > 0) begin
-    `uvm_error(`gfn, {"Queue exp_tl_filt_q is not empty: not all the received TL transactions have",
-                      " been compared."})
+    if (exp_tl_filt_q.size() > 0) begin
+      `uvm_error(`gfn, {"Queue exp_tl_filt_q is not empty: not all the received TL transactions",
+                        " have been compared."})
+    end
   end
 endfunction : check_phase
 
