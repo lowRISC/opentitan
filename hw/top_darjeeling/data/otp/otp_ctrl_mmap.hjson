@@ -264,7 +264,7 @@
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
             absorb:     false,
-            size:       "632", // in bytes
+            size:       "648", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -292,7 +292,7 @@
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
-                    size: "400"
+                    size: "412"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
