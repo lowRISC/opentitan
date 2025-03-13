@@ -22,8 +22,15 @@ class esc_receiver_driver extends alert_esc_base_driver;
   // Overridden from dv_base_driver.
   extern virtual task reset_signals();
 
+  // Run rsp_escalator and esc_ping_detector. Does not terminate.
+  //
+  // Overridden from alert_esc_base_driver.
   extern virtual task drive_req();
+
+  // Run forever, detect single-cycle escalation requests. These are ping requests. When one
+  // happens, set is_ping, which tells drive_esc_resp to send the 1010... pattern.
   extern virtual task esc_ping_detector();
+
   // This task will response to escalator sender's esc_p and esc_n signal,
   // depending on the signal length and req setting, it will response to
   // ping and real esc signals.
@@ -73,28 +80,36 @@ task esc_receiver_driver::drive_req();
   fork
     rsp_escalator();
     esc_ping_detector();
-  join_none
+  join
 endtask : drive_req
 
 task esc_receiver_driver::esc_ping_detector();
   forever begin
-    int cnt ;
-    wait(under_reset == 0);
-    fork
-      begin
-        wait_esc();
-        @(cfg.vif.receiver_cb);
-        while (get_esc() == 1) begin
-          cnt++;
-          @(cfg.vif.receiver_cb);
-        end
-        if (cnt == 1) is_ping = 1;
-      end
-      begin
+    wait(!under_reset);
+    fork begin : isolation_fork
+      fork
         wait(under_reset);
-      end
-    join_any
-    disable fork;
+        begin
+          int cnt;
+
+          // Wait until the esc_p/esc_n lines are not 0/1, which shows the start of an escalation.
+          wait_esc();
+          @(cfg.vif.receiver_cb);
+
+          // Now count the number of cycles where esc_p/esc_n is 1/0
+          while (get_esc() == 1) begin
+            cnt++;
+            @(cfg.vif.receiver_cb);
+          end
+
+          // If there was exactly one cycle, this is a ping from the escalation sender module. Set
+          // the is_ping flag and drive_esc_resp will pick this up and start driving a 1010...
+          // sequence
+          if (cnt == 1) is_ping = 1;
+        end
+      join_any
+      disable fork;
+    end join
   end
 endtask : esc_ping_detector
 
