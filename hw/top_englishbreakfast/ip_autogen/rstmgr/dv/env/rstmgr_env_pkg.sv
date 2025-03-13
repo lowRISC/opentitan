@@ -30,8 +30,8 @@ package rstmgr_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
   parameter uint NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault", "fatal_cnsty_fault"};
 
   // Sorted instances of rstmgr_leaf_rst modules in top_earlgrey's rstmgr.
   // This can be generated from the source using

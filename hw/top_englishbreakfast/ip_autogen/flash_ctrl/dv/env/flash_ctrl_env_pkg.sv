@@ -28,8 +28,10 @@ package flash_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[] = {"recov_err", "fatal_std_err", "fatal_err",
-                                       "fatal_prim_flash_alert", "recov_prim_flash_alert"};
+  parameter uint NUM_ALERTS = 5;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
+    "recov_err", "fatal_std_err", "fatal_err", "fatal_prim_flash_alert", "recov_prim_flash_alert"
+  };
 
   // Some paths are added multiple times to accomodate
   // indexing in the loop
@@ -47,7 +49,6 @@ package flash_ctrl_env_pkg;
     "tb.dut.u_flash_hw_if.rma_num_words"
   };
 
-  parameter uint NUM_ALERTS = 5;
   parameter uint FlashNumPages = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
   parameter uint FlashSizeBytes = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
                                   flash_ctrl_pkg::DataWidth / 8;
