@@ -1,0 +1,2 @@
+# These lines are too long due to templating
+waive --rule=line-length --location=".*ral_pkg.*"
