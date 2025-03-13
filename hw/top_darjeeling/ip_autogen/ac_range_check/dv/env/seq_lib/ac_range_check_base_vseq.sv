@@ -111,13 +111,14 @@ task ac_range_check_base_vseq::cfg_range_racl_policy();
 endtask : cfg_range_racl_policy
 
 task ac_range_check_base_vseq::send_single_tl_unfilt_tr();
-  tl_host_single_seq tl_unfilt_host_seq;
+  cip_tl_host_single_seq tl_unfilt_host_seq;
   `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
   `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_unfilt_host_seq,
-                                 write == tl_main_vars.write;
-                                 addr  == tl_main_vars.addr;
-                                 mask  == tl_main_vars.mask;
-                                 data  == tl_main_vars.data;)
+                                 instr_type == mubi4_bool_to_mubi(tl_main_vars.instr_type);
+                                 write      == tl_main_vars.write;
+                                 addr       == tl_main_vars.addr;
+                                 mask       == tl_main_vars.mask;
+                                 data       == tl_main_vars.data;)
 
   csr_utils_pkg::increment_outstanding_access();
   `uvm_info(`gfn, "Starting tl_unfilt_host_seq", UVM_MEDIUM)
