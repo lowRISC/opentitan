@@ -86,6 +86,7 @@ impl XmodemFirmware {
                     io,
                     frame,
                     buf.as_mut_ptr(),
+                    buf.len(),
                     &mut rxlen as *mut usize,
                     &mut unknown_rx as *mut u8,
                 ))

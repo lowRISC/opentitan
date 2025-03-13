@@ -83,7 +83,8 @@ void xmodem_ack(void *iohandle, bool ack) {
 }
 
 rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
-                              size_t *rxlen, uint8_t *unknown_rx) {
+                              size_t len_available, size_t *rxlen,
+                              uint8_t *unknown_rx) {
   uint8_t ch;
   size_t n = xmodem_read(iohandle, &ch, sizeof(ch), kXModemLongTimeout);
   if (n == 0) {
@@ -92,6 +93,10 @@ rom_error_t xmodem_recv_frame(void *iohandle, uint32_t frame, uint8_t *data,
     // Determine if we should expect a 1K or 128 byte block.
     size_t len = ch == kXModemStx ? 1024 : 128;
     uint8_t pkt[2];
+
+    if (len > len_available) {
+      return kErrorXModemBadLength;
+    }
 
     // Get the frame number and its inverse.
     n = xmodem_read(iohandle, pkt, sizeof(pkt), kXModemShortTimeout);
