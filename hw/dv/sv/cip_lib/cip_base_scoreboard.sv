@@ -194,7 +194,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     if (cfg.en_scb_tl_err_chk) begin
       // check tl packet integrity
-      void'(item.is_ok());
+      if (!item.is_ok()) begin
+        `uvm_error(`gfn,
+                   $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
+                             item.a_source, item.d_source))
+      end
       if (predict_tl_err(item, DataChannel, ral_name)) return;
     end
     if (cfg.en_scb_mem_chk && is_mem_addr(item, ral_name)) begin

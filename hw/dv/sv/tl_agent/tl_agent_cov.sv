@@ -87,7 +87,7 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
                                "PutFullData_mask_not_match_size",
                                "addr_not_align_mask",
                                "addr_not_align_size",
-                               "mask_not_in_enabled_lanes",
+                               "mask_not_in_active_lanes",
                                "size_over_max"};
     super.build_phase(phase);
     m_pending_req_on_rst_cg = new("m_pending_req_on_rst_cg", `gfn);
@@ -119,8 +119,8 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
             item.get_error_PutFullData_mask_size_mismatched());
         m_tl_error_cov_objs["addr_not_align_mask"].sample(item.get_error_addr_size_misaligned());
         m_tl_error_cov_objs["addr_not_align_size"].sample(item.get_error_addr_size_misaligned());
-        m_tl_error_cov_objs["mask_not_in_enabled_lanes"].sample(
-            item.get_error_mask_not_in_enabled_lanes());
+        m_tl_error_cov_objs["mask_not_in_active_lanes"].sample(
+            item.get_error_mask_not_in_active_lanes());
         m_tl_error_cov_objs["size_over_max"].sample(item.get_error_size_over_max());
       end
     end else begin // device mode
