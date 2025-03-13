@@ -412,27 +412,30 @@
 `define DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_  = `gfn, ERROR_MSG_ = "timeout occurred!", REPORT_FATAL_ = 1) \
   begin \
     #(TIMEOUT_NS_ * 1ns); \
-    if (REPORT_FATAL_) `dv_fatal(ERROR_MSG_, ID_) \
-    else               `dv_error(ERROR_MSG_, ID_) \
+    if (REPORT_FATAL_) begin \
+      `dv_fatal(ERROR_MSG_, ID_) \
+    end else begin \
+      `dv_error(ERROR_MSG_, ID_) \
+    end \
   end
 `endif
 
 // Wait for a statement, but exit early after a timeout
 `ifndef DV_SPINWAIT
-`define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  `DV_SPINWAIT_EXIT(WAIT_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
+`define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn, REPORT_FATAL_ = 1) \
+  `DV_SPINWAIT_EXIT(WAIT_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_, REPORT_FATAL_);, "", ID_)
 `endif
 
 // a shorthand of `DV_SPINWAIT(wait(...))
 `ifndef DV_WAIT
-`define DV_WAIT(WAIT_COND_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  `DV_SPINWAIT(wait (WAIT_COND_);, MSG_, TIMEOUT_NS_, ID_)
+`define DV_WAIT(WAIT_COND_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn, REPORT_FATAL_ = 1) \
+  `DV_SPINWAIT(wait (WAIT_COND_);, MSG_, TIMEOUT_NS_, ID_, REPORT_FATAL_)
 `endif
 
 // Wait for one of two statements, but exit early after a timeout
 `ifndef DV_WAIT_MULTI
-`define DV_WAIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  `DV_SPINWAIT_EXIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
+`define DV_WAIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn, REPORT_FATAL_ = 1) \
+  `DV_SPINWAIT_EXIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_, REPORT_FATAL_);, "", ID_)
 `endif
 
 // Control assertions in the DUT.
