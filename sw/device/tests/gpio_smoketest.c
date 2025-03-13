@@ -74,8 +74,8 @@ bool test_main(void) {
       dt_periph_io_t periph_io =
           dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0 + i);
       dt_pad_t pad = kPinmuxTestutilsGpioPads[i];
-      CHECK_DIF_OK(dif_pinmux_mio_select_input(&pinmux, periph_io, pad));
-      CHECK_DIF_OK(dif_pinmux_mio_select_output(&pinmux, pad, periph_io));
+      CHECK_STATUS_OK(pinmux_testutils_connect(&pinmux, periph_io,
+                                               kDtPeriphIoDirInout, pad));
     }
   }
   CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));

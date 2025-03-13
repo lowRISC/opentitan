@@ -2007,6 +2007,7 @@ opentitan_test(
     srcs = ["gpio_smoketest.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         # Not compatible with the verilated top level.
         dicts.omit(
             EARLGREY_TEST_ENVS,
