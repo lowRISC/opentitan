@@ -170,7 +170,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
     .q_o(intr_src_synced)
   );
 
-  ${module_instance_name}_gateway #(
+  rv_plic_gateway #(
     .N_SOURCE   (NumSrc)
   ) u_gateway (
     .clk_i,
@@ -189,7 +189,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Target interrupt notification //
   ///////////////////////////////////
   for (genvar i = 0 ; i < NumTarget ; i++) begin : gen_target
-    ${module_instance_name}_target #(
+    rv_plic_target #(
       .N_SOURCE    (NumSrc),
       .MAX_PRIO    (MAX_PRIO)
     ) u_target (
