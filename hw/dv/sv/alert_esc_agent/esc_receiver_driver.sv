@@ -141,18 +141,13 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
   if (req.standalone_int_err) begin
     wait_esc_complete();
     @(cfg.vif.receiver_cb); // wait one clock cycle to ensure is_ping is set
-    if (!is_ping) begin
-      repeat (req.int_err_cyc) begin
-        if (cfg.vif.esc_tx.esc_p === 1'b0 && !is_ping) begin
-          random_drive_resp_signal();
-          @(cfg.vif.receiver_cb);
-        end else begin
-          break;
-        end
-      end
-      // TODO: missed int_err case at first cycle of the esc_p = 1
-      if (!is_ping) reset_resp();
+    repeat (req.int_err_cyc) begin
+      if (is_ping || cfg.vif.esc_tx.esc_p !== 1'b0) break;
+      random_drive_resp_signal();
+      @(cfg.vif.receiver_cb);
     end
+    // TODO: missed int_err case at first cycle of the esc_p = 1
+    if (!is_ping) reset_resp();
   end else begin
     wait_esc();
     @(cfg.vif.receiver_cb);
@@ -166,15 +161,13 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
     if (is_ping) begin
       // `ping_timeout_cycle` is divided by 2 because `toggle_resp_signal` task contains two cycles
       int toggle_cycle = req.int_err ? cfg.ping_timeout_cycle / 2 : 1;
-      fork
-        begin : isolation_fork
-          fork
-            repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
-            cfg.probe_vif.wait_esc_en();
-          join_any
-          disable fork;
-        end
-      join
+      fork begin : isolation_fork
+        fork
+          repeat (toggle_cycle) toggle_resp_signal(req.ping_timeout);
+          cfg.probe_vif.wait_esc_en();
+        join_any
+        disable fork;
+      end join
       is_ping = 0;
       if (cfg.probe_vif.get_esc_en()) begin
         while (get_esc() === 1'b1) toggle_resp_signal(0);
