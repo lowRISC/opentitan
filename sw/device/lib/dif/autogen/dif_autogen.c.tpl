@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 <%doc>
     This file is the "auto-generated DIF library implementation template", which
     provides implementations of some mandatory DIFs that are similar across all
@@ -9,9 +8,16 @@
     auto-generated DIF header file (see util/make_new_dif/dif_autogen.inc.tpl).
 
     Note, this template requires the following Python objects to be passed:
-
-    1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
+    - ipcfg: path to the IP's Hjson file
 </%doc>
+
+<%
+    from make_new_dif.ip import Ip
+    from pathlib import Path
+
+    ip_hjson = Path(ipcfg)
+    ip = Ip(ip_hjson.stem, "AUTOGEN", ip_hjson)
+%>
 
 <%def name="mmio_region_read32(intr_reg_offset)">mmio_region_read32(
     ${ip.name_snake}->base_addr,
@@ -23,8 +29,6 @@
     (ptrdiff_t)${intr_reg_offset},
     ${value});
 </%def>
-
-${autogen_banner}
 
 #include <stdint.h>
 

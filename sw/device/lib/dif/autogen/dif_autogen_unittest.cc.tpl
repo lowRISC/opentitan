@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 <%doc>
     This file is the "auto-generated DIF library unit test template", which
     provides implementations of unit tests for some mandatory DIFs that are
@@ -9,12 +8,17 @@
     for the DIFs defined in the auto-generated DIF header file (see
     util/make_new_dif/dif_autogen.inc.tpl).
 
-    This template requires the following Python objects to be passed:
-
-    1. ip: See util/make_new_dif.py for the definition of the `ip` obj.
+    Note, this template requires the following Python objects to be passed:
+    - ipcfg: path to the IP's Hjson file
 </%doc>
 
-${autogen_banner}
+<%
+    from make_new_dif.ip import Ip
+    from pathlib import Path
+
+    ip_hjson = Path(ipcfg)
+    ip = Ip(ip_hjson.stem, "AUTOGEN", ip_hjson)
+%>
 
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
