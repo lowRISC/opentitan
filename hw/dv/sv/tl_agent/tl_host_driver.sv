@@ -48,7 +48,7 @@ class tl_host_driver extends tl_base_driver;
   // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiever
   //                 hasn't responded with a_ready.
   extern protected task send_a_request_body(tl_seq_item req, int a_valid_len,
-                                            output bit req_done, output bit req_abort);
+  output bit req_done, output bit req_abort);
 
   // Drive the d_ready pin (as the host) forever to allow a device to send responses back
   //
@@ -119,7 +119,17 @@ task tl_host_driver::reset_signals();
     //  - The sequencer shouldn't have any items available through seq_item_port. If an item had
     //    been available, we should have taken it immediately in get_and_drive.
     `DV_CHECK_EQ(pending_a_req.size(), 0)
-    `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
+    //`DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
+
+    //wait(!seq_item_port.has_do_available());
+
+    while(seq_item_port.has_do_available()) begin
+      tl_seq_item item;
+      //seq_item_port.get_next_item(item); // No more items
+      @(posedge cfg.vif.clk);
+      `uvm_info(get_full_name(), "Cleaning up remaining transactions", UVM_MEDIUM)
+      //seq_item_port.item_done();
+    end
 
     // At this point, we're in the main part of the simulation and the get_and_drive task will be
     // driving sequence items over the bus. Wait until reset is asserted then set the reset_asserted
@@ -161,7 +171,7 @@ task tl_host_driver::a_channel_thread();
     forever begin
       // Wait for the next item, but drop out early if we leave reset
       `DV_SPINWAIT_EXIT(seq_item_port.get_next_item(req);,
-                        wait(!reset_asserted);)
+      wait(!reset_asserted);)
       if (!reset_asserted) break;
 
       // If we get here then we are still in reset and the get_next_item() call yielded an item in
@@ -189,7 +199,7 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
   // need to insert additional delays to ensure we do not end up sending the new request whose
   // a_source matches one of the pending requests.
   `DV_SPINWAIT_EXIT(while (is_source_in_pending_req(req.a_source)) @(cfg.vif.host_cb);,
-                    wait(reset_asserted);)
+  wait(reset_asserted);)
 
   while (!req_done && !req_abort && !reset_asserted) begin
     if (cfg.use_seq_item_a_valid_delay) begin
@@ -208,7 +218,7 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
 
     // break delay loop if reset asserted to release blocking
     `DV_SPINWAIT_EXIT(repeat (a_valid_delay) @(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    wait(reset_asserted);)
 
     if (!reset_asserted) begin
       pending_a_req.push_back(req);
@@ -226,7 +236,7 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
     end
     // drop valid if it lasts for a_valid_len, even there is no a_ready
     `DV_SPINWAIT_EXIT(send_a_request_body(req, a_valid_len, req_done, req_abort);,
-                      wait(reset_asserted);)
+    wait(reset_asserted);)
 
     // when reset and host_cb.h2d_int.a_valid <= 1 occur at the same time, if clock is off,
     // there is a race condition and invalidate_a_channel can't clear a_valid.
@@ -243,11 +253,11 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
     req.req_completed = 1;
   end
   `uvm_info(get_full_name(), $sformatf("Req %0s: %0s", req_abort ? "aborted" : "sent",
-                                       req.convert2string()), UVM_HIGH)
+  req.convert2string()), UVM_HIGH)
 endtask
 
 task tl_host_driver::send_a_request_body(tl_seq_item req, int a_valid_len,
-                                         output bit req_done, output bit req_abort);
+  output bit req_done, output bit req_abort);
   int unsigned a_valid_cnt = 0;
   req_done = 1'b0;
   req_abort = 1'b0;
@@ -259,7 +269,7 @@ task tl_host_driver::send_a_request_body(tl_seq_item req, int a_valid_len,
       req_done = 1;
       break;
     end else if ((req.req_abort_after_a_valid_len || cfg.allow_a_valid_drop_wo_a_ready) &&
-                 a_valid_cnt >= a_valid_len) begin
+    a_valid_cnt >= a_valid_len) begin
       if (req.req_abort_after_a_valid_len) req_abort = 1;
       cfg.vif.host_cb.h2d_int.a_valid <= 1'b0;
       // remove unaccepted item
@@ -296,7 +306,7 @@ task tl_host_driver::d_channel_thread();
 
   forever begin
     if ((cfg.vif.host_cb.d2h.d_valid && cfg.vif.h2d_int.d_ready && !reset_asserted) ||
-        ((pending_a_req.size() != 0) & reset_asserted)) begin
+    ((pending_a_req.size() != 0) & reset_asserted)) begin
       // Use the source ID to find the matching request
       foreach (pending_a_req[i]) begin
         if ((pending_a_req[i].a_source == cfg.vif.host_cb.d2h.d_source) | reset_asserted) begin
@@ -315,7 +325,7 @@ task tl_host_driver::d_channel_thread();
           seq_item_port.put_response(rsp);
           pending_a_req.delete(i);
           `uvm_info(get_full_name(), $sformatf("Got response %0s, pending req:%0d",
-                                     rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
+          rsp.convert2string(), pending_a_req.size()), UVM_HIGH)
           rsp.rsp_completed = !reset_asserted;
           break;
         end

@@ -762,7 +762,6 @@ class cip_base_vseq #(
                 begin : run_stress_seq
                   dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T) dv_vseq;
                   `downcast(dv_vseq, seq.clone())
-
                   dv_vseq.do_apply_reset = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)

@@ -10,6 +10,7 @@ class tl_agent_base_vseq extends dv_base_vseq #(.CFG_T               (tl_agent_e
                                                 .VIRTUAL_SEQUENCER_T (tl_agent_virtual_sequencer));
   uint min_req_cnt = 100;
   uint max_req_cnt = 200;
+  uint _priority   = 100;
 
   rand bit out_of_order_rsp = 1;
 
@@ -29,6 +30,7 @@ class tl_agent_base_vseq extends dv_base_vseq #(.CFG_T               (tl_agent_e
   virtual task run_host_seq();
     tl_host_seq host_seq;
     host_seq = tl_host_seq#()::type_id::create("host_seq");
+    host_seq.set_priority(_priority);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(host_seq,
                                    req_cnt inside {[min_req_cnt : max_req_cnt]};)
     host_seq.start(p_sequencer.host_seqr);

@@ -121,8 +121,8 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
       randomize_rsp(rsp);
       post_randomize_rsp(rsp);
       update_mem(rsp);
-      start_item(rsp);
-      finish_item(rsp);
+      start_item(rsp, 100);
+      finish_item(rsp, 100);
       get_response(rsp);
 
       // Remove from req_q if response is completed.
