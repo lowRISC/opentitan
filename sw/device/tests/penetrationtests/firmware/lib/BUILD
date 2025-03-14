@@ -45,6 +45,7 @@ cc_library(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sensor_ctrl",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",

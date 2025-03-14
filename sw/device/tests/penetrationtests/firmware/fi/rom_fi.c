@@ -51,6 +51,8 @@ status_t handle_rom_read(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -70,6 +72,8 @@ status_t handle_rom_read(ujson_t *uj) {
   // Send the first 8 bytes of the digest and the alerts back to the host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_rom_fi_digest_t, uj, &uj_output);
   return OK_STATUS();
 }

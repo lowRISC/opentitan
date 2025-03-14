@@ -21,7 +21,8 @@ UJSON_SERDE_ENUM(LcCtrlFiSubcommand, lc_ctrl_fi_subcommand_t, LCCTRLFI_SUBCOMMAN
     field(state, uint32_t) \
     field(counter, uint32_t) \
     field(alerts, uint32_t, 3) \
-    field(err_status, uint32_t)
+    field(err_status, uint32_t) \
+    field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(LcCtrlFiCorruption, lc_ctrl_fi_corruption_t, LCCTRLFI_CORRUPTION);
 
 // clang-format on
