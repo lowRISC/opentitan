@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sim:0.1")}
-description: "AC_RANGE_CHECK DV sim target"
+description: "${module_instance_name.upper()} DV sim target"
 filesets:
   files_rtl:
     depend:
@@ -13,8 +13,8 @@ filesets:
 
   files_dv:
     depend:
-      - ${instance_vlnv("lowrisc:dv:ac_range_check_test")}
-      - ${instance_vlnv("lowrisc:dv:ac_range_check_sva")}
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_test")}
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

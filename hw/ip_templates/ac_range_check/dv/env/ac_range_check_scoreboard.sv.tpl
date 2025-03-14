@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ac_range_check_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(ac_range_check_env_cfg),
-    .RAL_T(ac_range_check_reg_block),
-    .COV_T(ac_range_check_env_cov)
+class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
+    .CFG_T(${module_instance_name}_env_cfg),
+    .RAL_T(${module_instance_name}_reg_block),
+    .COV_T(${module_instance_name}_env_cov)
   );
-  `uvm_component_utils(ac_range_check_scoreboard)
+  `uvm_component_utils(${module_instance_name}_scoreboard)
 
   // Local variables
   ac_range_check_dut_cfg dut_cfg;
@@ -36,15 +36,15 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern task process_tl_filt_d_chan_fifo();
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern function void reset(string kind = "HARD");
-endclass : ac_range_check_scoreboard
+endclass : ${module_instance_name}_scoreboard
 
 
-function ac_range_check_scoreboard::new(string name="", uvm_component parent=null);
+function ${module_instance_name}_scoreboard::new(string name="", uvm_component parent=null);
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 endfunction : new
 
-function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   tl_unfilt_a_chan_fifo = new("tl_unfilt_a_chan_fifo", this);
   tl_unfilt_d_chan_fifo = new("tl_unfilt_d_chan_fifo", this);
@@ -54,11 +54,11 @@ function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
   do_alert_check = 0;
 endfunction : build_phase
 
-function void ac_range_check_scoreboard::connect_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 endfunction : connect_phase
 
-task ac_range_check_scoreboard::run_phase(uvm_phase phase);
+task ${module_instance_name}_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
   wait(cfg.under_reset);
   forever begin
@@ -85,7 +85,7 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
   end
 endtask : run_phase
 
-task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo();
+task ${module_instance_name}_scoreboard::process_tl_unfilt_a_chan_fifo();
   tl_seq_item item;
   forever begin
     tl_unfilt_a_chan_fifo.get(item);
@@ -98,7 +98,7 @@ task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo();
   end
 endtask : process_tl_unfilt_a_chan_fifo
 
-task ac_range_check_scoreboard::process_tl_unfilt_d_chan_fifo();
+task ${module_instance_name}_scoreboard::process_tl_unfilt_d_chan_fifo();
   tl_seq_item item;
   forever begin
     tl_unfilt_d_chan_fifo.get(item);
@@ -111,7 +111,7 @@ task ac_range_check_scoreboard::process_tl_unfilt_d_chan_fifo();
   end
 endtask : process_tl_unfilt_d_chan_fifo
 
-task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
+task ${module_instance_name}_scoreboard::process_tl_filt_a_chan_fifo();
   tl_seq_item item;
   forever begin
     tl_filt_a_chan_fifo.get(item);
@@ -120,7 +120,7 @@ task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
   end
 endtask : process_tl_filt_a_chan_fifo
 
-task ac_range_check_scoreboard::process_tl_filt_d_chan_fifo();
+task ${module_instance_name}_scoreboard::process_tl_filt_d_chan_fifo();
   tl_seq_item item;
   forever begin
     tl_filt_d_chan_fifo.get(item);
@@ -129,7 +129,7 @@ task ac_range_check_scoreboard::process_tl_filt_d_chan_fifo();
   end
 endtask : process_tl_filt_d_chan_fifo
 
-task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
+task ${module_instance_name}_scoreboard::process_tl_access(tl_seq_item item,
                                                   tl_channels_e channel,
                                                   string ral_name);
   uvm_reg        csr;
@@ -254,12 +254,12 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
   end
 endtask : process_tl_access
 
-function void ac_range_check_scoreboard::reset(string kind = "HARD");
+function void ${module_instance_name}_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   // Reset local fifos queues and variables
 endfunction : reset
 
-function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
+function void ${module_instance_name}_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
   // Post test checks - ensure that all local fifos and queues are empty
 endfunction : check_phase

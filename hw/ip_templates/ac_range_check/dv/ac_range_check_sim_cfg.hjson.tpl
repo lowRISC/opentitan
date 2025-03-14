@@ -15,7 +15,7 @@
   tool: xcelium
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: ${instance_vlnv("lowrisc:dv:ac_range_check_sim:0.1")}
+  fusesoc_core: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sim:0.1")}
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/${module_instance_name}_testplan.hjson"
@@ -33,7 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["ac_range_check_bind"]
+  sim_tops: ["${module_instance_name}_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

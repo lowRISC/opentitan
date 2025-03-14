@@ -23,7 +23,7 @@ ${"###"} Block diagram
 
 ${"###"} Top level testbench
 Top level testbench is located at `hw/top_${topname}/ip_autogen/ac_range_check/dv/tb/tb.sv`.
-It instantiates the `ac_range_check` DUT module `hw/ip/ac_range_check/rtl/ac_range_check.sv`.
+It instantiates the `ac_range_check` DUT module `hw/ip/ac_range_check/rtl/${module_instance_name}.sv`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [Reset shadowed interface](../../../../dv/sv/common_ifs/README.md)  // TODO add something in this doc about this interface.
@@ -43,7 +43,7 @@ ${"###"} Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 
 ${"###"} Global types & methods
-All common types and methods defined at the package level can be found in `ac_range_check_env_pkg`.
+All common types and methods defined at the package level can be found in `${module_instance_name}_env_pkg`.
 Some of them in use are:
 ```systemverilog
 [list a few parameters, types & methods; no need to mention all]
@@ -77,7 +77,7 @@ This helps increase the likelihood of hitting the design corners that would othe
 This object aims to provide such run-time controls.
 
 ${"####"} Env cfg
-The `ac_range_check_env_cfg`, environment configuration object provides access to the following elements:
+The `${module_instance_name}_env_cfg`, environment configuration object provides access to the following elements:
 * Build-time controls to configure the UVM environment composition during the `build_phase`
 * Downstream agent configuration objects for ease of lookup from any environment component
   * This includes the `tl_agent_cfg` objects for both TL interfaces
@@ -89,11 +89,11 @@ By housing all of the above, all pertinent information is more easily shared wit
 
 ${"###"} Stimulus strategy
 ${"####"} Test sequences
-All test sequences reside in `hw/top_${topname}/ip_autogen/ac_range_check/dv/env/seq_lib`.
-The `ac_range_check_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `ac_range_check_base_vseq`.
+All test sequences reside in `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/env/seq_lib`.
+The `${module_instance_name}_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
+All test sequences are extended from `${module_instance_name}_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows: From `hw/top_${topname}/ip_autogen/ac_range_check/dv/env/seq/ac_range_check_base_vseq.sv`,
+Some of the most commonly used tasks / functions are as follows: From `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/env/seq/${module_instance_name}_base_vseq.sv`,
 * task 1:
 * task 2:
 
@@ -111,7 +111,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 <!-- explain inputs monitored, flow of data and outputs checked -->
 
 ${"####"} Assertions
-* TLUL assertions: The `hw/top_${topname}/ip_autogen/ac_range_check/dv/sva/ac_range_check_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/top_${topname}/ip_autogen/${module_instance_name}/dv/sva/${module_instance_name}_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * assert prop 1:
 * assert prop 2:
@@ -122,7 +122,7 @@ Please take a look at the link for detailed information on the usage, capabiliti
 Here's how to run a smoke test:
 ```console
 $ cd $REPO_TOP
-$ ./util/dvsim/dvsim.py hw/top_${topname}/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson -i ac_range_check_smoke
+$ ./util/dvsim/dvsim.py hw/top_${topname}/ip_autogen/${module_instance_name}/dv/${module_instance_name}_sim_cfg.hjson -i ac_range_check_smoke
 ```
 
 ${"##"} Testplan

@@ -3,14 +3,14 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva:0.1")}
-description: "AC_RANGE_CHECK assertion modules and bind file."
+description: "${module_instance_name.upper()} assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
     files:
-      - ac_range_check_bind.sv
+      - ${module_instance_name}_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
