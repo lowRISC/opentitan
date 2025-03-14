@@ -719,4 +719,21 @@ class SignConverter {
 // need to be saved.  The two that do not are `sp` and `gp` (x2 and x3).
 #define OT_CONTEXT_SIZE (OT_WORD_SIZE * 30)
 
+/**
+ * A macro that returns the minimum of two values.
+ *
+ * @param x First value.
+ * @param y Second value.
+ */
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+
+/**
+ * A macro that returns the maximum of two values.
+ *
+ * @param x First value.
+ * @param y Second value.
+ *
+ */
+#define MAX(x, y) ((x) > (y) ? (x) : (y))
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
