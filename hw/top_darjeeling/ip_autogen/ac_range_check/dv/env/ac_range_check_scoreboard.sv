@@ -24,7 +24,6 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_d_chan_fifo;
 
   // Local queues to hold incoming packets pending comparison
-  tl_filt_t act_tl_filt_q[$];
   tl_filt_t exp_tl_filt_q[$];
 
   // Standard SV/UVM methods
@@ -41,7 +40,7 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern task process_tl_filt_a_chan_fifo();
   extern task process_tl_filt_d_chan_fifo();
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-  extern task compare_tl_a_chan();
+  extern task compare_tl_a_chan(tl_filt_t act_tl_filt);
   extern function void reset(string kind = "HARD");
   extern function access_decision_e check_access(tl_seq_item item);
 endclass : ac_range_check_scoreboard
@@ -223,13 +222,12 @@ task ac_range_check_scoreboard::process_tl_filt_a_chan_fifo();
     tl_filt.cnt = act_filt_tr_cnt;
     `uvm_info(`gfn, $sformatf("Received tl_filt_a_chan ACTUAL filtered item #%0d:\n%0s",
                               act_filt_tr_cnt, tl_filt.item.sprint()), UVM_HIGH)
-    act_tl_filt_q.push_back(tl_filt);
     `uvm_info(`gfn, $sformatf({"ACTUAL filtered item #%0d on tl_filt_a_chan has been ",
               "pushed for comparison"}, act_filt_tr_cnt), UVM_LOW)
 
     // Spawn a thread and directly wait for the next item
     fork
-      compare_tl_a_chan();
+      compare_tl_a_chan(tl_filt);
     join_none
   end
 endtask : process_tl_filt_a_chan_fifo
@@ -242,11 +240,8 @@ task ac_range_check_scoreboard::process_tl_filt_d_chan_fifo();
   end
 endtask : process_tl_filt_d_chan_fifo
 
-task ac_range_check_scoreboard::compare_tl_a_chan();
-  tl_filt_t act_tl_filt;
+task ac_range_check_scoreboard::compare_tl_a_chan(tl_filt_t act_tl_filt);
   tl_filt_t exp_tl_filt;
-
-  act_tl_filt = act_tl_filt_q.pop_front();
 
   // Delay a bit if the espected queue is still empty as tl_unfilt port can be fed shortly after
   // tl_filt for some reason
@@ -405,7 +400,6 @@ endtask : process_tl_access
 
 function void ac_range_check_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
-  act_tl_filt_q.delete();
   exp_tl_filt_q.delete();
   matching_cnt    = 0;
   unfilt_tr_cnt   = 0;
@@ -423,11 +417,6 @@ function void ac_range_check_scoreboard::check_phase(uvm_phase phase);
     if (matching_cnt == 0) begin
       `uvm_error(`gfn, {"No matching transaction found, it can be because all the TL accesses have",
                         " been filtered. Please check your DUT configuration and your sequence."})
-    end
-
-    if (act_tl_filt_q.size() > 0) begin
-      `uvm_error(`gfn, {"Queue act_tl_filt_q is not empty: not all the received TL transactions",
-                        " have been compared."})
     end
 
     if (exp_tl_filt_q.size() > 0) begin
