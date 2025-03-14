@@ -91,7 +91,7 @@ impl Transport for HyperdebugDfu {
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(update_firmware_action) = action.downcast_ref::<UpdateFirmware>() {
             update_firmware(
-                &mut self.usb_backend.borrow_mut(),
+                &self.usb_backend.borrow(),
                 self.current_firmware_version.as_deref(),
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
@@ -166,7 +166,7 @@ fn get_hyperdebug_firmware_version(firmware: &[u8]) -> Result<&str> {
 /// Helper method to perform flash programming using ST's DfuSe variant of the DFU protocol.
 /// This method is used both by the `Hyperdebug` and the `HyperdebugDfu` structs.
 pub fn update_firmware(
-    usb_device: &mut UsbBackend,
+    usb_device: &UsbBackend,
     current_firmware_version: Option<&str>,
     firmware: &Option<Vec<u8>>,
     progress: &dyn ProgressIndicator,
@@ -233,7 +233,7 @@ pub fn update_firmware(
     // serial number as before.
     std::thread::sleep(std::time::Duration::from_millis(1000));
     log::info!("Connecting to DFU bootloader...");
-    let Some(mut dfu_device) = restablish_connection(
+    let Some(dfu_device) = restablish_connection(
         VID_ST_MICROELECTRONICS,
         PID_DFU_BOOTLOADER,
         usb_device.get_serial_number(),
