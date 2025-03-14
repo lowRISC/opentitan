@@ -67,6 +67,8 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Read LC CTRL to get reference values.
   dif_lc_ctrl_state_t lc_state_ref;
@@ -82,6 +84,8 @@ status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Check if we have managed to manipulate the LC Controller.
   dif_lc_ctrl_state_t lc_state_cmp;
@@ -115,6 +119,8 @@ status_t handle_lc_ctrl_fi_runtime_corruption(ujson_t *uj) {
   uj_output.counter = lc_count_cmp;
   uj_output.err_status = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_lc_ctrl_fi_corruption_t, uj, &uj_output);
 
   return OK_STATUS();

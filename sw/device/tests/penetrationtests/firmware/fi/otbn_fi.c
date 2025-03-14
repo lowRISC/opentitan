@@ -154,6 +154,8 @@ status_t clear_otbn_load_checksum(void) {
 status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_beq);
@@ -170,6 +172,8 @@ status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
@@ -194,6 +198,8 @@ status_t handle_otbn_fi_char_beq(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_cnt_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -205,6 +211,8 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bn_rshi);
@@ -228,6 +236,8 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read big_num_out from OTBN data memory.
   otbn_fi_big_num_out_t uj_output;
@@ -253,6 +263,8 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_big_num_out_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -264,6 +276,8 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bn_sel);
@@ -287,6 +301,8 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read big_num_out from OTBN data memory.
   otbn_fi_big_num_out_t uj_output;
@@ -312,6 +328,8 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_big_num_out_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -319,6 +337,8 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
 status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bn_wsrr);
@@ -338,6 +358,8 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -363,6 +385,8 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_data_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -371,6 +395,8 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj) {
 status_t handle_otbn_fi_char_bne(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_bne);
@@ -388,6 +414,8 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
   uj_output.result = 0;
@@ -410,6 +438,8 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_cnt_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -417,6 +447,8 @@ status_t handle_otbn_fi_char_bne(ujson_t *uj) {
 status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Config for the otbn.fi.char_dmem_access test.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_access);
@@ -436,6 +468,8 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -458,6 +492,8 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_data_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -466,6 +502,8 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
 status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Config for the otbn.fi.char_rf test.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_write);
@@ -619,6 +657,8 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -648,6 +688,8 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_array_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -656,6 +698,8 @@ status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
 status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_dmem_op_loop);
@@ -675,6 +719,8 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareDmemOpLoopLC, &loop_counter);
@@ -696,6 +742,8 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -703,6 +751,8 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_reg_op_loop);
@@ -722,6 +772,8 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareRegOpLoopLC, &loop_counter);
@@ -743,6 +795,8 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -750,6 +804,8 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
 status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_jal);
@@ -766,6 +822,8 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read counter (x1) from OTBN data memory.
   otbn_fi_result_cnt_t uj_output;
@@ -790,6 +848,8 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_cnt_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -797,6 +857,8 @@ status_t handle_otbn_fi_char_jal(ujson_t *uj) {
 status_t handle_otbn_fi_char_lw(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_lw);
@@ -819,6 +881,8 @@ status_t handle_otbn_fi_char_lw(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare reference values. 29 values as we are loading into 29 registers.
   otbn_fi_result_array_t uj_output;
@@ -848,6 +912,8 @@ status_t handle_otbn_fi_char_lw(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_array_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -868,6 +934,8 @@ status_t handle_otbn_fi_char_mem(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Reference values for DMEM and IMEM.
   uint32_t dmem_array_ref[char_mem_num_words];
@@ -898,6 +966,8 @@ status_t handle_otbn_fi_char_mem(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -957,6 +1027,8 @@ status_t handle_otbn_fi_char_mem(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_mem_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -965,6 +1037,8 @@ status_t handle_otbn_fi_char_mem(ujson_t *uj) {
 status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Config for the otbn.fi.char_rf test.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_rf);
@@ -992,6 +1066,8 @@ status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_otbn;
@@ -1041,6 +1117,8 @@ status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_rf_char_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1049,6 +1127,8 @@ status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
 status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_dmem_op_loop);
@@ -1068,6 +1148,8 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledDmemOpLoopLC, &loop_counter);
@@ -1089,6 +1171,8 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1096,6 +1180,8 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_reg_op_loop);
@@ -1115,6 +1201,8 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledRegOpLoopLC, &loop_counter);
@@ -1136,6 +1224,8 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1208,6 +1298,8 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   TRY(dif_otbn_set_ctrl_software_errs_fatal(&otbn, /*enable=*/false));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   if (!key_sideloading_init) {
     // Setup keymanager for sideloading key into OTBN.
@@ -1232,6 +1324,8 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read loop counter from OTBN data memory.
   uint32_t key_share_0_l, key_share_0_h;
@@ -1267,6 +1361,8 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_keys_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1274,6 +1370,8 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
 status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   if (!load_integrity_init) {
     // Load the OTBN app and read the load checksum without FI to retrieve
@@ -1292,6 +1390,8 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back checksum.
   uint32_t load_checksum;
@@ -1335,6 +1435,8 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1346,6 +1448,8 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_pc);
@@ -1375,6 +1479,8 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
   otbn_busy_wait_for_done();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read pc_out from OTBN data memory.
   otbn_fi_pc_out_t uj_output;
@@ -1401,6 +1507,8 @@ status_t handle_otbn_fi_pc(ujson_t *uj) {
   uj_output.err_otbn = err_otbn;
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_pc_out_t, uj, &uj_output);
   return OK_STATUS();
 }
