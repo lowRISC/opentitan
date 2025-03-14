@@ -145,6 +145,28 @@ dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_find_gateable_clock(
+    const dif_clkmgr_t *clkmgr, dt_instance_id_t inst_id,
+    dif_clkmgr_gateable_clock_t *clock) {
+  if (clkmgr == NULL || clock == NULL) {
+    return kDifBadArg;
+  }
+  dt_clkmgr_t dt;
+  dif_result_t res = dif_clkmgr_get_dt(clkmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+  // Query the DT to find the information.
+  for (size_t i = 0; i < dt_clkmgr_gateable_clock_count(dt); i++) {
+    if (dt_clkmgr_gateable_clock(dt, i) == inst_id) {
+      *clock = i;
+      return kDifOk;
+    }
+  }
+  return kDifError;
+}
+
 dif_result_t dif_clkmgr_gateable_clock_get_enabled(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_gateable_clock_t clock,
     dif_toggle_t *state) {
@@ -176,6 +198,28 @@ dif_result_t dif_clkmgr_gateable_clock_set_enabled(
                       clk_enables_val);
 
   return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_find_hintable_clock(
+    const dif_clkmgr_t *clkmgr, dt_instance_id_t inst_id,
+    dif_clkmgr_hintable_clock_t *clock) {
+  if (clkmgr == NULL || clock == NULL) {
+    return kDifBadArg;
+  }
+  dt_clkmgr_t dt;
+  dif_result_t res = dif_clkmgr_get_dt(clkmgr, &dt);
+  if (res != kDifOk) {
+    return res;
+  }
+  // Query the DT to find the information.
+  for (size_t i = 0; i < dt_clkmgr_hintable_clock_count(dt); i++) {
+    if (dt_clkmgr_hintable_clock(dt, i) == inst_id) {
+      *clock = i;
+      return kDifOk;
+    }
+  }
+  return kDifError;
 }
 
 dif_result_t dif_clkmgr_hintable_clock_get_enabled(
