@@ -16,14 +16,16 @@ package tl_agent_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  parameter int AddrWidth   = bus_params_pkg::BUS_AW;
-  parameter int DataWidth   = bus_params_pkg::BUS_DW;
-  parameter int SizeWidth   = bus_params_pkg::BUS_SZW;
-  parameter int MaskWidth   = bus_params_pkg::BUS_DBW;
-  parameter int SourceWidth = bus_params_pkg::BUS_AIW;
-  parameter int AUserWidth  = bus_params_pkg::BUS_AUW;
-  parameter int DUserWidth  = bus_params_pkg::BUS_DUW;
-  parameter int OpcodeWidth = 3;
+  parameter int AddrWidth       = bus_params_pkg::BUS_AW;
+  parameter int DataWidth       = bus_params_pkg::BUS_DW;
+  parameter int SizeWidth       = bus_params_pkg::BUS_SZW;
+  parameter int MaskWidth       = bus_params_pkg::BUS_DBW;
+  parameter int SourceWidth     = bus_params_pkg::BUS_AIW;
+  parameter int AUserWidth      = bus_params_pkg::BUS_AUW;
+  parameter int DUserWidth      = bus_params_pkg::BUS_DUW;
+  parameter int OpcodeWidth     = 3;
+  parameter int InstrTypeLsbPos = get_instr_type_lsb_pos();
+  parameter int InstrTypeMsbPos = get_instr_type_msb_pos();
 
   typedef class tl_seq_item;
   typedef class tl_agent_cfg;
@@ -58,6 +60,19 @@ package tl_agent_pkg;
     uvm_top.set_report_severity_id_action_hier(UVM_FATAL,
                                                "tl_logging", UVM_DISPLAY | UVM_LOG | UVM_EXIT);
   endfunction
+
+  // Extract the LSB position of the instr_type field from struct tl_a_user_t
+  function automatic int get_instr_type_lsb_pos();
+    tl_a_user_t tl_a_user = '0;
+    tl_a_user.instr_type = prim_mubi_pkg::mubi4_t'(1);
+    return $clog2(tl_a_user);
+  endfunction : get_instr_type_lsb_pos
+
+  // Extract the MSB position of the instr_type field from struct tl_a_user_t
+  function automatic int get_instr_type_msb_pos();
+    tl_a_user_t tl_a_user = '0;
+    return get_instr_type_lsb_pos()+$size(tl_a_user.instr_type)-1;
+  endfunction : get_instr_type_msb_pos
 
   `include "tl_seq_item.sv"
   `include "tl_agent_cfg.sv"
