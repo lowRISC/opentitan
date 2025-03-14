@@ -252,7 +252,7 @@ impl HyperdebugSpiTarget {
         enable_cmd: u8,
         idx: u8,
     ) -> Result<Self> {
-        let mut usb_handle = inner.usb_device.borrow_mut();
+        let usb_handle = inner.usb_device.borrow_mut();
 
         // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
         inner.selected_spi.set(idx);
