@@ -250,6 +250,7 @@
     {
       racl_ctrl: racl_ctrl
       ac_range_check: ac_range_check
+      rv_core_ibex: rv_core_ibex
       alert_handler: alert_handler
       rv_plic: rv_plic
     }

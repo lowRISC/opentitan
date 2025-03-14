@@ -39,6 +39,10 @@ licence_test(
         # Manually checked, files contain additional copyright header lines
         "hw/ip/usb_fs_nb_pe/rtl/*",
         "hw/ip/usbdev/rtl/usbdev_iomux.sv",
+        # rv_core_ibex uses waiver file from Ibex, which is not compliant
+        "hw/top_earlgrey/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
+        "hw/top_englishbreakfast/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
+        "hw/top_darjeeling/ip_autogen/rv_core_ibex/lint/rv_core_ibex.vlt",
 
         ## Software Exclusions
 

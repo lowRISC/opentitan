@@ -12,6 +12,7 @@
     topname: englishbreakfast
     uniquified_modules:
     {
+      rv_core_ibex: rv_core_ibex
       rv_plic: rv_plic
     }
   }
