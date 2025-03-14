@@ -125,8 +125,8 @@ typedef enum dif_pwrmgr_reset_request_source {
  * particular request type, i.e. wakeup or reset, as well querying wakeup
  * reasons.
  *
- * See also: `dif_pwrmgr_wakeup_request_source_t`,
- * `dif_pwrmgr_reset_request_source_t`.
+ * See also: `dt_pwrmgr_wakeup_src_t`, `dt_pwrmgr_reset_req_src_t` and
+ * associated functions.
  */
 typedef uint32_t dif_pwrmgr_request_sources_t;
 
@@ -199,6 +199,30 @@ typedef struct dif_pwrmgr_wakeup_reason {
    */
   dif_pwrmgr_request_sources_t request_sources;
 } dif_pwrmgr_wakeup_reason_t;
+
+/**
+ * Obtain a bit mask of wakeups/reset requests for a device.
+ *
+ * Given a module instance (identified by its instance ID) and a wakeup
+ * or reset request index from this module, return a bitmask of wakupe which
+ * can be used with the pwrmgr DIF or testutils.
+ *
+ * Example:
+ * ```c
+ * dif_pwrmgr_request_sources_t wakeups = dif_pwrmgr_
+ * ```
+ *
+ * @param pwrmgr A power manager handle.
+ * @param inst_id An instance ID
+ * @param idx Signal index
+ * @param[out] wakeups The bitmask corresponding to the wakeup requested.
+ * @return `kDifError` if no signal matches the description, `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_find_request_source(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
+    dt_instance_id_t inst_id, size_t sig_idx,
+    dif_pwrmgr_request_sources_t *sources);
 
 /**
  * Enables or disables low power state.
