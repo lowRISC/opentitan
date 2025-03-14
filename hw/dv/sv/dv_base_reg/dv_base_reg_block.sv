@@ -264,7 +264,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // memories or registers.
   //
   // This is idempotent and will re-calculate the same lists if called a second time.
-  function void compute_mapped_addr_ranges();
+  local function void compute_mapped_addr_ranges();
     uvm_reg csrs[$];
     get_registers(csrs);
 
@@ -292,7 +292,7 @@ class dv_base_reg_block extends uvm_reg_block;
   // Get a list of all invalid address ranges in this reg block
   //
   // This is idempotent and will re-calculate the same list if called a second time.
-  function void compute_unmapped_addr_ranges();
+  local function void compute_unmapped_addr_ranges();
     addr_range_t range;
 
     // convert the address mask into a relative address,
@@ -383,6 +383,9 @@ class dv_base_reg_block extends uvm_reg_block;
   // Checks if the provided base_addr is aligned as required by the register block. If
   // randomize_base_addr arg is set, then the base_addr arg is ignored - the function randomizes and
   // sets the base_addr itself.
+  //
+  // After setting the base address, this function updates csr_addrs, mem_ranges, mapped_addr_ranges
+  // and unmapped_addr_ranges.
   function void set_base_addr(uvm_reg_addr_t base_addr, uvm_reg_map map = null,
                               bit randomize_base_addr = 0);
     uvm_reg_addr_t mask;
@@ -402,6 +405,9 @@ class dv_base_reg_block extends uvm_reg_block;
 
     `uvm_info(`gfn, $sformatf("Setting register base address to 0x%0h", base_addr), UVM_HIGH)
     map.set_base_addr(base_addr);
+
+    compute_mapped_addr_ranges();
+    compute_unmapped_addr_ranges();
   endfunction
 
   // Round the given address down to the start of the containing word. For example, if the address
