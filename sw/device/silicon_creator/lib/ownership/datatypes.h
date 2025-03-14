@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/nonce.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
@@ -129,6 +130,8 @@ typedef enum tlv_tag {
   kTlvTagRescueConfig = 0x51534552,
   /** Integration Specific Firmware Binding: `ISFB`. */
   kTlvTagIntegrationSpecificFirmwareBinding = 0x42465349,
+  /** Detached Signature: `SIGN`. */
+  kTlvTagDetachedSignature = 0x4e474953,
   /** Not Present: `ZZZZ`. */
   kTlvTagNotPresent = 0x5a5a5a5a,
 } tlv_tag_t;
@@ -458,6 +461,51 @@ OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, key_domain, 16);
 OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, reserved, 20);
 OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, product_words, 40);
 OT_ASSERT_SIZE(owner_isfb_config_t, 44);
+
+/**
+ * A detached signature can be used to validate either a signed command or an
+ * owner block.
+ *
+ * Detached signatures are used when the signature is too larger to fit within
+ * the designated signature area of the original buffer. In such cases, the
+ * orginal buffer's signature field will be all zeros and the verification
+ * function will scan through the flash data pages to find the detached
+ * signature.
+ *
+ * The detached signature must be aligned on a flash page boundary.
+ */
+typedef struct owner_detached_signature {
+  /**
+   * Header identifying this struct.
+   * tag: `SIGN`.
+   * length: 8192.
+   */
+  tlv_header_t header;
+  uint32_t _pad[2];
+  /** The command associated with this signature (e.g. UNLK, ACTV, OWNR). */
+  uint32_t command;
+  /** The algorithm used to generate this signature (ownership_key_alg_t). */
+  uint32_t algorithm;
+  /** The current nonce associated with the command. */
+  nonce_t nonce;
+  /** The signature data. */
+  union {
+    uint32_t raw[2040];
+    ecdsa_p256_signature_t ecdsa;
+    sigverify_spx_signature_t spx;
+    struct {
+      ecdsa_p256_signature_t ecdsa;
+      sigverify_spx_signature_t spx;
+    } hybrid;
+  } signature;
+} owner_detached_signature_t;
+
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, header, 0);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, command, 16);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, algorithm, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, nonce, 24);
+OT_ASSERT_MEMBER_OFFSET(owner_detached_signature_t, signature, 32);
+OT_ASSERT_SIZE(owner_detached_signature_t, 8192);
 
 #ifdef __cplusplus
 }  // extern "C"
