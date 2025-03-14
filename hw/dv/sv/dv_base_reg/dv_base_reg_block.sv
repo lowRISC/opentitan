@@ -37,6 +37,10 @@ class dv_base_reg_block extends uvm_reg_block;
   // This is set by compute_addr_mask(), which must run after locking the model.
   protected uvm_reg_addr_t addr_mask[uvm_reg_map];
 
+  // A list of all CSR addresses
+  //
+  // This is populated by compute_csr_addrs, which iterates over the registers in the block and adds
+  // each register's address in turn.
   uvm_reg_addr_t csr_addrs[$];
 
   addr_range_t mem_ranges[$];
@@ -210,9 +214,12 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   // Internal function, used to get a list of all valid CSR addresses.
-  protected function void compute_csr_addrs();
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
+  local function void compute_csr_addrs();
     uvm_reg csrs[$];
     get_registers(csrs);
+    csr_addrs.delete();
     foreach (csrs[i]) begin
       csr_addrs.push_back(csrs[i].get_address());
     end
