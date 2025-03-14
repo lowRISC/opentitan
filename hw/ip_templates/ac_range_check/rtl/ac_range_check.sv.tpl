@@ -107,7 +107,9 @@ module ${module_instance_name}
   // Range Check Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic [NumRanges-1:0] addr_hit, deny_mask, read_mask, write_mask, execute_mask, log_enable_mask;
+  logic [NumRanges-1:0] addr_hit, log_enable_mask;
+  logic [NumRanges-1:0] read_grant_mask, write_grant_mask, execute_grant_mask;
+  logic [NumRanges-1:0] read_perm_n_mask, write_perm_n_mask, execute_perm_n_mask;
   logic [NumRanges-1:0] racl_read_hit, racl_write_hit;
 
   // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -157,17 +159,18 @@ module ${module_instance_name}
     // Access is denied if no read_, write_, or execute access is set in the permission mask
     // The permission masks need to be reversed to allow for the right priority order.
     // Range 0 has the highest priority and is the MSB in the mask.
-    assign deny_mask[NumRanges - 1 - i] =
-      addr_hit[i] & ~(perm_read_access | perm_write_access | perm_execute_access);
+    assign read_perm_n_mask   [NumRanges - 1 - i] = addr_hit[i] & ~perm_read_access;
+    assign write_perm_n_mask  [NumRanges - 1 - i] = addr_hit[i] & ~perm_write_access;
+    assign execute_perm_n_mask[NumRanges - 1 - i] = addr_hit[i] & ~perm_execute_access;
 
     // TODO(#25456) Use log_enable_mask to mask logging
     assign log_enable_mask[NumRanges - 1 - i] = prim_mubi_pkg::mubi4_test_true_strict(
       prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].log_denied_access.q));
 
     // Determine the read, write, and execute mask. Store a hit in their index
-    assign read_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
-    assign write_mask  [NumRanges - 1 - i] = addr_hit[i] & perm_write_access;
-    assign execute_mask[NumRanges - 1 - i] = addr_hit[i] & perm_execute_access;
+    assign read_grant_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
+    assign write_grant_mask  [NumRanges - 1 - i] = addr_hit[i] & perm_write_access;
+    assign execute_grant_mask[NumRanges - 1 - i] = addr_hit[i] & perm_execute_access;
   end
 
   // Fiddle out bits to determine if it's an execute request or not
@@ -187,15 +190,34 @@ module ${module_instance_name}
   // Priority comparison. If the deny mask is larger than the read, write, or execute mask, there
   // was an address match with a higher priority for the range to be denied
   logic read_allowed, write_allowed, execute_allowed;
-  assign read_allowed    = read_access    & (read_mask    > deny_mask);
-  assign write_allowed   = write_access   & (write_mask   > deny_mask);
-  assign execute_allowed = execute_access & (execute_mask > deny_mask);
+  assign read_allowed    = read_access    & (read_grant_mask    > read_perm_n_mask);
+  assign write_allowed   = write_access   & (write_grant_mask   > write_perm_n_mask);
+  assign execute_allowed = execute_access & (execute_grant_mask > execute_perm_n_mask);
 
   // Based on the deny mask, we compute the leading bit in the mask. The index of the leading
   // bit determines the index of the range that denied the request.
 
   localparam int unsigned NumRangesWidth = prim_util_pkg::vbits(NumRanges);
+  logic [NumRanges-1:0] read_deny_mask, write_deny_mask, execute_deny_mask, deny_mask;
   logic [NumRangesWidth-1:0] deny_index;
+
+  always_comb begin: assign_deny_mask
+    read_deny_mask    = '0;
+    write_deny_mask   = '0;
+    execute_deny_mask = '0;
+    if (read_access & ~read_allowed) begin
+      read_deny_mask = read_perm_n_mask;
+    end
+    if (write_access & ~write_allowed) begin
+      write_deny_mask = write_perm_n_mask;
+    end
+    if (execute_access & ~execute_allowed) begin
+      execute_deny_mask = execute_perm_n_mask;
+    end
+    // Need to be reversed as prim_leading_one_ppc returns the leading one from LSB
+    deny_mask = {<<{read_deny_mask | write_deny_mask | execute_deny_mask}};
+  end
+
   prim_leading_one_ppc #(
     .N ( NumRanges )
   ) u_leading_one (
