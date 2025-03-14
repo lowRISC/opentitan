@@ -120,29 +120,35 @@ impl UsbBackend {
         self.serial_number.as_str()
     }
 
-    pub fn set_active_configuration(&mut self, config: u8) -> Result<()> {
+    pub fn set_active_configuration(&self, config: u8) -> Result<()> {
         self.handle
             .set_active_configuration(config)
             .context("USB error")
     }
 
-    pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn claim_interface(&self, iface: u8) -> Result<()> {
         self.handle.claim_interface(iface).context("USB error")
     }
 
-    pub fn release_interface(&mut self, iface: u8) -> Result<()> {
+    pub fn release_interface(&self, iface: u8) -> Result<()> {
         self.handle.release_interface(iface).context("USB error")
+    }
+
+    pub fn set_alternate_setting(&self, iface: u8, setting: u8) -> Result<()> {
+        self.handle
+            .set_alternate_setting(iface, setting)
+            .context("USB error")
     }
 
     pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
         self.handle.kernel_driver_active(iface).context("USB error")
     }
 
-    pub fn detach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn detach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.detach_kernel_driver(iface).context("USB error")
     }
 
-    pub fn attach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+    pub fn attach_kernel_driver(&self, iface: u8) -> Result<()> {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
