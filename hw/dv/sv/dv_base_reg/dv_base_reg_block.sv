@@ -43,6 +43,10 @@ class dv_base_reg_block extends uvm_reg_block;
   // each register's address in turn.
   uvm_reg_addr_t csr_addrs[$];
 
+  // A list of all ranges associated with memories
+  //
+  // This is populated by compute_mem_addr_ranges, which iterates over the memories and adds each
+  // memory's range in turn.
   addr_range_t mem_ranges[$];
 
   addr_range_t mapped_addr_ranges[$];
@@ -227,9 +231,12 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   // Internal function, used to get a list of all valid memory ranges
-  protected function void compute_mem_addr_ranges();
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
+  local function void compute_mem_addr_ranges();
     uvm_mem mems[$];
     get_memories(mems);
+    mem_ranges.delete();
     foreach (mems[i]) begin
       addr_range_t mem_range;
       mem_range.start_addr = mems[i].get_address();
