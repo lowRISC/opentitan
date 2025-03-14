@@ -132,30 +132,44 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     csr_utils_pkg::reset_deasserted();
   endfunction
 
-  // Creates RAL models and sets their base address based on the supplied arg.
+  // Create missing RAL models and set their base addresses based on the supplied arg.
   //
   // csr_base_addr is the base address to set to the RAL models. If it is all 1s, then we treat that
   // as an indication to randomize the base address internally instead.
-  virtual function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
+  local function void create_ral_models(bit [bus_params_pkg::BUS_AW-1:0] csr_base_addr = '1);
 
     foreach (ral_model_names[i]) begin
+      dv_base_reg_block reg_blk;
       string ral_name = ral_model_names[i];
       bit randomize_base_addr = &csr_base_addr;
-      dv_base_reg_block reg_blk = create_ral_by_name(ral_name);
 
-      if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
+      if (ral_models.exists(ral_name)) begin
+        // If a model for this name already exists, set reg_blk to point at it.
+        reg_blk = ral_models[ral_name];
+      end else begin
+        // If a model for this name doesn't already exist, we should make one.
+        reg_blk = create_ral_by_name(ral_name);
 
-      // Build the register block with an arbitrary base address (we choose 0). We'll change it
-      // later.
-      pre_build_ral_settings(reg_blk);
-      reg_blk.build(.base_addr(0), .csr_excl(null));
-      reg_blk.addr_width = bus_params_pkg::BUS_AW;
-      reg_blk.data_width = bus_params_pkg::BUS_DW;
-      reg_blk.be_width = bus_params_pkg::BUS_DBW;
-      post_build_ral_settings(reg_blk);
-      reg_blk.lock_model();
+        // Build the register block with an arbitrary base address (we choose 0). We'll change it
+        // later.
+        pre_build_ral_settings(reg_blk);
+        reg_blk.build(.base_addr(0), .csr_excl(null));
+        reg_blk.addr_width = bus_params_pkg::BUS_AW;
+        reg_blk.data_width = bus_params_pkg::BUS_DW;
+        reg_blk.be_width = bus_params_pkg::BUS_DBW;
+        post_build_ral_settings(reg_blk);
+        reg_blk.lock_model();
 
-      // Now the model is locked, we know its layout. Set the base address for the register block.
+        ral_models[ral_name] = reg_blk;
+        if (reg_blk.get_name() == RAL_T::type_name) `downcast(ral, reg_blk)
+      end
+
+      // At this point, either the model existed already or we've just created and locked it. In
+      // either case, it should now be locked.
+      if (!reg_blk.is_locked())
+        `uvm_fatal(`gfn, $sformatf("ral_models[%s] is not locked.", ral_name))
+
+      // Since the model is locked, we know its layout. Set the base address for the register block.
       reg_blk.set_base_addr(.base_addr(`UVM_REG_ADDR_WIDTH'(csr_base_addr)),
                             .randomize_base_addr(randomize_base_addr));
     end
