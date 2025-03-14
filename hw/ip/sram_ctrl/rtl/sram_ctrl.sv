@@ -89,7 +89,8 @@ module sram_ctrl
   localparam int unsigned InstDepth = InstSize >> 2;
   localparam int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
 
-  `ASSERT_INIT(NumRamInstSameAsComputed_A, NumRamInst == int'($ceil(MemSizeRam / real'(InstSize))))
+  `ASSERT_INIT(NumRamInstSameAsComputed_A,
+               NumRamInst == prim_util_pkg::ceil_div(MemSizeRam, InstSize))
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
