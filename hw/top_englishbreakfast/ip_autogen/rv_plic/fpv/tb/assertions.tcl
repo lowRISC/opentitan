@@ -13,3 +13,9 @@ assert -name InpAlwaysOnehot0_A {$onehot0(dut.u_reg.u_prim_reg_we_check.u_prim_o
 assert -name InpOnehotImpliesEn_A \
   {{$onehot(dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.oh_i)} -> \
   {dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.en_i}}
+
+# All the interrupts are level triggered thus le_i is always 0. The reason to add this assertion is
+# to support the waiver for a statement included in coverage_waivers.tcl. The statement was a
+# ternary assignment and the conditional part of it is le_i which is always false.
+assert -name InterruptsAreLevelTriggered \
+  {!$rose(dut.u_gateway.le_i)}
