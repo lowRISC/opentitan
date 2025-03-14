@@ -216,7 +216,7 @@ class aes_base_vseq extends cip_base_vseq #(
     ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
     csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
     void'(ral.ctrl_gcm_shadowed.phase.predict(phase));
-    void'(ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes));
+    void'(ral.ctrl_gcm_shadowed.num_valid_bytes.predict(num_bytes));
   endtask
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
