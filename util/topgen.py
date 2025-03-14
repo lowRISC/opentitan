@@ -784,13 +784,14 @@ def generate_racl(top: ConfigT, module: ConfigT, out_path: Path) -> None:
 
 def _get_gpio_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for GPIO ipgen."""
+    module = lib.find_module(top["module"], "gpio")
+    uniquified_modules.add_module(module["template_type"], module["type"])
 
-    gpio = lib.find_module(top["module"], "gpio")
     params = {
         # TODO(#26553): Remove the following code once topgen automatically
         # incorporates template parameters.
-        "num_inp_period_counters": gpio.get("ipgen_param", {}).get("num_inp_period_counters", 0),
-        "module_instance_name": gpio["type"]
+        "num_inp_period_counters": module.get("ipgen_param", {}).get("num_inp_period_counters", 0),
+        "module_instance_name": module["type"]
     }
     return params
 

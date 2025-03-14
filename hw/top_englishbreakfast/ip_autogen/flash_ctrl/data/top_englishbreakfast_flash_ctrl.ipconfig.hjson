@@ -27,6 +27,7 @@
     topname: englishbreakfast
     uniquified_modules:
     {
+      gpio: gpio
       rv_plic: rv_plic
     }
   }
