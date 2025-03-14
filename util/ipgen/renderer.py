@@ -103,7 +103,7 @@ class IpTemplateRendererBase:
         return self.ip_config.param_values["uniquified_modules"].get(name)
 
     def _replace_uniquified_prefix(self, core_name: str) -> str:
-        uniquified_modules = self.ip_config.param_values["uniquified_modules"]
+        uniquified_modules = self.ip_config.param_values.get("uniquified_modules", {})
         for name, uniq_name in uniquified_modules.items():
             if core_name.startswith(f'{name}_'):
                 return f'{uniq_name}_{core_name[len(name)+1:]}'
