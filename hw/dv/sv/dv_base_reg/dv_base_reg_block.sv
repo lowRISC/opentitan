@@ -49,6 +49,11 @@ class dv_base_reg_block extends uvm_reg_block;
   // memory's range in turn.
   addr_range_t mem_ranges[$];
 
+  // A list of all ranges that are associated with either a memory or a register
+  //
+  // This is populated by compute_mapped_addr_ranges, which first updates mem_ranges and then
+  // appends that to the ranges formed by iterating over the registers and the range of each. This
+  // is sorted in ascending order based on start_addr.
   addr_range_t mapped_addr_ranges[$];
 
   // Indicates whether accesses to unmapped regions of this block returns an error response (0).
@@ -247,7 +252,10 @@ class dv_base_reg_block extends uvm_reg_block;
     `uvm_info(`gfn, $sformatf("mem_ranges: %0p", mem_ranges), UVM_HIGH)
   endfunction
 
-  // Used to get a list of all valid address ranges covered by this reg block
+  // Compute CSR addresses, memory address ranges, and the list of all address ranges used by either
+  // memories or registers.
+  //
+  // This is idempotent and will re-calculate the same lists if called a second time.
   function void compute_mapped_addr_ranges();
     uvm_reg csrs[$];
     get_registers(csrs);
@@ -257,17 +265,19 @@ class dv_base_reg_block extends uvm_reg_block;
     compute_mem_addr_ranges();
 
     // Convert each CSR into an address range
+    mapped_addr_ranges.delete();
     foreach (csrs[i]) begin
       addr_range_t csr_addr_range;
       csr_addr_range.start_addr = csrs[i].get_address();
       csr_addr_range.end_addr   = csr_addr_range.start_addr + csrs[i].get_n_bytes() - 1;
       mapped_addr_ranges.push_back(csr_addr_range);
     end
-
+    // Now append the ranges from memories
     mapped_addr_ranges = {mapped_addr_ranges, mem_ranges};
 
     // Sort the mapped address ranges in ascending order based on the start_addr of each range
     mapped_addr_ranges.sort(m) with (m.start_addr);
+
     `uvm_info(`gfn, $sformatf("mapped_addr_ranges: %0p", mapped_addr_ranges), UVM_HIGH)
   endfunction
 
