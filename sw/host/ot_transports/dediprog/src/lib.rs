@@ -124,7 +124,7 @@ impl Dediprog {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> anyhow::Result<Self> {
-        let mut device = UsbBackend::new(
+        let device = UsbBackend::new(
             usb_vid.unwrap_or(Self::VID_ST_MICROELECTRONICS),
             usb_pid.unwrap_or(Self::PID_DEDIPROG_SF100),
             usb_serial,
