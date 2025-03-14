@@ -74,6 +74,14 @@ class dv_base_reg_block extends uvm_reg_block;
   protected bit en_dv_reg_cov = 1;
 
   bit has_unmapped_addrs;
+
+  // A queue of all the unmapped address ranges. All mapped addresses for this block are between the
+  // base address (using the default map) and that plus the maximum address representable with the
+  // address mask.
+  //
+  // Unmapped addresses are the addresses in that range that don't point at a register of part of a
+  // memory. This variable holds those addresses, grouped into ranges and sorted in ascending order
+  // of start_addr.
   addr_range_t unmapped_addr_ranges[$];
 
   // Lookup table for alias registers and fields.
@@ -281,13 +289,17 @@ class dv_base_reg_block extends uvm_reg_block;
     `uvm_info(`gfn, $sformatf("mapped_addr_ranges: %0p", mapped_addr_ranges), UVM_HIGH)
   endfunction
 
-  // Used to get a list of all invalid address ranges in this reg block
+  // Get a list of all invalid address ranges in this reg block
+  //
+  // This is idempotent and will re-calculate the same list if called a second time.
   function void compute_unmapped_addr_ranges();
     addr_range_t range;
 
     // convert the address mask into a relative address,
     // this is the highest addressable location in the register block
     uvm_reg_addr_t highest_addr = default_map.get_base_addr() + get_addr_mask();
+
+    unmapped_addr_ranges.delete();
 
     // unmapped address ranges consist of:
     // - the address space between all mapped address ranges (if exists)
