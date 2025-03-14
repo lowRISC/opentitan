@@ -87,7 +87,6 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     cfg.gpio_vif.drive_en('0);
     csr_wr(ral.direct_out, gpio_out);
     csr_wr(ral.direct_oe, gpio_oe);
-
     // Random wait
     short_wait(0);
 
