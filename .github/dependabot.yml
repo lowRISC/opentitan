@@ -10,17 +10,38 @@ updates:
       # Updates are scheduled at the beginning of the work week.
       interval: "weekly"
       day: "monday"
-      time: "02:00"
-      # US Pacific Time
-      timezone: "America/Los_Angeles"
+      time: "10:00"
+      timezone: "Etc/UTC"
     commit-message:
       prefix: "[dependabot]"
-      reviewers:
-        - "lowRISC/ot-python-reviewers"
     # Ignore packages fetched from GitHub URLs.
     ignore:
       - dependency-name: "*fusesoc*"
       - dependency-name: "*edalize*"
       - dependency-name: "*chipwhisperer*"
     reviewers:
-      - "timothytrippel"
+      - "lowRISC/ot-python-reviewers"
+
+  - package-ecosystem: "cargo"
+    directory: "/third_party/rust"
+    schedule:
+      # Updates are scheduled at the beginning of the work week.
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Etc/UTC"
+    commit-message:
+      prefix: "[dependabot]"
+    reviewers:
+      - "lowRISC/ot-rust-reviewers"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Updates are scheduled at the beginning of the work week.
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Etc/UTC"
+    commit-message:
+      prefix: "[dependabot]"
