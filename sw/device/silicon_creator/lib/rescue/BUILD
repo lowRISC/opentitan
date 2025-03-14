@@ -31,6 +31,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/ownership:owner_block",
@@ -72,5 +73,42 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_library(
+    name = "dfu",
+    srcs = [
+        "dfu.c",
+        "dfu_state_table.c",
+    ],
+    hdrs = [
+        "dfu.h",
+    ],
+    deps = [
+        ":rescue",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:usb",
+    ],
+)
+
+cc_library(
+    name = "rescue_usbdfu",
+    srcs = ["rescue_usb.c"],
+    deps = [
+        ":dfu",
+        ":rescue",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:usb",
     ],
 )
