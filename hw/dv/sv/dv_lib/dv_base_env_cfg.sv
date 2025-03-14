@@ -159,9 +159,6 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
       reg_blk.set_base_addr(.base_addr(`UVM_REG_ADDR_WIDTH'(csr_base_addr)),
                             .randomize_base_addr(randomize_base_addr));
 
-      // Get list of valid csr addresses (useful in seq to randomize addr as well as in scb checks)
-      reg_blk.compute_mapped_addr_ranges();
-      reg_blk.compute_unmapped_addr_ranges();
       ral_models[ral_name] = reg_blk;
     end
 
