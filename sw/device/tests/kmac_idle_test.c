@@ -11,24 +11,15 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+static_assert(kDtKmacCount >= 1, "this test requires at least one kmac");
+const dt_kmac_t kKmacDt = (dt_kmac_t)0;
+
 static dif_clkmgr_t clkmgr;
 static dif_kmac_t kmac;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// TODO: change this conditional compilation to use a clkmgr DT extension
-// when one is available.
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-const dif_clkmgr_hintable_clock_t kmac_clock =
-    kTopEarlgreyHintableClocksMainKmac;
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-const dif_clkmgr_hintable_clock_t kmac_clock =
-    kTopDarjeelingHintableClocksMainKmac;
-#else
-#error "kmac_idle_test does not support this top"
-#endif
+dif_clkmgr_hintable_clock_t kmac_clock;
 
 #define TIMEOUT (1000 * 1000)
 
@@ -121,6 +112,8 @@ static void do_sha3_test(void) {
 
 bool test_main(void) {
   CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_find_hintable_clock(
+      &clkmgr, dt_kmac_instance_id(kKmacDt), &kmac_clock));
 
   // Get initial hint and enable for KMAC clock and check both are enabled.
   dif_toggle_t clock_hint_state;
@@ -141,7 +134,7 @@ bool test_main(void) {
 
   // Initialize KMAC hardware.
   static_assert(kDtKmacCount > 0, "This test requires a KMAC instance");
-  CHECK_DIF_OK(dif_kmac_init_from_dt((dt_kmac_t)0, &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kKmacDt, &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
