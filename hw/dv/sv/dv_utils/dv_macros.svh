@@ -295,11 +295,13 @@
 
 // print non-empty tlm fifos that were uncompared at end of test
 `ifndef DV_EOT_PRINT_TLM_FIFO_CONTENTS
-`define DV_EOT_PRINT_TLM_FIFO_CONTENTS(TYP_, FIFO_, SEV_=error, ID_=`gfn)            \
-  forever begin                                                                      \
-    TYP_ item;                                                                       \
-    if (!FIFO_.try_get(item)) break;                                                 \
-    `dv_``SEV_($sformatf("%s item uncompared:\n%s", `"FIFO_`", item.sprint()), ID_)  \
+`define DV_EOT_PRINT_TLM_FIFO_CONTENTS(TYP_, FIFO_, SEV_=error, ID_=`gfn)                          \
+  forever begin                                                                                    \
+    TYP_ item;                                                                                     \
+    int res = FIFO_.try_get(item);                                                                 \
+    if (res == 0) break;                                                                           \
+    if (res < 0) `dv_fatal($sformatf("Cannot read item from %s (type mismatch)", `"FIFO_`"), ID_)  \
+    `dv_``SEV_($sformatf("%s item uncompared:\n%s", `"FIFO_`", item.sprint()), ID_)                \
   end
 `endif
 
