@@ -10,8 +10,9 @@ interface pwrmgr_ast_sva_if #(
 ) (
   input logic                     clk_slow_i,
   input logic                     rst_slow_ni,
-  input logic                     clk_main_i,
-  input logic                     clk_io_i,
+% for clk in src_clks:
+  input logic                     clk_${clk}_i,
+% endfor
   input logic                     por_d0_ni,
   // The pwrmgr outputs.
   input pwrmgr_pkg::pwr_ast_req_t pwr_ast_o,
@@ -41,67 +42,64 @@ interface pwrmgr_ast_sva_if #(
   // Clock enable-valid.
 
   // Changes triggered by por_d0_ni only affect clk_val.
-  `ASSERT(MainClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !pwr_ast_i.core_clk_val, clk_slow_i,
+<%
+  # The cycle bounds are tuple (fall, rise)
+  cycle_bounds = {clk: (5, 5) if clk == 'usb' else (1, 2) for clk in src_clks}
+%>\
+% for clk in src_clks:
+<% ast_clk_name = 'core' if clk == 'main' else clk %>\
+  `ASSERT(${clk.capitalize()}ClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:${cycle_bounds[clk][0]}] !pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(MainClkGlitchToValOn_A,
-          $rose(por_d0_ni) && pwr_ast_o.core_clk_en |-> ##[0:2] pwr_ast_i.core_clk_val, clk_slow_i,
+  `ASSERT(${clk.capitalize()}ClkGlitchToValOn_A,
+          $rose(por_d0_ni) && pwr_ast_o.${ast_clk_name}_clk_en |-> ##[0:${cycle_bounds[clk][1]}] pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(IoClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !pwr_ast_i.io_clk_val, clk_slow_i,
-          reset_or_disable)
-  `ASSERT(IoClkGlitchToValOn_A,
-          $rose(por_d0_ni) && pwr_ast_o.io_clk_en |-> ##[0:2] pwr_ast_i.io_clk_val, clk_slow_i,
-          reset_or_disable)
+% endfor
   // Changes not triggered by por_d0_ni
-  `ASSERT(MainClkHandshakeOn_A,
-          $rose(pwr_ast_o.core_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
-          pwr_ast_i.core_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(MainClkHandshakeOff_A,
-          $fell(pwr_ast_o.core_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
+% for clk in src_clks:
+<% ast_clk_name = 'core' if clk == 'main' else clk %>\
+  % if clk == 'usb':
+  // Usb is a bit different: apparently usb_clk_val can stay low after a power glitch, so it may
+  // already be low when usb_clk_en drops.
+  `ASSERT(UsbClkHandshakeOn_A,
+          $rose(pwr_ast_o.usb_clk_en) && por_d0_ni && $past(por_d0_ni, 1) |-> `CLK_WAIT_BOUNDS
+          pwr_ast_i.usb_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
+  `ASSERT(UsbClkHandshakeOff_A,
+          $fell(pwr_ast_o.usb_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val, clk_slow_i,
           reset_or_disable)
-
-  `ASSERT(IoClkHandshakeOn_A,
-          $rose(pwr_ast_o.io_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
-          pwr_ast_i.io_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkHandshakeOff_A,
-          $fell(pwr_ast_o.io_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val, clk_slow_i,
+  % else:
+  `ASSERT(${clk.capitalize()}ClkHandshakeOn_A,
+          $rose(pwr_ast_o.${ast_clk_name}_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
+          pwr_ast_i.${ast_clk_name}_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
+  `ASSERT(${clk.capitalize()}ClkHandshakeOff_A,
+          $fell(pwr_ast_o.${ast_clk_name}_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.${ast_clk_name}_clk_val, clk_slow_i,
           reset_or_disable)
+  % endif
 
+% endfor
   if (CheckClocks) begin : gen_check_clock
-    int main_clk_cycles;
-    always_ff @(posedge clk_main_i) main_clk_cyces++;
-    int io_clk_cycles;
-    always_ff @(posedge clk_io_i) io_clk_cyces++;
+% for clk in src_clks:
+    int ${clk}_clk_cycles;
+    always_ff @(posedge clk_${clk}_i) ${clk}_clk_cyces++;
+% endfor
 
-    `ASSERT(MainClkStopped_A,
+% for clk in src_clks:
+<% ast_clk_name = 'core' if clk == 'main' else clk %>\
+    `ASSERT(${clk.capitalize() if clk == 'main' else clk.upper()}ClkStopped_A,
             $fell(
-                pwr_ast_i.core_clk_val
+                pwr_ast_i.${ast_clk_name}_clk_val
             ) |=> ($stable(
-                main_clk_cycles
-            ) || pwr_ast_i.core_clk_val) [* 1 : $],
+                ${clk}_clk_cycles
+            ) || pwr_ast_i.${ast_clk_name}_clk_val) [* 1 : $],
             clk_slow_i, reset_or_disable)
-    `ASSERT(MainClkRun_A,
+    `ASSERT(${clk.capitalize()}ClkRun_A,
             $rose(
-                pwr_ast_i.core_clk_val
+                pwr_ast_i.${ast_clk_name}_clk_val
             ) |=> (!$stable(
-                main_clk_cycles
-            ) || !pwr_ast_i.core_clk_val) [* 1 : $],
+                ${clk}_clk_cycles
+            ) || !pwr_ast_i.${ast_clk_name}_clk_val) [* 1 : $],
             clk_slow_i, reset_or_disable)
 
-    `ASSERT(IOClkStopped_A,
-            $fell(
-                pwr_ast_i.io_clk_val
-            ) |=> ($stable(
-                io_clk_cycles
-            ) || pwr_ast_i.io_clk_val) [* 1 : $],
-            clk_slow_i, reset_or_disable)
-    `ASSERT(IoClkRun_A,
-            $rose(
-                pwr_ast_i.io_clk_val
-            ) |=> (!$stable(
-                io_clk_cycles
-            ) || !pwr_ast_i.io_clk_val) [* 1 : $],
-            clk_slow_i, reset_or_disable)
-
+% endfor
   end
 
   // Main pd-pok

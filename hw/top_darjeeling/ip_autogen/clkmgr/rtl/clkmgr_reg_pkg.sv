@@ -8,15 +8,15 @@ package clkmgr_reg_pkg;
 
   // Param list
   parameter int NumGroups = 7;
-  parameter int NumSwGateableClocks = 3;
+  parameter int NumSwGateableClocks = 2;
   parameter int NumHintableClocks = 4;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
-  parameter int BlockAw = 7;
+  parameter int BlockAw = 6;
 
   // Number of registers for every interface
-  parameter int NumRegs = 18;
+  parameter int NumRegs = 16;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -47,9 +47,6 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_jitter_enable_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } clk_usb_peri_en;
     struct packed {
       logic        q;
     } clk_io_div2_peri_en;
@@ -104,19 +101,6 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
-    logic [3:0]  q;
-  } clkmgr_reg2hw_usb_meas_ctrl_en_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic [5:0]  q;
-    } lo;
-    struct packed {
-      logic [5:0]  q;
-    } hi;
-  } clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic        q;
     } shadow_storage_err;
@@ -167,11 +151,6 @@ package clkmgr_reg_pkg;
   } clkmgr_hw2reg_main_meas_ctrl_en_reg_t;
 
   typedef struct packed {
-    logic [3:0]  d;
-    logic        de;
-  } clkmgr_hw2reg_usb_meas_ctrl_en_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -187,19 +166,11 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } usb_measure_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } io_div4_timeout_err;
     struct packed {
       logic        d;
       logic        de;
     } main_timeout_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } usb_timeout_err;
   } clkmgr_hw2reg_recov_err_code_reg_t;
 
   typedef struct packed {
@@ -219,52 +190,47 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [70:67]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [66:59]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [58:55]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [54:52]
-    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [51:48]
-    clkmgr_reg2hw_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [47:47]
-    clkmgr_reg2hw_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [46:43]
-    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [42:35]
-    clkmgr_reg2hw_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [34:31]
-    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [30:19]
-    clkmgr_reg2hw_usb_meas_ctrl_en_reg_t usb_meas_ctrl_en; // [18:15]
-    clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t usb_meas_ctrl_shadowed; // [14:3]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [53:50]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [49:42]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [41:38]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [37:36]
+    clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [35:32]
+    clkmgr_reg2hw_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [31:31]
+    clkmgr_reg2hw_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [30:27]
+    clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t io_div4_meas_ctrl_shadowed; // [26:19]
+    clkmgr_reg2hw_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [18:15]
+    clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t main_meas_ctrl_shadowed; // [14:3]
     clkmgr_reg2hw_fatal_err_code_reg_t fatal_err_code; // [2:0]
   } clkmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [48:45]
-    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [44:37]
-    clkmgr_hw2reg_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [36:35]
-    clkmgr_hw2reg_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [34:30]
-    clkmgr_hw2reg_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [29:25]
-    clkmgr_hw2reg_usb_meas_ctrl_en_reg_t usb_meas_ctrl_en; // [24:20]
-    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [19:6]
+    clkmgr_hw2reg_extclk_status_reg_t extclk_status; // [39:36]
+    clkmgr_hw2reg_clk_hints_status_reg_t clk_hints_status; // [35:28]
+    clkmgr_hw2reg_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [27:26]
+    clkmgr_hw2reg_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [25:21]
+    clkmgr_hw2reg_main_meas_ctrl_en_reg_t main_meas_ctrl_en; // [20:16]
+    clkmgr_hw2reg_recov_err_code_reg_t recov_err_code; // [15:6]
     clkmgr_hw2reg_fatal_err_code_reg_t fatal_err_code; // [5:0]
   } clkmgr_hw2reg_t;
 
   // Register offsets
-  parameter logic [BlockAw-1:0] CLKMGR_ALERT_TEST_OFFSET = 7'h 0;
-  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET = 7'h 4;
-  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_OFFSET = 7'h 8;
-  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_STATUS_OFFSET = 7'h c;
-  parameter logic [BlockAw-1:0] CLKMGR_JITTER_REGWEN_OFFSET = 7'h 10;
-  parameter logic [BlockAw-1:0] CLKMGR_JITTER_ENABLE_OFFSET = 7'h 14;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 7'h 18;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 7'h 1c;
-  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 7'h 20;
-  parameter logic [BlockAw-1:0] CLKMGR_MEASURE_CTRL_REGWEN_OFFSET = 7'h 24;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET = 7'h 28;
-  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET = 7'h 2c;
-  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET = 7'h 30;
-  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET = 7'h 34;
-  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_EN_OFFSET = 7'h 38;
-  parameter logic [BlockAw-1:0] CLKMGR_USB_MEAS_CTRL_SHADOWED_OFFSET = 7'h 3c;
-  parameter logic [BlockAw-1:0] CLKMGR_RECOV_ERR_CODE_OFFSET = 7'h 40;
-  parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 7'h 44;
+  parameter logic [BlockAw-1:0] CLKMGR_ALERT_TEST_OFFSET = 6'h 0;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET = 6'h 4;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_CTRL_OFFSET = 6'h 8;
+  parameter logic [BlockAw-1:0] CLKMGR_EXTCLK_STATUS_OFFSET = 6'h c;
+  parameter logic [BlockAw-1:0] CLKMGR_JITTER_REGWEN_OFFSET = 6'h 10;
+  parameter logic [BlockAw-1:0] CLKMGR_JITTER_ENABLE_OFFSET = 6'h 14;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_ENABLES_OFFSET = 6'h 18;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_OFFSET = 6'h 1c;
+  parameter logic [BlockAw-1:0] CLKMGR_CLK_HINTS_STATUS_OFFSET = 6'h 20;
+  parameter logic [BlockAw-1:0] CLKMGR_MEASURE_CTRL_REGWEN_OFFSET = 6'h 24;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET = 6'h 28;
+  parameter logic [BlockAw-1:0] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET = 6'h 2c;
+  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET = 6'h 30;
+  parameter logic [BlockAw-1:0] CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET = 6'h 34;
+  parameter logic [BlockAw-1:0] CLKMGR_RECOV_ERR_CODE_OFFSET = 6'h 38;
+  parameter logic [BlockAw-1:0] CLKMGR_FATAL_ERR_CODE_OFFSET = 6'h 3c;
 
   // Reset values for hwext registers and their fields
   parameter logic [1:0] CLKMGR_ALERT_TEST_RESVAL = 2'h 0;
@@ -289,14 +255,12 @@ package clkmgr_reg_pkg;
     CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED,
     CLKMGR_MAIN_MEAS_CTRL_EN,
     CLKMGR_MAIN_MEAS_CTRL_SHADOWED,
-    CLKMGR_USB_MEAS_CTRL_EN,
-    CLKMGR_USB_MEAS_CTRL_SHADOWED,
     CLKMGR_RECOV_ERR_CODE,
     CLKMGR_FATAL_ERR_CODE
   } clkmgr_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CLKMGR_PERMIT [18] = '{
+  parameter logic [3:0] CLKMGR_PERMIT [16] = '{
     4'b 0001, // index[ 0] CLKMGR_ALERT_TEST
     4'b 0001, // index[ 1] CLKMGR_EXTCLK_CTRL_REGWEN
     4'b 0001, // index[ 2] CLKMGR_EXTCLK_CTRL
@@ -311,10 +275,8 @@ package clkmgr_reg_pkg;
     4'b 0001, // index[11] CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED
     4'b 0001, // index[12] CLKMGR_MAIN_MEAS_CTRL_EN
     4'b 0011, // index[13] CLKMGR_MAIN_MEAS_CTRL_SHADOWED
-    4'b 0001, // index[14] CLKMGR_USB_MEAS_CTRL_EN
-    4'b 0011, // index[15] CLKMGR_USB_MEAS_CTRL_SHADOWED
-    4'b 0001, // index[16] CLKMGR_RECOV_ERR_CODE
-    4'b 0001  // index[17] CLKMGR_FATAL_ERR_CODE
+    4'b 0001, // index[14] CLKMGR_RECOV_ERR_CODE
+    4'b 0001  // index[15] CLKMGR_FATAL_ERR_CODE
   };
 
 endpackage
