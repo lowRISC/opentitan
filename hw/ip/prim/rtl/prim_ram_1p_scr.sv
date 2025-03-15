@@ -61,7 +61,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Each 64 bit scrambling primitive requires a 64bit IV
   localparam int NonceWidth          = 64 * NumParScr,
   // Compute RAM tiling
-  localparam int NumRamInst          = int'($ceil(Depth / real'(InstDepth)))
+  localparam int NumRamInst          = prim_util_pkg::ceil_div(Depth, InstDepth)
 ) (
   input                                    clk_i,
   input                                    rst_ni,

@@ -37,7 +37,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
 
   localparam int Aw                   = prim_util_pkg::vbits(Depth),
   // Compute RAM tiling
-  localparam int NumRamInst           = int'($ceil(Depth / real'(InstDepth))),
+  localparam int NumRamInst           = prim_util_pkg::ceil_div(Depth, InstDepth),
   localparam int InstAw               = prim_util_pkg::vbits(InstDepth)
 ) (
   input clk_i,

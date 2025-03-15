@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_util
+
+waive -rules {DIVIDE} -location {prim_util_pkg.sv} -msg {Divide operation '(dividend / divisor)' encountered} \
+      -comment "Divide allowed to compute static values."
+
+waive -rules {MODULUS} -location {prim_util_pkg.sv} -msg {Modulus operation '(dividend % divisor)' encountered} \
+      -comment "Modulus allowed to compute static values."
