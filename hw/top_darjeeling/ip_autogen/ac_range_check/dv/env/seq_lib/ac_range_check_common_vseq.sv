@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence is mainly used to run the CSR tests, there is no need to run multiple transactions
-// in this sequence. Hence, the constraint is set to run only one transaction.
+// This sequence should only be used to run the CSR tests:
+//   - no need to have the scoreboard enabled (as it causes false errors with CSR tests)
+//   - no need to run multiple transactions. Hence, the constraint "num_trans" is set to 1
 class ac_range_check_common_vseq extends ac_range_check_base_vseq;
   `uvm_object_utils(ac_range_check_common_vseq)
 
