@@ -258,6 +258,24 @@ impl AttributeMap {
         VALID_TYPES.as_slice()
     }
 
+    /// Generates a list of sensitive attributes that should be redacted when
+    /// exporting an object. This list is used to prevent sensitive data from
+    /// being accidentally read. Some HSMs will not mark theses attributes as
+    /// sensitive, so we have to do it manually.
+    pub fn sensitive_attrs() -> &'static [cryptoki::object::AttributeType] {
+        &[
+            // For symmetric and EC private keys.
+            cryptoki::object::AttributeType::Value,
+            // For RSA private keys.
+            cryptoki::object::AttributeType::PrivateExponent,
+            cryptoki::object::AttributeType::Prime1,
+            cryptoki::object::AttributeType::Prime2,
+            cryptoki::object::AttributeType::Exponent1,
+            cryptoki::object::AttributeType::Exponent2,
+            cryptoki::object::AttributeType::Coefficient,
+        ]
+    }
+
     /// Inserts a `key`/`value` pair into the mapping, returing the
     /// previous value (if any).
     pub fn insert(&mut self, key: AttributeType, value: AttrData) -> Option<AttrData> {
@@ -297,21 +315,26 @@ impl AttributeMap {
     /// Retrieves an object from the PKCS#11 interface as an `AttributeMap`.
     pub fn from_object(session: &Session, object: ObjectHandle) -> Result<Self> {
         let all = Self::all();
+        let sensitive_attrs = Self::sensitive_attrs();
         let info = session.get_attribute_info(object, all)?;
         let mut atypes = Vec::new();
+        let mut sensitive_types = Vec::new();
         for (&a, i) in all.iter().zip(info.iter()) {
             // Skip the AllowedMechanism as cloud-kms returns a list of
             // mechanisms that aren't understood by cryptoki's MechanismType.
             if a == cryptoki::object::AttributeType::AllowedMechanisms {
                 continue;
             }
-            // Skip the value attribute. We first have to check if the object
+
+            // Skip sensitive attributes. We first have to check if the object
             // is sensitive before being able to load it. Some Luna HSM
             // versions will return an error if we attempt to read a sensitive
-            // value.
-            if a == cryptoki::object::AttributeType::Value {
+            // attribute.
+            if sensitive_attrs.contains(&a) {
+                sensitive_types.push(a);
                 continue;
             }
+
             if matches!(i, AttributeInfo::Available(_)) {
                 atypes.push(a);
             }
@@ -321,21 +344,27 @@ impl AttributeMap {
         let mut map = AttributeMap::from(attrs.as_slice());
 
         let sensitive = map.get(&AttributeType::Sensitive);
-        if sensitive.is_none() || matches!(sensitive, Some(AttrData::Bool(false))) {
-            // If the object is not sensitive, we can read the value attribute.
-            let value = session
-                .get_attributes(object, &[cryptoki::object::AttributeType::Value])?
-                .remove(0);
-            let (ty, val) = into_kv(&value)?;
-            map.insert(ty, val);
-        } else {
-            // If the object is sensitive, we redact the value attribute.
-            map.insert(
-                AttributeType::Value,
-                AttrData::Redacted(Redacted::RedactedByHsm),
-            );
-        }
+        let object_sensitive = matches!(sensitive, Some(AttrData::Bool(true)));
 
+        // Use a functional iteration to query the sensitive attributes. This
+        // is necessary because some HSMs will not allow reading sensitive
+        // attributes. In this case, we have to redact the attribute.
+        sensitive_types.iter().for_each(|&attr| {
+            if object_sensitive {
+                map.insert(
+                    AttributeType::Value,
+                    AttrData::Redacted(Redacted::RedactedByHsm),
+                );
+            } else if let Ok(attrs) = session.get_attributes(object, &[attr])
+                && let Some(attr_obj) = attrs.into_iter().next()
+                && let Ok((ty, val)) = into_kv(&attr_obj)
+            {
+                map.insert(ty, val);
+            }
+        });
+
+        // Finally, regardles of the above, if any attribute info explicitly marks
+        // an attribute as sensitive, redact it.
         for (&a, i) in all.iter().zip(info.iter()) {
             if matches!(i, AttributeInfo::Sensitive) {
                 map.insert(a.into(), AttrData::Redacted(Redacted::RedactedByHsm));
