@@ -36,6 +36,11 @@ function void ac_range_check_env::build_phase(uvm_phase phase);
   tl_filt_agt = tl_agent::type_id::create("tl_filt_agt", this);
   uvm_config_db#(tl_agent_cfg)::set(this, "tl_filt_agt*", "cfg", cfg.tl_filt_agt_cfg);
   cfg.tl_filt_agt_cfg.en_cov = cfg.en_cov;
+
+  // Retrieve the ac_range_check_misc_io_if virtual interface
+  if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
+    `uvm_fatal(`gfn, "Failed to get misc_vif from uvm_config_db")
+  end
 endfunction : build_phase
 
 function void ac_range_check_env::connect_phase(uvm_phase phase);
