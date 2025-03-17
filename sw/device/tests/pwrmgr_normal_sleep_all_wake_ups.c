@@ -58,7 +58,7 @@ bool test_main(void) {
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
     LOG_INFO("POR reset");
 
-    for (size_t wakeup_unit = 0; wakeup_unit < PWRMGR_PARAM_NUM_WKUPS;
+    for (size_t wakeup_unit = 0; wakeup_unit < get_wakeup_count();
          ++wakeup_unit) {
       if (kDeviceType != kDeviceSimDV &&
           wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {

@@ -71,9 +71,14 @@ extern dif_usbdev_t usbdev;
 void init_units(void);
 
 /**
+ * Return the number of units to test.
+ */
+size_t get_wakeup_count(void);
+
+/**
  * Check pwrmgr reports this unit as the reason for the wakeup.
  */
-void check_wakeup_reason(uint32_t wakeup_unit);
+void check_wakeup_reason(size_t wakeup_unit);
 
 /**
  * Execute the test for a given unit and sleep mode.
@@ -81,11 +86,11 @@ void check_wakeup_reason(uint32_t wakeup_unit);
  * Configure wakeup_unit to cause a wakeup up and the pwrmgr sleep mode,
  * and let the CPU wait for interrupt.
  */
-void execute_test(uint32_t wakeup_unit, bool deep_sleep);
+void execute_test(size_t wakeup_unit, bool deep_sleep);
 
 /**
  * Clear the wakeup for the given unit.
  */
-void clear_wakeup(uint32_t wakeup_unit);
+void clear_wakeup(size_t wakeup_unit);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_

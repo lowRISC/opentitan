@@ -101,7 +101,7 @@ bool test_main(void) {
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
 
     // The test is done once all wakeups are tested.
-    if (wakeup_count >= 2 * (PWRMGR_PARAM_NUM_WKUPS - 1)) {
+    if (wakeup_count >= 2 * (get_wakeup_count() - 1)) {
       return true;
     }
   }
