@@ -19,6 +19,14 @@
 # !addr_hit).
 cover -disable -regexp ".*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A:precondition1"
 
+# To support the precondition related to the assertion EnableCheck_A i.e. !en_i && |oh_i can never
+# become true as both of the signals has a dependency on the same wire. If that wire is false then
+# they both can't happen. The below assertions makes sure that whenever oh_i is onehot then there
+# must be en_i.
+assert -name InpOnehotImpliesEn_A \
+  {{$onehot(dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.oh_i)} -> \
+  {dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.en_i}}
+
 # This assertion means that if onehot input(oh_i) is not onehot or zero then err_o in
 # u_prim_onehot_check should get asserted. The precondition for Onehot0Check_A is !$onehot0(oh_i).
 # But oh_i is always one-hot or zero for the same reason argued above. Due to the fact that oh_i is
@@ -33,3 +41,7 @@ cover -disable -regexp ".*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableC
 # without a register error. Since a register could be a mapped one or not, the precondition can
 # never happen.
 cover -disable -regexp ".*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1"
+
+# To support that the precondition related to assertion Onehot0Check_A can never happen i.e.
+# !$onehot0(oh_i), an assertion to make sure that oh_i is always onehot or zero.
+assert -name InpAlwaysOnehot0_A {$onehot0(dut.u_reg.u_prim_reg_we_check.u_prim_onehot_check.oh_i)}
