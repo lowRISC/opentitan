@@ -18,14 +18,12 @@ package racl_ctrl_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // parameters
-  // TODO: add the names of alerts in order
-  parameter uint   NUM_ALERTS = ;
-  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {};
-
-  // types
-
-  // functions
+  // The LIST_OF_ALERTS string gives a list of alert names, used by the environment config (through
+  // cip_base_env_cfg) to instantiate agents for handling alerts.
+  //
+  // The connection to the dut is done through interfaces that are put in the config_db in the
+  // (templated) tb.sv. For this to work, every alert in this list must also be listed in tb.sv.
+  string LIST_OF_ALERTS[2] = {"fatal_fault", "recov_ctrl_update_err"};
 
   // package sources
   `include "racl_ctrl_env_cfg.sv"
