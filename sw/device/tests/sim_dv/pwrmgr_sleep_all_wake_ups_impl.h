@@ -37,10 +37,6 @@ typedef struct test_wakeup_sources {
    */
   const char *name;
   /**
-   * Handle to the DIF object for this device.
-   */
-  void *dif_handle;
-  /**
    * Wakeup Sources.
    */
   dif_pwrmgr_request_sources_t wakeup_src;
@@ -48,7 +44,7 @@ typedef struct test_wakeup_sources {
    * Configuration and initialization actions for the device.
    * This will be passed the value of `dif` above.
    */
-  void (*config)(void *dif);
+  void (*config)(void);
 } test_wakeup_sources_t;
 
 extern dif_adc_ctrl_t adc_ctrl;
