@@ -68,6 +68,8 @@ static void sysrst_ctrl_wakeup_clear(void) {
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
 }
 
+static bool adc_ctrl_skip(void) { return kDeviceType != kDeviceSimDV; }
+
 /**
  * adc_ctrl config for test #2
  * . enable filter 5 and set voltage range (0,200)
@@ -251,6 +253,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "SYSRST_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
+        .skip = NULL,
         .config = sysrst_ctrl_wakeup_config,
         .check = sysrst_ctrl_wakeup_check,
         .clear = sysrst_ctrl_wakeup_clear,
@@ -258,6 +261,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "ADC_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
+        .skip = adc_ctrl_skip,
         .config = adc_ctrl_wakeup_config,
         .check = adc_ctrl_wakeup_check,
         .clear = adc_ctrl_wakeup_clear,
@@ -265,6 +269,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "PINMUX",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
+        .skip = NULL,
         .config = pinmux_wakeup_config,
         .check = pinmux_wakeup_check,
         .clear = pinmux_wakeup_clear,
@@ -272,6 +277,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "USB",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
+        .skip = NULL,
         .config = usb_wakeup_config,
         .check = usb_wakeup_check,
         .clear = usb_wakeup_clear,
@@ -279,6 +285,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "AONTIMER",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
+        .skip = NULL,
         .config = aontimer_wakeup_config,
         .check = aontimer_wakeup_check,
         .clear = aontimer_wakeup_clear,
@@ -286,6 +293,7 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "SENSOR_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
+        .skip = NULL,
         .config = sensor_ctrl_wakeup_config,
         .check = sensor_ctrl_wakeup_check,
         .clear = sensor_ctrl_wakeup_clear,

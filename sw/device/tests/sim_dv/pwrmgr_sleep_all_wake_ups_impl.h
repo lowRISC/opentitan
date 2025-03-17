@@ -41,6 +41,12 @@ typedef struct test_wakeup_sources {
    */
   dif_pwrmgr_request_sources_t wakeup_src;
   /**
+   * Check whether this wake up should be skipped
+   * in this configuration. If set to NULL, assume that it should not be
+   * skipped.
+   */
+  bool (*skip)(void);
+  /**
    * Configuration and initialization actions for the device.
    * This will be passed the value of `dif` above.
    */
