@@ -313,9 +313,11 @@ void init_units(void) {
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 }
 
-void execute_test(uint32_t wakeup_source, bool deep_sleep) {
+size_t get_wakeup_count(void) { return PWRMGR_PARAM_NUM_WKUPS; }
+
+void execute_test(size_t wakeup_unit, bool deep_sleep) {
   // Configure wakeup device
-  kTestWakeupSources[wakeup_source].config();
+  kTestWakeupSources[wakeup_unit].config();
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
   cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
@@ -323,12 +325,12 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
                 kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
   CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kTestWakeupSources[wakeup_source].wakeup_src, cfg));
-  LOG_INFO("Issue WFI to enter sleep %d", wakeup_source);
+      &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src, cfg));
+  LOG_INFO("Issue WFI to enter sleep %d", wakeup_unit);
   wait_for_interrupt();
 }
 
-void check_wakeup_reason(uint32_t wakeup_unit) {
+void check_wakeup_reason(size_t wakeup_unit) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
@@ -345,7 +347,7 @@ static bool get_wakeup_status(void) {
   return (wake_req > 0);
 }
 
-void clear_wakeup(uint32_t wakeup_unit) {
+void clear_wakeup(size_t wakeup_unit) {
   kTestWakeupSources[wakeup_unit].clear();
   // Ensure the de-asserted events have cleared from the wakeup pipeline
   // within 100us.

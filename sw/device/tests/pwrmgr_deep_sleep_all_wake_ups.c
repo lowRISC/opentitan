@@ -84,7 +84,7 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
-    if (wakeup_unit >= PWRMGR_PARAM_NUM_WKUPS) {
+    if (wakeup_unit >= get_wakeup_count()) {
       return true;
     } else if (kDeviceType != kDeviceSimDV &&
                wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
