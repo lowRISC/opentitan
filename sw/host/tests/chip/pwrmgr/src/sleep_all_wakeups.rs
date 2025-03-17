@@ -28,33 +28,45 @@ fn sleep_all_wakeups_test(opts: &Opts, transport: &TransportWrapper) -> Result<(
     loop {
         let vec = UartConsole::wait_for(
             &*uart,
-            r"PASS|FAIL|Issue WFI to enter sleep ([0-9]+)",
+            r"PASS|FAIL|Test ([0-9]+) begin \(([^)]*)\)",
             opts.timeout,
         )?;
-        match vec[0].as_str() {
-            "PASS" => return Ok(()),
-            "FAIL" => return Err(anyhow!("Failure result: {:?}", vec)),
-            _ => {}
-        };
-        assert_eq!(vec.len(), 2, "Expected sleep unit");
-        let sleep_case: i32 = vec[1].parse().expect("expected a number");
-        match sleep_case {
-            0 => {
+        if vec[0].as_str() == "PASS" {
+            return Ok(());
+        }
+        if vec[0].as_str() == "FAIL" {
+            return Err(anyhow!("Failure result: {:?}", vec));
+        }
+        assert_eq!(vec.len(), 3, "Expected sleep unit and name");
+        let test_sleep_case: i32 = vec[1].parse().expect("expected a number");
+        let test_sleep_name = &vec[2];
+        let vec = UartConsole::wait_for(
+            &*uart,
+            &format!("FAIL|Issue WFI to enter sleep {test_sleep_case}"),
+            opts.timeout,
+        )?;
+        if vec[0].as_str() == "FAIL" {
+            return Err(anyhow!("Failure result: {:?}", vec));
+        }
+        match test_sleep_name.as_str() {
+            "SYSRST_CTRL" => {
                 ioc0_pin.write(true)?;
                 ioc0_pin.write(false)?;
             }
-            2 => {
+            "PINMUX" => {
                 ioc0_pin.write(false)?;
                 ioc0_pin.write(true)?;
             }
             _ => (),
         }
-        let vec = UartConsole::wait_for(&*uart, r"Woke up by source ([0-9]+)", opts.timeout)?;
-        assert_eq!(vec.len(), 2, "Expected unit number");
-        let sleep_case: i32 = vec[1].parse().expect("expected a number");
-        match sleep_case {
-            0 => ioc0_pin.write(true)?,
-            2 => ioc0_pin.write(false)?,
+        let _ = UartConsole::wait_for(
+            &*uart,
+            &format!("Woke up by source {test_sleep_case}"),
+            opts.timeout,
+        )?;
+        match test_sleep_name.as_str() {
+            "SYSRST_CTRL" => ioc0_pin.write(true)?,
+            "PINMUX" => ioc0_pin.write(false)?,
             _ => (),
         }
     }
