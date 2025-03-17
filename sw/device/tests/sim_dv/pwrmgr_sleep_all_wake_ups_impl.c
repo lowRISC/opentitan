@@ -37,12 +37,13 @@ dif_usbdev_t usbdev;
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
  * . use IOR13 as pwrb_in for DV, and IOC0 otherwise
  */
-static void sysrst_ctrl_wakeup_config(void *dif) {
+static void sysrst_ctrl_wakeup_config(void) {
   dif_sysrst_ctrl_input_change_config_t config = {
       .input_changes = kDifSysrstCtrlInputPowerButtonH2L,
       .debounce_time_threshold = 1,  // 5us
   };
-  CHECK_DIF_OK(dif_sysrst_ctrl_input_change_detect_configure(dif, config));
+  CHECK_DIF_OK(
+      dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
       kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
@@ -53,7 +54,7 @@ static void sysrst_ctrl_wakeup_config(void *dif) {
  * adc_ctrl config for test #2
  * . enable filter 5 and set voltage range (0,200)
  */
-static void adc_ctrl_wakeup_config(void *dif) {
+static void adc_ctrl_wakeup_config(void) {
   dif_adc_ctrl_config_t cfg = {
       .mode = kDifAdcCtrlLowPowerScanMode,
       .power_up_time_aon_cycles = 7,
@@ -61,7 +62,7 @@ static void adc_ctrl_wakeup_config(void *dif) {
       .num_low_power_samples = 2,
       .num_normal_power_samples = 8,
   };
-  CHECK_DIF_OK(dif_adc_ctrl_configure(dif, cfg));
+  CHECK_DIF_OK(dif_adc_ctrl_configure(&adc_ctrl, cfg));
 
   dif_adc_ctrl_filter_config_t filter_cfg = {
       .filter = kDifAdcCtrlFilter5,
@@ -72,13 +73,13 @@ static void adc_ctrl_wakeup_config(void *dif) {
       .generate_irq_on_match = false,
   };
 
-  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(dif, kDifAdcCtrlChannel0,
+  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(&adc_ctrl, kDifAdcCtrlChannel0,
                                              filter_cfg, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(dif, kDifAdcCtrlChannel1,
+  CHECK_DIF_OK(dif_adc_ctrl_configure_filter(&adc_ctrl, kDifAdcCtrlChannel1,
                                              filter_cfg, kDifToggleEnabled));
   CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
-      dif, kDifAdcCtrlFilter5, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(dif, kDifToggleEnabled));
+      &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
 }
 
 /**
@@ -86,7 +87,7 @@ static void adc_ctrl_wakeup_config(void *dif) {
  * . use IOB7 as an input for DV, IOC0 otherwise
  * . set posedge detection
  */
-static void pinmux_wakeup_config(void *dif) {
+static void pinmux_wakeup_config(void) {
   // Make sure the pin has a pulldown before we enable it for wakeup.
   // FPGA doesn't implement pullup/down, so just use that attribute for SimDV.
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
@@ -110,7 +111,7 @@ static void pinmux_wakeup_config(void *dif) {
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
         &pinmux, wakeup_pin, kDifPinmuxPadKindMio, in_attr, &out_attr));
   }
-  CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(dif, kPinmuxWkupDetector5,
+  CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, kPinmuxWkupDetector5,
                                                  detector_cfg));
 }
 
@@ -121,13 +122,13 @@ static void pinmux_wakeup_config(void *dif) {
  * (*dif) handle is not used but leave as is
  * to be called from execute_test
  */
-static void usb_wakeup_config(void *dif) {
+static void usb_wakeup_config(void) {
   dif_usbdev_phy_pins_drive_t pins = {
       .dp_pullup_en = true,
       .dn_pullup_en = false,
   };
-  CHECK_DIF_OK(dif_usbdev_set_phy_pins_state(dif, kDifToggleEnabled, pins));
-  CHECK_DIF_OK(dif_usbdev_set_wake_enable(dif, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_usbdev_set_phy_pins_state(&usbdev, kDifToggleEnabled, pins));
+  CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleEnabled));
 
   LOG_INFO("usb_wakeup_config: wait 20us (usb)");
   // Give the hardware a chance to recognize the wakeup values are the same.
@@ -138,53 +139,47 @@ static void usb_wakeup_config(void *dif) {
  * aon timer config for test #5
  * set wakeup signal in 50us
  */
-static void aontimer_wakeup_config(void *dif) {
-  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(dif, 10));
+static void aontimer_wakeup_config(void) {
+  CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 10));
 }
 
 /**
  * sensor ctrl config for test #6
  * setup event trigger0
  */
-static void sensor_ctrl_wakeup_config(void *dif) {
-  CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(dif, kSensorCtrlEventIdx,
-                                                     kDifToggleEnabled));
+static void sensor_ctrl_wakeup_config(void) {
+  CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
+      &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleEnabled));
 }
 
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "SYSRST_CTRL",
-        .dif_handle = &sysrst_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
         .config = sysrst_ctrl_wakeup_config,
     },
     {
         .name = "ADC_CTRL",
-        .dif_handle = &adc_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
         .config = adc_ctrl_wakeup_config,
     },
     {
         .name = "PINMUX",
-        .dif_handle = &pinmux,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
         .config = pinmux_wakeup_config,
     },
     {
         .name = "USB",
-        .dif_handle = &usbdev,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
         .config = usb_wakeup_config,
     },
     {
         .name = "AONTIMER",
-        .dif_handle = &aon_timer,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
         .config = aontimer_wakeup_config,
     },
     {
         .name = "SENSOR_CTRL",
-        .dif_handle = &sensor_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
         .config = sensor_ctrl_wakeup_config,
     },
@@ -213,8 +208,7 @@ void init_units(void) {
 
 void execute_test(uint32_t wakeup_source, bool deep_sleep) {
   // Configure wakeup device
-  kTestWakeupSources[wakeup_source].config(
-      kTestWakeupSources[wakeup_source].dif_handle);
+  kTestWakeupSources[wakeup_source].config();
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
   cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
