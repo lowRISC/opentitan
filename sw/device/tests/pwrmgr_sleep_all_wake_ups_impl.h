@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
-#define OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
 
 // Contains header for code that is common to deep, normal, and random sleep for
 // pwrmgr all_wake_ups test.
@@ -39,14 +39,12 @@ typedef struct test_wakeup_sources {
    */
   size_t wakeup;
   /**
-   * Check whether this wake up should be skipped
-   * in this configuration. If set to NULL, assume that it should not be
-   * skipped.
+   * Check whether this wake up should be skipped in this configuration.
+   * If set to NULL, assume that it should not be skipped.
    */
   bool (*skip)(dt_pwrmgr_wakeup_src_t src);
   /**
    * Configuration and initialization actions for the device.
-   * This will be passed the value of `dif` above.
    */
   void (*config)(dt_pwrmgr_wakeup_src_t src);
   /**
@@ -98,4 +96,4 @@ bool execute_test(size_t wakeup_unit, bool deep_sleep);
  */
 void clear_wakeup(size_t wakeup_unit);
 
-#endif  // OPENTITAN_SW_DEVICE_TESTS_SIM_DV_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PWRMGR_SLEEP_ALL_WAKE_UPS_IMPL_H_

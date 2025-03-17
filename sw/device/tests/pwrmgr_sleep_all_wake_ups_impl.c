@@ -5,7 +5,7 @@
 // Contains code that is common to deep, normal, and random sleep for
 // pwrmgr all_wake_ups test.
 
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
+#include "sw/device/tests/pwrmgr_sleep_all_wake_ups_impl.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -314,7 +314,7 @@ static void sensor_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK(enable == kDifToggleDisabled, "Expected event trigger disabled");
   dif_sensor_ctrl_events_t events;
   CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
-  CHECK(events == 0, "EXpected recoverable events to be clear, got 0x%x",
+  CHECK(events == 0, "Expected recoverable events to be clear, got 0x%x",
         events);
 }
 #endif /* HAS_SENSOR_CTRL */
@@ -387,8 +387,9 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
 const test_wakeup_sources_t *get_wakeup_source(
     size_t wakeup_unit, dt_pwrmgr_wakeup_src_t *out_src) {
   dt_pwrmgr_wakeup_src_t src = dt_pwrmgr_wakeup_src(kPwrmgrDt, wakeup_unit);
-  if (out_src)
+  if (out_src) {
     *out_src = src;
+  }
   for (size_t idx = 0; idx < ARRAYSIZE(kTestWakeupSources); idx++) {
     if (dt_device_type(src.inst_id) == kTestWakeupSources[idx].dev_type &&
         src.wakeup == kTestWakeupSources[idx].wakeup) {
