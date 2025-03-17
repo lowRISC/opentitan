@@ -25,6 +25,7 @@ package ac_range_check_env_pkg;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_logic_test_true_strict;
   import prim_mubi_pkg::mubi8_t;
+  import prim_mubi_pkg::MuBi8True;
   import prim_mubi_pkg::MuBi8False;
   import tl_agent_pkg::InstrTypeLsbPos;
   import tl_agent_pkg::InstrTypeMsbPos;
@@ -35,6 +36,8 @@ package ac_range_check_env_pkg;
   parameter uint   NUM_RANGES       = 32;
 
   // Types
+  typedef virtual ac_range_check_misc_io_if misc_vif_t;
+
   typedef enum int {
     DenyCntReached = 0
   } ac_range_check_intr_e;
@@ -45,6 +48,11 @@ package ac_range_check_env_pkg;
     DChanRead  = 2,
     DChanWrite = 3
   } tl_phase_e;
+
+  typedef enum bit {
+    AccessDenied  = 0,
+    AccessGranted = 1
+  } access_decision_e;
 
   typedef struct packed {
     bit log_denied_access;
@@ -71,11 +79,6 @@ package ac_range_check_env_pkg;
     tl_seq_item item;
     int         cnt;
   } tl_filt_t;
-
-  typedef enum bit {
-    AccessDenied  = 0,
-    AccessGranted = 1
-  } access_decision_e;
 
   // Functions
   // Retrieve the index of the CSR based on its name
