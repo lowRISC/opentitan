@@ -9,14 +9,8 @@
 // pwrmgr all_wake_ups test.
 
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_adc_ctrl.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_sensor_ctrl.h"
-#include "sw/device/lib/dif/dif_sysrst_ctrl.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -36,40 +30,37 @@ typedef struct test_wakeup_sources {
    * Name of the device.
    */
   const char *name;
-  /**
-   * Wakeup Sources.
+  /*
+   * Type of the module.
    */
-  dif_pwrmgr_request_sources_t wakeup_src;
+  dt_device_type_t dev_type;
+  /*
+   * Index of the wakeup signal.
+   */
+  size_t wakeup;
   /**
    * Check whether this wake up should be skipped
    * in this configuration. If set to NULL, assume that it should not be
    * skipped.
    */
-  bool (*skip)(void);
+  bool (*skip)(dt_pwrmgr_wakeup_src_t src);
   /**
    * Configuration and initialization actions for the device.
    * This will be passed the value of `dif` above.
    */
-  void (*config)(void);
+  void (*config)(dt_pwrmgr_wakeup_src_t src);
   /**
    * Check the wakeup reason.
    */
-  void (*check)(void);
+  void (*check)(dt_pwrmgr_wakeup_src_t src);
   /**
    * Clear the wakeup reason.
    */
-  void (*clear)(void);
+  void (*clear)(dt_pwrmgr_wakeup_src_t src);
 } test_wakeup_sources_t;
 
-extern dif_adc_ctrl_t adc_ctrl;
-extern dif_aon_timer_t aon_timer;
-extern dif_flash_ctrl_state_t flash_ctrl;
-extern dif_pinmux_t pinmux;
 extern dif_pwrmgr_t pwrmgr;
 extern dif_rv_plic_t rv_plic;
-extern dif_sensor_ctrl_t sensor_ctrl;
-extern dif_sysrst_ctrl_t sysrst_ctrl;
-extern dif_usbdev_t usbdev;
 
 /**
  * Initialize the units used in this test.
@@ -80,6 +71,12 @@ void init_units(void);
  * Return the number of units to test.
  */
 size_t get_wakeup_count(void);
+
+/**
+ * Obtain information about a wakeup source.
+ */
+const test_wakeup_sources_t *get_wakeup_source(size_t wakeup_unit,
+                                               dt_pwrmgr_wakeup_src_t *src);
 
 /**
  * Check pwrmgr reports this unit as the reason for the wakeup.

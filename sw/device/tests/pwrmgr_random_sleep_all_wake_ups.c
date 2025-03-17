@@ -2,21 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwrmgr_regs.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 /*
   PWRMGR RANDOM SLEEP ALL WAKE UPS TEST
@@ -24,19 +16,9 @@
   This test runs power manager wake up from normal or deep sleep mode by
   wake up inputs.
 
-  There are 6 wake up inputs.
-  0: sysrst_ctrl
-  1: adc_ctrl, only runnable in DV
-  2: pinmux
-  3: usb
-  4: aon_timer
-  5: sensor_ctrl
-
-  #1 is excluded in non-DV because it forces an internal signal.
-
-  There are 10 cases to be tested. For each wake up this tests normal and
-  deep sleep in succession; for example, case 2 is adc_ctrl normal sleep and
-  case 3 is adc_ctrl deep sleep.
+  For each wake up this tests normal and deep sleep in succession;
+  for example, case 2 is adc_ctrl normal sleep and case 3 is adc_ctrl
+  deep sleep.
 
   This is tracked by a retention sram counter, given there are resets involved.
  */
@@ -64,13 +46,6 @@ bool test_main(void) {
 
   ret_sram_testutils_init();
 
-  // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
-
-  // Enable pwrmgr interrupt.
-  CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
   uint32_t wakeup_count = 0;
   uint32_t wakeup_unit = 0;
   bool deep_sleep = false;
