@@ -37,7 +37,7 @@ dif_usbdev_t usbdev;
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
  * . use IOR13 as pwrb_in for DV, and IOC0 otherwise
  */
-static void prgm_sysrst_ctrl_wakeup(void *dif) {
+static void sysrst_ctrl_wakeup_config(void *dif) {
   dif_sysrst_ctrl_input_change_config_t config = {
       .input_changes = kDifSysrstCtrlInputPowerButtonH2L,
       .debounce_time_threshold = 1,  // 5us
@@ -53,7 +53,7 @@ static void prgm_sysrst_ctrl_wakeup(void *dif) {
  * adc_ctrl config for test #2
  * . enable filter 5 and set voltage range (0,200)
  */
-static void prgm_adc_ctrl_wakeup(void *dif) {
+static void adc_ctrl_wakeup_config(void *dif) {
   dif_adc_ctrl_config_t cfg = {
       .mode = kDifAdcCtrlLowPowerScanMode,
       .power_up_time_aon_cycles = 7,
@@ -86,7 +86,7 @@ static void prgm_adc_ctrl_wakeup(void *dif) {
  * . use IOB7 as an input for DV, IOC0 otherwise
  * . set posedge detection
  */
-static void prgm_pinmux_wakeup(void *dif) {
+static void pinmux_wakeup_config(void *dif) {
   // Make sure the pin has a pulldown before we enable it for wakeup.
   // FPGA doesn't implement pullup/down, so just use that attribute for SimDV.
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
@@ -121,7 +121,7 @@ static void prgm_pinmux_wakeup(void *dif) {
  * (*dif) handle is not used but leave as is
  * to be called from execute_test
  */
-static void prgm_usb_wakeup(void *dif) {
+static void usb_wakeup_config(void *dif) {
   dif_usbdev_phy_pins_drive_t pins = {
       .dp_pullup_en = true,
       .dn_pullup_en = false,
@@ -129,7 +129,7 @@ static void prgm_usb_wakeup(void *dif) {
   CHECK_DIF_OK(dif_usbdev_set_phy_pins_state(dif, kDifToggleEnabled, pins));
   CHECK_DIF_OK(dif_usbdev_set_wake_enable(dif, kDifToggleEnabled));
 
-  LOG_INFO("prgm_usb_wakeup: wait 20us (usb)");
+  LOG_INFO("usb_wakeup_config: wait 20us (usb)");
   // Give the hardware a chance to recognize the wakeup values are the same.
   busy_spin_micros(20);  // 20us
 }
@@ -138,7 +138,7 @@ static void prgm_usb_wakeup(void *dif) {
  * aon timer config for test #5
  * set wakeup signal in 50us
  */
-static void prgm_aontimer_wakeup(void *dif) {
+static void aontimer_wakeup_config(void *dif) {
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(dif, 10));
 }
 
@@ -146,7 +146,7 @@ static void prgm_aontimer_wakeup(void *dif) {
  * sensor ctrl config for test #6
  * setup event trigger0
  */
-static void prgm_sensor_ctrl_wakeup(void *dif) {
+static void sensor_ctrl_wakeup_config(void *dif) {
   CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(dif, kSensorCtrlEventIdx,
                                                      kDifToggleEnabled));
 }
@@ -156,37 +156,37 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
         .name = "SYSRST_CTRL",
         .dif_handle = &sysrst_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
-        .config = prgm_sysrst_ctrl_wakeup,
+        .config = sysrst_ctrl_wakeup_config,
     },
     {
         .name = "ADC_CTRL",
         .dif_handle = &adc_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
-        .config = prgm_adc_ctrl_wakeup,
+        .config = adc_ctrl_wakeup_config,
     },
     {
         .name = "PINMUX",
         .dif_handle = &pinmux,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
-        .config = prgm_pinmux_wakeup,
+        .config = pinmux_wakeup_config,
     },
     {
         .name = "USB",
         .dif_handle = &usbdev,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
-        .config = prgm_usb_wakeup,
+        .config = usb_wakeup_config,
     },
     {
         .name = "AONTIMER",
         .dif_handle = &aon_timer,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
-        .config = prgm_aontimer_wakeup,
+        .config = aontimer_wakeup_config,
     },
     {
         .name = "SENSOR_CTRL",
         .dif_handle = &sensor_ctrl,
         .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
-        .config = prgm_sensor_ctrl_wakeup,
+        .config = sensor_ctrl_wakeup_config,
     },
 };
 
