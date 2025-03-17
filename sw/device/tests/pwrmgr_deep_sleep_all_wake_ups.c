@@ -53,11 +53,6 @@ bool test_main(void) {
   ret_sram_testutils_init();
 
   init_units();
-  // Enable all AST alerts in sensor_ctrl
-  for (uint32_t k = 0; k < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; k++) {
-    CHECK_DIF_OK(
-        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, k, kDifToggleEnabled));
-  }
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,

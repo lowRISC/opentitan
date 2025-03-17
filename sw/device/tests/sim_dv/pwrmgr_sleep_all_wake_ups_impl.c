@@ -18,6 +18,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
+#include "sensor_ctrl_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 static const uint32_t kPinmuxWkupDetector5 = 5;
@@ -218,6 +219,11 @@ static void aontimer_wakeup_clear(void) {
  * setup event trigger0
  */
 static void sensor_ctrl_wakeup_config(void) {
+  // Enable all AST alerts in sensor_ctrl
+  for (uint32_t k = 0; k < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; k++) {
+    CHECK_DIF_OK(
+        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, k, kDifToggleEnabled));
+  }
   CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
       &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleEnabled));
 }
