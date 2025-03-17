@@ -316,6 +316,10 @@ void init_units(void) {
 size_t get_wakeup_count(void) { return PWRMGR_PARAM_NUM_WKUPS; }
 
 void execute_test(size_t wakeup_unit, bool deep_sleep) {
+  // This message is used by the harness to know how to wakeup the device.
+  LOG_INFO("Test %d begin (%s)", wakeup_unit,
+           kTestWakeupSources[wakeup_unit].name);
+
   // Configure wakeup device
   kTestWakeupSources[wakeup_unit].config();
   dif_pwrmgr_domain_config_t cfg;

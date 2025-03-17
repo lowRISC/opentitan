@@ -64,7 +64,6 @@ bool test_main(void) {
           wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
         continue;
       }
-      LOG_INFO("Test %d begin", wakeup_unit);
       execute_test(wakeup_unit, /*deep_sleep=*/false);
       check_wakeup_reason(wakeup_unit);
       LOG_INFO("Woke up by source %d", wakeup_unit);
