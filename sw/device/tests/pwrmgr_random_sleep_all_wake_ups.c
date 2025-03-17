@@ -8,7 +8,7 @@
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
+#include "sw/device/tests/pwrmgr_sleep_all_wake_ups_impl.h"
 
 /*
   PWRMGR RANDOM SLEEP ALL WAKE UPS TEST
