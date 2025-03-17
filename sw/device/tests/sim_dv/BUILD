@@ -2,9 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules/opentitan:defs.bzl", "opentitan_test")
-load("//hw/top:defs.bzl", "opentitan_select_top")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_test")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
+load("//rules/opentitan:util.bzl", "flatten")
 
 opentitan_test(
     name = "i2c_host_tx_rx_test",
@@ -566,34 +566,57 @@ opentitan_test(
     ],
 )
 
+# List of IPs supported by the pwrmgr_sleep_all_wake_ups_impl
+# library. Some of these are can be top-specific.
+PWRMGR_SUPPORTED_IPS = [
+    "aon_timer",
+    "adc_ctrl",
+    "pinmux",
+    "sensor_ctrl",
+    "sysrst_ctrl",
+    "usbdev",
+]
+
 cc_library(
     name = "pwrmgr_sleep_all_wake_ups_impl",
     srcs = ["pwrmgr_sleep_all_wake_ups_impl.c"],
     hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
+    defines = flatten(
+        [
+            opentitan_if_ip(
+                ip,
+                ["HAS_" + ip.upper()],
+                [],
+            )
+            for ip in PWRMGR_SUPPORTED_IPS
+        ],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
-        "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + flatten(
+        [
+            opentitan_if_ip(
+                ip,
+                ["//sw/device/lib/dif:" + ip],
+                [],
+            )
+            for ip in PWRMGR_SUPPORTED_IPS
+        ],
+    ),
 )
 
 opentitan_test(
