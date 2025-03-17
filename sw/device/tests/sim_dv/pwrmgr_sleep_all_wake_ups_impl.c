@@ -50,6 +50,13 @@ static void sysrst_ctrl_wakeup_config(void) {
                                   : kTopEarlgreyPinmuxInselIoc0));
 }
 
+static void sysrst_ctrl_wakeup_check(void) {
+  bool has_wakeup = false;
+  CHECK_DIF_OK(
+      dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl, &has_wakeup));
+  CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
+}
+
 /**
  * adc_ctrl config for test #2
  * . enable filter 5 and set voltage range (0,200)
@@ -80,6 +87,16 @@ static void adc_ctrl_wakeup_config(void) {
   CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
       &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleEnabled));
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
+}
+
+static void adc_ctrl_wakeup_check(void) {
+  uint32_t filter_status = 0;
+  CHECK_DIF_OK(
+      dif_adc_ctrl_wait_cdc_sync(&adc_ctrl, (uint32_t)kClockFreqAonHz));
+  CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
+  CHECK(filter_status == ((1 << kDifAdcCtrlFilter5) | (1 << kDifAdcCtrlTrans)),
+        "Expected bits %d and %d set in filter status, got status 0x%x",
+        kDifAdcCtrlFilter5, kDifAdcCtrlTrans, filter_status);
 }
 
 /**
@@ -115,6 +132,13 @@ static void pinmux_wakeup_config(void) {
                                                  detector_cfg));
 }
 
+static void pinmux_wakeup_check(void) {
+  uint32_t wakeup_cause;
+  CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
+  CHECK(wakeup_cause == 1 << kPinmuxWkupDetector5,
+        "Expected pinmux wakeup cause 5");
+}
+
 /**
  * usb config for test #4
  * . Fake low power entry through usb
@@ -135,12 +159,22 @@ static void usb_wakeup_config(void) {
   busy_spin_micros(20);  // 20us
 }
 
+static void usb_wakeup_check(void) {
+  // No bit in USBDEV indicates it caused a wakeup.
+}
+
 /**
  * aon timer config for test #5
  * set wakeup signal in 50us
  */
 static void aontimer_wakeup_config(void) {
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 10));
+}
+
+static void aontimer_wakeup_check(void) {
+  bool cause = false;
+  CHECK_DIF_OK(dif_aon_timer_get_wakeup_cause(&aon_timer, &cause));
+  CHECK(cause, "Expected aontimer wakeup cause to be enabled");
 }
 
 /**
@@ -150,6 +184,17 @@ static void aontimer_wakeup_config(void) {
 static void sensor_ctrl_wakeup_config(void) {
   CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
       &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleEnabled));
+}
+
+static void sensor_ctrl_wakeup_check(void) {
+  dif_sensor_ctrl_events_t events;
+  dif_toggle_t enable;
+  CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
+      &sensor_ctrl, kSensorCtrlEventIdx, &enable));
+  CHECK(enable == kDifToggleEnabled, "Expected event trigger enabled");
+  CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+  CHECK(events & (1 << kSensorCtrlEventIdx), "Expected bit %d to be set",
+        kSensorCtrlEventIdx);
 }
 
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
@@ -229,46 +274,18 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
         "wakeup reason wrong exp:%d  obs:%d",
         kTestWakeupSources[wakeup_unit].wakeup_src, wakeup_reason);
   switch (wakeup_unit) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
-      bool has_wakeup = false;
-      CHECK_DIF_OK(
-          dif_sysrst_ctrl_ulp_wakeup_get_status(&sysrst_ctrl, &has_wakeup));
-      CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
-    } break;
-    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX: {
-      uint32_t filter_status = 0;
-      CHECK_DIF_OK(
-          dif_adc_ctrl_wait_cdc_sync(&adc_ctrl, (uint32_t)kClockFreqAonHz));
-      CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
-      CHECK(filter_status ==
-                ((1 << kDifAdcCtrlFilter5) | (1 << kDifAdcCtrlTrans)),
-            "Expected bits %d and %d set in filter status, got status 0x%x",
-            kDifAdcCtrlFilter5, kDifAdcCtrlTrans, filter_status);
-    } break;
-    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX: {
-      uint32_t wakeup_cause;
-      CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
-      CHECK(wakeup_cause == 1 << kPinmuxWkupDetector5,
-            "Expected pinmux wakeup cause 5");
-    } break;
+    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX:
+      return sysrst_ctrl_wakeup_check();
+    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
+      return adc_ctrl_wakeup_check();
+    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX:
+      return pinmux_wakeup_check();
     case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      // No bit in USBDEV indicates it caused a wakeup.
-      break;
-    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX: {
-      bool cause = false;
-      CHECK_DIF_OK(dif_aon_timer_get_wakeup_cause(&aon_timer, &cause));
-      CHECK(cause, "Expected aontimer wakeup cause to be enabled");
-    } break;
-    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX: {
-      dif_sensor_ctrl_events_t events;
-      dif_toggle_t enable;
-      CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
-          &sensor_ctrl, kSensorCtrlEventIdx, &enable));
-      CHECK(enable == kDifToggleEnabled, "Expected event trigger enabled");
-      CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
-      CHECK(events & (1 << kSensorCtrlEventIdx), "Expected bit %d to be set",
-            kSensorCtrlEventIdx);
-    } break;
+      return usb_wakeup_check();
+    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:
+      return aontimer_wakeup_check();
+    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX:
+      return sensor_ctrl_wakeup_check();
     default:
       LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
   }
