@@ -69,25 +69,25 @@ module tlul_adapter_reg_racl
       .out_o( racl_role_vec )
     );
 
-    logic req, rd_req, wr_req, racl_read_allowed, racl_write_allowed;
-    assign req                = tl_i.a_valid & tl_o.a_ready;
-    assign rd_req             = req & (tl_i.a_opcode == tlul_pkg::Get);
-    assign wr_req             = req & (tl_i.a_opcode == tlul_pkg::PutFullData |
-                                       tl_i.a_opcode == tlul_pkg::PutPartialData);
+    logic rd_req, wr_req, racl_read_allowed, racl_write_allowed, racl_error;
+    assign rd_req             = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::Get);
+    assign wr_req             = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::PutFullData |
+                                                tl_i.a_opcode == tlul_pkg::PutPartialData);
     assign racl_read_allowed  = (|(racl_policies_i[RaclPolicySelVec].read_perm  & racl_role_vec));
     assign racl_write_allowed = (|(racl_policies_i[RaclPolicySelVec].write_perm & racl_role_vec));
-    assign racl_error_o.valid = (rd_req & ~racl_read_allowed) | (wr_req & ~racl_write_allowed);
+    assign racl_error         = (rd_req & ~racl_read_allowed) | (wr_req & ~racl_write_allowed);
+    assign racl_error_o.valid = racl_error & tl_o.a_ready;
 
     tlul_request_loopback #(
       .ErrorRsp(RaclErrorRsp)
     ) u_loopback (
       .clk_i,
       .rst_ni,
-      .squash_req_i ( racl_error_o.valid ),
-      .tl_h2d_i     ( tl_i               ),
-      .tl_d2h_o     ( tl_o               ),
-      .tl_h2d_o     ( tl_h2d_filtered    ),
-      .tl_d2h_i     ( tl_d2h_filtered    )
+      .squash_req_i ( racl_error      ),
+      .tl_h2d_i     ( tl_i            ),
+      .tl_d2h_o     ( tl_o            ),
+      .tl_h2d_o     ( tl_h2d_filtered ),
+      .tl_d2h_i     ( tl_d2h_filtered )
     );
 
     // Collect RACL error information
