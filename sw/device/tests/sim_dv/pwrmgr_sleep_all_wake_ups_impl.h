@@ -49,6 +49,10 @@ typedef struct test_wakeup_sources {
    * Check the wakeup reason.
    */
   void (*check)(void);
+  /**
+   * Clear the wakeup reason.
+   */
+  void (*clear)(void);
 } test_wakeup_sources_t;
 
 extern dif_adc_ctrl_t adc_ctrl;

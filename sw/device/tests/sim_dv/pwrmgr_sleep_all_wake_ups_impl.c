@@ -57,6 +57,17 @@ static void sysrst_ctrl_wakeup_check(void) {
   CHECK(has_wakeup, "Expected sysrst_ctrl wakeup to be set");
 }
 
+static void sysrst_ctrl_wakeup_clear(void) {
+  CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
+  // Disable wakeups.
+  dif_sysrst_ctrl_input_change_config_t config = {
+      .input_changes = 0,
+      .debounce_time_threshold = 0,  // 5us
+  };
+  CHECK_DIF_OK(
+      dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
+}
+
 /**
  * adc_ctrl config for test #2
  * . enable filter 5 and set voltage range (0,200)
@@ -99,6 +110,11 @@ static void adc_ctrl_wakeup_check(void) {
         kDifAdcCtrlFilter5, kDifAdcCtrlTrans, filter_status);
 }
 
+static void adc_ctrl_wakeup_clear(void) {
+  CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
+}
+
 /**
  * pinmux config for test #3
  * . use IOB7 as an input for DV, IOC0 otherwise
@@ -139,6 +155,10 @@ static void pinmux_wakeup_check(void) {
         "Expected pinmux wakeup cause 5");
 }
 
+static void pinmux_wakeup_clear(void) {
+  CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
+}
+
 /**
  * usb config for test #4
  * . Fake low power entry through usb
@@ -163,6 +183,13 @@ static void usb_wakeup_check(void) {
   // No bit in USBDEV indicates it caused a wakeup.
 }
 
+static void usb_wakeup_clear(void) {
+  CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
+  // Write again to make sure the first one has already completed.
+  CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
+}
+
 /**
  * aon timer config for test #5
  * set wakeup signal in 50us
@@ -175,6 +202,13 @@ static void aontimer_wakeup_check(void) {
   bool cause = false;
   CHECK_DIF_OK(dif_aon_timer_get_wakeup_cause(&aon_timer, &cause));
   CHECK(cause, "Expected aontimer wakeup cause to be enabled");
+}
+
+static void aontimer_wakeup_clear(void) {
+  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
+  // Write again to make sure the first one has already completed.
+  CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
 }
 
 /**
@@ -197,42 +231,64 @@ static void sensor_ctrl_wakeup_check(void) {
         kSensorCtrlEventIdx);
 }
 
+static void sensor_ctrl_wakeup_clear(void) {
+  // clear event trigger
+  CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
+      &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleDisabled));
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, kSensorCtrlEventIdx));
+  dif_toggle_t enable;
+  CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
+      &sensor_ctrl, kSensorCtrlEventIdx, &enable));
+  CHECK(enable == kDifToggleDisabled, "Expected event trigger disabled");
+  dif_sensor_ctrl_events_t events;
+  CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+  CHECK(events == 0, "EXpected recoverable events to be clear, got 0x%x",
+        events);
+}
+
 const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
     {
         .name = "SYSRST_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
         .config = sysrst_ctrl_wakeup_config,
         .check = sysrst_ctrl_wakeup_check,
+        .clear = sysrst_ctrl_wakeup_clear,
     },
     {
         .name = "ADC_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
         .config = adc_ctrl_wakeup_config,
         .check = adc_ctrl_wakeup_check,
+        .clear = adc_ctrl_wakeup_clear,
     },
     {
         .name = "PINMUX",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
         .config = pinmux_wakeup_config,
         .check = pinmux_wakeup_check,
+        .clear = pinmux_wakeup_clear,
     },
     {
         .name = "USB",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
         .config = usb_wakeup_config,
         .check = usb_wakeup_check,
+        .clear = usb_wakeup_clear,
     },
     {
         .name = "AONTIMER",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
         .config = aontimer_wakeup_config,
         .check = aontimer_wakeup_check,
+        .clear = aontimer_wakeup_clear,
     },
     {
         .name = "SENSOR_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
         .config = sensor_ctrl_wakeup_config,
         .check = sensor_ctrl_wakeup_check,
+        .clear = sensor_ctrl_wakeup_clear,
     },
 };
 
@@ -290,55 +346,7 @@ static bool get_wakeup_status(void) {
 }
 
 void clear_wakeup(uint32_t wakeup_unit) {
-  switch (wakeup_unit) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX: {
-      CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
-      // Disable wakeups.
-      dif_sysrst_ctrl_input_change_config_t config = {
-          .input_changes = 0,
-          .debounce_time_threshold = 0,  // 5us
-      };
-      CHECK_DIF_OK(
-          dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
-    } break;
-    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
-          &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
-      break;
-    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
-      break;
-    case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
-      // Write again to make sure the first one has already completed.
-      CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
-      CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
-      break;
-    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:
-      CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-      // Write again to make sure the first one has already completed.
-      CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-      CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
-      break;
-    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX: {
-      // clear event trigger
-      CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(
-          &sensor_ctrl, kSensorCtrlEventIdx, kDifToggleDisabled));
-      CHECK_DIF_OK(
-          dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, kSensorCtrlEventIdx));
-      dif_toggle_t enable;
-      CHECK_DIF_OK(dif_sensor_ctrl_get_ast_event_trigger(
-          &sensor_ctrl, kSensorCtrlEventIdx, &enable));
-      CHECK(enable == kDifToggleDisabled, "Expected event trigger disabled");
-      dif_sensor_ctrl_events_t events;
-      CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
-      CHECK(events == 0, "EXpected recoverable events to be clear, got 0x%x",
-            events);
-    } break;
-    default:
-      LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
-  }
-
+  kTestWakeupSources[wakeup_unit].clear();
   // Ensure the de-asserted events have cleared from the wakeup pipeline
   // within 100us.
   IBEX_SPIN_FOR(!get_wakeup_status(), 100);
