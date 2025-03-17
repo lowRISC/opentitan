@@ -202,31 +202,37 @@ const test_wakeup_sources_t kTestWakeupSources[PWRMGR_PARAM_NUM_WKUPS] = {
         .name = "SYSRST_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceOne,
         .config = sysrst_ctrl_wakeup_config,
+        .check = sysrst_ctrl_wakeup_check,
     },
     {
         .name = "ADC_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceTwo,
         .config = adc_ctrl_wakeup_config,
+        .check = adc_ctrl_wakeup_check,
     },
     {
         .name = "PINMUX",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceThree,
         .config = pinmux_wakeup_config,
+        .check = pinmux_wakeup_check,
     },
     {
         .name = "USB",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFour,
         .config = usb_wakeup_config,
+        .check = usb_wakeup_check,
     },
     {
         .name = "AONTIMER",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceFive,
         .config = aontimer_wakeup_config,
+        .check = aontimer_wakeup_check,
     },
     {
         .name = "SENSOR_CTRL",
         .wakeup_src = kDifPwrmgrWakeupRequestSourceSix,
         .config = sensor_ctrl_wakeup_config,
+        .check = sensor_ctrl_wakeup_check,
     },
 };
 
@@ -270,25 +276,10 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
   CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-            &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src)) == true,
+            &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src)),
         "wakeup reason wrong exp:%d  obs:%d",
         kTestWakeupSources[wakeup_unit].wakeup_src, wakeup_reason);
-  switch (wakeup_unit) {
-    case PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX:
-      return sysrst_ctrl_wakeup_check();
-    case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX:
-      return adc_ctrl_wakeup_check();
-    case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX:
-      return pinmux_wakeup_check();
-    case PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX:
-      return usb_wakeup_check();
-    case PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX:
-      return aontimer_wakeup_check();
-    case PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX:
-      return sensor_ctrl_wakeup_check();
-    default:
-      LOG_ERROR("unknown wakeup unit %d", wakeup_unit);
-  }
+  kTestWakeupSources[wakeup_unit].check();
 }
 
 static bool get_wakeup_status(void) {

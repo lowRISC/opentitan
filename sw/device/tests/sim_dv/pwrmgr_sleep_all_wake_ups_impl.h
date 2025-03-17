@@ -45,6 +45,10 @@ typedef struct test_wakeup_sources {
    * This will be passed the value of `dif` above.
    */
   void (*config)(void);
+  /**
+   * Check the wakeup reason.
+   */
+  void (*check)(void);
 } test_wakeup_sources_t;
 
 extern dif_adc_ctrl_t adc_ctrl;
