@@ -97,32 +97,38 @@ bool test_main(void) {
 
     // All is well, get ready for the next test.
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
-    CHECK_STATUS_OK(
-        ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
-
-    // The test is done once all wakeups are tested.
-    if (wakeup_count >= 2 * (get_wakeup_count() - 1)) {
-      return true;
-    }
   }
   // All is well, get ready for the next unit, normal and deep sleep.
-  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
-  wakeup_unit = get_wakeup_unit(wakeup_count);
-  deep_sleep = get_deep_sleep(wakeup_count);
-  delay_n_clear(4);
-  CHECK(!deep_sleep, "Should be normal sleep");
-  execute_test(wakeup_unit, deep_sleep);
-  check_wakeup_reason(wakeup_unit);
-  LOG_INFO("Woke up by source %d", wakeup_unit);
-  clear_wakeup(wakeup_unit);
-  // Prepare deep sleep. The check is done above where a reset is handled.
-  CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
-  CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
-  wakeup_unit = get_wakeup_unit(wakeup_count);
-  deep_sleep = get_deep_sleep(wakeup_count);
-  delay_n_clear(4);
-  CHECK(deep_sleep, "Should be deep sleep");
-  execute_test(wakeup_unit, deep_sleep);
+  while (true) {
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+    if (wakeup_count >= 2 * get_wakeup_count()) {
+      return true;
+    }
+    wakeup_unit = get_wakeup_unit(wakeup_count);
+    deep_sleep = get_deep_sleep(wakeup_count);
+    delay_n_clear(4);
+    CHECK(!deep_sleep, "Should be normal sleep");
+    if (execute_test(wakeup_unit, deep_sleep)) {
+      check_wakeup_reason(wakeup_unit);
+      LOG_INFO("Woke up by source %d", wakeup_unit);
+      clear_wakeup(wakeup_unit);
+    }
+    // Prepare deep sleep. The check is done above where a reset is handled.
+    CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+    CHECK_STATUS_OK(
+        ret_sram_testutils_counter_get(kCounterCases, &wakeup_count));
+    wakeup_unit = get_wakeup_unit(wakeup_count);
+    deep_sleep = get_deep_sleep(wakeup_count);
+    delay_n_clear(4);
+    CHECK(deep_sleep, "Should be deep sleep");
+    if (execute_test(wakeup_unit, deep_sleep)) {
+      CHECK(false, "This is not reachable since we entered deep sleep");
+    } else {
+      // Increment test counter.
+      CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+    }
+  }
 
   // This is not reachable.
   return false;

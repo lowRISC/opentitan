@@ -50,23 +50,22 @@ bool test_main(void) {
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
-  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0))) {
     LOG_INFO("POR reset");
 
     for (size_t wakeup_unit = 0; wakeup_unit < get_wakeup_count();
          ++wakeup_unit) {
-      if (kDeviceType != kDeviceSimDV &&
-          wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
+      if (!execute_test(wakeup_unit, /*deep_sleep=*/false)) {
         continue;
       }
-      execute_test(wakeup_unit, /*deep_sleep=*/false);
       check_wakeup_reason(wakeup_unit);
       LOG_INFO("Woke up by source %d", wakeup_unit);
       clear_wakeup(wakeup_unit);
       LOG_INFO("clean up done source %d", wakeup_unit);
     }
     return true;
+  } else {
+    LOG_ERROR("Unexpected wake up reason");
+    return false;
   }
-
-  return false;
 }
