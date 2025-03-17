@@ -329,23 +329,29 @@ void init_units(void) {
 
 size_t get_wakeup_count(void) { return PWRMGR_PARAM_NUM_WKUPS; }
 
-void execute_test(size_t wakeup_unit, bool deep_sleep) {
+bool execute_test(size_t wakeup_unit, bool deep_sleep) {
+  const test_wakeup_sources_t *src = &kTestWakeupSources[wakeup_unit];
+  if (src->skip && src->skip()) {
+    LOG_INFO("Skip %d (%s)", wakeup_unit, src->name);
+    return false;
+  }
+
   // This message is used by the harness to know how to wakeup the device.
-  LOG_INFO("Test %d begin (%s)", wakeup_unit,
-           kTestWakeupSources[wakeup_unit].name);
+  LOG_INFO("Test %d begin (%s)", wakeup_unit, src->name);
 
   // Configure wakeup device
-  kTestWakeupSources[wakeup_unit].config();
+  src->config();
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
   cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInLowPower |
                 kDifPwrmgrDomainOptionUsbClockInActivePower)) |
         (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kTestWakeupSources[wakeup_unit].wakeup_src, cfg));
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, src->wakeup_src, cfg));
   LOG_INFO("Issue WFI to enter sleep %d", wakeup_unit);
   wait_for_interrupt();
+  return true;
 }
 
 void check_wakeup_reason(size_t wakeup_unit) {

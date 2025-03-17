@@ -64,32 +64,31 @@ bool test_main(void) {
 
   uint32_t wakeup_unit = 0;
 
-  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) == true) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0))) {
     LOG_INFO("POR reset");
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterCases));
-    CHECK_STATUS_OK(
-        ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
-    execute_test(wakeup_unit, /*deep_sleep=*/true);
   } else {
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
     check_wakeup_reason(wakeup_unit);
     LOG_INFO("Woke up by source %d", wakeup_unit);
     clear_wakeup(wakeup_unit);
+    delay_n_clear(4);
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
+  }
+
+  while (true) {
     CHECK_STATUS_OK(
         ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
     if (wakeup_unit >= get_wakeup_count()) {
       return true;
-    } else if (kDeviceType != kDeviceSimDV &&
-               wakeup_unit == PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX) {
-      // Skip ADC_CTRL and sensor control if not in sim_dv.
+    }
+    if (execute_test(wakeup_unit, /*deep_sleep=*/true)) {
+      CHECK(false, "This is not reachable since we entered deep sleep");
+    } else {
+      // Skip test.
       CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterCases));
     }
-    CHECK_STATUS_OK(
-        ret_sram_testutils_counter_get(kCounterCases, &wakeup_unit));
-    delay_n_clear(4);
-    execute_test(wakeup_unit, /*deep_sleep=*/true);
   }
 
   return false;

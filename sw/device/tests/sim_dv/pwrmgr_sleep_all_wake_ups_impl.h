@@ -90,9 +90,11 @@ void check_wakeup_reason(size_t wakeup_unit);
  * Execute the test for a given unit and sleep mode.
  *
  * Configure wakeup_unit to cause a wakeup up and the pwrmgr sleep mode,
- * and let the CPU wait for interrupt.
+ * and let the CPU wait for interrupt. Returns false if this wakeup unit
+ * must be skipped.
  */
-void execute_test(size_t wakeup_unit, bool deep_sleep);
+OT_WARN_UNUSED_RESULT
+bool execute_test(size_t wakeup_unit, bool deep_sleep);
 
 /**
  * Clear the wakeup for the given unit.
