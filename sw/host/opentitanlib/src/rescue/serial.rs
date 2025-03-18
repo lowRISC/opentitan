@@ -9,7 +9,7 @@ use std::time::Duration;
 use crate::app::TransportWrapper;
 use crate::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
-use crate::rescue::{Rescue, RescueError, RescueMode};
+use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode};
 use crate::uart::console::UartConsole;
 
 pub struct RescueSerial {
@@ -41,11 +41,20 @@ impl RescueSerial {
 }
 
 impl Rescue for RescueSerial {
-    fn enter(&self, transport: &TransportWrapper, reset_target: bool) -> Result<()> {
-        log::info!("Setting serial break to trigger rescue mode.");
-        self.uart.set_break(true)?;
-        if reset_target {
-            transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+    fn enter(&self, transport: &TransportWrapper, mode: EntryMode) -> Result<()> {
+        log::info!("Setting serial break to trigger rescue mode (entry via {mode:?}).");
+        match mode {
+            EntryMode::Reset => {
+                self.uart.set_break(true)?;
+                transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+            }
+            EntryMode::Reboot => {
+                self.reboot()?;
+                self.uart.set_break(true)?;
+            }
+            EntryMode::None => {
+                self.uart.set_break(true)?;
+            }
         }
         UartConsole::wait_for(&*self.uart, r"rescue:.*\r\n", self.enter_delay)?;
         log::info!("Rescue triggered. clearing serial break.");
@@ -98,11 +107,6 @@ impl Rescue for RescueSerial {
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
-        Ok(())
-    }
-
-    fn wait(&self) -> Result<()> {
-        self.set_mode(Self::WAIT)?;
         Ok(())
     }
 
