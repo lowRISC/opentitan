@@ -8,6 +8,7 @@ LOCALTOOLS_TOOLCHAIN = "@lowrisc_opentitan//rules/opentitan:localtools_type"
 
 LocalToolInfo = provider(fields = [
     "opentitantool",
+    "gen_ft_devid",
     "gen_mem_image",
     "gen_otp_rot_auth_json",
     "gen_otp_immutable_rom_ext_json",
@@ -16,6 +17,7 @@ LocalToolInfo = provider(fields = [
 def _localtools_toolchain(ctx):
     tools = LocalToolInfo(
         opentitantool = ctx.attr.opentitantool[0].files_to_run,
+        gen_ft_devid = ctx.attr.gen_ft_devid[0].files_to_run,
         gen_mem_image = ctx.attr.gen_mem_image[0].files_to_run,
         gen_otp_rot_auth_json = ctx.attr.gen_otp_rot_auth_json[0].files_to_run,
         gen_otp_immutable_rom_ext_json = ctx.attr.gen_otp_immutable_rom_ext_json[0].files_to_run,
@@ -30,6 +32,11 @@ localtools_toolchain = rule(
     attrs = {
         "opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
+            executable = True,
+            cfg = host_tools_transition,
+        ),
+        "gen_ft_devid": attr.label(
+            default = "//sw/host/provisioning/orchestrator/src:ft_devid_gen",
             executable = True,
             cfg = host_tools_transition,
         ),

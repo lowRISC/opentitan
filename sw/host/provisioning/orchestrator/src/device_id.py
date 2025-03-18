@@ -241,6 +241,10 @@ class DeviceId():
 
         return DeviceId(sku_config, din)
 
+    def sku_specific_hexstr(self) -> str:
+        """Returns the SKU specific portion of the device ID as a hex string."""
+        return util.format_hex(self.sku_specific, width=32)
+
     def to_hexstr(self) -> str:
         """Returns the device ID as a hex string."""
         return util.format_hex(self.device_id, width=64)

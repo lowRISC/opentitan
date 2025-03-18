@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
+#include "sw/device/silicon_creator/manuf/base/ft_device_id.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
@@ -237,9 +238,8 @@ static status_t provision(ujson_t *uj) {
 
   // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
-  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
-                                        kFlashInfoPage0Permissions,
-                                        in_data.ft_device_id));
+  TRY(manuf_individualize_device_hw_cfg(
+      &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
 
   LOG_INFO("Writing ROT_CREATOR_AUTH_CODESIGN OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
