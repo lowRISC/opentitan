@@ -15,7 +15,7 @@
   tool: xcelium
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: ${instance_vlnv("lowrisc:dv:ac_range_check_sim:0.1")}
+  fusesoc_core: ${instance_vlnv("lowrisc:dv:${module_instance_name}_sim:0.1")}
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/${module_instance_name}_testplan.hjson"

@@ -105,6 +105,11 @@ class IpTemplateRendererBase:
     def _replace_uniquified_prefix(self, core_name: str) -> str:
         uniquified_modules = self.ip_config.param_values.get("uniquified_modules", {})
         for name, uniq_name in uniquified_modules.items():
+            # This prevents applying the rename multiple times, like when the
+            # core file undergoes `module_instance_name` processing during
+            # template expansion, and is also subject to instance_vlnv.
+            if core_name == uniq_name or core_name.startswith(f'{uniq_name}_'):
+                return core_name
             if core_name.startswith(f'{name}_'):
                 return f'{uniq_name}_{core_name[len(name)+1:]}'
             elif core_name == name:

@@ -27,9 +27,8 @@ import topgen.lib as topgen_lib
 from autogen_testutils.gen import gen_testutils
 from make_new_dif.ip import Ip
 
-# This file is $REPO_TOP/util/autogen_testutils.py, so it takes two parent()
-# calls to get back to the top.
-REPO_TOP = Path(__file__).resolve().parent.parent
+# This file is $REPO_TOP/util/gen_testutils.py, so parents[1] is the top.
+REPO_TOP = Path(__file__).resolve().parents[1]
 
 
 def main():

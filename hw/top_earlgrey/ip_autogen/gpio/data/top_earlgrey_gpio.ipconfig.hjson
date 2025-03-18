@@ -8,11 +8,6 @@
     num_inp_period_counters: 0
     module_instance_name: gpio
     topname: earlgrey
-    uniquified_modules:
-    {
-      gpio: gpio
-      alert_handler: alert_handler
-      rv_plic: rv_plic
-    }
+    uniquified_modules: {}
   }
 }

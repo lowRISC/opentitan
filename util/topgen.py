@@ -74,6 +74,8 @@ class UniquifiedModules(object):
         self.modules: Dict[str, str] = {}
 
     def add_module(self, name: str, uniquified_name: str):
+        if name == uniquified_name:
+            return
         if (name in self.modules and uniquified_name != self.modules[name]):
             raise SystemExit(f"Multiple renames for module {name}")
         self.modules[name] = uniquified_name

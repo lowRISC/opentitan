@@ -14,8 +14,8 @@ from raclgen.lib import parse_racl_config, parse_racl_mapping, gen_md, gen_md_he
 from reggen.ip_block import IpBlock
 import topgen.lib as topgen_lib
 
-# This file is $REPO_TOP/util/, so it takes two parent() calls to get back to the top.
-REPO_TOP = Path(__file__).resolve().parent.parent
+# This file is under $REPO_TOP/util/, so parents[1] gets back to the top.
+REPO_TOP = Path(__file__).resolve().parents[1]
 
 
 def main():
