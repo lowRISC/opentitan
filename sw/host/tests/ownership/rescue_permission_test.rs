@@ -12,8 +12,8 @@ use std::time::Duration;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::ownership::OwnershipKeyAlg;
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
 use transfer_lib::HybridPair;
 
@@ -110,7 +110,7 @@ fn rescue_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<(
     log::info!("###### Check Rescue Dis-Allowed Command ######");
     // We'll check a boot_svc command that has been removed from the
     // allowlist when we use the `WithRescueRestricted` configuration.
-    rescue.enter(transport, /*reset_target=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     let result = rescue.set_next_bl0_slot(
         /*primary=*/ BootSlot::Unspecified,
         /*next=*/ BootSlot::SlotA,
