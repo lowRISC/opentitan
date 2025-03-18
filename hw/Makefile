@@ -20,8 +20,6 @@ IPS ?= aes           \
        dma           \
        edn           \
        entropy_src   \
-       flash_ctrl    \
-       gpio          \
        hmac          \
        i2c           \
        keymgr        \
@@ -30,7 +28,6 @@ IPS ?= aes           \
        lc_ctrl       \
        mbx           \
        otbn          \
-       otp_ctrl      \
        pattgen       \
        pwm           \
        rom_ctrl      \
@@ -70,7 +67,6 @@ ips_reg        = $(addsuffix _reg, $(local_ips))
 
 # Per-top targets (all phonies)
 tops_gen = $(addsuffix _gen,$(TOPS))
-tops_reg = $(addsuffix _reg,$(TOPS))
 tops_rust_gen = $(addsuffix _gen,$(TOPS))
 
 # Targets for installing files into TOCK_ROOT (empty if TOCK_ROOT is not defined)
@@ -82,11 +78,11 @@ $(tock_rust_destdir):
 	mkdir -p $@
 endif
 
-.PHONY: $(ips_reg) $(tops_gen) $(tops_reg)
+.PHONY: $(ips_reg) $(tops_gen)
 
-all: $(ips_reg) $(tops_gen) $(tops_reg) cmdgen
+all: $(ips_reg) $(tops_gen) cmdgen
 
-regs: $(ips_reg) $(tops_reg)
+regs: $(ips_reg)
 
 $(REG_OUTPUT_DV_DIR) $(REG_OUTPUT_SW_DIR): %:
 	mkdir -p $@
@@ -101,7 +97,6 @@ $(ips_reg): %_reg: | $(REG_OUTPUT_DV_DIR)
 	$(if $(wildcard $(blk-gen-script)),$(blk-gen-script))
 	${PRJ_DIR}/util/regtool.py ${toolflags} -r $(blk-hjson)
 	${PRJ_DIR}/util/regtool.py --sec-cm-testplan $(blk-hjson)
-	${PRJ_DIR}/util/regtool.py -s -t $(REG_OUTPUT_DV_DIR) $(blk-hjson)
 
 # Register generation for otp_ctrl also depends on running gen-otp-mmap.py
 .PHONY: otp-mmap
@@ -133,13 +128,9 @@ topgen_rust: workspace_status
 topgen_rust_pkg: topgen_rust
 	tar -C ${REG_OUTPUT_AUTOGEN_DIR}/sw/autogen/ -cvf ${REG_OUTPUT_AUTOGEN_DIR}/chip_${TOPS}.tar chip
 
-top: $(tops_gen) $(tops_reg)
+top: $(tops_gen)
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
-
-$(tops_reg): %_reg:
-	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
-	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
 
 # This runs cmdgen on all md files of the repo.
 cmdgen:
