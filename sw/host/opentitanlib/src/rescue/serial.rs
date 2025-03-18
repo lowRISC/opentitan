@@ -3,22 +3,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use std::cell::Cell;
 use std::rc::Rc;
 use std::time::Duration;
 
 use crate::app::TransportWrapper;
 use crate::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
-use crate::rescue::{Rescue, RescueError, RescueMode};
+use crate::rescue::{EntryMode, Rescue, RescueError, RescueMode};
 use crate::uart::console::UartConsole;
 
 pub struct RescueSerial {
     uart: Rc<dyn Uart>,
     reset_delay: Duration,
     enter_delay: Duration,
+    version: Cell<u16>,
 }
 
 impl RescueSerial {
+    // The version is encoded in a u16 with the major as the high byte and minor as the low byte.
+    const VERSION_1_0: u16 = 0x0100;
+    const VERSION_2_0: u16 = 0x0200;
+
     const ONE_SECOND: Duration = Duration::from_secs(1);
     pub const REBOOT: RescueMode = RescueMode(u32::from_be_bytes(*b"REBO"));
     pub const BAUD: RescueMode = RescueMode(u32::from_be_bytes(*b"BAUD"));
@@ -36,24 +42,60 @@ impl RescueSerial {
             uart,
             reset_delay: Duration::from_millis(50),
             enter_delay: Duration::from_secs(5),
+            version: Cell::default(),
         }
     }
 }
 
 impl Rescue for RescueSerial {
-    fn enter(&self, transport: &TransportWrapper, reset_target: bool) -> Result<()> {
-        log::info!("Setting serial break to trigger rescue mode.");
-        self.uart.set_break(true)?;
-        if reset_target {
-            transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+    fn enter(&self, transport: &TransportWrapper, mode: EntryMode) -> Result<()> {
+        log::info!("Setting serial break to trigger rescue mode (entry via {mode:?}).");
+        match mode {
+            EntryMode::Reset => {
+                self.uart.set_break(true)?;
+                transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+            }
+            EntryMode::Reboot => {
+                self.reboot()?;
+                self.uart.set_break(true)?;
+            }
+            EntryMode::None => {
+                self.uart.set_break(true)?;
+            }
         }
-        UartConsole::wait_for(&*self.uart, r"rescue:.*\r\n", self.enter_delay)?;
-        log::info!("Rescue triggered. clearing serial break.");
+        let version = UartConsole::wait_for(
+            &*self.uart,
+            r"rescue:(?:(\d+)\.(\d+))?.*\r\n",
+            self.enter_delay,
+        )?;
+        let version = if !version[1].is_empty() && !version[2].is_empty() {
+            let major = version[1].parse::<u16>()?;
+            let minor = version[2].parse::<u16>()?;
+            (major << 8) | minor
+        } else {
+            0
+        };
+        self.version.set(version);
+        log::info!("Rescue triggered (version={version:04x}). Clearing serial break.");
         self.uart.set_break(false)?;
         // Upon entry, rescue is going to tell us what mode it is.
         // Consume and discard.
         let _ = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND);
-        Ok(())
+
+        if version < Self::VERSION_1_0 {
+            // Make the older version of the protocol compliant with the current expectations of
+            // the client.  Since the rescue client now expects the chip to wait after transfers
+            // rather than automatically reset, we put older implementations into WAIT mode.
+            self.set_mode(Self::WAIT)?;
+        }
+        if version >= Self::VERSION_2_0 {
+            Err(RescueError::BadProtocol(format!(
+                "This version of opentitantool does not support rescue protocol {version:04x}"
+            ))
+            .into())
+        } else {
+            Ok(())
+        }
     }
 
     fn set_speed(&self, baud: u32) -> Result<u32> {
@@ -104,11 +146,6 @@ impl Rescue for RescueSerial {
         if result[1] == "error" {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
-        Ok(())
-    }
-
-    fn wait(&self) -> Result<()> {
-        self.set_mode(Self::WAIT)?;
         Ok(())
     }
 
