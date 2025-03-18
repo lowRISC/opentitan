@@ -30,9 +30,6 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --package=${PACKAGE} \
   --fpga=hyper310 \
   --ast-cfg-version=0 \
-  --enable-alerts \
-  --use-ext-clk \
-  --patch-ast \
   --log-ujson-payloads \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite

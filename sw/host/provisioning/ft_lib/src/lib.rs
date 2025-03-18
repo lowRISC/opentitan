@@ -33,9 +33,7 @@ use ot_certs::x509::parse_certificate;
 use ot_certs::CertFormat;
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
-use ujson_lib::provisioning_data::{
-    LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
-};
+use ujson_lib::provisioning_data::{LcTokenHash, ManufCertgenInputs, PersoBlob, SerdesSha256Hash};
 use ujson_lib::UjsonPayloads;
 use util_lib::hash_lc_token;
 
@@ -88,10 +86,8 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     reset_delay: Duration,
     sram_program: &SramProgramParams,
-    ft_individualize_data_in: &ManufFtIndividualizeData,
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
-    ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
@@ -114,19 +110,6 @@ pub fn run_sram_ft_individualize(
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-
-    // Wait for SRAM program to complete execution.
-    let _ = UartConsole::wait_for(
-        spi_console,
-        r"Waiting for FT SRAM provisioning data ...",
-        timeout,
-    )?;
-
-    // Inject provisioning data into the device.
-    ujson_payloads.dut_in.insert(
-        "FT_INDIVIDUALIZE_DATA_IN".to_string(),
-        ft_individualize_data_in.send(spi_console)?,
-    );
 
     // Wait for provisioning operations to complete. If we see at least 10 NMIs, we know it is time
     // to capture crashdump information.
