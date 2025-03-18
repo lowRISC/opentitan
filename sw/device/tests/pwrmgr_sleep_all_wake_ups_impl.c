@@ -7,10 +7,15 @@
 
 #include "sw/device/tests/pwrmgr_sleep_all_wake_ups_impl.h"
 
+#include "dt/dt_aon_timer.h"
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rv_plic_testutils.h"
 
 #ifdef HAS_ADC_CTRL
 #include "dt/dt_adc_ctrl.h"

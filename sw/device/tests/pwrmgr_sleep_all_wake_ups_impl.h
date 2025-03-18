@@ -8,15 +8,7 @@
 // Contains header for code that is common to deep, normal, and random sleep for
 // pwrmgr all_wake_ups test.
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/runtime/ibex.h"
-#include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/pwrmgr_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -58,7 +50,6 @@ typedef struct test_wakeup_sources {
 } test_wakeup_sources_t;
 
 extern dif_pwrmgr_t pwrmgr;
-extern dif_rv_plic_t rv_plic;
 
 /**
  * Initialize the units used in this test.
