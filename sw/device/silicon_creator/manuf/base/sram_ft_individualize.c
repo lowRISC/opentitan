@@ -10,19 +10,16 @@
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
@@ -43,11 +40,8 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
 static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl_state;
-static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
-
-static manuf_ft_individualize_data_t in_data;
 
 // Switching to external clocks causes the clocks to be unstable for some time.
 // This is used to delay further action when the switch happens.
@@ -55,9 +49,6 @@ static const int kSettleDelayMicros = 200;
 
 // Number of NMIs seen as a result of alerts firing.
 static size_t alert_nmi_count = 0;
-
-// ATE Indicator GPIOs.
-static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 1;
 
 /**
  * Handle NMIs from the alert escalation mechanism.
@@ -82,7 +73,6 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
@@ -152,16 +142,6 @@ static status_t configure_all_alerts(void) {
   return OK_STATUS();
 }
 
-static status_t configure_ate_gpio_indicators(void) {
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-                               kTopEarlgreyPinmuxOutselGpioGpio0));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-                               kTopEarlgreyPinmuxOutselGpioGpio1));
-  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first two GPIOs.
-  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
-  return OK_STATUS();
-}
-
 /**
  * Patch AST config if patch exists in flash info page 0.
  */
@@ -185,16 +165,17 @@ static status_t patch_ast_config_value(void) {
       kFlashInfoFieldAstIndividPatchValSizeIn32BitWords));
 
   // Check the address is within range before programming.
-  // Check the value is non-zero and not all ones before programming.
   if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
     TRY_CHECK(ast_patch_addr_offset <= AST_REGAL_REG_OFFSET);
-    TRY_CHECK(ast_patch_value != 0 && ast_patch_value != UINT32_MAX);
   }
 
-  // Write patch value.
-  abs_mmio_write32(
-      TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
-      ast_patch_value);
+  // Only patch AST if the patch value is present.
+  if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
+    // Write patch value.
+    abs_mmio_write32(
+        TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
+        ast_patch_value);
+  }
 
   return OK_STATUS();
 }
@@ -206,35 +187,24 @@ static status_t patch_ast_config_value(void) {
  * Note: CreatorSwCfg and OwnerSwCfg partitions are not locked yet, as not
  * all fields can be programmed until the personalization stage.
  */
-static status_t provision(ujson_t *uj) {
-  // Enable ATE GPIO indicators.
-  TRY(configure_ate_gpio_indicators());
-
-  // Get host data.
-  LOG_INFO("Waiting for FT SRAM provisioning data ...");
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-  TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
-
+static status_t provision(void) {
   // Enable all alerts (and alert NMIs) if requested.
-  if (in_data.enable_alerts) {
-    TRY(configure_all_alerts());
-    LOG_INFO("All alerts and alert NMI enabled.");
-  }
+  //
+  // This if for debugging purposes. Keep commented for production.
+  // TRY(configure_all_alerts());
 
   // Enable external clock on silicon platforms if requested.
-  if ((kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) &&
-      in_data.use_ext_clk) {
-    TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr,
-                                              /*is_low_speed=*/true));
-    IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
-    LOG_INFO("External clock enabled.");
-  }
+  //
+  // This if for debugging purposes. Keep commented for production.
+  // if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
+  //   TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr,
+  //                                             /*is_low_speed=*/true));
+  //   IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
+  //   LOG_INFO("External clock enabled.");
+  // }
 
   // Patch AST config if requested.
-  if (in_data.patch_ast) {
-    TRY(patch_ast_config_value());
-  }
+  TRY(patch_ast_config_value());
 
   // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
@@ -260,7 +230,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
-  ujson_t uj = ujson_ottf_console();
 
   // Abort if reset reason is due to an escalation.
   if (rstmgr_is_hw_reset_reason(kDtRstmgrAon, rstmgr_reason_get(),
@@ -273,7 +242,7 @@ bool test_main(void) {
   rstmgr_reason_clear(UINT8_MAX);
 
   // Perform provisioning operations.
-  CHECK_STATUS_OK(provision(&uj));
+  CHECK_STATUS_OK(provision());
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission
   // mode, as ROM execution should be active now.
