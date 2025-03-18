@@ -25,7 +25,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ot_hal::dif::lc_ctrl::DifLcCtrlState;
-use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
+use ujson_lib::provisioning_data::ManufCertgenInputs;
 use util_lib::{
     encrypt_token, hex_string_to_u8_arrayvec, hex_string_to_u32_arrayvec, load_rsa_public_key,
     random_token,
@@ -34,21 +34,6 @@ use util_lib::{
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
-    /// FT Device ID to provision in big-endian.
-    ///
-    /// Contains the SKU-specific portion of the device ID.
-    #[arg(long)]
-    pub ft_device_id: String,
-
-    #[arg(long)]
-    pub enable_alerts_during_individualize: bool,
-
-    #[arg(long)]
-    pub use_ext_clk_during_individualize: bool,
-
-    #[arg(long)]
-    pub use_ast_patch_during_individualize: bool,
-
     /// TestUnlock token; a 128-bit hex string.
     #[arg(long)]
     pub test_unlock_token: String,
@@ -139,18 +124,6 @@ fn main() -> Result<()> {
     response.rma_unlock_token = Base64::encode_string(&encrypted_rma_unlock_token);
     log::info!("Encrypted rma_unlock_token = {}", response.rma_unlock_token);
 
-    // Parse and prepare individualization ujson data payload.
-    let mut ft_device_id =
-        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
-    // The FT device ID is sent to the DUT in little endian order.
-    ft_device_id.reverse();
-    let ft_individualize_data_in = ManufFtIndividualizeData {
-        enable_alerts: opts.provisioning_data.enable_alerts_during_individualize,
-        use_ext_clk: opts.provisioning_data.use_ext_clk_during_individualize,
-        patch_ast: opts.provisioning_data.use_ast_patch_during_individualize,
-        ft_device_id,
-    };
-
     // Parse and prepare CA key.
     let mut ca_cfgs: HashMap<String, CaConfig> = serde_annotate::from_str(
         &std::fs::read_to_string(opts.ca_config)
@@ -227,7 +200,6 @@ fn main() -> Result<()> {
                 &transport,
                 &opts.init.jtag_params,
                 &opts.sram_program,
-                &ft_individualize_data_in,
                 opts.timeout,
                 &spi_console_device,
             )?;
