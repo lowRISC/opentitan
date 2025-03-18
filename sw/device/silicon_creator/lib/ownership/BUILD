@@ -231,6 +231,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue:rescue",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
     ],
     alwayslink = True,
 )
@@ -249,6 +251,33 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue:rescue",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
+    name = "test_owner_usbdfu",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        # 0x55 is 'U'sb.
+        "WITH_RESCUE_PROTOCOL=0x55",
+        # Trigger 2 is strap pins combination.
+        "WITH_RESCUE_TRIGGER=2",
+        # Strapping value of 3.
+        "WITH_RESCUE_INDEX=3",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue:rescue",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
     ],
     alwayslink = True,
 )

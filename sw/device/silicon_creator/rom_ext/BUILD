@@ -164,7 +164,7 @@ ld_library(
             "//sw/device/silicon_creator/lib/ownership:owner_verify",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
-            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
+            "//sw/device/silicon_creator/lib/rescue:rescue",
             "//sw/device/silicon_creator/lib/sigverify",
             "//sw/otbn/crypto:boot",
         ] + variation_deps,
@@ -207,6 +207,7 @@ manifest(d = {
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner",
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
+            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/rom_ext/imm_section:main_section_{}_slot_{}".format(variation_name, slot),
         ],
     )
@@ -236,6 +237,33 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner_update_mode_newversion",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+    ],
+)
+
+# This binary is a test-only ROM_EXT that has rescue configured
+# for USB-DFU.
+opentitan_binary(
+    name = "rom_ext_usbdfu",
+    testonly = True,
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
+    ],
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest",
+    deps = [
+        ":rom_ext_dice_x509",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner_usbdfu",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/lib/rescue:rescue_usbdfu",
         "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
     ],
 )
@@ -268,6 +296,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
         "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
     ],
 )
