@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Dependencies:
-bazel_dep(name = "rules_rust", version = "0.56.0")
-bazel_dep(name = "rules_rust_bindgen", version = "0.56.0")
+bazel_dep(name = "rules_rust", version = "0.59.2")
+bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
@@ -14,17 +14,16 @@ single_version_override(
         "//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
     ],
     patch_strip = 1,
-    version = "0.56.0",
+    version = "0.59.2",
 )
 
 single_version_override(
     module_name = "rules_rust_bindgen",
     patches = [
         "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
-        "//third_party/rust/patches:rules_rust.bindgen_defines.patch",
     ],
     patch_strip = 3,
-    version = "0.56.0",
+    version = "0.59.2",
 )
 
 # Rust toolchain:
