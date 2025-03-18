@@ -137,7 +137,13 @@ class cip_base_vseq #(
       // sequence has do_apply_reset=1. If not, the reset will be applied in an upper vseq.
       if (cfg.clk_rst_vif.rst_n) dut_init();
     end else begin
-      if (cfg.clk_rst_vif.rst_n) check_no_fatal_alerts();
+      if (cfg.clk_rst_vif.rst_n) begin
+        // Set flag since pings are in an infinite loop within the agent's run phase
+        // Otherwise, we may get a ping and wrongly fail tests since the ping is being serviced
+        cfg.configure_esc_agent_drive_ping(0);
+        check_no_fatal_alerts();
+        cfg.configure_esc_agent_drive_ping(1);
+      end
     end
 
     // Some fatal alerts might trigger interrupt as well, so only check interrupt after fatal alert
