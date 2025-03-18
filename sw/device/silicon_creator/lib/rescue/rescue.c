@@ -307,7 +307,7 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
       break;
     case kRescueDetectBreak:
       if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
-        dbg_printf("rescue: remember to clear break\r\n");
+        dbg_printf("rescue:1.0 remember to clear break\r\n");
         uart_enable_receiver();
         return kHardenedBoolTrue;
       }
