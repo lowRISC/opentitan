@@ -50,11 +50,17 @@ interface alert_esc_if(input clk, input rst_n);
 
   typedef enum logic [1:0] { IdleSt, PingSt, AlertSt } state_e;
   state_e state_d, state_q;
+  // Delaying the state in the same way as the alert_tx/rx signals
+  state_e state_q_dly1, state_q_final;
   always_ff @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       state_q <= IdleSt;
+      state_q_dly1 <= IdleSt;
+      state_q_final <= IdleSt;
     end else begin
       state_q <= state_d;
+      state_q_dly1 <= state_q;
+      state_q_final <= state_q_dly1;
     end
   end
 
@@ -69,7 +75,7 @@ interface alert_esc_if(input clk, input rst_n);
   end
 
   logic ping_pending;
-  always_comb ping_pending = state_q != IdleSt;
+  always_comb ping_pending = state_q_final != IdleSt;
 
   // if alert sender is async mode, the clock will be driven in alert_esc_agent,
   // if it is sync mode, will assign to dut clk here
@@ -90,10 +96,12 @@ interface alert_esc_if(input clk, input rst_n);
       alert_rx_sync_dly1 <= alert_rx;
     end
   end
-  assign alert_tx_final = (is_async && (if_mode == dv_utils_pkg::Host)) ?
-                          alert_tx_sync_dly2 : alert_tx;
-  assign alert_rx_final = (is_async && (if_mode == dv_utils_pkg::Device)) ?
-                          alert_rx_sync_dly2 : alert_rx;
+
+  // Used by the monitor for "symetrical" sampling with equal delay from both sides
+  // This ensures correct sampling. Otherwise there can be race conditions where the monitor misses
+  // a ping due to a delay.
+  assign alert_tx_final = alert_tx_sync_dly2;
+  assign alert_rx_final = alert_rx_sync_dly2;
 
   clocking sender_cb @(posedge async_clk);
     input  rst_n;
