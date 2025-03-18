@@ -66,13 +66,12 @@ filegroup(
     ],
 )
 
-# These aliases are required for the DV testbench to locate these VMEM files.
-alias(
+# This alias is required for the DV testbench to locate these files.
+filegroup(
     name = "ate_gpio_toggle_test_silicon_creator",
-    actual = ":ate_gpio_toggle_test_silicon_creator_vmem64_signed",
-)
-
-alias(
-    name = "ate_gpio_toggle_test_sim_dv",
-    actual = ":ate_gpio_toggle_test_sim_dv_vmem64_signed",
+    testonly = True,
+    srcs = [
+        ":ate_gpio_toggle_test_silicon_creator.dis",
+        ":ate_gpio_toggle_test_silicon_creator_vmem64_signed",
+    ],
 )
