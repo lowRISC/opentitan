@@ -422,10 +422,14 @@ def search_ips(ip_path: Path) -> List[str]:
 
 def get_ip_hjson_path(ip_name_snake: str, topcfg: ConfigT,
                       repotop: Path) -> Path:
+    """Return the location of an IP's hjson file for a given top.
+
+    This function should be called with the module['type'] for ipgen
+    modules, since find_module is called with use_base_template_type
+    set to False.
     """
-    Return the location of an IP's hjson file for a given top.
-    """
-    m = find_module(topcfg["module"], ip_name_snake)
+    m = find_module(topcfg["module"], ip_name_snake,
+                    use_base_template_type=False)
     if is_ipgen(m):
         data_dir = repotop / "hw/top_{}/ip_autogen/{}/data".format(
             topcfg["name"], ip_name_snake)

@@ -1986,11 +1986,6 @@
       ]
     }
     topname: earlgrey
-    uniquified_modules:
-    {
-      gpio: gpio
-      alert_handler: alert_handler
-      rv_plic: rv_plic
-    }
+    uniquified_modules: {}
   }
 }
