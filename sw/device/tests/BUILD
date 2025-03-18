@@ -3260,10 +3260,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:log",
@@ -3433,15 +3430,11 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
+        ":pwrmgr_sleep_all_wake_ups_impl",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        ":pwrmgr_sleep_all_wake_ups_impl",
     ],
 )
 
@@ -3466,17 +3459,13 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
+        ":pwrmgr_sleep_all_wake_ups_impl",
         "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        ":pwrmgr_sleep_all_wake_ups_impl",
     ],
 )
 
@@ -3507,6 +3496,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
+        ":pwrmgr_sleep_all_wake_ups_impl",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -3518,7 +3508,6 @@ opentitan_test(
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        ":pwrmgr_sleep_all_wake_ups_impl",
     ],
 )
 
@@ -3576,7 +3565,6 @@ opentitan_test(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        ":pwrmgr_sleep_all_wake_ups_impl",
     ],
 )
 
