@@ -164,6 +164,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     if (jtag_riscv_map != null) ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);
   endfunction
 
+  function void configure_esc_agent_drive_ping(bit value);
+    foreach(m_alert_agent_cfgs[agent_idx])
+      m_alert_agent_cfgs[agent_idx].drive_ping = value;
+  endfunction
+
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
     // Usually plusargs are collected during build_phase, but need this variable here during RAL
     // initialization.
