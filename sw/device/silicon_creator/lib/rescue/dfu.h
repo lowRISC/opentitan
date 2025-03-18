@@ -111,6 +111,8 @@ typedef struct dfu_ctx {
   rescue_state_t state;
   /** Pointer to bootdata. */
   boot_data_t *bootdata;
+  /** Expected receive length (upload) */
+  uint32_t expected_len;
   /** Status buffer (used to respond to DfuReqGetStatus). */
   uint8_t status[6];
   /** DFU state. */
