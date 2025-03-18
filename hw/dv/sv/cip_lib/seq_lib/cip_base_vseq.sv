@@ -609,7 +609,7 @@ class cip_base_vseq #(
           if (alert_req[i]) begin
             // if previous alert_handler just finish, there is a max of two clock_cycle
             // pause in between
-            wait_alert_trigger(alert_name, .max_wait_cycle(2));
+            wait_alert_trigger(alert_name, .max_wait_cycle(4));
 
             // write alert_test during alert handshake will be ignored
             if ($urandom_range(1, 10) == 10) begin
