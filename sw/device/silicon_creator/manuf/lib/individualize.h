@@ -45,7 +45,7 @@
 status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
     dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    uint32_t *device_id);
+    const uint32_t *device_id);
 
 /**
  * Checks the HW_CFG0/1 OTP partition end state.

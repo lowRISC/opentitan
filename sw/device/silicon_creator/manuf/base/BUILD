@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@//rules:manuf.bzl", "ft_device_id")
 load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_SIGNED_PERSO_BINS",
@@ -19,7 +20,6 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_OTP_CFGS",
     "EARLGREY_SKUS",
 )
 load(
@@ -145,8 +145,19 @@ opentitan_test(
 )
 
 [
+    ft_device_id(
+        name = "ft_device_id_{}".format(sku),
+        ast_cfg_version = 0,
+        headers = ["ft_device_id.h"],
+        sku_config = config["orchestrator_cfg"],
+        template = ":ft_device_id.c.tpl",
+    )
+    for sku, config in EARLGREY_SKUS.items()
+]
+
+[
     opentitan_binary(
-        name = "sram_ft_individualize_{}".format(cfg),
+        name = "sram_ft_individualize_{}".format(sku),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
@@ -159,6 +170,7 @@ opentitan_test(
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
         deps = [
             ":flash_info_permissions",
+            ":ft_device_id_{}_library".format(sku),
             "//hw/top_earlgrey:alert_handler_c_regs",
             "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -187,18 +199,18 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(cfg),
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
         ],
     )
-    for cfg in EARLGREY_OTP_CFGS.keys()
+    for sku, config in EARLGREY_SKUS.items()
 ]
 
 filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
-        ":sram_ft_individualize_{}".format(cfg)
-        for cfg in EARLGREY_OTP_CFGS.keys()
+        ":sram_ft_individualize_{}".format(sku)
+        for sku in EARLGREY_SKUS.keys()
     ],
 )
 
