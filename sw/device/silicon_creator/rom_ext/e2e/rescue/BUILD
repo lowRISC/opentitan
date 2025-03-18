@@ -27,6 +27,17 @@ _POSITIONS = {
     },
 }
 
+_CONFIGS = {
+    "xmodem": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "params": "",
+    },
+    "usbdfu": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
+        "params": "-p usb-dfu -t strap -v 3",
+    },
+}
+
 [
     opentitan_binary(
         name = "boot_test_{}".format(name),
@@ -50,7 +61,7 @@ _POSITIONS = {
 
 [
     opentitan_test(
-        name = "rescue_firmware_{}".format(name),
+        name = "rescue_firmware_{}_{}".format(name, protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
@@ -59,15 +70,18 @@ _POSITIONS = {
             binaries = {
                 ":boot_test_{}".format(name): "payload",
             },
+            params = config["params"],
+            rom_ext = config["rom_ext"],
             slot = position["slot"],
             test_cmd = """
                 --exec="transport init"
+                --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true {rom_ext}"
                 # First make sure the ROM_EXT is faulting because there is no firmware
                 --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
                 # Load firmware via rescue
-                --exec="rescue firmware --slot={slot} {payload:signed_bin}"
+                --exec="rescue {params} firmware --slot={slot} {payload:signed_bin}"
                 # Check for firmware execution
                 --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
                 no-op
@@ -75,71 +89,82 @@ _POSITIONS = {
         ),
     )
     for name, position in _POSITIONS.items()
+    for protocol, config in _CONFIGS.items()
 ]
 
-opentitan_test(
-    name = "next_slot",
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
-    fpga = fpga_params(
-        assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
-        binaries = {
-            ":boot_test_slot_a": "slot_a",
-            ":boot_test_slot_b": "slot_b",
+[
+    opentitan_test(
+        name = "next_slot_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            # Set next slot via the rescue protocol
-            --exec="rescue boot-svc set-next-bl0-slot --next=SlotB --get-response=false"
-            # Check for firmware execution in slot B
-            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
-            # Reset and observe return to slot A.
-            --exec="gpio apply RESET"
-            --exec="gpio remove RESET"
-            --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
-            --exec="fpga clear-bitstream"
-            no-op
-        """,
-    ),
-)
+        fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
+            binaries = {
+                ":boot_test_slot_a": "slot_a",
+                ":boot_test_slot_b": "slot_b",
+            },
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {firmware}"
+                --exec="no-op --info='##### Set next slot via the rescue protocol'"
+                --exec="rescue {params} boot-svc set-next-bl0-slot --next=SlotB --get-response=false"
+                --exec="no-op --info='##### Check for firmware execution in slot B'"
+                --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
+                --exec="no-op --info='##### Reset and observe return to slot A.'"
+                --exec="gpio apply RESET"
+                --exec="gpio remove RESET"
+                --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
+                --exec="fpga clear-bitstream"
+                no-op
+            """,
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
 
-opentitan_test(
-    name = "primary_slot",
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
-    fpga = fpga_params(
-        assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
-        binaries = {
-            ":boot_test_slot_a": "slot_a",
-            ":boot_test_slot_b": "slot_b",
+[
+    opentitan_test(
+        name = "primary_slot_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            # Set primary slot via the rescue protocol
-            --exec="rescue boot-svc set-next-bl0-slot --primary=SlotB"
-            # Check for firmware execution in slot B
-            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
-            # Reset and observe continued execution in slot B
-            --exec="gpio apply RESET"
-            --exec="gpio remove RESET"
-            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
-            # Set primary slot via the rescue protocol
-            --exec="rescue boot-svc set-next-bl0-slot --primary=SlotA"
-            # Check for firmware execution in slot A
-            --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
-            --exec="fpga clear-bitstream"
-            no-op
-        """,
-    ),
-)
+        fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {slot_a:signed_bin}@{owner_slot_a} {slot_b:signed_bin}@{owner_slot_b}",
+            binaries = {
+                ":boot_test_slot_a": "slot_a",
+                ":boot_test_slot_b": "slot_b",
+            },
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {firmware}"
+                --exec="no-op --info='##### Set primary slot via the rescue protocol'"
+                --exec="rescue {params} boot-svc set-next-bl0-slot --primary=SlotB"
+                --exec="no-op --info='##### Check for firmware execution in slot B'"
+                --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
+                --exec="no-op --info='##### Reset and observe continued execution in slot B'"
+                --exec="gpio apply RESET"
+                --exec="gpio remove RESET"
+                --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
+                --exec="no-op --info='##### Set primary slot via the rescue protocol'"
+                --exec="rescue {params} boot-svc set-next-bl0-slot --primary=SlotA --get-response=false"
+                --exec="no-op --info='##### Check for firmware execution in slot A'"
+                --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
+                --exec="fpga clear-bitstream"
+                no-op
+            """,
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
 
 opentitan_test(
     name = "rescue_rate_test",
