@@ -16,7 +16,7 @@ use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams}
 use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::ownership::{OwnerBlock, TlvHeader};
-use opentitanlib::rescue::{RescueMode, RescueParams};
+use opentitanlib::rescue::{EntryMode, RescueMode, RescueParams};
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -37,19 +37,15 @@ pub struct Firmware {
     offset: Option<usize>,
     #[arg(long, default_value_t = false, help = "Upload the file contents as-is")]
     raw: bool,
+    #[arg(long, default_value_t = true, help = "Reboot after upload")]
+    reboot: bool,
     #[arg(
         long,
-        default_value_t = false,
-        help = "Wait after upload (no automatic reboot)"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    wait: bool,
-    #[arg(
-        long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
-    )]
-    reset_target: bool,
+    reset_target: EntryMode,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -85,17 +81,12 @@ impl CommandDispatch for Firmware {
         if let Some(rate) = self.rate {
             prev_baudrate = rescue.set_speed(rate)?;
         }
-        if self.wait {
-            rescue.wait()?;
-        }
         rescue.update_firmware(self.slot, payload)?;
         if self.rate.is_some() {
-            if self.wait {
-                rescue.set_speed(prev_baudrate)?;
-            } else {
-                // FIXME: restore speed
-                //uart.set_baudrate(prev_baudrate)?;
-            }
+            rescue.set_speed(prev_baudrate)?;
+        }
+        if self.reboot {
+            rescue.reboot()?;
         }
         Ok(None)
     }
@@ -105,11 +96,13 @@ impl CommandDispatch for Firmware {
 pub struct GetBootLog {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -123,13 +116,17 @@ impl CommandDispatch for GetBootLog {
         let context = context.downcast_ref::<RescueCommand>().unwrap();
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
+        let result: Box<dyn erased_serde::Serialize> = if self.raw {
             let data = rescue.get_raw(RescueMode::BootLog)?;
-            Ok(Some(Box::new(RawBytes(data))))
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_boot_log()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
@@ -137,11 +134,13 @@ impl CommandDispatch for GetBootLog {
 pub struct GetBootSvc {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -155,13 +154,17 @@ impl CommandDispatch for GetBootSvc {
         let context = context.downcast_ref::<RescueCommand>().unwrap();
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
+        let result: Box<dyn erased_serde::Serialize> = if self.raw {
             let data = rescue.get_raw(RescueMode::BootSvcRsp)?;
-            Ok(Some(Box::new(RawBytes(data))))
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_boot_svc()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
@@ -169,11 +172,13 @@ impl CommandDispatch for GetBootSvc {
 pub struct GetDeviceId {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -187,13 +192,17 @@ impl CommandDispatch for GetDeviceId {
         let context = context.downcast_ref::<RescueCommand>().unwrap();
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
+        let result: Box<dyn erased_serde::Serialize> = if self.raw {
             let data = rescue.get_raw(RescueMode::DeviceId)?;
-            Ok(Some(Box::new(RawBytes(data))))
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_device_id()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
@@ -215,11 +224,13 @@ pub struct SetNextBl0Slot {
     next: BootSlot,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -239,14 +250,17 @@ impl CommandDispatch for SetNextBl0Slot {
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_next_bl0_slot(self.primary, self.next)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn erased_serde::Serialize>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
@@ -254,11 +268,13 @@ impl CommandDispatch for SetNextBl0Slot {
 pub struct OwnershipUnlock {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -289,14 +305,17 @@ impl CommandDispatch for OwnershipUnlock {
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_unlock(unlock)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn erased_serde::Serialize>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
@@ -304,11 +323,13 @@ impl CommandDispatch for OwnershipUnlock {
 pub struct OwnershipActivate {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -339,14 +360,17 @@ impl CommandDispatch for OwnershipActivate {
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_activate(activate)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn erased_serde::Serialize>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
@@ -354,11 +378,13 @@ impl CommandDispatch for OwnershipActivate {
 pub struct SetOwnerConfig {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(help = "A signed owner configuration block")]
     input: PathBuf,
 }
@@ -374,6 +400,9 @@ impl CommandDispatch for SetOwnerConfig {
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_owner_config(&data)?;
+        if self.reboot {
+            rescue.reboot()?;
+        }
         Ok(None)
     }
 }
@@ -382,11 +411,13 @@ impl CommandDispatch for SetOwnerConfig {
 pub struct GetOwnerConfig {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false", conflicts_with = "output")]
     raw: bool,
     #[arg(long, short, default_value = "0", help = "Owner page number")]
@@ -415,16 +446,21 @@ impl CommandDispatch for GetOwnerConfig {
         let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         let data = rescue.get_raw(page)?;
-        if let Some(output) = &self.output {
+        let result = if let Some(output) = &self.output {
             std::fs::write(output, &data)?;
-            Ok(None)
+            None
         } else if self.raw {
-            Ok(Some(Box::new(RawBytes(data))))
+            Some(Box::new(RawBytes(data)) as Box<dyn erased_serde::Serialize>)
         } else {
             let mut cursor = std::io::Cursor::new(&data);
             let header = TlvHeader::read(&mut cursor)?;
-            Ok(Some(Box::new(OwnerBlock::read(&mut cursor, header)?)))
+            Some(Box::new(OwnerBlock::read(&mut cursor, header)?)
+                as Box<dyn erased_serde::Serialize>)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
@@ -432,11 +468,13 @@ impl CommandDispatch for GetOwnerConfig {
 pub struct EraseOwner {
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, default_value_t = false, help = "Really erase the owner config")]
     really: bool,
 }
@@ -452,6 +490,9 @@ impl CommandDispatch for EraseOwner {
             let rescue = context.params.create(transport)?;
             rescue.enter(transport, self.reset_target)?;
             rescue.erase_owner()?;
+            if self.reboot {
+                rescue.reboot()?;
+            }
             Ok(None)
         } else {
             Err(anyhow!("The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."))
