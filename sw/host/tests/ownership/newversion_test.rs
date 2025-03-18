@@ -12,8 +12,8 @@ use std::time::Duration;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::ownership::OwnershipKeyAlg;
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use transfer_lib::HybridPair;
@@ -69,7 +69,7 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let rescue = RescueSerial::new(uart.clone());
 
     log::info!("###### Get Device Info ######");
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     let devid = rescue.get_device_id()?;
 
     log::info!("###### Upload Owner Block ######");

@@ -13,8 +13,8 @@ use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::ownership::OwnershipKeyAlg;
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use transfer_lib::HybridPair;
@@ -298,8 +298,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
 
     if let Some(fw) = &opts.rescue_after_activate {
         let data = std::fs::read(fw)?;
-        rescue.enter(transport, /*reset_target=*/ true)?;
-        rescue.wait()?;
+        rescue.enter(transport, EntryMode::Reset)?;
         rescue.update_firmware(opts.rescue_slot, &data)?;
         // Clear the opposite slot because we changed the scrambling/ecc settings
         // for the application area of flash.

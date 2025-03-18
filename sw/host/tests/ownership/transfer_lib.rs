@@ -20,8 +20,8 @@ use opentitanlib::ownership::{
     OwnerApplicationKey, OwnerBlock, OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig,
     OwnerFlashRegion, OwnerInfoPage, OwnerRescueConfig, OwnershipKeyAlg,
 };
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 
 pub const TEST_OWNER_CONFIG_VERSION: u32 = 1;
 
@@ -30,7 +30,7 @@ pub fn get_device_info(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
 ) -> Result<(BootLog, DeviceId)> {
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     Ok((rescue.get_boot_log()?, rescue.get_device_id()?))
 }
 
@@ -59,15 +59,13 @@ pub fn ownership_unlock(
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
-    rescue.enter(transport, /*reset=*/ true)?;
-    rescue.wait()?;
+    rescue.enter(transport, EntryMode::Reset)?;
     if algorithm.is_detached() {
         let sig = detached_sig.expect("algorithm is detached");
         rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
     }
     rescue.ownership_unlock(unlock)?;
-    rescue.reboot()?;
-    rescue.enter(transport, /*reset=*/ false)?;
+    rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match result.message {
         Message::OwnershipUnlockResponse(r) => r.status.into(),
@@ -118,15 +116,13 @@ pub fn ownership_activate(
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
-    rescue.enter(transport, /*reset=*/ true)?;
-    rescue.wait()?;
+    rescue.enter(transport, EntryMode::Reset)?;
     if algorithm.is_detached() {
         let sig = detached_sig.expect("algorithm is detached");
         rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
     }
     rescue.ownership_activate(activate)?;
-    rescue.reboot()?;
-    rescue.enter(transport, /*reset=*/ false)?;
+    rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
         Message::OwnershipActivateResponse(r) => r.status.into(),
@@ -371,8 +367,7 @@ where
     }
     let mut owner_config = Vec::new();
     owner.write(&mut owner_config)?;
-    rescue.enter(transport, /*reset=*/ true)?;
-    rescue.wait()?;
+    rescue.enter(transport, EntryMode::Reset)?;
     if key_alg.is_detached() {
         rescue.update_firmware(BootSlot::SlotB, detached_sig.to_vec()?.as_slice())?;
     }

@@ -13,8 +13,8 @@ use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::ownership::OwnershipKeyAlg;
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use transfer_lib::HybridPair;
@@ -218,8 +218,9 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     if let Some(fw) = &opts.rescue_after_activate {
         let data = std::fs::read(fw)?;
-        rescue.enter(transport, /*reset_target=*/ true)?;
+        rescue.enter(transport, EntryMode::Reset)?;
         rescue.update_firmware(BootSlot::SlotA, &data)?;
+        rescue.reboot()?;
     }
 
     log::info!("###### Boot After Transfer Complete ######");
