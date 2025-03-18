@@ -64,8 +64,6 @@ static status_t patch_ast_config_value(void) {
   TRY(manuf_flash_info_field_read(
       &flash_ctrl_state, kFlashInfoFieldAstIndividPatchVal, &ast_patch_value,
       kFlashInfoFieldAstIndividPatchValSizeIn32BitWords));
-  LOG_INFO("AST patch address offset = 0x%08x", ast_patch_addr_offset);
-  LOG_INFO("AST patch address value  = 0x%08x", ast_patch_value);
 
   // Check the address is within range before programming.
   if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
@@ -74,18 +72,14 @@ static status_t patch_ast_config_value(void) {
 
   // Only patch AST if the patch value is present.
   if (ast_patch_value != 0 && ast_patch_value != UINT32_MAX) {
+    LOG_INFO("Patching AST with:");
+    LOG_INFO("AST patch address offset = 0x%08x", ast_patch_addr_offset);
+    LOG_INFO("AST patch address value  = 0x%08x", ast_patch_value);
+
     // Write patch value.
     abs_mmio_write32(
         TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
         ast_patch_value);
-
-    // Read back AST calibration values loaded into CSRs.
-    LOG_INFO("AST Calibration Values (in CSRs):");
-    for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-      LOG_INFO(
-          "Word %d = 0x%08x", i,
-          abs_mmio_read32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t)));
-    }
   }
 
   return OK_STATUS();
