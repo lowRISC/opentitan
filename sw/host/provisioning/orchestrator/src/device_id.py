@@ -29,16 +29,16 @@ class DeviceIdentificationNumber:
     wafer: int = 0  # valid range: [0,99]
     wafer_x_coord: int = 0  # valid range: [0, 999]
     wafer_y_coord: int = 0  # valid range: [0, 999]
-    blind_asm: bool = False  # boolean indicating if blind assembly part
+    blind_asm_status: bool = False  # boolean indicating if blind assembly part
 
     def __post_init__(self):
         # Check if blind assembly part, if so, we skip field validation.
         if (self.year == -1 and self.week == -1 and self.lot == -1 and
                 self.wafer == -1 and self.wafer_x_coord == -1 and
                 self.wafer_y_coord == -1):
-            self.blind_asm = True
+            self.blind_asm_status = True
         else:
-            self.blind_asm = False
+            self.blind_asm_status = False
             self.validate()
 
     def validate(self) -> None:
@@ -70,7 +70,7 @@ class DeviceIdentificationNumber:
     def to_int(self) -> int:
         """Convert DIN to an int."""
         # If blind assembly part, the DIN is UINT64_MAX.
-        if self.blind_asm:
+        if self.blind_asm_status:
             return 2**64 - 1
         din = 0
         din |= util.bcd_encode(self.wafer_y_coord) << 44
