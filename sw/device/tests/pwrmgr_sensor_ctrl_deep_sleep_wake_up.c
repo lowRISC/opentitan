@@ -5,16 +5,29 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/dif/dif_sensor_ctrl.h"
+#include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/tests/sim_dv/pwrmgr_sleep_all_wake_ups_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "pwrmgr_regs.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
+dif_pwrmgr_t pwrmgr;
+dif_rv_plic_t rv_plic;
+dif_sensor_ctrl_t sensor_ctrl;
+
+enum {
+  kPlicTarget = 0,
+};
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
+static const dt_sensor_ctrl_t kSensorCtrlDt = 0;
+static_assert(kDtSensorCtrlCount == 1,
+              "this library expects exactly one sensor_ctrl");
 
 /*
   PWRMGR SENSOR_CTRL SLEEP WAKE UP TEST
@@ -40,21 +53,36 @@ static status_t wait_for_pwrmgr_wake_status_is_clear(void) {
   return OK_STATUS();
 }
 
+/**
+ * External interrupt handler.
+ */
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_pwrmgr_instance_id(kPwrmgrDt) &&
+      irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool test_main(void) {
   dif_pwrmgr_domain_config_t cfg;
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  init_units();
-
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
+  CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kSensorCtrlDt, &sensor_ctrl));
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
-
-  // Enable pwrmgr interrupt.
+  dif_rv_plic_irq_id_t irq_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  rv_plic_testutils_irq_range_enable(&rv_plic, kPlicTarget, irq_id, irq_id);
+  // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
+
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
 
