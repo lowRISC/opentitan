@@ -103,7 +103,7 @@ fn get_boot_log_test(
         .context("Failed to get boot log from rescue")?;
     let rom_ext_manifest = image
         .subimages()?
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow!("No subimages found in the image"))?
         .manifest;
     if boot_log.rom_ext_major != rom_ext_manifest.version_major {
