@@ -24,6 +24,8 @@ pub enum RescueError {
     BadMode(String),
     #[error("configuration error: {0}")]
     Configuration(String),
+    #[error("bad protocol: {0}")]
+    BadProtocol(String),
 }
 
 #[derive(ValueEnum, Default, Debug, Clone, Copy, PartialEq)]
@@ -104,15 +106,25 @@ pub enum RescueMode: u32 {
 }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+/// Determines how `Rescue::enter` should enter rescue mode.
+pub enum EntryMode {
+    /// Reset the chip using the external power-on reset signal.
+    Reset,
+    /// Assume the chip is in rescue mode and needs to soft-reboot back to rescue mode.
+    Reboot,
+    /// Do nothing; assume the chip is ready to go to rescue mode.
+    None,
+}
+
 pub trait Rescue {
-    fn enter(&self, transport: &TransportWrapper, reset_target: bool) -> Result<()>;
+    fn enter(&self, transport: &TransportWrapper, mode: EntryMode) -> Result<()>;
     fn set_mode(&self, mode: RescueMode) -> Result<()>;
     fn send(&self, data: &[u8]) -> Result<()>;
     fn recv(&self) -> Result<Vec<u8>>;
 
     // Not supported by all backends
     fn set_speed(&self, speed: u32) -> Result<u32>;
-    fn wait(&self) -> Result<()>;
     fn reboot(&self) -> Result<()>;
 
     fn get_raw(&self, mode: RescueMode) -> Result<Vec<u8>> {
