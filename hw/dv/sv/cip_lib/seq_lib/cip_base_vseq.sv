@@ -566,20 +566,37 @@ class cip_base_vseq #(
         fork
           wait(!cfg.clk_rst_vif.rst_n);
           begin
-            // This task wait for recoverable alerts handshake to complete, or fatal alert being
-            // triggered once by `alert_test` register.
-            cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
             foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-              `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();)
-            end
+              automatic string local_alert_name = alert_name;
+              automatic alert_esc_agent_cfg local_alert_agent_cfg =
+                cfg.m_alert_agent_cfgs[alert_name];
+              automatic int unsigned ping_count = local_alert_agent_cfg.ping_count;
+              fork
+                begin
+                  // This task waits for recoverable alerts handshake to complete, or fatal alert
+                  // being triggered once by `alert_test` register.
+                  cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+                  `DV_SPINWAIT(local_alert_agent_cfg.vif.wait_ack_complete();)
 
-            repeat(check_cycles) begin
-              cfg.clk_rst_vif.wait_clks(1);
-              foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-                `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(),
-                             $sformatf("Alert %0s fired unexpectedly!", alert_name))
-              end
+                  repeat(check_cycles) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    // The alert agent sends a periodic Ping sequence. If there's been a ping since
+                    // this check was started, there may be an alert, in which the check is skipped.
+                    if (ping_count == local_alert_agent_cfg.ping_count) begin
+                      `DV_CHECK_EQ(0, local_alert_agent_cfg.vif.get_alert(),
+                                   $sformatf("Alert %0s fired unexpectedly!", alert_name))
+                    end
+                    else begin
+                      `uvm_info(`gfn, {"Not checking alerts: There's been",
+                                       " a periodic ping since this check",
+                                       " was started which caused an alert"},
+                                       UVM_DEBUG)
+                    end
+                  end
+                end
+              join_none
             end
+            wait fork;
           end
         join_any
         disable fork;
