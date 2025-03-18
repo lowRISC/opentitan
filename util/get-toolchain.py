@@ -13,6 +13,7 @@ import sys
 import tempfile
 from pathlib import Path
 from urllib.request import urlopen, urlretrieve
+import platform
 
 log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
@@ -37,7 +38,10 @@ FILE_PATTERNS_TO_REWRITE = [
 
 def get_available_toolchain_info(version, kind):
     assert kind in ASSET_PREFIXES
-
+    
+    # Check if we're on x86_64
+    arch = "x86_64" if platform.machine() == 'x86_64' else "aarch64"
+    
     if version == 'latest':
         releases_url = '%s/%s' % (RELEASES_URL_BASE, version)
     else:
@@ -47,8 +51,9 @@ def get_available_toolchain_info(version, kind):
         release_info = json.loads(f.read().decode('utf-8'))
 
     for asset in release_info["assets"]:
-        if (asset["name"].startswith(ASSET_PREFIXES[kind]) and
-                asset["name"].endswith(ASSET_SUFFIX)):
+        if (asset["name"].startswith(ASSET_PREFIXES[kind]) and 
+            arch in asset["name"] and 
+            asset["name"].endswith(ASSET_SUFFIX)):
             return {
                 'download_url': asset['browser_download_url'],
                 'name': asset['name'],
@@ -57,8 +62,8 @@ def get_available_toolchain_info(version, kind):
             }
 
     # No matching asset found for the toolchain kind requested
-    log.error("No available downloads found for %s toolchain version: %s",
-              kind, release_info['tag_name'])
+    log.error("No available downloads found for %s toolchain version %s on %s",
+              kind, release_info['tag_name'], arch)
     raise SystemExit(1)
 
 
