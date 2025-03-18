@@ -22,6 +22,19 @@ py_library(
     ],
 )
 
+py_binary(
+    name = "ft_devid_gen",
+    srcs = ["ft_devid_gen.py"],
+    data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
+    imports = ["."],
+    deps = [
+        ":device_id",
+        ":sku_config",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
 py_library(
     name = "ca_config",
     srcs = ["ca_config.py"],
