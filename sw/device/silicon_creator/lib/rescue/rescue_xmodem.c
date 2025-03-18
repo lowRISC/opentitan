@@ -87,7 +87,8 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
   uint8_t command;
   uint32_t next_mode = 0;
 
-  state->reboot = true;
+  // TODO: remove automatic reboots.
+  state->reboot = false;
   validate_mode(kRescueModeFirmware, state, bootdata);
 
   xmodem_recv_start(iohandle);
