@@ -310,10 +310,19 @@ def update_file_attr(name, attr, provider, data_files, param, action_param = Non
     elif provider and provider in attr:
         update_file_provider(name, attr[provider], data_files, param, action_param, default)
     elif DefaultInfo in attr:
-        file = attr[DefaultInfo].files.to_list()
-        if len(file) > 1:
-            fail("Expected to find exactly one file in", attr, ", but got", file)
-        _update(name, file[0], data_files, param, action_param)
+        # Filter out disassembly files.
+        file_list = attr[DefaultInfo].files.to_list()
+        file = None
+        num_files = 0
+        for f in file_list:
+            if f.extension == "dis":
+                continue
+            else:
+                file = f
+                num_files += 1
+        if num_files > 1:
+            fail("Expected to find exactly one file in", attr, ", but got", num_files)
+        _update(name, file, data_files, param, action_param)
     else:
         fail("No file providers in", attr)
 
