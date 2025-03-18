@@ -13,8 +13,8 @@ use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::ownership::OwnershipKeyAlg;
-use opentitanlib::rescue::Rescue;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, Rescue};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use transfer_lib::HybridPair;
@@ -125,7 +125,7 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // 384K, block 385 and 386 will be buffered in RAM and the rescue module
     // will reject the write request and terminate the upload.
     let data = vec![0u8; 448 * 1024];
-    rescue.enter(transport, /*reset_target=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     let result = rescue.update_firmware(BootSlot::SlotA, &data);
     assert_eq!(result.unwrap_err().to_string(), "Cancelled");
     log::info!("Got expected 'Cancel' during upload of too-large payload.");
