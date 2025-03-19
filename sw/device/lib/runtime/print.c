@@ -464,10 +464,10 @@ static size_t write_digits(buffer_sink_t out, uint32_t value, uint32_t width,
 
 static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
   // The module id is defined to be 3 chars long.
-  char mod[] = {'"', 0, 0, 0, '"', ','};
+  char mod[] = {0, 0, 0};
   int32_t arg;
   const char *start;
-  bool err = status_extract(value, &start, &arg, &mod[1]);
+  bool err = status_extract(value, &start, &arg, mod);
 
   // strlen of the status code.
   const char *end = start;
@@ -482,8 +482,15 @@ static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
   len += out.sink(out.data, ":", 1);
   if (err) {
     // All error codes include the module identifier.
-    len += out.sink(out.data, "[", 1);
-    len += out.sink(out.data, mod, sizeof(mod));
+    len += out.sink(out.data, "[\"", 2);
+    for (size_t i = 0; i < 3; i++) {
+      if (mod[i] == '\\') {
+        len += out.sink(out.data, "\\\\", 2);
+      } else {
+        len += out.sink(out.data, &mod[i], 1);
+      }
+    }
+    len += out.sink(out.data, "\",", 2);
     len += write_digits(out, (uint32_t)arg, 0, 0, 10, kDigitsLow);
     len += out.sink(out.data, "]", 1);
   } else {
