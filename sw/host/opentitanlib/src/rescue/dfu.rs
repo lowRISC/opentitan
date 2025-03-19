@@ -61,8 +61,9 @@ with_unknown! {
 #[derive(Clone, Copy)]
 #[repr(u8)]
 pub enum DfuRequestType {
-    Out = 0x21, // direction=out, type=class, recipient=interface.
-    In = 0xA1,  // direction=in, type=class, recipient=interface.
+    Out = 0x21,    // direction=out, type=class, recipient=interface.
+    In = 0xA1,     // direction=in, type=class, recipient=interface.
+    Vendor = 0x40, // direction=out, type=vendor, recipient=device.
 }
 
 impl From<DfuRequestType> for u8 {
