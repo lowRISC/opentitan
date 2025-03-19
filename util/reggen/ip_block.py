@@ -11,6 +11,7 @@ from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
 from reggen.countermeasure import CounterMeasure
+from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
 from reggen.lib import (check_bool, check_int, check_keys, check_list,
@@ -184,6 +185,7 @@ class IpBlock:
                  scan_reset: bool,
                  scan_en: bool,
                  countermeasures: List[CounterMeasure],
+                 features: List[Feature],
                  node: str = ''):
         assert reg_blocks
 
@@ -226,6 +228,7 @@ class IpBlock:
         self.scan_reset = scan_reset
         self.scan_en = scan_en
         self.countermeasures = countermeasures
+        self.features = features
 
     @staticmethod
     def from_raw(param_defaults: List[Tuple[str, str]],
@@ -269,6 +272,9 @@ class IpBlock:
 
         countermeasures = CounterMeasure.from_raw_list(
             'countermeasure list for block {}'.format(name), raw_cms)
+
+        features = Feature.from_raw_list(
+            'feature list for block {}'.format(name), rd.get('features', []))
 
         # Ensure that the countermeasures are unique
         for x in countermeasures:
@@ -396,7 +402,7 @@ class IpBlock:
                        None, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
-                       countermeasures, node)
+                       countermeasures, features, node)
 
     @staticmethod
     def from_text(txt: str,
