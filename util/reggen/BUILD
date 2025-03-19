@@ -59,6 +59,12 @@ py_library(
 )
 
 py_library(
+    name = "feature",
+    srcs = ["feature.py"],
+    deps = [":lib"],
+)
+
+py_library(
     name = "enum_entry",
     srcs = ["enum_entry.py"],
     deps = [":lib"],
@@ -106,6 +112,7 @@ py_library(
         ":bus_interfaces",
         ":clocking",
         ":countermeasure",
+        ":feature",
         ":inter_signal",
         ":interrupt",
         ":lib",
