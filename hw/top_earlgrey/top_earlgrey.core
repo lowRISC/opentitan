@@ -12,7 +12,6 @@ filesets:
       - lowrisc:earlgrey_ip:alert_handler_reg
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
@@ -48,6 +47,7 @@ filesets:
       - lowrisc:earlgrey_ip:pwrmgr
       - lowrisc:earlgrey_ip:rstmgr
       - lowrisc:earlgrey_ip:rv_plic
+      - lowrisc:earlgrey_ip:rv_core_ibex
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

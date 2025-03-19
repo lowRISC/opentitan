@@ -1,0 +1,31 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "num_regions"
+      desc: "Number of translatable regions per ibex bus"
+      type: "int"
+      default: "2"
+    }
+    {
+      name: "uniquified_modules"
+      desc: "A dictionary mapping template_names to uniquified_names"
+      type: "object"
+      default: {"clkmgr": "clkmgr1"}
+    }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple rv_core_ibex instances"
+      type: "string"
+      default: "rv_core_ibex"
+    }
+  ]
+}
