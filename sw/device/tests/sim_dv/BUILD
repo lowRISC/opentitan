@@ -2,8 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//rules/opentitan:defs.bzl", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_test")
 load("//hw/top:defs.bzl", "opentitan_select_top")
 
 opentitan_test(
@@ -563,36 +562,6 @@ opentitan_test(
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:status",
-    ],
-)
-
-cc_library(
-    name = "pwrmgr_sleep_all_wake_ups_impl",
-    srcs = ["pwrmgr_sleep_all_wake_ups_impl.c"],
-    hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    visibility = ["//sw/device/tests:__pkg__"],
-    deps = [
-        "//hw/top:pwrmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:sensor_ctrl",
-        "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/dif:usbdev",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aon_timer_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 

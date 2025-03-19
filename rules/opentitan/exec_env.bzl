@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:types.bzl", "types")
-load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "PROVIDER_FIELDS")
+load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -235,6 +235,8 @@ def _do_update(name, file, data_files, param, action_param):
     """Update the files list and param dictionaries."""
     if name in param:
         fail(name, "already exists in the param dictionary")
+    if type(file) != "File":
+        return
     data_files.append(file)
     param[name] = file.short_path
     if action_param != None:
@@ -268,10 +270,8 @@ def update_file_provider(name, provider, data_files, param, action_param = None,
     if not provider:
         # Nothing to do.
         return
-    for field in PROVIDER_FIELDS:
+    for field in dir(provider):
         file = getattr(provider, field, None)
-        if not file:
-            continue
         if field == default:
             _update(name, file, data_files, param, action_param)
         else:

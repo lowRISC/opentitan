@@ -48,18 +48,6 @@ ALL_BINARY_PROVIDERS = [
     SimQemuBinaryInfo,
 ]
 
-PROVIDER_FIELDS = [
-    "elf",
-    "binary",
-    "default",
-    "rom",
-    "signed_bin",
-    "disassembly",
-    "logs",
-    "mapfile",
-    "vmem",
-]
-
 def get_binary_files(attrs, field = "binary", providers = ALL_BINARY_PROVIDERS):
     """Get the list of binary files associated with a list of labels.
 
