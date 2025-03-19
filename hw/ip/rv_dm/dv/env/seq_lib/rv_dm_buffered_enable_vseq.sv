@@ -93,11 +93,11 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
     // Randomise the sequence, but setting instr_type (so that this is a fetch), zeroing delays (no
     // need to wait!), making the chance of abortion zero and reading from the correct address
     // (0x300 within the block).
-    seq.instr_type = prim_mubi_pkg::MuBi4True;
     seq.min_req_delay = 0;
     seq.max_req_delay = 0;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(seq,
-                                   write == 1'b0; addr == 'h300 + mem_base_addr; mask == 4'hf;)
+                                   write == 1'b0; addr == 'h300 + mem_base_addr; mask == 4'hf;
+                                   instr_type == prim_mubi_pkg::MuBi4True;)
 
     csr_utils_pkg::increment_outstanding_access();
     `DV_SPINWAIT(`uvm_send_pri(seq, 100), "Timed out when sending fetch request")

@@ -251,7 +251,6 @@ class cip_base_vseq #(
 
     cip_tl_host_single_seq tl_seq;
     `uvm_create_on(tl_seq, tl_sequencer_h)
-    tl_seq.instr_type = instr_type;
     tl_seq.tl_intg_err_type = tl_intg_err_type;
     if (cfg.zero_delays) begin
       tl_seq.min_req_delay = 0;
@@ -259,10 +258,11 @@ class cip_base_vseq #(
     end
     tl_seq.req_abort_pct = req_abort_pct;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
-        addr  == local::addr;
-        write == local::write;
-        mask  == local::mask;
-        data  == local::data;)
+        addr        == local::addr;
+        write       == local::write;
+        mask        == local::mask;
+        data        == local::data;
+        instr_type  == local::instr_type;)
 
     csr_utils_pkg::increment_outstanding_access();
     fork begin : isolation_fork
