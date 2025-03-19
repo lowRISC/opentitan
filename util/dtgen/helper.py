@@ -204,6 +204,26 @@ class StructType(BaseType):
         return "{\n" + indent_text(text, "  ") + "}"
 
 
+class DefinesBlock:
+    """
+    A block of C `#define`s.
+    """
+    def __init__(self):
+        self.defines = {}
+
+    def add_define(self, name: Name, value: object):
+        self.defines[name] = value
+
+    def render(self) -> str:
+        text = ""
+        for (name, value) in self.defines.items():
+            if value is None:
+                text += "#define {}\n".format(name.as_c_define())
+            else:
+                text += "#define {} {}\n".format(name.as_c_define(), str(value))
+        return text
+
+
 class Extension(ABC):
     """
     Base class for extensions.
@@ -590,6 +610,7 @@ class IpHelper:
         self._init_reset_requests()
         self._init_resets()
         self._init_periph_io()
+        self._init_features()
         self.extension = (extension_cls or EmptyExtension).create_ext(self)
 
         self._init_instances()
@@ -795,6 +816,15 @@ class IpHelper:
             self.inst_map[inst_name] = m
         if isinstance(self.inst_enum, CEnum):
             self.inst_enum.add_constant(Name(["count"]), "Number of instances")
+
+    def has_features(self):
+        return len(self.ip.features) > 0
+
+    def _init_features(self):
+        self.feature_defines = DefinesBlock()
+        for feature in self.ip.features:
+            define = Name(["opentitan"]) + self.ip_name + Name(["has"]) + Name([feature.name])
+            self.feature_defines.add_define(define, 1)
 
     def _create_dt_struct(self):
         self.inst_struct = StructType(self.DT_STRUCT_NAME_PREFIX + self.ip_name)

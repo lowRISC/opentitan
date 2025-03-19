@@ -100,6 +100,13 @@ ${helper.periph_io_enum.render()}
 ${helper.wakeup_enum.render()}
 
 % endif
+% if helper.has_features():
+/**
+ * List of supported hardware features.
+ */
+${helper.feature_defines.render()}
+
+% endif
 
 /**
  * Get the ${device_name} instance from an instance ID
