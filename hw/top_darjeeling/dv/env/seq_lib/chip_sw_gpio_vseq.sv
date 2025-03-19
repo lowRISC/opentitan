@@ -73,15 +73,13 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task gpio_input_test();
-    // Wait and check all zs - this indicates it is safe to drive GPIOs as inputs.
-    `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === {NUM_GPIOS{1'bz}});,
-                 $sformatf("Timed out waiting for GPIOs == %0h", {NUM_GPIOS{1'bz}}),
-                 timeout_ns,
-                `gfn)
+    // Darjeeling does not multiplex the GPIO pins through a pinmux. Instead they are direct IO,
+    // so we rely upon the DUT outputs being in a known state before enabling our drivers.
+    `DV_CHECK_FATAL(cfg.chip_vif.gpios_if.pins === ~gpios_mask, "GPIO pins not in expected state")
 
     // Enable GPIO in input mode.
-    cfg.chip_vif.gpios_if.drive_en(gpios_mask);
     cfg.chip_vif.gpios_if.drive(~gpios_mask);
+    cfg.chip_vif.gpios_if.drive_en(gpios_mask);
 
     `uvm_info(`gfn, "Starting GPIO input test", UVM_LOW)
 

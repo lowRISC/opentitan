@@ -128,7 +128,10 @@ opentitan_test(
 opentitan_test(
     name = "gpio_test",
     srcs = ["gpio_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
