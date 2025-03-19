@@ -23,6 +23,12 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     )
   endtask
 
+  virtual task dut_init(string reset_kind = "HARD");
+    // We want to control the SoC external reset request signal directly.
+    cfg.monitor_internal_resets = 1'b0;
+    super.dut_init();
+  endtask
+
   virtual task body();
     super.body();
 
@@ -31,8 +37,8 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "External resets enabled.")
 
     // Trigger the external reset request.
-    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                                      .value(1'b1)));
+//    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeForce),
+//                                                      .value(1'b1)));
 
     // Fork background threads to ensure that most reset domains do *not* get reset.
     fork
@@ -51,18 +57,24 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
       // Wait threads: wait until all desired reset domains have been cycled.
       fork
         begin
+          // Trigger the external reset request; note that because of synchronization delays and
+          // 4-cycle filtering (on both assertion and deassertion) and synchronization delays we
+          // need to allow circa 12 additional cycles before the 32-cycle timeout below.
+          int unsigned clks = $urandom_range(18, 5);
+          `uvm_info(`gfn, $sformatf("Applying SoC reset request for %0d cycle(s)", clks),
+                    UVM_MEDIUM)
+          apply_soc_reset_request(clks);
+        end
+        begin
           cfg.chip_vif.cpu_clk_rst_if.wait_for_reset();
           `uvm_info(`gfn, $sformatf("CPU reset cycled."), UVM_LOW)
         end
       join
       ,
+      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(32);
       // Exit thread: allow at most 20 AON clock cycles until the above domains must reset.
-      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(20);
       `dv_error("Resets did not complete within required time!")
     )
-
-    // Deactivate external reset request.
-    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
 
     // Wait until SW confirms reset on external request.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Reset on external request.")
