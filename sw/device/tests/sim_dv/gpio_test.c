@@ -80,6 +80,11 @@ static void gpio_output_test(const dif_gpio_t *gpio, uint32_t mask) {
     uint32_t gpio_val = 1 << i;
     CHECK_DIF_OK(dif_gpio_write_all(gpio, gpio_val));
 
+    // The GPIO output signals are routed through pinmux back to the GPIO block
+    // and there are synchronizers involved so the inputs may not be available
+    // immediately, and may in fact arrive at different times.
+    busy_spin_micros(1);
+
     // Read GPIO_IN to confirm what we wrote.
     uint32_t read_val;
     CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
@@ -99,6 +104,11 @@ static void gpio_output_test(const dif_gpio_t *gpio, uint32_t mask) {
   for (uint32_t i = 0; i < kDifGpioNumPins; ++i) {
     uint32_t gpio_val = ~(1 << i);
     CHECK_DIF_OK(dif_gpio_write_all(gpio, gpio_val));
+
+    // The GPIO output signals are routed through pinmux back to the GPIO block
+    // and there are synchronizers involved so the inputs may not be available
+    // immediately, and may in fact arrive at different times.
+    busy_spin_micros(1);
 
     // Read GPIO_IN to confirm what we wrote.
     uint32_t read_val;
@@ -226,8 +236,8 @@ void configure_pinmux(void) {
     dt_periph_io_t periph_io =
         dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0 + i);
     dt_pad_t pad = kPinmuxTestutilsGpioPads[i];
-    CHECK_DIF_OK(dif_pinmux_mio_select_input(&pinmux, periph_io, pad));
-    CHECK_DIF_OK(dif_pinmux_mio_select_output(&pinmux, pad, periph_io));
+    CHECK_STATUS_OK(
+        pinmux_testutils_connect(&pinmux, periph_io, kDtPeriphIoDirInout, pad));
   }
 }
 
