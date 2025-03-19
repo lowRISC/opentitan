@@ -317,6 +317,28 @@ opentitan_binary(
     ],
 )
 
+# This binary is a test-only ROM_EXT that has rescue configured for USB-DFU.
+opentitan_binary(
+    name = "rom_ext_spidfu",
+    testonly = True,
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+    ],
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest",
+    transitive_features = ROM_EXT_FEATURES,
+    deps = [
+        ":rom_ext_dice_x509",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner_spidfu",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/lib/rescue:rescue_spidfu",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+    ],
+)
+
 manifest(d = {
     "name": "manifest_bad_address_translation",
     "address_translation": "0",
