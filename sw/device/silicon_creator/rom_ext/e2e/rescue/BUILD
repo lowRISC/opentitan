@@ -36,6 +36,11 @@ _CONFIGS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         "params": "-p usb-dfu -t strap -v 3",
     },
+    "spidfu": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
+        # Use spi-dfu, trigger with GPIO IOA2 high.
+        "params": "-p spi-dfu -t gpio -v +Ioa2",
+    },
 }
 
 [
@@ -70,9 +75,9 @@ _CONFIGS = {
             binaries = {
                 ":boot_test_{}".format(name): "payload",
             },
-            slot = position["slot"],
             params = config["params"],
             rom_ext = config["rom_ext"],
+            slot = position["slot"],
             tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
@@ -105,9 +110,9 @@ _CONFIGS = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
-            tags = ["broken"],
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
@@ -141,9 +146,9 @@ _CONFIGS = {
                 ":boot_test_slot_a": "slot_a",
                 ":boot_test_slot_b": "slot_b",
             },
-            tags = ["broken"],
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
