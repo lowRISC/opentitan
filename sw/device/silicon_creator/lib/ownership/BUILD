@@ -299,6 +299,35 @@ cc_library(
 )
 
 cc_library(
+    name = "test_owner_spidfu",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        # 0x53 is 'S'pi.
+        "WITH_RESCUE_PROTOCOL=0x53",
+        # Trigger 3 is GPIO pin.
+        "WITH_RESCUE_TRIGGER=3",
+        # When the trigger is GPIO, the index is the MuxedPad to us as the sense
+        # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
+        "WITH_RESCUE_INDEX=2",
+        # GPIO param 3 means enable the internal pull resistor and trigger
+        # rescue when the GPIO is high.
+        "WITH_RESCUE_GPIO_PARAM=3",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "owner_verify",
     srcs = ["owner_verify.c"],
     hdrs = ["owner_verify.h"],

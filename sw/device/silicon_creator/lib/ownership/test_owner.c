@@ -71,8 +71,8 @@
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
 #endif
 
-#ifndef WITH_RESCUE_GPIO
-#define WITH_RESCUE_GPIO 0
+#ifndef WITH_RESCUE_GPIO_PARAM
+#define WITH_RESCUE_GPIO_PARAM 0
 #endif
 #ifndef WITH_RESCUE_TRIGGER
 #define WITH_RESCUE_TRIGGER 1 /* default to UartBreak */
@@ -222,7 +222,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
               .length = sizeof(owner_rescue_config_t),
           },
       .protocol = WITH_RESCUE_PROTOCOL,
-      .gpio = WITH_RESCUE_GPIO,
+      .gpio = WITH_RESCUE_GPIO_PARAM,
       .detect = (WITH_RESCUE_TRIGGER << 6) | WITH_RESCUE_INDEX,
       .start = 32,
       .size = 224,
