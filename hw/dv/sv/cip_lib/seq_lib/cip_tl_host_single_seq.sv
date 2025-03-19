@@ -11,8 +11,11 @@ class cip_tl_host_single_seq extends tl_host_single_seq #(cip_tl_seq_item);
   `uvm_object_utils(cip_tl_host_single_seq)
   `uvm_object_new
 
-  rand mubi4_t  instr_type;
+  // Control knobs
   tl_intg_err_e tl_intg_err_type = TlIntgErrNone;
+
+  // Randomizable variables
+  rand bit [MuBi4Width-1:0] instr_type;
 
   constraint instr_type_c {
     soft instr_type == MuBi4False;
@@ -24,7 +27,7 @@ class cip_tl_host_single_seq extends tl_host_single_seq #(cip_tl_seq_item);
     // set tl_intg_err_type first, as set_instr_type will trigger re-calculating integrity based on
     // the TLUL info and err_type
     req.tl_intg_err_type = tl_intg_err_type;
-    req.set_instr_type(instr_type);
+    req.set_instr_type(mubi4_t'(instr_type));
   endfunction
 
 endclass
