@@ -69,21 +69,25 @@ pub struct OwnerRescueConfig {
     #[serde(alias = "rescue_type")]
     pub protocol: RescueProtocol,
     /// The rescue triggering mechanism (UartBreak, Strapping or Gpio).
+    #[serde(default)]
     pub trigger: RescueTrigger,
     /// The index of the trigger (e.g. Strapping combo or GPIO pin number).
+    #[serde(default)]
     pub trigger_index: u8,
     /// Whether or not to enable the GPIO pull resistor (only if trigger is GPIO).
+    #[serde(default)]
     pub gpio_pull_en: bool,
     /// The GPIO trigger value (only if trigger is GPIO).
+    #[serde(default)]
     pub gpio_value: bool,
     /// Enter rescue mode if boot fails (not implemented yet).
-    #[serde(skip_serializing_if = "is_default")]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub _enter_on_failure: bool,
     /// Enable a timeout (rescue exits after a period of no activity; not implemented yet).
-    #[serde(skip_serializing_if = "is_default")]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub _timeout_enable: bool,
     /// The timeout in seconds (not implemented yet).
-    #[serde(skip_serializing_if = "is_default")]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub _timeout: u8,
     /// The start of the rescue flash region (in pages).
     pub start: u16,
