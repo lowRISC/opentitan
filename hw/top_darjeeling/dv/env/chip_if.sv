@@ -1015,6 +1015,12 @@ interface chip_if;
                                    `TOP_HIER.soc_recov_alert_rsp_o,
                                    2 * soc_proxy_pkg::NumRecovExternalAlerts)
 
+  // Signal probe function for `boot_status.light_reset_req` of TOP_HIER.
+  // This shall only be used as a probe, not a driver.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pwrmgr_light_reset_req,
+                                   `TOP_HIER.pwrmgr_boot_status_o.light_reset_req,
+                                   1)
+
   // Signal probe function for `soc_rst_req_async_i` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_rst_req_async,
                                    `TOP_HIER.soc_rst_req_async_i,
