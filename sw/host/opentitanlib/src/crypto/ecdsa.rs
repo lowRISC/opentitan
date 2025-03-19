@@ -137,7 +137,7 @@ impl EcdsaRawSignature {
             let mut data = Vec::<u8>::new();
 
             file.read_to_end(&mut data)
-                .with_context(|| "Failed to read {path:?}")?;
+                .with_context(|| format!("Failed to read {path:?}"))?;
 
             // Let's try interpreting the file as ASN.1 DER.
             // If unsuccessful, attempt PEM decoding.
