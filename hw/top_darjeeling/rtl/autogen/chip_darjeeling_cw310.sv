@@ -1497,7 +1497,34 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
 
   assign srst_n = manual_in_por_button_n;
 
-
+  // Extend the internal reset request from the power manager.
+  //
+  // TODO: To model the SoC within FPGA this logic is insufficient; its presence here
+  // is to avoid a design that locks up awaiting the deassertion of the signal
+  // `soc_rst_req_async_i` in response to an internal reset request.
+  logic  internal_request_d, internal_request_q;
+  logic  external_reset, count_up;
+  logic  [3:0] count;
+  always_ff @(posedge ast_base_clks.clk_aon or negedge por_n[0]) begin
+    if (!por_n[0]) begin
+      external_reset     <= 1'b0;
+      internal_request_q <= 1'b0;
+      count_up           <= '0;
+      count              <= '0;
+    end else begin
+      internal_request_q <= internal_request_d;
+      if (!internal_request_q && internal_request_d) begin
+        count_up       <= 1'b1;
+        external_reset <= 1;
+      end else if (count == 'd8) begin
+        count_up       <= 0;
+        external_reset <= 0;
+        count          <= '0;
+      end else if (count_up) begin
+        count <= count + 1;
+      end
+    end
+  end
 
   //////////////////////
   // Top-level design //
@@ -1580,6 +1607,8 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .debug_halt_cpu_boot_i        ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
+    .soc_rst_req_async_i          ( external_reset             ),
+    .soc_lsio_trigger_i           ( '0                         ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .calib_rdy_i                  ( ast_init_done              ),
