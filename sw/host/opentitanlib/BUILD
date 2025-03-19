@@ -141,6 +141,7 @@ rust_library(
         "src/rescue/mod.rs",
         "src/rescue/dfu.rs",
         "src/rescue/serial.rs",
+        "src/rescue/spidfu.rs",
         "src/rescue/usbdfu.rs",
         "src/rescue/xmodem.rs",
         "src/spiflash/flash.rs",
