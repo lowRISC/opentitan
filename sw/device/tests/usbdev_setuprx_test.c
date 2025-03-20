@@ -127,7 +127,8 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   // In simulation the DPI model connects VBUS shortly after reset and
   // prolonged delays when asserting or deasserting pull ups are wasteful.
-  uint32_t timeout_micros = 1000u;
+  // It spends a little over a bus frame (1ms) in the Bus Reset state.
+  uint32_t timeout_micros = 1500u;
   uint32_t delay_micros = 1u;
   bool prompt = false;
 
