@@ -328,8 +328,6 @@ x_r:
 attestation_additional_seed:
 .zero 64
 
-.section .scratchpad
-
 /* First share of the saved attestation ECDSA-P256 private key (d). */
 .globl d0
 .balign 32
@@ -341,6 +339,8 @@ d0:
 .balign 32
 d1:
 .zero 64
+
+.section .scratchpad
 
 /* First share of the per-signature ECDSA-P256 secret scalar (k). */
 .globl k0
