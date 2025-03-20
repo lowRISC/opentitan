@@ -66,6 +66,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
+    csr_rd(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .blocking(1));
     // Write auxiliary control register and make sure the update went through, i.e., the register
     // isn't locked already.
     csr_wr(.ptr(ral.ctrl_aux_shadowed.key_touch_forces_reseed), .value(cfg.do_reseed),
