@@ -4994,7 +4994,6 @@ cc_library(
         "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
