@@ -24,8 +24,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input [TotalResetWidth-1:0] reset_reqs_i,
   input fsm_invalid_i,
   output logic clr_slow_req_o,
-  input usb_ip_clk_en_i,
-  output logic usb_ip_clk_status_o,
 
   // consumed in pwrmgr
   output logic wkup_o,        // generate wake interrupt
@@ -540,16 +538,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // power sequence
   assign ips_clk_en_o.main_ip_clk_en = ip_clk_en_q;
   assign ips_clk_en_o.io_ip_clk_en = ip_clk_en_q;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(1'b0)
-  ) u_usb_ip_clk_en (
-    .clk_i,
-    .rst_ni,
-    .d_i(ip_clk_en_d & usb_ip_clk_en_i),
-    .q_o(ips_clk_en_o.usb_ip_clk_en)
-  );
-  assign usb_ip_clk_status_o = clk_en_status_i.usb_status;
 
   prim_flop #(
     .Width(1),
