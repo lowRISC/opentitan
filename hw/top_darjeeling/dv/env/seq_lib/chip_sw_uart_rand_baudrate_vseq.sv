@@ -46,10 +46,10 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
 
   virtual task cpu_init();
     // sw_symbol_backdoor_overwrite takes an array as the input
-    bit [7:0] uart_freq_arr[8] = {<<byte{cfg.uart_baud_rate}};
+    bit [7:0] uart_freq_arr[8] = {<<byte{64'(cfg.uart_baud_rate)}};
 
     super.cpu_init();
-    sw_symbol_backdoor_overwrite("kUartBaudrate", uart_freq_arr);
+    sw_symbol_backdoor_overwrite("kUartBaudrateDV", uart_freq_arr);
     `uvm_info(`gfn, $sformatf(
               "Backdoor_overwrite: configure uart core clk %0d khz, baud_rate: %s",
               uart_clk_freq_khz,
@@ -59,11 +59,11 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
       bit [7:0] use_extclk_arr[] = {cfg.chip_clock_source != ChipClockSourceInternal};
       bit [7:0] low_speed_sel_arr[] = {cfg.chip_clock_source == ChipClockSourceExternal48Mhz};
-      bit [7:0] uart_clk_freq_arr[8] = {<<byte{uart_clk_freq_khz * 1000}};
+      bit [7:0] uart_clk_freq_arr[8] = {<<byte{64'(uart_clk_freq_khz * 1000)}};
 
       sw_symbol_backdoor_overwrite("kUseExtClk", use_extclk_arr);
       sw_symbol_backdoor_overwrite("kUseLowSpeedSel", low_speed_sel_arr);
-      sw_symbol_backdoor_overwrite("kClockFreqPeripheralHz", uart_clk_freq_arr);
+      sw_symbol_backdoor_overwrite("kUartClockFreqHzDV", uart_clk_freq_arr);
     end
   endtask
 
