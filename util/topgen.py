@@ -1114,7 +1114,8 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     multi_instance_ipgens = []
     for inst in topcfg["module"]:
         if lib.is_ipgen(inst):
-            if inst["template_type"] in ipgen_instances and inst["template_type"] != "alert_handler":
+            if inst["template_type"] in ipgen_instances and \
+                    inst["template_type"] != "alert_handler":
                 multi_instance_ipgens.append(inst)
             else:
                 ipgen_instances[inst["template_type"]].append(inst)
