@@ -88,31 +88,6 @@ typedef enum dif_pwrmgr_domain_option {
 typedef uint8_t dif_pwrmgr_domain_config_t;
 
 /**
- * A wakeup request source.
- *
- * Constants below are bitmasks that can be used to define sets of wakeup
- * request sources.
- *
- * See also: `dif_pwrmgr_request_sources_t`.
- *
- * Note: This needs to be updated once the HW is finalized.
- */
-typedef enum dif_pwrmgr_wakeup_request_source {
-  kDifPwrmgrWakeupRequestSourceOne = (1u << 0),
-  kDifPwrmgrWakeupRequestSourceTwo = (1u << 1),
-  kDifPwrmgrWakeupRequestSourceThree = (1u << 2),
-  kDifPwrmgrWakeupRequestSourceFour = (1u << 3),
-#if defined(OPENTITAN_IS_EARLGREY)
-  kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
-  kDifPwrmgrWakeupRequestSourceSix = (1u << 5),
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling only has four wakeup request sources
-#else
-#error "dif_pwrmgr does not support this top"
-#endif
-} dif_pwrmgr_wakeup_request_source_t;
-
-/**
  * A reset request source.
  *
  * Constants below are bitmasks that can be used to define sets of reset
