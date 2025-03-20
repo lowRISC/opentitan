@@ -26,9 +26,6 @@
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/racl_ctrl/data/racl_ctrl_testplan.hjson"
 
-  // Add additional tops for simulation.
-  sim_tops: ["racl_ctrl_bind"]
-
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 

@@ -7,13 +7,13 @@ description: "A racl_ctrl simulation"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:systems:top_${topname}_racl_pkg
+      - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}")}
 
   files_dv:
     depend:
       - lowrisc:dv:racl_ctrl_test
-      - lowrisc:dv:racl_ctrl_sva
+      - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
     files:
       - tb.sv
     file_type: systemVerilogSource
