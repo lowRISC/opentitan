@@ -546,6 +546,7 @@ def parse_args():
                              'in the order they are passed.'))
 
     seedg.add_argument("--fixed-seed",
+                       "-fs",
                        type=int,
                        metavar='S',
                        help=('Run all items with the seed S. This implies '
