@@ -125,7 +125,7 @@ module tlul_adapter_sram_racl
     assign racl_error_o.valid = (rd_req & ~racl_read_allowed) | (wr_req & ~racl_write_allowed);
 
     tlul_request_loopback #(
-      .ErrorRsp(RaclErrorRsp)
+      .ErrorRsp ( RaclErrorRsp )
     ) u_loopback (
       .clk_i,
       .rst_ni,
