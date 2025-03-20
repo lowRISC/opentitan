@@ -145,7 +145,7 @@ pub const RSTMGR_AON_BASE_ADDR: usize = 0x40410000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RSTMGR_AON_BASE_ADDR and
 /// `RSTMGR_AON_BASE_ADDR + RSTMGR_AON_SIZE_BYTES`.
-pub const RSTMGR_AON_SIZE_BYTES: usize = 0x80;
+pub const RSTMGR_AON_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for clkmgr_aon in top englishbreakfast.
 ///

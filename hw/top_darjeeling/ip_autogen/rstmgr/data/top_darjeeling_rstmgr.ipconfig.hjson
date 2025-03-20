@@ -543,9 +543,17 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    alert_handler_vlnv: lowrisc:darjeeling_ip:alert_handler_pkg
+    alert_handler_vlnvs:
+    [
+      lowrisc:darjeeling_ip:alert_handler_pkg
+    ]
+    alert_handler_pkgs:
+    [
+      alert_handler_pkg
+    ]
     with_alert_handler: true
     top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
+    num_cores: 1
     topname: darjeeling
     uniquified_modules:
     {
