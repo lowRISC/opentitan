@@ -398,8 +398,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
  sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
 %>
   clkmgr_meas_chk #(
-    .Cnt(${cnt}),
-    .RefCnt(1)
+    .Cnt(${cnt})
   ) u_${src}_meas (
     .clk_i,
     .rst_ni,
