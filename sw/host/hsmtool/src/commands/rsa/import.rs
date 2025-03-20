@@ -65,7 +65,7 @@ impl Import {
 
         bail!("RSA import by unwrapping is not supported yet!");
         // FIXME(cfrantz): Turn this back on when cryptoki includes the correct mechanisms.
-        //let key = helper::read_file(&self.filename)?;
+        //let key = std::fs::read(&self.filename)?;
         //let k = session.unwrap_key(&Mechanism::RsaPkcs, wkey, &key, &template.to_vec()?)?;
         //Ok(())
     }

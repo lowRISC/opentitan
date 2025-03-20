@@ -42,10 +42,10 @@ impl Dispatch for Encrypt {
         attrs.push(Attribute::Encrypt(true));
         let object = helper::find_one_object(session, &attrs)?;
 
-        let data = helper::read_file(&self.input)?;
+        let data = std::fs::read(&self.input)?;
         let result = session.encrypt(&Mechanism::RsaPkcs, object, &data)?;
         if let Some(output) = &self.output {
-            helper::write_file(output, &result)?;
+            std::fs::write(output, &result)?;
         }
         Ok(Box::<BasicResult>::default())
     }
