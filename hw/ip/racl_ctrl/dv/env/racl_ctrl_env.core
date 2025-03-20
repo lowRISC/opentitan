@@ -7,8 +7,8 @@ description: "RACL_CTRL DV UVM environment"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:dv:racl_ctrl_ral
     files:
       - racl_ctrl_env_pkg.sv
       - racl_ctrl_env_cfg.sv: {is_include_file: true}
@@ -22,16 +22,7 @@ filesets:
       - seq_lib/racl_ctrl_smoke_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: racl_ctrl
-      ip_hjson: ../../data/racl_ctrl.hjson
-
 targets:
   default:
     filesets:
       - files_dv
-    generate:
-      - ral

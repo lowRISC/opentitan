@@ -21,6 +21,9 @@
 <%def name="construct_classes(block)">\
 
 `include "prim_assert.sv"
+`ifdef UVM
+  `include "uvm_macros.svh"
+`endif
 
 `ifndef FPV_ON
   `define REGWEN_PATH tb.dut.${reg_block_path}
