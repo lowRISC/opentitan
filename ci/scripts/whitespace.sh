@@ -26,6 +26,7 @@ set -o pipefail
 git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
         ':!third_party/rust/crates/*' \
         ':!signing/softhsm/tokens/*' \
+        ':!*/testdata/*' \
         ':!*/vendor/*' | \
     xargs -r util/fix_trailing_whitespace.py --dry-run || {
     echo -n "::error::"

@@ -355,22 +355,15 @@ rust_test(
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
     crate = ":opentitanlib",
-    data = [
-        "src/image/testdata/hello.txt",
-        "src/image/testdata/manifest.hjson",
-        "src/image/testdata/manifest_ext.hjson",
-        "src/image/testdata/manifest_missing.hjson",
-        "src/image/testdata/test_image.bin",
-        "src/image/testdata/world.txt",
-        "src/otp/testdata/lc_ctrl_state.hjson",
-        "src/otp/testdata/otp_ctrl_img_dev.hjson",
-        "src/otp/testdata/otp_ctrl_mmap.hjson",
-        "src/otp/testdata/output.vmem",
+    data = glob(["testdata/**"]) + [
         ":e2e_command",
         ":gpio",
         ":pinmux_config",
     ],
-    env = {"RUST_MIN_STACK": "4194304"},
+    env = {
+        "RUST_MIN_STACK": "4194304",
+        "TESTDATA": "$(rootpath testdata/otp/lc_ctrl_state.hjson)",
+    },
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
         "gpio": "$(location :gpio)",
