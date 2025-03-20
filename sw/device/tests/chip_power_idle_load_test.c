@@ -26,7 +26,6 @@
 
 #include "alert_handler_regs.h"
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwm_regs.h"
 
 typedef void (*isr_handler)(void);
@@ -45,6 +44,30 @@ static dif_pwm_t pwm;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
+static_assert(kDtRvCoreIbexCount == 1,
+              "this library expects exactly one rv_core_ibex");
+static const dt_alert_handler_t kAlertHandlerDt = 0;
+static_assert(kDtAlertHandlerCount == 1,
+              "this library expects exactly one alert_handler");
+static const dt_rv_timer_t kRvTimerDt = 0;
+static_assert(kDtRvTimerCount >= 1,
+              "this library expects at least one rv_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1,
+              "this library expects exactly one aon_timer");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
+static const dt_gpio_t kGpioDt = 0;
+static_assert(kDtGpioCount == 1, "this library expects exactly one gpio");
+static const dt_otp_ctrl_t kOtpCtrlDt = 0;
+static_assert(kDtOtpCtrlCount == 1,
+              "this library expects exactly one otp_ctrl");
+static const dt_pwm_t kPwmDt = 0;
+static_assert(kDtPwmCount >= 1, "this library expects at least one pwm");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -86,26 +109,15 @@ static void wdog_irq_handler(void) {
 
 bool test_main(void) {
   // Define access to DUT IPs:
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &rv_timer));
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-  CHECK_DIF_OK(dif_pwm_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_timer_init_from_dt(kRvTimerDt, &rv_timer));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
+  CHECK_DIF_OK(dif_pwm_init_from_dt(kPwmDt, &pwm));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kOtpCtrlDt, &otp_ctrl));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
 
   LOG_INFO("Running CHIP Power Idle Load test");
 
