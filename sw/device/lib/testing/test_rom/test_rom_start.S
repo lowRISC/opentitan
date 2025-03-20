@@ -37,6 +37,7 @@
 #define SENSOR_CTRL_BASE_ADDR               TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
 
 #elif defined(OPENTITAN_IS_DARJEELING)
+#include "otp_ctrl_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
 #define OTP_CTRL_CORE_BASE_ADDR             TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR
 #define AST_BASE_ADDR                       TOP_DARJEELING_AST_BASE_ADDR
@@ -203,14 +204,12 @@ _start:
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
 
-#ifdef OPENTITAN_IS_EARLGREY
   // Check if AST initialization should be skipped.
   li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_skip
-
 
   // Copy the AST configuration from OTP.
   li   a0, (AST_BASE_ADDR)
@@ -220,6 +219,7 @@ _start:
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
+#ifdef OPENTITAN_IS_EARLGREY
   // Wait for AST initialization to complete.
   li   a0, SENSOR_CTRL_BASE_ADDR
 .L_ast_done_loop:
@@ -234,7 +234,7 @@ _start:
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
   li   a0, CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
-#endif /* OTP_CTRL_CORE_BASE_ADDR */
+#endif
 
 .L_ast_init_skip:
 #ifdef ENTROPY_SRC_BASE_ADDR
