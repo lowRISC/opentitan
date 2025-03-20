@@ -288,14 +288,14 @@ impl ManifestExtEntry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testdata;
     use crate::util::hexdump::hexdump_string;
     use crate::util::num_de::HexEncoded;
+    use crate::util::testdata;
 
     #[test]
     fn test_manifest_ext_from_hjson() {
-        let spec = ManifestExtSpec::read_from_file(&testdata!("manifest_ext.hjson")).unwrap();
-        assert_eq!(spec.source_path(), Some(testdata!().as_path()));
+        let spec = ManifestExtSpec::read_from_file(&testdata("image/manifest_ext.hjson")).unwrap();
+        assert_eq!(spec.source_path(), Some(testdata("image").as_path()));
         assert_eq!(spec.extension_params.len(), 6);
         assert_eq!(
             spec.extension_params[0],
