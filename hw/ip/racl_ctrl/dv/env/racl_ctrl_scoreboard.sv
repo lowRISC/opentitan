@@ -63,16 +63,6 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       // add individual case item for each csr
-      "intr_state": begin
-        // FIXME
-        do_read_check = 1'b0;
-      end
-      "intr_enable": begin
-        // FIXME
-      end
-      "intr_test": begin
-        // FIXME
-      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
