@@ -96,7 +96,10 @@ class aes_common_vseq extends aes_base_vseq;
         if (phase_val != GCM_RESTORE &&
             phase_val != GCM_AAD     &&
             phase_val != GCM_TEXT    &&
-            phase_val != GCM_TAG) begin
+            phase_val != GCM_TAG     || 1) begin // TODO: We can only leave GCM_INIT after having
+                                                 // generated the hash subkey and after having
+                                                 // encrypted the initial counter block. Right now,
+                                                 // the DV cannot track this.
           phase_val = {val_cur.phase};
         end
       end else if (val_cur.phase == GCM_RESTORE) begin
