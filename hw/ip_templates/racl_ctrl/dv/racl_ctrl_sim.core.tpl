@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:systems:top_${topname}_racl_pkg
       - ${instance_vlnv("lowrisc:ip:racl_ctrl")}
+      - ${instance_vlnv("lowrisc:dv:racl_ctrl_sva")}
       - lowrisc:dv:racl_ctrl_sim_core
 
 targets:
