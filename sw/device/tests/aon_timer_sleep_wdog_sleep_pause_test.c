@@ -17,7 +17,13 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this library expects exactly one rstmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1,
+              "this library expects exactly one aon_timer");
 
 #define IDLE_TIME_US 10
 #define WKUP_TIME_US 2000
@@ -26,24 +32,30 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize rstmgr to check the reset reason.
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Initialize aon timer to use the wdog.
   dif_aon_timer_t aon_timer;
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+
+  // Find wakeup and reset sources.
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &wakeup_sources));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
 
   // Enable aon_timer watchdog reset.
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   // Check if there was a HW reset caused by the wdog bite.
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
@@ -73,9 +85,8 @@ bool test_main(void) {
     CHECK(wdog_cnt >= wkup_cnt);
 
     // Deep sleep.
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-        /*domain_config=*/0));
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                                      /*domain_config=*/0));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");
