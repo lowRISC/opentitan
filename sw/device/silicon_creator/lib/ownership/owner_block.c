@@ -143,8 +143,13 @@ rom_error_t owner_block_flash_info_check(
   if (info->header.length < sizeof(owner_flash_info_config_t)) {
     return kErrorOwnershipInvalidTagLength;
   }
-  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
-               sizeof(owner_info_page_t);
+  size_t len = (info->header.length - sizeof(owner_flash_info_config_t));
+  // Determine if the non-header length is an even multiple of the per-page
+  // configuration item size.
+  if (len % sizeof(owner_info_page_t) != 0) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  len /= sizeof(owner_info_page_t);
   const owner_info_page_t *config = info->config;
   for (size_t i = 0; i < len; ++i, ++config) {
     if (is_owner_page(config) != kHardenedBoolTrue) {
@@ -277,8 +282,13 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
   if (flash->header.length < sizeof(owner_flash_config_t)) {
     return kErrorOwnershipInvalidTagLength;
   }
-  size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
-               sizeof(owner_flash_region_t);
+  size_t len = (flash->header.length - sizeof(owner_flash_config_t));
+  // Determine if the non-header length is an even multiple of the per-region
+  // configuration item size.
+  if (len % sizeof(owner_flash_region_t) != 0) {
+    return kErrorOwnershipInvalidTagLength;
+  }
+  len /= sizeof(owner_flash_region_t);
   if (len > kProtectSlots - kRomExtRegions) {
     return kErrorOwnershipFlashConfigLength;
   }
@@ -446,7 +456,7 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
 
 rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
                                    uint32_t key_id, size_t *index) {
-  for (size_t i = 0; i < keyring->length; ++i) {
+  for (size_t i = 0; i < keyring->length && i < ARRAYSIZE(keyring->key); ++i) {
     uint32_t id = keyring->key[i]->data.id;
     if ((keyring->key[i]->key_alg & kOwnershipKeyAlgCategoryMask) ==
         kOwnershipKeyAlgCategoryHybrid) {
