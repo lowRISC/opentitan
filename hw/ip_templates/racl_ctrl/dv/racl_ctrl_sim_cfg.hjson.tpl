@@ -11,6 +11,10 @@
   // Top level dut module name
   dut: ${module_instance_name}
 
+  // Tell the tool to include the bind module as a top-level. Since the name of the bind module is
+  // templated, this needs to be done here.
+  sim_tops: ["${module_instance_name}_bind"]
+
   // Import the underlying sim_cfg (not templated)
   import_cfgs: ["{proj_root}/hw/ip/racl_ctrl/dv/racl_ctrl_tests.hjson"]
 }
