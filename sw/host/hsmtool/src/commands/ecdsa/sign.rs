@@ -51,7 +51,7 @@ impl Dispatch for Sign {
         attrs.push(Attribute::Sign(true));
         let object = helper::find_one_object(session, &attrs)?;
 
-        let data = helper::read_file(&self.input)?;
+        let data = std::fs::read(&self.input)?;
         let data = self
             .format
             .prepare(KeyType::Ec, &data, self.little_endian)?;
@@ -63,16 +63,16 @@ impl Dispatch for Sign {
             result[half..].reverse();
         }
         if let Some(output) = &self.output {
-            helper::write_file(output, &result)?;
+            std::fs::write(output, &result)?;
         }
         if let Some(range) = &self.update_in_place {
-            let mut data = helper::read_file(&self.input)?;
+            let mut data = std::fs::read(&self.input)?;
             if let Some(slice) = data.get_mut(range.clone()) {
                 slice.copy_from_slice(&result);
             } else {
                 return Err(anyhow!("Invalid range on input file: {range:?}"));
             }
-            helper::write_file(&self.input, &data)?;
+            std::fs::write(&self.input, &data)?;
         }
         Ok(Box::new(SignResult {
             digest: data,

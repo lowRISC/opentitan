@@ -51,15 +51,15 @@ impl Dispatch for Verify {
         attrs.push(Attribute::Verify(true));
         let object = helper::find_one_object(session, &attrs)?;
 
-        let data = helper::read_file(&self.input)?;
+        let data = std::fs::read(&self.input)?;
         let data = self
             .format
             .prepare(KeyType::Ec, &data, self.little_endian)?;
         let mechanism = self.format.mechanism(KeyType::Ec)?;
         let mut signature = if let Some(filename) = &self.signature {
-            helper::read_file(filename)?
+            std::fs::read(filename)?
         } else if let Some(range) = &self.signature_at {
-            let input = helper::read_file(&self.input)?;
+            let input = std::fs::read(&self.input)?;
             input
                 .get(range.clone())
                 .ok_or_else(|| anyhow!("Invalid range on input file: {range:?}"))?

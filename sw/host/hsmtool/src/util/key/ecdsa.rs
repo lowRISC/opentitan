@@ -16,10 +16,9 @@ use std::path::Path;
 use super::KeyEncoding;
 use crate::error::HsmError;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, ObjectClass};
-use crate::util::helper;
 
 fn _load_private_key(path: &Path) -> Result<SigningKey> {
-    let data = helper::read_file(path)?;
+    let data = std::fs::read(path)?;
     let sdata = std::str::from_utf8(&data);
     let format = match sdata {
         Ok(s) if s.contains("-----BEGIN PRIVATE KEY-----") => KeyEncoding::Pkcs8Pem,
@@ -99,7 +98,7 @@ impl TryFrom<&AttributeMap> for SigningKey {
 }
 
 fn _load_public_key(path: &Path) -> Result<VerifyingKey> {
-    let data = helper::read_file(path)?;
+    let data = std::fs::read(path)?;
     let sdata = std::str::from_utf8(&data);
     let format = match sdata {
         Ok(s) if s.contains("-----BEGIN PUBLIC KEY-----") => KeyEncoding::Pkcs8Pem,

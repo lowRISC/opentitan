@@ -15,10 +15,9 @@ use std::path::Path;
 use super::KeyEncoding;
 use crate::error::HsmError;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, ObjectClass};
-use crate::util::helper;
 
 fn _load_private_key(path: &Path) -> Result<RsaPrivateKey> {
-    let data = helper::read_file(path)?;
+    let data = std::fs::read(path)?;
     let sdata = std::str::from_utf8(&data);
     let format = match sdata {
         Ok(s) if s.contains("-----BEGIN RSA PRIVATE KEY-----") => KeyEncoding::Pkcs1Pem,
@@ -155,7 +154,7 @@ impl TryFrom<&AttributeMap> for RsaPrivateKey {
 }
 
 fn _load_public_key(path: &Path) -> Result<RsaPublicKey> {
-    let data = helper::read_file(path)?;
+    let data = std::fs::read(path)?;
     let sdata = std::str::from_utf8(&data);
     let format = match sdata {
         Ok(s) if s.contains("-----BEGIN RSA PUBLIC KEY-----") => KeyEncoding::Pkcs1Pem,
