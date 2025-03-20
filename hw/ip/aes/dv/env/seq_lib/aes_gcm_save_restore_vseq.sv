@@ -243,7 +243,7 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
             cov_if.cg_ctrl_gcm_reg_sample(GCM_TEXT);
             set_gcm_phase(GCM_TEXT, valid_bytes, 0, 0);
-            new_aad = 0;
+            new_data = 0;
             if ((item_cnt == 1) && $urandom_range(0, 3) == 0)  begin
               // Randomly attemp to enter GCM_SAVE before having processed at least one block. The DUT
               // must remain in the current phase.
