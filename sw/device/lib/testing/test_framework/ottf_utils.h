@@ -22,7 +22,7 @@
  *
  * In DV, this function will simply spin since the DV environment can do
  * backdoor writes to make the condition true. On real device, this will wait
- * for host to send ujson message. The condition is check after each command.
+ * for host to send ujson message. The condition is checked after each command.
  */
 #define OTTF_WAIT_FOR(cond, timeout_usec)                                     \
   do {                                                                        \

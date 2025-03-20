@@ -69,7 +69,7 @@ typedef enum uart_direction {
  * placed in .data section in the main SRAM. We cannot backdoor write anything
  * in SRAM at the start of the test because the CRT init code wipes it to 0s.
  */
-static volatile const uint8_t kUartIdxDv = 0xff;
+OTTF_BACKDOOR_VAR_DV uint8_t kUartIdxDv = 0xff;
 /**
  * Outside of DV simulation environments, the `kUartIdx` symbol needs to be
  * _non_ `const` so that we can modify it via OTTF commands. `kUartIdx` is used
@@ -77,6 +77,17 @@ static volatile const uint8_t kUartIdxDv = 0xff;
  * to here if it has been set.
  */
 static volatile uint8_t kUartIdx = 0xff;
+
+/**
+ * Indicates the baud rate of the UART under test; this is set within the
+ * `dv_sim` environment but the override is not used on physical hardware.
+ */
+OTTF_BACKDOOR_VAR_DV uint64_t kUartBaudrateDV = 0u;
+/**
+ * Indicates the clock frequency of the UART under test; this is set within
+ * the `dv_sim` environment but the override is not used on physical hardware.
+ */
+OTTF_BACKDOOR_VAR_DV uint64_t kUartClockFreqHzDV = 0u;
 
 /**
  * Indicates if ext_clk is used and what speed.
@@ -203,22 +214,19 @@ void ottf_external_isr(uint32_t *exc_info) {
 /**
  * Initializes UART and enables the relevant interrupts.
  */
-static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
+static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart,
+                                uint32_t uartBaudrate, uint32_t uartFreqHz) {
   LOG_INFO("Initializing the UART.");
 
   CHECK_DIF_OK(dif_uart_init(base_addr, uart));
-  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(dif_uart_configure(
-      uart, (dif_uart_config_t){
-                .baudrate = (uint32_t)kUartBaudrate,
-                .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                .parity_enable = kDifToggleDisabled,
-                .parity = kDifUartParityEven,
-                .tx_enable = kDifToggleEnabled,
-                .rx_enable = kDifToggleEnabled,
-            }));
+  CHECK_DIF_OK(dif_uart_configure(uart, (dif_uart_config_t){
+                                            .baudrate = (uint32_t)uartBaudrate,
+                                            .clk_freq_hz = (uint32_t)uartFreqHz,
+                                            .parity_enable = kDifToggleDisabled,
+                                            .parity = kDifUartParityEven,
+                                            .tx_enable = kDifToggleEnabled,
+                                            .rx_enable = kDifToggleEnabled,
+                                        }));
 
   // Set the TX and RX watermark to 16 bytes.
   CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));
@@ -488,6 +496,22 @@ bool test_main(void) {
     OTTF_WAIT_FOR(kUartIdx != 0xff, kCommandTimeout);
   }
 
+  // Use the default UART baud rate and clock frequency for the target device.
+  uint64_t uartBaudrate = kUartBaudrate;
+  uint64_t uartFreqHz = kClockFreqPeripheralHz;
+
+  // Collect the target baud rate and the clock frequency of the UART
+  // peripheral, since the `sim_dv` environment may have modified these for
+  // more extensive testing.
+  if (kUartBaudrateDV) {
+    uartBaudrate = kUartBaudrateDV;
+  }
+  if (kUartClockFreqHzDV) {
+    uartFreqHz = kUartClockFreqHzDV;
+  }
+  CHECK(uartBaudrate <= UINT32_MAX, "uartBaudrate must fit in uint32_t");
+  CHECK(uartFreqHz <= UINT32_MAX, "uartFreqHz must fit in uint32_t");
+
   // If we're testing UART0 we need to move the console to UART1.
   if (kUartIdx == 0 && kDeviceType != kDeviceSimDV) {
     CHECK_STATUS_OK(
@@ -512,7 +536,8 @@ bool test_main(void) {
 
   // Initialize the UART.
   mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_cfg.base_addr);
-  uart_init_with_irqs(chosen_uart_region, &uart);
+  uart_init_with_irqs(chosen_uart_region, &uart, (uint32_t)uartBaudrate,
+                      (uint32_t)uartFreqHz);
 
   // Initialize the PLIC.
   mmio_region_t plic_base_addr =
