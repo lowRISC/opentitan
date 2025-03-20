@@ -26,6 +26,7 @@ package racl_ctrl_env_pkg;
   string LIST_OF_ALERTS[2] = {"fatal_fault", "recov_ctrl_update_err"};
 
   // package sources
+  `include "racl_ctrl_reg_window.sv"
   `include "racl_ctrl_env_cfg.sv"
   `include "racl_ctrl_env_cov.sv"
   `include "racl_ctrl_virtual_sequencer.sv"
