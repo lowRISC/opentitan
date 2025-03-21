@@ -134,7 +134,8 @@ def otp_words_to_updatemem_pieces(words: List[int]) -> List[str]:
     assert all(word == (word & mask_22_bits) for word in words)
 
     # The first line indicates that we're starting from the zero address. For
-    # simplicity, we will not print any subsequent addresses.
+    # simplicity and to make `updatemem` more efficient, we will not print
+    # any subsequent addresses.
     mem_pieces = ['@0']
     for word in words:
         # Examining the INIT_XX strings from a full Vivado bitstream build, it
@@ -234,13 +235,20 @@ def main() -> int:
     # 3) write this to the output file.
     addr_chars = 8
     word_chars = math.ceil(width / 4)
+    word_bytes = (word_chars + 1) // 2
+    prev_addr = None
     for idx, word in enumerate(words):
         # Generate the address.
         addr = idx * math.ceil(width / 8)
         # Convert endianness.
         data = swap_bytes(width, word, args.swap_nibbles)
+        # Check for contiguous addresses. If any are found, omit this word's
+        # address to speed up `updatemem` operation.
+        toks = []
+        if prev_addr is None or addr != (prev_addr + word_bytes):
+            toks.append(f'@{addr:0{addr_chars}X}')
+        prev_addr = addr
         # Write to file.
-        toks = [f'@{addr:0{addr_chars}X}']
         toks.append(f'{data:0{word_chars}X}')
         args.outfile.write(' '.join(toks) + '\n')
 
