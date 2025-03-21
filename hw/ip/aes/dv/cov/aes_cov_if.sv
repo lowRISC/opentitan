@@ -302,8 +302,9 @@ interface aes_cov_if
 
     cp_aad_blocks: coverpoint aad_blocks
       {
-        bins aad_blocks_l[2] = {[1:2]};
-        bins aad_blocks_h    = {[3:$]};
+        bins aad_blocks_one  = {1};
+        bins aad_blocks_two  = {2};
+        bins aad_blocks_many = {[3:$]};
       }
 
     cp_aad_last_block_len: coverpoint aad_last_block_len
@@ -311,21 +312,22 @@ interface aes_cov_if
         // If aad_blocks > 0, then aad_last_block_len = 0 means a full 16-byte
         // block. Value between 1-15 indicate that the last block is a partial
         // block.
-        bins aad_last_block_len_l[2] = {[0:1]};
-        bins aad_last_block_len_m[2] = {[2:13]};
-        bins aad_last_block_len_h[2] = {[14:15]};
+        bins aad_last_block_full    = {0};
+        bins aad_last_block_partial = {[1:15]};
       }
 
     cp_zero_aad_block: coverpoint aad_block_zero
       {
         // Track whether we have seen an AES-GCM run with an AAD length of 0.
+        // This is separate from cp_aad_blocks to not factor it into the cross below.
         bins aad_block_zero   = {1};
       }
 
     cp_text_blocks: coverpoint text_blocks
       {
-        bins text_blocks_l[2] = {[1:2]};
-        bins text_blocks_h    = {[3:$]};
+        bins text_blocks_one  = {1};
+        bins text_blocks_two  = {2};
+        bins text_blocks_many = {[3:$]};
       }
 
     cp_text_last_block_len: coverpoint text_last_block_len
@@ -333,14 +335,14 @@ interface aes_cov_if
         // If text_blocks > 0, then text_last_block_len = 0 means a full 16-byte
         // block. Value between 1-15 indicate that the last block is a partial
         // block.
-        bins text_last_block_len_l[2] = {[0:1]};
-        bins text_last_block_len_m[2] = {[2:13]};
-        bins text_last_block_len_h[2] = {[14:15]};
+        bins text_last_block_full    = {0};
+        bins text_last_block_partial = {[1:15]};
       }
 
     cp_zero_text_block: coverpoint text_block_zero
       {
         // Track whether we have seen an AES-GCM run with a message length of 0.
+        // This is separate from cp_aad_blocks to not factor it into the cross below.
         bins text_block_zero   = {1};
       }
 
