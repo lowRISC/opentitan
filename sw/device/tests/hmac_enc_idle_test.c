@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_hmac.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -11,15 +12,17 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #define TIMEOUT (1000 * 1000)
 
 OTTF_DEFINE_TEST_CONFIG();
+static_assert(kDtHmacCount >= 1,
+              "This test requires at least one HMAC instance");
+
+static const dt_hmac_t kTestHmac = (dt_hmac_t)0;
+
 static dif_hmac_t hmac;
 static dif_clkmgr_t clkmgr;
-static const dif_clkmgr_hintable_clock_t kHmacClock =
-    kTopEarlgreyHintableClocksMainHmac;
+static dif_clkmgr_hintable_clock_t hmac_clock;
 
 static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .digest_endianness = kDifHmacEndiannessLittle,
@@ -35,8 +38,9 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_find_hintable_clock(
+      &clkmgr, dt_hmac_instance_id(kTestHmac), &hmac_clock));
 
   // Get initial hint and enable for AES clock and check both are enabled.
   dif_toggle_t clock_hint_state;
@@ -72,12 +76,12 @@ static status_t execute_test(void) {
   // indicate HMAC clk can be gated and verify that the HMAC clk hint status
   // within clkmgr reads 0 (HMAC is disabled).
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
-      clkmgr, kHmacClock, kDifToggleDisabled, kDifToggleDisabled);
+      clkmgr, hmac_clock, kDifToggleDisabled, kDifToggleDisabled);
 
   // Write the HMAC clk hint to 1 within clkmgr to indicate HMAC clk can be
   // enabled.
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
-      clkmgr, kHmacClock, kDifToggleEnabled, kDifToggleEnabled);
+      clkmgr, hmac_clock, kDifToggleEnabled, kDifToggleEnabled);
 
   // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
@@ -87,12 +91,12 @@ static status_t execute_test(void) {
   CHECK_STATUS_OK(
       hmac_testutils_check_message_length(&hmac, sizeof(kHmacRefLongKey) * 8));
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
-      clkmgr, kHmacClock, kDifToggleDisabled, kDifToggleEnabled);
+      clkmgr, hmac_clock, kDifToggleDisabled, kDifToggleEnabled);
   LOG_INFO("Cleared hints");
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   LOG_INFO("Process");
 
-  CHECK_STATUS_OK(handle_end_of_process(kHmacClock));
+  CHECK_STATUS_OK(handle_end_of_process(hmac_clock));
 
   dif_hmac_digest_t key_digest;
   CHECK_STATUS_OK(hmac_testutils_finish_polled(&hmac, &key_digest));
@@ -104,7 +108,7 @@ static status_t execute_test(void) {
   CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, (uint8_t *)&key_digest.digest[0],
                                         kHmacTransactionConfig));
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
-      clkmgr, kHmacClock, kDifToggleDisabled, kDifToggleEnabled);
+      clkmgr, hmac_clock, kDifToggleDisabled, kDifToggleEnabled);
   LOG_INFO("Cleared hints");
   CHECK_STATUS_OK(
       hmac_testutils_push_message(&hmac, kHmacRefData, sizeof(kHmacRefData)));
@@ -113,16 +117,15 @@ static status_t execute_test(void) {
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   LOG_INFO("Process");
 
-  CHECK_STATUS_OK(handle_end_of_process(kHmacClock));
+  CHECK_STATUS_OK(handle_end_of_process(hmac_clock));
 
   return hmac_testutils_finish_and_check_polled(&hmac, &kHmacRefExpectedDigest);
 }
 
 bool test_main(void) {
-  CHECK_STATUS_OK(initialize_clkmgr(kHmacClock));
+  CHECK_STATUS_OK(initialize_clkmgr(hmac_clock));
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kTestHmac, &hmac));
 
   return status_ok(execute_test());
 }

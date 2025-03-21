@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_hmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
@@ -10,7 +11,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static_assert(kDtHmacCount >= 1,
+              "This test requires at least one HMAC instance");
+
+static dt_hmac_t kTestHmac = (dt_hmac_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -101,7 +105,7 @@ bool test_main(void) {
   LOG_INFO("Running HMAC DIF test...");
 
   dif_hmac_t hmac;
-  test_setup(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac);
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kTestHmac, &hmac));
 
   LOG_INFO("Running test SHA256 pass 1...");
   run_test(&hmac, kData, sizeof(kData), NULL, &kExpectedShaDigest);

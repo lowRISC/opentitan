@@ -2131,9 +2131,10 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:hmac",
@@ -2201,9 +2202,10 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
+        DARJEELING_TEST_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
@@ -7574,9 +7576,7 @@ opentitan_test(
 opentitan_test(
     name = "mbx_smoketest",
     srcs = ["mbx_smoketest.c"],
-    exec_env = {
-        "//hw/top_darjeeling:sim_dv": None,
-    },
+    exec_env = DARJEELING_TEST_ENVS,
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/dif:mbx",
