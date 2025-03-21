@@ -17,3 +17,6 @@ waive -rules RESET_MUX -location {top_englishbreakfast.sv} -regexp {Asynchronous
 #      -comment "upper bits of a_source are shifted off when going through M:1 sockets"
 #waive -rules LINE_LENGTH -location {xbar_main.sv} -regexp {Line length of .* exceeds 100 character limit} \
 #      -comment "This is a generated file and it is hence permissible to have line lengths that exceed this limit"
+
+waive -rules {LINE_LENGTH} -location {top_englishbreakfast.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "top_darjeeling is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
