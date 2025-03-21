@@ -96,7 +96,7 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_blanker.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_crc32.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_xoshiro256pp.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_ram_1p_scr.sv
+    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_ram_1p_scr_1cyc.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_ram_1p_adv.sv
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_ram_1p.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_subst_perm.sv

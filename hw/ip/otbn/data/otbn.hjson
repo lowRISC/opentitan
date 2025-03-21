@@ -247,7 +247,7 @@
   ]
   countermeasures: [
     { name: "MEM.SCRAMBLE",
-      desc: "Both the imem and dmem are scrambled by using prim_ram_1p_scr."
+      desc: "Both the imem and dmem are scrambled by using prim_ram_1p_scr_1cyc."
     }
     { name: "DATA.MEM.INTEGRITY",
       desc: '''
