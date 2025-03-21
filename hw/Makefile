@@ -35,6 +35,7 @@ IPS ?= aes           \
        rv_dm         \
        rv_timer      \
        sensor_ctrl   \
+       soc_dbg_ctrl  \
        spi_device    \
        spi_host      \
        sram_ctrl     \

@@ -13,6 +13,10 @@ package soc_dbg_ctrl_reg_pkg;
   parameter int CoreAw = 5;
   parameter int JtagAw = 5;
 
+  // Number of registers for every interface
+  parameter int NumRegsCore = 7;
+  parameter int NumRegsJtag = 6;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////
