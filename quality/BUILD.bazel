@@ -5,7 +5,7 @@
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_misc_linters//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix", "rustfmt_test")
+load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix", "rustfmt_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -121,17 +121,21 @@ format_test(
     workspace = "//:MODULE.bazel",
 )
 
-clang_format_test(
-    name = "clang_format_check",
-    exclude_patterns = format_exclude,
-    mode = "diff",
-    workspace = "//:MODULE.bazel",
+# Run all clang formatters (C and C++).
+format_multirun(
+    name = "clang_format_fix",
+    c = ":clang-format",
+    cc = ":clang-format",
 )
 
-clang_format_check(
-    name = "clang_format_fix",
-    exclude_patterns = format_exclude,
-    mode = "fix",
+# Check all clang formatting (C and C++).
+# This is a test suite so it can share cache with `:format_check`.
+test_suite(
+    name = "clang_format_check",
+    tests = [
+        ":format_check_C++_with_clang-format",
+        ":format_check_C_with_clang-format",
+    ],
 )
 
 # TODO(dmcardle) Add more targets that should be automatically checked with
