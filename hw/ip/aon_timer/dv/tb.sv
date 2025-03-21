@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import aon_timer_env_pkg::*;
   import aon_timer_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -21,6 +22,8 @@ module tb;
   wire                          wkup_expired, wdog_bark, wdog_bark_nmi;
   wire                          wkup_req, rst_req;
   wire                          sleep;
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0;
 
   clk_rst_if fast_clk_rst_if(.clk(clk),     .rst_n(rst_n));
   clk_rst_if aon_clk_rst_if (.clk(clk_aon), .rst_n(rst_aon_n));
@@ -55,6 +58,8 @@ module tb;
     .tl_o                      (tl_if.d2h),
     .alert_rx_i                (alert_rx),
     .alert_tx_o                (alert_tx),
+    .racl_policies_i           (racl_policies),
+    .racl_error_o              (),
     .lc_escalate_en_i          (lc_escalate_en),
     .intr_wkup_timer_expired_o (wkup_expired),
     .intr_wdog_timer_bark_o    (wdog_bark),
