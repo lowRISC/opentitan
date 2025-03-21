@@ -34,7 +34,7 @@ constraint hmac_test_vectors_sha_vseq::hmac_disabled_c {
 }
 
 constraint hmac_test_vectors_sha_vseq::num_trans_c {
-  soft num_trans == 30;
+  soft num_trans == 40;
 }
 
 // Always send data with full width to maximize the throughput and speed up the test
