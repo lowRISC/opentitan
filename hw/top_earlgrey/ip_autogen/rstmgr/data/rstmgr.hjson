@@ -261,7 +261,7 @@
 
     { struct:  "alert_crashdump",
       type:    "uni",
-      name:    "alert_dump_0",
+      name:    "alert_dump",
       act:     "rcv",
       package: "alert_handler_pkg",
       desc:    '''
@@ -271,7 +271,7 @@
 
     { struct:  "cpu_crash_dump",
       type:    "uni",
-      name:    "cpu_dump_0",
+      name:    "cpu_dump",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
@@ -368,7 +368,7 @@
       ]
     },
 
-    { name: "ALERT_0_REGWEN",
+    { name: "ALERT_REGWEN",
       desc: "Alert[0] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -377,20 +377,20 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!ALERT_0_INFO_CTRL can be modified.
+            When 1, !!ALERT_INFO_CTRL can be modified.
           '''
         },
       ]
     }
 
-    { name: "ALERT_0_INFO_CTRL",
+    { name: "ALERT_INFO_CTRL",
       desc: '''
             Alert[0] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
       sync: "clk_por_i",
-      regwen: "ALERT_0_REGWEN",
+      regwen: "ALERT_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -412,7 +412,7 @@
       ]
     },
 
-    { name: "ALERT_0_INFO_ATTR",
+    { name: "ALERT_INFO_ATTR",
       desc: '''
             Alert[0] info dump attributes.
             ''',
@@ -437,10 +437,10 @@
       ]
     },
 
-    { name: "ALERT_0_INFO",
+    { name: "ALERT_INFO",
       desc: '''
               Alert[0] dump information prior to last reset.
-              Which value read is controlled by the !!ALERT_0_INFO_CTRL register.
+              Which value read is controlled by the !!ALERT_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -456,7 +456,7 @@
         },
       ]
     },
-    { name: "CPU_0_REGWEN",
+    { name: "CPU_REGWEN",
       desc: "Cpu[0] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -465,20 +465,20 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!CPU_0_INFO_CTRL can be modified.
+            When 1, !!CPU_INFO_CTRL can be modified.
           '''
         },
       ]
     }
 
-    { name: "CPU_0_INFO_CTRL",
+    { name: "CPU_INFO_CTRL",
       desc: '''
             Cpu[0] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
       sync: "clk_por_i",
-      regwen: "CPU_0_REGWEN",
+      regwen: "CPU_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -500,7 +500,7 @@
       ]
     },
 
-    { name: "CPU_0_INFO_ATTR",
+    { name: "CPU_INFO_ATTR",
       desc: '''
             Cpu[0] info dump attributes.
             ''',
@@ -525,10 +525,10 @@
       ]
     },
 
-    { name: "CPU_0_INFO",
+    { name: "CPU_INFO",
       desc: '''
               Cpu[0] dump information prior to last reset.
-              Which value read is controlled by the !!CPU_0_INFO_CTRL register.
+              Which value read is controlled by the !!CPU_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",

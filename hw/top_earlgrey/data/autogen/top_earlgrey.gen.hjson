@@ -4075,7 +4075,7 @@
           index: -1
         }
         {
-          name: alert_dump_0
+          name: alert_dump
           desc: Crash dump info for alert handler 0.
           struct: alert_crashdump
           package: alert_handler_pkg
@@ -4088,7 +4088,7 @@
           index: -1
         }
         {
-          name: cpu_dump_0
+          name: cpu_dump
           desc: Crash dump info for CPU 0.
           struct: cpu_crash_dump
           package: rv_core_ibex_pkg
@@ -9887,7 +9887,7 @@
       ]
       alert_handler.crashdump:
       [
-        rstmgr_aon.alert_dump_0
+        rstmgr_aon.alert_dump
       ]
       alert_handler.esc_rx:
       [
@@ -10195,7 +10195,7 @@
       ]
       rv_core_ibex.crash_dump:
       [
-        rstmgr_aon.cpu_dump_0
+        rstmgr_aon.cpu_dump
       ]
       rv_core_ibex.pwrmgr:
       [
@@ -20337,7 +20337,7 @@
         index: -1
       }
       {
-        name: alert_dump_0
+        name: alert_dump
         desc: Crash dump info for alert handler 0.
         struct: alert_crashdump
         package: alert_handler_pkg
@@ -20350,7 +20350,7 @@
         index: -1
       }
       {
-        name: cpu_dump_0
+        name: cpu_dump
         desc: Crash dump info for CPU 0.
         struct: cpu_crash_dump
         package: rv_core_ibex_pkg

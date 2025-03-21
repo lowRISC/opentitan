@@ -231,7 +231,7 @@
 
     { struct:  "cpu_crash_dump",
       type:    "uni",
-      name:    "cpu_dump_0",
+      name:    "cpu_dump",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
@@ -327,7 +327,7 @@
       ]
     },
 
-    { name: "CPU_0_REGWEN",
+    { name: "CPU_REGWEN",
       desc: "Cpu[0] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -336,20 +336,20 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!CPU_0_INFO_CTRL can be modified.
+            When 1, !!CPU_INFO_CTRL can be modified.
           '''
         },
       ]
     }
 
-    { name: "CPU_0_INFO_CTRL",
+    { name: "CPU_INFO_CTRL",
       desc: '''
             Cpu[0] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
       sync: "clk_por_i",
-      regwen: "CPU_0_REGWEN",
+      regwen: "CPU_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -371,7 +371,7 @@
       ]
     },
 
-    { name: "CPU_0_INFO_ATTR",
+    { name: "CPU_INFO_ATTR",
       desc: '''
             Cpu[0] info dump attributes.
             ''',
@@ -396,10 +396,10 @@
       ]
     },
 
-    { name: "CPU_0_INFO",
+    { name: "CPU_INFO",
       desc: '''
               Cpu[0] dump information prior to last reset.
-              Which value read is controlled by the !!CPU_0_INFO_CTRL register.
+              Which value read is controlled by the !!CPU_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",

@@ -3,36 +3,36 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson -->
 ## Summary
 
-| Name                                             | Offset   |   Length | Description                                                        |
-|:-------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------|
-| rstmgr.[`ALERT_TEST`](#alert_test)               | 0x0      |        4 | Alert Test Register                                                |
-| rstmgr.[`RESET_REQ`](#reset_req)                 | 0x4      |        4 | Software requested system reset.                                   |
-| rstmgr.[`RESET_INFO`](#reset_info)               | 0x8      |        4 | Device reset reason.                                               |
-| rstmgr.[`ALERT_0_REGWEN`](#alert_0_regwen)       | 0xc      |        4 | Alert[0] write enable                                              |
-| rstmgr.[`ALERT_0_INFO_CTRL`](#alert_0_info_ctrl) | 0x10     |        4 | Alert[0] info dump controls.                                       |
-| rstmgr.[`ALERT_0_INFO_ATTR`](#alert_0_info_attr) | 0x14     |        4 | Alert[0] info dump attributes.                                     |
-| rstmgr.[`ALERT_0_INFO`](#alert_0_info)           | 0x18     |        4 | Alert[0] dump information prior to last reset.                     |
-| rstmgr.[`CPU_0_REGWEN`](#cpu_0_regwen)           | 0x1c     |        4 | Cpu[0] write enable                                                |
-| rstmgr.[`CPU_0_INFO_CTRL`](#cpu_0_info_ctrl)     | 0x20     |        4 | Cpu[0] info dump controls.                                         |
-| rstmgr.[`CPU_0_INFO_ATTR`](#cpu_0_info_attr)     | 0x24     |        4 | Cpu[0] info dump attributes.                                       |
-| rstmgr.[`CPU_0_INFO`](#cpu_0_info)               | 0x28     |        4 | Cpu[0] dump information prior to last reset.                       |
-| rstmgr.[`SW_RST_REGWEN_0`](#sw_rst_regwen)       | 0x2c     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_1`](#sw_rst_regwen)       | 0x30     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_2`](#sw_rst_regwen)       | 0x34     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_3`](#sw_rst_regwen)       | 0x38     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_4`](#sw_rst_regwen)       | 0x3c     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_5`](#sw_rst_regwen)       | 0x40     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_6`](#sw_rst_regwen)       | 0x44     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_REGWEN_7`](#sw_rst_regwen)       | 0x48     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_CTRL_N_0`](#sw_rst_ctrl_n)       | 0x4c     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_1`](#sw_rst_ctrl_n)       | 0x50     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_2`](#sw_rst_ctrl_n)       | 0x54     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_3`](#sw_rst_ctrl_n)       | 0x58     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_4`](#sw_rst_ctrl_n)       | 0x5c     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_5`](#sw_rst_ctrl_n)       | 0x60     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_6`](#sw_rst_ctrl_n)       | 0x64     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_7`](#sw_rst_ctrl_n)       | 0x68     |        4 | Software controllable resets.                                      |
-| rstmgr.[`ERR_CODE`](#err_code)                   | 0x6c     |        4 | A bit vector of all the errors that have occurred in reset manager |
+| Name                                         | Offset   |   Length | Description                                                        |
+|:---------------------------------------------|:---------|---------:|:-------------------------------------------------------------------|
+| rstmgr.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                                                |
+| rstmgr.[`RESET_REQ`](#reset_req)             | 0x4      |        4 | Software requested system reset.                                   |
+| rstmgr.[`RESET_INFO`](#reset_info)           | 0x8      |        4 | Device reset reason.                                               |
+| rstmgr.[`ALERT_REGWEN`](#alert_regwen)       | 0xc      |        4 | Alert[0] write enable                                              |
+| rstmgr.[`ALERT_INFO_CTRL`](#alert_info_ctrl) | 0x10     |        4 | Alert[0] info dump controls.                                       |
+| rstmgr.[`ALERT_INFO_ATTR`](#alert_info_attr) | 0x14     |        4 | Alert[0] info dump attributes.                                     |
+| rstmgr.[`ALERT_INFO`](#alert_info)           | 0x18     |        4 | Alert[0] dump information prior to last reset.                     |
+| rstmgr.[`CPU_REGWEN`](#cpu_regwen)           | 0x1c     |        4 | Cpu[0] write enable                                                |
+| rstmgr.[`CPU_INFO_CTRL`](#cpu_info_ctrl)     | 0x20     |        4 | Cpu[0] info dump controls.                                         |
+| rstmgr.[`CPU_INFO_ATTR`](#cpu_info_attr)     | 0x24     |        4 | Cpu[0] info dump attributes.                                       |
+| rstmgr.[`CPU_INFO`](#cpu_info)               | 0x28     |        4 | Cpu[0] dump information prior to last reset.                       |
+| rstmgr.[`SW_RST_REGWEN_0`](#sw_rst_regwen)   | 0x2c     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_1`](#sw_rst_regwen)   | 0x30     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_2`](#sw_rst_regwen)   | 0x34     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_3`](#sw_rst_regwen)   | 0x38     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_4`](#sw_rst_regwen)   | 0x3c     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_5`](#sw_rst_regwen)   | 0x40     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_6`](#sw_rst_regwen)   | 0x44     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_REGWEN_7`](#sw_rst_regwen)   | 0x48     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_CTRL_N_0`](#sw_rst_ctrl_n)   | 0x4c     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_1`](#sw_rst_ctrl_n)   | 0x50     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_2`](#sw_rst_ctrl_n)   | 0x54     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_3`](#sw_rst_ctrl_n)   | 0x58     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_4`](#sw_rst_ctrl_n)   | 0x5c     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_5`](#sw_rst_ctrl_n)   | 0x60     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_6`](#sw_rst_ctrl_n)   | 0x64     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_7`](#sw_rst_ctrl_n)   | 0x68     |        4 | Software controllable resets.                                      |
+| rstmgr.[`ERR_CODE`](#err_code)               | 0x6c     |        4 | A bit vector of all the errors that have occurred in reset manager |
 
 ## ALERT_TEST
 Alert Test Register
@@ -107,7 +107,7 @@ Indicates when a device has reset due low power exit.
 ### RESET_INFO . POR
 Indicates when a device has reset due to power up.
 
-## ALERT_0_REGWEN
+## ALERT_REGWEN
 Alert[0] write enable
 - Offset: `0xc`
 - Reset default: `0x1`
@@ -119,17 +119,17 @@ Alert[0] write enable
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                        |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                           |
-|   0    |  rw0c  |   0x1   | EN     | When 1, [`ALERT_0_INFO_CTRL`](#alert_0_info_ctrl) can be modified. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                    |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                       |
+|   0    |  rw0c  |   0x1   | EN     | When 1, [`ALERT_INFO_CTRL`](#alert_info_ctrl) can be modified. |
 
-## ALERT_0_INFO_CTRL
+## ALERT_INFO_CTRL
 Alert[0] info dump controls.
 - Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0xf1`
-- Register enable: [`ALERT_0_REGWEN`](#alert_0_regwen)
+- Register enable: [`ALERT_REGWEN`](#alert_regwen)
 
 ### Fields
 
@@ -144,7 +144,7 @@ Alert[0] info dump controls.
 |  3:1   |        |         |        | Reserved                                                                                                                               |
 |   0    |   rw   |   0x0   | EN     | Enable alert[0] dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
 
-## ALERT_0_INFO_ATTR
+## ALERT_INFO_ATTR
 Alert[0] info dump attributes.
 - Offset: `0x14`
 - Reset default: `0x0`
@@ -161,9 +161,9 @@ Alert[0] info dump attributes.
 |  31:4  |        |         |           | Reserved                                                         |
 |  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the alert[0] info dump. |
 
-## ALERT_0_INFO
+## ALERT_INFO
   Alert[0] dump information prior to last reset.
-  Which value read is controlled by the [`ALERT_0_INFO_CTRL`](#alert_0_info_ctrl) register.
+  Which value read is controlled by the [`ALERT_INFO_CTRL`](#alert_info_ctrl) register.
 - Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -178,7 +178,7 @@ Alert[0] info dump attributes.
 |:------:|:------:|:-------:|:-------|:----------------------------------------|
 |  31:0  |   ro   |   0x0   | VALUE  | The current 32-bit value of crash dump. |
 
-## CPU_0_REGWEN
+## CPU_REGWEN
 Cpu[0] write enable
 - Offset: `0x1c`
 - Reset default: `0x1`
@@ -190,17 +190,17 @@ Cpu[0] write enable
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                    |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                       |
-|   0    |  rw0c  |   0x1   | EN     | When 1, [`CPU_0_INFO_CTRL`](#cpu_0_info_ctrl) can be modified. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                   |
+|   0    |  rw0c  |   0x1   | EN     | When 1, [`CPU_INFO_CTRL`](#cpu_info_ctrl) can be modified. |
 
-## CPU_0_INFO_CTRL
+## CPU_INFO_CTRL
 Cpu[0] info dump controls.
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xf1`
-- Register enable: [`CPU_0_REGWEN`](#cpu_0_regwen)
+- Register enable: [`CPU_REGWEN`](#cpu_regwen)
 
 ### Fields
 
@@ -215,7 +215,7 @@ Cpu[0] info dump controls.
 |  3:1   |        |         |        | Reserved                                                                                                                             |
 |   0    |   rw   |   0x0   | EN     | Enable cpu[0] dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
 
-## CPU_0_INFO_ATTR
+## CPU_INFO_ATTR
 Cpu[0] info dump attributes.
 - Offset: `0x24`
 - Reset default: `0x0`
@@ -232,9 +232,9 @@ Cpu[0] info dump attributes.
 |  31:4  |        |         |           | Reserved                                                       |
 |  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the cpu[0] info dump. |
 
-## CPU_0_INFO
+## CPU_INFO
   Cpu[0] dump information prior to last reset.
-  Which value read is controlled by the [`CPU_0_INFO_CTRL`](#cpu_0_info_ctrl) register.
+  Which value read is controlled by the [`CPU_INFO_CTRL`](#cpu_info_ctrl) register.
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

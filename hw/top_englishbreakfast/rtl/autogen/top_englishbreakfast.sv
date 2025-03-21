@@ -887,7 +887,7 @@ module top_englishbreakfast #(
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
       .rst_en_o(rstmgr_aon_rst_en),
-      .cpu_dump_0_i(rv_core_ibex_crash_dump),
+      .cpu_dump_i(rv_core_ibex_crash_dump),
       .sw_rst_req_o(rstmgr_aon_sw_rst_req),
       .tl_i(rstmgr_aon_tl_req),
       .tl_o(rstmgr_aon_tl_rsp),
