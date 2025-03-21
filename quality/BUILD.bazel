@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_misc_linters//rules:rules.bzl", "licence_test")
 load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix", "rustfmt_test")
@@ -98,6 +99,27 @@ format_exclude = [
     # fusesoc build dir
     "./build/**",
 ]
+
+alias(
+    name = "clang-format",
+    actual = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+)
+
+# Run all formatters.
+format_multirun(
+    name = "format",
+    c = ":clang-format",
+    cc = ":clang-format",
+)
+
+# Check all formatting.
+format_test(
+    name = "format_check",
+    c = ":clang-format",
+    cc = ":clang-format",
+    no_sandbox = True,
+    workspace = "//:MODULE.bazel",
+)
 
 clang_format_test(
     name = "clang_format_check",
