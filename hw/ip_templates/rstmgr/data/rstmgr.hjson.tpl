@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-  crash_dump_srcs = ['alert', 'cpu']
   # long term change this to a method where the generating function
   # can query the pwrmgr for how many internal resets it has
   peri_reqs = reqs.get("peripheral", [])
@@ -12,6 +11,17 @@
   total_hw_resets = len(peri_reqs) + len(int_reqs) + len(debug_reqs)
   # por / low power exit / sw reset / hw resets
   total_resets = total_hw_resets + 3
+
+  # List of (prefix, count) pairs
+  num_handlers = len(alert_handler_pkgs)
+  crash_dump_srcs = [('alert', num_handlers), ('cpu', num_cores)]
+
+  # Create "_{i}" only when there's more than 1
+  def pluralize(i, n):
+    if n == 0 or n == 1:
+        return ""
+    else:
+        return f"_{i}"
 %>
 
 # RSTMGR register template
@@ -226,26 +236,30 @@
       '''
     },
 
+% for i in range(num_handlers):
     { struct:  "alert_crashdump",
       type:    "uni",
-      name:    "alert_dump",
+      name:    "alert_dump${pluralize(i, num_handlers)}",
       act:     "rcv",
-      package: "alert_handler_pkg",
+      package: "${alert_handler_pkgs[i]}",
       desc:    '''
-        Alert handler crash dump information.
+        Crash dump info for alert handler ${i}.
       '''
     },
 
+% endfor
+% for i in range(num_cores):
     { struct:  "cpu_crash_dump",
       type:    "uni",
-      name:    "cpu_dump",
+      name:    "cpu_dump${pluralize(i, num_cores)}",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
-        Main processing element crash dump information.
+        Crash dump info for CPU ${i}.
       '''
     },
 
+% endfor
     { struct:  "mubi4",
       type:    "uni",
       name:    "sw_rst_req",
@@ -341,9 +355,10 @@
       ]
     },
 
-    % for dump_src in crash_dump_srcs:
-    { name: "${dump_src.upper()}_REGWEN",
-      desc: "${dump_src.capitalize()} write enable",
+    % for (dump_src, dump_count) in crash_dump_srcs:
+    %     for dump_idx in range(dump_count):
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_REGWEN",
+      desc: "${dump_src.capitalize()}[${dump_idx}] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -351,26 +366,26 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!${dump_src.upper()}_INFO_CTRL can be modified.
+            When 1, !!${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL can be modified.
           '''
         },
       ]
     }
 
-    { name: "${dump_src.upper()}_INFO_CTRL",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL",
       desc: '''
-            ${dump_src.capitalize()} info dump controls.
+            ${dump_src.capitalize()}[${dump_idx}] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
       sync: "clk_por_i",
-      regwen: "${dump_src.upper()}_REGWEN",
+      regwen: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
           hwaccess: "hrw",
           desc: '''
-            Enable ${dump_src} dump to capture new information.
+            Enable ${dump_src}[${dump_idx}] dump to capture new information.
             This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
             '''
           resval: "0"
@@ -386,9 +401,9 @@
       ]
     },
 
-    { name: "${dump_src.upper()}_INFO_ATTR",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_ATTR",
       desc: '''
-            ${dump_src.capitalize()} info dump attributes.
+            ${dump_src.capitalize()}[${dump_idx}] info dump attributes.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -400,7 +415,7 @@
           swaccess: "ro",
           hwaccess: "hwo",
           desc: '''
-            The number of 32-bit values contained in the ${dump_src} info dump.
+            The number of 32-bit values contained in the ${dump_src}[${dump_idx}] info dump.
             '''
           resval: "0",
           tags: [// This field is tied to a design constant, thus the
@@ -411,10 +426,10 @@
       ]
     },
 
-    { name: "${dump_src.upper()}_INFO",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO",
       desc: '''
-              ${dump_src.capitalize()} dump information prior to last reset.
-              Which value read is controlled by the !!${dump_src.upper()}_INFO_CTRL register.
+              ${dump_src.capitalize()}[${dump_idx}] dump information prior to last reset.
+              Which value read is controlled by the !!${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -430,7 +445,8 @@
         },
       ]
     },
-    % endfor
+    %     endfor # dump_idx
+    % endfor # crash_dump_src
 
 
     ########################
