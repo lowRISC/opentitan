@@ -35,9 +35,9 @@ module tlul_request_loopback
   assign tl_error_h2d = tl_muxed_h2d[1];
   assign tl_muxed_d2h[1] = tl_error_d2h;
 
-  // Use a tlul_socket_1n to mux between the the genuine response and the error respone. The
-  // tlul_socket_1n keeps track for outstanding transactions and ensures that all transponses
-  // happen in the correct ordering.
+  // Use a tlul_socket_1n to mux between the genuine response and the error response. The
+  // tlul_socket_1n keeps track of outstanding transactions and ensures that all responses
+  // happen in the correct order.
   tlul_socket_1n #(
     .N(2),
     .ExplicitErrs(0)
