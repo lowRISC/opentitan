@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_sram_ctrl.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -11,11 +12,13 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 // define a number of reads and writes to perform,
 // for our purposes a small number will be sufficient.
 #define SRAM_CTRL_TEST_DATA_SIZE_WORDS 16
+
+static_assert(
+    kDtSramCtrlCount >= 2,
+    "This test requires at least Main and RetAon RAM Control instances");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -55,12 +58,8 @@ bool test_main(void) {
   // Initialize SRAM_CTRL hardware.
   dif_sram_ctrl_t sram_ctrl_main;
   dif_sram_ctrl_t sram_ctrl_ret;
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
-      &sram_ctrl_main));
-  CHECK_DIF_OK(dif_sram_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
-      &sram_ctrl_ret));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlMain, &sram_ctrl_main));
+  CHECK_DIF_OK(dif_sram_ctrl_init_from_dt(kDtSramCtrlRetAon, &sram_ctrl_ret));
 
   dif_sram_ctrl_status_bitfield_t status_main;
   dif_sram_ctrl_status_bitfield_t status_ret;
@@ -78,10 +77,8 @@ bool test_main(void) {
   // buffer that has been allocated. Ret SRAM can start at the beginning
   // of the owner section.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
-  uintptr_t sram_ret_buffer_addr =
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-      offsetof(retention_sram_t, owner);
-
+  uintptr_t sram_ret_buffer_addr = (uintptr_t)dt_sram_ctrl_reg_block(
+      kDtSramCtrlRetAon, kDtSramCtrlRegBlockRam);
   mmio_region_t sram_region_main_addr =
       mmio_region_from_addr(sram_main_buffer_addr);
   mmio_region_t sram_region_ret_addr =
