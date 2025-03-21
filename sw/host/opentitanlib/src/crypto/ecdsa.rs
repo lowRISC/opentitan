@@ -137,7 +137,7 @@ impl EcdsaRawSignature {
             let mut data = Vec::<u8>::new();
 
             file.read_to_end(&mut data)
-                .with_context(|| "Failed to read {path:?}")?;
+                .with_context(|| format!("Failed to read {path:?}"))?;
 
             EcdsaRawSignature::from_der(&data).with_context(|| format!("Failed parsing {path:?}"))
         }
