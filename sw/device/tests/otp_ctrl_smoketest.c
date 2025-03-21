@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "dt/dt_otp_ctrl.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -14,13 +15,16 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_otp_ctrl_t otp;
 
 static const char kTestData[] = "abcdefghijklmno";
 static_assert(ARRAYSIZE(kTestData) % sizeof(uint32_t) == 0,
               "kTestData must be a word array");
+
+static_assert(kDtOtpCtrlCount >= 1,
+              "This test requires at least one OTP Control instance");
+
+static dt_otp_ctrl_t kTestOtpCtrl = (dt_otp_ctrl_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -29,8 +33,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * value can then be read out exactly through the blocking read interface.
  */
 bool test_main(void) {
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(dif_otp_ctrl_init_from_dt(kTestOtpCtrl, &otp));
 
   dif_otp_ctrl_config_t config = {
       .check_timeout = 100000,
