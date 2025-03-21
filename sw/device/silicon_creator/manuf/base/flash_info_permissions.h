@@ -9,9 +9,12 @@
 
 /**
  * Access permissions for flash info page 0 (holds device_id and manuf_state).
+ *
+ * We keep ECC disabled on this page as the ATE cannot use ECC when writing this
+ * page earlier during the provisioning process.
  */
 dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
-    .ecc_en = kMultiBitBool4True,
+    .ecc_en = kMultiBitBool4False,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4True,
     .prog_en = kMultiBitBool4True,
