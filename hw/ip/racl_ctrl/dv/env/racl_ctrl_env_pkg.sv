@@ -25,6 +25,8 @@ package racl_ctrl_env_pkg;
   // (templated) tb.sv. For this to work, every alert in this list must also be listed in tb.sv.
   string LIST_OF_ALERTS[2] = {"fatal_fault", "recov_ctrl_update_err"};
 
+  localparam PolicyBits = $bits(top_racl_pkg::racl_policy_vec_t);
+
   // package sources
   `include "racl_ctrl_reg_window.sv"
   `include "racl_ctrl_env_cfg.sv"
