@@ -114,6 +114,13 @@
       expose:    "true",
       default:   "2"
     },
+    { name:      "RaclPolicySelRangesRamNum",
+      desc:      "Number of Racl Policy Selection Ranges for the Ram interface",
+      type:      "int",
+      local:     "false",
+      expose:    "true",
+      default:   "1"
+    },
   ]
 
   features: [
@@ -228,6 +235,16 @@
       package: "top_racl_pkg",
       desc:    '''
         RACL error log information of this module.
+      '''
+    },
+    { struct:  "racl_range_t",
+      type:    "uni",
+      name:    "racl_policy_sel_ranges_ram",
+      act:     "rcv",
+      width:   "RaclPolicySelRangesRamNum"
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming array of RACL policy ranges.
       '''
     }
   ]
