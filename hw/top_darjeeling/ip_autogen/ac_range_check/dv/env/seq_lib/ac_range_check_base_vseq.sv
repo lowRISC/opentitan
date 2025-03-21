@@ -51,7 +51,12 @@ function ac_range_check_base_vseq::new(string name="");
 endfunction : new
 
 task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
+  // Initialize some of DUT inputs
+  cfg.misc_vif.set_range_check_overwrite(0);
+  cfg.misc_vif.init_racl_policies();
+
   super.dut_init();
+
   if (do_ac_range_check_init) begin
     ac_range_check_init();
   end

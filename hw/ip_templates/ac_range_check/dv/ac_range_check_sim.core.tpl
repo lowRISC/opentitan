@@ -16,6 +16,7 @@ filesets:
       - ${instance_vlnv("lowrisc:dv:ac_range_check_test")}
       - ${instance_vlnv("lowrisc:dv:ac_range_check_sva")}
     files:
+      - env/ac_range_check_misc_io_if.sv
       - tb/tb.sv
     file_type: systemVerilogSource
 

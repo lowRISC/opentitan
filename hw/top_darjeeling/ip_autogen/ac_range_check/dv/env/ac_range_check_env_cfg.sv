@@ -4,6 +4,9 @@
 
 class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_reg_block));
 
+  // External interfaces
+  misc_vif_t misc_vif;
+
   // External component config objects
   rand tl_agent_cfg tl_unfilt_agt_cfg;
   rand tl_agent_cfg tl_filt_agt_cfg;
