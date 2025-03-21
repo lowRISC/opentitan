@@ -14,6 +14,9 @@ filesets:
       # explicitly.
       - lowrisc:darjeeling_dv:racl_ctrl_sva
       - lowrisc:darjeeling_ip:racl_ctrl
+      # Depend on the top_racl_pkg system, which will guarantee that
+      # the top_racl_pkg package is defined.
+      - lowrisc:systems:top_racl_pkg
     files:
       - tb.sv
     file_type: systemVerilogSource

@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// An environment config for interfacing with racl_ctrl.
+
 class racl_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(racl_ctrl_reg_block));
   `uvm_object_utils(racl_ctrl_env_cfg)
 
   racl_ctrl_reg_window regs;
+
+  // An interface that will be bound to the racl_policies_o output of the dut.
+  virtual racl_ctrl_policies_if policies_vif;
 
   extern function new (string name="");
   extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
