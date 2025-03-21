@@ -64,6 +64,7 @@ cc_library(
         "//conditions:default": [
             "//sw/device/lib/crypto/drivers:otbn",
             "//sw/device/lib/testing:entropy_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
         ],
     }),
 )

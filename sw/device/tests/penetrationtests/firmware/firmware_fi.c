@@ -16,6 +16,7 @@
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 #include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 
@@ -27,6 +28,7 @@
 #include "fi/rng_fi.h"
 #include "fi/rom_fi.h"
 #include "lib/extclk_sca_fi.h"
+#include "lib/pentest_lib.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -35,6 +37,9 @@ status_t process_cmd(ujson_t *uj) {
     penetrationtest_cmd_t cmd;
     TRY(ujson_deserialize_penetrationtest_cmd_t(uj, &cmd));
     switch (cmd) {
+      case kPenetrationtestCommandAlertInfo:
+        RESP_ERR(uj, pentest_read_rstmgr_alert_info(uj));
+        break;
       case kPenetrationtestCommandCryptoFi:
         RESP_ERR(uj, handle_crypto_fi(uj));
         break;
