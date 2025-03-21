@@ -12,6 +12,21 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
+
+  // A dynamic array of bits (used as a return value)
+  typedef bit bit_vec_t[];
+
+  // A function that looks at cfg.policies_vif and checks that its values match those requested in
+  // the policy registers.
+  extern function void check_policies();
+
+  // A task that watches cfg.policies_vif continuously, checking that the values always match the
+  // ones requested by the policy registers.
+  //
+  // This performs a check just after each change to the output. To make sure everything stays in
+  // sync, the process_tl_access task does an analogous check after each write to one of those
+  // policies.
+  extern task watch_policies();
 endclass
 
 function racl_ctrl_scoreboard::new (string name="", uvm_component parent=null);
@@ -25,7 +40,13 @@ function void racl_ctrl_scoreboard::build_phase(uvm_phase phase);
 endfunction
 
 task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
-  super.run_phase(phase);
+  // At the start of time, wait until rst_n is either 0 or 1 (skipping over any period where it's 'x
+  // at the start)
+  wait(!$isunknown(cfg.clk_rst_vif.rst_n));
+  fork
+    super.run_phase(phase);
+    watch_policies();
+  join
 endtask
 
 task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
@@ -55,6 +76,10 @@ task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
   end
 
+  // If this is the D channel response for a write to one of the policy registers, check that it has
+  // been applied to racl_policies_o.
+  if (data_phase_write && cfg.regs.is_policy_reg(csr)) check_policies();
+
   // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
   if (data_phase_read) begin
     if (do_read_check) begin
@@ -62,5 +87,39 @@ task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
                    $sformatf("reg name: %0s", csr.get_full_name()))
     end
     void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+  end
+endtask
+
+function void racl_ctrl_scoreboard::check_policies();
+  dv_base_reg  regs[$];
+  cfg.regs.get_policy_registers(regs);
+
+  for (int unsigned i = 0; i < regs.size(); i++) begin
+    logic [31:0] seen     = cfg.policies_vif.get_policy(i);
+    logic [31:0] expected = cfg.regs.get_policy(i);
+
+    if (seen !== expected) begin
+      `uvm_error(`gfn, $sformatf("Policy output mismatch for index %0d: seen %0x; expected %0x",
+                                 i, seen, expected))
+    end
+  end
+endfunction
+
+task racl_ctrl_scoreboard::watch_policies();
+  forever begin
+    wait(!cfg.under_reset);
+
+    check_policies();
+
+    fork begin : isolation_fork
+      fork
+        wait(cfg.under_reset);
+        begin
+          @(cfg.policies_vif.policies);
+          @(negedge cfg.clk_rst_vif.clk);
+        end
+      join_any
+      disable fork;
+    end join
   end
 endtask

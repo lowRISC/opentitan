@@ -18,4 +18,8 @@ endfunction
 
 function void racl_ctrl_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
+
+  if (!uvm_config_db#(virtual racl_ctrl_policies_if)::get(null, "*.env",
+                                                          "policies_if", cfg.policies_vif))
+    `uvm_fatal(`gfn, "failed to get policies_if handle from config db")
 endfunction

@@ -18,10 +18,10 @@ module tb;
 
   wire clk, rst_n, rst_shadowed_n;
 
-  // interfaces
-  clk_rst_if      clk_rst_if  (.clk(clk), .rst_n(rst_n));
-  rst_shadowed_if rst_shad_if (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
-  tl_if           tl_if       (.clk(clk), .rst_n(rst_n));
+  clk_rst_if            clk_rst_if  (.clk(clk), .rst_n(rst_n));
+  rst_shadowed_if       rst_shad_if (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
+  tl_if                 tl_if       (.clk(clk), .rst_n(rst_n));
+  racl_ctrl_policies_if policies_if ();
 
   // Information about the names of alerts and their indices (used by DV_ALERT_IF_CONNECT to attach
   // interfaces to the ports and register them with the config db)
@@ -41,7 +41,7 @@ module tb;
     .alert_rx_i            (alert_rx                                                ),
     .alert_tx_o            (alert_tx                                                ),
 
-    .racl_policies_o       ( /* TODO: Not yet connecting policies output */         ),
+    .racl_policies_o       (policies_if.policies                                    ),
     .racl_error_i          ( /* TODO: Not yet connecting error input */ '0          ),
     .racl_error_external_i ( /* TODO: Not yet connecting external error input */ '0 )
   );
@@ -52,6 +52,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(virtual racl_ctrl_policies_if)::set(null, "*.env", "policies_if", policies_if);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
