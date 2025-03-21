@@ -118,6 +118,10 @@ bool test_main(void) {
     uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
     static_assert(kFlashInfoFieldCpDeviceIdSizeIn32BitWords == 4,
                   "CP device ID should fit in four 32bit words.");
+    CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup_properties(
+        &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
+        kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
+        kFlashInfoPage0Permissions, /*offset=*/NULL));
     CHECK_STATUS_OK(manuf_flash_info_field_read(
         &flash_ctrl_state, kFlashInfoFieldCpDeviceId, cp_device_id,
         kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
