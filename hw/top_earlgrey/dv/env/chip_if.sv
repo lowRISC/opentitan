@@ -585,7 +585,8 @@ interface chip_if;
                   .clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
                   .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
 `endif
-                  .pwm  (mios[AssignedPwmIos[i]]));
+                  .start_cntr (`PWM_HIER.u_pwm_core.clr_phase_cntr),
+                  .pwm        (mios[AssignedPwmIos[i]]));
 
     initial begin
       uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",

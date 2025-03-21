@@ -38,7 +38,10 @@ class chip_sw_pwm_pulses_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("PWMSEQ : duty_cycle = %p",duty_cycle), UVM_MEDIUM)
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "pinmux_init end")
     `uvm_info(`gfn, $sformatf("set mon active 1"), UVM_MEDIUM)
+    // Supply each of the monitors with the phase counter configuration.
     foreach (cfg.m_pwm_monitor_cfg[i]) begin
+      cfg.m_pwm_monitor_cfg[i].clk_div = CLOCK_DIV;
+      cfg.m_pwm_monitor_cfg[i].resolution = $clog2(BEATS_PER_PULSE_CYCLE) - 1;
       cfg.m_pwm_monitor_cfg[i].active = 1;
     end
     fork
