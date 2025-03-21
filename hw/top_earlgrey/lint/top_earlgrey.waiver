@@ -70,3 +70,6 @@ waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'
       -comment {This is acceptable, since these are used in different hierarchies.}
 waive -rules SAME_NAME_TYPE -location {prim_trivium.sv prim_xoshiro256pp.sv} -regexp {'state_update' is used as a (reg|function) here, and as a (function|reg) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
+
+waive -rules {LINE_LENGTH} -location {top_earlgrey.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
+      -comment "top_darjeeling is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"

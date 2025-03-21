@@ -71,6 +71,9 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
+    files:
+      - lint/top_englishbreakfast.vbl
+    file_type: veribleLintWaiver
 
 
 parameters:
