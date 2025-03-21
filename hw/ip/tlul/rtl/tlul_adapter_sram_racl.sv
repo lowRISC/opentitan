@@ -42,7 +42,6 @@ module tlul_adapter_sram_racl
   parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
   parameter bit RaclErrorRsp      = EnableRacl, // 1: Return TLUL error on RACL errors
   parameter int RaclPolicySelNumRanges = 1,     // Number of ranges with a RACL policy
-  parameter top_racl_pkg::racl_range_t RaclPolicySelRanges [RaclPolicySelNumRanges] = '{'0},
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -77,7 +76,8 @@ module tlul_adapter_sram_racl
   input  logic                 write_pending_i,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output top_racl_pkg::racl_error_log_t  racl_error_o
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
+  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRanges-1:0] racl_policy_sel_ranges
 );
   tl_h2d_t tl_h2d_filtered;
   tl_d2h_t tl_d2h_filtered;
@@ -104,12 +104,12 @@ module tlul_adapter_sram_racl
       top_racl_pkg::racl_range_t range;
       top_racl_pkg::racl_policy_t policy;
       logic range_match;
-      assign range = RaclPolicySelRanges[r];
+      assign range = racl_policy_sel_ranges[r];
       assign policy = racl_policies_i[range.policy_sel];
-      // Asserts that a valid range is defined
-      `ASSERT(RaclAdapterSramValidRange, range.mask > 0)
       // Check if the address is within range
-      assign range_match = (tl_i.a_address & ~range.mask) == range.base;
+      assign range_match = range.enable
+                           & tl_i.a_address >= range.base
+                           & tl_i.a_address <= range.limit;
       // If address matches, lookup permissions for policy defined for this range
       assign range_read_allowed[r]  = range_match & |(policy.read_perm  & racl_role_vec);
       assign range_write_allowed[r] = range_match & |(policy.write_perm & racl_role_vec);
@@ -147,6 +147,10 @@ module tlul_adapter_sram_racl
     assign tl_h2d_filtered  = tl_i;
     assign tl_o             = tl_d2h_filtered;
     assign racl_error_o     = '0;
+
+    // racl_policy_sel_ranges is not read when RACL is disabled
+    logic unused_racl_policy_sel_ranges;
+    assign unused_racl_policy_sel_ranges = ^racl_policy_sel_ranges;
   end
 
   tlul_adapter_sram #(
