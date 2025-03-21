@@ -2,80 +2,65 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class racl_ctrl_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(racl_ctrl_env_cfg),
-    .RAL_T(racl_ctrl_reg_block),
-    .COV_T(racl_ctrl_env_cov)
-  );
+class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cfg),
+                                                         .RAL_T(racl_ctrl_reg_block),
+                                                         .COV_T(racl_ctrl_env_cov));
   `uvm_component_utils(racl_ctrl_scoreboard)
 
-  // local variables
+  extern function new (string name="", uvm_component parent=null);
 
-  // TLM agent fifos
-
-  // local queues to hold incoming packets pending comparison
-
-  `uvm_component_new
-
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    // TODO: remove once support alert checking
-    do_alert_check = 0;
-  endfunction
-
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-  endfunction
-
-  task run_phase(uvm_phase phase);
-    super.run_phase(phase);
-    fork
-    join_none
-  endtask
-
-  virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg csr;
-    bit     do_read_check   = 1'b1;
-    bit     write           = item.is_write();
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
-
-    // if access was to a valid csr, get the csr handle
-    if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-      csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-      `DV_CHECK_NE_FATAL(csr, null)
-    end
-    else begin
-      `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-    end
-
-    // if incoming access is a write to a valid csr, then make updates right away
-    if (addr_phase_write) begin
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-    end
-
-    // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
-      if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
-      end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
-    end
-  endtask
-
-  virtual function void reset(string kind = "HARD");
-    super.reset(kind);
-    // reset local fifos queues and variables
-  endfunction
-
-  function void check_phase(uvm_phase phase);
-    super.check_phase(phase);
-    // post test checks - ensure that all local fifos and queues are empty
-  endfunction
-
+  extern function void build_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
+  extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
 endclass
+
+function racl_ctrl_scoreboard::new (string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction
+
+function void racl_ctrl_scoreboard::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  // TODO: remove once support alert checking
+  do_alert_check = 0;
+endfunction
+
+task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
+  super.run_phase(phase);
+endtask
+
+task racl_ctrl_scoreboard::process_tl_access(tl_seq_item item,
+                                             tl_channels_e channel,
+                                             string ral_name);
+  uvm_reg csr;
+  bit     do_read_check   = 1'b1;
+  bit     write           = item.is_write();
+  uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+
+  bit addr_phase_read   = (!write && channel == AddrChannel);
+  bit addr_phase_write  = (write && channel == AddrChannel);
+  bit data_phase_read   = (!write && channel == DataChannel);
+  bit data_phase_write  = (write && channel == DataChannel);
+
+  // if access was to a valid csr, get the csr handle
+  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
+    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
+    `DV_CHECK_NE_FATAL(csr, null)
+  end
+  else begin
+    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
+  end
+
+  // if incoming access is a write to a valid csr, then make updates right away
+  if (addr_phase_write) begin
+    void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+  end
+
+  // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
+  if (data_phase_read) begin
+    if (do_read_check) begin
+      `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                   $sformatf("reg name: %0s", csr.get_full_name()))
+    end
+    void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+  end
+endtask
