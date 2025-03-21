@@ -107,7 +107,6 @@ module otbn
   logic busy_secure_wipe;
   logic init_sec_wipe_done_d, init_sec_wipe_done_q;
   logic illegal_bus_access_d, illegal_bus_access_q;
-  logic missed_gnt_error_d, missed_gnt_error_q;
   logic dmem_sec_wipe;
   logic imem_sec_wipe;
   logic mems_sec_wipe;
@@ -236,7 +235,6 @@ module otbn
   logic imem_access_core;
 
   logic imem_req;
-  logic imem_gnt;
   logic imem_write;
   logic imem_wr_collision;
   logic imem_wpending;
@@ -244,9 +242,8 @@ module otbn
   logic [38:0] imem_wdata;
   logic [38:0] imem_wmask;
   logic [38:0] imem_rdata;
-  logic imem_rvalid;
+  logic imem_rvalid_q;
   logic imem_illegal_bus_access;
-  logic imem_missed_gnt;
 
   logic imem_req_core;
   logic imem_write_core;
@@ -334,7 +331,7 @@ module otbn
   );
 
   // SEC_CM: MEM.SCRAMBLE
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width          (39),
     .Depth          (ImemSizeWords),
     .InstDepth      (ImemSizeWords),
@@ -344,12 +341,10 @@ module otbn
     .clk_i,
     .rst_ni(rst_n),
 
-    .key_valid_i(otbn_imem_scramble_valid),
     .key_i      (otbn_imem_scramble_key),
     .nonce_i    (otbn_imem_scramble_nonce),
 
     .req_i       (imem_req),
-    .gnt_o       (imem_gnt),
     .write_i     (imem_write),
     .addr_i      (imem_index),
     .wdata_i     (imem_wdata),
@@ -357,7 +352,6 @@ module otbn
     .intg_error_i(locking),
 
     .rdata_o  (imem_rdata),
-    .rvalid_o (imem_rvalid),
     .raddr_o  (),
     .rerror_o (),
     .cfg_i    (ram_cfg_imem_i),
@@ -368,9 +362,6 @@ module otbn
 
     .alert_o ()
   );
-
-  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
-  assign imem_missed_gnt = imem_req & ~imem_gnt;
 
   // IMEM access from main TL-UL bus
   logic imem_gnt_bus;
@@ -425,8 +416,10 @@ module otbn
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       imem_dummy_response_q <= 1'b0;
+      imem_rvalid_q <= 1'b0;
     end else begin
       imem_dummy_response_q <= imem_dummy_response_d;
+      imem_rvalid_q <= imem_req;
     end
   end
 
@@ -481,8 +474,8 @@ module otbn
   assign imem_rdata_core = imem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
-  assign imem_rvalid_bus = (~imem_access_core & imem_rvalid) | imem_dummy_response_q;
-  assign imem_rvalid_core = imem_access_core ? imem_rvalid : 1'b0;
+  assign imem_rvalid_bus = (~imem_access_core & imem_rvalid_q) | imem_dummy_response_q;
+  assign imem_rvalid_core = imem_access_core ? imem_rvalid_q : 1'b0;
 
   assign imem_byte_mask_bus = tl_win_h2d[TlWinImem].a_mask;
 
@@ -502,17 +495,15 @@ module otbn
   logic dmem_access_core;
 
   logic dmem_req;
-  logic dmem_gnt;
   logic dmem_write;
   logic [DmemIndexWidth-1:0] dmem_index;
   logic [ExtWLEN-1:0] dmem_wdata;
   logic [ExtWLEN-1:0] dmem_wmask;
   logic [ExtWLEN-1:0] dmem_rdata;
-  logic dmem_rvalid;
+  logic dmem_rvalid_q;
   logic [BaseWordsPerWLEN*2-1:0] dmem_rerror_vec;
   logic dmem_rerror;
   logic dmem_illegal_bus_access;
-  logic dmem_missed_gnt;
 
   logic dmem_req_core;
   logic dmem_write_core;
@@ -550,7 +541,7 @@ module otbn
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
   // SEC_CM: MEM.SCRAMBLE
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width             (ExtWLEN),
     .Depth             (DmemSizeWords),
     .InstDepth         (DmemSizeWords),
@@ -561,12 +552,10 @@ module otbn
     .clk_i,
     .rst_ni(rst_n),
 
-    .key_valid_i(otbn_dmem_scramble_valid),
     .key_i      (otbn_dmem_scramble_key),
     .nonce_i    (otbn_dmem_scramble_nonce),
 
     .req_i       (dmem_req),
-    .gnt_o       (dmem_gnt),
     .write_i     (dmem_write),
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
@@ -574,7 +563,6 @@ module otbn
     .intg_error_i(locking),
 
     .rdata_o  (dmem_rdata),
-    .rvalid_o (dmem_rvalid),
     .raddr_o  (),
     .rerror_o (),
     .cfg_i    (ram_cfg_dmem_i),
@@ -586,16 +574,15 @@ module otbn
     .alert_o ()
   );
 
-  // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
-  assign dmem_missed_gnt = dmem_req & !dmem_gnt;
-
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dmem_rmask_core_q <= '0;
+      dmem_rvalid_q <= 1'b0;
     end else begin
       if (dmem_req_core) begin
         dmem_rmask_core_q <= dmem_rmask_core_d;
       end
+      dmem_rvalid_q <= dmem_req;
     end
   end
 
@@ -617,7 +604,7 @@ module otbn
     // that OTBN isn't using will cause false errors. dmem_rerror is only reported for reads from
     // OTBN. For Ibex reads integrity checking on TL responses will serve the same purpose.
     assign dmem_rerror_vec[i_word*2 +: 2] = dmem_rerror_raw &
-        {2{dmem_rmask_core_q[i_word] & dmem_rvalid & dmem_access_core}};
+        {2{dmem_rmask_core_q[i_word] & dmem_rvalid_q & dmem_access_core}};
   end
 
   // dmem_rerror_vec is 2 bits wide and is used to report ECC errors. Bit 1 is set if there's an
@@ -727,8 +714,8 @@ module otbn
   assign dmem_rdata_core = dmem_rdata;
 
   // When an illegal bus access is seen, always return a dummy response the follow cycle.
-  assign dmem_rvalid_bus  = (~dmem_access_core & dmem_rvalid) | dmem_dummy_response_q;
-  assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid : 1'b0;
+  assign dmem_rvalid_bus  = (~dmem_access_core & dmem_rvalid_q) | dmem_dummy_response_q;
+  assign dmem_rvalid_core = dmem_access_core ? dmem_rvalid_q : 1'b0;
 
   // No dmem errors reported for bus reads. Integrity is carried through on the bus so integrity
   // checking on TL responses will pick up any errors.
@@ -838,19 +825,15 @@ module otbn
   // key, so no request can occur (the core won't generate one whilst awaiting a scrambling key and
   // the bus requests get an immediate dummy response bypassing the dmem or imem). A fatal error is
   // raised if request is seen without a grant.
-  assign missed_gnt_error_d = dmem_missed_gnt | imem_missed_gnt;
 
-  // Flop `illegal_bus_access_q` and `missed_gnt_error_q` to break timing paths from the TL
-  // interface into the OTBN core.
+  // Flop `illegal_bus_access_q` to break timing paths from the TL interface into the OTBN core.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       start_q              <= 1'b0;
       illegal_bus_access_q <= 1'b0;
-      missed_gnt_error_q   <= 1'b0;
     end else begin
       start_q              <= start_d;
       illegal_bus_access_q <= illegal_bus_access_d;
-      missed_gnt_error_q   <= missed_gnt_error_d;
     end
   end
 
@@ -1170,7 +1153,7 @@ module otbn
   assign non_core_err_bits = '{
     lifecycle_escalation: lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en[0]),
     illegal_bus_access:   illegal_bus_access_q,
-    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q,
+    bad_internal_state:   otbn_scramble_state_error,
     bus_intg_violation:   bus_intg_violation
   };
 
@@ -1225,6 +1208,14 @@ module otbn
       alert_tx_o[AlertFatal]
     )
   end
+
+  // Assert that the DMEM and IMEM scramble keys are valid on every request.
+  `ASSERT(DmemScrambleKeyValidOnReq_A, dmem_req |-> otbn_dmem_scramble_valid)
+  `ASSERT(ImemScrambleKeyValidOnReq_A, imem_req |-> otbn_imem_scramble_valid)
+
+  // Those signals are only used for assertions.
+  logic unused_scramble_valid;
+  assign unused_scramble_valid = ^{otbn_dmem_scramble_valid, otbn_imem_scramble_valid};
 
   // GPR assertions for secure wipe
   // 1. urnd_reseed_err disables the assertion because secure wipe finishes with failure and OTBN
