@@ -29,6 +29,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  bit EnableOutputPipeline = 0, // Add pipeline stage after memory macro output.
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -258,6 +259,35 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [Width-1:0] keystream_repl;
   assign keystream_repl = Width'({NumParKeystr{keystream}});
 
+  logic [Width-1:0] keystream_q_repl;
+  if (EnableOutputPipeline) begin : gen_oup_pipeline_keystream
+    logic read_en_q;
+    prim_flop #(
+      .Width (1),
+      .ResetValue (1'b0)
+    ) u_flop_read_en (
+      .clk_i,
+      .rst_ni,
+      .d_i (mubi4_test_true_loose(read_en_buf)),
+      .q_o (read_en_q)
+    );
+
+    logic [NumParScr*64-1:0] keystream_q;
+    prim_flop_en #(
+      .Width (NumParScr*64),
+      .ResetValue ('0),
+      .EnSecBuf (1'b0)
+    ) u_flop_keystream (
+      .clk_i,
+      .rst_ni,
+      .en_i (read_en_q),
+      .d_i (keystream),
+      .q_o (keystream_q)
+    );
+
+    assign keystream_q_repl = Width'({NumParKeystr{keystream_q}});
+  end
+
   /////////////////////
   // Data Scrambling //
   /////////////////////
@@ -313,8 +343,13 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     );
 
     // Apply Keystream, replicate it if needed
-    assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
-                                              keystream_repl[k*DiffWidth +: LocalWidth];
+    if (EnableOutputPipeline) begin : gen_oup_pipeline_rdata
+      assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
+                                                keystream_q_repl[k*DiffWidth +: LocalWidth];
+    end else begin : gen_no_oup_pipeline_rdata
+      assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
+                                                keystream_repl[k*DiffWidth +: LocalWidth];
+    end
   end
 
   ///////////////
@@ -346,8 +381,24 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .q_o({rvalid_q})
   );
 
+  if (EnableOutputPipeline) begin : gen_oup_pipeline_rvalid
+    mubi4_t rvalid_qq;
+    prim_flop #(
+      .Width (MuBi4Width),
+      .ResetValue (MuBi4Width'(MuBi4False))
+    ) u_rvalid_flop2 (
+      .clk_i,
+      .rst_ni,
+      .d_i(MuBi4Width'(rvalid_q)),
+      .q_o({rvalid_qq})
+    );
+
+    assign rvalid_o = mubi4_test_true_loose(rvalid_qq);
+  end else begin : gen_no_oup_pipeline_rvalid
+    assign rvalid_o = mubi4_test_true_loose(rvalid_q);
+  end
+
   assign rdata_o = rdata;
-  assign rvalid_o = mubi4_test_true_loose(rvalid_q);
 
   assign read_en_b = mubi4_test_true_loose(read_en_buf);
   assign write_en_b = mubi4_test_true_loose(write_en_buf_d);
@@ -384,7 +435,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .EnableECC(1'b0),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
-    .EnableOutputPipeline(1'b0)
+    .EnableOutputPipeline(EnableOutputPipeline)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
