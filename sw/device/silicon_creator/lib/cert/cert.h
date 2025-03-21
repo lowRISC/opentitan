@@ -8,9 +8,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -32,24 +30,38 @@ enum {
   kCertX509Asn1SerialNumberSizeInBytes = 20,
 
   /**
-   * Size of an X.509 ASN.1 DER encoded certificate up to, and including, the
-   * serial number.
-   *
-   * Offset of ASN.1 tag is 13 plus:
-   *  - 1 byte of tag
-   *  - 1 byte of size
-   *  - (potentially) 1 byte of padding
-   *  - 20 bytes of serial number
-   */
-  kCertX509Asn1FirstBytesWithSerialNumber =
-      kCertX509Asn1SerialNumberFieldByteOffset +
-      kCertX509Asn1SerialNumberSizeInBytes + 3,
-
-  /**
    * Cert key ID size (used for the serial number and auth key ID fields).
    */
   kCertKeyIdSizeInBytes = kCertX509Asn1SerialNumberSizeInBytes,
 };
+
+enum dice_x509_cert_expectations {
+  /**
+   * Size of the SerialNumber region header.
+   * Expects 1B tag + 1B len + 1B 0x00
+   */
+  kDiceX509SerialHeaderSizeBytes = 3,
+
+  /**
+   * Total size in bytes of the SerialNumber region.
+   * Expects header + 20B key id with MSb set.
+   */
+  kDiceX509SerialSizeBytes =
+      kDiceX509SerialHeaderSizeBytes + kCertKeyIdSizeInBytes,
+
+  /**
+   * Offset to the SerialNumber region including header.
+   * This offset is relative to the *begin* of signed cert.
+   */
+  kDiceX509SerialOffsetBytes = 13,
+
+  /**
+   * All valid X509 cert should be longer than this size.
+   */
+  kDiceX509MinSizeBytes = kDiceX509SerialOffsetBytes + kDiceX509SerialSizeBytes,
+};
+
+typedef uint8_t cert_key_id_t[kCertKeyIdSizeInBytes];
 
 /**
  * DICE certificate format. It supports 2 types currently.
@@ -110,35 +122,23 @@ typedef struct cert_key_id_pair {
 uint32_t cert_x509_asn1_decode_size_header(const uint8_t *header);
 
 /**
- * Reads the first word of the certificate, which contains it's size, decodes
- * it, and returns the size of the certificate in bytes.
+ * Check if the serial number field from an ASN.1 DER encoded X.509
+ * certificate is expected.
  *
- * @param info_page Pointer to the flash info page the certificate is on.
- * @param offset Byte offset on the flash info page the certificate starts at.
- * @param[out] size The size of the certificate in bytes (including the header).
- * @return Result of the operation.
- */
-rom_error_t cert_x509_asn1_get_size_in_bytes(
-    const flash_ctrl_info_page_t *info_page, uint32_t offset, uint32_t *size);
-
-/**
- * Extracts the serial number field from an ASN.1 DER encoded X.509
- * certificate and checks if it matches what is expected.
+ * This function expects a certificate with a serial number encoded using the
+ * MSb tweak. If the certificate does not have the MSb set for the serial int,
+ * the function may return unmatched.
  *
- * @param cert_page_buffer Pointer to the buffer holding the certificate blob.
- * @param offset Byte offset into the certificate buffer to start reading at.
+ * @param cert Pointer to the buffer holding the certificate blob.
+ * @param size Size of the `cert` buffer in bytes.
  * @param expected_sn_bytes Expected serial number bytes (in big endian order).
  * @param[out] matches True if expected serial number found. False otherwise.
- * @param[out] out_cert_size The certificate size in bytes. Can be NULL if
- *                           caller does not want it returned.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t cert_x509_asn1_check_serial_number(const uint8_t *cert_page_buffer,
-                                               size_t offset,
-                                               uint8_t *expected_sn_bytes,
-                                               hardened_bool_t *matches,
-                                               uint32_t *out_cert_size);
+rom_error_t cert_x509_asn1_check_serial_number(const uint8_t *cert, size_t size,
+                                               cert_key_id_t *expected_sn_bytes,
+                                               hardened_bool_t *matches);
 
 #ifdef __cplusplus
 }
