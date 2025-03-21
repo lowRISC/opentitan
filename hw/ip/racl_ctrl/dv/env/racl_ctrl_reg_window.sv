@@ -18,6 +18,13 @@ class racl_ctrl_reg_window extends uvm_object;
 
   // Get the policy registers, writing them into a queue (a bit like uvm_reg_block::get_registers)
   extern function void get_policy_registers (ref dv_base_reg regs[$]);
+
+  // Get the policy with the given index, returning it as a 32-bit value (padded at the top with
+  // zeros)
+  extern function bit[31:0] get_policy(int unsigned idx);
+
+  // Return true if register is one of the policy registers
+  extern function bit is_policy_reg(uvm_reg register);
 endclass
 
 function racl_ctrl_reg_window::new (string name="");
@@ -52,8 +59,32 @@ function void racl_ctrl_reg_window::set_reg_block(uvm_reg_block ral);
     // racl_policies_o.
     policy_regs.push_back(dv_reg);
   end
+
+  // As a simple check, make sure that we have the same number of policy registers as the
+  // NrRaclPolicies parameter defined in top_racl_pkg.
+  if (policy_regs.size() != top_racl_pkg::NrRaclPolicies)
+    `uvm_fatal(`gfn,
+               $sformatf({"Cannot extract policy registers. ",
+                          "top_racl_pkg::NrRaclPolicies = %0d but we have %0d policy registers."},
+                         top_racl_pkg::NrRaclPolicies,
+                         policy_regs.size()))
 endfunction
 
 function void racl_ctrl_reg_window::get_policy_registers (ref dv_base_reg regs[$]);
   foreach (policy_regs[i]) regs.push_back(policy_regs[i]);
+endfunction
+
+function bit[31:0] racl_ctrl_reg_window::get_policy(int unsigned idx);
+  if (idx >= policy_regs.size()) begin
+    `uvm_error(`gfn, $sformatf("Invalid policy index (%0d >= %0d)", idx, policy_regs.size()))
+    return 0;
+  end
+  return policy_regs[idx].get_mirrored_value();
+endfunction
+
+function bit racl_ctrl_reg_window::is_policy_reg(uvm_reg register);
+  foreach (policy_regs[i]) begin
+    if (register == policy_regs[i]) return 1;
+  end
+  return 0;
 endfunction
