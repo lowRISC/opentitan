@@ -91,6 +91,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_dv",
             "//hw/top_earlgrey:sim_verilator",
+            "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -128,6 +129,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_dv",
             "//hw/top_earlgrey:sim_verilator",
+            "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
@@ -151,6 +153,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         # We need to specify the manifest because the simulation environments do not
@@ -199,7 +202,7 @@ opentitan_test(
 ]
 
 # Corrupt binaries
-# Note: the naming of the files is important for dvsim. The code expects fiel to be named:
+# Note: the naming of the files is important for dvsim. The code expects file to be named:
 # - binary: <something>.<key_name>.signed.bin
 # - vmem: <something>.<key_name>.signed.64.vmem
 # - flash vmem: <something>.<key_name>.signed.64.scr.vmem
