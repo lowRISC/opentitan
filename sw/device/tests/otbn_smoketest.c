@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_otbn.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -9,8 +10,6 @@
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTBN_DECLARE_APP_SYMBOLS(barrett384);
 OTBN_DECLARE_SYMBOL_ADDR(barrett384, inp_a);
@@ -29,6 +28,11 @@ static const otbn_addr_t kOupC = OTBN_ADDR_T_INIT(barrett384, oup_c);
 OTBN_DECLARE_APP_SYMBOLS(err_test);
 
 static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
+
+static_assert(kDtOtbnCount >= 1,
+              "This test requires at least one OTBN instance");
+
+static dt_otbn_t kTestOtbn = (dt_otbn_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -152,8 +156,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   dif_otbn_t otbn;
-  CHECK_DIF_OK(
-      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kTestOtbn, &otbn));
 
   test_barrett384(&otbn);
   test_sec_wipe(&otbn);
