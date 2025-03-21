@@ -96,7 +96,7 @@ module tlul_adapter_sram_racl
       .out_o( racl_role_vec )
     );
 
-    logic req, rd_req, wr_req, racl_read_allowed, racl_write_allowed;
+    logic rd_req, wr_req, racl_read_allowed, racl_write_allowed;
     logic [RaclPolicySelNumRanges-1:0] range_read_allowed;
     logic [RaclPolicySelNumRanges-1:0] range_write_allowed;
 
@@ -118,10 +118,9 @@ module tlul_adapter_sram_racl
     assign racl_read_allowed  = |range_read_allowed;
     assign racl_write_allowed = |range_write_allowed;
 
-    assign req                = tl_i.a_valid & tl_o.a_ready;
-    assign rd_req             = req & (tl_i.a_opcode == tlul_pkg::Get);
-    assign wr_req             = req & (tl_i.a_opcode == tlul_pkg::PutFullData |
-                                       tl_i.a_opcode == tlul_pkg::PutPartialData);
+    assign rd_req             = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::Get);
+    assign wr_req             = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::PutFullData |
+                                                tl_i.a_opcode == tlul_pkg::PutPartialData);
     assign racl_error_o.valid = (rd_req & ~racl_read_allowed) | (wr_req & ~racl_write_allowed);
 
     tlul_request_loopback #(
