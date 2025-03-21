@@ -197,6 +197,15 @@
     <rule ccType="inst" ccfFlagsMask="37383508603842-42" domain="icc" entityName="aes/u_reg/u_ctrl_aux_shadowed_key_touch_forces_reseed/3" entityType="block" excTime="1670881796" file="6" im-checksum="294603585" line="93" name="exclude" reviewer="unknown" text="assign phase_clear = (SwAccess == SwAccessRO) ? 1'b0 : re;" user="1" vscope="default"></rule>
     <!-- wr_data for AUX_REGWEN is always 0. -->
     <rule ccType="inst" ccfFlagsMask="37383508603842-42" domain="icc" entityName="aes/u_reg/u_ctrl_aux_regwen/wr_en_data_arb/gen_w0c/3" entityType="block" excTime="1670881788" file="7" im-checksum="513240802" line="60" name="exclude" reviewer="unknown" text="assign wr_data = (de ? d : q) &amp; (we ? wd : '1);" user="1" vscope="default"></rule>
+    <!-- The GHASH_ADD_S state is not used for the masked GHASH implementation -->
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_ADD_S" entityType="state" excTime="1742576728" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_IDLE/GHASH_ADD_S" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_ADD_S/GHASH_IDLE" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <!-- The masked GHASH implementation traverses through the various states slighly differently compared to the unmasked implementation. -->
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_IDLE/GHASH_OUT" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_OUT/GHASH_IDLE" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_MULT/GHASH_OUT" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="aes/u_aes_core/gen_ghash/u_aes_ghash/aes_ghash_cs/GHASH_MULT/GHASH_IDLE" entityType="transition" excTime="1742573644" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
   </rules>
   <cache-map>
   </cache-map>
