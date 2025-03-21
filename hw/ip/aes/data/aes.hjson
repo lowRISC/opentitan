@@ -387,6 +387,7 @@
     { name: "KEY.MASKING",
       desc: '''
         1st-order domain-oriented masking of the cipher core including data path and key expand.
+        1st-order masking of the GHASH operation.
         Can optionally be disabled via compile-time Verilog parameter for instantiations that don't need SCA hardening.
       '''
     }

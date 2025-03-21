@@ -591,6 +591,7 @@ module aes_core
     // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
     localparam int unsigned GhashGFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
 
+    // SEC_CM: KEY.MASKING
     // The actual GHASH module.
     aes_ghash #(
       .SecMasking   ( SecMasking        ),
