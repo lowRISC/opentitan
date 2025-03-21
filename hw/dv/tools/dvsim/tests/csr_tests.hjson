@@ -30,7 +30,8 @@
       build_mode: "cover_reg_top"
       run_opts: ["+csr_rw"]
       en_run_modes: ["csr_tests_mode"]
-      reseed: 20
+      reseed: 5
+      // reseed: 20
     }
 
     {

@@ -15,11 +15,11 @@ ANNOTATION: "Not possible to trigger hash_process and write to message FIFO in t
 Branch 8 "1280311922" "{ack_in, ack_out}" (4) "{ack_in, ack_out} 2'b11 ,-,1"
 CHECKSUM: "2099741489 2073313596"
 INSTANCE: tb.dut.u_reg.u_intr_state_fifo_empty.wr_en_data_arb
-ANNOTATION: "Driven by a prim_intr_hw instance with IntrT = "Status", hence de is always 1."
+ANNOTATION: "Driven by a prim_intr_hw instance with IntrT = Status, hence de is always 1."
 Block 1 "494386457" "assign wr_en = de;"
 CHECKSUM: "4255502330 223073768"
 INSTANCE: tb.dut.u_reg.u_intr_state_fifo_empty
-ANNOTATION: "Driven by a prim_intr_hw instance with IntrT = "Status", hence de is always 1 and so wr_en."
+ANNOTATION: "Driven by a prim_intr_hw instance with IntrT = Status, hence de is always 1 and so wr_en."
 Block 7 "1375076151" "assign qe = wr_en;"
 CHECKSUM: "3248171150 3709966184"
 INSTANCE: tb.dut.u_reg.u_socket
