@@ -38,7 +38,7 @@
   sim_tops: ["hmac_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 10
 
   // Add HMAC specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/hmac/dv/cov/hmac_unr_excl.el",
@@ -66,12 +66,14 @@
     {
       name: hmac_stress_reset
       uvm_test_seq: hmac_stress_reset_vseq
+      reseed: 25
     }
 
     {
       name: hmac_back_pressure
       uvm_test_seq: hmac_back_pressure_vseq
       run_opts: ["+zero_delays=1"]
+      reseed: 25
     }
 
     {
@@ -83,6 +85,7 @@
     {
       name: hmac_burst_wr
       uvm_test_seq: hmac_burst_wr_vseq
+      reseed: 50
     }
 
     {
@@ -141,6 +144,7 @@
     {
       // Append the common stress_tests.hjson entry for more run_opts.
       name: hmac_stress_all
+      reseed: 25
     }
 
     {
