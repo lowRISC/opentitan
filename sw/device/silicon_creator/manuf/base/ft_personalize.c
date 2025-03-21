@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdalign.h>
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -351,7 +353,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
                                  size_t offset, size_t *size) {
   // 1K should be enough for the largest certificate perso LTV object.
   const size_t kBufferSize = 1024;
-  uint8_t buffer[kBufferSize];
+  alignas(uint32_t) uint8_t buffer[kBufferSize];
 
   // Read first word of the certificate perso LTV object (contains the size).
   perso_tlv_object_header_t objh;
@@ -695,6 +697,10 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
   next_cert = all_certs;
   free_room = sizeof(all_certs);
+  // 1K should be enough for the largest certificate perso LTV object.
+  const size_t kBufferSize = 1024;
+  alignas(uint32_t) uint8_t buffer[kBufferSize];
+
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -719,8 +725,15 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
                   curr_layout.group_name, block.name);
         return OUT_OF_RANGE();
       }
+      if (sizeof(buffer) < cert_size_bytes_ru) {
+        LOG_ERROR("%s %s certificate did not fit into the buffer.",
+                  curr_layout.group_name, block.name);
+        return OUT_OF_RANGE();
+      }
+      memset(buffer, 0, cert_size_bytes_ru);
+      memcpy(buffer, next_cert, block.obj_size);
       TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
-                                cert_size_words, next_cert));
+                                cert_size_words, buffer));
       LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
                block.name);
       page_offset += cert_size_bytes_ru;
