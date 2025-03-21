@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:racl_ctrl_ral
     files:
+      - racl_ctrl_policies_if.sv
       - racl_ctrl_env_pkg.sv
       - racl_ctrl_reg_window.sv: {is_include_file: true}
       - racl_ctrl_env_cfg.sv: {is_include_file: true}
