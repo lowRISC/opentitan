@@ -66,7 +66,6 @@ class tl_host_base_seq #(type REQ_T = tl_seq_item) extends dv_base_seq #(
     `downcast(req, item)
     if (cfg == null) get_cfg(req);
     if (override_a_source_val) begin
-      req.a_source_is_overridden = 1'b1;
       req.a_source = overridden_a_source_val;
       cfg.add_to_a_source_pend_q(req.a_source);
     end else begin

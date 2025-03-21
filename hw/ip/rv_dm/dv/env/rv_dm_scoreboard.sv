@@ -233,8 +233,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       end
       sba_tl_access_q.push_back(item);
       // check tl packet integrity
-      // TODO: deal with item not being ok.
-      void'(item.is_ok(.throw_error(0)));
+      if (!item.is_ok()) begin
+        // TODO: deal with item not being ok.
+      end
       process_tl_sba_access(item, DataChannel);
     end
   endtask
