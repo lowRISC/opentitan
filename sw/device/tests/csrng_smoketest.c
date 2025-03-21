@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_csrng.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -10,7 +11,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static_assert(kDtCsrngCount >= 1,
+              "This test requires at least one CSRNG instance");
+
+static const dt_csrng_t kTestCsrng = (dt_csrng_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -53,8 +57,7 @@ status_t test_ctr_drbg_ctr0_smoke(const dif_csrng_t *csrng) {
 
 bool test_main(void) {
   dif_csrng_t csrng;
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
-  CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kTestCsrng, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_STATUS_OK(test_ctr_drbg_ctr0_smoke(&csrng));
   return true;
