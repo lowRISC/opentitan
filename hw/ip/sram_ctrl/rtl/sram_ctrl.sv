@@ -17,6 +17,7 @@ module sram_ctrl
   parameter int NumRamInst                                 = 1,
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn             = {NumAlerts{1'b1}},
+  parameter bit                   FlopRamOutput            = 1'b0,
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                                  = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
@@ -672,6 +673,7 @@ module sram_ctrl
     .Depth(Depth),
     .InstDepth(InstDepth),
     .EnableParity(0),
+    .EnableOutputPipeline(FlopRamOutput),
     .DataBitsPerMask(DataWidth),
     .NumPrinceRoundsHalf(NumPrinceRoundsHalf)
   ) u_prim_ram_1p_scr (
