@@ -5,6 +5,9 @@
 class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   `uvm_object_utils(ac_range_check_smoke_vseq)
 
+  // Internal variables
+  rand protected bit[NUM_RANGES-1:0] range_to_configure;  // Which ranges should be constrained
+
   // Constraints
   extern constraint num_trans_c;
   extern constraint tmp_c;
@@ -31,12 +34,15 @@ constraint ac_range_check_smoke_vseq::tmp_c {
 }
 
 constraint ac_range_check_smoke_vseq::range_c {
+  solve range_to_configure before dut_cfg.range_base;
   solve dut_cfg.range_base before dut_cfg.range_limit;
   foreach (dut_cfg.range_limit[i]) {
     // Limit always greater than base
     dut_cfg.range_limit[i] > dut_cfg.range_base[i];
-    // Range size in 32-bit words, it shouldn't be too large and let it be 1 word size
-    ((dut_cfg.range_limit[i] - dut_cfg.range_base[i]) >> 2) inside {[1:49]};
+    if (range_to_configure[i]) {
+      // Range size in 32-bit words, it shouldn't be too large and let it be 1 word size
+      ((dut_cfg.range_limit[i] - dut_cfg.range_base[i]) >> 2) inside {[1:49]};
+    }
   }
 }
 
