@@ -66,11 +66,11 @@ policy: ${policy_names[range['policy']]} (Idx ${f"{range['policy']}".rjust(polic
 % endfor
 % if len(range_mapping) > 0:
   parameter racl_policy_sel_t RACL_POLICY_SEL_NUM_RANGES_${policy_sel_name} = ${len(range_mapping)};
-<% fmt_range = "'{{base:'h{base:04x},mask:'h{mask:04x},policy:{policy:{policy_sel_len}}}}" %>\
-  parameter racl_range_t RACL_POLICY_SEL_RANGES_${policy_sel_name} [${len(range_mapping)}] = '{
+<% fmt_range = "'{{base:'h{base:04x},limit:'h{limit:04x},policy:{policy:{policy_sel_len}},enable:1'b1}}" %>\
+  parameter racl_range_t [${len(range_mapping)-1}:0] RACL_POLICY_SEL_RANGES_${policy_sel_name} = '{
 % for range in range_mapping:
 <%
-    value = fmt_range.format(base=range['base'],mask=range['mask'],policy=policy_names[range['policy']],policy_sel_len=policy_sel_len)
+    value = fmt_range.format(base=range['base'],limit=range['limit'],policy=policy_names[range['policy']],policy_sel_len=policy_sel_len)
     value += ' ' if loop.last else ','
     comment = " // Policy Idx " + f"{range['policy']}".rjust(policy_idx_len)
 %>\

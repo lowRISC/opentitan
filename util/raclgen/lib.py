@@ -230,24 +230,23 @@ def parse_racl_mapping(
         try:
             base = int(range['base'], 0)
             size = int(range['size'], 0)
-            mask = size - 1
-            if size <= 0 or size.bit_count() != 1 or base & mask:
-                raise ValueError
-        except ValueError:
-            raise SystemExit(f'Invalid RACL range mapping ({range}) in {mapping_path}')
+            if size <= 0 or base < 0:
+                raise ValueError("Base must not be negative and size must be > 0.")
+            limit = base + size - 1
+        except ValueError as error:
+            raise SystemExit(f'Invalid RACL range mapping ({range}) in {mapping_path}: {error}')
 
         # ensure disjunct ranges:
         for range_mapping in parsed_range_mapping:
-            start = range_mapping['base']
-            end = range_mapping['base'] + range_mapping['size'] - 1
-            if max(base, start) <= min(base + size - 1, end):
+            other_base = range_mapping['base']
+            other_limit = range_mapping['limit']
+            if max(base, other_base) <= min(limit, other_limit):
                 raise SystemExit(f'Overlapping RACL range ({range}) in {mapping_path}')
 
         parsed_range_mapping.append(
             {
                 'base': base,
-                'size': size,
-                'mask': mask,
+                'limit': limit,
                 'policy': policy_name_to_idx(range['policy'])
             }
         )

@@ -85,16 +85,20 @@ module spi_device
   localparam int unsigned TpmRdFifoWidth  = spi_device_reg_pkg::TpmRdFifoWidth;
 
   // Derived parameters
-  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesEgressbuffer[1] = '{
-    '{base: {top_pkg::TL_AW{1'b0}},
-      mask: {top_pkg::TL_AW{1'b1}},
-      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinEgressbuffer)
+  localparam top_racl_pkg::racl_range_t [0:0] RaclPolicySelRangesEgressbuffer = '{
+    '{
+      base:  {top_pkg::TL_AW{1'b0}},
+      limit: {top_pkg::TL_AW{1'b1}},
+      policy_sel: RaclPolicySelWinEgressbuffer,
+      enable: 1'b1
     }
   };
-  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesIngressbuffer[1] = '{
-    '{base: {top_pkg::TL_AW{1'b0}},
-      mask: {top_pkg::TL_AW{1'b1}},
-      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinIngressbuffer)
+  localparam top_racl_pkg::racl_range_t  [0:0] RaclPolicySelRangesIngressbuffer = '{
+    '{
+      base:  {top_pkg::TL_AW{1'b0}},
+      limit: {top_pkg::TL_AW{1'b1}},
+      policy_sel: RaclPolicySelWinIngressbuffer,
+      enable: 1'b1
     }
   };
 
@@ -1703,8 +1707,7 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelNumRanges(1),
-    .RaclPolicySelRanges(RaclPolicySelRangesEgressbuffer)
+    .RaclPolicySelNumRanges(1)
   ) u_tlul2sram_egress (
     .clk_i,
     .rst_ni,
@@ -1730,7 +1733,8 @@ module spi_device
     .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error[1])
+    .racl_error_o               (racl_error[1]),
+    .racl_policy_sel_ranges     (RaclPolicySelRangesEgressbuffer)
   );
 
   tlul_adapter_sram_racl #(
@@ -1741,8 +1745,7 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelNumRanges(1),
-    .RaclPolicySelRanges(RaclPolicySelRangesIngressbuffer)
+    .RaclPolicySelNumRanges(1)
   ) u_tlul2sram_ingress (
     .clk_i,
     .rst_ni,
@@ -1768,7 +1771,8 @@ module spi_device
     .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error[2])
+    .racl_error_o               (racl_error[2]),
+    .racl_policy_sel_ranges     (RaclPolicySelRangesIngressbuffer)
   );
   assign sys_sram_l2m[SysSramFwEgress].wstrb =
     sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]);
