@@ -35,8 +35,8 @@ package top_racl_pkg;
 
   // RACL policy containing a read and write permission
   typedef struct packed {
-    racl_role_vec_t read_perm;
-    racl_role_vec_t write_perm;
+    racl_role_vec_t write_perm;    // Write permission (upper bits)
+    racl_role_vec_t read_perm;     // Read permission (lower bits)
   } racl_policy_t;
 
   // RACL policy vector for distributing RACL policies from the RACL widget to the subscribing IP
