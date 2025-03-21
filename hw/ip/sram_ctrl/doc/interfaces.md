@@ -37,6 +37,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | otp_en_sram_ifetch | prim_mubi_pkg::mubi8            | uni     | rcv   | 1          |                                                                                                                                      |
 | racl_policies      | top_racl_pkg::racl_policy_vec   | uni     | rcv   | 1          | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
 | racl_error         | top_racl_pkg::racl_error_log    | uni     | req   | 1          | RACL error log information of this module.                                                                                           |
+| sram_rerror        | sram_ctrl_pkg::sram_error_t     | uni     | req   | 1          | SRAM read error indicating correctable and uncorrectable ECC errors.                                                                 |
 | regs_tl            | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
 | ram_tl             | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
 
