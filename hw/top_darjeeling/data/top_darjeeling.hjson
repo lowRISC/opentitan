@@ -1198,7 +1198,7 @@
       'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
-      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump_0'],
+      'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
 
       // DMA LSIO triggers
       'dma.lsio_trigger'        : ['soc_proxy.dma_lsio_trigger'],
@@ -1298,7 +1298,7 @@
 
 
       // rv core ibex connections
-      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump_0'],
+      'rv_core_ibex.crash_dump' : ['rstmgr_aon.cpu_dump'],
       'rv_core_ibex.pwrmgr'     : ['pwrmgr_aon.pwr_cpu'],
 
       // spi passthrough connection

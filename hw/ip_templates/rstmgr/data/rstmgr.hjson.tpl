@@ -13,7 +13,15 @@
   total_resets = total_hw_resets + 3
 
   # List of (prefix, count) pairs
-  crash_dump_srcs = [('alert', len(alert_handler_pkgs)), ('cpu', num_cores)]
+  num_handlers = len(alert_handler_pkgs)
+  crash_dump_srcs = [('alert', num_handlers), ('cpu', num_cores)]
+
+  # Create "_{i}" only when there's more than 1
+  def pluralize(i, n):
+    if n == 0 or n == 1:
+        return ""
+    else:
+        return f"_{i}"
 %>
 
 # RSTMGR register template
@@ -228,12 +236,12 @@
       '''
     },
 
-% for i, alert_handler_pkg in enumerate(alert_handler_pkgs):
+% for i in range(num_handlers):
     { struct:  "alert_crashdump",
       type:    "uni",
-      name:    "alert_dump_${i}",
+      name:    "alert_dump${pluralize(i, num_handlers)}",
       act:     "rcv",
-      package: "${alert_handler_pkg}",
+      package: "${alert_handler_pkgs[i]}",
       desc:    '''
         Crash dump info for alert handler ${i}.
       '''
@@ -243,7 +251,7 @@
 % for i in range(num_cores):
     { struct:  "cpu_crash_dump",
       type:    "uni",
-      name:    "cpu_dump_${i}",
+      name:    "cpu_dump${pluralize(i, num_cores)}",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
@@ -349,7 +357,7 @@
 
     % for (dump_src, dump_count) in crash_dump_srcs:
     %     for dump_idx in range(dump_count):
-    { name: "${dump_src.upper()}_${dump_idx}_REGWEN",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_REGWEN",
       desc: "${dump_src.capitalize()}[${dump_idx}] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
@@ -358,20 +366,20 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!${dump_src.upper()}_${dump_idx}_INFO_CTRL can be modified.
+            When 1, !!${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL can be modified.
           '''
         },
       ]
     }
 
-    { name: "${dump_src.upper()}_${dump_idx}_INFO_CTRL",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL",
       desc: '''
             ${dump_src.capitalize()}[${dump_idx}] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
       sync: "clk_por_i",
-      regwen: "${dump_src.upper()}_${dump_idx}_REGWEN",
+      regwen: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_REGWEN",
       fields: [
         { bits: "0",
           name: "EN",
@@ -393,7 +401,7 @@
       ]
     },
 
-    { name: "${dump_src.upper()}_${dump_idx}_INFO_ATTR",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_ATTR",
       desc: '''
             ${dump_src.capitalize()}[${dump_idx}] info dump attributes.
             ''',
@@ -418,10 +426,10 @@
       ]
     },
 
-    { name: "${dump_src.upper()}_${dump_idx}_INFO",
+    { name: "${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO",
       desc: '''
               ${dump_src.capitalize()}[${dump_idx}] dump information prior to last reset.
-              Which value read is controlled by the !!${dump_src.upper()}_${dump_idx}_INFO_CTRL register.
+              Which value read is controlled by the !!${dump_src.upper() + pluralize(dump_idx, dump_count)}_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
