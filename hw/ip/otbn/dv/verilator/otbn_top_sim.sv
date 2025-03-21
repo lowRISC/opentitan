@@ -35,7 +35,7 @@ module otbn_top_sim (
   logic                     imem_req;
   logic [ImemAddrWidth-1:0] imem_addr;
   logic [38:0]              imem_rdata;
-  logic                     imem_rvalid;
+  logic                     imem_rvalid_q;
 
   // Data memory (DMEM) signals
   logic                     dmem_req;
@@ -44,7 +44,7 @@ module otbn_top_sim (
   logic [ExtWLEN-1:0]       dmem_wdata;
   logic [ExtWLEN-1:0]       dmem_wmask;
   logic [ExtWLEN-1:0]       dmem_rdata;
-  logic                     dmem_rvalid;
+  logic                     dmem_rvalid_q;
   logic                     dmem_rerror;
 
   // Entropy Distribution Network (EDN)
@@ -66,6 +66,16 @@ module otbn_top_sim (
 
   logic secure_wipe_running;
 
+  always_ff @(posedge IO_CLK or negedge IO_RST_N) begin
+    if (!IO_RST_N) begin
+      dmem_rvalid_q <= 1'b0;
+      imem_rvalid_q <= 1'b0;
+    end else begin
+      dmem_rvalid_q <= dmem_req & ~dmem_write;
+      imem_rvalid_q <= imem_req;
+    end
+  end
+
   otbn_core #(
     .ImemSizeByte             ( ImemSizeByte ),
     .DmemSizeByte             ( DmemSizeByte ),
@@ -86,7 +96,7 @@ module otbn_top_sim (
     .imem_req_o                  ( imem_req                   ),
     .imem_addr_o                 ( imem_addr                  ),
     .imem_rdata_i                ( imem_rdata                 ),
-    .imem_rvalid_i               ( imem_rvalid                ),
+    .imem_rvalid_i               ( imem_rvalid_q              ),
 
     .dmem_req_o                  ( dmem_req                   ),
     .dmem_write_o                ( dmem_write                 ),
@@ -95,7 +105,7 @@ module otbn_top_sim (
     .dmem_wmask_o                ( dmem_wmask                 ),
     .dmem_rmask_o                ( ),
     .dmem_rdata_i                ( dmem_rdata                 ),
-    .dmem_rvalid_i               ( dmem_rvalid                ),
+    .dmem_rvalid_i               ( dmem_rvalid_q              ),
     .dmem_rerror_i               ( dmem_rerror                ),
 
     .edn_rnd_req_o               ( edn_rnd_req                ),
@@ -176,7 +186,6 @@ module otbn_top_sim (
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   assign u_otbn_core.i_otbn_trace_if.scramble_state_err_i = '0;
-  assign u_otbn_core.i_otbn_trace_if.missed_gnt_i = '0;
 
   // Convert from core_err_bits_t to err_bits_t
   assign otbn_err_bits = '{
@@ -249,7 +258,7 @@ module otbn_top_sim (
   assign dmem_index = dmem_addr[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
   assign unused_dmem_addr = dmem_addr[DmemAddrWidth-DmemIndexWidth-1:0];
 
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width              ( ExtWLEN       ),
     .Depth              ( DmemSizeWords ),
     .InstDepth          ( DmemSizeWords ),
@@ -260,12 +269,10 @@ module otbn_top_sim (
     .clk_i            ( IO_CLK            ),
     .rst_ni           ( IO_RST_N          ),
 
-    .key_valid_i      ( 1'b1              ),
     .key_i            ( TestScrambleKey   ),
     .nonce_i          ( TestScrambleNonce ),
 
     .req_i            ( dmem_req          ),
-    .gnt_o            (                   ),
     .write_i          ( dmem_write        ),
     .addr_i           ( dmem_index        ),
     .wdata_i          ( dmem_wdata        ),
@@ -273,7 +280,6 @@ module otbn_top_sim (
     .intg_error_i     ( 1'b0              ),
 
     .rdata_o          ( dmem_rdata        ),
-    .rvalid_o         ( dmem_rvalid       ),
     .raddr_o          (                   ),
     .rerror_o         (                   ),
     .cfg_i            ( '0                ),
@@ -297,7 +303,7 @@ module otbn_top_sim (
   assign imem_index = imem_addr[ImemAddrWidth-1:2];
   assign unused_imem_addr = imem_addr[1:0];
 
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width           ( 39            ),
     .Depth           ( ImemSizeWords ),
     .InstDepth       ( ImemSizeWords ),
@@ -307,12 +313,10 @@ module otbn_top_sim (
     .clk_i            ( IO_CLK                  ),
     .rst_ni           ( IO_RST_N                ),
 
-    .key_valid_i      ( 1'b1                    ),
     .key_i            ( TestScrambleKey         ),
     .nonce_i          ( TestScrambleNonce       ),
 
     .req_i            ( imem_req                ),
-    .gnt_o            (                         ),
     .write_i          ( 1'b0                    ),
     .addr_i           ( imem_index              ),
     .wdata_i          ( '0                      ),
@@ -320,7 +324,6 @@ module otbn_top_sim (
     .intg_error_i     ( 1'b0                    ),
 
     .rdata_o          ( imem_rdata              ),
-    .rvalid_o         ( imem_rvalid             ),
     .raddr_o          (                         ),
     .rerror_o         (                         ),
     .cfg_i            ( '0                      ),
