@@ -29,6 +29,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  bit EnableOutputPipeline = 0, // Add pipeline stage after memory macro output.
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -208,9 +209,18 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     assign addr_scr = addr_i;
   end
 
-  // We latch the non-scrambled address for error reporting.
-  logic [AddrWidth-1:0] raddr_q;
-  assign raddr_o = raddr_q;
+  // Flop the non-scrambled address for error reporting.
+  prim_flop_en #(
+    .Width(AddrWidth),
+    .Depth(1 + EnableOutputPipeline),
+    .ResetValue('0)
+  ) u_flop_raddr (
+    .clk_i,
+    .rst_ni,
+    .en_i(read_en_b),
+    .d_i(addr_i),
+    .q_o(raddr_o)
+  );
 
   //////////////////////////////////////////////
   // Keystream Generation for Data Scrambling //
@@ -256,9 +266,37 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     end
   end
 
+  logic read_en_q;
+  prim_flop #(
+    .Width (1),
+    .Depth (1), // matches latency of prim_prince
+    .ResetValue (1'b0)
+  ) u_flop_read_en (
+    .clk_i,
+    .rst_ni,
+    .d_i (mubi4_test_true_loose(read_en_buf)),
+    .q_o (read_en_q)
+  );
+
+  // Optionally pipeline keystream if the read data from RAM has a latency of more than one cycle.
+  logic [NumParScr*64-1:0] keystream_pipelined;
+  prim_flop_en #(
+    .Width (NumParScr*64),
+    .Depth (EnableOutputPipeline),
+    .ResetValue ('0),
+    .EnSecBuf (1'b0)
+  ) u_flop_keystream (
+    .clk_i,
+    .rst_ni,
+    .en_i (read_en_q),
+    .d_i (keystream),
+    .q_o (keystream_pipelined)
+  );
+
   // Replicate keystream if needed
-  logic [Width-1:0] keystream_repl;
+  logic [Width-1:0] keystream_repl, keystream_pipelined_repl;
   assign keystream_repl = Width'({NumParKeystr{keystream}});
+  assign keystream_pipelined_repl = Width'({NumParKeystr{keystream_pipelined}});
 
   /////////////////////
   // Data Scrambling //
@@ -314,9 +352,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .data_o ( rdata_xor )
     );
 
-    // Apply Keystream, replicate it if needed
+    // Apply Keystream to decipher read data.
     assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
-                                              keystream_repl[k*DiffWidth +: LocalWidth];
+                                              keystream_pipelined_repl[k*DiffWidth +: LocalWidth];
   end
 
   ///////////////
@@ -324,9 +362,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   ///////////////
   logic ram_alert;
 
-  mubi4_t rvalid_q;
+  mubi4_t rvalid_pipelined;
   assign alert_o = mubi4_test_invalid(write_en_q) |
-                   mubi4_test_invalid(rvalid_q) | ram_alert;
+                   mubi4_test_invalid(rvalid_pipelined) | ram_alert;
 
   prim_flop #(
     .Width(MuBi4Width),
@@ -340,16 +378,17 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   prim_flop #(
     .Width(MuBi4Width),
+    .Depth(1 + EnableOutputPipeline),
     .ResetValue(MuBi4Width'(MuBi4False))
   ) u_rvalid_flop (
     .clk_i,
     .rst_ni,
     .d_i(MuBi4Width'(read_en_buf)),
-    .q_o({rvalid_q})
+    .q_o({rvalid_pipelined})
   );
 
   assign rdata_o = rdata;
-  assign rvalid_o = mubi4_test_true_loose(rvalid_q);
+  assign rvalid_o = mubi4_test_true_loose(rvalid_pipelined);
 
   assign read_en_b = mubi4_test_true_loose(read_en_buf);
   assign write_en_b = mubi4_test_true_loose(write_en_buf_d);
@@ -357,15 +396,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [Width-1:0] wmask_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
-      raddr_q             <= '0;
       waddr_scr_q         <= '0;
       wmask_q             <= '0;
       wdata_q             <= '0;
     end else begin
-
-      if (read_en_b) begin
-        raddr_q <= addr_i;
-      end
       if (write_en_b) begin
         waddr_scr_q    <= addr_scr;
         wmask_q        <= wmask_i;
@@ -386,7 +420,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .EnableECC(1'b0),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
-    .EnableOutputPipeline(1'b0)
+    .EnableOutputPipeline(EnableOutputPipeline)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,

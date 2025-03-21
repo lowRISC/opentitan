@@ -121,6 +121,13 @@
       expose:    "true",
       default:   "0"
     },
+    { name:      "FlopRamOutput",
+      desc:      "Add a flop stage after the RAM macro output.",
+      type:      "bit",
+      local:     "false",
+      expose:    "true",
+      default:   "0"
+    },
   ]
 
   features: [
