@@ -48,7 +48,12 @@ status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
   if (module_id == 0) {
     // First three characters of the filename.
     const char *f = basename(file);
-    module_id = MAKE_MODULE_ID(f[0], f[1], f[2]);
+    // Compute the name length (strlen() is not available).
+    size_t name_len = 0;
+    while (f[name_len])
+      name_len++;
+    module_id = name_len >= 3 ? MAKE_MODULE_ID(f[0], f[1], f[2])
+                              : MAKE_MODULE_ID('u', 'n', 'd');
   }
   // At this point, the module_id is already packed into the correct bitfield.
   return (status_t){
