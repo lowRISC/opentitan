@@ -5,7 +5,7 @@
 load("@aspect_rules_lint//format:defs.bzl", "format_multirun", "format_test")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_misc_linters//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report", "rustfmt_fix", "rustfmt_test")
+load("//rules:quality.bzl", "clang_tidy_rv_test", "clang_tidy_test", "html_coverage_report")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -87,22 +87,14 @@ licence_test(
     workspace = "//:MODULE.bazel",
 )
 
-format_exclude = [
-    # Vendored source code dirs
-    "./**/vendor/**",
-    # Rust cargo build dirs
-    "./**/target/**",
-    # Directories used exclusively to store build artifacts are still copied into.
-    "./build-out/**",
-    "./build-bin/**",
-    "./build-site/**",
-    # fusesoc build dir
-    "./build/**",
-]
-
 alias(
     name = "clang-format",
     actual = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+)
+
+alias(
+    name = "rustfmt",
+    actual = "@rules_rust//tools/upstream_wrapper:rustfmt",
 )
 
 # Run all formatters.
@@ -110,6 +102,7 @@ format_multirun(
     name = "format",
     c = ":clang-format",
     cc = ":clang-format",
+    rust = ":rustfmt",
 )
 
 # Check all formatting.
@@ -118,6 +111,7 @@ format_test(
     c = ":clang-format",
     cc = ":clang-format",
     no_sandbox = True,
+    rust = ":rustfmt",
     workspace = "//:MODULE.bazel",
 )
 
@@ -136,6 +130,18 @@ test_suite(
         ":format_check_C++_with_clang-format",
         ":format_check_C_with_clang-format",
     ],
+)
+
+# Run `rustfmt` on all Rust code.
+alias(
+    name = "rustfmt_fix",
+    actual = ":format_Rust_with_rustfmt",
+)
+
+# Check formatting on all Rust code.
+test_suite(
+    name = "rustfmt_check",
+    tests = [":format_check_Rust_with_rustfmt"],
 )
 
 # TODO(dmcardle) Add more targets that should be automatically checked with
@@ -189,50 +195,6 @@ buildifier_test(
     no_sandbox = True,
     verbose = True,
     workspace = "//:MODULE.bazel",
-)
-
-# TODO(cfrantz): Find a way to keep this list of rust targets synchronized
-# with the full set of rust targets in the codebase.
-#
-# $ bazel query 'kind("rust_(binary|library|test)", //...)' | grep -v bindgen
-RUST_TARGETS = [
-    "//sw/device/lib/ujson/rust:roundtrip_test",
-    "//sw/host/cryptotest:cryptotest_parser",
-    "//sw/host/cryptotest:cryptotest_parser_test",
-    "//sw/host/hsmtool:hsmlib",
-    "//sw/host/hsmtool:hsmlib_test",
-    "//sw/host/hsmtool/acorn:acorn",
-    "//sw/host/opentitanlib:opentitanlib",
-    "//sw/host/opentitanlib:opentitanlib_test",
-    "//sw/host/opentitansession:opentitansession",
-    "//sw/host/opentitantool:opentitantool",
-    "//sw/host/ot_certs:ot_certs",
-    "//sw/host/ot_certs:ot_certs_test",
-    "//sw/host/tests/chip/gpio:gpio",
-    "//sw/host/tests/chip/power_virus:power_virus",
-    "//sw/host/tests/chip/spi_device:spi_passthru",
-    "//sw/host/tests/ownership:rescue_limit_test",
-    "//sw/host/tests/ownership:rescue_permission_test",
-    "//sw/host/tests/ownership:transfer_lib",
-    "//sw/host/tests/ownership:transfer_test",
-    "//sw/host/tests/rom/e2e_bootstrap_disabled:e2e_bootstrap_disabled",
-    "//sw/host/tests/rom/e2e_bootstrap_entry:e2e_bootstrap_entry",
-    "//sw/host/tests/rom/e2e_chip_specific_startup:e2e_chip_specific_startup",
-    "//sw/host/tests/rom/sw_strap_value:sw_strap_value",
-    "//sw/host/tests/xmodem:lrzsz_test",
-    "//sw/host/tests/xmodem:xmodem",
-    "//sw/host/sphincsplus:sphincsplus",
-]
-
-rustfmt_test(
-    name = "rustfmt_check",
-    exclude_patterns = format_exclude,
-    workspace = "//:MODULE.bazel",
-)
-
-rustfmt_fix(
-    name = "rustfmt_fix",
-    exclude_patterns = format_exclude,
 )
 
 html_coverage_report(
