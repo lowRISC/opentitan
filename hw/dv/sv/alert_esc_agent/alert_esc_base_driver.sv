@@ -40,6 +40,9 @@ class alert_esc_base_driver extends dv_base_driver#(alert_esc_seq_item, alert_es
       // sender mode
       if (req.s_alert_send)      s_alert_send_q.push_back(req_clone);
       if (req.s_alert_ping_rsp)  s_alert_ping_rsp_q.push_back(req_clone);
+      `uvm_info(`gfn, $sformatf({"Driver received item (after pushing): req.r_alert_ping_send=%0d",
+                                 " | req.r_alert_rsp=%0d | req.r_esc_rsp=%0d"},
+                                 req.r_alert_ping_send, req.r_alert_rsp, req.r_esc_rsp), UVM_DEBUG)
     end
   endtask : get_req
 

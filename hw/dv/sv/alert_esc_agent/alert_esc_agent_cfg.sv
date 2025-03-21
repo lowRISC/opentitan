@@ -67,6 +67,10 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
 
   bit under_reset;
 
+  // Pings are driven when set - useful since currently the ping sequence is an infinite loop
+  // in the agent
+  bit drive_ping = 1;
+
   `uvm_object_utils_begin(alert_esc_agent_cfg)
     `uvm_field_int(alert_delay_min, UVM_DEFAULT)
     `uvm_field_int(alert_delay_max, UVM_DEFAULT)

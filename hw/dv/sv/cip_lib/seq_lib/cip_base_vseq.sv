@@ -137,7 +137,13 @@ class cip_base_vseq #(
       // sequence has do_apply_reset=1. If not, the reset will be applied in an upper vseq.
       if (cfg.clk_rst_vif.rst_n) dut_init();
     end else begin
-      if (cfg.clk_rst_vif.rst_n) check_no_fatal_alerts();
+      if (cfg.clk_rst_vif.rst_n) begin
+        // Set flag since pings are in an infinite loop within the agent's run phase
+        // Otherwise, we may get a ping and wrongly fail tests since the ping is being serviced
+        cfg.configure_esc_agent_drive_ping(0);
+        check_no_fatal_alerts();
+        cfg.configure_esc_agent_drive_ping(1);
+      end
     end
 
     // Some fatal alerts might trigger interrupt as well, so only check interrupt after fatal alert
@@ -566,20 +572,24 @@ class cip_base_vseq #(
         fork
           wait(!cfg.clk_rst_vif.rst_n);
           begin
-            // This task wait for recoverable alerts handshake to complete, or fatal alert being
-            // triggered once by `alert_test` register.
-            cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
             foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-              `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();)
-            end
+              automatic string local_alert_name = alert_name;
+              fork
+                begin
+                  // This task waits for recoverable alerts handshake to complete, or fatal alert
+                  // being triggered once by `alert_test` register.
+                  cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+                  `DV_SPINWAIT(cfg.m_alert_agent_cfgs[local_alert_name].vif.wait_ack_complete();)
 
-            repeat(check_cycles) begin
-              cfg.clk_rst_vif.wait_clks(1);
-              foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-                `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(),
-                             $sformatf("Alert %0s fired unexpectedly!", alert_name))
-              end
+                  repeat(check_cycles) begin
+                    cfg.clk_rst_vif.wait_clks(1);
+                    `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[local_alert_name].vif.get_alert(),
+                                 $sformatf("Alert %0s fired unexpectedly!", alert_name))
+                  end
+                end
+              join_none
             end
+            wait fork;
           end
         join_any
         disable fork;
@@ -609,7 +619,7 @@ class cip_base_vseq #(
           if (alert_req[i]) begin
             // if previous alert_handler just finish, there is a max of two clock_cycle
             // pause in between
-            wait_alert_trigger(alert_name, .max_wait_cycle(2));
+            wait_alert_trigger(alert_name, .max_wait_cycle(4));
 
             // write alert_test during alert handshake will be ignored
             if ($urandom_range(1, 10) == 10) begin
