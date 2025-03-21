@@ -1,0 +1,51 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Security countermeasures testplan extracted from the IP Hjson using reggen.
+//
+// This testplan is auto-generated only the first time it is created. This is
+// because this testplan needs to be hand-editable. It is possible that these
+// testpoints can go out of date if the spec is updated with new
+// countermeasures. When `reggen` is invoked when this testplan already exists,
+// It checks if the list of testpoints is up-to-date and enforces the user to
+// make further manual updates.
+//
+// These countermeasures and their descriptions can be found here:
+// .../soc_dbg_ctrl/data/soc_dbg_ctrl.hjson
+//
+// It is possible that the testing of some of these countermeasures may already
+// be covered as a testpoint in a different testplan. This duplication is ok -
+// the test would have likely already been developed. We simply map those tests
+// to the testpoints below using the `tests` key.
+//
+// Please ensure that this testplan is imported in:
+// .../soc_dbg_ctrl/data/soc_dbg_ctrl_testplan.hjson
+{
+  testpoints: [
+    {
+      name: sec_cm_bus_integrity
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_debug_policy_valid_config_shadow
+      desc: "Verify the countermeasure(s) DEBUG_POLICY_VALID.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_debug_policy_category_config_shadow
+      desc: "Verify the countermeasure(s) DEBUG_POLICY_CATEGORY.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_halt_fsm_sparse
+      desc: "Verify the countermeasure(s) HALT.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+  ]
+}
