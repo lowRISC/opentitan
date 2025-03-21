@@ -1054,4 +1054,59 @@ module aes_ghash
     ghash_state_done_o = aes_transpose(aes_state_to_ghash_vec(ghash_state_done));
   end
 
+  ////////////////
+  // Assertions //
+  ////////////////
+
+// Typically assertions already contain this macro, which ensures that assertions are only compiled
+// in simulation and FPV. However, we wrap the entire assertion section with INC_ASSERT so that the
+// helper logic below is not synthesized either, since that could cause issues in DC.
+`ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
+
+  if (SecMasking) begin : gen_sec_cm_key_masking_svas
+
+    // For clearing operations directly following a reset, the hash subkey shares as well as the
+    // GHASH state may still be zero which is not an issue SCA wise.
+    logic hsk_vld_after_rst_d, hsk_vld_after_rst_q;
+    logic s_vld_after_rst_d, s_vld_after_rst_q;
+    logic in_hs;
+
+    assign in_hs = (in_valid_i == SP2V_HIGH) & (in_ready_o == SP2V_HIGH);
+    assign hsk_vld_after_rst_d = (in_hs & ~clear_i &  load_hash_subkey_i) | hsk_vld_after_rst_q;
+    assign s_vld_after_rst_d   = (in_hs & ~clear_i & ~load_hash_subkey_i) | s_vld_after_rst_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin : sva_reg
+      if (!rst_ni) begin
+        hsk_vld_after_rst_q <= 1'b0;
+        s_vld_after_rst_q   <= 1'b0;
+      end else begin
+        hsk_vld_after_rst_q <= hsk_vld_after_rst_d;
+        s_vld_after_rst_q   <= s_vld_after_rst_d;
+      end
+    end
+
+    for (genvar s = 0; s < NumShares; s++) begin : gen_sec_cm_key_masking_share_svas
+      // Ensure that none of the hash subkey shares are zero when they are used.
+      `ASSERT(AesSecCmKeyMaskingGhashHskNonZero,
+          hsk_vld_after_rst_q && gf_mult_req[s] |-> |hash_subkey_q[s])
+      // Ensure that none of the GHASH state shares (initialized to S) are zero.
+      `ASSERT(AesSecCmKeyMaskingGhashInitialStateNonZero,
+          s_vld_after_rst_q && (aes_ghash_cs == GHASH_MASKED_INIT) |-> |ghash_state_q[s])
+      // Ensure that none of the repeatedly used correction terms are zero when they're used.
+      `ASSERT(AesSecCmKeyMaskingGhashCorrNonZero,
+          aes_ghash_cs == GHASH_MASKED_ADD_CORR |-> |corr_q[s])
+    end
+    // Ensure that S1 is not zero when it's used. This includes both the computation of the
+    // correction term used only once, as well as the final addition of S1.
+    `ASSERT(AesSecCmKeyMaskingGhashS1NonZero,
+        (aes_ghash_cs == GHASH_MASKED_ADD_CORR && first_block_q) ||
+        (aes_ghash_cs == GHASH_OUT) |-> |s_q)
+  end
+
+  //VCS coverage on
+  // pragma coverage on
+`endif
+
 endmodule
