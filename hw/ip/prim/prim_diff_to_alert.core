@@ -1,0 +1,21 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim:diff_to_alert"
+description: "Translate a differentially encoded signal to an alert"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:buf
+      - lowrisc:prim:alert
+    files:
+      - rtl/prim_diff_to_alert.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
