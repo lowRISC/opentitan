@@ -32,11 +32,12 @@ module spi_host_window
   localparam int AW = spi_host_reg_pkg::BlockAw;
   localparam int DW = 32;
   localparam int ByteMaskW = DW / 8;
-  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesTXDATA[1] = '{
+  localparam top_racl_pkg::racl_range_t [0:0] RaclPolicySelRangesTXDATA = '{
     '{
-      base: {top_pkg::TL_AW{1'b0}},
-      mask: {top_pkg::TL_AW{1'b1}},
-      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinTXDATA)
+      base:  {top_pkg::TL_AW{1'b0}},
+      limit: {top_pkg::TL_AW{1'b1}},
+      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinTXDATA),
+      enable: 1'b1
     }
   };
 
@@ -92,8 +93,7 @@ module spi_host_window
     .ErrOnRead(1),
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
-    .RaclPolicySelNumRanges(1),
-    .RaclPolicySelRanges(RaclPolicySelRangesTXDATA)
+    .RaclPolicySelNumRanges(1)
   ) u_adapter_tx (
     .clk_i,
     .rst_ni,
@@ -118,7 +118,8 @@ module spi_host_window
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0),
     .racl_policies_i  (racl_policies_i),
-    .racl_error_o     (racl_error_tx_o)
+    .racl_error_o     (racl_error_tx_o),
+    .racl_policy_sel_ranges(RaclPolicySelRangesTXDATA)
   );
 
 endmodule : spi_host_window
