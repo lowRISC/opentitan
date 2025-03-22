@@ -17,7 +17,7 @@ use opentitanlib::ownership::{
     OwnerRescueConfig, OwnershipKeyAlg,
 };
 use opentitanlib::rescue::serial::RescueSerial;
-use opentitanlib::rescue::Rescue;
+use opentitanlib::rescue::{EntryMode, Rescue};
 
 use std::path::Path;
 
@@ -28,7 +28,7 @@ pub fn get_device_info(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
 ) -> Result<(BootLog, DeviceId)> {
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     Ok((rescue.get_boot_log()?, rescue.get_device_id()?))
 }
 
@@ -53,9 +53,9 @@ pub fn ownership_unlock(
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     rescue.ownership_unlock(unlock)?;
-    rescue.enter(transport, /*reset=*/ false)?;
+    rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match result.message {
         Message::OwnershipUnlockResponse(r) => r.status.into(),
@@ -99,9 +99,9 @@ pub fn ownership_activate(
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     rescue.ownership_activate(activate)?;
-    rescue.enter(transport, /*reset=*/ false)?;
+    rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
         Message::OwnershipActivateResponse(r) => r.status.into(),
@@ -289,7 +289,8 @@ where
     }
     let mut owner_config = Vec::new();
     owner.write(&mut owner_config)?;
-    rescue.enter(transport, /*reset=*/ true)?;
+    rescue.enter(transport, EntryMode::Reset)?;
     rescue.set_owner_config(&owner_config)?;
+    rescue.reboot()?;
     Ok(())
 }
