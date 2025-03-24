@@ -24,7 +24,8 @@ module ${module_instance_name}_assert_fpv #(parameter int NumSrc = 1,
   input [NumSrc-1:0] claim,
   input [NumSrc-1:0] complete,
   input [NumSrc-1:0][PRIOW-1:0] prio,
-  input [PRIOW-1:0]  threshold [NumTarget]
+  input [PRIOW-1:0]  threshold [NumTarget],
+  input logic        fatal_alert_i
 );
 
   localparam int SrcIdxWidth = NumSrc > 1 ? $clog2(NumSrc - 1) : 1;
@@ -104,4 +105,7 @@ module ${module_instance_name}_assert_fpv #(parameter int NumSrc = 1,
   // but smaller than the threshold
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
           irq_o[tgt_sel] || ((irq_id_o[tgt_sel]) == $past(i_high_prio) && !$past(irq)))
+
+  // When fatal alert happens then only reset can clear it.
+  `ASSERT(FatalAlertNeverdrops_A, !$fell(fatal_alert_i))
 endmodule : ${module_instance_name}_assert_fpv
