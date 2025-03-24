@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// class : ${module_instance_name}_random_long_reg_writes_reg_reads_vseq
+// class : gpio_random_long_reg_writes_reg_reads_vseq
 // This gpio random test sequence performs random no. of iteration such that
 // each iteration will do either of the following operations:
 //   (i) drives random gpio input data values
 //  (ii) writes any of gpio registers except for CTRL_EN_INPUT_FILTER register
 // (iii) reads any of gpio registers
-class ${module_instance_name}_random_long_reg_writes_reg_reads_vseq extends ${module_instance_name}_base_vseq;
+class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
 
-  `uvm_object_utils(${module_instance_name}_random_long_reg_writes_reg_reads_vseq)
+  `uvm_object_utils(gpio_random_long_reg_writes_reg_reads_vseq)
   `uvm_object_new
 
   task body();
@@ -184,4 +184,4 @@ class ${module_instance_name}_random_long_reg_writes_reg_reads_vseq extends ${mo
     endcase
   endtask : gpio_reg_rd
 
-endclass : ${module_instance_name}_random_long_reg_writes_reg_reads_vseq
+endclass : gpio_random_long_reg_writes_reg_reads_vseq
