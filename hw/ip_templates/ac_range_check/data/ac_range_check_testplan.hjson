@@ -21,16 +21,25 @@
                   * Randomize the RANGE_PERM register and set the RANGE_PERM.enable bit to 1
                   * Set RANGE_RACL_POLICY_SHADOWED.read_perm and
                     RANGE_RACL_POLICY_SHADOWED.write_perm to 0xFFFF (disables RACL checks)
-                - Perform random TLUL requests where at least 1 RACL role bit is set in the TLUL
-                  user bit vector.
+                - Perform random TLUL requests on the unfiltered interface (ctn_tl_h2d_i) and
+                  provide random TLUL responses on the filtered interface (ctn_filtered_tl_d2h_i).
 
               Checking:
-                - If a request falls outside of any configured range, the request is denied and TLUL
-                  error is returned. Read requests return all zero as data.
-                - If the request falls in any of the configured range, and the TLUL request matches
-                  the (R/W/X) permissions of the configured range, the request should be allowed.
-                  * Write transfer goes through
-                  * Read and Execute request return the expected data
+                - If a request falls outside of any enabled range:
+                  * The request should be denied and an error should be returned in the response on
+                    the unfiltered TLUL D channel (ctn_tl_d2h_o).
+                  * Read and Execute requests should return all zero as data on the unfiltered TLUL
+                    D channel (ctn_tl_d2h_o).
+                - If the request falls into the address space of at least one enabled range, the
+                  request is allowed if and only if the permissions of that range allow it (e.g., if
+                  the access is a data read, the range needs to allow reads for the access to be
+                  allowed) and it does not fall into the address space of any other enabled range
+                  with lower index whose permissions deny the request.
+                  Allowed requests should propagate without modifications on the A channel. And the
+                  corresponding responses should propagate unmodified on the D channel. One
+                  exception to this is the d_data field for AccessAck responses (i.e., responses to
+                  writes): the TL-UL spec defines that this field in this case can be any value, and
+                  the current implementation sets it to zero (for the reason described in PR #1236).
               '''
         stage: V1
         tests: ["ac_range_check_smoke"]
