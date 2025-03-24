@@ -21,7 +21,6 @@ applicable. Once done, remove this comment before making a PR. -->
 ## Current status
 * [Design & verification stage]({{< relref "hw" >}})
   * [HW development stages]({{< relref "doc/project/development_stages" >}})
-* [Simulation results](https://reports.opentitan.org/hw/ip/racl_ctrl/dv/latest/report.html)
 
 ## Design features
 For detailed information on RACL_CTRL design features, please see the [RACL_CTRL HWIP technical specification]({{< relref "hw/ip/racl_ctrl/doc" >}}).
@@ -33,8 +32,8 @@ RACL_CTRL testbench has been constructed based on the [CIP testbench architectur
 ![Block diagram](tb.svg)
 
 ### Top level testbench
-The top level testbench is located at `hw/ip/racl_ctrl/dv/tb.sv`.
-It instantiates the RACL_CTRL DUT module `hw/ip/racl_ctrl/rtl/racl_ctrl.sv`.
+The top level testbench is generated from a template at `hw/ip_templates/racl_ctrl/dv/tb.sv.tpl`.
+It instantiates the appropriate instance of the RACL_CTRL module (based on `hw/ip_templates/racl_ctrl/rtl/racl_ctrl.sv.tpl`).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
