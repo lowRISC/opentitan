@@ -18,3 +18,11 @@ check_cov -waiver -add -start_line 249 -end_line 249 -type {branch} -instance\
 # The intention to add this assertion is to make sure that while doing FPV there is not a
 # possibility to inject parasitic state to the state register of alert sender FSM.
 assert -name AlertSenderNoParasiticState_A {dut.gen_alert_tx[0].u_prim_alert_sender.state_q <= 6}
+
+# The port data_o in u_data_chk is untied and used nowhere.
+check_cov -waiver -add -start_line 25 -end_line 56 -type {statement} -instance\
+ {dut.u_reg.u_chk.u_tlul_data_integ_dec.u_data_chk} -comment {data_o is untied}
+
+# The port data_o in u_data_chk is untied and used nowhere.
+check_cov -waiver -add -start_line 25 -end_line 81 -type {statement} -instance\
+ {dut.u_reg.u_chk.u_chk} -comment {data_o is untied}
