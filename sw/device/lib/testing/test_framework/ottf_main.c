@@ -113,22 +113,25 @@ static void report_test_status(bool result) {
   // Print the reported status in case of error. Beware that
   // status_report_list_cnt might be greater than kStatusReportListSize which
   // means we had to overwrite values.
-  if (!result) {
-    LOG_INFO("Status reported by the test:");
-    // Handle overflow.
-    size_t print_cnt = status_report_list_cnt;
-    if (status_report_list_cnt > kStatusReportListSize) {
-      print_cnt = kStatusReportListSize;
-    }
-    // We print the list backwards like a stack (last report event first).
-    for (size_t i = 1; i <= print_cnt; i++) {
-      size_t idx = (status_report_list_cnt - i) % kStatusReportListSize;
-      LOG_INFO("- %r", status_report_list[idx]);
-    }
-    // Warn about overflow.
-    if (status_report_list_cnt > kStatusReportListSize) {
-      LOG_INFO(
-          "Some statuses have been lost due to the limited size of the list.");
+  if (!kOttfTestConfig.silence_console_prints) {
+    if (!result) {
+      LOG_INFO("Status reported by the test:");
+      // Handle overflow.
+      size_t print_cnt = status_report_list_cnt;
+      if (status_report_list_cnt > kStatusReportListSize) {
+        print_cnt = kStatusReportListSize;
+      }
+      // We print the list backwards like a stack (last report event first).
+      for (size_t i = 1; i <= print_cnt; i++) {
+        size_t idx = (status_report_list_cnt - i) % kStatusReportListSize;
+        LOG_INFO("- %r", status_report_list[idx]);
+      }
+      // Warn about overflow.
+      if (status_report_list_cnt > kStatusReportListSize) {
+        LOG_INFO(
+            "Some statuses have been lost due to the limited size of the "
+            "list.");
+      }
     }
   }
 
