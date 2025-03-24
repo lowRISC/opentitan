@@ -106,7 +106,7 @@ fn dispatch_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
         ));
     }
     Ok(quote! {
-        #name::#ident(ref __field) =>
+        #name::#ident(__field) =>
             opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
     })
 }
