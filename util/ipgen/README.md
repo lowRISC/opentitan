@@ -111,7 +111,7 @@ CAPI=2:
 name: ${instance_vlnv("lowrisc:ip:rv_plic")}
 ```
 
-If `topname` was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
+If `topname` was `earlgrey` and the uniquified names dictionary was `{'rv_plic': 'rv_plic_1'}`, the VLNV will become `lowrisc:earlgrey_ip:rv_plic_1`.
 Similarly, the VLNV `lowrisc:dv:rv_plic_sim` will become `lowrisc:earlgrey_dv:rv_plic_1_sim`.
 
 The following rules should be applied when creating IP templates:
