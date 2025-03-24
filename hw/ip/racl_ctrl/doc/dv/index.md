@@ -110,9 +110,11 @@ It creates the following analysis ports to retrieve the data monitored by corres
 ## Building and running tests
 We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/doc" >}}) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a smoke test:
+
+Different instantiations of `racl_ctrl` have different instances of a `racl_ctrl_sim_cfg.hjson` template.
+Here's how to run a smoke test for the instantiation for Darjeeling:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/racl_ctrl/dv/racl_ctrl_sim_cfg.hjson -i racl_ctrl_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_darjeeling/ip_autogen/racl_ctrl/dv/racl_ctrl_sim_cfg.hjson -i racl_ctrl_smoke
 ```
 
 ## Testplan
