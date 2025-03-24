@@ -360,7 +360,7 @@ impl X509 {
         builder: &mut B,
         oid: &Oid,
         critical: bool,
-        gen: impl FnOnce(&mut B) -> Result<()>,
+        build: impl FnOnce(&mut B) -> Result<()>,
     ) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1:
         // Extension  ::=  SEQUENCE  {
@@ -374,7 +374,7 @@ impl X509 {
         builder.push_seq(concat_suffix(&Some(oid.to_string()), "ext"), |builder| {
             builder.push_oid(oid)?;
             builder.push_boolean(&Tag::Boolean, &Value::Literal(critical))?;
-            builder.push_octet_string(concat_suffix(&Some(oid.to_string()), "ext_value"), gen)
+            builder.push_octet_string(concat_suffix(&Some(oid.to_string()), "ext_value"), build)
         })
     }
 

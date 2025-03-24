@@ -117,12 +117,12 @@ impl Codegen<'_> {
     /// * `buf_size_name` - Name of the variable holding the size of the output buffer.
     ///   This variable is updated by the code to hold the actual size of the data after production.
     /// * `variables` - Description of the variable types used when producing the output.
-    /// * `gen` - Closure generating the ASN1 document.
+    /// * `build` - Closure generating the ASN1 document.
     pub fn generate(
         buf_name: &str,
         buf_size_name: &str,
         variable_info: &dyn Fn(&str) -> Result<VariableInfo>,
-        gen: impl FnOnce(&mut Codegen) -> Result<()>,
+        build: impl FnOnce(&mut Codegen) -> Result<()>,
     ) -> Result<CodegenOutput> {
         let mut builder = Codegen {
             output: CodeOutput::new(),
@@ -130,7 +130,7 @@ impl Codegen<'_> {
             min_out_size: 0,
             max_out_size: 0,
         };
-        gen(&mut builder)?;
+        build(&mut builder)?;
 
         let mut output = String::new();
         let mut const_bytes = Vec::<u8>::new();
@@ -260,13 +260,13 @@ impl Codegen<'_> {
         self.push_chunk(CodeChunk::ConstBytes(value.to_owned()), comment);
     }
 
-    /// Push a constified DER built by the `gen` function.
+    /// Push a constified DER built by the `build` function.
     fn push_der(
         &mut self,
         comment: Option<String>,
-        gen: impl FnOnce(&mut Der) -> Result<()>,
+        build: impl FnOnce(&mut Der) -> Result<()>,
     ) -> Result<()> {
-        let content = Der::generate(gen)?;
+        let content = Der::generate(build)?;
         self.push_const(comment, &content);
         Ok(())
     }
@@ -721,7 +721,7 @@ impl Builder for Codegen<'_> {
         &mut self,
         name_hint: Option<String>,
         tag: &Tag,
-        gen: impl FnOnce(&mut Self) -> Result<()>,
+        build: impl FnOnce(&mut Self) -> Result<()>,
     ) -> Result<()> {
         let tag_name = name_hint.unwrap_or("Unnamed tag".into());
 
@@ -748,7 +748,7 @@ impl Builder for Codegen<'_> {
         let old_min_size = self.min_out_size;
         let old_max_size = self.max_out_size;
         self.indent();
-        gen(self)?;
+        build(self)?;
         self.unindent();
         let min_size: usize = self.min_out_size - old_min_size;
         let max_size: usize = self.max_out_size - old_max_size;

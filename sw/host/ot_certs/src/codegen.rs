@@ -421,7 +421,7 @@ fn generate_builder(
     fn_name: &str,
     fn_params_str: &str,
     variables: &IndexMap<String, VariableType>,
-    gen: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
+    build: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
 ) -> Result<(String, CodegenOutput)> {
     let get_var_info = |var_name: &str| -> Result<VariableInfo> {
         let var_type = variables
@@ -455,7 +455,7 @@ fn generate_builder(
             /* buf_name */ "out_buf",
             /* buf_size_name */ "inout_size",
             &get_var_info,
-            gen,
+            build,
         )?;
     } else {
         generate_fn_def = indoc::formatdoc! { r#"
@@ -479,7 +479,7 @@ fn generate_builder(
             /* buf_name */ "out_buf",
             /* buf_size_name */ "inout_size",
             &get_var_info,
-            gen,
+            build,
         )?;
     }
 
