@@ -5,6 +5,9 @@
 class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   `uvm_object_utils(ac_range_check_smoke_vseq)
 
+  // Local variables
+  rand bit zero_delays;
+
   // Constraints
   extern constraint num_trans_c;
   extern constraint tmp_c;
@@ -75,9 +78,20 @@ task ac_range_check_smoke_vseq::body();
   for (int i=1; i<=num_trans; i++) begin
     `uvm_info(`gfn, $sformatf("Starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
-    `DV_CHECK_RANDOMIZE_FATAL(this)
-    ac_range_check_init();
-    send_single_tl_unfilt_tr();
+    // Randomly keep the same configuration to allow transactions back to back transactions, as no
+    // configuration change will happen in between
+    randcase
+      // 25% of the time, change the config
+      1: begin
+        `DV_CHECK_RANDOMIZE_FATAL(this)
+        ac_range_check_init();
+      end
+      // 75% of the time, keep the same config
+      3: begin
+        `uvm_info(`gfn, $sformatf("Keep the same configuration for seq #%0d", i), UVM_MEDIUM)
+      end
+    endcase
+    send_single_tl_unfilt_tr(zero_delays);  // Send a single TLUL seq with random zero delays
     $display("\n");
   end
 endtask : body

@@ -35,7 +35,7 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   extern task cfg_range_limit();
   extern task cfg_range_perm();
   extern task cfg_range_racl_policy();
-  extern task send_single_tl_unfilt_tr();
+  extern task send_single_tl_unfilt_tr(bit zero_delays = 0);
   extern task tl_filt_device_auto_resp(int min_rsp_delay = 0, int max_rsp_delay = 80,
     int rsp_abort_pct = 25, int d_error_pct = 0, int d_chan_intg_err_pct = 0);
 endclass : ac_range_check_base_vseq
@@ -115,9 +115,13 @@ task ac_range_check_base_vseq::cfg_range_racl_policy();
   end
 endtask : cfg_range_racl_policy
 
-task ac_range_check_base_vseq::send_single_tl_unfilt_tr();
+task ac_range_check_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
   cip_tl_host_single_seq tl_unfilt_host_seq;
   `uvm_create_on(tl_unfilt_host_seq, p_sequencer.tl_unfilt_sqr)
+  if (zero_delays) begin
+    tl_unfilt_host_seq.min_req_delay = 0;
+    tl_unfilt_host_seq.max_req_delay = 0;
+  end
   `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_unfilt_host_seq,
                                  instr_type == mubi4_bool_to_mubi(tl_main_vars.instr_type);
                                  write      == tl_main_vars.write;
