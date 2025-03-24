@@ -34,6 +34,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   ],
   regwidth: "32",
 ##############################################################################
+  # The number of escalation severities and ping count width parameters
+  # have a local and non-local varieties instantiated with the same value.
+  # This is to work around the restriction in CSR generation to only allow
+  # local parameters, or the value may become inconsistent when the
+  # parameter gets an override.
   param_list: [
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
@@ -122,12 +127,21 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       default: "${n_classes}",
       local: "true"
     },
+    { name: "EscNumSeverities",
+      desc: "Number of escalation severities as regular parameter",
+      type: "int",
+      # NOTE: If this value is to be changed, pass the exposed parameter as
+      # a regular override to all IPs with prim_esc_receiver
+      default: "${n_esc_sev}",
+      expose: "true",
+      local: "false"
+    },
     { name: "N_ESC_SEV",
       desc: "Number of escalation severities",
       type: "int",
       # NOTE: If this value is to be changed, ensure all IPs with
       # prim_esc_receiver get updated as well.
-      default: "4",
+      default: "${n_esc_sev}",
       local: "true"
     },
     { name: "N_PHASES",
@@ -142,12 +156,21 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       default: "7",
       local: "true"
     },
+    { name: "EscPingCountWidth",
+      desc: "Width of ping counter as regular parameter",
+      type: "int",
+      # NOTE: If this value is to be changed, pass the exposed parameter as
+      # a regular override to all IPs with prim_esc_receiver
+      default: "${ping_cnt_dw}",
+      expose: "true",
+      local: "false"
+    },
     { name: "PING_CNT_DW",
       desc: "Width of ping counter",
       type: "int",
       # NOTE: If this value is to be changed, ensure all IPs with
       # prim_esc_receiver get updated as well.
-      default: "16",
+      default: "${ping_cnt_dw}",
       local: "true"
     },
     { name: "PHASE_DW",

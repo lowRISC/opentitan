@@ -324,6 +324,9 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
     module = lib.find_module(top["module"], "alert_handler")
     uniquified_modules.add_module(module["template_type"], module["type"])
 
+    n_esc_sev = module["param_decl"]["EscNumSeverities"]
+    ping_cnt_dw = module["param_decl"]["EscPingCountWidth"]
+
     return {
         "module_instance_name": module["type"],
         "n_alerts": n_alerts,
@@ -331,6 +334,8 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         "accu_cnt_dw": accu_cnt_dw,
         "async_on": async_on,
         "n_classes": n_classes,
+        "n_esc_sev": n_esc_sev,
+        "ping_cnt_dw": ping_cnt_dw,
         "n_lpg": n_lpgs,
         "lpg_map": lpg_map,
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",

@@ -41,6 +41,8 @@ module top_earlgrey #(
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
   parameter logic [31:0] LcCtrlIdcodeValue = jtag_id_pkg::LC_CTRL_JTAG_IDCODE,
   // parameters for alert_handler
+  parameter int AlertHandlerEscNumSeverities = 4,
+  parameter int AlertHandlerEscPingCountWidth = 16,
   // parameters for spi_host0
   // parameters for spi_host1
   // parameters for usbdev
@@ -254,9 +256,6 @@ module top_earlgrey #(
   localparam int SramCtrlRetAonOutstanding = 2;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
-  // local parameters for rv_core_ibex
-  localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
-  localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -1563,7 +1562,9 @@ module top_earlgrey #(
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
     .IdcodeValue(LcCtrlIdcodeValue),
-    .NumRmaAckSigs(LcCtrlNumRmaAckSigs)
+    .NumRmaAckSigs(LcCtrlNumRmaAckSigs),
+    .EscNumSeverities(AlertHandlerEscNumSeverities),
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_lc_ctrl (
       // [16]: fatal_prog_error
       // [17]: fatal_state_error
@@ -1625,7 +1626,9 @@ module top_earlgrey #(
   );
   alert_handler #(
     .RndCnstLfsrSeed(RndCnstAlertHandlerLfsrSeed),
-    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm)
+    .RndCnstLfsrPerm(RndCnstAlertHandlerLfsrPerm),
+    .EscNumSeverities(AlertHandlerEscNumSeverities),
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_alert_handler (
 
       // Interrupt
@@ -1798,8 +1801,8 @@ module top_earlgrey #(
   );
   pwrmgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22]),
-    .EscNumSeverities(4),
-    .EscPingCountWidth(16)
+    .EscNumSeverities(AlertHandlerEscNumSeverities),
+    .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_pwrmgr_aon (
 
       // Interrupt
@@ -2721,8 +2724,8 @@ module top_earlgrey #(
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
-    .NEscalationSeverities(RvCoreIbexNEscalationSeverities),
-    .WidthPingCounter(RvCoreIbexWidthPingCounter),
+    .NEscalationSeverities(AlertHandlerEscNumSeverities),
+    .WidthPingCounter(AlertHandlerEscPingCountWidth),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),

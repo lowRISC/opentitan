@@ -46,6 +46,18 @@
       default: "4"
     }
     {
+      name: "n_esc_sev"
+      desc: "Number of escalation severities"
+      type: "int"
+      default: "4"
+    }
+    {
+      name: "ping_cnt_dw"
+      desc: "Width of ping timeout counter"
+      type: "int"
+      default: "4"
+    }
+    {
       name: "n_lpg"
       desc: "Number of low-power groups (LPGs)"
       type: "int"

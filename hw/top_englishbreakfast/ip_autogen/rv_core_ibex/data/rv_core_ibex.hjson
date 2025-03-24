@@ -244,16 +244,14 @@
       type:    "int unsigned"
       default: "4"
       desc:    "Number of escalation severities"
-      local:   "true"
-      expose:  "true"
+      local:   "false"
     },
 
     { name:    "WidthPingCounter"
       type:    "int unsigned"
       default: "16"
       desc:    "Width of the ping counter"
-      local:   "true"
-      expose:  "true"
+      local:   "false"
     },
 
     { name:    "PMPEnable"

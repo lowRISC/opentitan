@@ -448,6 +448,8 @@
         ProductId: "16'h 0002", // Earlgrey PROD
         RevisionId: "8'h 01",   // First tapeout
         IdcodeValue: "jtag_id_pkg::LC_CTRL_JTAG_IDCODE",
+        EscNumSeverities: "AlertHandlerEscNumSeverities",
+        EscPingCountWidth: "AlertHandlerEscPingCountWidth",
       },
     },
     { name: "alert_handler",
@@ -458,6 +460,10 @@
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
       base_addr: {
         hart: "0x40150000",
+      },
+      param_decl: {
+        EscNumSeverities: "4",
+        EscPingCountWidth: "16"
       },
       attr: "ipgen",
     },
@@ -529,6 +535,10 @@
       domain: ["Aon", "0"],
       base_addr: {
         hart: "0x40400000",
+      },
+      param_decl: {
+        EscNumSeverities: "AlertHandlerEscNumSeverities",
+        EscPingCountWidth: "AlertHandlerEscPingCountWidth",
       },
       attr: "ipgen",
     },
@@ -1006,8 +1016,8 @@
                    DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
                    DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
                    PipeLine: "0",
-                   NEscalationSeverities: "alert_handler_reg_pkg::N_ESC_SEV",
-                   WidthPingCounter: "alert_handler_reg_pkg::PING_CNT_DW"
+                   NEscalationSeverities: "AlertHandlerEscNumSeverities",
+                   WidthPingCounter: "AlertHandlerEscPingCountWidth",
                   },
       clock_srcs: {
         clk_i: "main",

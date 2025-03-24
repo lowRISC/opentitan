@@ -17,6 +17,8 @@ module ${module_instance_name}
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegs] = 
     '{${module_instance_name}_reg_pkg::NumRegs{0}},
 % endif
+  parameter int EscNumSeverities = ${n_esc_sev},
+  parameter int EscPingCountWidth = ${ping_cnt_dw},
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
@@ -327,6 +329,9 @@ module ${module_instance_name}
   end
 
   assign loc_alert_trig[3] = |esc_integfail;
+
+  logic unused_params;
+  assign unused_params = ^{EscNumSeverities, EscPingCountWidth};
 
   ////////////////
   // Assertions //

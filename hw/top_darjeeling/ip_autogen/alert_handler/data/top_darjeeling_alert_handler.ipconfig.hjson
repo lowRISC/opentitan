@@ -116,6 +116,8 @@
       1'b1
     ]
     n_classes: 4
+    n_esc_sev: 4
+    ping_cnt_dw: 16
     n_lpg: 18
     lpg_map:
     [
