@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // interface : gpio_straps_if
-`ifndef GPIO_STRAPS_IF_SV
-`define GPIO_STRAPS_IF_SV
 
 import gpio_pkg::*;
 
@@ -17,5 +15,3 @@ interface gpio_straps_if(input logic clk, input logic rst_n);
   modport tb_port(output strap_en, input sampled_straps);
 
 endinterface
-
-`endif // GPIO_STRAPS_IF_SV
