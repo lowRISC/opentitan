@@ -8,7 +8,9 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
@@ -31,7 +33,14 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.test_may_clobber = false, );
 
 static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
+static dif_pinmux_t pinmux;
+
+// ATE Indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinTestStart = 0;
+static const dif_gpio_pin_t kGpioPinTestDone = 1;
+static const dif_gpio_pin_t kGpioPinTestError = 2;
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -40,8 +49,33 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
+  TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+                      &pinmux));
+  return OK_STATUS();
+}
+
+/**
+ * Configure the ATE GPIO indicator pins.
+ */
+static status_t configure_ate_gpio_indicators(void) {
+  // IOA0 / GPIO2 is for error reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+  // IOA1 / GPIO1 is for test done reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+  // IOA4 / GPIO0 is for test start reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(&gpio,
+                                      0x7));        // Enable first three GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
   return OK_STATUS();
 }
 
@@ -99,18 +133,12 @@ static status_t provision(void) {
   TRY(patch_ast_config_value());
 
   // Perform OTP writes.
-  LOG_INFO("Writing HW_CFG* OTP partitions ...");
   TRY(manuf_individualize_device_hw_cfg(
       &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
-  LOG_INFO("Writing ROT_CREATOR_AUTH_CODESIGN OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
-  LOG_INFO("Writing ROT_CREATOR_AUTH_STATE OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
-  LOG_INFO("Writing OWNER_SW_CFG OTP partition ...");
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-  LOG_INFO("Writing CREATOR_SW_CFG OTP partition ...");
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
-  LOG_INFO("FT SRAM provisioning done.");
 
   return OK_STATUS();
 }
@@ -119,12 +147,20 @@ bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   CHECK_STATUS_OK(entropy_complex_init());
   ottf_console_init();
+  CHECK_STATUS_OK(configure_ate_gpio_indicators());
 
   // Perform provisioning operations.
-  CHECK_STATUS_OK(provision());
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
+  status_t result = provision();
+  if (!status_ok(result)) {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
+  } else {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
+  }
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission
   // mode, as ROM execution should be active now.
+  LOG_INFO("FT SRAM provisioning done.");
   abort();
 
   return true;
