@@ -4,6 +4,8 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 description: "RACL Control permission IP"
+virtual:
+  - "lowrisc:ip:racl_ctrl"
 
 filesets:
   files_rtl:

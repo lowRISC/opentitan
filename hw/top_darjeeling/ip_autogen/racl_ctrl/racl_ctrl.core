@@ -4,6 +4,8 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:darjeeling_ip:racl_ctrl:0.1
 description: "RACL Control permission IP"
+virtual:
+  - "lowrisc:ip:racl_ctrl"
 
 filesets:
   files_rtl:
