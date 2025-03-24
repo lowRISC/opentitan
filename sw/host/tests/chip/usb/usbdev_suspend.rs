@@ -203,17 +203,13 @@ fn usbdev_suspend(
     // The full suspend-sleep-resume testing is decomposed into a number of shorter sequences to
     // make chip-level simulation feasible. Most of the top-level tests that this harness supports
     // expects to run through a short sub-sequence of these test phases.
-    log::info!(
-        "Phase sequence - {} to {} inclusive",
-        init_phase.to_string(),
-        fin_phase.to_string()
-    );
+    log::info!("Phase sequence - {} to {} inclusive", init_phase, fin_phase);
 
     for iter in 1..=opts.num_iters {
         log::info!("Iteration {} of {}", iter, opts.num_iters);
         let mut phase = init_phase.clone();
         loop {
-            log::info!("Test phase {}", phase.to_string());
+            log::info!("Test phase {}", phase);
 
             // Synchronize with the device-side code; it shall always emit this message at the point
             // of being ready to receive the stimulus within a given test phase, because we have
