@@ -210,7 +210,7 @@ fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<B
     let pid = FromStr::from_str(fs::read_to_string(&path)?.trim())?;
     let pid = Pid::from_raw(pid).context("Pid is not valid")?;
     // Send signal to daemon process, asking it to terminate.
-    rustix::process::kill_process(pid, Signal::Term)?;
+    rustix::process::kill_process(pid, Signal::TERM)?;
     // Wait for daemon process to stop.
     loop {
         std::thread::sleep(Duration::from_millis(100));
@@ -236,7 +236,7 @@ fn main() -> Result<()> {
         // terminate if its parent dies.  This might be useful for use in scripts.
 
         // Request a SIGTERM if our parent dies.
-        rustix::process::set_parent_process_death_signal(Some(Signal::Term))?;
+        rustix::process::set_parent_process_death_signal(Some(Signal::TERM))?;
 
         let transport = backend::create(&opts.backend_opts)?;
         let mut session = SessionHandler::init(&transport, opts.listen_port)?;
