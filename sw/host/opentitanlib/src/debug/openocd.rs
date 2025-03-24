@@ -100,7 +100,7 @@ impl OpenOcd {
                 // Since we use OpenOCD as a library, make sure it's killed when
                 // the parent process dies. This setting is preserved across execve.
                 rustix::process::set_parent_process_death_signal(Some(
-                    rustix::process::Signal::Hup,
+                    rustix::process::Signal::HUP,
                 ))?;
                 Ok(())
             });

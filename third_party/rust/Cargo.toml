@@ -66,7 +66,7 @@ rand_chacha = "0.3"
 regex = "1.7"
 rsa = "0.9.7"
 rusb = "0.9.3"
-rustix = { version = "0.38", features = ["event", "fs", "net", "process", "stdio", "termios"] }
+rustix = { version = "1", features = ["event", "fs", "net", "process", "stdio", "termios"] }
 scopeguard = "1.2"
 serde = { version = "1.0.188", features = ["derive"] }
 serde_bytes = "0.11"

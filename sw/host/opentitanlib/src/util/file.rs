@@ -95,9 +95,8 @@ pub fn wait_timeout(
     events: rustix::event::PollFlags,
     timeout: Duration,
 ) -> Result<()> {
-    let timeout = timeout.as_millis().try_into().unwrap_or(i32::MAX);
     let mut pfd = [rustix::event::PollFd::from_borrowed_fd(fd, events)];
-    match rustix::event::poll(&mut pfd, timeout)? {
+    match rustix::event::poll(&mut pfd, timeout.try_into().ok().as_ref())? {
         0 => Err(io::Error::new(
             io::ErrorKind::TimedOut,
             "timed out waiting for fd to be ready",
