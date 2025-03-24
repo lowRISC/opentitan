@@ -76,6 +76,7 @@ serialport = { version = "4.2.2", features = ["serde"] }
 sha2 = { version = "0.10", features = ["oid"] }
 sha3 = {version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
+strum = { version = "0.27", features = ["derive"] }
 syn = "2.0"
 tempfile = "3.3.0"
 thiserror = "2"
@@ -88,7 +89,6 @@ zeroize = "1.8.1"
 cryptoki = "0.8.0"
 cryptoki-sys = "0.2.0"
 indexmap = { version = "2.0", features = ["serde"] }
-strum = { version = "0.26", features = ["derive"] }
 libloading = "0.8"
 
 # We'd like to reference serde_annotate by its Git repo, but we also need to
