@@ -17,6 +17,7 @@ filegroup(
         "//hw/top_englishbreakfast/ip_autogen/pinmux:rtl_files",
         "//hw/top_englishbreakfast/ip_autogen/pwrmgr:rtl_files",
         "//hw/top_englishbreakfast/ip_autogen/rstmgr:rtl_files",
+        "//hw/top_englishbreakfast/ip_autogen/rv_core_ibex:rtl_files",
         "//hw/top_englishbreakfast/ip_autogen/rv_plic:rtl_files",
     ],
 )
