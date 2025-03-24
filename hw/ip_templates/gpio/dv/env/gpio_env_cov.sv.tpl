@@ -50,8 +50,8 @@ class gpio_out_oe_cov_obj extends uvm_object;
   endfunction : new
 endclass : gpio_out_oe_cov_obj
 
-class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module_instance_name}_env_cfg));
-  `uvm_component_utils(${module_instance_name}_env_cov)
+class gpio_env_cov extends cip_base_env_cov #(.CFG_T(gpio_env_cfg));
+  `uvm_component_utils(gpio_env_cov)
 
   // Array of coverage objects for per pin coverage for gpio pin values
   bit_toggle_cg_wrap gpio_pin_values_cov_obj[NUM_GPIOS];
