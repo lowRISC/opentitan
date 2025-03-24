@@ -268,6 +268,7 @@ task rom_ctrl_base_vseq::wait_for_fatal_alert(bit check_fsm_state = 1'b1,
                                               int max_delay = 10000,
                                               int max_wait_cycle = 1000);
   uvm_reg_data_t act_val;
+  `uvm_info(`gfn, $sformatf("Setting alert: fatal=1, max_delay=%0d",max_delay), UVM_DEBUG)
   cfg.scoreboard.set_exp_alert("fatal", .is_fatal(1'b1), .max_delay(max_delay));
 
   fork
