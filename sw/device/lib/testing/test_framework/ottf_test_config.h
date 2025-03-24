@@ -81,6 +81,7 @@ typedef struct ottf_test_config {
   bool clear_reset_reason;
 
   /**
+   * Indicates if OTTF console prints will be silenced.
    */
   bool silence_console_prints;
 
