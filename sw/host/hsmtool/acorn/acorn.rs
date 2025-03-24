@@ -17,11 +17,18 @@ pub enum AcornError {
 }
 
 /// Converts a C-string into a rust string.
+///
+/// # Safety
+///
+/// `ptr` should either be a null pointer or a valid pointer to a C NUL-terminated string.
 unsafe fn rust_string(ptr: *const std::ffi::c_char) -> String {
     if ptr.is_null() {
         "nullptr for string!".into()
     } else {
-        CStr::from_ptr(ptr).to_string_lossy().into_owned()
+        // SAFETY: `ptr` is a valid pointer to a C string.
+        unsafe { CStr::from_ptr(ptr) }
+            .to_string_lossy()
+            .into_owned()
     }
 }
 
