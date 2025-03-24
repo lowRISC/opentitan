@@ -91,11 +91,11 @@ constraint ac_range_check_smoke_vseq::tl_main_vars_addr_c {
     // 1% on the uppermost part of the range
     [2^NUM_RANGES-10                  : 2^NUM_RANGES-1                  ] :/ 1
   };
-};
+}
 
 constraint ac_range_check_smoke_vseq::tl_main_vars_mask_c {
   soft tl_main_vars.mask == 'hF;
-};
+}
 
 function ac_range_check_smoke_vseq::new(string name="");
   super.new(name);
