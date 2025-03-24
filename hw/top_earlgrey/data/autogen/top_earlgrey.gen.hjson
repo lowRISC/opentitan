@@ -2276,6 +2276,8 @@
         ProductId: 16'h 0002
         RevisionId: 8'h 01
         IdcodeValue: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
+        EscNumSeverities: AlertHandlerEscNumSeverities
+        EscPingCountWidth: AlertHandlerEscPingCountWidth
       }
       clock_connections:
       {
@@ -2417,6 +2419,24 @@
           local: "true"
           expose: "true"
           name_top: LcCtrlNumRmaAckSigs
+        }
+        {
+          name: EscNumSeverities
+          desc: Number of escalation severities
+          type: int
+          default: AlertHandlerEscNumSeverities
+          local: "false"
+          expose: "false"
+          name_top: LcCtrlEscNumSeverities
+        }
+        {
+          name: EscPingCountWidth
+          desc: Width of ping count for the escalation receiver
+          type: int
+          default: AlertHandlerEscPingCountWidth
+          local: "false"
+          expose: "false"
+          name_top: LcCtrlEscPingCountWidth
         }
       ]
       inter_signal_list:
@@ -2913,13 +2933,17 @@
           domain: "0"
         }
       }
+      param_decl:
+      {
+        EscNumSeverities: "4"
+        EscPingCountWidth: "16"
+      }
       attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -2942,6 +2966,24 @@
           name_top: RndCnstAlertHandlerLfsrPerm
           default: 0x83a2b09fb9d7006b1534f2bf7d8eb2112787b10d
           randwidth: 160
+        }
+        {
+          name: EscNumSeverities
+          desc: Number of escalation severities as regular parameter
+          type: int
+          default: "4"
+          local: "false"
+          expose: "true"
+          name_top: AlertHandlerEscNumSeverities
+        }
+        {
+          name: EscPingCountWidth
+          desc: Width of ping counter as regular parameter
+          type: int
+          default: "16"
+          local: "false"
+          expose: "true"
+          name_top: AlertHandlerEscPingCountWidth
         }
       ]
       inter_signal_list:
@@ -3631,6 +3673,11 @@
         Aon
         "0"
       ]
+      param_decl:
+      {
+        EscNumSeverities: AlertHandlerEscNumSeverities
+        EscPingCountWidth: AlertHandlerEscPingCountWidth
+      }
       attr: ipgen
       clock_connections:
       {
@@ -3639,7 +3686,6 @@
         clk_lc_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -3647,7 +3693,7 @@
           name: EscNumSeverities
           desc: Number of escalation severities
           type: int
-          default: "4"
+          default: AlertHandlerEscNumSeverities
           local: "false"
           expose: "false"
           name_top: PwrmgrAonEscNumSeverities
@@ -3656,7 +3702,7 @@
           name: EscPingCountWidth
           desc: Width of ping count for the escalation receiver
           type: int
-          default: "16"
+          default: AlertHandlerEscPingCountWidth
           local: "false"
           expose: "false"
           name_top: PwrmgrAonEscPingCountWidth
@@ -9111,8 +9157,8 @@
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
         PipeLine: "0"
-        NEscalationSeverities: alert_handler_reg_pkg::N_ESC_SEV
-        WidthPingCounter: alert_handler_reg_pkg::PING_CNT_DW
+        NEscalationSeverities: AlertHandlerEscNumSeverities
+        WidthPingCounter: AlertHandlerEscPingCountWidth
       }
       clock_srcs:
       {
@@ -9207,18 +9253,18 @@
           name: NEscalationSeverities
           desc: Number of escalation severities
           type: int unsigned
-          default: alert_handler_reg_pkg::N_ESC_SEV
-          local: "true"
-          expose: "true"
+          default: AlertHandlerEscNumSeverities
+          local: "false"
+          expose: "false"
           name_top: RvCoreIbexNEscalationSeverities
         }
         {
           name: WidthPingCounter
           desc: Width of the ping counter
           type: int unsigned
-          default: alert_handler_reg_pkg::PING_CNT_DW
-          local: "true"
-          expose: "true"
+          default: AlertHandlerEscPingCountWidth
+          local: "false"
+          expose: "false"
           name_top: RvCoreIbexWidthPingCounter
         }
         {
