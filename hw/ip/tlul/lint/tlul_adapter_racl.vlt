@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+
+`verilator_config
+
+// Signal is not used: clk_i
+lint_off -rule UNUSED -file "*/rtl/tlul_adapter_racl.sv" -match "*clk_i*"
+
+// Signal is not used: rst_ni
+lint_off -rule UNUSED -file "*/rtl/tlul_adapter_racl.sv" -match "*rst_ni*"
