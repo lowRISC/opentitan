@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -19,6 +20,7 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
@@ -32,6 +34,16 @@
 
 #ifndef TEST_OWNER_UPDATE_MODE
 #define TEST_OWNER_UPDATE_MODE kOwnershipUpdateModeOpen
+#endif
+
+#ifndef WITH_RESCUE_GPIO
+#define WITH_RESCUE_GPIO 0
+#endif
+#ifndef WITH_RESCUE_TRIGGER
+#define WITH_RESCUE_TRIGGER 1 /* default to UartBreak */
+#endif
+#ifndef WITH_RESCUE_INDEX
+#define WITH_RESCUE_INDEX 0
 #endif
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
@@ -175,11 +187,46 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
           },
   };
 
+  uintptr_t end = (uintptr_t)app + app->header.length;
+#ifdef WITH_RESCUE_PROTOCOL
+  owner_rescue_config_t *rescue =
+      (owner_rescue_config_t *)((uintptr_t)app + app->header.length);
+  *rescue = (owner_rescue_config_t){
+      .header =
+          {
+              .tag = kTlvTagRescueConfig,
+              .length = sizeof(owner_rescue_config_t),
+          },
+      .protocol = WITH_RESCUE_PROTOCOL,
+      .gpio = WITH_RESCUE_GPIO,
+      .detect = (WITH_RESCUE_TRIGGER << 6) | WITH_RESCUE_INDEX,
+      .start = 32,
+      .size = 224,
+  };
+  const uint32_t commands[] = {
+      kRescueModeBootLog,
+      kRescueModeBootSvcRsp,
+      kRescueModeBootSvcReq,
+      kRescueModeOwnerBlock,
+      kRescueModeOwnerPage0,
+      kRescueModeOwnerPage1,
+      kRescueModeOpenTitanID,
+      kRescueModeFirmware,
+      kRescueModeFirmwareSlotB,
+      kBootSvcEmptyReqType,
+      kBootSvcNextBl0SlotReqType,
+      kBootSvcMinBl0SecVerReqType,
+      kBootSvcOwnershipActivateReqType,
+      kBootSvcOwnershipUnlockReqType,
+  };
+  memcpy(&rescue->command_allow, commands, sizeof(commands));
+  rescue->header.length += sizeof(commands);
+  end = (uintptr_t)rescue + rescue->header.length;
+#endif
   // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
-  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
   size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
-               (uintptr_t)app;
-  memset(app, 0x5a, len);
+               (uintptr_t)end;
+  memset((void *)end, 0x5a, len);
 
   ownership_seal_page(/*page=*/0);
   memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
