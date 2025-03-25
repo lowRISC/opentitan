@@ -107,7 +107,10 @@ module ${module_instance_name}
   // Range Check Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic [NumRanges-1:0] addr_hit, deny_mask, read_mask, write_mask, execute_mask, log_enable_mask;
+  logic [NumRanges-1:0] addr_hit;
+  logic [NumRanges-1:0] r_deny_mask, w_deny_mask, x_deny_mask, deny_mask;
+  logic [NumRanges-1:0] r_grant_mask, w_grant_mask, x_grant_mask, grant_mask;
+  logic [NumRanges-1:0] log_enable_mask;
   logic [NumRanges-1:0] racl_read_hit, racl_write_hit;
 
   // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -122,6 +125,22 @@ module ${module_instance_name}
     .en_i ( 1'b1          ),
     .out_o( racl_role_vec )
   );
+
+  // Figure out whether the access is an instruction fetch ("execute") or not. Note that the
+  // following two signals are *not* complementary strictly speaking: if `instr_type` isn't a valid
+  // MuBi value, neither of them will be true, hence the access will not be granted at all.
+  logic no_exec_access, exec_access;
+  assign no_exec_access = prim_mubi_pkg::mubi4_test_false_strict(
+                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
+  assign exec_access    = prim_mubi_pkg::mubi4_test_true_strict(
+                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
+
+  // Figure out whether the access is a read, write, or execute.
+  logic read_access, write_access, execute_access;
+  assign read_access    = (ctn_tl_h2d_i.a_opcode == Get) & no_exec_access;
+  assign write_access   = (ctn_tl_h2d_i.a_opcode == PutFullData) |
+                          (ctn_tl_h2d_i.a_opcode == PutPartialData);
+  assign execute_access = (ctn_tl_h2d_i.a_opcode == Get) & exec_access;
 
   for (genvar i = 0; i < NumRanges; i++) begin : gen_range_checks
     // Extend base, limit, and mask to 32 bits
@@ -154,62 +173,62 @@ module ${module_instance_name}
                                    prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].execute_access.q)) &
                                    racl_read_hit[i];
 
-    // Access is denied if no read_, write_, or execute access is set in the permission mask
-    // The permission masks need to be reversed to allow for the right priority order.
-    // Range 0 has the highest priority and is the MSB in the mask.
-    assign deny_mask[NumRanges - 1 - i] =
-      addr_hit[i] & ~(perm_read_access | perm_write_access | perm_execute_access);
+    // A range grants a request if the request address hits and the type of the access (R/W/X) is
+    // permitted by that range. In the grant masks and the deny masks (see below), the range with
+    // index 0 is at the MSB, giving it the highest priority in the greater-than comparison to
+    // decide between grant and denial.
+    assign r_grant_mask[NumRanges-1-i] = addr_hit[i] & read_access & perm_read_access;
+    assign w_grant_mask[NumRanges-1-i] = addr_hit[i] & write_access & perm_write_access;
+    assign x_grant_mask[NumRanges-1-i] = addr_hit[i] & execute_access & perm_execute_access;
+
+    // A range denies a request if the request address hits and the type of the access (R/W/X) is
+    // *not* permitted by that range.
+    assign r_deny_mask[NumRanges-1-i] = addr_hit[i] & read_access & ~perm_read_access;
+    assign w_deny_mask[NumRanges-1-i] = addr_hit[i] & write_access & ~perm_write_access;
+    assign x_deny_mask[NumRanges-1-i] = addr_hit[i] & execute_access & ~perm_execute_access;
 
     // TODO(#25456) Use log_enable_mask to mask logging
     assign log_enable_mask[NumRanges - 1 - i] = prim_mubi_pkg::mubi4_test_true_strict(
       prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].log_denied_access.q));
-
-    // Determine the read, write, and execute mask. Store a hit in their index
-    assign read_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
-    assign write_mask  [NumRanges - 1 - i] = addr_hit[i] & perm_write_access;
-    assign execute_mask[NumRanges - 1 - i] = addr_hit[i] & perm_execute_access;
   end
 
-  // Fiddle out bits to determine if it's an execute request or not
-  logic no_exec_access, exec_access;
-  assign no_exec_access = prim_mubi_pkg::mubi4_test_false_strict(
-                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
-  assign exec_access    = prim_mubi_pkg::mubi4_test_true_strict(
-                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
-
-  // Fiddle out what access we are performing
-  logic read_access, write_access, execute_access;
-  assign read_access = (ctn_tl_h2d_i.a_opcode == Get) & no_exec_access;
-  assign write_access = ((ctn_tl_h2d_i.a_opcode == PutFullData) |
-                         (ctn_tl_h2d_i.a_opcode == PutPartialData));
-  assign execute_access = (ctn_tl_h2d_i.a_opcode == Get) & exec_access;
-
-  // Priority comparison. If the deny mask is larger than the read, write, or execute mask, there
-  // was an address match with a higher priority for the range to be denied
-  logic read_allowed, write_allowed, execute_allowed;
-  assign read_allowed    = read_access    & (read_mask    > deny_mask);
-  assign write_allowed   = write_access   & (write_mask   > deny_mask);
-  assign execute_allowed = execute_access & (execute_mask > deny_mask);
+  // The overall grant and deny mask is simply the OR combination of the access-type-specific masks.
+  assign grant_mask = r_grant_mask | w_grant_mask | x_grant_mask;
+  assign deny_mask  = r_deny_mask  | w_deny_mask  | x_deny_mask;
 
   // Based on the deny mask, we compute the leading bit in the mask. The index of the leading
-  // bit determines the index of the range that denied the request.
+  // bit determines the index of the range that denied the request. As `prim_leading_one_ppc` starts
+  // its search for the "leading" bit at the LSB, `deny_mask` needs to be reversed to compute the
+  // index. The result is then directly the index of the SW-configured range, due to how
+  // `grant_mask` and `deny_mask` get built (see above).
+  logic [NumRanges-1:0] deny_mask_reversed;
+  assign deny_mask_reversed = {<<{deny_mask}};
 
   localparam int unsigned NumRangesWidth = prim_util_pkg::vbits(NumRanges);
   logic [NumRangesWidth-1:0] deny_index;
   prim_leading_one_ppc #(
     .N ( NumRanges )
   ) u_leading_one (
-    .in_i          ( deny_mask  ),
-    .leading_one_o (            ),
-    .ppc_out_o     (            ),
-    .idx_o         ( deny_index )
+    .in_i          ( deny_mask_reversed ),
+    .leading_one_o (                    ),
+    .ppc_out_o     (                    ),
+    .idx_o         ( deny_index         )
   );
 
-  // The access fails if nothing is allowed and no overwrite is present
+  // A request gets granted if and only if
+  // (1) the request is valid and
+  // (2.1) at least one range matches and among the matching ranges the one with the highest
+  //       priority grants the request or
+  // (2.2) range checks are bypassed.
+  logic range_check_grant;
+  assign range_check_grant = ctn_tl_h2d_i.a_valid & (
+                               (|addr_hit & (grant_mask > deny_mask)) |
+                               prim_mubi_pkg::mubi8_test_true_strict(range_check_overwrite_i)
+                             );
+
+  // A request gets denied if and only if it is valid and doesn't get granted.
   logic range_check_fail;
-  assign range_check_fail =
-    ctn_tl_h2d_i.a_valid & ~(|{read_allowed, write_allowed, execute_allowed,
-                               prim_mubi_pkg::mubi8_test_true_strict(range_check_overwrite_i)});
+  assign range_check_fail = ctn_tl_h2d_i.a_valid & ~range_check_grant;
 
   //////////////////////////////////////////////////////////////////////////////
   // TLUL Loopback for failing accesses
