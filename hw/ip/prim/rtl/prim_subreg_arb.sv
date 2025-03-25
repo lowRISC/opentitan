@@ -29,7 +29,7 @@ module prim_subreg_arb
 );
   import prim_mubi_pkg::*;
 
-  if (SwAccess inside {SwAccessRW, SwAccessWO}) begin : gen_w
+  if ((SwAccess == SwAccessRW) || (SwAccess == SwAccessWO)) begin : gen_w
     assign wr_en   = we | de;
     assign wr_data = (we == 1'b1) ? wd : d; // SW higher priority
     // Unused q - Prevent lint errors.
