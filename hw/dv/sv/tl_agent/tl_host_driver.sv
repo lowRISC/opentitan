@@ -6,19 +6,24 @@
 class tl_host_driver extends tl_base_driver;
   `uvm_component_utils(tl_host_driver)
 
+  // A queue of sequence items corresponding to the requests have been sent on the A channel but
+  // haven't yet had a response on the D channel.
   protected tl_seq_item pending_a_req[$];
+
+  // A flag that is true whenever reset is asserted on the bus. This is maintained by the
+  // reset_signals task.
   protected bit reset_asserted;
 
   extern function new (string name="", uvm_component parent=null);
 
-  // Drive items received from the sequencer. This task is defined in dv_base_driver.
+  // Drive items received from the sequencer. This implements a task declared in dv_base_driver.
   extern task get_and_drive();
 
   // Clear output signals and internal state whenever a reset happens. This task runs forever,
   // looping over resets.
   //
   // This also controls an internal reset_asserted flag, which is used by other tasks in the class
-  // to detect resets.
+  // to detect resets. This implements a task declared in dv_base_driver.
   extern task reset_signals();
 
   // Wait for the next edge of host_cb. Stops early if reset is asserted.
@@ -32,7 +37,7 @@ class tl_host_driver extends tl_base_driver;
   extern protected task a_channel_thread();
 
   // Send a request, req, on the A channel
-  extern task send_a_channel_request(tl_seq_item req);
+  extern protected task send_a_channel_request(tl_seq_item req);
 
   // Send the body of a request on the A channel.
   //
@@ -57,7 +62,7 @@ class tl_host_driver extends tl_base_driver;
   //
   // If cfg.host_can_stall_rsp_when_a_valid_high is false then the driver setting a_valid high will
   // cause this task to skip any wait period with d_ready low and hold it high.
-  extern task d_ready_rsp();
+  extern protected task d_ready_rsp();
 
   // Collect responses on the D channel
   //
@@ -70,16 +75,16 @@ class tl_host_driver extends tl_base_driver;
   //
   // If the internal reset_asserted flag is high, this task responds to all pending requests (with
   // potentially silly data values)
-  extern task d_channel_thread();
+  extern protected task d_channel_thread();
 
   // Return true if the given source is the a_source value of some pending request.
-  extern function bit is_source_in_pending_req(bit [SourceWidth-1:0] source);
+  extern protected function bit is_source_in_pending_req(bit [SourceWidth-1:0] source);
 
   // Write rubbish to the A channel to invalidate it and set a_valid to zero
   //
   // If cfg.invalidate_a_x is true then all fields other than a_valid will be set to 'x. If it is
   // false then all the fields will be randomised.
-  extern function void invalidate_a_channel();
+  extern protected function void invalidate_a_channel();
 endclass : tl_host_driver
 
 function tl_host_driver::new (string name="", uvm_component parent=null);
