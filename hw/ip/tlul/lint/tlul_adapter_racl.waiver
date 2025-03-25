@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for TLUL elements lint
+
+# TLUL Adapter RACL
+waive -rules HIER_BRANCH_NOT_READ -location {tlul_adapter_racl.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module 'tlul_adapter_racl'} \
+      -comment "If EnableRacl=0, the module is just passed through"
+waive -rules INPUT_NOT_READ -location {tlul_adapter_racl.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from} \
+      -comment "If EnableRacl=0, the module is just passed through"
