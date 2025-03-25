@@ -93,28 +93,25 @@ pub trait Driver {
         self.write_register(Register::STS, &TpmStatus::CMD_READY.to_le_bytes())?;
 
         log::debug!("RUN({}) {:02X?}", cmd.len(), cmd);
-        self.poll_for_ready()?;
-        for slice in cmd.chunks(MAX_TRANSACTION_SIZE) {
+        let burst_count = self.poll_for_ready()?.burst_count();
+        for slice in cmd.chunks(burst_count) {
             self.write_register(Register::DATA_FIFO, slice)?;
         }
         self.write_register(Register::STS, &TpmStatus::TPM_GO.to_le_bytes())?;
 
-        let sz = self
-            .poll_for_data_available()?
-            .burst_count()
-            .clamp(RESPONSE_HEADER_SIZE, MAX_TRANSACTION_SIZE);
-        let mut result: Vec<u8> = vec![0; sz];
+        let burst_count = self.poll_for_data_available()?.burst_count();
+        let mut result: Vec<u8> = vec![0; burst_count];
         self.read_register(Register::DATA_FIFO, result.as_mut_slice())?;
         let resp_size: usize = u32::from_be_bytes(result[2..6].try_into().unwrap()) as usize;
         ensure!(
             resp_size < MAX_RESPONSE_SIZE,
             TpmError::UnexpectedResponseSize(resp_size)
         );
-        let mut remaining = resp_size - sz;
+        let mut remaining = resp_size - result.len();
 
         let mut sts = self.read_status()?;
         while sts.is_valid() && sts.data_available() && remaining > 0 {
-            let to_read: usize = remaining.min(MAX_TRANSACTION_SIZE);
+            let to_read: usize = remaining.min(burst_count);
             let mut result2: Vec<u8> = vec![0; to_read];
             self.read_register(Register::DATA_FIFO, result2.as_mut_slice())?;
             result.append(&mut result2);
@@ -273,8 +270,6 @@ const SPI_TPM_WRITE: u32 = 0x40000000;
 const SPI_TPM_DATA_LEN_POS: u8 = 24;
 const SPI_TPM_ADDRESS_OFFSET: u32 = 0x00D40000;
 
-const MAX_TRANSACTION_SIZE: usize = 64;
-const RESPONSE_HEADER_SIZE: usize = 6;
 const MAX_RESPONSE_SIZE: usize = 4096;
 const TIMEOUT: Duration = Duration::from_millis(500);
 
