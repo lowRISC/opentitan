@@ -75,6 +75,13 @@ uint32_t pinmux_read_straps(void);
  */
 bool pinmux_read_gpio(uint32_t gpio);
 
+/**
+ * Initialize the USB sense pin.
+ *
+ * This connects the UsbdevSense input to InselConstantOne.
+ */
+void pinmux_init_usb(void);
+
 #ifdef __cplusplus
 }
 #endif
