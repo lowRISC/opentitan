@@ -60,7 +60,6 @@ _POSITIONS = {
                 ":boot_test_{}".format(name): "payload",
             },
             slot = position["slot"],
-            tags = ["broken"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga load-bitstream {bitstream}"
@@ -89,7 +88,6 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
-        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -118,7 +116,6 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
-        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -135,6 +132,31 @@ opentitan_test(
             --exec="rescue boot-svc set-next-bl0-slot --primary=SlotA"
             # Check for firmware execution in slot A
             --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+)
+
+opentitan_test(
+    name = "rescue_rate_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "",
+        binaries = {
+            ":boot_test_slot_a": "payload",
+        },
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {rom_ext}"
+            # First make sure the ROM_EXT is faulting because there is no firmware
+            --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
+            # Load firmware via rescue
+            --exec="rescue firmware --rate=230400 {payload:signed_bin}"
+            # Check for firmware execution
+            --exec="console --baudrate=115200 --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             no-op
         """,
     ),

@@ -79,8 +79,14 @@ impl RescueSerial {
             _ => return Err(RescueError::BadMode(format!("Unsupported badrate {baud}")).into()),
         };
 
-        // Request to change rates.
-        self.set_mode(Self::BAUD)?;
+        // Request to change rates.  We don't use `set_mode` here because changing
+        // rates isn't a "mode" request and doesn't respond the same way.
+        self.uart.write(&Self::BAUD.0.to_be_bytes())?;
+        self.uart.write(b"\r")?;
+        let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
+        if result[1] == "error" {
+            return Err(RescueError::BadMode(result[0].clone()).into());
+        }
 
         // Send the new rate and check for success.
         self.uart.write(&symbol)?;
