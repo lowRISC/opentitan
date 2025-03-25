@@ -167,18 +167,11 @@ class cip_tl_seq_item extends tl_seq_item;
     d_user = l_d_user;
   endfunction : inject_d_chan_intg_err
 
-  virtual function bit is_a_chan_intg_ok(bit en_cmd_intg_chk = 1,
-                                         bit en_data_intg_chk = 1,
-                                         bit throw_error = 1'b1);
+  virtual function bit is_a_chan_intg_ok(bit throw_error = 1'b1);
     tl_a_user_t exp_a_user = compute_a_user();
     tl_a_user_t act_a_user = tl_a_user_t'(a_user);
-    bit cmd_intg_ok  = 1;
-    bit data_intg_ok = 1;
-
-    `DV_CHECK(en_cmd_intg_chk || en_data_intg_chk)
-
-    if (en_cmd_intg_chk) cmd_intg_ok = act_a_user.cmd_intg == exp_a_user.cmd_intg;
-    if (en_data_intg_chk) data_intg_ok = act_a_user.data_intg == exp_a_user.data_intg;
+    bit cmd_intg_ok  = act_a_user.cmd_intg == exp_a_user.cmd_intg;
+    bit data_intg_ok = act_a_user.data_intg == exp_a_user.data_intg;
 
     if (!cmd_intg_ok) begin
       report_intg_mismatch(act_a_user.cmd_intg, exp_a_user.cmd_intg, throw_error,
