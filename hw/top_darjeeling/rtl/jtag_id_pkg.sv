@@ -8,7 +8,7 @@ package jtag_id_pkg;
   // lowRISC JEDEC Manufacturer ID, bank 13 0xEF
   localparam logic [10:0] JEDEC_MANUFACTURER_ID = {4'd12, 7'b110_1111};
   localparam logic [3:0] JTAG_VERSION = 4'h1;
-  localparam logic [11:0] PART_TYPE = 12'h0;
+  localparam logic [11:0] PART_TYPE = 12'h1;
 
   // These are the open source facing JTAG values that silicon creators may wish to replace We have
   // two TAPs, one for rv_dm and the other for lc_ctrl, they each have their own JTAG_IDCODE.  They
