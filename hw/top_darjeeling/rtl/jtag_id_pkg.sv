@@ -10,9 +10,10 @@ package jtag_id_pkg;
   localparam logic [3:0] JTAG_VERSION = 4'h1;
   localparam logic [11:0] PART_TYPE = 12'h1;
 
-  // These are the open source facing JTAG values that silicon creators may wish to replace We have
-  // two TAPs, one for rv_dm and the other for lc_ctrl, they each have their own JTAG_IDCODE.  They
-  // only differ in part number.
+  // These are the open source facing JTAG values that silicon creators may wish to replace.
+  // We have three TAPs, one for rv_dm, one for lc_ctrl and one combined TAP.
+  // They each have their own JTAG_IDCODE where they differ in the TAP type of
+  // the part number.
 
   localparam logic [31:0] RV_DM_JTAG_IDCODE = {
     JTAG_VERSION,          // Version
