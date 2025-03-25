@@ -54,12 +54,22 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             rom_scramble_config = exec_env.rom_scramble_config,
             rom_scramble_tool = ctx.executable.rom_scramble_tool,
         )
+
+        # We may want to run non-scrambled ROM in DV environment, for faster
+        # run times.
+        rom32 = convert_to_vmem(
+            ctx,
+            name = name,
+            src = binary,
+            word_size = 32,
+        )
         default = rom
         vmem = rom
         vmem32 = None
     elif ctx.attr.kind == "ram":
         default = elf
         rom = None
+        rom32 = None
 
         # Generate Un-scrambled RAM VMEM (for testing SRAM injection in DV)
         vmem = convert_to_vmem(
@@ -99,6 +109,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             _tool = exec_env.flash_scramble_tool.files_to_run,
         )
         rom = None
+        rom32 = None
         default = vmem
         vmem = vmem_base
     else:
@@ -115,6 +126,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "binary": binary,
         "default": default,
         "rom": rom,
+        "rom32": rom32,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "logs": logs,
