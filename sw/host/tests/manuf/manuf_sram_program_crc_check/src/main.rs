@@ -7,6 +7,7 @@ use std::time::Duration;
 use anyhow::{Context, Result, bail};
 use clap::Parser;
 
+use bindgen::sram_program::{SRAM_MAGIC_SP_CRC_SKIPPED, SRAM_MAGIC_SP_EXECUTION_DONE};
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
@@ -27,7 +28,12 @@ struct Opts {
     sram_program: SramProgramParams,
 }
 
-fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> Result<()> {
+fn test_sram_load(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    corrupt: bool,
+    skip_crc: bool,
+) -> Result<()> {
     let uart = transport.uart("console")?;
     //
     // Connect to the RISC-V TAP
@@ -63,15 +69,42 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
         &mut *jtag,
         &sram_prog_info,
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
+        skip_crc,
     )?;
     match exec_res {
-        ExecutionResult::ExecutionDone(_) => {
-            if corrupt {
-                bail!("SRAM program finished successfully but expected a CRC failure")
-            } else {
-                log::info!("SRAM program finished successfully")
+        ExecutionResult::ExecutionDone(sp_val) => match sp_val {
+            SRAM_MAGIC_SP_CRC_SKIPPED => {
+                if skip_crc {
+                    log::info!("SRAM program finished successfully")
+                } else {
+                    bail!(
+                        "SRAM program finished successfully but did not expect a SKIPPED_CRC result"
+                    )
+                }
             }
-        }
+            SRAM_MAGIC_SP_EXECUTION_DONE => {
+                if !corrupt && !skip_crc {
+                    log::info!("SRAM program finished successfully")
+                } else if corrupt {
+                    bail!("SRAM program finished successfully but expected a CRC failure")
+                } else if skip_crc {
+                    bail!(
+                        "SRAM program finished successfully but did not expect a SKIPPED_CRC result"
+                    )
+                } else {
+                    bail!(
+                        "SRAM program execution failed with unexpected result {:?}",
+                        exec_res
+                    )
+                }
+            }
+            _ => {
+                bail!(
+                    "SRAM program execution failed with unexpected result {:?}",
+                    exec_res
+                )
+            }
+        },
         ExecutionResult::ExecutionError(err) => match err {
             ExecutionError::CrcMismatch if corrupt => {
                 log::info!("SRAM program correctly reported a CRC mismatch")
@@ -109,9 +142,29 @@ fn main() -> Result<()> {
     let transport = opts.init.init_target()?;
 
     // First test is normal.
-    execute_test!(test_sram_load, &opts, &transport, false);
+    execute_test!(
+        test_sram_load,
+        &opts,
+        &transport,
+        /*corrupt=*/ false,
+        /*skip_crc=*/ false
+    );
     // Second test we try to corrupt the data.
-    execute_test!(test_sram_load, &opts, &transport, true);
+    execute_test!(
+        test_sram_load,
+        &opts,
+        &transport,
+        /*corrupt=*/ true,
+        /*skip_crc=*/ false
+    );
+    // Third test we skip the CRC check.
+    execute_test!(
+        test_sram_load,
+        &opts,
+        &transport,
+        /*corrupt=*/ false,
+        /*skip_crc=*/ true
+    );
 
     Ok(())
 }
