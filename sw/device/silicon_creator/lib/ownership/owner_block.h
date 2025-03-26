@@ -45,6 +45,10 @@ typedef struct owner_config {
   const owner_flash_info_config_t *info;
   /** The requested rescue configuration. */
   const owner_rescue_config_t *rescue;
+  /**
+   * The requested Integrator Specific Firmware Binding (ISFB) configuration.
+   */
+  const owner_isfb_config_t *isfb;
 } owner_config_t;
 
 /**
@@ -109,6 +113,17 @@ rom_error_t owner_block_parse(const owner_block_t *block,
  * @return error code.
  */
 rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
+
+/**
+ * Check the ISFB configuration for errors.
+ *
+ * Currently, this checks that the ISFB configuration is on an owner page,
+ * and that the product_words field is within bounds.
+ *
+ * @param isfb A pointer to an ISFB configuration struct.
+ * @return error code.
+ */
+rom_error_t owner_isfb_config_check(const owner_isfb_config_t *isfb);
 
 /**
  * Apply the flash configuration parameters from the owner block.

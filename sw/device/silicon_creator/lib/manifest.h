@@ -468,6 +468,19 @@ typedef struct manifest_ext_secver_write {
 } manifest_ext_secver_write_t;
 
 /**
+ * Product expression used in the `manifest_ext_isfb_t` extension.
+ *
+ * The product expression is a 32-bit value that is compared against the product
+ * word in the ISFB info flash page. The comparison is done by applying the mask
+ * to the product word and comparing the result to the value.
+ */
+typedef struct manifest_ext_product_expr {
+  uint32_t mask;
+  uint32_t value;
+} manifest_ext_product_expr_t;
+OT_ASSERT_SIZE(manifest_ext_product_expr_t, 8);
+
+/**
  * Manifest extension: Integration Specific Firmware Binding (ISFB).
  *
  * The Integration Specific Firmware Binding (ISFB) extension is used to bind
@@ -490,8 +503,8 @@ typedef struct manifest_ext_isfb {
    * Strikeout mask.
    *
    * The size of this array is equal to 128 strike bits packed into uint32_t
-   * words. Each strike bit corresponds to a flash word in the ISFB info flash
-   * page.
+   * words. Each strike bit corresponds to a uint32_t word in the ISFB info
+   * flash page.
    *
    * For each 1-bit in the strike mask, the corresponding flash word in the ISFB
    * info flash page must have a non-zero value.
@@ -506,15 +519,13 @@ typedef struct manifest_ext_isfb {
    * Product expressions. The size of this array is equal to
    * `product_expr_count`.
    */
-  struct {
-    uint32_t mask;
-    uint32_t value;
-  } product_expr[];
+  manifest_ext_product_expr_t product_expr[];
 } manifest_ext_isfb_t;
 OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, header, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, strike_mask, 8);
 OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, product_expr_count, 24);
 OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, product_expr, 28);
+OT_ASSERT_SIZE(manifest_ext_isfb_t, 28);
 
 /**
  * Manifest extension: ISFB erase policy.
