@@ -156,8 +156,24 @@
       }
     },
     {
+      IsfbConfig: {
+        bank: 0,
+        page: 5,
+        erase_conditions: 0x666,
+        key_domain: "Dev",
+        product_words: 4
+      }
+    },
+    {
       RescueConfig: {
         rescue_type: "Xmodem",
+        trigger: "UartBreak",
+        trigger_index: 0,
+        gpio_pull_en: false,
+        gpio_value: false,
+        _enter_on_failure: false,
+        _timeout_enable: false,
+        _timeout: 0,
         start: 32,
         size: 192,
         command_allow: [
