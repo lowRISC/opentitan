@@ -1,9 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (${module_instance_name}_env_cfg),
-                                                    .RAL_T (${module_instance_name}_reg_block),
-                                                    .COV_T (${module_instance_name}_env_cov));
+class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
+                                                    .RAL_T (gpio_reg_block),
+                                                    .COV_T (gpio_env_cov));
 
   // predicted value of DATA_OUT rtl implementation register
   bit   [NUM_GPIOS-1:0] data_out;
@@ -40,15 +40,30 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
 
   string common_seq_type;
 
-  `uvm_component_utils(${module_instance_name}_scoreboard)
+  // gpio model
+  gpio_model model;
 
-  function new (string name = "${module_instance_name}_scoreboard", uvm_component parent = null);
+  // Used to get the gpio strap data from the monitor.
+  uvm_analysis_imp_strap #(gpio_seq_item, gpio_scoreboard) strap_analysis_port;
+  // Used to get the gpio data inputs/outputs from the monitor.
+  uvm_analysis_imp_data #(gpio_seq_item, gpio_scoreboard) data_analysis_port;
+
+  `uvm_component_utils(gpio_scoreboard)
+
+  function new (string name = "gpio_scoreboard", uvm_component parent = null);
     super.new (name, parent);
   endfunction
 
   // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    strap_analysis_port = new("strap_analysis_port", this);
+    data_analysis_port  = new("data_analysis_port", this);
+
+    // Get the gpio_model from the environment configuration object.
+    if (!uvm_config_db#(gpio_model)::get(this, "", "gpio_model", model)) begin
+      `uvm_fatal(`gfn, "Could not get gpio_model from uvm_config_db")
+    end
   endfunction
 
   // Task: run_phase
@@ -58,9 +73,40 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
     fork
       monitor_gpio_i();
       monitor_gpio_interrupt_pins();
-      monitor_gpio_straps();
     join_none
   endtask
+
+  // Task: write function to get the gpio_seq_item from the straps monitor
+  // and call the predictors and do the checkers.
+  virtual function void write(gpio_seq_item item);
+    logic [NUM_GPIOS-1:0] gpio_i_sampled;
+    // Get the gpio_i input data from the monitor.
+    gpio_i_sampled = item.cio_gpio_i;
+
+    if(item.strap_en_i == 1'b1) begin
+      // Update the register model.
+      update_straps_regs(gpio_i_sampled, 'b1);
+      // Checker: Compare those values of gpio pins
+      // against the output strap_data.
+      `DV_CHECK_CASE_EQ(gpio_i_sampled, item.sampled_straps_o.data)
+      // Check the output data_in_valid
+      `DV_CHECK_CASE_EQ('b1, item.sampled_straps_o.valid)
+    end else begin
+      update_straps_regs('b0, 'b0);
+      // Checker: Compare if the values are zero if the strap is disabled.
+      `DV_CHECK_CASE_EQ('b0, item.sampled_straps_o.data)
+      // Check the register hw_straps_data_in_valid zero value.
+      `DV_CHECK_CASE_EQ('b0, item.sampled_straps_o.valid)
+    end
+  endfunction : write
+
+  virtual function void update_straps_regs(logic [NUM_GPIOS-1:0] sampled, bit data_valid);
+    // Update data_in valid register value based on result of input
+    `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value(data_valid),
+                                                        .kind(UVM_PREDICT_DIRECT)));
+    `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(sampled),
+                                                  .kind(UVM_PREDICT_DIRECT)));
+  endfunction : update_straps_regs
 
   // Task : process_tl_access
   // process monitored tl transaction
@@ -252,7 +298,9 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
   // Task : monitor_gpio_i
   // monitor gpio input pins interface
   virtual task monitor_gpio_i();
-    logic [NUM_GPIOS-1:0] prev_gpio_i = cfg.gpio_vif.pins;
+
+    logic [NUM_GPIOS-1:0] prev_gpio_i;
+    prev_gpio_i = cfg.gpio_vif.pins;
 
     forever begin : monitor_pins_if
       @(cfg.gpio_vif.pins or cfg.under_reset);
@@ -291,7 +339,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
           gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
           foreach (prev_gpio_i[pin]) begin
             gpio_i_transition[pin].transition_occurred =
-                (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
+              (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
             if (gpio_i_transition[pin].transition_occurred) begin
               case (cfg.gpio_vif.pins[pin])
                 1'b0: begin
@@ -325,6 +373,9 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
                     // z->x does not indicate useful transition, reset transition bit
                     gpio_i_transition[pin].transition_occurred = 1'b0;
                   end
+                end
+                default: begin
+                  `uvm_info(`gfn, "gpio pin undefined!", UVM_HIGH)
                 end
               endcase
             end
@@ -872,4 +923,4 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
     super.check_phase(phase);
   endfunction
 
-endclass : ${module_instance_name}_scoreboard
+endclass : gpio_scoreboard
