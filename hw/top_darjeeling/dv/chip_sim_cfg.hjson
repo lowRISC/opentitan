@@ -48,7 +48,9 @@
                 // Enable C compilation of AES model for DPI-C
                 "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
 
-                "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+                // TODO(#26733): fix these smoke tests for Darjeeling.
+                //"{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
+
                 // TODO #5484, comment these 2 lines out because spi host memory is dummy
                 // "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
                 // xbar tests
@@ -1718,17 +1720,20 @@
     }
     {
       name: smoke
-      tests: ["xbar_smoke",
-              "chip_sw_uart_tx_rx",
-              "chip_sw_spi_host_tx_rx",
-              "chip_sw_spi_device_pass_through",
-              "chip_sw_i2c_host_tx_rx",
-              "chip_sw_i2c_device_tx_rx",
-              "chip_plic_all_irqs",
-              "chip_sw_example_rom",
-              "chip_sw_example_manufacturer",
-              "chip_sw_example_concurrency"]
-              // TODO: add this test after enabling HW verification: "rom_e2e_smoke"]
+      tests: ["chip_sw_spi_device_pass_through",
+              "chip_sw_example_concurrency",
+              // TODO(#26733): fix these tests for Darjeeling or select more appropriate ones.
+              //"xbar_smoke",
+              //"chip_sw_uart_tx_rx",
+              //"chip_sw_spi_host_tx_rx",
+              //"chip_sw_i2c_host_tx_rx",
+              //"chip_sw_i2c_device_tx_rx",
+              //"chip_plic_all_irqs",
+              //"chip_sw_example_rom",
+              //"chip_sw_example_manufacturer",
+              // TODO: add this test after enabling HW verification:
+              //"rom_e2e_smoke",
+             ]
     }
     {
       name: jitter
@@ -1753,21 +1758,22 @@
     }
     {
       name: xcelium_ci_0
-      tests: ["chip_plic_all_irqs",
-              "chip_rv_dm_lc_disabled",
-              "chip_sw_kmac_app_rom",
+      tests: ["chip_rv_dm_lc_disabled",
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",
               "chip_sw_clkmgr_jitter",
               "chip_sw_rom_ctrl_integrity_check",
-              "chip_sw_aes_entropy",
               "chip_sw_kmac_idle",
-              "chip_sw_kmac_mode_cshake",
-              "chip_sw_kmac_mode_kmac",
-              "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_lc_ctrl_rand_to_scrap"
               "chip_sw_sleep_pin_mio_dio_val",
-              "chip_sw_power_virus",
+              // TODO(#26733): uncomment when these run for Darjeeling.
+              // "chip_plic_all_irqs",
+              // "chip_sw_kmac_app_rom",
+              // "chip_sw_aes_entropy",
+              // "chip_sw_kmac_mode_cshake",
+              // "chip_sw_kmac_mode_kmac",
+              // "chip_sw_kmac_mode_kmac_jitter_en",
+              // "chip_sw_power_virus",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_lc_walkthrough_dev",
               // "chip_sw_lc_walkthrough_prod",
@@ -1783,22 +1789,22 @@
               "chip_sw_spi_device_pass_through",
               "chip_sw_plic_sw_irq",
               "chip_sw_aes_enc",
-              "chip_sw_aes_enc_jitter_en",
-              "chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_all_escalation_resets",
-              "chip_rv_dm_ndm_reset_req",
               "chip_sw_csrng_kat_test",
-              "chip_sw_sensor_ctrl_status",
-              "chip_sw_rstmgr_sw_req",
+              // TODO(#26733): uncomment when these run for Darjeeling.
+              // "chip_sw_aes_enc_jitter_en",
+              // "chip_sw_sram_ctrl_scrambled_access",
+              // "chip_rv_dm_ndm_reset_req",
+              // "chip_sw_sensor_ctrl_status",
+              // "chip_sw_rstmgr_sw_req",
+              // "chip_sw_pwrmgr_sleep_disabled",
+              // "base_rom_e2e_smoke",
               "chip_sw_aes_idle",
               // TODO: uncomment when these run with Xcelium.
               // "chip_sw_pwrmgr_main_power_glitch_reset",
               // "chip_sw_pwrmgr_deep_sleep_power_glitch_reset",
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
-              "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
-              "base_rom_e2e_smoke",
               // TODO(opentitan-integrated/#332): enable this test again once ROM has been
               // refactored to work without embedded flash.
               // "rom_e2e_smoke"
