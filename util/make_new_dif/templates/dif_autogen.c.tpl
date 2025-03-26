@@ -185,6 +185,9 @@ dif_result_t dif_${ip.name_snake}_get_dt(
       ## This handles the RV Timer IP.
       % elif ip.name_snake == "rv_timer":
         *index_out = ${ip.name_upper}_INTR_STATE0_IS_${loop.index}_BIT;
+      ## This handles the RACL Controller IP.
+      % elif ip.name_snake == "racl_ctrl":
+        *index_out = ${ip.name_upper}_INTR_STATE_${irq.name_upper}_BIT;
       ## This handles all other IPs that do not have the "no_auto_intr_regs" in
       ## their HJSON files.
       % else:

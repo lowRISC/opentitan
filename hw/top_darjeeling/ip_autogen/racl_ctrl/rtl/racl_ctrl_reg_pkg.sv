@@ -13,7 +13,7 @@ package racl_ctrl_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 6;
+  parameter int NumRegs = 9;
 
   ////////////////////////////
   // Typedefs for registers //
@@ -47,6 +47,19 @@ package racl_ctrl_reg_pkg;
   } racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t;
 
   typedef struct packed {
+    logic        q;
+  } racl_ctrl_reg2hw_intr_state_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } racl_ctrl_reg2hw_intr_enable_reg_t;
+
+  typedef struct packed {
+    logic        q;
+    logic        qe;
+  } racl_ctrl_reg2hw_intr_test_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
@@ -63,6 +76,11 @@ package racl_ctrl_reg_pkg;
       logic        qe;
     } valid;
   } racl_ctrl_reg2hw_error_log_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } racl_ctrl_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -94,15 +112,19 @@ package racl_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [101:70]
-    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [69:38]
-    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [37:6]
+    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [105:74]
+    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [73:42]
+    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [41:10]
+    racl_ctrl_reg2hw_intr_state_reg_t intr_state; // [9:9]
+    racl_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [8:8]
+    racl_ctrl_reg2hw_intr_test_reg_t intr_test; // [7:6]
     racl_ctrl_reg2hw_alert_test_reg_t alert_test; // [5:2]
     racl_ctrl_reg2hw_error_log_reg_t error_log; // [1:0]
   } racl_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
+    racl_ctrl_hw2reg_intr_state_reg_t intr_state; // [51:50]
     racl_ctrl_hw2reg_error_log_reg_t error_log; // [49:33]
     racl_ctrl_hw2reg_error_log_address_reg_t error_log_address; // [32:0]
   } racl_ctrl_hw2reg_t;
@@ -111,11 +133,15 @@ package racl_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] RACL_CTRL_POLICY_ALL_RD_WR_SHADOWED_OFFSET = 8'h 0;
   parameter logic [BlockAw-1:0] RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED_OFFSET = 8'h 8;
   parameter logic [BlockAw-1:0] RACL_CTRL_POLICY_SOC_ROT_SHADOWED_OFFSET = 8'h 10;
+  parameter logic [BlockAw-1:0] RACL_CTRL_INTR_STATE_OFFSET = 8'h e8;
+  parameter logic [BlockAw-1:0] RACL_CTRL_INTR_ENABLE_OFFSET = 8'h ec;
+  parameter logic [BlockAw-1:0] RACL_CTRL_INTR_TEST_OFFSET = 8'h f0;
   parameter logic [BlockAw-1:0] RACL_CTRL_ALERT_TEST_OFFSET = 8'h f4;
   parameter logic [BlockAw-1:0] RACL_CTRL_ERROR_LOG_OFFSET = 8'h f8;
   parameter logic [BlockAw-1:0] RACL_CTRL_ERROR_LOG_ADDRESS_OFFSET = 8'h fc;
 
   // Reset values for hwext registers and their fields
+  parameter logic [0:0] RACL_CTRL_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [1:0] RACL_CTRL_ALERT_TEST_RESVAL = 2'h 0;
 
   // Register index
@@ -123,19 +149,25 @@ package racl_ctrl_reg_pkg;
     RACL_CTRL_POLICY_ALL_RD_WR_SHADOWED,
     RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED,
     RACL_CTRL_POLICY_SOC_ROT_SHADOWED,
+    RACL_CTRL_INTR_STATE,
+    RACL_CTRL_INTR_ENABLE,
+    RACL_CTRL_INTR_TEST,
     RACL_CTRL_ALERT_TEST,
     RACL_CTRL_ERROR_LOG,
     RACL_CTRL_ERROR_LOG_ADDRESS
   } racl_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] RACL_CTRL_PERMIT [6] = '{
+  parameter logic [3:0] RACL_CTRL_PERMIT [9] = '{
     4'b 1111, // index[0] RACL_CTRL_POLICY_ALL_RD_WR_SHADOWED
     4'b 1111, // index[1] RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED
     4'b 1111, // index[2] RACL_CTRL_POLICY_SOC_ROT_SHADOWED
-    4'b 0001, // index[3] RACL_CTRL_ALERT_TEST
-    4'b 0011, // index[4] RACL_CTRL_ERROR_LOG
-    4'b 1111  // index[5] RACL_CTRL_ERROR_LOG_ADDRESS
+    4'b 0001, // index[3] RACL_CTRL_INTR_STATE
+    4'b 0001, // index[4] RACL_CTRL_INTR_ENABLE
+    4'b 0001, // index[5] RACL_CTRL_INTR_TEST
+    4'b 0001, // index[6] RACL_CTRL_ALERT_TEST
+    4'b 0011, // index[7] RACL_CTRL_ERROR_LOG
+    4'b 1111  // index[8] RACL_CTRL_ERROR_LOG_ADDRESS
   };
 
 endpackage

@@ -19,6 +19,8 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]                    alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]                    alert_tx_o,
+  // Interrupt
+  output logic                                                         intr_racl_error_o,
   // Output policy vector for distribution
   output top_racl_pkg::racl_policy_vec_t                               racl_policies_o,
   // RACL violation information.
@@ -206,11 +208,32 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   assign hw2reg.error_log_address.de = first_error | clear_log;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Interrupt handling
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  prim_intr_hw #(
+    .Width ( 1        ),
+    .IntrT ( "Status" )
+  ) u_intr_racl_error (
+    .clk_i                  ( clk_i                    ),
+    .rst_ni                 ( rst_ni                   ),
+    .event_intr_i           ( reg2hw.error_log.valid.q ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q     ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q       ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe      ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q      ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de     ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d      ),
+    .intr_o                 ( intr_racl_error_o        )
+  );
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
   // Assertions
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(RaclErrorIrqKnown_A, intr_racl_error_o)
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
