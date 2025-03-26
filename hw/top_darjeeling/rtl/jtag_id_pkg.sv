@@ -11,27 +11,8 @@ package jtag_id_pkg;
   localparam logic [11:0] PART_TYPE = 12'h1;
 
   // These are the open source facing JTAG values that silicon creators may wish to replace.
-  // We have three TAPs, one for rv_dm, one for lc_ctrl and one combined TAP.
-  // They each have their own JTAG_IDCODE where they differ in the TAP type of
-  // the part number.
-
-  localparam logic [31:0] RV_DM_JTAG_IDCODE = {
-    JTAG_VERSION,          // Version
-                           // Part Number:
-    PART_TYPE,             // - Part Type
-    4'h1,                  // - TAP Type
-    JEDEC_MANUFACTURER_ID, // Manufacturer ID
-    1'b1                   // (fixed)
-  };
-
-  localparam logic [31:0] LC_CTRL_JTAG_IDCODE = {
-    JTAG_VERSION,          // Version
-                           // Part Number:
-    PART_TYPE,             // - Part Type
-    4'h2,                  // - TAP Type
-    JEDEC_MANUFACTURER_ID, // Manufacturer ID
-    1'b1                   // (fixed)
-  };
+  // We have one TAP on Darjeeling which combines both the RISC-V debug module
+  // (rv_dm) and the life-cycle controller (lc_ctrl).
 
   localparam logic [31:0] LC_DM_COMBINED_JTAG_IDCODE = {
     JTAG_VERSION,          // Version
