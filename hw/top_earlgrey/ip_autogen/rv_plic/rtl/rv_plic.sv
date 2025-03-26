@@ -457,4 +457,14 @@ module rv_plic import rv_plic_reg_pkg::*; #(
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+
+  // If a response is coming back from the device, then check if it contains the correct integrity
+  // bits.
+  `ASSERT(DataIntg_A,
+          tl_o.d_valid -> (tlul_pkg::get_data_intg(tl_o.d_data) == tl_o.d_user.data_intg))
+
+  `ASSERT(RspIntg_A,
+          tl_o.d_valid ->
+          (prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0, tlul_pkg::extract_d2h_rsp_intg(tl_o)})
+          >> (64-tlul_pkg::D2HRspIntgWidth)) == tl_o.d_user.rsp_intg)
 endmodule
