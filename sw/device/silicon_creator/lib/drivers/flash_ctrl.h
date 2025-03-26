@@ -684,6 +684,17 @@ void flash_ctrl_cert_info_page_creator_cfg(
 void flash_ctrl_cert_info_page_owner_restrict(
     const flash_ctrl_info_page_t *info_page);
 
+/**
+ * Builds a `flash_ctrl_info_page_t` struct for a given bank and page.
+ *
+ * @param bank Bank index.
+ * @param page Page index.
+ * @param[out] info_page Pointer to the `flash_ctrl_info_page_t` struct to fill.
+ * @return Result of the operation.
+ */
+rom_error_t flash_ctrl_info_type0_params_build(
+    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page);
+
 #ifdef __cplusplus
 }
 #endif
