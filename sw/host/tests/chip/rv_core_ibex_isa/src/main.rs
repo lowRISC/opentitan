@@ -46,17 +46,17 @@ fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     uart.clear_rx_buffer()?;
 
     // Load SRAM program
-    let a0 = match opts.sram_program.load_and_execute(
+    match opts.sram_program.load_and_execute(
         &mut *jtag,
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
     )? {
-        ExecutionResult::ExecutionDone(a0) => {
+        ExecutionResult::ExecutionDone(_) => {
             log::info!("program successfully ran");
-            a0
         }
         res => bail!("program execution failed: {:?}", res),
     };
 
+    let a0 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0))?;
     log::info!("Return Value (a0): {a0}");
     if a0 == 0 {
         let a1 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A1))?;

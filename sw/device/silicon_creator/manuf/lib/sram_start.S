@@ -6,6 +6,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/multibits_asm.h"
+#include "sw/device/lib/testing/test_framework/ottf_macros.h"
 
 #include "hw/top/csrng_regs.h"  // Generated.
 #include "hw/top/edn_regs.h"  // Generated.
@@ -123,7 +124,11 @@ sram_start:
 
   // Save CRC32
   mv   sp, a0
+  // Skip the CRC check if requested.
+  li   t3, SRAM_MAGIC_SP_CRC_SKIPPED
+  beq  t3, sp, .L_crc_match
   // Verify CRC
+  li   t3, SRAM_MAGIC_SP_EXECUTION_DONE
   la   a0, _crc_start
   la   a1, _crc_end
   call compute_crc32
@@ -146,6 +151,11 @@ sram_start:
    */
   la   t0, (sram_interrupt_vector + 1)
   csrw mtvec, t0
+
+  // t3 will contain either the CRC_SKIPPED or CRC_ERROR magic values. We push
+  // it to the stack so we can check it when the SRAM program has executed.
+  addi sp, sp, -OTTF_WORD_SIZE
+  sw   t3, 0(sp)
 
   // Zero out the `.bss` segment.
   la   a0, _bss_start
@@ -185,8 +195,10 @@ sram_start:
   // Jump into the C program entry point.
   call test_main
 
-  // Notify the host that we are done.
-  li  sp, SRAM_MAGIC_SP_EXECUTION_DONE
+  // Notify the host that we are done by loading a magic value in sp.
+  lw   t3, 0(sp)
+  addi sp, sp, OTTF_WORD_SIZE
+  mv   sp, t3
   ebreak
 
   // Set function size to allow disassembly.
