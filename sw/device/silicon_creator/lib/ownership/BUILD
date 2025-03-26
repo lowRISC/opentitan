@@ -25,6 +25,38 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "isfb",
+    srcs = ["isfb.c"],
+    hdrs = ["isfb.h"],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "isfb_unittest",
+    srcs = [
+        "isfb_unittest.cc",
+    ],
+    deps = [
+        ":datatypes",
+        ":isfb",
+        ":owner_block",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "ownership_key",
     srcs = dual_inputs(

@@ -99,5 +99,10 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
   MockFlashCtrl::Instance().CreatorInfoPagesLockdown();
 }
 
+rom_error_t flash_ctrl_info_type0_params_build(
+    uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page) {
+  return MockFlashCtrl::Instance().InfoType0ParamsBuild(bank, page, info_page);
+}
+
 }  // extern "C"
 }  // namespace rom_test
