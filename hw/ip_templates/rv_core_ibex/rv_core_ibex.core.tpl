@@ -41,7 +41,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/rv_core_ibex.waiver
+      - lint/${module_instance_name}.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
