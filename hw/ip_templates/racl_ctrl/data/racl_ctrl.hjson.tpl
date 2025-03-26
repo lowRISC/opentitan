@@ -32,9 +32,17 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", static_racl_support: true }
   ],
-  // In order to not disturb the racl_ctrl address map, we place the alert test
-  // register manually at a safe offset after the main CSRs.
+  // In order to not disturb the racl_ctrl address map, we place the alert test and interrupt
+  // registers manually at a safe offset after the main CSRs.
+  // TODO(#26748) Add tooling support to avoid manual placement of alert/interrupt registers
+  no_auto_intr_regs: "True",
   no_auto_alert_regs: "True",
+  interrupt_list: [
+    { name: "racl_error",
+      desc: "RACL error has occurred.",
+      type: "status"
+    }
+  ]
   alert_list: [
     { name: "fatal_fault"
       desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
@@ -138,7 +146,47 @@
     }
     { reserved: "1" }
     % endfor
-    { skipto: "0xF4" }
+    { skipto: "0xE8" }
+    { name: "INTR_STATE",
+      desc: "Interrupt State Register",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      fields: [
+        { bits: "0",
+          name: "racl_error",
+          desc: '''
+                Interrupt status. The interrupt is raised when a RACL error occurs and cleared
+                when error_log is cleared by writing 1 to error_log.valid."
+                '''
+        }
+      ]
+      tags: [// interrupt could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+    { name: "INTR_ENABLE",
+        desc: "Interrupt Enable Register",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            name: "IE",
+            desc: "Interrupt Enable"
+          }
+        ]
+    },
+    { name: "INTR_TEST",
+      desc: "Interrupt Test Register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        { bits: "0",
+          name: "racl_error",
+          desc: "Write 1 to force racl_error interrupt",
+        }
+      ]
+    },
     { name: "ALERT_TEST",
       desc: '''Alert Test Register.''',
       swaccess: "wo",

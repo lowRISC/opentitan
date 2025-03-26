@@ -129,7 +129,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[159] = {
+    top_darjeeling_plic_interrupt_for_peripheral[160] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -288,5 +288,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxReady] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxError] = kTopDarjeelingPlicPeripheralMbxPcie1,
+  [kTopDarjeelingPlicIrqIdRaclCtrlRaclError] = kTopDarjeelingPlicPeripheralRaclCtrl,
   [kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached] = kTopDarjeelingPlicPeripheralAcRangeCheck,
 };

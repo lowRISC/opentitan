@@ -1065,8 +1065,9 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralMbxJtag = 27, /**< mbx_jtag */
   kTopDarjeelingPlicPeripheralMbxPcie0 = 28, /**< mbx_pcie0 */
   kTopDarjeelingPlicPeripheralMbxPcie1 = 29, /**< mbx_pcie1 */
-  kTopDarjeelingPlicPeripheralAcRangeCheck = 30, /**< ac_range_check */
-  kTopDarjeelingPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
+  kTopDarjeelingPlicPeripheralRaclCtrl = 30, /**< racl_ctrl */
+  kTopDarjeelingPlicPeripheralAcRangeCheck = 31, /**< ac_range_check */
+  kTopDarjeelingPlicPeripheralLast = 31, /**< \internal Final PLIC peripheral */
 } top_darjeeling_plic_peripheral_t;
 
 /**
@@ -1234,8 +1235,9 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdMbxPcie1MbxReady = 155, /**< mbx_pcie1_mbx_ready */
   kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort = 156, /**< mbx_pcie1_mbx_abort */
   kTopDarjeelingPlicIrqIdMbxPcie1MbxError = 157, /**< mbx_pcie1_mbx_error */
-  kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached = 158, /**< ac_range_check_deny_cnt_reached */
-  kTopDarjeelingPlicIrqIdLast = 158, /**< \internal The Last Valid Interrupt ID. */
+  kTopDarjeelingPlicIrqIdRaclCtrlRaclError = 158, /**< racl_ctrl_racl_error */
+  kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached = 159, /**< ac_range_check_deny_cnt_reached */
+  kTopDarjeelingPlicIrqIdLast = 159, /**< \internal The Last Valid Interrupt ID. */
 } top_darjeeling_plic_irq_id_t;
 
 /**
@@ -1245,7 +1247,7 @@ typedef enum top_darjeeling_plic_irq_id {
  * `top_darjeeling_plic_peripheral_t`.
  */
 extern const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[159];
+    top_darjeeling_plic_interrupt_for_peripheral[160];
 
 /**
  * PLIC Interrupt Target.

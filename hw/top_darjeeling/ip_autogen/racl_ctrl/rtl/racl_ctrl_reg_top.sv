@@ -63,9 +63,9 @@ module racl_ctrl_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [5:0] reg_we_check;
+  logic [8:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(6)
+    .OneHotWidth(9)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -163,6 +163,12 @@ module racl_ctrl_reg_top
   logic [15:0] policy_soc_rot_shadowed_write_perm_wd;
   logic policy_soc_rot_shadowed_write_perm_storage_err;
   logic policy_soc_rot_shadowed_write_perm_update_err;
+  logic intr_state_qs;
+  logic intr_enable_we;
+  logic intr_enable_qs;
+  logic intr_enable_wd;
+  logic intr_test_we;
+  logic intr_test_wd;
   logic alert_test_we;
   logic alert_test_fatal_fault_wd;
   logic alert_test_recov_ctrl_update_err_wd;
@@ -398,6 +404,82 @@ module racl_ctrl_reg_top
   );
 
 
+  // R[intr_state]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.de),
+    .d      (hw2reg.intr_state.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_qs)
+  );
+
+
+  // R[intr_enable]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_qs)
+  );
+
+
+  // R[intr_test]: V(True)
+  logic intr_test_qe;
+  logic [0:0] intr_test_flds_we;
+  assign intr_test_qe = &intr_test_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[0]),
+    .q      (reg2hw.intr_test.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.qe = intr_test_qe;
+
+
   // R[alert_test]: V(True)
   logic alert_test_qe;
   logic [1:0] alert_test_flds_we;
@@ -617,12 +699,12 @@ module racl_ctrl_reg_top
 
 
 
-  logic [5:0] addr_hit;
+  logic [8:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [5:0] racl_addr_hit_read;
-  logic [5:0] racl_addr_hit_write;
+  logic [8:0] racl_addr_hit_read;
+  logic [8:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -651,12 +733,15 @@ module racl_ctrl_reg_top
     addr_hit[0] = (reg_addr == RACL_CTRL_POLICY_ALL_RD_WR_SHADOWED_OFFSET);
     addr_hit[1] = (reg_addr == RACL_CTRL_POLICY_ROT_PRIVATE_SHADOWED_OFFSET);
     addr_hit[2] = (reg_addr == RACL_CTRL_POLICY_SOC_ROT_SHADOWED_OFFSET);
-    addr_hit[3] = (reg_addr == RACL_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[4] = (reg_addr == RACL_CTRL_ERROR_LOG_OFFSET);
-    addr_hit[5] = (reg_addr == RACL_CTRL_ERROR_LOG_ADDRESS_OFFSET);
+    addr_hit[3] = (reg_addr == RACL_CTRL_INTR_STATE_OFFSET);
+    addr_hit[4] = (reg_addr == RACL_CTRL_INTR_ENABLE_OFFSET);
+    addr_hit[5] = (reg_addr == RACL_CTRL_INTR_TEST_OFFSET);
+    addr_hit[6] = (reg_addr == RACL_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[7] = (reg_addr == RACL_CTRL_ERROR_LOG_OFFSET);
+    addr_hit[8] = (reg_addr == RACL_CTRL_ERROR_LOG_ADDRESS_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 6; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 9; slice_idx++) begin
         // Static RACL protection with ROT_PRIVATE policy
         racl_addr_hit_read[slice_idx] =
           addr_hit[slice_idx] & (|(top_racl_pkg::RACL_POLICY_ROT_PRIVATE_RD & racl_role_vec));
@@ -693,7 +778,10 @@ module racl_ctrl_reg_top
                (racl_addr_hit_write[2] & (|(RACL_CTRL_PERMIT[2] & ~reg_be))) |
                (racl_addr_hit_write[3] & (|(RACL_CTRL_PERMIT[3] & ~reg_be))) |
                (racl_addr_hit_write[4] & (|(RACL_CTRL_PERMIT[4] & ~reg_be))) |
-               (racl_addr_hit_write[5] & (|(RACL_CTRL_PERMIT[5] & ~reg_be)))));
+               (racl_addr_hit_write[5] & (|(RACL_CTRL_PERMIT[5] & ~reg_be))) |
+               (racl_addr_hit_write[6] & (|(RACL_CTRL_PERMIT[6] & ~reg_be))) |
+               (racl_addr_hit_write[7] & (|(RACL_CTRL_PERMIT[7] & ~reg_be))) |
+               (racl_addr_hit_write[8] & (|(RACL_CTRL_PERMIT[8] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -715,12 +803,18 @@ module racl_ctrl_reg_top
   assign policy_soc_rot_shadowed_read_perm_wd = reg_wdata[15:0];
 
   assign policy_soc_rot_shadowed_write_perm_wd = reg_wdata[31:16];
-  assign alert_test_we = racl_addr_hit_write[3] & reg_we & !reg_error;
+  assign intr_enable_we = racl_addr_hit_write[4] & reg_we & !reg_error;
+
+  assign intr_enable_wd = reg_wdata[0];
+  assign intr_test_we = racl_addr_hit_write[5] & reg_we & !reg_error;
+
+  assign intr_test_wd = reg_wdata[0];
+  assign alert_test_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign alert_test_fatal_fault_wd = reg_wdata[0];
 
   assign alert_test_recov_ctrl_update_err_wd = reg_wdata[1];
-  assign error_log_we = racl_addr_hit_write[4] & reg_we & !reg_error;
+  assign error_log_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign error_log_valid_wd = reg_wdata[0];
 
@@ -730,9 +824,12 @@ module racl_ctrl_reg_top
     reg_we_check[0] = policy_all_rd_wr_shadowed_we;
     reg_we_check[1] = policy_rot_private_shadowed_we;
     reg_we_check[2] = policy_soc_rot_shadowed_we;
-    reg_we_check[3] = alert_test_we;
-    reg_we_check[4] = error_log_we;
-    reg_we_check[5] = 1'b0;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = intr_enable_we;
+    reg_we_check[5] = intr_test_we;
+    reg_we_check[6] = alert_test_we;
+    reg_we_check[7] = error_log_we;
+    reg_we_check[8] = 1'b0;
   end
 
   // Read data return
@@ -755,11 +852,23 @@ module racl_ctrl_reg_top
       end
 
       racl_addr_hit_read[3]: begin
+        reg_rdata_next[0] = intr_state_qs;
+      end
+
+      racl_addr_hit_read[4]: begin
+        reg_rdata_next[0] = intr_enable_qs;
+      end
+
+      racl_addr_hit_read[5]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      racl_addr_hit_read[4]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next[0] = error_log_valid_qs;
         reg_rdata_next[1] = error_log_overflow_qs;
         reg_rdata_next[2] = error_log_read_access_qs;
@@ -767,7 +876,7 @@ module racl_ctrl_reg_top
         reg_rdata_next[11:7] = error_log_ctn_uid_qs;
       end
 
-      racl_addr_hit_read[5]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next[31:0] = error_log_address_qs;
       end
 

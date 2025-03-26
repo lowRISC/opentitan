@@ -7,7 +7,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Bus Device Interfaces (TL-UL): **`tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
-- Interrupts: *none*
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
@@ -17,6 +16,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | racl_error          | top_racl_pkg::racl_error_log  | uni     | rcv   | NumSubscribingIps         | Error log information from all IPs. Only one IP can raise an error at a time.          |
 | racl_error_external | top_racl_pkg::racl_error_log  | uni     | rcv   | NumExternalSubscribingIps | Error log information from all external IPs. Only one IP can raise an error at a time. |
 | tl                  | tlul_pkg::tl                  | req_rsp | rsp   | 1                         |                                                                                        |
+
+## Interrupts
+
+| Interrupt Name   | Type   | Description              |
+|:-----------------|:-------|:-------------------------|
+| racl_error       | Status | RACL error has occurred. |
 
 ## Security Alerts
 
