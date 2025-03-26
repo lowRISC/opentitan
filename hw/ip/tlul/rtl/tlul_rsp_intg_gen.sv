@@ -78,7 +78,7 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
 `ifndef SYNTHESIS
-  always_comb begin
+  always @(tl_i) begin
     if (tl_i.d_valid) begin
       `ASSERT_I(RspZero_A, RspIntgInIsZero -> ~|tl_i.d_user.rsp_intg)
       `ASSERT_I(UserZero_A, UserInIsZero -> ~|tl_i.d_user)
