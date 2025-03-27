@@ -126,15 +126,15 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   // This collects coverage for recoverable errors.
   covergroup recov_err_cg with function sample (
       bit main_timeout,
-      bit io_div4_timeout,
+      bit io_timeout,
       bit main_measure,
-      bit io_div4_measure,
+      bit io_measure,
       bit shadow_update
   );
     shadow_update_cp: coverpoint shadow_update;
-    io_div4_measure_cp: coverpoint io_div4_measure;
+    io_measure_cp: coverpoint io_measure;
     main_measure_cp: coverpoint main_measure;
-    io_div4_timeout_cp: coverpoint io_div4_timeout;
+    io_timeout_cp: coverpoint io_timeout;
     main_timeout_cp: coverpoint main_timeout;
   endgroup
 

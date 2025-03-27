@@ -19,7 +19,6 @@ interface rstmgr_cascading_sva_if (
   input logic clk_i,
   input logic clk_aon_i,
   input logic clk_io_i,
-  input logic clk_io_div4_i,
   input logic clk_main_i,
   input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
   input rstmgr_pkg::rstmgr_out_t resets_o,

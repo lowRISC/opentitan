@@ -39,9 +39,8 @@ package clkmgr_env_pkg;
   parameter mubi_hintables_t IdleAllBusy = {NUM_TRANS{prim_mubi_pkg::MuBi4False}};
 
   parameter int MainClkHz = 1_000_000_000;
-  parameter int IoClkHz = 1_000_000_000;
+  parameter int IoClkHz = 250_000_000;
   parameter int AonClkHz = 62_500_000;
-  parameter int IoDiv4ClkHz = 250_000_000;
   parameter int FakeAonClkHz = 7_000_000;
 
   // alerts
@@ -55,10 +54,10 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-    PeriIoDiv4
+    PeriIo
   } peri_e;
   typedef struct packed {
-    logic io_div4_peri_en;
+    logic io_peri_en;
   } clk_enables_t;
 
   typedef enum int {
@@ -82,7 +81,7 @@ package clkmgr_env_pkg;
 
   // These are ordered per the bits in the recov_err_code register.
   typedef enum int {
-    ClkMesrIoDiv4,
+    ClkMesrIo,
     ClkMesrMain,
     ClkMesrSize
   } clk_mesr_e;
@@ -108,13 +107,13 @@ package clkmgr_env_pkg;
 
   // These must be after the declaration of clk_mesr_e for sizing.
   parameter int ClkInHz[ClkMesrSize] = {
-    IoDiv4ClkHz,
+    IoClkHz,
     MainClkHz
   };
 
   // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
-    (ClkInHz[ClkMesrIoDiv4] / AonClkHz) * 32 - 1,
+    (ClkInHz[ClkMesrIo] / AonClkHz) * 32 - 1,
     (ClkInHz[ClkMesrMain] / AonClkHz) * 8 - 1
   };
 
