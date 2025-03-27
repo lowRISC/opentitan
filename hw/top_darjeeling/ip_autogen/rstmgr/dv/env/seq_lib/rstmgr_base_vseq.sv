@@ -16,8 +16,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // Set clock frequencies per spec, except the aon is 200kHZ, which is
   // too slow and could slow testing down for no good reason.
   localparam int AON_FREQ_MHZ = 3;
-  localparam int IO_FREQ_MHZ = 1000;
-  localparam int IO_DIV4_FREQ_MHZ = 250;
+  localparam int IO_FREQ_MHZ = 250;
   localparam int MAIN_FREQ_MHZ = 1000;
 
   // POR needs to be stable not less than 32 clock cycles, plus some extra, before it
@@ -92,7 +91,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // This is used to randomize the delays for the clocks to start and stop.
   typedef struct {
     bit [5:0] io_delay;
-    bit [5:0] io_div4_delay;
     bit [5:0] main_delay;
   } clock_delays_in_ns_t;
 
@@ -333,11 +331,9 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_STD_RANDOMIZE_FATAL(delays)
     if (enable) fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.start_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
     join else fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
-      #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
     join
   endtask
@@ -456,7 +452,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     fork
       cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
     join
   endtask
@@ -516,7 +511,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
     cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
-    cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
     // Initial values for some input pins.
     cfg.rstmgr_vif.scanmode_i  = prim_mubi_pkg::MuBi4False;

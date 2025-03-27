@@ -43,20 +43,18 @@ package rstmgr_env_pkg;
     "u_d0_sys",
     "u_daon_lc",
     "u_daon_lc_aon",
-    "u_daon_lc_io",
     "u_daon_lc_shadowed",
     "u_daon_por",
     "u_daon_por_io",
-    "u_daon_por_io_div4",
-    "u_daon_sys_io_div4"
+    "u_daon_sys_io"
   };
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.
   parameter string LIST_OF_SHADOW_LEAFS[] = {
     "u_d0_lc",
-    "u_d0_lc_io_div4",
+    "u_d0_lc_io",
     "u_daon_lc",
-    "u_daon_lc_io_div4"
+    "u_daon_lc_io"
   };
 
   // types

@@ -117,11 +117,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task sample_peri_covs();
     fork
       forever
-        @cfg.clkmgr_vif.peri_io_div4_cb begin
+        @cfg.clkmgr_vif.peri_io_cb begin
           if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIoDiv4].sample(cfg.clkmgr_vif.peri_io_div4_cb.clk_enable,
-                                                cfg.clkmgr_vif.peri_io_div4_cb.ip_clk_en,
-                                                cfg.clkmgr_vif.scanmode_i == MuBi4True);
+            cov.peri_cg_wrap[PeriIo].sample(cfg.clkmgr_vif.peri_io_cb.clk_enable,
+                                            cfg.clkmgr_vif.peri_io_cb.ip_clk_en,
+                                            cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
     join
@@ -169,10 +169,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task sample_freq_measurement_covs();
     fork
       forever
-        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or
-          posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
-                                      cfg.clkmgr_vif.io_div4_timeout_err);
+        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.io_timeout_err) begin
+          sample_freq_measurement_cov(ClkMesrIo, cfg.clkmgr_vif.io_freq_measurement,
+                                      cfg.clkmgr_vif.io_timeout_err);
         end
 
       forever
@@ -295,13 +295,9 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "io_meas_ctrl_en": begin
       end
-      "io_div4_meas_ctrl_en": begin
-      end
       "main_meas_ctrl_en": begin
       end
       "io_meas_ctrl_shadowed": begin
-      end
-      "io_div4_meas_ctrl_shadowed": begin
       end
       "main_meas_ctrl_shadowed": begin
       end
