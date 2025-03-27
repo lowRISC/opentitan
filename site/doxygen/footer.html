@@ -1,8 +1,19 @@
+<!-- HTML footer for doxygen 1.13.2-->
 <!-- This has been changed to link back to OpenTitan -->
 <!-- start footer part -->
-<hr class="footer"/>
-<address class="footer">
-  Return to <a href="/">OpenTitan Documentation</a>
-</address>
+<!--BEGIN GENERATE_TREEVIEW-->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    $navpath
+    <li class="footer">Return to <a href="/">OpenTitan Documentation</a></li>
+  </ul>
+</div>
+<!--END GENERATE_TREEVIEW-->
+<!--BEGIN !GENERATE_TREEVIEW-->
+<hr class="footer"/><address class="footer"><small>
+Return to <a href="/">OpenTitan Documentation</a>
+</small></address>
+</div><!-- doc-content -->
+<!--END !GENERATE_TREEVIEW-->
 </body>
 </html>
