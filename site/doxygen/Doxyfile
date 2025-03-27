@@ -55,6 +55,8 @@ LAYOUT_FILE            = "$(SRCTREE_TOP)/site/doxygen/layout.xml"
 QUIET                  = YES
 WARN_LOGFILE           = "$(DOXYGEN_OUT)/doxygen_warnings.log"
 
+WARN_IF_UNDOCUMENTED   = NO
+
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
