@@ -55,14 +55,6 @@
     derived_srcs:
     [
       {
-        name: io_div2
-        aon: no
-        freq: "500000000"
-        ref: false
-        div: "2"
-        src: io
-      }
-      {
         name: io_div4
         aon: no
         freq: "250000000"
@@ -96,7 +88,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_io_div2_powerup: io_div2
         }
       }
       {
@@ -143,7 +134,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_aon_peri: aon
         }
       }
@@ -233,20 +223,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -302,20 +278,6 @@
         path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
         clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: lc_io_div4
@@ -747,7 +709,7 @@
       clock_srcs:
       {
         clk_i: io_div4
-        scan_clk_i: io_div2
+        scan_clk_i: io_div4
       }
       clock_group: peri
       reset_connections:
@@ -765,7 +727,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
-        scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
+        scan_clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
       memory: {}
       param_list:
@@ -3032,7 +2994,6 @@
         clk_aon_i: aon
         clk_main_i: main
         clk_io_i: io
-        clk_io_div2_i: io_div2
         clk_io_div4_i: io_div4
       }
       clock_group: powerup
@@ -3062,7 +3023,6 @@
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
         clk_main_i: clkmgr_aon_clocks.clk_main_powerup
         clk_io_i: clkmgr_aon_clocks.clk_io_powerup
-        clk_io_div2_i: clkmgr_aon_clocks.clk_io_div2_powerup
         clk_io_div4_i: clkmgr_aon_clocks.clk_io_div4_powerup
       }
       param_decl: {}
@@ -3261,11 +3221,6 @@
           name: lc_io
           domain: Aon
         }
-        rst_io_div2_ni:
-        {
-          name: lc_io_div2
-          domain: Aon
-        }
         rst_io_div4_ni:
         {
           name: lc_io_div4
@@ -3284,11 +3239,6 @@
         rst_root_io_ni:
         {
           name: por_io
-          domain: Aon
-        }
-        rst_root_io_div2_ni:
-        {
-          name: por_io_div2
           domain: Aon
         }
         rst_root_io_div4_ni:
@@ -20896,7 +20846,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_aon_peri: aon
         }
       }
@@ -20920,7 +20869,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_aon_peri: aon
         }
       }
@@ -20944,7 +20892,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_aon_peri: aon
         }
       }
@@ -21014,7 +20961,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_aon_peri: aon
         }
       }
@@ -21041,7 +20987,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_io_div2_powerup: io_div2
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
@@ -21067,7 +21012,6 @@
           clk_aon_powerup: aon
           clk_main_powerup: main
           clk_io_powerup: io
-          clk_io_div2_powerup: io_div2
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup

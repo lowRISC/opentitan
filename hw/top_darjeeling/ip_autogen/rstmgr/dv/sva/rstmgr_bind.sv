@@ -17,7 +17,6 @@ module rstmgr_bind;
     .clk_i,
     .clk_aon_i,
     .clk_io_i,
-    .clk_io_div2_i,
     .clk_io_div4_i,
     .clk_main_i,
     .por_n_i,
@@ -79,7 +78,6 @@ module rstmgr_bind;
     .reset_en_i(rst_en_o),
     .clk_aon_i,
     .clk_io_i,
-    .clk_io_div2_i,
     .clk_io_div4_i,
     .clk_main_i,
     .rst_por_ni(rst_por_ni)

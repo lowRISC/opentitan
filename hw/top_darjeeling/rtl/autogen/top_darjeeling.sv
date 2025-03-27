@@ -957,15 +957,11 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_cg_en_2;
     assign unused_cg_en_2 = clkmgr_aon_cg_en.io_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_3;
-    assign unused_cg_en_3 = clkmgr_aon_cg_en.io_div2_powerup;
+    assign unused_cg_en_3 = clkmgr_aon_cg_en.aon_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_4;
-    assign unused_cg_en_4 = clkmgr_aon_cg_en.aon_infra;
+    assign unused_cg_en_4 = clkmgr_aon_cg_en.aon_peri;
     prim_mubi_pkg::mubi4_t unused_cg_en_5;
-    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_peri;
-    prim_mubi_pkg::mubi4_t unused_cg_en_6;
-    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_timers;
-    prim_mubi_pkg::mubi4_t unused_cg_en_7;
-    assign unused_cg_en_7 = clkmgr_aon_cg_en.io_div2_peri;
+    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_timers;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -979,41 +975,33 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_rst_en_5;
     assign unused_rst_en_5 = rstmgr_aon_rst_en.por_io[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_6;
-    assign unused_rst_en_6 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_6 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_7;
-    assign unused_rst_en_7 = rstmgr_aon_rst_en.por_io_div2[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_7 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_8;
-    assign unused_rst_en_8 = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_8 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_9;
-    assign unused_rst_en_9 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_9 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_10;
-    assign unused_rst_en_10 = rstmgr_aon_rst_en.lc[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_10 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_11;
-    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_shadowed[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_11 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_12;
-    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_12 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_13;
-    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_aon[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_13 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_14;
-    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_14 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_15;
-    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_io[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_15 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_16;
-    assign unused_rst_en_16 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_16 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_17;
-    assign unused_rst_en_17 = rstmgr_aon_rst_en.lc_io_div2[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_17 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_18;
-    assign unused_rst_en_18 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_18 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_19;
-    assign unused_rst_en_19 = rstmgr_aon_rst_en.lc_io_div4_shadowed[rstmgr_pkg::Domain0Sel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_20;
-    assign unused_rst_en_20 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_21;
-    assign unused_rst_en_21 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_22;
-    assign unused_rst_en_22 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_23;
-    assign unused_rst_en_23 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_19 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
 //VCS coverage on
 // pragma coverage on
 
@@ -1136,7 +1124,7 @@ module top_darjeeling #(
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
-      .scan_clk_i (clkmgr_aon_clocks.clk_io_div2_peri),
+      .scan_clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
       .rst_ni (rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
@@ -1543,7 +1531,6 @@ module top_darjeeling #(
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_aon_clocks.clk_main_powerup),
       .clk_io_i (clkmgr_aon_clocks.clk_io_powerup),
-      .clk_io_div2_i (clkmgr_aon_clocks.clk_io_div2_powerup),
       .clk_io_div4_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_por_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
@@ -1587,12 +1574,10 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_ni (rstmgr_aon_resets.rst_lc_io_n[rstmgr_pkg::DomainAonSel]),
-      .rst_io_div2_ni (rstmgr_aon_resets.rst_lc_io_div2_n[rstmgr_pkg::DomainAonSel]),
       .rst_io_div4_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_main_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_io_ni (rstmgr_aon_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]),
-      .rst_root_io_div2_ni (rstmgr_aon_resets.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_io_div4_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_root_main_ni (rstmgr_aon_resets.rst_por_n[rstmgr_pkg::DomainAonSel])
   );
