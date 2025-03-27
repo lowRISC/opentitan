@@ -118,7 +118,7 @@ fn dispatch_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
         ));
     }
     Ok(quote! {
-        #name::#ident(ref __field) =>
+        #name::#ident(__field) =>
             opentitanlib::app::command::CommandDispatch::run(__field, context, backend)
     })
 }
@@ -141,7 +141,7 @@ fn exclusive_variant(name: &Ident, variant: &Variant) -> Result<TokenStream> {
         ));
     }
     Ok(quote! {
-        #name::#ident(ref __field) =>
+        #name::#ident(__field) =>
             opentitanlib::app::command::CommandDispatch::exclusive_use_of_transport(__field)
     })
 }
