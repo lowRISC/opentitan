@@ -171,20 +171,19 @@ Enable jittery clock
 Clock enable for software gateable clocks.
 These clocks are directly controlled by software.
 - Offset: `0x18`
-- Reset default: `0x7`
-- Reset mask: `0x7`
+- Reset default: `0x3`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                                    |
 |:------:|:------:|:-------:|:--------------------|:---------------------------------------------------------------|
-|  31:3  |        |         |                     | Reserved                                                       |
-|   2    |   rw   |   0x1   | CLK_USB_PERI_EN     | 0 CLK_USB_PERI is disabled. 1 CLK_USB_PERI is enabled.         |
-|   1    |   rw   |   0x1   | CLK_IO_DIV2_PERI_EN | 0 CLK_IO_DIV2_PERI is disabled. 1 CLK_IO_DIV2_PERI is enabled. |
+|  31:2  |        |         |                     | Reserved                                                       |
+|   1    |   rw   |   0x1   | CLK_USB_PERI_EN     | 0 CLK_USB_PERI is disabled. 1 CLK_USB_PERI is enabled.         |
 |   0    |   rw   |   0x1   | CLK_IO_DIV4_PERI_EN | 0 CLK_IO_DIV4_PERI is disabled. 1 CLK_IO_DIV4_PERI is enabled. |
 
 ## CLK_HINTS
