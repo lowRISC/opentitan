@@ -47,7 +47,6 @@ dt_reset_t dt_rstmgr_sw_reset(dt_rstmgr_t dt, size_t idx);
  * - the main power glitch reset request, coming from the `pwrmgr`,
  * - the escalation reset request, coming from the `alert_handler`,
  * - the non-debug-module reset request, coming from the `rv_dm`.
- * ```
  */
 %(reset_req_src_struct)s
 
