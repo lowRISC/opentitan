@@ -58,13 +58,6 @@ dt_instance_id_t dt_${device_name}_instance_id(
   return TRY_GET_DT(dt, kDtInstanceIdUnknown)->inst_id;
 }
 
-/**
- * Get the register base address of an instance.
- *
- * @param dt Pointer to an instance of ${device_name}.
- * @param reg_block The register block requested.
- * @return The register base address of the requested block.
- */
 uint32_t dt_${device_name}_reg_block(
     dt_${device_name}_t dt,
     dt_${device_name}_reg_block_t reg_block) {
@@ -73,16 +66,6 @@ uint32_t dt_${device_name}_reg_block(
 }
 
 % if helper.has_irqs():
-/**
- * Get the PLIC ID of a ${device_name} IRQ for a given instance.
- *
- * If the instance is not connected to the PLIC, this function
- * will return `kDtPlicIrqIdNone`.
- *
- * @param dt Pointer to an instance of ${device_name}.
- * @param irq_type A ${device_name} IRQ.
- * @return The PLIC ID of the IRQ of this instance.
- */
 dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
     dt_${device_name}_t dt,
     dt_${device_name}_irq_t irq) {
@@ -93,18 +76,6 @@ dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
   return (dt_plic_irq_id_t)((uint32_t)first_irq + (uint32_t)irq);
 }
 
-/**
- * Convert a global IRQ ID to a local ${device_name} IRQ type.
- *
- * @param dt Pointer to an instance of ${device_name}.
- * @param irq A PLIC ID that belongs to this instance.
- * @return The ${device_name} IRQ, or `${helper.irq_enum.name.as_c_enum()}Count`.
- *
- * NOTE This function assumes that the PLIC ID belongs to the instance
- * of ${device_name} passed in parameter. In other words, it must be the case that
- * `dt_${device_name}_instance_id(dt) == dt_plic_id_to_instance_id(irq)`. Otherwise, this function
- * will return `${helper.irq_enum.name.as_c_enum()}Count`.
- */
 dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
     dt_${device_name}_t dt,
     dt_plic_irq_id_t irq) {
@@ -122,34 +93,12 @@ dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
 %endif
 
 % if helper.has_alerts() and helper.has_alert_handler():
-/**
- * Get the alert ID of a ${device_name} alert for a given instance.
- *
- * NOTE This function only makes sense if the instance is connected to the Alert Handler. For any
- * instances where the instance is not connected, the return value is unspecified.
- *
- * @param dt Instance of ${device_name}.
- * @param alert_type A ${device_name} alert.
- * @return The Alert Handler alert ID of the alert of this instance.
- */
 dt_alert_id_t dt_${device_name}_alert_to_alert_id(
     dt_${device_name}_t dt,
     dt_${device_name}_alert_t alert) {
   return (dt_alert_id_t)((uint32_t)${dt_array}[dt].first_alert + (uint32_t)alert);
 }
 
-/**
- * Convert a global alert ID to a local ${device_name} alert type.
- *
- * @param dt Instance of ${device_name}.
- * @param alert A global alert ID that belongs to this instance.
- * @return The ${device_name} alert, or `${helper.alert_enum.name.as_c_enum()}Count`.
- *
- * NOTE This function assumes that the global alert ID belongs to the
- * instance of ${device_name} passed in parameter. In other words, it must be the case
- * that `dt_${device_name}_instance_id(dt) == dt_alert_id_to_instance_id(alert)`. Otherwise,
- * this function will return `${helper.alert_enum.name.as_c_enum()}Count`.
- */
 dt_${device_name}_alert_t dt_${device_name}_alert_from_alert_id(
     dt_${device_name}_t dt,
     dt_alert_id_t alert) {
@@ -163,13 +112,6 @@ dt_${device_name}_alert_t dt_${device_name}_alert_from_alert_id(
 %endif
 
 % if helper.has_periph_io():
-/**
- * Get the peripheral I/O description of an instance.
- *
- * @param dt Pointer to an instance of ${device_name}.
- * @param sig Requested peripheral I/O.
- * @return Description of the requested peripheral I/O for this instance.
- */
 dt_periph_io_t dt_${device_name}_periph_io(
     dt_${device_name}_t dt,
     dt_${device_name}_periph_io_t sig) {
@@ -179,13 +121,6 @@ dt_periph_io_t dt_${device_name}_periph_io(
 % endif
 
 % if helper.has_clocks():
-/**
- * Get the clock signal connected to a clock port of an instance.
- *
- * @param dt Instance of ${device_name}.
- * @param sig Clock port.
- * @return Clock signal.
- */
 dt_clock_t dt_${device_name}_clock(
     dt_${device_name}_t dt,
     dt_${device_name}_clock_t clk) {
@@ -195,13 +130,6 @@ dt_clock_t dt_${device_name}_clock(
 % endif
 
 % if helper.has_resets():
-/**
- * Get the reset signal connected to a reset port of an instance.
- *
- * @param dt Instance of ${device_name}.
- * @param sig Reset port.
- * @return Reset signal.
- */
 dt_reset_t dt_${device_name}_reset(
     dt_${device_name}_t dt,
     dt_${device_name}_reset_t rst) {
