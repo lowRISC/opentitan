@@ -2781,8 +2781,8 @@ pub enum PowerManagerResetRequests {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum GateableClocks {
-    /// Clock clk_io_div4_peri in group peri
-    IoDiv4Peri = 0,
+    /// Clock clk_io_peri in group peri
+    IoPeri = 0,
     /// Clock clk_usb_peri in group peri
     UsbPeri = 1,
 }

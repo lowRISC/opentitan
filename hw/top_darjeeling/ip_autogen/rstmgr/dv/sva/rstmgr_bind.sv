@@ -56,9 +56,9 @@ module rstmgr_bind;
 
   bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
     .clk_i({
-      clk_io_div4_i,
-      clk_io_div4_i,
-      clk_io_div4_i
+      clk_io_i,
+      clk_io_i,
+      clk_io_i
     }),
     .rst_ni,
     .parent_rst_n(rst_sys_src_n[1]),
