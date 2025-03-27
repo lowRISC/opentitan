@@ -8,8 +8,13 @@ from topgen.lib import Name
 from dtgen.helper import Extension
 
 module_name = helper.ip.name
+top_name = helper.top["name"]
 %>\
 
+/**
+ * @file
+ * @brief Device Tables (DT) for IP ${module_name} and top ${top_name}.
+ */
 
 #include "dt/dt_${module_name}.h"
 
