@@ -733,12 +733,13 @@ class IpHelper:
         self.reset_req_map = OrderedDict()
         # Resets are listed alongside clocks.
         for req in self.ip.reset_requests:
+            desc = req.desc
             req = req.name
             req_orig = req
             req = self.simplify_reset_request_name(req)
 
             self.reset_req_map[req_orig] = req
-            self.reset_req_enum.add_constant(Name.from_snake_case(req))
+            self.reset_req_enum.add_constant(Name.from_snake_case(req), desc)
         if isinstance(self.reset_req_enum, CEnum):
             self.reset_req_enum.add_count_constant("Number of reset requests")
 
@@ -760,7 +761,7 @@ class IpHelper:
             else:
                 rst = rst.removeprefix("rst_").removesuffix("_ni")
             self.reset_map[rst_orig] = rst
-            self.reset_enum.add_constant(Name.from_snake_case(rst))
+            self.reset_enum.add_constant(Name.from_snake_case(rst), f"Reset port {rst_orig}")
         if isinstance(self.reset_enum, CEnum):
             self.reset_enum.add_count_constant("Number of reset ports")
 
@@ -823,7 +824,7 @@ class IpHelper:
             else:
                 inst_name = m["name"]
             inst_name = Name.from_snake_case(inst_name) if inst_name != "" else Name([])
-            self.inst_enum.add_constant(inst_name)
+            self.inst_enum.add_constant(inst_name, m["name"])
             if self.first_inst_id is None:
                 self.first_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.last_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
