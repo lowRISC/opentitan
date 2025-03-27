@@ -15,8 +15,8 @@ module prim_diff_to_alert #(
   input logic                       clk_i,
   input logic                       rst_ni,
   // Input diff pair (differentially encoded alert signal)
-  input logic                       diff_p_i,
-  input logic                       diff_n_i,
+  input logic                       diff_pi,
+  input logic                       diff_ni,
   // Alert pair (interface signals for the alert protocol)
   input  prim_alert_pkg::alert_rx_t alert_rx_i,
   output prim_alert_pkg::alert_tx_t alert_tx_o
@@ -30,12 +30,12 @@ module prim_diff_to_alert #(
     ) u_sync (
       .clk_i,
       .rst_ni,
-      .d_i  ( {diff_n_i, diff_p_i}       ),
+      .d_i  ( {diff_ni, diff_pi}         ),
       .q_o  ( {diff_n_sync, diff_p_sync} )
     );
   end else begin : gen_sync
-    assign diff_p_sync = diff_p_i;
-    assign diff_n_sync = diff_n_i;
+    assign diff_p_sync = diff_pi;
+    assign diff_n_sync = diff_ni;
   end
 
   // This prevents further tool optimizations of the differential signal.
@@ -57,7 +57,7 @@ module prim_diff_to_alert #(
   ) u_prim_alert_sender (
     .clk_i,
     .rst_ni,
-    .alert_test_i  ( 1'b1      ),
+    .alert_test_i  ( 1'b0      ),
     .alert_req_i   ( alert_req ),
     .alert_ack_o   (),
     .alert_state_o (),

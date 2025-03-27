@@ -22,8 +22,8 @@ module prim_alert_to_diff #(
   output prim_alert_pkg::alert_rx_t alert_rx_o,
   input  prim_alert_pkg::alert_tx_t alert_tx_i,
   // Output diff pair (differentially encoded alert signal)
-  output logic                      diff_p_o,
-  output logic                      diff_n_o
+  output logic                      diff_po,
+  output logic                      diff_no
 );
 
   logic integ_error;
@@ -54,7 +54,7 @@ module prim_alert_to_diff #(
     .clk_i,
     .rst_ni,
     .req_i(combined_alert), // Input request signal (combined alert).
-    .diff_p_o,
-    .diff_n_o
+    .diff_po,
+    .diff_no
   );
 endmodule

@@ -13,8 +13,8 @@ module prim_diff_encode (
   // Single line input signal
   input logic  req_i,
   // Output diff pair
-  output logic diff_p_o,
-  output logic diff_n_o
+  output logic diff_po,
+  output logic diff_no
 );
   // Buff the input signal to avoid any optimization
   logic req;
@@ -46,7 +46,7 @@ module prim_diff_encode (
     .clk_i,
     .rst_ni,
     .d_i   ( diff_p_buf ),
-    .q_o   ( diff_p_o   )
+    .q_o   ( diff_po    )
   );
 
   prim_flop #(
@@ -56,6 +56,6 @@ module prim_diff_encode (
     .clk_i,
     .rst_ni,
     .d_i   ( diff_n_buf ),
-    .q_o   ( diff_n_o   )
+    .q_o   ( diff_no    )
   );
 endmodule : prim_diff_encode
