@@ -1,0 +1,49 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load(
+    "//rules:doxygen.bzl",
+    "doxygen",
+    "doxygen_gather_cc",
+    "doxygen_multitop",
+)
+
+exports_files(glob(["**"]))
+
+doxygen_gather_cc(
+    name = "doxygen_srcs",
+    deps = [
+        "//hw/top:doxy_target",
+        "//sw/device/lib/arch:doxy_target",
+        "//sw/device/lib/base:doxy_target",
+        "//sw/device/lib/dif:doxy_target",
+        "//sw/device/lib/testing:doxy_target",
+    ],
+)
+
+doxygen_multitop(
+    name = "doxygen_srcs_multitop",
+    src = ":doxygen_srcs",
+)
+
+doxygen(
+    name = "doxygen",
+    srcs = [":doxygen_srcs_multitop"],
+    data = [
+        "//:BUILD.bazel",
+        "//doc:opentitan-logo.png",
+        "//site/doxygen:footer.html",
+        "//site/doxygen:header.html",
+        "//site/doxygen:layout.xml",
+        "//site/doxygen:main_page.md",
+    ],
+    doxyfile = "//site/doxygen:Doxyfile",
+    env = {
+        "SRCTREE_TOP": ".",
+    },
+    output_groups = {
+        "html": ["doxy/"],
+        "xml": ["api-xml/"],
+    },
+)

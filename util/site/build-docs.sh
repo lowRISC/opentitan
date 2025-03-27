@@ -87,12 +87,6 @@ getURLs () {
 }
 getURLs
 
-# Build up doxygen command
-doxygen_env="env"
-doxygen_env+=" SRCTREE_TOP=${proj_root}"
-doxygen_env+=" DOXYGEN_OUT=${build_dir}/gen"
-doxygen_args="${proj_root}/util/doxygen/Doxyfile"
-
 # Register the pre-processors
 # Each book should only be passed the preprocessors it specifies inside the book.toml
 # ./book.toml
@@ -122,10 +116,13 @@ buildSite () {
     mkdir -p "${build_dir}/gen/doxy"
 
     echo "Building doxygen..."
-    pushd "${this_dir}" >/dev/null
     # shellcheck disable=SC2086
-    ${doxygen_env} doxygen ${doxygen_args}
-    popd >/dev/null
+    ./bazelisk.sh build --verbose_failures //doc:doxygen
+    while read -r line; do
+      cp -rf "$line" "${build_dir}/gen/"
+    done < <(./bazelisk.sh cquery --output=files //doc:doxygen)
+    # The files from bazel-out aren't writable. This ensures those that were copied are.
+    chmod +w -R "${build_dir}/gen/"
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
