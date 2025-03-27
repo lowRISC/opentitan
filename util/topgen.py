@@ -1544,7 +1544,8 @@ def main():
     log_level = (log.ERROR if args.get_blocks or args.check_cm else
                  log.DEBUG if args.verbose else None)
 
-    log.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
+    log.basicConfig(format="%(filename)s:%(lineno)d: %(levelname)s: %(message)s",
+                    level=log_level)
 
     if not args.outdir:
         outdir = Path(args.topcfg).parents[1]
