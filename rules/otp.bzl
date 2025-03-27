@@ -398,7 +398,7 @@ def _parse_str_list(s):
     """
     return s.replace(" ", "").split(",")
 
-def otp_alert_classification(alert_list, default = None, **kwargs):
+def otp_alert_classification(alert_list, default = None, ordered_params = {}, **kwargs):
     """Create an array specifying the alert classifications.
 
     This function creates an array of bytestrings that specifies the alert
@@ -410,6 +410,14 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
         default: default classification for all alerts that are not specified
             in kwargs. If kwargs does not include all alerts, a value must be
             specified for default.
+        ordered_params: a mapping of the format '{"alert_name": alert_class_string}'.
+            alert_name is an alert in the alert_list argument.
+            alert_class_string is a comma-delimited string that can contain
+            spaces and is intended to be parsed by the _parse_str_list macro.
+            This string must indicate exactly 4 alert classes for the prod,
+            prod_end, dev, and rma LC states in that order.
+            Use this argument instead of kwargs to ensure the order of the
+            alert classes is maintained in the bazel build file.
         kwargs: a mapping of the format 'alert_name = alert_class_string'.
             alert_name is an alert in the alert_list argument.
             alert_class_string is a comma-delimited string that can contain
@@ -440,6 +448,9 @@ def otp_alert_classification(alert_list, default = None, **kwargs):
 
     provided_alerts = dict()
     for alert, class_str in kwargs.items():
+        provided_alerts[alert] = _parse_alert_class_string(class_str)
+
+    for alert, class_str in ordered_params.items():
         provided_alerts[alert] = _parse_alert_class_string(class_str)
 
     alert_set = sets.make(alert_list)
