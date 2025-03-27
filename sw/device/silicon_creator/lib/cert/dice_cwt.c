@@ -55,7 +55,7 @@ enum payload_entry_sizes {
   // 64 byte should be enough for 2 entries
   kConfigDescBuffSize = 64,
 };
-static_assert(kIssuerSubjectNameLength < (1u << kIssuerSubjectKeyIdLength),
+static_assert(kIssuerSubjectNameLength <= kIssuerSubjectKeyIdLength * 2,
               "Insufficient SubjectNameLength");
 
 enum cwt_cert_expectations {
