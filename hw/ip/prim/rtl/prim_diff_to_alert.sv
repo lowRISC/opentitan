@@ -12,14 +12,14 @@ module prim_diff_to_alert #(
   // keep on sending alert events until the next reset.
   parameter bit IsFatal = 1'b1
 ) (
-  input logic       clk_i,
-  input logic       rst_ni,
+  input logic                       clk_i,
+  input logic                       rst_ni,
   // Input diff pair (differentially encoded alert signal)
-  input logic       diff_p_i,
-  input logic       diff_n_i,
+  input logic                       diff_p_i,
+  input logic                       diff_n_i,
   // Alert pair (interface signals for the alert protocol)
-  input  alert_rx_t alert_rx_i,
-  output alert_tx_t alert_tx_o
+  input  prim_alert_pkg::alert_rx_t alert_rx_i,
+  output prim_alert_pkg::alert_tx_t alert_tx_o
 );
   logic diff_p_sync, diff_n_sync;
 
@@ -49,7 +49,7 @@ module prim_diff_to_alert #(
 
   // Treat any positive value on `diff_p_buf` and any negative value on `diff_n_buf` as alert.
   logic alert_req;
-  assign alert_req = diff_p_buf | ~diff_n_buf
+  assign alert_req = diff_p_buf | ~diff_n_buf;
 
   prim_alert_sender #(
     .AsyncOn(AsyncOn),
@@ -61,7 +61,7 @@ module prim_diff_to_alert #(
     .alert_req_i   ( alert_req ),
     .alert_ack_o   (),
     .alert_state_o (),
-    .alert_rx_i
+    .alert_rx_i,
     .alert_tx_o
   );
 endmodule

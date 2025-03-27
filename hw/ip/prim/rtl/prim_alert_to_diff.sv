@@ -16,14 +16,14 @@ module prim_alert_to_diff #(
   // AsyncOn: Enables additional synchronization logic within the alert receiver.
   parameter bit AsyncOn = 1'b0
 ) (
-  input logic       clk_i,
-  input logic       rst_ni,
+  input logic                       clk_i,
+  input logic                       rst_ni,
   // Alert pair (interface signals for the alert protocol)
-  output alert_rx_t alert_rx_o,
-  input  alert_tx_t alert_tx_i,
+  output prim_alert_pkg::alert_rx_t alert_rx_o,
+  input  prim_alert_pkg::alert_tx_t alert_tx_i,
   // Output diff pair (differentially encoded alert signal)
-  output logic      diff_p_o,
-  output logic      diff_n_o
+  output logic                      diff_p_o,
+  output logic                      diff_n_o
 );
 
   logic integ_error;
@@ -50,7 +50,7 @@ module prim_alert_to_diff #(
   assign combined_alert = integ_error | alert;
 
   // Instantiates the differential encoder module.
-  prim_diff_encode (
+  prim_diff_encode u_prim_diff_encode (
     .clk_i,
     .rst_ni,
     .req_i(combined_alert), // Input request signal (combined alert).
