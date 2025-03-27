@@ -30,8 +30,8 @@ interface pwrmgr_if (
   pwrmgr_pkg::pwr_otp_req_t                                    pwr_otp_req;
   pwrmgr_pkg::pwr_otp_rsp_t                                    pwr_otp_rsp;
 
-  pwrmgr_pkg::pwr_lc_req_t                                     pwr_lc_req;
-  pwrmgr_pkg::pwr_lc_rsp_t                                     pwr_lc_rsp;
+  lc_ctrl_pkg::pwr_lc_req_t                                    pwr_lc_req;
+  lc_ctrl_pkg::pwr_lc_rsp_t                                    pwr_lc_rsp;
 
   pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
 

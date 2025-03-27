@@ -1578,7 +1578,7 @@
         {
           name: pwr_lc
           struct: pwr_lc
-          package: pwrmgr_pkg
+          package: lc_ctrl_pkg
           type: req_rsp
           act: req
           width: 1
@@ -9736,7 +9736,7 @@
       {
         name: pwr_lc
         struct: pwr_lc
-        package: pwrmgr_pkg
+        package: lc_ctrl_pkg
         type: req_rsp
         act: req
         width: 1

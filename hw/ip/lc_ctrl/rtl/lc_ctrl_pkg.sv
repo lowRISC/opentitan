@@ -10,6 +10,23 @@ package lc_ctrl_pkg;
   import prim_util_pkg::vbits;
   import lc_ctrl_state_pkg::*;
 
+  // pwrmgr to lifecycle
+  typedef struct packed {
+    logic lc_init;
+  } pwr_lc_req_t;
+
+  // lifecycle to pwrmgr
+  typedef struct packed {
+    logic lc_done;
+    logic lc_idle;
+  } pwr_lc_rsp_t;
+
+  // default value (for dangling ports)
+  parameter pwr_lc_rsp_t PWR_LC_RSP_DEFAULT = '{
+    lc_done: 1'b1,
+    lc_idle: 1'b1
+  };
+
   ///////////////////////////////////////
   // Netlist Constants (Hashed Tokens) //
   ///////////////////////////////////////

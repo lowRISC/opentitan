@@ -51,8 +51,8 @@ module pwrmgr
   output pwr_otp_req_t pwr_otp_o,
 
   // life cycle interface
-  input  pwr_lc_rsp_t pwr_lc_i,
-  output pwr_lc_req_t pwr_lc_o,
+  input  lc_ctrl_pkg::pwr_lc_rsp_t pwr_lc_i,
+  output lc_ctrl_pkg::pwr_lc_req_t pwr_lc_o,
 
   // flash interface
   input  pwr_flash_t pwr_flash_i,

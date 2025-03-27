@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
 description: "Power manager package"
-virtual:
-  - lowrisc:virtual_ip:pwrmgr_pkg
 
 filesets:
   files_rtl:

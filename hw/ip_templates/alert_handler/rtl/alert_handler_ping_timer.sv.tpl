@@ -6,7 +6,7 @@
 // LFSR-based PRNG to
 //
 // a) determine the next peripheral index to be pinged (can be an alert receiver or an
-//    escalation sender). it is detected that this particular peripheral is disabled,
+//    escalation sender). If it is detected that a particular peripheral is disabled,
 //    another index will be drawn from the PRNG.
 //
 // b) determine the amount of pause cycles to wait before pinging the peripheral selected in a).
@@ -42,7 +42,7 @@ module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*;
   input        [PING_CNT_DW-1:0]   ping_timeout_cyc_i, // timeout in cycles
   input        [PING_CNT_DW-1:0]   wait_cyc_mask_i,    // mask to shorten the counters in DV / FPV
   output logic [NAlerts-1:0]       alert_ping_req_o,   // request to alert receivers
-  output logic [N_ESC_SEV-1:0]     esc_ping_req_o,     // enable to esc senders
+  output logic [N_ESC_SEV-1:0]     esc_ping_req_o,     // request to esc senders
   input        [NAlerts-1:0]       alert_ping_ok_i,    // response from alert receivers
   input        [N_ESC_SEV-1:0]     esc_ping_ok_i,      // response from esc senders
   output logic                     alert_ping_fail_o,  // any of the alert receivers failed

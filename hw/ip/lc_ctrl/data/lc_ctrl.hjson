@@ -276,7 +276,7 @@
       type:    "req_rsp",
       name:    "pwr_lc",
       act:     "rsp",
-      package: "pwrmgr_pkg",
+      package: "lc_ctrl_pkg",
     },
     // Macro-specific test signals to/from LC TAP/DMI
     { struct:  "lc_otp_vendor_test"

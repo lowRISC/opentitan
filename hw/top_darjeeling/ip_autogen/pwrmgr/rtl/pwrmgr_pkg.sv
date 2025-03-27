@@ -120,23 +120,6 @@ package pwrmgr_pkg;
     otp_idle: 1'b1
   };
 
-  // pwrmgr to lifecycle
-  typedef struct packed {
-    logic lc_init;
-  } pwr_lc_req_t;
-
-  // lifecycle to pwrmgr
-  typedef struct packed {
-    logic lc_done;
-    logic lc_idle;
-  } pwr_lc_rsp_t;
-
-  // default value (for dangling ports)
-  parameter pwr_lc_rsp_t PWR_LC_RSP_DEFAULT = '{
-    lc_done: 1'b1,
-    lc_idle: 1'b1
-  };
-
   typedef struct packed {
     logic flash_idle;
   } pwr_flash_t;

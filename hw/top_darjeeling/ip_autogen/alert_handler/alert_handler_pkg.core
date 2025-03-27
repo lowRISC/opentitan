@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:darjeeling_ip:alert_handler_pkg:0.1
 description: "Alert Handler constants in packages"
-virtual:
-  - "lowrisc:virtual_ip:alert_handler_pkg"
 
 filesets:
   files_rtl:
