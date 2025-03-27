@@ -62,8 +62,8 @@ module lc_ctrl
   input  prim_esc_pkg::esc_rx_t                      esc_scrap_state1_tx_i,
   output prim_esc_pkg::esc_tx_t                      esc_scrap_state1_rx_o,
   // Power manager interface (inputs are synced to lifecycle clock domain).
-  input  pwrmgr_pkg::pwr_lc_req_t                    pwr_lc_i,
-  output pwrmgr_pkg::pwr_lc_rsp_t                    pwr_lc_o,
+  input  pwr_lc_req_t                                pwr_lc_i,
+  output pwr_lc_rsp_t                                pwr_lc_o,
   // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1,
   // Otherwise this output is tied off to 0.
   output logic                                       strap_en_override_o,

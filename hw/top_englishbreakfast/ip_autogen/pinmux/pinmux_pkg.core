@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:englishbreakfast_ip:pinmux_pkg:0.1
 description: "Pinmux package"
-virtual:
-  - lowrisc:virtual_ip:pinmux_pkg
 
 filesets:
   files_rtl:

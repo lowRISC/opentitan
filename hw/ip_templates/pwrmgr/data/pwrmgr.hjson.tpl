@@ -182,7 +182,7 @@
       type:    "req_rsp",
       name:    "pwr_lc",
       act:     "req",
-      package: "pwrmgr_pkg",
+      package: "lc_ctrl_pkg",
     },
 
     { struct:  "pwr_flash",

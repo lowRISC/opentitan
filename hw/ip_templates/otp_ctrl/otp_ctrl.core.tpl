@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:otp_ctrl:1.0")}
 description: "OTP Controller"
-virtual:
-  - lowrisc:virtual_ip:otp_ctrl
 
 filesets:
   files_rtl:
