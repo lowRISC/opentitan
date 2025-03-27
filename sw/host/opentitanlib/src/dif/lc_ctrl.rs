@@ -340,7 +340,7 @@ impl DifLcCtrlToken {
     }
 }
 
-#[derive(Clone, Copy, Debug, strum::EnumString)]
+#[derive(clap::ValueEnum, Clone, Copy, Debug, strum::EnumString)]
 #[strum(serialize_all = "snake_case")]
 #[repr(u32)]
 pub enum LcCtrlReg {
