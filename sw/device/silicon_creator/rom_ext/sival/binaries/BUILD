@@ -3,8 +3,19 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
+load("//rules:files.bzl", "copy_files")
 
 package(default_visibility = ["//visibility:public"])
+
+copy_files(
+    name = "copy_signed",
+    testonly = True,
+    srcs = [
+        "//sw/device/silicon_creator/rom_ext/sival:signed",
+    ],
+    relative_to = ":BUILD",
+    tags = ["manual"],
+)
 
 exec_env_filegroup(
     name = "rom_ext_dice_x509_prod",
