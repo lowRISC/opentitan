@@ -7,6 +7,11 @@
 from topgen.lib import Name, is_top_reggen, is_ipgen
 %>
 
+/**
+ * @file
+ * @brief Device Tables (DT) API for top ${helper.top["name"]}
+ */
+
 #include "dt/dt_api.h"
 #include "hw/top_${helper.top["name"]}/sw/autogen/top_${helper.top["name"]}.h"
 #include <stdint.h>
