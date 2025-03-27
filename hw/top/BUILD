@@ -163,3 +163,19 @@ cc_library(
         for ip in ALL_IP_NAMES
     ]),
 )
+
+cc_library(
+    name = "doxy_target",
+    deps = [
+        # Pull all DT headers and implementation, transitively includes top headers.
+        ":dt",
+    ] + flatten([
+        # Add all compatible register headers
+        opentitan_if_ip(
+            ip,
+            ["{}_c_regs".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+)
