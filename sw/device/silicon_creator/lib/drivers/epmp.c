@@ -76,7 +76,8 @@ uint32_t epmp_encode_napot(epmp_region_t region) {
 }
 
 epmp_region_t epmp_decode_napot(uint32_t pmpaddr) {
-  uint32_t size = 1 << bitfield_count_trailing_zeroes32(~pmpaddr);
+  HARDENED_CHECK_NE(pmpaddr, UINT32_MAX);
+  uint32_t size = 1u << bitfield_count_trailing_zeroes32(~pmpaddr);
   pmpaddr = (pmpaddr & ~(size - 1)) << 2;
   size <<= 3;
   return (epmp_region_t){.start = pmpaddr, .end = pmpaddr + size};
