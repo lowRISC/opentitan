@@ -338,7 +338,6 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         "ping_cnt_dw": ping_cnt_dw,
         "n_lpg": n_lpgs,
         "lpg_map": lpg_map,
-        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
 
@@ -484,7 +483,6 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
-        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
         "scan_role_pkg_vlnv": f"lowrisc:systems:top_{topname}_scan_role_pkg",
     }
 
@@ -540,8 +538,6 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
         len(clocks.groups),
         "with_alert_handler":
         with_alert_handler,
-        "top_pkg_vlnv":
-        f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
 
@@ -590,7 +586,6 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
         "rst_reqs": top["reset_requests"],
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
-        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
 
@@ -656,7 +651,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "export_rsts": top["exported_rsts"],
         "alert_handler_vlnv": alert_handler_vlnv,
         "with_alert_handler": with_alert_handler,
-        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
 
@@ -686,7 +680,6 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
         "metadata_width": 12,
         "info_types": 3,
         "infos_per_bank": [10, 1, 2],
-        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     })
 
     params.pop('base_addrs', None)

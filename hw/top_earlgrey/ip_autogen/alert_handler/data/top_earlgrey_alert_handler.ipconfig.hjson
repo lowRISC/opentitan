@@ -149,7 +149,6 @@
       5'd17
       5'd17
     ]
-    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
     uniquified_modules: {}
   }

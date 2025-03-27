@@ -225,7 +225,6 @@
       5'd10
       5'd10
     ]
-    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
     uniquified_modules: {}
   }

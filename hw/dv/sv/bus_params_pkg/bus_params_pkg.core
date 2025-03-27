@@ -8,7 +8,7 @@ description: "Package holding common bus parameters such as widths."
 filesets:
   files_dv:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
     files:
       - bus_params_pkg.sv
     file_type: systemVerilogSource

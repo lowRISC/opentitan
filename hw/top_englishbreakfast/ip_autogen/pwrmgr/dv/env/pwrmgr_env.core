@@ -11,7 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:englishbreakfast_ip:pwrmgr_pkg
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}

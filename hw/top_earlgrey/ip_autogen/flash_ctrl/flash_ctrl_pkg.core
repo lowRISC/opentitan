@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_earlgrey_top_pkg
+      - lowrisc:earlgrey_constants:top_pkg
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:earlgrey_ip:pwrmgr_pkg

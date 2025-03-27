@@ -8,7 +8,7 @@ description: "KMAC Package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:ip:sha3
     files:
       - rtl/kmac_pkg.sv

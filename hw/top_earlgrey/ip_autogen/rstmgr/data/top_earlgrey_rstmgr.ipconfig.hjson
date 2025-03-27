@@ -692,7 +692,6 @@
     export_rsts: {}
     alert_handler_vlnv: lowrisc:earlgrey_ip:alert_handler_pkg
     with_alert_handler: true
-    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
     uniquified_modules: {}
   }

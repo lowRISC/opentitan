@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:tlul:common
       - lowrisc:tlul:trans_intg
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
     files:
       - rtl/tlul_adapter_host.sv
     file_type: systemVerilogSource

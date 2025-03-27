@@ -8,7 +8,7 @@ description: "Flash Package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:ip:edn_pkg
     files:
       - rtl/keymgr_reg_pkg.sv

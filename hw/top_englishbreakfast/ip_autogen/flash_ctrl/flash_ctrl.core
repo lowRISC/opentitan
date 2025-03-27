@@ -22,7 +22,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:englishbreakfast_ip:flash_ctrl_pkg
       - lowrisc:englishbreakfast_ip:flash_ctrl_reg
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
       - lowrisc:ip:jtag_pkg
     files:
       - rtl/flash_ctrl.sv

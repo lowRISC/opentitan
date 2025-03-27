@@ -71,7 +71,6 @@
     }
     wait_for_external_reset: true
     NumRomInputs: 3
-    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
     uniquified_modules: {}
   }
