@@ -11,7 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:earlgrey_ip:clkmgr_pkg
-      - lowrisc:constants:top_earlgrey_top_pkg
+      - lowrisc:earlgrey_constants:top_pkg
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv

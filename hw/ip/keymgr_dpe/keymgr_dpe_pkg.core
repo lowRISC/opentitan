@@ -8,7 +8,7 @@ description: "Keymgr DPE Package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:keymgr_pkg
     files:

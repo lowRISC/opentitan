@@ -7,7 +7,7 @@ description: "uart"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
       - lowrisc:systems:top_racl_pkg

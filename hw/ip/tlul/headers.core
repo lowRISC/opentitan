@@ -8,7 +8,7 @@ description: "TL-UL headers"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:secded
       - lowrisc:prim:mubi_pkg
     files:

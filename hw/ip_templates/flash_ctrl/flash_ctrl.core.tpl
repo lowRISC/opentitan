@@ -22,7 +22,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
-      - ${top_pkg_vlnv}
+      - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - lowrisc:ip:jtag_pkg
     files:
       - rtl/flash_ctrl.sv

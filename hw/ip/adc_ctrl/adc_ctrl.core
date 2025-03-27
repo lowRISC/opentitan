@@ -7,7 +7,7 @@ description: "USB-C debug cable detection (CC1/CC2 voltage sensing)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
       - "fileset_partner  ? (partner:systems:ast_pkg)"

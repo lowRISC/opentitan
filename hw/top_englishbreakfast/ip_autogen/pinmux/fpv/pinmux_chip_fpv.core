@@ -16,7 +16,7 @@ filesets:
       - lowrisc:englishbreakfast_ip:pinmux:0.1
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:englishbreakfast_fpv:pinmux_common_fpv:0.1
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
       - lowrisc:systems:top_englishbreakfast_scan_role_pkg
     files:
       - tb/pinmux_chip_tb.sv

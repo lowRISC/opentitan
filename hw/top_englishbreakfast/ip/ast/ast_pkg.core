@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/ast_pkg.sv

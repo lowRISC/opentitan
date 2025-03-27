@@ -10,7 +10,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_pkg:0.1")}
       - lowrisc:prim:mubi_pkg
-      - ${top_pkg_vlnv}
+      - ${instance_vlnv("lowrisc:constants:top_pkg")}
     files:
       - ${module_instance_name}_env_pkg.sv
       - ${module_instance_name}_if.sv

@@ -11,7 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:englishbreakfast_ip:pwrmgr_pkg
       - lowrisc:englishbreakfast_ip:clkmgr_pkg
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv
