@@ -8,12 +8,20 @@
     from dtgen.helper import Extension
 
     device_name = helper.ip.name
+    top_name = helper.top["name"]
 
     include_guard = "OPENTITAN_DT_{}_H_".format(device_name.upper())
 %>\
 
 #ifndef ${include_guard}
 #define ${include_guard}
+
+/**
+ * @file
+ * @brief Device Tables (DT) for IP ${device_name} and top ${top_name}.
+ *
+ * This file contains the type definitions and global functions of the ${device_name}.
+ */
 
 #include "dt_api.h"
 #include <stdint.h>
@@ -113,10 +121,10 @@ ${helper.feature_defines.render()}
  *
  * For example, `dt_uart_from_instance_id(kDtInstanceIdUart3) == kDtUart3`.
  *
- * @param dt Instance ID.
+ * @param inst_id Instance ID.
  * @return A ${device_name} instance.
  *
- * NOTE This function only makes sense if the instance ID has device type ${device_name},
+ * **Note:** This function only makes sense if the instance ID has device type ${device_name},
  * otherwise the returned value is unspecified.
  */
 dt_${device_name}_t dt_${device_name}_from_instance_id(dt_instance_id_t inst_id);
@@ -162,7 +170,7 @@ static inline uint32_t dt_${device_name}_primary_reg_block(
  * will return `kDtPlicIrqIdNone`.
  *
  * @param dt Instance of ${device_name}.
- * @param irq_type A ${device_name} IRQ.
+ * @param irq A ${device_name} IRQ.
  * @return The PLIC ID of the IRQ of this instance.
  */
 dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
@@ -176,7 +184,7 @@ dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
  * @param irq A PLIC ID that belongs to this instance.
  * @return The ${device_name} IRQ, or `${helper.irq_enum.name.as_c_enum()}Count`.
  *
- * NOTE This function assumes that the PLIC ID belongs to the instance
+ * **Note:** This function assumes that the PLIC ID belongs to the instance
  * of ${device_name} passed in parameter. In other words, it must be the case that
  * `dt_${device_name}_instance_id(dt) == dt_plic_id_to_instance_id(irq)`. Otherwise, this function
  * will return `${helper.irq_enum.name.as_c_enum()}Count`.
@@ -191,11 +199,11 @@ dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
 /**
  * Get the alert ID of a ${device_name} alert for a given instance.
  *
- * NOTE This function only makes sense if the instance is connected to the Alert Handler. For any
+ * **Note:** This function only makes sense if the instance is connected to the Alert Handler. For any
  * instances where the instance is not connected, the return value is unspecified.
  *
  * @param dt Instance of ${device_name}.
- * @param alert_type A ${device_name} alert.
+ * @param alert A ${device_name} alert.
  * @return The Alert Handler alert ID of the alert of this instance.
  */
 dt_alert_id_t dt_${device_name}_alert_to_alert_id(
@@ -209,7 +217,7 @@ dt_alert_id_t dt_${device_name}_alert_to_alert_id(
  * @param alert A global alert ID that belongs to this instance.
  * @return The ${device_name} alert, or `${helper.alert_enum.name.as_c_enum()}Count`.
  *
- * NOTE This function assumes that the global alert ID belongs to the
+ * **Note:** This function assumes that the global alert ID belongs to the
  * instance of ${device_name} passed in parameter. In other words, it must be the case
  * that `dt_${device_name}_instance_id(dt) == dt_alert_id_to_instance_id(alert)`. Otherwise,
  * this function will return `${helper.alert_enum.name.as_c_enum()}Count`.
@@ -238,7 +246,7 @@ dt_periph_io_t dt_${device_name}_periph_io(
  * Get the clock signal connected to a clock port of an instance.
  *
  * @param dt Instance of ${device_name}.
- * @param sig Clock port.
+ * @param clk Clock port.
  * @return Clock signal.
  */
 dt_clock_t dt_${device_name}_clock(
@@ -251,7 +259,7 @@ dt_clock_t dt_${device_name}_clock(
  * Get the reset signal connected to a reset port of an instance.
  *
  * @param dt Instance of ${device_name}.
- * @param sig Reset port.
+ * @param rst Reset port.
  * @return Reset signal.
  */
 dt_reset_t dt_${device_name}_reset(
