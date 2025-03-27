@@ -43,12 +43,6 @@ module tb;
     .rst_n()
   );
 
-  wire clk_io_div2;
-  clk_rst_if io_div2_clk_rst_if (
-    .clk  (clk_io_div2),
-    .rst_n()
-  );
-
 
   tl_if tl_if (
     .clk,
@@ -65,7 +59,6 @@ module tb;
     clk_rst_if.set_active();
     aon_clk_rst_if.set_active();
     io_clk_rst_if.set_active();
-    io_div2_clk_rst_if.set_active();
     io_div4_clk_rst_if.set_active();
     main_clk_rst_if.set_active();
   end
@@ -80,7 +73,6 @@ module tb;
     .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .clk_aon_i    (clk_aon),
     .clk_io_i     (clk_io),
-    .clk_io_div2_i(clk_io_div2),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
     .clk_por_i    (clk_io_div4),
@@ -116,8 +108,6 @@ module tb;
                                             aon_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif",
                                             io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif",
-                                            io_div2_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif",
                                             io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif",

@@ -337,7 +337,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
       reset_duration_ps,
       cfg.aon_clk_rst_vif.clk_period_ps,
       cfg.io_clk_rst_vif.clk_period_ps,
-      cfg.io_div2_clk_rst_vif.clk_period_ps,
       cfg.io_div4_clk_rst_vif.clk_period_ps,
       cfg.main_clk_rst_vif.clk_period_ps
     };
@@ -347,18 +346,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.drive_rst_pin(0);
     cfg.root_main_clk_rst_vif.drive_rst_pin(0);
     cfg.root_io_clk_rst_vif.drive_rst_pin(0);
-    cfg.root_io_div2_clk_rst_vif.drive_rst_pin(0);
     cfg.root_io_div4_clk_rst_vif.drive_rst_pin(0);
     cfg.aon_clk_rst_vif.drive_rst_pin(0);
     cfg.io_clk_rst_vif.drive_rst_pin(0);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(0);
     cfg.io_div4_clk_rst_vif.drive_rst_pin(0);
     cfg.main_clk_rst_vif.drive_rst_pin(0);
 
     #(reset_duration_ps * $urandom_range(2, 10) * 1ps);
     cfg.root_main_clk_rst_vif.drive_rst_pin(1);
     cfg.root_io_clk_rst_vif.drive_rst_pin(1);
-    cfg.root_io_div2_clk_rst_vif.drive_rst_pin(1);
     cfg.root_io_div4_clk_rst_vif.drive_rst_pin(1);
     `uvm_info(`gfn, "apply_resets_concurrently releases POR", UVM_MEDIUM)
 
@@ -366,7 +362,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.drive_rst_pin(1);
     cfg.aon_clk_rst_vif.drive_rst_pin(1);
     cfg.io_clk_rst_vif.drive_rst_pin(1);
-    cfg.io_div2_clk_rst_vif.drive_rst_pin(1);
     cfg.io_div4_clk_rst_vif.drive_rst_pin(1);
     cfg.main_clk_rst_vif.drive_rst_pin(1);
     `uvm_info(`gfn, "apply_resets_concurrently releases other resets", UVM_MEDIUM)
@@ -379,7 +374,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
         cfg.clk_rst_vif.apply_reset();
         cfg.aon_clk_rst_vif.apply_reset();
         cfg.io_clk_rst_vif.apply_reset();
-        cfg.io_div2_clk_rst_vif.apply_reset();
         cfg.io_div4_clk_rst_vif.apply_reset();
         cfg.main_clk_rst_vif.apply_reset();
       join
