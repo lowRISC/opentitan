@@ -147,6 +147,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   );
 
 % endfor
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -160,6 +161,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
 % for src_name in derived_clks:
   logic clk_${src_name};
 % endfor
+% endif
 
 % for src in derived_clks.values():
 
@@ -259,6 +261,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -290,6 +293,16 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
+  % else:
+  // No bypass as there are no derived clocks
+
+  // Read inputs and tie-off outputs
+  logic unused_bypass = ^{lc_clk_byp_req_i, all_clk_byp_ack_i, io_clk_byp_ack_i};
+
+  assign all_clk_byp_req_o               = prim_mubi_pkg::MuBi4False;
+  assign io_clk_byp_req_o                = prim_mubi_pkg::MuBi4False;
+  assign all_clkhi_speed_sel_o_byp_req_o = prim_mubi_pkg::MuBi4False;
+  % endif
 
   ////////////////////////////////////////////////////
   // Feed through clocks
