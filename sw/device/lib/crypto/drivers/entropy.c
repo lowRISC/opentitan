@@ -767,7 +767,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       config->alert_threshold);
   exp_reg = bitfield_field32_write(
       exp_reg, ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_FIELD,
-      ~config->alert_threshold);
+      ~(uint32_t)config->alert_threshold);
   if (exp_reg != abs_mmio_read32(kBaseEntropySrc +
                                  ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET)) {
     return OTCRYPTO_RECOV_ERR;
