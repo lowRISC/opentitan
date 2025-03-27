@@ -264,6 +264,35 @@
         ]
       }
     },
+    "//third_party/doxygen:extensions.bzl%doxygen": {
+      "general": {
+        "bzlTransitiveDigest": "2sWNfb6gQPQ+2L4xxaNYIwOBgpWEKN1B6LlvQnnhT9A=",
+        "usagesDigest": "rs9zP1p9+nnwMU8RTk53mNhGcEtuU9Uep1EcTwwPxGM=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "doxygen": {
+            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:http.bzl%http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/doxygen:BUILD.doxygen.bazel",
+              "sha256": "f2c0a349403bc5b5ade3f501301e32b49ea31b3182666954bc398452fbc0dd1c",
+              "strip_prefix": "doxygen-1.13.2",
+              "urls": [
+                "https://github.com/doxygen/doxygen/releases/download/Release_1_13_2/doxygen-1.13.2.linux.bin.tar.gz"
+              ]
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/freertos:extensions.bzl%freertos": {
       "general": {
         "bzlTransitiveDigest": "PUJzsWOE7C3+Bw/DAmv3qaXaycdxAoaCr68tQ8wWXsQ=",
