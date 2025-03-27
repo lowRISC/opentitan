@@ -160,6 +160,18 @@ TEST(UJson, ParseIntegerError) {
   s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
   EXPECT_EQ(status_err(s), kNotFound);
 
+  // A number that can NOT be represented in a 64-bit unsigned integer.
+  // number = UINT64_MAX + 1.
+  ss.Reset("18446744073709551616");
+  s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
+  EXPECT_EQ(status_err(s), kOutOfRange);
+
+  // A number that can NOT be represented in a 64-bit unsigned integer.
+  // number / 10 > UINT64_MAX / 10.
+  ss.Reset("18446744073709551620");
+  s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
+  EXPECT_EQ(status_err(s), kOutOfRange);
+
   // Negative number that can NOT be represented in a 64-bit signed integer.
   ss.Reset("-9223372036854775809");
   s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
