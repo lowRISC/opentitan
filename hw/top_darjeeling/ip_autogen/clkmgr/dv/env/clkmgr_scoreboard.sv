@@ -124,14 +124,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
                                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
         end
-      forever
-        @cfg.clkmgr_vif.peri_io_div2_cb begin
-          if (cfg.io_clk_rst_vif.rst_n && cfg.en_cov) begin
-            cov.peri_cg_wrap[PeriIoDiv2].sample(cfg.clkmgr_vif.peri_io_div2_cb.clk_enable,
-                                                cfg.clkmgr_vif.peri_io_div2_cb.ip_clk_en,
-                                                cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
     join
   endtask
 
@@ -303,15 +295,11 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "io_meas_ctrl_en": begin
       end
-      "io_div2_meas_ctrl_en": begin
-      end
       "io_div4_meas_ctrl_en": begin
       end
       "main_meas_ctrl_en": begin
       end
       "io_meas_ctrl_shadowed": begin
-      end
-      "io_div2_meas_ctrl_shadowed": begin
       end
       "io_div4_meas_ctrl_shadowed": begin
       end

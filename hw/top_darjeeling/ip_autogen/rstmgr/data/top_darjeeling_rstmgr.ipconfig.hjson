@@ -11,7 +11,6 @@
       io_div4: 250000000
       main: 1000000000
       io: 1000000000
-      io_div2: 500000000
     }
     reqs:
     {
@@ -109,20 +108,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -178,20 +163,6 @@
         path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
         clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: lc_io_div4
@@ -310,20 +281,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -379,20 +336,6 @@
         path: rstmgr_aon_resets.rst_lc_io_n
         parent: lc_src
         clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: lc_io_div4

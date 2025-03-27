@@ -1648,8 +1648,7 @@ typedef enum top_darjeeling_power_manager_reset_requests {
  */
 typedef enum top_darjeeling_gateable_clocks {
   kTopDarjeelingGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
-  kTopDarjeelingGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopDarjeelingGateableClocksLast = 1, /**< \internal Last Valid Gateable Clock */
+  kTopDarjeelingGateableClocksLast = 0, /**< \internal Last Valid Gateable Clock */
 } top_darjeeling_gateable_clocks_t;
 
 /**

@@ -36,15 +36,6 @@ module clkmgr_bind;
     .gated_clk(clocks_o.clk_io_div4_peri)
   );
 
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div2_peri_sva_if (
-    .clk(clocks_o.clk_io_div2_powerup),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(pwr_i.io_ip_clk_en),
-    .sw_clk_en(clk_io_div2_peri_sw_en),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_io_div2_peri)
-  );
-
   // Assertions for transactional clocks.
   bind clkmgr clkmgr_trans_sva_if clkmgr_aes_trans_sva_if (
     .clk(clk_main_i),
@@ -136,10 +127,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.aon_timers == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div2_powerup (
-    .cg_en(cg_en_o.io_div2_powerup == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div4_powerup (
     .cg_en(cg_en_o.io_div4_powerup == prim_mubi_pkg::MuBi4True)
   );
@@ -206,15 +193,6 @@ module clkmgr_bind;
     .sw_clk_en(clk_io_div4_peri_sw_en),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_peri == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_peri (
-    .clk(clk_io_div2),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(clk_io_div2_en),
-    .sw_clk_en(clk_io_div2_peri_sw_en),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
   );
 
   // Hint controlled gating enables.

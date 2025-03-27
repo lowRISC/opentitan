@@ -45,7 +45,7 @@ All common types and methods defined at the package level can be found in
 `clkmgr_env_pkg`. Some of them in use are:
 
 ```systemverilog
-  localparam int NUM_PERI = 2;
+  localparam int NUM_PERI = 1;
   localparam int NUM_TRANS = 4;
   localparam int NUM_ALERTS = 2;
 
@@ -55,8 +55,7 @@ All common types and methods defined at the package level can be found in
   typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
   typedef enum int {
-    PeriIoDiv4,
-    PeriIoDiv2
+    PeriIoDiv4
   } peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;
 ```

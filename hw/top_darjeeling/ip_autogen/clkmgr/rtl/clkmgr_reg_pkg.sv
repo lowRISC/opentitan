@@ -8,7 +8,7 @@ package clkmgr_reg_pkg;
 
   // Param list
   parameter int NumGroups = 7;
-  parameter int NumSwGateableClocks = 2;
+  parameter int NumSwGateableClocks = 1;
   parameter int NumHintableClocks = 4;
   parameter int NumAlerts = 2;
 
@@ -47,12 +47,7 @@ package clkmgr_reg_pkg;
   } clkmgr_reg2hw_jitter_enable_reg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } clk_io_div2_peri_en;
-    struct packed {
-      logic        q;
-    } clk_io_div4_peri_en;
+    logic        q;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {
@@ -190,10 +185,10 @@ package clkmgr_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    clkmgr_reg2hw_alert_test_reg_t alert_test; // [53:50]
-    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [49:42]
-    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [41:38]
-    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [37:36]
+    clkmgr_reg2hw_alert_test_reg_t alert_test; // [52:49]
+    clkmgr_reg2hw_extclk_ctrl_reg_t extclk_ctrl; // [48:41]
+    clkmgr_reg2hw_jitter_enable_reg_t jitter_enable; // [40:37]
+    clkmgr_reg2hw_clk_enables_reg_t clk_enables; // [36:36]
     clkmgr_reg2hw_clk_hints_reg_t clk_hints; // [35:32]
     clkmgr_reg2hw_measure_ctrl_regwen_reg_t measure_ctrl_regwen; // [31:31]
     clkmgr_reg2hw_io_div4_meas_ctrl_en_reg_t io_div4_meas_ctrl_en; // [30:27]

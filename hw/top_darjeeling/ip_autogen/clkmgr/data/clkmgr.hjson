@@ -37,11 +37,9 @@
     {clock: "clk_main_i", reset: "rst_main_ni"},
     {clock: "clk_io_i", reset: "rst_io_ni"},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
-    {clock: "clk_io_div2_i", reset: "rst_io_div2_ni", internal: true},
     {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
     {reset: "rst_root_main_ni"},
     {reset: "rst_root_io_ni"},
-    {reset: "rst_root_io_div2_ni"},
     {reset: "rst_root_io_div4_ni"},
   ]
   bus_interfaces: [
@@ -70,7 +68,7 @@
     { name: "NumSwGateableClocks",
       desc: "Number of SW gateable clocks",
       type: "int",
-      default: "2",
+      default: "1",
       local: "true"
     },
     { name: "NumHintableClocks",
@@ -84,9 +82,6 @@
   features: [
     { name: "CLKMGR.ENABLE.IO_DIV4",
       desc: "Gating of IO_DIV4 peripheral clock."
-    }
-    { name: "CLKMGR.ENABLE.IO_DIV2",
-      desc: "Gating of IO_DIV2 peripheral clock."
     }
     { name: "CLKMGR.HINT.AES",
       desc: "Gating of AES transactional clock."
@@ -444,15 +439,6 @@
           desc: '''
             0 CLK_IO_DIV4_PERI is disabled.
             1 CLK_IO_DIV4_PERI is enabled.
-          '''
-        }
-        {
-          bits: "1",
-          name: "CLK_IO_DIV2_PERI_EN",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV2_PERI is disabled.
-            1 CLK_IO_DIV2_PERI is enabled.
           '''
         }
       ]
