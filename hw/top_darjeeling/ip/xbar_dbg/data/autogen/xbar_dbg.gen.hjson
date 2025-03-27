@@ -11,7 +11,7 @@
   clock_srcs:
   {
     clk_dbg_i: main
-    clk_peri_i: io_div4
+    clk_peri_i: io
   }
   clock_group: infra
   reset: rst_dbg_ni
@@ -24,14 +24,14 @@
     }
     rst_peri_ni:
     {
-      name: lc_io_div4
+      name: lc_io
       domain: "0"
     }
   }
   clock_connections:
   {
     clk_dbg_i: clkmgr_aon_clocks.clk_main_infra
-    clk_peri_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_peri_i: clkmgr_aon_clocks.clk_io_infra
   }
   domain:
   [
