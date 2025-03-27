@@ -25,6 +25,11 @@ single_version_override(
 
 # Dev dependencies:
 bazel_dep(
+    name = "aspect_rules_lint",
+    version = "1.2.2",
+    dev_dependency = True,
+)
+bazel_dep(
     name = "buildifier_prebuilt",
     version = "6.4.0",
     dev_dependency = True,

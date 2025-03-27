@@ -57,7 +57,7 @@ class BazelQueryRunner:
           set of characters that must be removed from the target's name.
 
         """
-        allowed_chars = set(string.ascii_letters + string.digits + '/:_-.')
+        allowed_chars = set(string.ascii_letters + string.digits + '/:_-.+')
         for target in self.query("//..."):
             if bad_chars := set(target) - allowed_chars:
                 yield (target, bad_chars)
