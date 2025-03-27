@@ -357,7 +357,10 @@ def gen_cdefines(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
     generated = outstr.getvalue()
     outstr.close()
 
-    genout(outfile, '// Generated register defines for ' + block.name + '\n\n')
+    genout(outfile, '/**\n')
+    genout(outfile, ' * @file\n')
+    genout(outfile, ' * @brief Generated register defines for ' + block.name + '\n')
+    genout(outfile, ' */\n\n')
     if src_copy != '':
         genout(outfile, '// Copyright information found in source file:\n')
         genout(outfile, '// ' + src_copy + '\n\n')
