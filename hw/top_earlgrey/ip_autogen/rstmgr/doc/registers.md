@@ -93,7 +93,7 @@ Device reset reason.
 Indicates when a device has reset due to a hardware requested reset.
 The bit mapping is as follows:
 b3: sysrst_ctrl_aon: OpenTitan reset request to `rstmgr` (running on AON clock).
-b4: aon_timer_aon: watchdog reset requestt
+b4: aon_timer_aon: watchdog reset request
 b5: pwrmgr_aon: main power glitch reset request
 b6: alert_handler: escalation reset request
 b7: rv_dm: non-debug-module reset request

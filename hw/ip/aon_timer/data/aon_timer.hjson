@@ -53,7 +53,7 @@
   ],
   reset_request_list: [
     { name: "aon_timer_rst_req",
-      desc: "watchdog reset requestt"
+      desc: "watchdog reset request"
     },
   ],
   inter_signal_list: [
