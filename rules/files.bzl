@@ -51,3 +51,68 @@ output_groups = rule(
         ),
     },
 )
+
+def _matches_filter(val, filt):
+    if not filt:
+        return True
+    for f in filt:
+        if f in val:
+            return True
+    return False
+
+def _copy_files(ctx):
+    files = []
+    for file in ctx.files.srcs:
+        if _matches_filter(file.basename, ctx.attr.filter):
+            files.append(file)
+
+    out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
+    substitutions = {
+        # This is maybe a bit naughty: we rely on the fact that the `package`
+        # portion of the `relative_to` label looks just like the dirname
+        # of the file and the package is relative to the root of the
+        # workspace in which the rule resides.
+        "__DEST__": ctx.attr.relative_to.label.package,
+        "__FILES__": " ".join([f.path for f in files]),
+        "__WORKSPACE__": ctx.attr.workspace_env,
+    }
+    ctx.actions.expand_template(
+        template = ctx.file._runner,
+        output = out_file,
+        substitutions = substitutions,
+        is_executable = True,
+    )
+
+    return [DefaultInfo(
+        runfiles = ctx.runfiles(files = files),
+        executable = out_file,
+    )]
+
+copy_files = rule(
+    implementation = _copy_files,
+    attrs = {
+        "srcs": attr.label_list(
+            mandatory = True,
+            allow_files = True,
+            doc = "Targets producing file outputs",
+        ),
+        "relative_to": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+            doc = "Label of a file in the same subdir that the files should be copied to.",
+        ),
+        "filter": attr.string_list(
+            default = [],
+            doc = "Substrings that must match the filename to qualify the file for copying.",
+        ),
+        "workspace_env": attr.string(
+            default = "BUILD_WORKSPACE_DIRECTORY",
+            doc = "An environment variable that holds the path to the root of the workspace.",
+        ),
+        "_runner": attr.label(
+            default = "//rules/scripts:copy_files.template.sh",
+            allow_single_file = True,
+        ),
+    },
+    executable = True,
+)
