@@ -5,9 +5,11 @@
 import json
 import sys
 import re
+from pathlib import Path
 
 from mdbook import utils as md_utils
-import check_tool_requirements
+sys.path.insert(0, str(Path(__file__).parents[1] / "hw"))
+import check_tool_requirements  # noqa: E402
 
 # We are looking to match on the following example strings
 # {{#tool-version verible }}
