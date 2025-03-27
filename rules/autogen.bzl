@@ -4,6 +4,7 @@
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo", "opentitan_top_get_ip_attr")
+load("//rules:doxygen.bzl", "DoxygenCcInputInfo")
 
 """Autogeneration rules for OpenTitan.
 
@@ -55,6 +56,10 @@ def _opentitan_ip_c_header_impl(ctx):
         OutputGroupInfo(
             header = depset([header]),
         ),
+        DoxygenCcInputInfo(
+            files = depset([header]),
+            include_paths = depset([header.dirname]),
+        ),
     ]
 
 opentitan_ip_c_header = rule(
@@ -74,6 +79,7 @@ opentitan_ip_c_header = rule(
             cfg = "exec",
         ),
     },
+    provides = [CcInfo, DoxygenCcInputInfo],
 )
 
 def _opentitan_ip_rust_header_impl(ctx):
