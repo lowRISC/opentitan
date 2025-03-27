@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_activate.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_history.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_unlock.h"
 
 #ifdef __cplusplus
@@ -51,6 +52,11 @@ extern "C" {
    */ \
   X(boot_svc_ownership_activate_req_t, ownership_activate_req) \
   X(boot_svc_ownership_activate_res_t, ownership_activate_res) \
+  /**
+   * Ownership History
+   */ \
+  X(boot_svc_ownership_history_req_t, ownership_history_req) \
+  X(boot_svc_ownership_history_res_t, ownership_history_res) \
   /**
    * Ownership Unlock
    */ \
