@@ -71,10 +71,11 @@ void ottf_external_isr(uint32_t *exc_info) {
 static void put_to_sleep(dif_pwrmgr_t *pwrmgr, bool deep_sleep) {
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(pwrmgr, &cfg));
-  cfg = (cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInLowPower |
-                kDifPwrmgrDomainOptionUsbClockInActivePower)) |
-        (!deep_sleep ? kDifPwrmgrDomainOptionMainPowerInLowPower : 0);
+  if (deep_sleep) {
+    cfg &= ~kDifPwrmgrDomainOptionMainPowerInLowPower;
+  } else {
+    cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
+  }
 
   dif_pwrmgr_request_sources_t wakeup_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(

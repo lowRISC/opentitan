@@ -54,6 +54,7 @@ typedef enum dif_pwrmgr_domain_option {
    * Enable input/output (IO) clock in low power state.
    */
   kDifPwrmgrDomainOptionIoClockInLowPower = (1u << 1),
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
   /**
    * Enable USB clock in low power state.
    */
@@ -66,6 +67,14 @@ typedef enum dif_pwrmgr_domain_option {
    * Enable main power domain in low power state.
    */
   kDifPwrmgrDomainOptionMainPowerInLowPower = (1u << 4),
+#elif defined(OPENTITAN_IS_DARJEELING)
+  /**
+   * Enable main power domain in low power state.
+   */
+  kDifPwrmgrDomainOptionMainPowerInLowPower = (1u << 2),
+#else /* OPENTITAN_IS_ */
+#error "dif_pwrmgr does not support this top"
+#endif /* OPENTITAN_IS_ */
 } dif_pwrmgr_domain_option_t;
 
 /**

@@ -12,7 +12,6 @@
   {
     clk_main_i: main
     clk_fixed_i: io_div4
-    clk_usb_i: usb
   }
   clock_group: infra
   reset: rst_main_ni
@@ -28,17 +27,11 @@
       name: lc_io_div4
       domain: "0"
     }
-    rst_usb_ni:
-    {
-      name: lc_usb
-      domain: "0"
-    }
   }
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
     clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
-    clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
   }
   domain:
   [
