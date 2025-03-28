@@ -450,7 +450,6 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    alert_handler_vlnv: lowrisc:earlgrey_ip:alert_handler_pkg
     with_alert_handler: false
     topname: englishbreakfast
     uniquified_modules: {}

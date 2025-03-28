@@ -630,14 +630,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     # Will connect to alert_handler
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
-    if with_alert_handler:
-        alert_handler_vlnv = f"lowrisc:{topname}_ip:alert_handler_pkg"
-    elif topname == "englishbreakfast":
-        # TODO: Clean templates to not require alert_handler. English Breakfast
-        # does not have one, so it uses types and constants from Earl Grey.
-        alert_handler_vlnv = "lowrisc:earlgrey_ip:alert_handler_pkg"
-    else:
-        alert_handler_vlnv = ""
 
     return {
         "clks": clks,
@@ -649,7 +641,6 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
-        "alert_handler_vlnv": alert_handler_vlnv,
         "with_alert_handler": with_alert_handler,
     }
 

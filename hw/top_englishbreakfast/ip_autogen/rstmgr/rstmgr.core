@@ -8,7 +8,6 @@ description: "Reset manager RTL"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:earlgrey_ip:alert_handler_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2

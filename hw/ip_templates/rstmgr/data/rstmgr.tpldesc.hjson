@@ -124,12 +124,6 @@
       default: "1"
     }
     {
-      name: "alert_handler_vlnv"
-      desc: "Provides the vlnv for alert_handler_pkt used by this rstmgr"
-      type: "string"
-      default: ""
-    }
-    {
       name: "module_instance_name"
       desc: "instance name in case there are multiple rstmgr instances. Not yet implemented."
       type: "string"
