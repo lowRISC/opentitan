@@ -11,7 +11,7 @@
   clock_srcs:
   {
     clk_main_i: main
-    clk_fixed_i: io_div4
+    clk_fixed_i: io
     clk_usb_i: usb
   }
   clock_group: infra
@@ -25,7 +25,7 @@
     }
     rst_fixed_ni:
     {
-      name: lc_io_div4
+      name: lc_io
       domain: "0"
     }
     rst_usb_ni:
@@ -37,7 +37,7 @@
   clock_connections:
   {
     clk_main_i: clkmgr_aon_clocks.clk_main_infra
-    clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_fixed_i: clkmgr_aon_clocks.clk_io_infra
     clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
   }
   domain:

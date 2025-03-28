@@ -75,6 +75,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input lc_tx_t lc_hw_debug_en_i,
 
+% if len(derived_clks) > 0:
   // clock bypass control with lc_ctrl
   // SEC_CM: LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI
   input lc_tx_t lc_clk_byp_req_i,
@@ -88,6 +89,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   input mubi4_t all_clk_byp_ack_i,
   output mubi4_t hi_speed_sel_o,
 
+% endif
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
@@ -96,6 +98,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   // jittery enable to ast
   output mubi4_t jitter_en_o,
 
+% if len(derived_clks) > 0:
   // external indication for whether dividers should be stepped down
   // SEC_CM: DIV.INTERSIG.MUBI
   input mubi4_t div_step_down_req_i,
@@ -103,6 +106,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
 
+% endif
   // clock output interface
 % for intf in exported_clks:
   output clkmgr_${intf}_out_t clocks_${intf}_o,
@@ -147,6 +151,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
   );
 
 % endfor
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Divided clocks
@@ -160,6 +165,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
 % for src_name in derived_clks:
   logic clk_${src_name};
 % endfor
+% endif
 
 % for src in derived_clks.values():
 
@@ -259,6 +265,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
+% if len(derived_clks) > 0:
 
   ////////////////////////////////////////////////////
   // Clock bypass request
@@ -290,6 +297,7 @@ rg_srcs = list(sorted({sig['src_name'] for sig
     // divider step down controls
     .step_down_acks_i(step_down_acks)
   );
+  % endif
 
   ////////////////////////////////////////////////////
   // Feed through clocks

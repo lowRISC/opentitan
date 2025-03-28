@@ -38,12 +38,8 @@
     {clock: "clk_io_i", reset: "rst_io_ni"},
     {clock: "clk_usb_i", reset: "rst_usb_ni"},
     {clock: "clk_aon_i", reset: "rst_aon_ni"},
-    {clock: "clk_io_div2_i", reset: "rst_io_div2_ni", internal: true},
-    {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
     {reset: "rst_root_main_ni"},
     {reset: "rst_root_io_ni"},
-    {reset: "rst_root_io_div2_ni"},
-    {reset: "rst_root_io_div4_ni"},
     {reset: "rst_root_usb_ni"},
   ]
   bus_interfaces: [
@@ -72,7 +68,7 @@
     { name: "NumSwGateableClocks",
       desc: "Number of SW gateable clocks",
       type: "int",
-      default: "3",
+      default: "2",
       local: "true"
     },
     { name: "NumHintableClocks",
@@ -84,11 +80,8 @@
   ],
 
   features: [
-    { name: "CLKMGR.ENABLE.IO_DIV4",
-      desc: "Gating of IO_DIV4 peripheral clock."
-    }
-    { name: "CLKMGR.ENABLE.IO_DIV2",
-      desc: "Gating of IO_DIV2 peripheral clock."
+    { name: "CLKMGR.ENABLE.IO",
+      desc: "Gating of IO peripheral clock."
     }
     { name: "CLKMGR.ENABLE.USB",
       desc: "Gating of USB peripheral clock."
@@ -110,8 +103,8 @@
             measurements.
             '''
     }
-    { name: "CLKMGR.MEAS_CTRL.IO_DIV4",
-      desc: "Frequency and timeout measurements of IO_DIV4 clock."
+    { name: "CLKMGR.MEAS_CTRL.IO",
+      desc: "Frequency and timeout measurements of IO clock."
     }
     { name: "CLKMGR.MEAS_CTRL.MAIN",
       desc: "Frequency and timeout measurements of MAIN clock."
@@ -169,62 +162,6 @@
 
     { struct:  "mubi4",
       type:    "uni",
-      name:    "io_clk_byp_req",
-      act:     "req",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
-      name:    "io_clk_byp_ack",
-      act:     "rcv",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
-      name:    "all_clk_byp_req",
-      act:     "req",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
-      name:    "all_clk_byp_ack",
-      act:     "rcv",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
-      name:    "hi_speed_sel",
-      act:     "req",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
-      name:    "div_step_down_req",
-      act:     "rcv",
-      package: "prim_mubi_pkg",
-    },
-
-    { struct:  "lc_tx",
-      type:    "uni",
-      name:    "lc_clk_byp_req",
-      act:     "rcv",
-      package: "lc_ctrl_pkg",
-    },
-
-    { struct:  "lc_tx",
-      type:    "uni",
-      name:    "lc_clk_byp_ack",
-      act:     "req",
-      package: "lc_ctrl_pkg",
-    },
-
-    { struct:  "mubi4",
-      type:    "uni",
       name:    "jitter_en",
       act:     "req",
       package: "prim_mubi_pkg"
@@ -274,15 +211,6 @@
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
-    }
-    { name: "LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI",
-      desc: "The life cycle clock req/ack signals are multibit encoded."
-    }
-    { name: "CLK_HANDSHAKE.INTERSIG.MUBI",
-      desc: "The external clock req/ack signals are multibit encoded."
-    }
-    { name: "DIV.INTERSIG.MUBI",
-      desc: "Divider step down request is multibit encoded."
     }
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
@@ -447,24 +375,15 @@
       fields: [
         {
           bits: "0",
-          name: "CLK_IO_DIV4_PERI_EN",
+          name: "CLK_IO_PERI_EN",
           resval: 1,
           desc: '''
-            0 CLK_IO_DIV4_PERI is disabled.
-            1 CLK_IO_DIV4_PERI is enabled.
+            0 CLK_IO_PERI is disabled.
+            1 CLK_IO_PERI is enabled.
           '''
         }
         {
           bits: "1",
-          name: "CLK_IO_DIV2_PERI_EN",
-          resval: 1,
-          desc: '''
-            0 CLK_IO_DIV2_PERI is disabled.
-            1 CLK_IO_DIV2_PERI is enabled.
-          '''
-        }
-        {
-          bits: "2",
           name: "CLK_USB_PERI_EN",
           resval: 1,
           desc: '''
@@ -605,19 +524,19 @@
         },
       ]
     },
-    { name: "IO_DIV4_MEAS_CTRL_EN",
+    { name: "IO_MEAS_CTRL_EN",
       desc: '''
         Enable for measurement control
       ''',
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hrw",
-      async: "clk_io_div4_i",
+      async: "clk_io_i",
       fields: [
         {
           bits: "3:0",
           name: "EN",
-          desc: "Enable measurement for io_div4",
+          desc: "Enable measurement for io",
           mubi: true,
           resval: false,
         },
@@ -629,9 +548,9 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
-    { name: "IO_DIV4_MEAS_CTRL_SHADOWED",
+    { name: "IO_MEAS_CTRL_SHADOWED",
       desc: '''
-        Configuration controls for io_div4 measurement.
+        Configuration controls for io measurement.
 
         The threshold fields are made wider than required (by 1 bit) to ensure
         there is room to adjust for measurement inaccuracies.
@@ -639,7 +558,7 @@
       regwen: "MEASURE_CTRL_REGWEN",
       swaccess: "rw",
       hwaccess: "hro",
-      async: "clk_io_div4_i",
+      async: "clk_io_i",
       shadowed: "true",
       update_err_alert: "recov_fault",
       storage_err_alert: "fatal_fault",
@@ -647,14 +566,14 @@
         {
           bits: "3:0",
           name: "HI",
-          desc: "Max threshold for io_div4 measurement",
+          desc: "Max threshold for io measurement",
           resval: "14"
         },
 
         {
           bits: "7:4",
           name: "LO",
-          desc: "Min threshold for io_div4 measurement",
+          desc: "Min threshold for io measurement",
           resval: "0"
         },
       ]
@@ -782,10 +701,10 @@
         },
         {
           bits: "1",
-          name: "IO_DIV4_MEASURE_ERR",
+          name: "IO_MEASURE_ERR",
           resval: 0,
           desc: '''
-            io_div4 has encountered a measurement error.
+            io has encountered a measurement error.
           '''
         },
         {
@@ -806,10 +725,10 @@
         },
         {
           bits: "4",
-          name: "IO_DIV4_TIMEOUT_ERR",
+          name: "IO_TIMEOUT_ERR",
           resval: 0,
           desc: '''
-            io_div4 has timed out.
+            io has timed out.
           '''
         }
         {

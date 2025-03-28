@@ -10,8 +10,8 @@ module clkmgr_reg_top (
   input clk_i,
   input rst_ni,
   input rst_shadowed_ni,
-  input clk_io_div4_i,
-  input rst_io_div4_ni,
+  input clk_io_i,
+  input rst_io_ni,
   input clk_main_i,
   input rst_main_ni,
   input clk_usb_i,
@@ -151,10 +151,8 @@ module clkmgr_reg_top (
   logic [3:0] jitter_enable_qs;
   logic [3:0] jitter_enable_wd;
   logic clk_enables_we;
-  logic clk_enables_clk_io_div4_peri_en_qs;
-  logic clk_enables_clk_io_div4_peri_en_wd;
-  logic clk_enables_clk_io_div2_peri_en_qs;
-  logic clk_enables_clk_io_div2_peri_en_wd;
+  logic clk_enables_clk_io_peri_en_qs;
+  logic clk_enables_clk_io_peri_en_wd;
   logic clk_enables_clk_usb_peri_en_qs;
   logic clk_enables_clk_usb_peri_en_wd;
   logic clk_hints_we;
@@ -173,17 +171,17 @@ module clkmgr_reg_top (
   logic measure_ctrl_regwen_we;
   logic measure_ctrl_regwen_qs;
   logic measure_ctrl_regwen_wd;
-  logic io_div4_meas_ctrl_en_we;
-  logic [3:0] io_div4_meas_ctrl_en_qs;
-  logic io_div4_meas_ctrl_en_busy;
-  logic io_div4_meas_ctrl_shadowed_re;
-  logic io_div4_meas_ctrl_shadowed_we;
-  logic [7:0] io_div4_meas_ctrl_shadowed_qs;
-  logic io_div4_meas_ctrl_shadowed_busy;
-  logic io_div4_meas_ctrl_shadowed_hi_storage_err;
-  logic io_div4_meas_ctrl_shadowed_hi_update_err;
-  logic io_div4_meas_ctrl_shadowed_lo_storage_err;
-  logic io_div4_meas_ctrl_shadowed_lo_update_err;
+  logic io_meas_ctrl_en_we;
+  logic [3:0] io_meas_ctrl_en_qs;
+  logic io_meas_ctrl_en_busy;
+  logic io_meas_ctrl_shadowed_re;
+  logic io_meas_ctrl_shadowed_we;
+  logic [7:0] io_meas_ctrl_shadowed_qs;
+  logic io_meas_ctrl_shadowed_busy;
+  logic io_meas_ctrl_shadowed_hi_storage_err;
+  logic io_meas_ctrl_shadowed_hi_update_err;
+  logic io_meas_ctrl_shadowed_lo_storage_err;
+  logic io_meas_ctrl_shadowed_lo_update_err;
   logic main_meas_ctrl_en_we;
   logic [3:0] main_meas_ctrl_en_qs;
   logic main_meas_ctrl_en_busy;
@@ -209,14 +207,14 @@ module clkmgr_reg_top (
   logic recov_err_code_we;
   logic recov_err_code_shadow_update_err_qs;
   logic recov_err_code_shadow_update_err_wd;
-  logic recov_err_code_io_div4_measure_err_qs;
-  logic recov_err_code_io_div4_measure_err_wd;
+  logic recov_err_code_io_measure_err_qs;
+  logic recov_err_code_io_measure_err_wd;
   logic recov_err_code_main_measure_err_qs;
   logic recov_err_code_main_measure_err_wd;
   logic recov_err_code_usb_measure_err_qs;
   logic recov_err_code_usb_measure_err_wd;
-  logic recov_err_code_io_div4_timeout_err_qs;
-  logic recov_err_code_io_div4_timeout_err_wd;
+  logic recov_err_code_io_timeout_err_qs;
+  logic recov_err_code_io_timeout_err_wd;
   logic recov_err_code_main_timeout_err_qs;
   logic recov_err_code_main_timeout_err_wd;
   logic recov_err_code_usb_timeout_err_qs;
@@ -227,21 +225,21 @@ module clkmgr_reg_top (
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
-  logic [3:0]  io_div4_io_div4_meas_ctrl_en_ds_int;
-  logic [3:0]  io_div4_io_div4_meas_ctrl_en_qs_int;
-  logic [3:0] io_div4_io_div4_meas_ctrl_en_ds;
-  logic io_div4_io_div4_meas_ctrl_en_qe;
-  logic [3:0] io_div4_io_div4_meas_ctrl_en_qs;
-  logic [3:0] io_div4_io_div4_meas_ctrl_en_wdata;
-  logic io_div4_io_div4_meas_ctrl_en_we;
-  logic unused_io_div4_io_div4_meas_ctrl_en_wdata;
-  logic io_div4_io_div4_meas_ctrl_en_regwen;
+  logic [3:0]  io_io_meas_ctrl_en_ds_int;
+  logic [3:0]  io_io_meas_ctrl_en_qs_int;
+  logic [3:0] io_io_meas_ctrl_en_ds;
+  logic io_io_meas_ctrl_en_qe;
+  logic [3:0] io_io_meas_ctrl_en_qs;
+  logic [3:0] io_io_meas_ctrl_en_wdata;
+  logic io_io_meas_ctrl_en_we;
+  logic unused_io_io_meas_ctrl_en_wdata;
+  logic io_io_meas_ctrl_en_regwen;
 
   always_comb begin
-    io_div4_io_div4_meas_ctrl_en_qs = 4'h9;
-    io_div4_io_div4_meas_ctrl_en_ds = 4'h9;
-    io_div4_io_div4_meas_ctrl_en_ds = io_div4_io_div4_meas_ctrl_en_ds_int;
-    io_div4_io_div4_meas_ctrl_en_qs = io_div4_io_div4_meas_ctrl_en_qs_int;
+    io_io_meas_ctrl_en_qs = 4'h9;
+    io_io_meas_ctrl_en_ds = 4'h9;
+    io_io_meas_ctrl_en_ds = io_io_meas_ctrl_en_ds_int;
+    io_io_meas_ctrl_en_qs = io_io_meas_ctrl_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -249,41 +247,41 @@ module clkmgr_reg_top (
     .ResetVal(4'h9),
     .BitMask(4'hf),
     .DstWrReq(1)
-  ) u_io_div4_meas_ctrl_en_cdc (
+  ) u_io_meas_ctrl_en_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_io_div4_i),
-    .rst_dst_ni   (rst_io_div4_ni),
+    .clk_dst_i    (clk_io_i),
+    .rst_dst_ni   (rst_io_ni),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (io_div4_meas_ctrl_en_we),
+    .src_we_i     (io_meas_ctrl_en_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[3:0]),
-    .src_busy_o   (io_div4_meas_ctrl_en_busy),
-    .src_qs_o     (io_div4_meas_ctrl_en_qs), // for software read back
-    .dst_update_i (io_div4_io_div4_meas_ctrl_en_qe),
-    .dst_ds_i     (io_div4_io_div4_meas_ctrl_en_ds),
-    .dst_qs_i     (io_div4_io_div4_meas_ctrl_en_qs),
-    .dst_we_o     (io_div4_io_div4_meas_ctrl_en_we),
+    .src_busy_o   (io_meas_ctrl_en_busy),
+    .src_qs_o     (io_meas_ctrl_en_qs), // for software read back
+    .dst_update_i (io_io_meas_ctrl_en_qe),
+    .dst_ds_i     (io_io_meas_ctrl_en_ds),
+    .dst_qs_i     (io_io_meas_ctrl_en_qs),
+    .dst_we_o     (io_io_meas_ctrl_en_we),
     .dst_re_o     (),
-    .dst_regwen_o (io_div4_io_div4_meas_ctrl_en_regwen),
-    .dst_wd_o     (io_div4_io_div4_meas_ctrl_en_wdata)
+    .dst_regwen_o (io_io_meas_ctrl_en_regwen),
+    .dst_wd_o     (io_io_meas_ctrl_en_wdata)
   );
-  assign unused_io_div4_io_div4_meas_ctrl_en_wdata =
-      ^io_div4_io_div4_meas_ctrl_en_wdata;
+  assign unused_io_io_meas_ctrl_en_wdata =
+      ^io_io_meas_ctrl_en_wdata;
 
-  logic [3:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-  logic [3:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
-  logic [7:0] io_div4_io_div4_meas_ctrl_shadowed_qs;
-  logic [7:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
-  logic io_div4_io_div4_meas_ctrl_shadowed_we;
-  logic unused_io_div4_io_div4_meas_ctrl_shadowed_wdata;
-  logic io_div4_io_div4_meas_ctrl_shadowed_re;
-  logic io_div4_io_div4_meas_ctrl_shadowed_regwen;
+  logic [3:0]  io_io_meas_ctrl_shadowed_hi_qs_int;
+  logic [3:0]  io_io_meas_ctrl_shadowed_lo_qs_int;
+  logic [7:0] io_io_meas_ctrl_shadowed_qs;
+  logic [7:0] io_io_meas_ctrl_shadowed_wdata;
+  logic io_io_meas_ctrl_shadowed_we;
+  logic unused_io_io_meas_ctrl_shadowed_wdata;
+  logic io_io_meas_ctrl_shadowed_re;
+  logic io_io_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div4_io_div4_meas_ctrl_shadowed_qs = 8'he;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[3:0] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[7:4] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+    io_io_meas_ctrl_shadowed_qs = 8'he;
+    io_io_meas_ctrl_shadowed_qs[3:0] = io_io_meas_ctrl_shadowed_hi_qs_int;
+    io_io_meas_ctrl_shadowed_qs[7:4] = io_io_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
@@ -291,27 +289,27 @@ module clkmgr_reg_top (
     .ResetVal(8'he),
     .BitMask(8'hff),
     .DstWrReq(0)
-  ) u_io_div4_meas_ctrl_shadowed_cdc (
+  ) u_io_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_io_div4_i),
-    .rst_dst_ni   (rst_io_div4_ni),
+    .clk_dst_i    (clk_io_i),
+    .rst_dst_ni   (rst_io_ni),
     .src_regwen_i (measure_ctrl_regwen_qs),
-    .src_we_i     (io_div4_meas_ctrl_shadowed_we),
-    .src_re_i     (io_div4_meas_ctrl_shadowed_re),
+    .src_we_i     (io_meas_ctrl_shadowed_we),
+    .src_re_i     (io_meas_ctrl_shadowed_re),
     .src_wd_i     (reg_wdata[7:0]),
-    .src_busy_o   (io_div4_meas_ctrl_shadowed_busy),
-    .src_qs_o     (io_div4_meas_ctrl_shadowed_qs), // for software read back
+    .src_busy_o   (io_meas_ctrl_shadowed_busy),
+    .src_qs_o     (io_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
     .dst_ds_i     ('0),
-    .dst_qs_i     (io_div4_io_div4_meas_ctrl_shadowed_qs),
-    .dst_we_o     (io_div4_io_div4_meas_ctrl_shadowed_we),
-    .dst_re_o     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .dst_regwen_o (io_div4_io_div4_meas_ctrl_shadowed_regwen),
-    .dst_wd_o     (io_div4_io_div4_meas_ctrl_shadowed_wdata)
+    .dst_qs_i     (io_io_meas_ctrl_shadowed_qs),
+    .dst_we_o     (io_io_meas_ctrl_shadowed_we),
+    .dst_re_o     (io_io_meas_ctrl_shadowed_re),
+    .dst_regwen_o (io_io_meas_ctrl_shadowed_regwen),
+    .dst_wd_o     (io_io_meas_ctrl_shadowed_wdata)
   );
-  assign unused_io_div4_io_div4_meas_ctrl_shadowed_wdata =
-      ^io_div4_io_div4_meas_ctrl_shadowed_wdata;
+  assign unused_io_io_meas_ctrl_shadowed_wdata =
+      ^io_io_meas_ctrl_shadowed_wdata;
 
   logic [3:0]  main_main_meas_ctrl_en_ds_int;
   logic [3:0]  main_main_meas_ctrl_en_qs_int;
@@ -686,19 +684,19 @@ module clkmgr_reg_top (
 
 
   // R[clk_enables]: V(False)
-  //   F[clk_io_div4_peri_en]: 0:0
+  //   F[clk_io_peri_en]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_clk_enables_clk_io_div4_peri_en (
+  ) u_clk_enables_clk_io_peri_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (clk_enables_we),
-    .wd     (clk_enables_clk_io_div4_peri_en_wd),
+    .wd     (clk_enables_clk_io_peri_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -706,41 +704,14 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.clk_enables.clk_io_div4_peri_en.q),
+    .q      (reg2hw.clk_enables.clk_io_peri_en.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (clk_enables_clk_io_div4_peri_en_qs)
+    .qs     (clk_enables_clk_io_peri_en_qs)
   );
 
-  //   F[clk_io_div2_peri_en]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_clk_enables_clk_io_div2_peri_en (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (clk_enables_we),
-    .wd     (clk_enables_clk_io_div2_peri_en_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.clk_enables.clk_io_div2_peri_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (clk_enables_clk_io_div2_peri_en_qs)
-  );
-
-  //   F[clk_usb_peri_en]: 2:2
+  //   F[clk_usb_peri_en]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1016,83 +987,82 @@ module clkmgr_reg_top (
   );
 
 
-  // R[io_div4_meas_ctrl_en]: V(False)
-  logic [0:0] io_div4_meas_ctrl_en_flds_we;
-  assign io_div4_io_div4_meas_ctrl_en_qe = |io_div4_meas_ctrl_en_flds_we;
+  // R[io_meas_ctrl_en]: V(False)
+  logic [0:0] io_meas_ctrl_en_flds_we;
+  assign io_io_meas_ctrl_en_qe = |io_meas_ctrl_en_flds_we;
   // Create REGWEN-gated WE signal
-  logic io_div4_io_div4_meas_ctrl_en_gated_we;
-  assign io_div4_io_div4_meas_ctrl_en_gated_we =
-    io_div4_io_div4_meas_ctrl_en_we & io_div4_io_div4_meas_ctrl_en_regwen;
+  logic io_io_meas_ctrl_en_gated_we;
+  assign io_io_meas_ctrl_en_gated_we = io_io_meas_ctrl_en_we & io_io_meas_ctrl_en_regwen;
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9),
     .Mubi    (1'b1)
-  ) u_io_div4_meas_ctrl_en (
-    .clk_i   (clk_io_div4_i),
-    .rst_ni  (rst_io_div4_ni),
+  ) u_io_meas_ctrl_en (
+    .clk_i   (clk_io_i),
+    .rst_ni  (rst_io_ni),
 
     // from register interface
-    .we     (io_div4_io_div4_meas_ctrl_en_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_en_wdata[3:0]),
+    .we     (io_io_meas_ctrl_en_gated_we),
+    .wd     (io_io_meas_ctrl_en_wdata[3:0]),
 
     // from internal hardware
-    .de     (hw2reg.io_div4_meas_ctrl_en.de),
-    .d      (hw2reg.io_div4_meas_ctrl_en.d),
+    .de     (hw2reg.io_meas_ctrl_en.de),
+    .d      (hw2reg.io_meas_ctrl_en.d),
 
     // to internal hardware
-    .qe     (io_div4_meas_ctrl_en_flds_we[0]),
-    .q      (reg2hw.io_div4_meas_ctrl_en.q),
-    .ds     (io_div4_io_div4_meas_ctrl_en_ds_int),
+    .qe     (io_meas_ctrl_en_flds_we[0]),
+    .q      (reg2hw.io_meas_ctrl_en.q),
+    .ds     (io_io_meas_ctrl_en_ds_int),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_meas_ctrl_en_qs_int)
+    .qs     (io_io_meas_ctrl_en_qs_int)
   );
 
 
-  // R[io_div4_meas_ctrl_shadowed]: V(False)
+  // R[io_meas_ctrl_shadowed]: V(False)
   // Create REGWEN-gated WE signal
-  logic io_div4_io_div4_meas_ctrl_shadowed_gated_we;
-  assign io_div4_io_div4_meas_ctrl_shadowed_gated_we =
-    io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen;
+  logic io_io_meas_ctrl_shadowed_gated_we;
+  assign io_io_meas_ctrl_shadowed_gated_we =
+    io_io_meas_ctrl_shadowed_we & io_io_meas_ctrl_shadowed_regwen;
   //   F[hi]: 3:0
-  logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
-  logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
+  logic async_io_meas_ctrl_shadowed_hi_err_update;
+  logic async_io_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_sync (
+  ) u_io_meas_ctrl_shadowed_hi_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_hi_err_storage),
-    .q_o(io_div4_meas_ctrl_shadowed_hi_storage_err)
+    .d_i(async_io_meas_ctrl_shadowed_hi_err_storage),
+    .q_o(io_meas_ctrl_shadowed_hi_storage_err)
   );
 
   // update error is transient and must be immediately captured
-  prim_pulse_sync u_io_div4_meas_ctrl_shadowed_hi_err_update_sync (
-    .clk_src_i(clk_io_div4_i),
-    .rst_src_ni(rst_io_div4_ni),
-    .src_pulse_i(async_io_div4_meas_ctrl_shadowed_hi_err_update),
+  prim_pulse_sync u_io_meas_ctrl_shadowed_hi_err_update_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(async_io_meas_ctrl_shadowed_hi_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(io_div4_meas_ctrl_shadowed_hi_update_err)
+    .dst_pulse_o(io_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'he),
     .Mubi    (1'b0)
-  ) u_io_div4_meas_ctrl_shadowed_hi (
-    .clk_i   (clk_io_div4_i),
-    .rst_ni  (rst_io_div4_ni),
+  ) u_io_meas_ctrl_shadowed_hi (
+    .clk_i   (clk_io_i),
+    .rst_ni  (rst_io_ni),
     .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[3:0]),
+    .re     (io_io_meas_ctrl_shadowed_re),
+    .we     (io_io_meas_ctrl_shadowed_gated_we),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[3:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1100,58 +1070,58 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div4_meas_ctrl_shadowed.hi.q),
+    .q      (reg2hw.io_meas_ctrl_shadowed.hi.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int),
+    .qs     (io_io_meas_ctrl_shadowed_hi_qs_int),
 
     // Shadow register phase. Relevant for hwext only.
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (async_io_div4_meas_ctrl_shadowed_hi_err_update),
-    .err_storage (async_io_div4_meas_ctrl_shadowed_hi_err_storage)
+    .err_update  (async_io_meas_ctrl_shadowed_hi_err_update),
+    .err_storage (async_io_meas_ctrl_shadowed_hi_err_storage)
   );
 
   //   F[lo]: 7:4
-  logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
-  logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
+  logic async_io_meas_ctrl_shadowed_lo_err_update;
+  logic async_io_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
   prim_flop_2sync #(
     .Width(1),
     .ResetValue('0)
-  ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_sync (
+  ) u_io_meas_ctrl_shadowed_lo_err_storage_sync (
     .clk_i,
     .rst_ni,
-    .d_i(async_io_div4_meas_ctrl_shadowed_lo_err_storage),
-    .q_o(io_div4_meas_ctrl_shadowed_lo_storage_err)
+    .d_i(async_io_meas_ctrl_shadowed_lo_err_storage),
+    .q_o(io_meas_ctrl_shadowed_lo_storage_err)
   );
 
   // update error is transient and must be immediately captured
-  prim_pulse_sync u_io_div4_meas_ctrl_shadowed_lo_err_update_sync (
-    .clk_src_i(clk_io_div4_i),
-    .rst_src_ni(rst_io_div4_ni),
-    .src_pulse_i(async_io_div4_meas_ctrl_shadowed_lo_err_update),
+  prim_pulse_sync u_io_meas_ctrl_shadowed_lo_err_update_sync (
+    .clk_src_i(clk_io_i),
+    .rst_src_ni(rst_io_ni),
+    .src_pulse_i(async_io_meas_ctrl_shadowed_lo_err_update),
     .clk_dst_i(clk_i),
     .rst_dst_ni(rst_ni),
-    .dst_pulse_o(io_div4_meas_ctrl_shadowed_lo_update_err)
+    .dst_pulse_o(io_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_io_div4_meas_ctrl_shadowed_lo (
-    .clk_i   (clk_io_div4_i),
-    .rst_ni  (rst_io_div4_ni),
+  ) u_io_meas_ctrl_shadowed_lo (
+    .clk_i   (clk_io_i),
+    .rst_ni  (rst_io_ni),
     .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
-    .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[7:4]),
+    .re     (io_io_meas_ctrl_shadowed_re),
+    .we     (io_io_meas_ctrl_shadowed_gated_we),
+    .wd     (io_io_meas_ctrl_shadowed_wdata[7:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1159,18 +1129,18 @@ module clkmgr_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.io_div4_meas_ctrl_shadowed.lo.q),
+    .q      (reg2hw.io_meas_ctrl_shadowed.lo.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int),
+    .qs     (io_io_meas_ctrl_shadowed_lo_qs_int),
 
     // Shadow register phase. Relevant for hwext only.
     .phase  (),
 
     // Shadow register error conditions
-    .err_update  (async_io_div4_meas_ctrl_shadowed_lo_err_update),
-    .err_storage (async_io_div4_meas_ctrl_shadowed_lo_err_storage)
+    .err_update  (async_io_meas_ctrl_shadowed_lo_err_update),
+    .err_storage (async_io_meas_ctrl_shadowed_lo_err_storage)
   );
 
 
@@ -1517,23 +1487,23 @@ module clkmgr_reg_top (
     .qs     (recov_err_code_shadow_update_err_qs)
   );
 
-  //   F[io_div4_measure_err]: 1:1
+  //   F[io_measure_err]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_recov_err_code_io_div4_measure_err (
+  ) u_recov_err_code_io_measure_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (recov_err_code_we),
-    .wd     (recov_err_code_io_div4_measure_err_wd),
+    .wd     (recov_err_code_io_measure_err_wd),
 
     // from internal hardware
-    .de     (hw2reg.recov_err_code.io_div4_measure_err.de),
-    .d      (hw2reg.recov_err_code.io_div4_measure_err.d),
+    .de     (hw2reg.recov_err_code.io_measure_err.de),
+    .d      (hw2reg.recov_err_code.io_measure_err.d),
 
     // to internal hardware
     .qe     (),
@@ -1541,7 +1511,7 @@ module clkmgr_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (recov_err_code_io_div4_measure_err_qs)
+    .qs     (recov_err_code_io_measure_err_qs)
   );
 
   //   F[main_measure_err]: 2:2
@@ -1598,23 +1568,23 @@ module clkmgr_reg_top (
     .qs     (recov_err_code_usb_measure_err_qs)
   );
 
-  //   F[io_div4_timeout_err]: 4:4
+  //   F[io_timeout_err]: 4:4
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_recov_err_code_io_div4_timeout_err (
+  ) u_recov_err_code_io_timeout_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (recov_err_code_we),
-    .wd     (recov_err_code_io_div4_timeout_err_wd),
+    .wd     (recov_err_code_io_timeout_err_wd),
 
     // from internal hardware
-    .de     (hw2reg.recov_err_code.io_div4_timeout_err.de),
-    .d      (hw2reg.recov_err_code.io_div4_timeout_err.d),
+    .de     (hw2reg.recov_err_code.io_timeout_err.de),
+    .d      (hw2reg.recov_err_code.io_timeout_err.d),
 
     // to internal hardware
     .qe     (),
@@ -1622,7 +1592,7 @@ module clkmgr_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (recov_err_code_io_div4_timeout_err_qs)
+    .qs     (recov_err_code_io_timeout_err_qs)
   );
 
   //   F[main_timeout_err]: 5:5
@@ -1777,8 +1747,8 @@ module clkmgr_reg_top (
     addr_hit[ 7] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
     addr_hit[ 8] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
     addr_hit[ 9] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
-    addr_hit[10] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_EN_OFFSET);
-    addr_hit[11] = (reg_addr == CLKMGR_IO_DIV4_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[10] = (reg_addr == CLKMGR_IO_MEAS_CTRL_EN_OFFSET);
+    addr_hit[11] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
     addr_hit[12] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET);
     addr_hit[13] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
     addr_hit[14] = (reg_addr == CLKMGR_USB_MEAS_CTRL_EN_OFFSET);
@@ -1835,11 +1805,9 @@ module clkmgr_reg_top (
   assign jitter_enable_wd = reg_wdata[3:0];
   assign clk_enables_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign clk_enables_clk_io_div4_peri_en_wd = reg_wdata[0];
+  assign clk_enables_clk_io_peri_en_wd = reg_wdata[0];
 
-  assign clk_enables_clk_io_div2_peri_en_wd = reg_wdata[1];
-
-  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[2];
+  assign clk_enables_clk_usb_peri_en_wd = reg_wdata[1];
   assign clk_hints_we = addr_hit[7] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
@@ -1852,10 +1820,10 @@ module clkmgr_reg_top (
   assign measure_ctrl_regwen_we = addr_hit[9] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
-  assign io_div4_meas_ctrl_en_we = addr_hit[10] & reg_we & !reg_error;
+  assign io_meas_ctrl_en_we = addr_hit[10] & reg_we & !reg_error;
 
-  assign io_div4_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
-  assign io_div4_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
+  assign io_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
+  assign io_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
 
 
   assign main_meas_ctrl_en_we = addr_hit[12] & reg_we & !reg_error;
@@ -1874,13 +1842,13 @@ module clkmgr_reg_top (
 
   assign recov_err_code_shadow_update_err_wd = reg_wdata[0];
 
-  assign recov_err_code_io_div4_measure_err_wd = reg_wdata[1];
+  assign recov_err_code_io_measure_err_wd = reg_wdata[1];
 
   assign recov_err_code_main_measure_err_wd = reg_wdata[2];
 
   assign recov_err_code_usb_measure_err_wd = reg_wdata[3];
 
-  assign recov_err_code_io_div4_timeout_err_wd = reg_wdata[4];
+  assign recov_err_code_io_timeout_err_wd = reg_wdata[4];
 
   assign recov_err_code_main_timeout_err_wd = reg_wdata[5];
 
@@ -1899,8 +1867,8 @@ module clkmgr_reg_top (
     reg_we_check[7] = clk_hints_we;
     reg_we_check[8] = 1'b0;
     reg_we_check[9] = measure_ctrl_regwen_we;
-    reg_we_check[10] = io_div4_meas_ctrl_en_we;
-    reg_we_check[11] = io_div4_meas_ctrl_shadowed_we;
+    reg_we_check[10] = io_meas_ctrl_en_we;
+    reg_we_check[11] = io_meas_ctrl_shadowed_we;
     reg_we_check[12] = main_meas_ctrl_en_we;
     reg_we_check[13] = main_meas_ctrl_shadowed_we;
     reg_we_check[14] = usb_meas_ctrl_en_we;
@@ -1940,9 +1908,8 @@ module clkmgr_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[0] = clk_enables_clk_io_div4_peri_en_qs;
-        reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
-        reg_rdata_next[2] = clk_enables_clk_usb_peri_en_qs;
+        reg_rdata_next[0] = clk_enables_clk_io_peri_en_qs;
+        reg_rdata_next[1] = clk_enables_clk_usb_peri_en_qs;
       end
 
       addr_hit[7]: begin
@@ -1964,10 +1931,10 @@ module clkmgr_reg_top (
       end
 
       addr_hit[10]: begin
-        reg_rdata_next = DW'(io_div4_meas_ctrl_en_qs);
+        reg_rdata_next = DW'(io_meas_ctrl_en_qs);
       end
       addr_hit[11]: begin
-        reg_rdata_next = DW'(io_div4_meas_ctrl_shadowed_qs);
+        reg_rdata_next = DW'(io_meas_ctrl_shadowed_qs);
       end
       addr_hit[12]: begin
         reg_rdata_next = DW'(main_meas_ctrl_en_qs);
@@ -1983,10 +1950,10 @@ module clkmgr_reg_top (
       end
       addr_hit[16]: begin
         reg_rdata_next[0] = recov_err_code_shadow_update_err_qs;
-        reg_rdata_next[1] = recov_err_code_io_div4_measure_err_qs;
+        reg_rdata_next[1] = recov_err_code_io_measure_err_qs;
         reg_rdata_next[2] = recov_err_code_main_measure_err_qs;
         reg_rdata_next[3] = recov_err_code_usb_measure_err_qs;
-        reg_rdata_next[4] = recov_err_code_io_div4_timeout_err_qs;
+        reg_rdata_next[4] = recov_err_code_io_timeout_err_qs;
         reg_rdata_next[5] = recov_err_code_main_timeout_err_qs;
         reg_rdata_next[6] = recov_err_code_usb_timeout_err_qs;
       end
@@ -2028,16 +1995,16 @@ module clkmgr_reg_top (
 
   // Collect up storage and update errors
   assign shadowed_storage_err_o = |{
-    io_div4_meas_ctrl_shadowed_hi_storage_err,
-    io_div4_meas_ctrl_shadowed_lo_storage_err,
+    io_meas_ctrl_shadowed_hi_storage_err,
+    io_meas_ctrl_shadowed_lo_storage_err,
     main_meas_ctrl_shadowed_hi_storage_err,
     main_meas_ctrl_shadowed_lo_storage_err,
     usb_meas_ctrl_shadowed_hi_storage_err,
     usb_meas_ctrl_shadowed_lo_storage_err
   };
   assign shadowed_update_err_o = |{
-    io_div4_meas_ctrl_shadowed_hi_update_err,
-    io_div4_meas_ctrl_shadowed_lo_update_err,
+    io_meas_ctrl_shadowed_hi_update_err,
+    io_meas_ctrl_shadowed_lo_update_err,
     main_meas_ctrl_shadowed_hi_update_err,
     main_meas_ctrl_shadowed_lo_update_err,
     usb_meas_ctrl_shadowed_hi_update_err,
@@ -2051,10 +2018,10 @@ module clkmgr_reg_top (
     reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[10]: begin
-        reg_busy_sel = io_div4_meas_ctrl_en_busy;
+        reg_busy_sel = io_meas_ctrl_en_busy;
       end
       addr_hit[11]: begin
-        reg_busy_sel = io_div4_meas_ctrl_shadowed_busy;
+        reg_busy_sel = io_meas_ctrl_shadowed_busy;
       end
       addr_hit[12]: begin
         reg_busy_sel = main_meas_ctrl_en_busy;

@@ -163,7 +163,6 @@
       act:     "rcv",
       package: "lc_ctrl_pkg",
     },
-
     { struct:  "mubi4",
       type:    "uni",
       name:    "io_clk_byp_req",
@@ -194,15 +193,15 @@
 
     { struct:  "mubi4",
       type:    "uni",
-      name:    "hi_speed_sel",
-      act:     "req",
+      name:    "div_step_down_req",
+      act:     "rcv",
       package: "prim_mubi_pkg",
     },
 
     { struct:  "mubi4",
       type:    "uni",
-      name:    "div_step_down_req",
-      act:     "rcv",
+      name:    "hi_speed_sel",
+      act:     "req",
       package: "prim_mubi_pkg",
     },
 

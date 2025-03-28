@@ -15,12 +15,10 @@ package clkmgr_pkg;
 
   // clocks generated and broadcast
   typedef struct packed {
-    logic clk_io_div4_powerup;
+    logic clk_io_powerup;
     logic clk_aon_powerup;
     logic clk_main_powerup;
-    logic clk_io_powerup;
     logic clk_usb_powerup;
-    logic clk_io_div2_powerup;
     logic clk_aon_infra;
     logic clk_aon_peri;
     logic clk_aon_timers;
@@ -28,25 +26,22 @@ package clkmgr_pkg;
     logic clk_main_hmac;
     logic clk_main_kmac;
     logic clk_main_otbn;
-    logic clk_io_div4_infra;
+    logic clk_io_infra;
     logic clk_main_infra;
     logic clk_usb_infra;
-    logic clk_io_div4_secure;
+    logic clk_io_secure;
     logic clk_main_secure;
-    logic clk_io_div4_timers;
-    logic clk_io_div4_peri;
-    logic clk_io_div2_peri;
+    logic clk_io_timers;
+    logic clk_io_peri;
     logic clk_usb_peri;
   } clkmgr_out_t;
 
   // clock gating indication for alert handler
   typedef struct packed {
-    prim_mubi_pkg::mubi4_t io_div4_powerup;
+    prim_mubi_pkg::mubi4_t io_powerup;
     prim_mubi_pkg::mubi4_t aon_powerup;
     prim_mubi_pkg::mubi4_t main_powerup;
-    prim_mubi_pkg::mubi4_t io_powerup;
     prim_mubi_pkg::mubi4_t usb_powerup;
-    prim_mubi_pkg::mubi4_t io_div2_powerup;
     prim_mubi_pkg::mubi4_t aon_infra;
     prim_mubi_pkg::mubi4_t aon_peri;
     prim_mubi_pkg::mubi4_t aon_timers;
@@ -54,18 +49,17 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_hmac;
     prim_mubi_pkg::mubi4_t main_kmac;
     prim_mubi_pkg::mubi4_t main_otbn;
-    prim_mubi_pkg::mubi4_t io_div4_infra;
+    prim_mubi_pkg::mubi4_t io_infra;
     prim_mubi_pkg::mubi4_t main_infra;
     prim_mubi_pkg::mubi4_t usb_infra;
-    prim_mubi_pkg::mubi4_t io_div4_secure;
+    prim_mubi_pkg::mubi4_t io_secure;
     prim_mubi_pkg::mubi4_t main_secure;
-    prim_mubi_pkg::mubi4_t io_div4_timers;
-    prim_mubi_pkg::mubi4_t io_div4_peri;
-    prim_mubi_pkg::mubi4_t io_div2_peri;
+    prim_mubi_pkg::mubi4_t io_timers;
+    prim_mubi_pkg::mubi4_t io_peri;
     prim_mubi_pkg::mubi4_t usb_peri;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 22;
+  parameter int NumOutputClk = 19;
 
 
   typedef struct packed {
