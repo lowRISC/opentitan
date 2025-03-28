@@ -4278,6 +4278,7 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -4418,6 +4419,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlRetAonRaclPolicySelRangesRamNum
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopRamOutput
         }
       ]
       inter_signal_list:
@@ -6613,6 +6623,7 @@
       {
         InstrExec: "1"
         InstSize: 65536
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -6753,6 +6764,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMainRaclPolicySelRangesRamNum
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopRamOutput
         }
       ]
       inter_signal_list:
@@ -6970,6 +6990,7 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
       }
       base_addrs:
       {
@@ -7110,6 +7131,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxRaclPolicySelRangesRamNum
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopRamOutput
         }
       ]
       inter_signal_list:

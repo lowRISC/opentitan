@@ -580,7 +580,7 @@ module ibex_top import ibex_pkg::*; #(
 
         // SEC_CM: ICACHE.MEM.SCRAMBLE
         // Tag RAM instantiation
-        prim_ram_1p_scr #(
+        prim_ram_1p_scr_1cyc #(
           .Width              (TagSizeECC),
           .Depth              (IC_NUM_LINES),
           .DataBitsPerMask    (TagSizeECC),
@@ -591,13 +591,11 @@ module ibex_top import ibex_pkg::*; #(
           .clk_i,
           .rst_ni,
 
-          .key_valid_i      (scramble_key_valid_q),
           .key_i            (scramble_key_q),
           .nonce_i          (scramble_nonce_q),
 
           .req_i            (ic_tag_req[way]),
 
-          .gnt_o            (),
           .write_i          (ic_tag_write),
           .addr_i           (ic_tag_addr),
           .wdata_i          (ic_tag_wdata),
@@ -605,7 +603,6 @@ module ibex_top import ibex_pkg::*; #(
           .intg_error_i     (1'b0),
 
           .rdata_o          (ic_tag_rdata[way]),
-          .rvalid_o         (),
           .raddr_o          (),
           .rerror_o         (),
           .cfg_i            (ram_cfg_icache_tag_i),
@@ -617,7 +614,7 @@ module ibex_top import ibex_pkg::*; #(
         );
 
         // Data RAM instantiation
-        prim_ram_1p_scr #(
+        prim_ram_1p_scr_1cyc #(
           .Width              (LineSizeECC),
           .Depth              (IC_NUM_LINES),
           .DataBitsPerMask    (LineSizeECC),
@@ -629,13 +626,11 @@ module ibex_top import ibex_pkg::*; #(
           .clk_i,
           .rst_ni,
 
-          .key_valid_i      (scramble_key_valid_q),
           .key_i            (scramble_key_q),
           .nonce_i          (scramble_nonce_q),
 
           .req_i            (ic_data_req[way]),
 
-          .gnt_o            (),
           .write_i          (ic_data_write),
           .addr_i           (ic_data_addr),
           .wdata_i          (ic_data_wdata),
@@ -643,7 +638,6 @@ module ibex_top import ibex_pkg::*; #(
           .intg_error_i     (1'b0),
 
           .rdata_o          (ic_data_rdata[way]),
-          .rvalid_o         (),
           .raddr_o          (),
           .rerror_o         (),
           .cfg_i            (ram_cfg_icache_data_i),
@@ -666,6 +660,11 @@ module ibex_top import ibex_pkg::*; #(
               sampled_scramble_key <= scramble_key_i;
             end
           end
+
+          // Ensure that requests to the I$ data and tag RAMs are only made when the scrambling key
+          // is valid.
+          `ASSERT(ScrambleKeyValidOnDataReq_A, ic_data_req[way] |-> scramble_key_valid_q)
+          `ASSERT(ScrambleKeyValidOnTagReq_A, ic_tag_req[way] |-> scramble_key_valid_q)
 
           // Ensure that when a scramble key is received, it is correctly applied to the icache
           // scrambled memory primitives.  The upper bound in the cycle ranges below is not exact,
