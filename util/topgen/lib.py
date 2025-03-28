@@ -34,6 +34,7 @@ class CEnum(object):
         self.finalized = False
 
         self.constants = []
+        self.meta_constants = []
 
     def add_constant(self, constant_name, docstring=""):
         assert not self.finalized
@@ -47,19 +48,34 @@ class CEnum(object):
 
         return full_name
 
-    def add_last_constant(self, docstring=""):
-        assert not self.finalized
+    def add_first_constant(self, docstring=""):
+        assert len(self.constants) > 0, "cannot add a First constant to an empty enumeration"
 
+        full_name = self.name + Name(["first"])
+
+        _, first_val, _ = self.constants[0]
+
+        self.meta_constants.append((full_name, first_val, r"\internal " + docstring))
+        self.finalized = True
+
+    def add_last_constant(self, docstring=""):
+        assert len(self.constants) > 0, "cannot add a Last constant to an empty enumeration"
         full_name = self.name + Name(["last"])
 
         _, last_val, _ = self.constants[-1]
 
-        self.constants.append((full_name, last_val, r"\internal " + docstring))
+        self.meta_constants.append((full_name, last_val, r"\internal " + docstring))
+        self.finalized = True
+
+    def add_count_constant(self, docstring=""):
+        full_name = self.name + Name(["count"])
+
+        self.meta_constants.append((full_name, len(self.constants), r"\internal " + docstring))
         self.finalized = True
 
     def render(self) -> str:
         template = ("typedef enum ${enum.name.as_snake_case()} {\n"
-                    "% for name, value, docstring in enum.constants:\n"
+                    "% for name, value, docstring in enum.constants + enum.meta_constants:\n"
                     "  ${name.as_c_enum()} = ${value}, /**< ${docstring} */\n"
                     "% endfor\n"
                     "} ${enum.name.as_c_type()};")
