@@ -525,6 +525,7 @@ pub fn run_ft_personalize(
     // Bootstrap personalization + ROM_EXT + Owner FW binaries into flash, since
     // flash scrambling seeds were provisioned in the previous step.
     let t0 = Instant::now();
+    let _ = UartConsole::wait_for(spi_console, r"Reset reason.*", timeout)?;
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
     response.stats.log_elapsed_time("first-bootstrap-done", t0);
 

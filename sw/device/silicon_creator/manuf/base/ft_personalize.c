@@ -38,6 +38,8 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -929,12 +931,29 @@ static status_t configure_ate_gpio_indicators(void) {
 }
 
 bool test_main(void) {
+  // Unconditionally disable the watchdog timer.
+  // This is needed to avoid a watchdog reset if enabled in the ROM.
+  watchdog_disable();
+
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
+
   log_self_hash();
+
+  // Read the reset reason directly from the RSTMGR.
+  // This is needed to clear the reset reason before the first call to
+  // `personalize_otp_and_flash_secrets()`, which will reset the device.
+  uint32_t reason = rstmgr_reason_get();
+  if (reason != 0) {
+    rstmgr_reason_clear(reason);
+  }
+
+  // Read the reset reason from SRAM.
+  LOG_INFO("Reset reason: %08x", rstmgr_testutils_reason_get());
+
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));

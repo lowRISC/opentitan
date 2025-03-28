@@ -324,6 +324,8 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
             "//sw/device/silicon_creator/lib/drivers:kmac",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+            "//sw/device/silicon_creator/lib/drivers:watchdog",
             "//sw/device/silicon_creator/lib/ownership:owner_block",
             "//sw/device/silicon_creator/lib/ownership:ownership_key",
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
