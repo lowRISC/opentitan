@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - ${top_pkg_vlnv}
+      - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}

@@ -12,7 +12,7 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:top_earlgrey_padring
-      - lowrisc:systems:top_earlgrey_scan_role_pkg
+      - lowrisc:earlgrey_systems:scan_role_pkg
     files:
       - rtl/clkgen_xil_ultrascale.sv
       - rtl/usr_access_xil7series.sv

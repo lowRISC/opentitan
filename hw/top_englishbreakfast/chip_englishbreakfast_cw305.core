@@ -13,7 +13,7 @@ filesets:
       - lowrisc:systems:top_englishbreakfast_pkg
       - lowrisc:systems:top_englishbreakfast_ast
       - lowrisc:systems:top_earlgrey_padring
-      - lowrisc:systems:top_earlgrey_scan_role_pkg
+      - lowrisc:earlgrey_systems:scan_role_pkg
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/usr_access_xil7series.sv

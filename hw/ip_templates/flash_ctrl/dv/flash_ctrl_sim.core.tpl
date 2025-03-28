@@ -8,7 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
-      - ${top_pkg_vlnv}
+      - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
     file_type: systemVerilogSource
 

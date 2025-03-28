@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_darjeeling_top_pkg
+      - lowrisc:darjeeling_constants:top_pkg
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/ast_pkg.sv

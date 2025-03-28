@@ -14,7 +14,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:englishbreakfast_ip:rstmgr_pkg
-      - lowrisc:constants:top_englishbreakfast_top_pkg
+      - lowrisc:englishbreakfast_constants:top_pkg
 
     files:
       - rstmgr_env_pkg.sv

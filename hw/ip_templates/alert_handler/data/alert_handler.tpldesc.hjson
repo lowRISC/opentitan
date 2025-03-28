@@ -70,12 +70,6 @@
       default: []
     }
     {
-      name: "top_pkg_vlnv"
-      desc: "Provides the VLNV for the top_pkg used by this alert_handler"
-      type: "string"
-      default: "lowrisc:constants:top_pkg"
-    }
-    {
       name: "module_instance_name"
       desc: "instance name in case there are multiple alert_handler instances"
       type: "string"

@@ -23,7 +23,6 @@
     bytes_per_page: 2048
     bytes_per_bank: 32768
     size: 65536
-    top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     topname: englishbreakfast
     uniquified_modules: {}
   }
