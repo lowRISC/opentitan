@@ -177,3 +177,8 @@ py_binary(
     srcs = ["mdbook_toolversion.py"],
     deps = ["//hw:check_tool_requirements"],
 )
+
+py_binary(
+    name = "gen_stamped_tarball",
+    srcs = ["gen_stamped_tarball.py"],
+)
