@@ -124,10 +124,16 @@
       default: "1"
     }
     {
-      name: "alert_handler_vlnv"
-      desc: "Provides the vlnv for alert_handler_pkt used by this rstmgr"
-      type: "string"
-      default: ""
+      name: "alert_handler_vlnvs"
+      desc: "Provides the VLNVs for alert_handler_pkgs used by this rstmgr"
+      type: "object"
+      default: []
+    }
+    {
+      name: "alert_handler_pkgs"
+      desc: "Provides alert_handler_pkgs used by this rstmgr"
+      type: "object"
+      default: []
     }
     {
       name: "top_pkg_vlnv"
@@ -140,6 +146,12 @@
       desc: "instance name in case there are multiple rstmgr instances. Not yet implemented."
       type: "string"
       default: "rstmgr"
+    }
+    {
+      name: "num_cores"
+      desc: "Number of CPU crash dumps to store."
+      type: "int"
+      default: 1
     }
   ]
 }

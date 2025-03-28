@@ -27,8 +27,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | pwr         | pwr_rst                            | req_rsp | rsp   |       1 | Reset request signals from power manager. Power manager can request for specific domains of the lc/sys reset tree to assert. |
 | resets      | rstmgr_pkg::rstmgr_out             | uni     | req   |       1 | Leaf resets fed to the system.                                                                                               |
 | rst_en      | rstmgr_pkg::rstmgr_rst_en          | uni     | req   |       1 | Low-power-group outputs used by alert handler.                                                                               |
-| alert_dump  | alert_handler_pkg::alert_crashdump | uni     | rcv   |       1 | Alert handler crash dump information.                                                                                        |
-| cpu_dump    | rv_core_ibex_pkg::cpu_crash_dump   | uni     | rcv   |       1 | Main processing element crash dump information.                                                                              |
+| alert_dump  | alert_handler_pkg::alert_crashdump | uni     | rcv   |       1 | Crash dump info for alert handler 0.                                                                                         |
+| cpu_dump    | rv_core_ibex_pkg::cpu_crash_dump   | uni     | rcv   |       1 | Crash dump info for CPU 0.                                                                                                   |
 | sw_rst_req  | prim_mubi_pkg::mubi4               | uni     | req   |       1 | Software requested system reset to pwrmgr.                                                                                   |
 | tl          | tlul_pkg::tl                       | req_rsp | rsp   |       1 |                                                                                                                              |
 
