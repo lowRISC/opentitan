@@ -39,9 +39,61 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end join_none
   endtask
 
+  // Extend internal reset requests from the power manager for a number of clocks using the SoC
+  // reset request signal. The power manager awaits the deassertion of the external reset request
+  // before proceeding to boot.
+  //
+  // Note: Since the operation of this background process relies upon forcing it could conflict
+  // with an asynchronous request for an assertion, in which case the task may be disabled by
+  // clearing `cfg.monitor_internal_reqests` or by overriding this virtual task.
+  virtual task extend_internal_reset_requests();
+    `uvm_info(`gfn, "Monitoring and responding to internal reset requests", UVM_MEDIUM)
+    fork begin
+      forever begin
+        // Await the report of an internal reset request from the power manager.
+        if (cfg.chip_vif.aon_clk_por_rst_if.rst_n === 1'b1) begin
+          // No need to check for requests every cycle; the power manager will wait until the
+          // it observes the falling edge of the external reset request signal.
+          cfg.chip_vif.aon_clk_por_rst_if.wait_clks(7);
+          if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
+                .kind(dv_utils_pkg::SignalProbeSample))) begin
+            int unsigned clks = $urandom_range(24, 5);
+            `uvm_info(`gfn, $sformatf("Supply external reset request of %0d cycle(s)", clks),
+                      UVM_MEDIUM)
+            // Apply an extended reset signal of sufficient duration to pass through the filter.
+            apply_soc_reset_request(clks);
+          end
+        end else begin
+          @(posedge cfg.chip_vif.aon_clk_por_rst_if.rst_n);
+        end
+      end
+    end
+    join_none
+  endtask
+
+  // Assert the external reset request for the requested number of AON clock cycles.
+  //
+  // Note that this signal is filtered within the soc_proxy module, so it must be asserted for
+  // at least 5 AON clock cycles if it is to be observed.
+  virtual task apply_soc_reset_request(int unsigned clks);
+    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeForce),
+                                                      .value(1'b1)));
+    // Assert the external SoC reset request for a while; note that this signal is filtered
+    // and takes a while to travel to the power manager logic for CDCs.
+    cfg.chip_vif.aon_clk_por_rst_if.wait_clks(clks);
+    // Deactivate external reset request.
+    void'(cfg.chip_vif.signal_probe_soc_rst_req_async(.kind(dv_utils_pkg::SignalProbeRelease)));
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     // Reset the sw_test_status.
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
+
+    if (cfg.monitor_internal_resets) begin
+      // Launch a background process to monitor and extern internal resets requests within the
+      // power manager.
+      extend_internal_reset_requests();
+    end
 
     // Bring the chip out of reset.
     super.dut_init(reset_kind);

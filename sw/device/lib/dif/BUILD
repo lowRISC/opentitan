@@ -62,6 +62,7 @@ DIFS = {
     "rv_dm": {},
     "rv_plic": {},
     "rv_timer": {},
+    "soc_proxy": {},
     "spi_device": {},
     "spi_host": {
         "ut_deps": ["//sw/device/lib/base:global_mock"],
