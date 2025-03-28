@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  testpoints: [
+    {
+      name: racl_rw
+      desc: '''
+          Precondition:
+            - Randomize the number of RACL policies and randomize its default policy values.
+            - Randomize the policy selection vector of the CSRs.
+            - Randomize the RaclErrorRsp parameter.
+            - Shuffle the list of CSRs first to remove the effect of ordering.
+
+          Verify the correct access for each CSR:
+            - Loop through the CSRs in a random order, performing read and write requests using
+              random RACL roles and CTN UID values.
+              If the request is allowed:
+                - No TL-UL error is expected.
+                - Verify that reads and writes complete as expected.
+              else if the request is denied:
+                - Verify the error log matches:
+                  - error_log_o.valid = 1
+                  - error_log_o.overflow = 0
+                  - error_log_o.racl_role = <role that caused the error>
+                  - error_log_o.ctn_uid = <ctn uid that caused the error>
+                - Verify that a write has no effect.
+                - Verify a read returns data with 0xFFFFF (all bits set to 1).
+                - If ErrorRsp = 1:
+                  - Verify a TLUL error is returned.
+            '''
+      stage: V1
+      tests: ["{name}{intf}_racl_rw"]
+    }
+  ]
+}
