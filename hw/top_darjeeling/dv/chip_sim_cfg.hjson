@@ -222,6 +222,9 @@
     //   build_opts: ["-cm_constfile {top_dv_path}/cov/constfile.txt"]
     //   is_sim_mode: 1
     // }
+    {
+      name: cover_reg_top
+    }
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer,
