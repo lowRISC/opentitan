@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+  from topgen.lib import Name
+
   rg_srcs = list(sorted({sig['src_name'] for sig
                          in typed_clocks['rg_clks'].values()}))
 %>
@@ -102,22 +104,12 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   task pre_start();
 % for clk in rg_srcs:
   % if clk != 'aon':
-    $display("${clk}_meas_ctrl_en, ");
+<% clk_enum = "ClkMesr" + Name.from_snake_case(clk).as_camel_case() %>\
+    meas_ctrl_regs[${clk_enum}] = '{"${clk}", ral.${clk}_meas_ctrl_en,
+                                    ral.${clk}_meas_ctrl_shadowed.hi,
+                                    ral.${clk}_meas_ctrl_shadowed.lo};
   % endif
 % endfor
-
-    meas_ctrl_regs[ClkMesrIo] = '{"io", ral.io_meas_ctrl_en, ral.io_meas_ctrl_shadowed.hi,
-                                  ral.io_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrIoDiv2] = '{"io div2", ral.io_div2_meas_ctrl_en,
-                                      ral.io_div2_meas_ctrl_shadowed.hi,
-                                      ral.io_div2_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrIoDiv4] = '{"io div4", ral.io_div4_meas_ctrl_en,
-                                      ral.io_div4_meas_ctrl_shadowed.hi,
-                                      ral.io_div4_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrMain] = '{"main", ral.main_meas_ctrl_en, ral.main_meas_ctrl_shadowed.hi,
-                                    ral.main_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrUsb] = '{"usb", ral.usb_meas_ctrl_en, ral.usb_meas_ctrl_shadowed.hi,
-                                   ral.usb_meas_ctrl_shadowed.lo};
 
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
