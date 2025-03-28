@@ -590,6 +590,40 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   return OK_STATUS();
 }
 
+static status_t boot_data_cfg_initialize(void) {
+  // Configure the boot data OTP word.
+  if (!status_ok(manuf_individualize_device_flash_info_boot_data_cfg_check(
+          &otp_ctrl))) {
+    TRY(manuf_individualize_device_field_cfg(
+        &otp_ctrl,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET));
+  }
+
+  // Loads the boot data configuration from OTP.
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+
+  flash_ctrl_perms_t perm = {
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4True,
+  };
+
+  // Erase the BootData pages. This is necessary to ensure that the owner
+  // block is written to a clean page and to avoid ECC errors in the
+  // next boot.
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0, perm);
+  flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1, perm);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, cfg);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, cfg);
+
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData0,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData1,
+                            kFlashCtrlEraseTypePage));
+
+  return OK_STATUS();
+}
+
 static status_t install_owner(void) {
   // Get the boot_data; installing the owner will write it back with the
   // ownership_state set to LockedOwner.
@@ -612,6 +646,11 @@ static status_t install_owner(void) {
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
 
+  //  Initializes the boot data flash configuration in OTP, and
+  //  erases the boot data pages to avoid integrity errors in the next boot.
+  // `sku_creator_owner_init` will write the owner block to the flash.
+  TRY(boot_data_cfg_initialize());
+
   // Initialize ownership.  This will write the owner block into OwnerSlot0 and
   // set the ownership_state to LockedOwner.  The first boot of the ROM_EXT
   // will create a redundanty copy in OwnerSlot1.
@@ -619,7 +658,6 @@ static status_t install_owner(void) {
   owner_config_default(&config);
   owner_application_keyring_t keyring = {0};
   TRY(sku_creator_owner_init(&boot_data, &config, &keyring));
-
   return OK_STATUS();
 }
 
