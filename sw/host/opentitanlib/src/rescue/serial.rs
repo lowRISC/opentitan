@@ -81,7 +81,7 @@ impl RescueSerial {
 
         // Request to change rates.  We don't use `set_mode` here because changing
         // rates isn't a "mode" request and doesn't respond the same way.
-        self.uart.write(&Self::BAUD.0.to_be_bytes())?;
+        self.uart.write(&Self::BAUD)?;
         self.uart.write(b"\r")?;
         let result = UartConsole::wait_for(&*self.uart, r"(ok|error):.*\r\n", Self::ONE_SECOND)?;
         if result[1] == "error" {
