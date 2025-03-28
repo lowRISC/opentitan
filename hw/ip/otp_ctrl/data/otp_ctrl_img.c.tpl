@@ -67,6 +67,7 @@ ${fileheader}
     if item['name'] not in [
         'CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN',
         'CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG',
+        'CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG',
         'CREATOR_SW_CFG_MANUF_STATE',
         'OWNER_SW_CFG_ROM_BOOTSTRAP_DIS',
     ]:
