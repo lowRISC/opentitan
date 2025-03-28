@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/usb.h"
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
@@ -132,8 +131,6 @@ typedef struct dfu_ctx {
   usb_control_ctx_t ep0;
   /** Rescue state. */
   rescue_state_t state;
-  /** Pointer to bootdata. */
-  boot_data_t *bootdata;
   /** Expected receive length (upload) */
   uint32_t expected_len;
   /** Status buffer (used to respond to DfuReqGetStatus). */

@@ -696,7 +696,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   if (rescue_detect_entry(owner_config.rescue) == kHardenedBoolTrue) {
     ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
-    error = rescue_protocol(boot_data, owner_config.rescue);
+    error = rescue_protocol(boot_data, boot_log, owner_config.rescue);
   } else {
     ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolFalse);
     error = rom_ext_try_next_stage(boot_data, boot_log);
