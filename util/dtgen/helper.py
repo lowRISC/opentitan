@@ -815,7 +815,8 @@ class IpHelper:
             self.inst_dt_values[inst_name] = self._create_instance(m)
             self.inst_map[inst_name] = m
         if isinstance(self.inst_enum, CEnum):
-            self.inst_enum.add_constant(Name(["count"]), "Number of instances")
+            self.inst_enum.add_first_constant("First instance")
+            self.inst_enum.add_count_constant("Number of instances")
 
     def has_features(self):
         return len(self.ip.features) > 0
