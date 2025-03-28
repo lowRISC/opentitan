@@ -16,6 +16,7 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 
@@ -26,6 +27,20 @@ static hardened_bool_t rescue_requested;
 const uint32_t kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 const uint32_t kFlashBankSize =
     kFlashPageSize * FLASH_CTRL_PARAM_REG_PAGES_PER_BANK;
+
+static inline bool is_rom_ext(const void *data) {
+  const manifest_t *manifest = (const manifest_t *)data;
+  return manifest->identifier == CHIP_ROM_EXT_IDENTIFIER;
+}
+
+static inline bool is_rom_ext_update_allowed(rescue_state_t *state) {
+  // A ROM_EXT update is allowed if the partition we're flashing is not the
+  // ROM_EXT active partition.
+  return (state->mode == kRescueModeFirmware &&
+          state->boot_log->rom_ext_slot == kBootSlotB) ||
+         (state->mode == kRescueModeFirmwareSlotB &&
+          state->boot_log->rom_ext_slot == kBootSlotA);
+}
 
 rom_error_t flash_firmware_block(rescue_state_t *state) {
   uint32_t bank_offset =
@@ -38,20 +53,39 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
         .write = kMultiBitBool4True,
         .erase = kMultiBitBool4True,
     });
-    for (uint32_t addr = state->flash_start; addr < state->flash_limit;
+    // Detect if we're allowed to flash the ROM_EXT _and_ if the data stream
+    // starts with a ROM_EXT.  If so, we start flashing at offset 0 in this
+    // bank.
+    state->flash_begin =
+        (is_rom_ext_update_allowed(state) && is_rom_ext(state->data))
+            ? 0
+            : state->flash_start;
+
+    // Erase the allowed range in the requested partition.
+    for (uint32_t addr = state->flash_begin; addr < state->flash_limit;
          addr += kFlashPageSize) {
       HARDENED_RETURN_IF_ERROR(
           flash_ctrl_data_erase(bank_offset + addr, kFlashCtrlEraseTypePage));
     }
-    state->flash_offset = state->flash_start;
+    // Regardless of whether we're allowed to flash the ROM_EXT, set the flash
+    // offset to zero if the data stream contains a ROM_EXT, otherwise, set to
+    // flash_start. This will allow rescue to silently consume the ROM_EXT if
+    // we're in the ROM_EXT active partition.
+    state->flash_offset = is_rom_ext(state->data) ? 0 : state->flash_start;
   }
-  if (state->flash_offset < state->flash_limit) {
+
+  if (state->flash_offset < state->flash_begin) {
+    // Before allowed beginning; silently consume the data without flashing.
+    state->flash_offset += sizeof(state->data);
+  } else if (state->flash_offset >= state->flash_limit) {
+    // Beyond the allowed limit; return an error.
+    return kErrorRescueImageTooBig;
+  } else {
+    // In the allowed range; flash the data.
     HARDENED_RETURN_IF_ERROR(flash_ctrl_data_write(
         bank_offset + state->flash_offset,
         sizeof(state->data) / sizeof(uint32_t), state->data));
     state->flash_offset += sizeof(state->data);
-  } else {
-    return kErrorRescueImageTooBig;
   }
   return kErrorOk;
 }

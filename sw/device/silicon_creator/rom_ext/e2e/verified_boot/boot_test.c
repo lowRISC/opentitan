@@ -93,6 +93,29 @@ status_t keymgr_print(void) {
 status_t keymgr_print(void) { return OK_STATUS(); }
 #endif
 
+#ifdef WITH_MANIFEST
+#include "sw/device/silicon_creator/lib/manifest.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+status_t manifest_print(void) {
+  const manifest_t *a =
+      (const manifest_t *)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  const manifest_t *b =
+      (const manifest_t *)(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                           (TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2));
+  LOG_INFO("slot_a rom_ext_id = %C", a->identifier);
+  LOG_INFO("slot_a rom_ext_version = %u.%u", a->version_major,
+           a->version_minor);
+  LOG_INFO("slot_b rom_ext_id = %C", b->identifier);
+  LOG_INFO("slot_b rom_ext_version = %u.%u", b->version_major,
+           b->version_minor);
+  return OK_STATUS();
+}
+#else
+status_t manifest_print(void) { return OK_STATUS(); }
+#endif
+
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t boot_log_print(boot_log_t *boot_log) {
@@ -114,6 +137,7 @@ status_t boot_log_print(boot_log_t *boot_log) {
   LOG_INFO("boot_log rom_ext_min_sec_ver = %u", boot_log->rom_ext_min_sec_ver);
   LOG_INFO("boot_log bl0_min_sec_ver = %u", boot_log->bl0_min_sec_ver);
   LOG_INFO("boot_log primary_bl0_slot = %C", boot_log->primary_bl0_slot);
+  TRY(manifest_print());
   TRY(ownership_print());
   TRY(keymgr_print());
   return OK_STATUS();
