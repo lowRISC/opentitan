@@ -90,7 +90,8 @@ struct Opts {
     #[arg(long, value_parser = PathBuf::from_str, default_value = "config")]
     rcfile: PathBuf,
 
-    #[arg(long, default_value = "warn")]
+    /// Log level (off, error, warn, info, debug, trace)
+    #[arg(short, long, default_value = "warn")]
     logging: LevelFilter,
 
     /// Preferred output format.
