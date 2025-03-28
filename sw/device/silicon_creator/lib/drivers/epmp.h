@@ -51,7 +51,7 @@ void epmp_clear_lock_bits(void);
 /**
  * Encode a start/end address pair to NAPOT address.
  *
- * The region start must have an alignment consistend with the region size.  The
+ * The region start must have an alignment consistent with the region size.  The
  * region size must be a power of two.  If either of these conditions is not
  * met, this function will fault.
  *
@@ -71,7 +71,7 @@ epmp_region_t epmp_decode_napot(uint32_t pmpaddr);
 /**
  * Configures an ePMP entry for a NAPOT or NA4 region.
  *
- * The region start must have an alignment consistend with the region size.  The
+ * The region start must have an alignment consistent with the region size.  The
  * region size must be a power of two.  If either of these conditions is not
  * met, this function will fault.
  *
