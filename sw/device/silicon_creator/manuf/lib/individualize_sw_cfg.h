@@ -16,6 +16,7 @@
 extern const size_t kOtpKvCreatorSwCfgSize;
 extern const otp_kv_t kOtpKvCreatorSwCfg[];
 extern const uint32_t kCreatorSwCfgFlashDataDefaultCfgValue;
+extern const uint32_t kCreatorSwCfgFlashInfoBootDataCfgValue;
 extern const uint32_t kCreatorSwCfgManufStateValue;
 extern const uint32_t kCreatorSwCfgImmutableRomExtEnValue;
 
@@ -89,6 +90,17 @@ status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_flash_data_default_cfg_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the FLASH_INFO_BOOT_DATA_CFG field in the CREATOR_SW_CFG OTP
+ * partition.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the FLASH_INFO_BOOT_DATA_CFG field is provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_flash_info_boot_data_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
