@@ -46,7 +46,7 @@
       desc:  '''Pulse output.  Note that though this output is always enabled, there is a formal
                 set of enable pins (pwm_en_o) which are required for top-level integration of
                 comportable IPs.'''
-      width: "6"
+      width: "${nr_output_channels}"
     }
   ]
   alert_list: [
