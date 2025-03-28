@@ -59,7 +59,10 @@ cc_library(
 
 cc_library(
     name = "imm_section_version_def",
-    srcs = ["imm_section_version_def.c"],
+    srcs = [
+        "imm_section_version_def.c",
+        "//rules:autogen_stamp_include",
+    ],
     local_defines = [
         "IMM_SECTION_MAJOR_VERSION={}".format(IMM_SECTION_MAJOR_VERSION),
         "IMM_SECTION_MINOR_VERSION={}".format(IMM_SECTION_MINOR_VERSION),
