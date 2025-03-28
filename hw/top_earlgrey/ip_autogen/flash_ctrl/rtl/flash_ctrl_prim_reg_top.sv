@@ -2003,7 +2003,6 @@ module flash_ctrl_prim_reg_top (
 
   logic [20:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == FLASH_CTRL_CSR0_REGWEN_OFFSET);
     addr_hit[ 1] = (reg_addr == FLASH_CTRL_CSR1_OFFSET);
     addr_hit[ 2] = (reg_addr == FLASH_CTRL_CSR2_OFFSET);
@@ -2200,7 +2199,6 @@ module flash_ctrl_prim_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = csr0_regwen_we;
     reg_we_check[1] = csr1_gated_we;
     reg_we_check[2] = csr2_we;

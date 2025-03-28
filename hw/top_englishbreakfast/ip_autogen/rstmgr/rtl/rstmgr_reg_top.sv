@@ -877,7 +877,6 @@ module rstmgr_reg_top (
 
   logic [17:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RSTMGR_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == RSTMGR_RESET_REQ_OFFSET);
     addr_hit[ 2] = (reg_addr == RSTMGR_RESET_INFO_OFFSET);
@@ -982,7 +981,6 @@ module rstmgr_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = reset_req_we;
     reg_we_check[2] = reset_info_we;

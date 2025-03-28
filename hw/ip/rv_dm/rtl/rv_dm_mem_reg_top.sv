@@ -8608,7 +8608,6 @@ module rv_dm_mem_reg_top (
 
   logic [280:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[  0] = (reg_addr == RV_DM_HALTED_OFFSET);
     addr_hit[  1] = (reg_addr == RV_DM_GOING_OFFSET);
     addr_hit[  2] = (reg_addr == RV_DM_RESUMING_OFFSET);
@@ -9202,7 +9201,6 @@ module rv_dm_mem_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = halted_we;
     reg_we_check[1] = going_we;
     reg_we_check[2] = resuming_we;

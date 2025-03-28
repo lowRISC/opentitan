@@ -21568,7 +21568,6 @@ module alert_handler_reg_top (
 
   logic [501:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[  0] = (reg_addr == ALERT_HANDLER_INTR_STATE_OFFSET);
     addr_hit[  1] = (reg_addr == ALERT_HANDLER_INTR_ENABLE_OFFSET);
     addr_hit[  2] = (reg_addr == ALERT_HANDLER_INTR_TEST_OFFSET);
@@ -24416,7 +24415,6 @@ module alert_handler_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = intr_state_we;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;

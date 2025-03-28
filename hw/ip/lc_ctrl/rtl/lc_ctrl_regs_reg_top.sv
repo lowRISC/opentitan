@@ -1137,7 +1137,6 @@ module lc_ctrl_regs_reg_top (
 
   logic [34:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == LC_CTRL_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == LC_CTRL_STATUS_OFFSET);
     addr_hit[ 2] = (reg_addr == LC_CTRL_CLAIM_TRANSITION_IF_REGWEN_OFFSET);
@@ -1292,7 +1291,6 @@ module lc_ctrl_regs_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = 1'b0;
     reg_we_check[2] = claim_transition_if_regwen_we;

@@ -1265,7 +1265,6 @@ module otp_ctrl_prim_reg_top (
 
   logic [7:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[0] = (reg_addr == OTP_CTRL_CSR0_OFFSET);
     addr_hit[1] = (reg_addr == OTP_CTRL_CSR1_OFFSET);
     addr_hit[2] = (reg_addr == OTP_CTRL_CSR2_OFFSET);
@@ -1352,7 +1351,6 @@ module otp_ctrl_prim_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = csr0_we;
     reg_we_check[1] = csr1_we;
     reg_we_check[2] = csr2_we;

@@ -854,7 +854,6 @@ module pattgen_reg_top (
 
   logic [11:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == PATTGEN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == PATTGEN_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == PATTGEN_INTR_TEST_OFFSET);
@@ -954,7 +953,6 @@ module pattgen_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = intr_state_we;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
