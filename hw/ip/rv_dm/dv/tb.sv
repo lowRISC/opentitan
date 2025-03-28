@@ -68,9 +68,15 @@ module tb;
     // value as given as a default for next_dm_addr in rv_dm.hjson.
     .next_dm_addr_i            ('0),
 
+    // the strapping behavior of lc_hw_debug_en_i will be tested at the top-level.
     .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
     .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
     .lc_dft_en_i               (rv_dm_if.lc_dft_en                ),
+    .lc_check_byp_en_i         (rv_dm_if.lc_check_byp_en          ),
+    .lc_escalate_en_i          (rv_dm_if.lc_escalate_en           ),
+    .strap_en_i                (rv_dm_if.strap_en                 ),
+    .strap_en_override_i       (rv_dm_if.strap_en_override        ),
+
     .otp_dis_rv_dm_late_debug_i(rv_dm_if.otp_dis_rv_dm_late_debug ),
 
     .scanmode_i                (rv_dm_if.scanmode      ),
@@ -104,10 +110,13 @@ module tb;
     .dbg_tl_d_o                (dbg_tl_d2h)
   );
 
+  jtag_mon_if mon_jtag_if ();
+`ifdef USE_DMI_INTERFACE
+  // TODO: In this case, what should the monitor see? Perhaps there should be no JTAG signaling
+  // and thus no monitor, but presently the vseqs depend upon the monitor directly.
+`else
   // Apply the muxing that we get in rv_dm, where the JTAG interface that actually connects to the
   // debug module has direct clock/reset in scan mode, and is disabled if debug is not enabled.
-  jtag_mon_if mon_jtag_if ();
-`ifndef USE_DMI_INTERFACE
   assign mon_jtag_if.tck    = dut.gen_jtag_gating.dap.tck_i;
   assign mon_jtag_if.trst_n = dut.gen_jtag_gating.dap.trst_ni;
   assign mon_jtag_if.tms    = dut.gen_jtag_gating.dap.tms_i;
