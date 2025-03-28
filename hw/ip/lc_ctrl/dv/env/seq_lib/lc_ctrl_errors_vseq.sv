@@ -1068,12 +1068,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     if (err_inj.clk_byp_rsp_mubi_err) `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 0)
     else `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 1)
     if (err_inj.flash_rma_rsp_mubi_err) begin
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync0", 0)
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync1", 0)
+      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 0)
       `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckBuf", 0)
     end else begin
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync0", 1)
-      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync1", 1)
+      `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckSync", 1)
       `DV_ASSERT_CTRL_REQ("FsmClkFlashRmaAckBuf", 1)
     end
     if (err_inj.otp_test_tokens_valid_mubi_err) `DV_ASSERT_CTRL_REQ("FsmOtpTestTokensValidSync", 0)
