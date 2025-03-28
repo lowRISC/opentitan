@@ -530,8 +530,11 @@ module otp_ctrl
     hw2reg.direct_access_rdata = dai_rdata;
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
-    // Assign these to the status register.
-    hw2reg.status = {part_errors_reduced,
+    // Assign these to the status register. Note that the lower 2 bits of part_errors_reduced
+    // contain the DAI/LCI error. They are treated as normal erorrs and not part of the dedicated
+    // partitition status register.
+    hw2reg.status = {|part_errors_reduced[$bits(part_errors_reduced)-1:2],
+                     part_errors_reduced[1:0],
                      chk_timeout,
                      lfsr_fsm_err,
                      scrmbl_fsm_err,
@@ -539,6 +542,7 @@ module otp_ctrl
                      fatal_bus_integ_error_q,
                      dai_idle,
                      chk_pending};
+    hw2reg.partition_status = part_errors_reduced[$bits(part_errors_reduced)-1:2];
     // Error code registers.
     hw2reg.err_code = part_error;
     // Interrupt signals
