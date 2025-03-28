@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
@@ -126,6 +127,14 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state,
  */
 void rescue_state_init(rescue_state_t *state,
                        const owner_rescue_config_t *config);
+
+/**
+ * Handle the boot services RescueEnter request.
+ *
+ * @param msg The boot services message.
+ * @return kErrorOk if the command was processed correctly.
+ */
+rom_error_t rescue_enter_handler(boot_svc_msg_t *msg);
 
 /**
  * Perform the rescue protocol.
