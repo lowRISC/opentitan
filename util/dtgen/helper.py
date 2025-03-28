@@ -334,7 +334,7 @@ class TopHelper:
                 f"instance of {module_name}"
             )
         if isinstance(self.device_type_enum, CEnum):
-            self.device_type_enum.add_constant(Name(["count"]), "Number of instance types")
+            self.device_type_enum.add_count_constant("Number of instance types")
 
         # List of all module instance IDs and put them in an enum.
         self.instance_id_enum = self._enum_type(Name([]), self.DT_INSTANCE_ID_NAME)
@@ -347,7 +347,7 @@ class TopHelper:
                     "instance {} of {}".format(m["name"], m["type"])
                 )
         if isinstance(self.instance_id_enum, CEnum):
-            self.instance_id_enum.add_constant(Name(["count"]), "Number of instance IDs")
+            self.instance_id_enum.add_count_constant("Number of instance IDs")
 
         # List all muxed pads directly from the top.
         pads = [pad for pad in self.top['pinout']['pads'] if pad['connection'] == 'muxed']
@@ -366,7 +366,7 @@ class TopHelper:
                 Name.from_snake_case(name),
             )
         if isinstance(self.pad_enum, CEnum):
-            self.pad_enum.add_constant(Name(["count"]), "Number of pads")
+            self.pad_enum.add_count_constant("Number of pads")
 
         # List of all clocks and put them in an enum.
         self.clock_enum = self._enum_type(Name([]), self.DT_CLOCK_ENUM_NAME)
@@ -374,7 +374,7 @@ class TopHelper:
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
             self.clock_enum.add_constant(clock_name)
-        self.clock_enum.add_constant(Name(["count"]), "Number of clocks")
+        self.clock_enum.add_count_constant("Number of clocks")
 
         # List of all reset nodes and put them in an enum.
         self.reset_enum = self._enum_type(Name([]), self.DT_RESET_ENUM_NAME)
@@ -382,7 +382,7 @@ class TopHelper:
         for reset_node in self.top["resets"]["nodes"]:
             reset_name = Name.from_snake_case(reset_node["name"])
             self.reset_enum.add_constant(reset_name)
-        self.reset_enum.add_constant(Name(["count"]), "Number of resets")
+        self.reset_enum.add_count_constant("Number of resets")
 
         # Create structure to describe a peripheral I/O and a pad.
         self._create_periph_io_struct()
@@ -632,7 +632,7 @@ class IpHelper:
         for rb in reg_blocks:
             self.reg_block_enum.add_constant(Name.from_snake_case(rb))
         if isinstance(self.reg_block_enum, CEnum):
-            self.reg_block_enum.add_constant(Name(["count"]), "Number of register blocks")
+            self.reg_block_enum.add_count_constant("Number of register blocks")
 
     def has_irqs(self):
         return len(self.ip.interrupts) > 0
@@ -650,7 +650,7 @@ class IpHelper:
         for (irq, sig) in device_irqs.items():
             self.irq_enum.add_constant(Name.from_snake_case(irq), sig.desc)
         if isinstance(self.reg_block_enum, CEnum):
-            self.irq_enum.add_constant(Name(["count"]), "Number of IRQs")
+            self.irq_enum.add_count_constant("Number of IRQs")
 
     def has_alerts(self):
         return len(self.ip.alerts) > 0
@@ -672,7 +672,7 @@ class IpHelper:
         for (alert, sig) in device_alerts.items():
             self.alert_enum.add_constant(Name.from_snake_case(alert), sig.desc)
         if isinstance(self.reg_block_enum, CEnum):
-            self.alert_enum.add_constant(Name(["count"]), "Number of Alerts")
+            self.alert_enum.add_count_constant("Number of Alerts")
 
     def has_clocks(self):
         return len(self._device_clocks) > 0
@@ -699,7 +699,7 @@ class IpHelper:
             self.clock_map[clk_orig] = clk
             self.clock_enum.add_constant(Name.from_snake_case(clk))
         if isinstance(self.reg_block_enum, CEnum):
-            self.clock_enum.add_constant(Name(["count"]), "Number of clock ports")
+            self.clock_enum.add_count_constant("Number of clock ports")
 
     def has_reset_requests(self):
         return len(self.reset_req_map) > 0
@@ -725,7 +725,7 @@ class IpHelper:
             self.reset_req_map[req_orig] = req
             self.reset_req_enum.add_constant(Name.from_snake_case(req))
         if isinstance(self.reset_req_enum, CEnum):
-            self.reset_req_enum.add_constant(Name(["count"]), "Number of reset requests")
+            self.reset_req_enum.add_count_constant("Number of reset requests")
 
     def has_resets(self):
         return len(self.reset_map) > 0
@@ -747,7 +747,7 @@ class IpHelper:
             self.reset_map[rst_orig] = rst
             self.reset_enum.add_constant(Name.from_snake_case(rst))
         if isinstance(self.reset_enum, CEnum):
-            self.reset_enum.add_constant(Name(["count"]), "Number of reset ports")
+            self.reset_enum.add_count_constant("Number of reset ports")
 
     def has_periph_io(self):
         return len(self._device_signals) > 0
@@ -769,7 +769,7 @@ class IpHelper:
         for sig in self._device_signals.keys():
             self.periph_io_enum.add_constant(Name.from_snake_case(sig))
         if isinstance(self.reg_block_enum, CEnum):
-            self.periph_io_enum.add_constant(Name(["count"]), "Number of peripheral I/O")
+            self.periph_io_enum.add_count_constant("Number of peripheral I/O")
 
     def has_wakeups(self):
         return len(self.ip.wakeups) > 0
@@ -782,7 +782,7 @@ class IpHelper:
         for sig in self.ip.wakeups:
             self.wakeup_enum.add_constant(Name.from_snake_case(sig.name), sig.desc)
         if isinstance(self.wakeup_enum, CEnum):
-            self.wakeup_enum.add_constant(Name(["count"]), "Number of wakeups")
+            self.wakeup_enum.add_count_constant("Number of wakeups")
 
     def _init_instances(self):
         self.inst_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name)
