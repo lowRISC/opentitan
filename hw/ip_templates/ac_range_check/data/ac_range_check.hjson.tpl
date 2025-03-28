@@ -33,6 +33,17 @@ import math
       default: "8",
       local:   "true"
     },
+    { name:    "RangeCheckErrorRsp",
+      desc:    '''
+        Error behavior on blocked requests:
+        1: A denied request returns a TLUL error (.d_error = 1 on the response)
+        0: Writes are dropped and reads return all-zero, without a TLUL error
+        ''',
+      type:    "bit",
+      default: "1",
+      local:   "false"
+      expose:  "true"
+    },
   ],
   inter_signal_list: [
     { name:    "range_check_overwrite"
