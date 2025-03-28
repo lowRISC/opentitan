@@ -130,22 +130,11 @@ module tb;
     .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
-    .lc_hw_debug_en_i(clkmgr_if.lc_hw_debug_en_i),
-    .all_clk_byp_req_o(clkmgr_if.all_clk_byp_req),
-    .all_clk_byp_ack_i(clkmgr_if.all_clk_byp_ack),
-    .io_clk_byp_req_o(clkmgr_if.io_clk_byp_req),
-    .io_clk_byp_ack_i(clkmgr_if.io_clk_byp_ack),
-    .lc_clk_byp_req_i(clkmgr_if.lc_clk_byp_req),
-    .lc_clk_byp_ack_o(clkmgr_if.lc_clk_byp_ack),
-    .div_step_down_req_i(clkmgr_if.div_step_down_req),
-
+    .calib_rdy_i(clkmgr_if.calib_rdy),
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
-    .clocks_o   (clkmgr_if.clocks_o),
-
-    .calib_rdy_i(clkmgr_if.calib_rdy),
-    .hi_speed_sel_o(clkmgr_if.hi_speed_sel)
+    .clocks_o   (clkmgr_if.clocks_o)
   );
 
   initial begin

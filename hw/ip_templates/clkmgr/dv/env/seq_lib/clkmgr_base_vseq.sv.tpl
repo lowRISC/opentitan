@@ -126,8 +126,10 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     cfg.clkmgr_vif.update_${src['name']}_ip_clk_en(1'b1);
   % endif
 % endfor
+  % if len(derived_clks) > 0:
     cfg.clkmgr_vif.update_div_step_down_req(MuBi4False);
     cfg.clkmgr_vif.update_io_clk_byp_ack(MuBi4False);
+  % endif
 
     disable_unnecessary_exclusions();
     clkmgr_init();
