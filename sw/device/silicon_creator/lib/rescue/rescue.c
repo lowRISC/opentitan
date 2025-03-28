@@ -7,6 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -52,11 +53,11 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
   return kErrorOk;
 }
 
-rom_error_t flash_owner_block(rescue_state_t *state, boot_data_t *bootdata) {
-  if (bootdata->ownership_state == kOwnershipStateUnlockedAny ||
-      bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
-      bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
-      (bootdata->ownership_state == kOwnershipStateLockedOwner &&
+rom_error_t flash_owner_block(rescue_state_t *state) {
+  if (state->bootdata->ownership_state == kOwnershipStateUnlockedAny ||
+      state->bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
+      state->bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
+      (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
        owner_block_newversion_mode() == kHardenedBoolTrue)) {
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
         &kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage));
@@ -90,8 +91,7 @@ static void ownership_erase(void) {
 }
 #endif
 
-rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state,
-                                 boot_data_t *bootdata) {
+rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
   dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   rom_error_t result = kErrorOk;
 
@@ -128,10 +128,11 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state,
         dbg_printf("ok: send boot_svc request\r\n");
         break;
       case kRescueModeOwnerBlock:
-        if (bootdata->ownership_state == kOwnershipStateUnlockedAny ||
-            bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
-            bootdata->ownership_state == kOwnershipStateUnlockedEndorsed ||
-            (bootdata->ownership_state == kOwnershipStateLockedOwner &&
+        if (state->bootdata->ownership_state == kOwnershipStateUnlockedAny ||
+            state->bootdata->ownership_state == kOwnershipStateUnlockedSelf ||
+            state->bootdata->ownership_state ==
+                kOwnershipStateUnlockedEndorsed ||
+            (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
              owner_block_newversion_mode() == kHardenedBoolTrue)) {
           dbg_printf("ok: send owner_block\r\n");
         } else {
@@ -167,7 +168,7 @@ exitproc:
   return result;
 }
 
-rom_error_t rescue_send_handler(rescue_state_t *state, boot_data_t *bootdata) {
+rom_error_t rescue_send_handler(rescue_state_t *state) {
   hardened_bool_t allow =
       owner_rescue_command_allowed(state->config, state->mode);
   if (allow != kHardenedBoolTrue) {
@@ -216,7 +217,7 @@ rom_error_t rescue_send_handler(rescue_state_t *state, boot_data_t *bootdata) {
   return kErrorRescueSendStart;
 }
 
-rom_error_t rescue_recv_handler(rescue_state_t *state, boot_data_t *bootdata) {
+rom_error_t rescue_recv_handler(rescue_state_t *state) {
   hardened_bool_t allow =
       owner_rescue_command_allowed(state->config, state->mode);
   if (allow != kHardenedBoolTrue) {
@@ -246,7 +247,7 @@ rom_error_t rescue_recv_handler(rescue_state_t *state, boot_data_t *bootdata) {
       break;
     case kRescueModeOwnerBlock:
       if (state->offset == sizeof(state->data)) {
-        HARDENED_RETURN_IF_ERROR(flash_owner_block(state, bootdata));
+        HARDENED_RETURN_IF_ERROR(flash_owner_block(state));
         state->offset = 0;
       }
       break;
@@ -265,8 +266,11 @@ rom_error_t rescue_recv_handler(rescue_state_t *state, boot_data_t *bootdata) {
   return kErrorOk;
 }
 
-void rescue_state_init(rescue_state_t *state,
+void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
+                       boot_log_t *boot_log,
                        const owner_rescue_config_t *config) {
+  state->boot_log = boot_log;
+  state->bootdata = bootdata;
   state->config = config;
   if ((hardened_bool_t)config == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
