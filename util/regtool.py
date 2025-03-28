@@ -150,13 +150,14 @@ def main():
     if args.version:
         version.show_and_exit(__file__, ["Hjson", "Mako"])
 
+    log_format = "%(filename)s:%(lineno)d: %(levelname)s: %(message)s"
     verbose = args.verbose
     if verbose:
-        log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
+        log.basicConfig(format=log_format, level=log.DEBUG)
     elif args.quiet:
-        log.basicConfig(format="%(levelname)s: %(message)s", level=log.ERROR)
+        log.basicConfig(format=log_format, level=log.ERROR)
     else:
-        log.basicConfig(format="%(levelname)s: %(message)s")
+        log.basicConfig(format=log_format)
 
     # Entries are triples of the form (arg, (fmt, dirspec)).
     #

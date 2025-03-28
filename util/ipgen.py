@@ -15,11 +15,11 @@ from ipgen import (IpBlockRenderer, IpConfig, IpTemplate, TemplateParseError,
 
 def init_logging(verbose: bool) -> None:
     """ Initialize the logging system """
+    log_format = "%(filename)s:%(lineno)d: %(levelname)s: %(message)s"
     if verbose:
-        logging.basicConfig(format="%(levelname)s: %(message)s",
-                            level=logging.DEBUG)
+        logging.basicConfig(format=log_format, level=logging.DEBUG)
     else:
-        logging.basicConfig(format="%(levelname)s: %(message)s")
+        logging.basicConfig(format=log_format)
 
 
 def action_generate(ip_template: IpTemplate, args: argparse.Namespace) -> None:
