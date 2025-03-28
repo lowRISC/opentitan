@@ -51,4 +51,5 @@ tree
 xmlstarlet
 xsltproc
 zlib1g-dev
+xxd
 xz-utils
