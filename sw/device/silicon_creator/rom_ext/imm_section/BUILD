@@ -14,6 +14,7 @@ load(
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:utils.bzl",
     "create_imm_section_targets",
+    "imm_section_bundle",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -185,4 +186,11 @@ opentitan_binary(
 create_imm_section_targets(
     name = "main_section_slot_virtual",
     src = ":main_binaries_slot_virtual",
+)
+
+imm_section_bundle(
+    name = "release_bundle",
+    variants = {
+        "dice_x509": "main_binaries_slot_virtual",
+    },
 )
