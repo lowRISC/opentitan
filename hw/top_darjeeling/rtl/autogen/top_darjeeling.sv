@@ -129,6 +129,7 @@ module top_darjeeling #(
   // parameters for racl_ctrl
   parameter int RaclCtrlNumExternalSubscribingIps = 1,
   // parameters for ac_range_check
+  parameter bit AcRangeCheckRangeCheckErrorRsp = 1,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -2643,7 +2644,8 @@ module top_darjeeling #(
     .EnableRacl(1'b1),
     .RaclErrorRsp(top_racl_pkg::ErrorRsp),
     .RaclPolicySelVec(RACL_POLICY_SEL_VEC_AC_RANGE_CHECK),
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:97])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:97]),
+    .RangeCheckErrorRsp(AcRangeCheckRangeCheckErrorRsp)
   ) u_ac_range_check (
 
       // Interrupt

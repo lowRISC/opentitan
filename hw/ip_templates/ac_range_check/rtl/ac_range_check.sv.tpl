@@ -7,6 +7,7 @@ module ${module_instance_name}
   import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             RangeCheckErrorRsp        = 1'b1,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
@@ -234,7 +235,9 @@ module ${module_instance_name}
   // TLUL Loopback for failing accesses
   //////////////////////////////////////////////////////////////////////////////
 
-  tlul_request_loopback u_req_loopback (
+  tlul_request_loopback #(
+    .ErrorRsp( RangeCheckErrorRsp )
+  ) u_req_loopback (
     .clk_i         ( clk_i                 ),
     .rst_ni        ( rst_ni                ),
     .squash_req_i  ( range_check_fail      ),
