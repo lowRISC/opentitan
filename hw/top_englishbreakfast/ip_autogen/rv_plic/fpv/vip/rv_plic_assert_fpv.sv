@@ -107,9 +107,6 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   `ASSERT(IdChangeWithIrq_A, !$stable(irq_id_o[tgt_sel]) && irq_id_o[tgt_sel] != 0 |->
           irq_o[tgt_sel] || ((irq_id_o[tgt_sel]) == $past(i_high_prio) && !$past(irq)))
 
-  // When fatal alert happens then only reset can clear it.
-  `ASSERT(FatalAlertNeverdrops_A, !$fell(fatal_alert_i))
-
   // If a response is coming back from the device, then check if it contains the correct integrity
   // bits.
   `ASSERT(DataIntg_A,
@@ -119,4 +116,7 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
           tl_o.d_valid ->
           (prim_secded_pkg::prim_secded_inv_64_57_enc({51'b0, tlul_pkg::extract_d2h_rsp_intg(tl_o)})
           >> (64-tlul_pkg::D2HRspIntgWidth)) == tl_o.d_user.rsp_intg)
+
+  // When fatal alert happens then only reset can clear it.
+  `ASSERT(FatalAlertNeverdrops_A, ##1 !$fell(fatal_alert_i))
 endmodule : rv_plic_assert_fpv
