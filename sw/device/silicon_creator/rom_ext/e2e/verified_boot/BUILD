@@ -25,6 +25,8 @@ load(
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
     "IMMUTABLE_HASH_UNENFORCED_MSG",
+    "IMM_SECTION_MAJOR_VERSION",
+    "IMM_SECTION_MINOR_VERSION",
     "IMM_SECTION_VARIATIONS",
 )
 
@@ -130,6 +132,14 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = __BB\r\n",
+        "otp_img": None,
+    },
+    "imm_section_virtual_a": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext_offset": "0",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "owner_offset": "0x10000",
+        "success": "IMM_SECTION:{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION),
         "otp_img": None,
     },
 } | {
