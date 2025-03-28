@@ -77,38 +77,6 @@ module clkmgr_bind;
     .trans_clk(clocks_o.clk_main_otbn)
   );
 
-  bind clkmgr clkmgr_extclk_sva_if clkmgr_extclk_sva_if (
-    .clk_i,
-    .rst_ni,
-    .extclk_ctrl_sel,
-    .extclk_ctrl_hi_speed_sel,
-    .lc_hw_debug_en_i,
-    .lc_clk_byp_req_i,
-    .io_clk_byp_req_o,
-    .all_clk_byp_req_o,
-    .hi_speed_sel_o
-  );
-
-  bind clkmgr clkmgr_div_sva_if #(
-    .DIV(2)
-  ) clkmgr_div2_sva_if (
-    .clk(clocks_o.clk_io_powerup),
-    .rst_n(rst_ni),
-    .maybe_divided_clk(clocks_o.clk_io_div2_powerup),
-    .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
-  );
-
-  // The div2 clk also steps, so not a good reference. Instead, check it always tracks io_div2.
-  bind clkmgr clkmgr_div_sva_if #(
-    .DIV(4)
-  ) clkmgr_div4_sva_if (
-    .clk(clocks_o.clk_io_div2_powerup),
-    .rst_n(rst_ni),
-    .maybe_divided_clk(clocks_o.clk_io_div4_powerup),
-    .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
-  );
 
   // AON clock gating enables.
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_infra (
@@ -250,19 +218,5 @@ module clkmgr_bind;
     .meas_ctrl_en(u_reg.main_meas_ctrl_en_qs)
   );
 
-  bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
-    .clk_i,
-    .rst_ni,
-    .all_clk_byp_req_o,
-    .lc_hw_debug_en_i,
-    .lc_clk_byp_req_i,
-    .lc_clk_byp_ack_o,
-    .io_clk_byp_req_o,
-    // internal signal is picked due to inconsistent t->f, f->t delay
-    .io_clk_byp_ack(u_clkmgr_byp.io_clk_byp_ack),
-    // internal signal is picked due to inconsistent input to signal delay
-    .step_down_acks_sync(u_clkmgr_byp.step_down_acks_sync),
-    .extclk_ctrl_sel
-  );
 `endif
 endmodule : clkmgr_bind

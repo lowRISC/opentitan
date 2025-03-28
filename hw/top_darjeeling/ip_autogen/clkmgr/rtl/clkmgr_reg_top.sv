@@ -60,9 +60,9 @@ module clkmgr_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [15:0] reg_we_check;
+  logic [12:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(16)
+    .OneHotWidth(13)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -132,16 +132,6 @@ module clkmgr_reg_top (
   logic alert_test_we;
   logic alert_test_recov_fault_wd;
   logic alert_test_fatal_fault_wd;
-  logic extclk_ctrl_regwen_we;
-  logic extclk_ctrl_regwen_qs;
-  logic extclk_ctrl_regwen_wd;
-  logic extclk_ctrl_we;
-  logic [3:0] extclk_ctrl_sel_qs;
-  logic [3:0] extclk_ctrl_sel_wd;
-  logic [3:0] extclk_ctrl_hi_speed_sel_qs;
-  logic [3:0] extclk_ctrl_hi_speed_sel_wd;
-  logic extclk_status_re;
-  logic [3:0] extclk_status_qs;
   logic jitter_regwen_we;
   logic jitter_regwen_qs;
   logic jitter_regwen_wd;
@@ -414,109 +404,6 @@ module clkmgr_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
-
-
-  // R[extclk_ctrl_regwen]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_extclk_ctrl_regwen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (extclk_ctrl_regwen_we),
-    .wd     (extclk_ctrl_regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (extclk_ctrl_regwen_qs)
-  );
-
-
-  // R[extclk_ctrl]: V(False)
-  // Create REGWEN-gated WE signal
-  logic extclk_ctrl_gated_we;
-  assign extclk_ctrl_gated_we = extclk_ctrl_we & extclk_ctrl_regwen_qs;
-  //   F[sel]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_extclk_ctrl_sel (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (extclk_ctrl_gated_we),
-    .wd     (extclk_ctrl_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extclk_ctrl.sel.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (extclk_ctrl_sel_qs)
-  );
-
-  //   F[hi_speed_sel]: 7:4
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_extclk_ctrl_hi_speed_sel (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (extclk_ctrl_gated_we),
-    .wd     (extclk_ctrl_hi_speed_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.extclk_ctrl.hi_speed_sel.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (extclk_ctrl_hi_speed_sel_qs)
-  );
-
-
-  // R[extclk_status]: V(True)
-  prim_subreg_ext #(
-    .DW    (4)
-  ) u_extclk_status (
-    .re     (extclk_status_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.extclk_status.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .ds     (),
-    .qs     (extclk_status_qs)
-  );
 
 
   // R[jitter_regwen]: V(False)
@@ -1390,24 +1277,21 @@ module clkmgr_reg_top (
 
 
 
-  logic [15:0] addr_hit;
+  logic [12:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == CLKMGR_ALERT_TEST_OFFSET);
-    addr_hit[ 1] = (reg_addr == CLKMGR_EXTCLK_CTRL_REGWEN_OFFSET);
-    addr_hit[ 2] = (reg_addr == CLKMGR_EXTCLK_CTRL_OFFSET);
-    addr_hit[ 3] = (reg_addr == CLKMGR_EXTCLK_STATUS_OFFSET);
-    addr_hit[ 4] = (reg_addr == CLKMGR_JITTER_REGWEN_OFFSET);
-    addr_hit[ 5] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
-    addr_hit[ 6] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
-    addr_hit[ 7] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
-    addr_hit[ 8] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
-    addr_hit[ 9] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
-    addr_hit[10] = (reg_addr == CLKMGR_IO_MEAS_CTRL_EN_OFFSET);
-    addr_hit[11] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[12] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET);
-    addr_hit[13] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
-    addr_hit[14] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
-    addr_hit[15] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
+    addr_hit[ 1] = (reg_addr == CLKMGR_JITTER_REGWEN_OFFSET);
+    addr_hit[ 2] = (reg_addr == CLKMGR_JITTER_ENABLE_OFFSET);
+    addr_hit[ 3] = (reg_addr == CLKMGR_CLK_ENABLES_OFFSET);
+    addr_hit[ 4] = (reg_addr == CLKMGR_CLK_HINTS_OFFSET);
+    addr_hit[ 5] = (reg_addr == CLKMGR_CLK_HINTS_STATUS_OFFSET);
+    addr_hit[ 6] = (reg_addr == CLKMGR_MEASURE_CTRL_REGWEN_OFFSET);
+    addr_hit[ 7] = (reg_addr == CLKMGR_IO_MEAS_CTRL_EN_OFFSET);
+    addr_hit[ 8] = (reg_addr == CLKMGR_IO_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[ 9] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_EN_OFFSET);
+    addr_hit[10] = (reg_addr == CLKMGR_MAIN_MEAS_CTRL_SHADOWED_OFFSET);
+    addr_hit[11] = (reg_addr == CLKMGR_RECOV_ERR_CODE_OFFSET);
+    addr_hit[12] = (reg_addr == CLKMGR_FATAL_ERR_CODE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1427,10 +1311,7 @@ module clkmgr_reg_top (
                (addr_hit[ 9] & (|(CLKMGR_PERMIT[ 9] & ~reg_be))) |
                (addr_hit[10] & (|(CLKMGR_PERMIT[10] & ~reg_be))) |
                (addr_hit[11] & (|(CLKMGR_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(CLKMGR_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(CLKMGR_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(CLKMGR_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(CLKMGR_PERMIT[15] & ~reg_be)))));
+               (addr_hit[12] & (|(CLKMGR_PERMIT[12] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1439,25 +1320,16 @@ module clkmgr_reg_top (
   assign alert_test_recov_fault_wd = reg_wdata[0];
 
   assign alert_test_fatal_fault_wd = reg_wdata[1];
-  assign extclk_ctrl_regwen_we = addr_hit[1] & reg_we & !reg_error;
-
-  assign extclk_ctrl_regwen_wd = reg_wdata[0];
-  assign extclk_ctrl_we = addr_hit[2] & reg_we & !reg_error;
-
-  assign extclk_ctrl_sel_wd = reg_wdata[3:0];
-
-  assign extclk_ctrl_hi_speed_sel_wd = reg_wdata[7:4];
-  assign extclk_status_re = addr_hit[3] & reg_re & !reg_error;
-  assign jitter_regwen_we = addr_hit[4] & reg_we & !reg_error;
+  assign jitter_regwen_we = addr_hit[1] & reg_we & !reg_error;
 
   assign jitter_regwen_wd = reg_wdata[0];
-  assign jitter_enable_we = addr_hit[5] & reg_we & !reg_error;
+  assign jitter_enable_we = addr_hit[2] & reg_we & !reg_error;
 
   assign jitter_enable_wd = reg_wdata[3:0];
-  assign clk_enables_we = addr_hit[6] & reg_we & !reg_error;
+  assign clk_enables_we = addr_hit[3] & reg_we & !reg_error;
 
   assign clk_enables_wd = reg_wdata[0];
-  assign clk_hints_we = addr_hit[7] & reg_we & !reg_error;
+  assign clk_hints_we = addr_hit[4] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
 
@@ -1466,22 +1338,22 @@ module clkmgr_reg_top (
   assign clk_hints_clk_main_kmac_hint_wd = reg_wdata[2];
 
   assign clk_hints_clk_main_otbn_hint_wd = reg_wdata[3];
-  assign measure_ctrl_regwen_we = addr_hit[9] & reg_we & !reg_error;
+  assign measure_ctrl_regwen_we = addr_hit[6] & reg_we & !reg_error;
 
   assign measure_ctrl_regwen_wd = reg_wdata[0];
-  assign io_meas_ctrl_en_we = addr_hit[10] & reg_we & !reg_error;
+  assign io_meas_ctrl_en_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign io_meas_ctrl_shadowed_re = addr_hit[11] & reg_re & !reg_error;
-  assign io_meas_ctrl_shadowed_we = addr_hit[11] & reg_we & !reg_error;
-
-
-  assign main_meas_ctrl_en_we = addr_hit[12] & reg_we & !reg_error;
-
-  assign main_meas_ctrl_shadowed_re = addr_hit[13] & reg_re & !reg_error;
-  assign main_meas_ctrl_shadowed_we = addr_hit[13] & reg_we & !reg_error;
+  assign io_meas_ctrl_shadowed_re = addr_hit[8] & reg_re & !reg_error;
+  assign io_meas_ctrl_shadowed_we = addr_hit[8] & reg_we & !reg_error;
 
 
-  assign recov_err_code_we = addr_hit[14] & reg_we & !reg_error;
+  assign main_meas_ctrl_en_we = addr_hit[9] & reg_we & !reg_error;
+
+  assign main_meas_ctrl_shadowed_re = addr_hit[10] & reg_re & !reg_error;
+  assign main_meas_ctrl_shadowed_we = addr_hit[10] & reg_we & !reg_error;
+
+
+  assign recov_err_code_we = addr_hit[11] & reg_we & !reg_error;
 
   assign recov_err_code_shadow_update_err_wd = reg_wdata[0];
 
@@ -1496,21 +1368,18 @@ module clkmgr_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check[0] = alert_test_we;
-    reg_we_check[1] = extclk_ctrl_regwen_we;
-    reg_we_check[2] = extclk_ctrl_gated_we;
-    reg_we_check[3] = 1'b0;
-    reg_we_check[4] = jitter_regwen_we;
-    reg_we_check[5] = jitter_enable_gated_we;
-    reg_we_check[6] = clk_enables_we;
-    reg_we_check[7] = clk_hints_we;
-    reg_we_check[8] = 1'b0;
-    reg_we_check[9] = measure_ctrl_regwen_we;
-    reg_we_check[10] = io_meas_ctrl_en_we;
-    reg_we_check[11] = io_meas_ctrl_shadowed_we;
-    reg_we_check[12] = main_meas_ctrl_en_we;
-    reg_we_check[13] = main_meas_ctrl_shadowed_we;
-    reg_we_check[14] = recov_err_code_we;
-    reg_we_check[15] = 1'b0;
+    reg_we_check[1] = jitter_regwen_we;
+    reg_we_check[2] = jitter_enable_gated_we;
+    reg_we_check[3] = clk_enables_we;
+    reg_we_check[4] = clk_hints_we;
+    reg_we_check[5] = 1'b0;
+    reg_we_check[6] = measure_ctrl_regwen_we;
+    reg_we_check[7] = io_meas_ctrl_en_we;
+    reg_we_check[8] = io_meas_ctrl_shadowed_we;
+    reg_we_check[9] = main_meas_ctrl_en_we;
+    reg_we_check[10] = main_meas_ctrl_shadowed_we;
+    reg_we_check[11] = recov_err_code_we;
+    reg_we_check[12] = 1'b0;
   end
 
   // Read data return
@@ -1523,61 +1392,48 @@ module clkmgr_reg_top (
       end
 
       addr_hit[1]: begin
-        reg_rdata_next[0] = extclk_ctrl_regwen_qs;
-      end
-
-      addr_hit[2]: begin
-        reg_rdata_next[3:0] = extclk_ctrl_sel_qs;
-        reg_rdata_next[7:4] = extclk_ctrl_hi_speed_sel_qs;
-      end
-
-      addr_hit[3]: begin
-        reg_rdata_next[3:0] = extclk_status_qs;
-      end
-
-      addr_hit[4]: begin
         reg_rdata_next[0] = jitter_regwen_qs;
       end
 
-      addr_hit[5]: begin
+      addr_hit[2]: begin
         reg_rdata_next[3:0] = jitter_enable_qs;
       end
 
-      addr_hit[6]: begin
+      addr_hit[3]: begin
         reg_rdata_next[0] = clk_enables_qs;
       end
 
-      addr_hit[7]: begin
+      addr_hit[4]: begin
         reg_rdata_next[0] = clk_hints_clk_main_aes_hint_qs;
         reg_rdata_next[1] = clk_hints_clk_main_hmac_hint_qs;
         reg_rdata_next[2] = clk_hints_clk_main_kmac_hint_qs;
         reg_rdata_next[3] = clk_hints_clk_main_otbn_hint_qs;
       end
 
-      addr_hit[8]: begin
+      addr_hit[5]: begin
         reg_rdata_next[0] = clk_hints_status_clk_main_aes_val_qs;
         reg_rdata_next[1] = clk_hints_status_clk_main_hmac_val_qs;
         reg_rdata_next[2] = clk_hints_status_clk_main_kmac_val_qs;
         reg_rdata_next[3] = clk_hints_status_clk_main_otbn_val_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[6]: begin
         reg_rdata_next[0] = measure_ctrl_regwen_qs;
       end
 
-      addr_hit[10]: begin
+      addr_hit[7]: begin
         reg_rdata_next = DW'(io_meas_ctrl_en_qs);
       end
-      addr_hit[11]: begin
+      addr_hit[8]: begin
         reg_rdata_next = DW'(io_meas_ctrl_shadowed_qs);
       end
-      addr_hit[12]: begin
+      addr_hit[9]: begin
         reg_rdata_next = DW'(main_meas_ctrl_en_qs);
       end
-      addr_hit[13]: begin
+      addr_hit[10]: begin
         reg_rdata_next = DW'(main_meas_ctrl_shadowed_qs);
       end
-      addr_hit[14]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = recov_err_code_shadow_update_err_qs;
         reg_rdata_next[1] = recov_err_code_io_measure_err_qs;
         reg_rdata_next[2] = recov_err_code_main_measure_err_qs;
@@ -1585,7 +1441,7 @@ module clkmgr_reg_top (
         reg_rdata_next[4] = recov_err_code_main_timeout_err_qs;
       end
 
-      addr_hit[15]: begin
+      addr_hit[12]: begin
         reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
         reg_rdata_next[1] = fatal_err_code_idle_cnt_qs;
         reg_rdata_next[2] = fatal_err_code_shadow_storage_err_qs;
@@ -1640,16 +1496,16 @@ module clkmgr_reg_top (
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[10]: begin
+      addr_hit[7]: begin
         reg_busy_sel = io_meas_ctrl_en_busy;
       end
-      addr_hit[11]: begin
+      addr_hit[8]: begin
         reg_busy_sel = io_meas_ctrl_shadowed_busy;
       end
-      addr_hit[12]: begin
+      addr_hit[9]: begin
         reg_busy_sel = main_meas_ctrl_en_busy;
       end
-      addr_hit[13]: begin
+      addr_hit[10]: begin
         reg_busy_sel = main_meas_ctrl_shadowed_busy;
       end
       default: begin

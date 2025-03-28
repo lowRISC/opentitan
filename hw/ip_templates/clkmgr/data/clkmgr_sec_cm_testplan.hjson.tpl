@@ -90,6 +90,7 @@
       stage: V2S
       tests: ["clkmgr_idle_intersig_mubi"]
     }
+  % if len(derived_clks) > 0:
     {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
@@ -147,6 +148,7 @@
       stage: V2S
       tests: ["clkmgr_div_intersig_mubi"]
     }
+  % endif
     {
       name: sec_cm_jitter_config_mubi
       desc: '''Verify the countermeasure(s) JITTER.CONFIG.MUBI.

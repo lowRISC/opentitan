@@ -496,13 +496,13 @@ interface chip_if;
   clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
 `ifdef GATE_LEVEL
-  wire io_div4_clk = 1'b0;
-  wire io_div4_rst_n = 1'b1;
+  wire io_clk = 1'b0;
+  wire io_rst_n = 1'b1;
 `else
-  wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
-  wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
+  wire io_clk = `CLKMGR_HIER.clocks_o.clk_io_powerup;
+  wire io_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_n[0];
 `endif
-  clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
+  clk_rst_if io_clk_rst_if(.clk(io_clk), .rst_n(io_rst_n));
 
 `ifdef GATE_LEVEL
   wire lc_ready = 1'b0;
@@ -555,8 +555,8 @@ interface chip_if;
                                           .rst_n   (1)
 `else
                                           .clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                                          .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
-                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0])
+                                          .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_powerup),
+                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_n[0])
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
@@ -576,8 +576,6 @@ interface chip_if;
   wire otbn_clk_is_enabled = 0;
 
   wire io_clk_is_enabled = 0;
-  wire io_div2_clk_is_enabled = 0;
-  wire io_div4_clk_is_enabled = 0;
 `else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
   wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
@@ -586,8 +584,6 @@ interface chip_if;
 
 // TODO: Not used in DV simulation.
 // wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
-  wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
-  wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
 `endif
   // Ibex monitors.
   ibex_pkg::pmp_mseccfg_t pmp_mseccfg;

@@ -207,12 +207,6 @@ module top_darjeeling #(
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_spi2sys_i,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
-  output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
-  input  prim_mubi_pkg::mubi4_t       io_clk_byp_ack_i,
-  output prim_mubi_pkg::mubi4_t       all_clk_byp_req_o,
-  input  prim_mubi_pkg::mubi4_t       all_clk_byp_ack_i,
-  output prim_mubi_pkg::mubi4_t       hi_speed_sel_o,
-  input  prim_mubi_pkg::mubi4_t       div_step_down_req_i,
   input  prim_mubi_pkg::mubi4_t       calib_rdy_i,
   output dma_pkg::sys_req_t       dma_sys_req_o,
   input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
@@ -605,7 +599,6 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
@@ -1334,7 +1327,7 @@ module top_darjeeling #(
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
       .lc_escalate_en_o(lc_ctrl_lc_escalate_en),
-      .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
+      .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_ack),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
       .lc_flash_rma_ack_i(otbn_lc_rma_ack),
@@ -1536,15 +1529,6 @@ module top_darjeeling #(
       // Inter-module signals
       .clocks_o(clkmgr_aon_clocks),
       .cg_en_o(clkmgr_aon_cg_en),
-      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
-      .io_clk_byp_req_o(io_clk_byp_req_o),
-      .io_clk_byp_ack_i(io_clk_byp_ack_i),
-      .all_clk_byp_req_o(all_clk_byp_req_o),
-      .all_clk_byp_ack_i(all_clk_byp_ack_i),
-      .hi_speed_sel_o(hi_speed_sel_o),
-      .div_step_down_req_i(div_step_down_req_i),
-      .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req),
-      .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack),
       .jitter_en_o(clk_main_jitter_en_o),
       .pwr_i(pwrmgr_aon_pwr_clk_req),
       .pwr_o(pwrmgr_aon_pwr_clk_rsp),

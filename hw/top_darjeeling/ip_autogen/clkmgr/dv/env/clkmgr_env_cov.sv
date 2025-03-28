@@ -110,19 +110,6 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   // These covergroups collect outcomes of clock frequency measurements.
   freq_measure_cg_wrap freq_measure_cg_wrap[2];
 
-  // This embeded covergroup collects coverage for the external clock functionality.
-  covergroup extclk_cg with function sample (
-      bit csr_sel, bit csr_low_speed, bit hw_debug_en, bit byp_req, bit scanmode
-  );
-    csr_sel_cp: coverpoint csr_sel;
-    csr_low_speed_cp: coverpoint csr_low_speed;
-    hw_debug_en_cp: coverpoint hw_debug_en;
-    byp_req_cp: coverpoint byp_req;
-    scanmode_cp: coverpoint scanmode;
-
-    extclk_cross: cross csr_sel_cp, csr_low_speed_cp, hw_debug_en_cp, byp_req_cp, scanmode_cp;
-  endgroup
-
   // This collects coverage for recoverable errors.
   covergroup recov_err_cg with function sample (
       bit main_timeout,
@@ -163,7 +150,6 @@ class clkmgr_env_cov extends cip_base_env_cov #(
       clk_mesr_e clk_mesr = clk_mesr_e'(i);
       freq_measure_cg_wrap[i] = new(clk_mesr.name);
     end
-    extclk_cg = new();
     recov_err_cg = new();
     fatal_err_cg = new();
   endfunction : new

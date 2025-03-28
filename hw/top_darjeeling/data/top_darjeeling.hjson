@@ -416,10 +416,6 @@
     { name: "pwrmgr_aon",
       type: "pwrmgr",
       template_type: "pwrmgr",
-      // TODO: RS, fix after pwrmgr fix is merged
-      // param_decl: {
-      //   PwrFsmWaitForExtRst: "1"
-      // }
       clock_group: "powerup",
       clock_srcs: {
         clk_i: "io",
@@ -1282,7 +1278,6 @@
                                       'ast.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
-                                      'clkmgr_aon.lc_hw_debug_en',
                                       'pwrmgr_aon.lc_hw_debug_en',
                                       'soc_dbg_ctrl.lc_hw_debug_en'],
       'lc_ctrl.lc_cpu_en'          : ['rv_core_ibex.lc_cpu_en',
@@ -1300,8 +1295,9 @@
 
       'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
                                       'rv_dm.lc_check_byp_en'],
-      'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
-      'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
+
+      // Darjeeling does not have bypassable clocks. Therefore always ack are req
+      'lc_ctrl.lc_clk_byp_ack'     : ['lc_ctrl.lc_clk_byp_req'],
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
@@ -1411,12 +1407,6 @@
         'spi_device.ram_cfg_spi2sys'           : 'spi_device_ram_2p_cfg_spi2sys',
         'pwrmgr_aon.boot_status'               : 'pwrmgr_boot_status',
         'clkmgr_aon.jitter_en'                 : 'clk_main_jitter_en',
-        'clkmgr_aon.io_clk_byp_req'            : 'io_clk_byp_req',
-        'clkmgr_aon.io_clk_byp_ack'            : 'io_clk_byp_ack',
-        'clkmgr_aon.all_clk_byp_req'           : 'all_clk_byp_req',
-        'clkmgr_aon.all_clk_byp_ack'           : 'all_clk_byp_ack',
-        'clkmgr_aon.hi_speed_sel'              : 'hi_speed_sel',
-        'clkmgr_aon.div_step_down_req'         : 'div_step_down_req',
         'clkmgr_aon.calib_rdy'                 : 'calib_rdy',
         'dma.sys'                              : 'dma_sys',
         'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
