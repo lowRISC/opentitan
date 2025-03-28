@@ -88,3 +88,8 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
     ],
 )
+
+py_binary(
+    name = "gen_stamped_tarball",
+    srcs = ["gen_stamped_tarball.py"],
+)
