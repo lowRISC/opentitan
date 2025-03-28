@@ -270,7 +270,6 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
 
 def _get_alert_handler_params(top: ConfigT) -> ParamsT:
     """Returns parameters for alert_hander ipgen from top config."""
-    topname = top["name"]
     # default values
     esc_cnt_dw = 32
     accu_cnt_dw = 16
@@ -418,7 +417,6 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     assert "pinmux" in top
     assert "pinout" in top
 
-    topname = top["name"]
     pinmux = top["pinmux"]
 
     # Get number of wakeup detectors
@@ -483,7 +481,6 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
-        "scan_role_pkg_vlnv": f"lowrisc:systems:top_{topname}_scan_role_pkg",
     }
 
 
@@ -516,7 +513,6 @@ def _get_clkmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
 
-    topname = top["name"]
     return {
         "src_clks":
         OrderedDict({name: vars(obj)
@@ -553,7 +549,6 @@ def generate_clkmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
 
 def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for pwrmgr ipgen."""
-    topname = top["name"]
     # Count number of wakeups
     n_wkups = len(top["wakeups"])
     log.info("Found {} wakeup signals".format(n_wkups))
@@ -602,7 +597,6 @@ def get_rst_ni(top: ConfigT) -> object:
 
 def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for rstmgr ipgen."""
-    topname = top["name"]
     # Parameters needed for generation
     reset_obj = top["resets"]
 
@@ -664,7 +658,6 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
         raise ValueError(
             "In _get_flash_ctrl_params for design with no flash_ctrl")
 
-    topname = top["name"]
     params = vars(flash_mems[0]["memory"]["mem"]["config"])
     # Additional parameters not provided in the top config.
     params.update({
