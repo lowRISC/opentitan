@@ -150,14 +150,21 @@ class RstmgrExt(Extension):
             sw_rsts[str(idx)] = Name.from_snake_case(rst)
         hw_reqs = {}
         for (idx, reset) in enumerate(self.ipconfig.hw_reset_req_list()):
-            # We need to create the reset name from another module.
-            module_type = self.ip_helper.top_helper.get_module_type(reset["module"])
-            self._extra_includes[module_type] = None
+            # NOTE Englishbreakfast pretends to have an escalation signal but
+            # in fact does not have an alert_handler so we need to special case
+            # that. Similarly there is no rv_dm.
+            if self.ip_helper.top_helper.top["name"] == "englishbreakfast" and \
+                    reset["module"] in ["alert_handler", "rv_dm"]:
+                inst_id = Name(["unknown"])
+            else:
+                inst_id = Name.from_snake_case(reset["module"])
             # Even though the ipconfig currently models internal and debug reset
             # requests like peripherals, they are in reality hardcoded signals and
             # therefore there is not correspondingly named reset requests coming from
             # those blocks. For now, simply hardwire those to 0 to workaround the issue.
-            if reset["name"] not in ["Ndm", "MainPwr", "Esc"]:
+            if reset["name"] not in ["Ndm", "MainPwr", "Esc"] and inst_id != Name(["unknown"]):
+                module_type = self.ip_helper.top_helper.get_module_type(reset["module"])
+                self._extra_includes[module_type] = None
                 rstreq = Name(["dt"])
                 rstreq += Name.from_snake_case(module_type)
                 rstreq += Name(["reset", "req"])
@@ -167,7 +174,7 @@ class RstmgrExt(Extension):
             else:
                 rstreq = "0"
             hw_reqs[str(idx)] = {
-                self.RSTREQ_SOURCE_INST_FIELD_NAME: Name.from_snake_case(reset["module"]),
+                self.RSTREQ_SOURCE_INST_FIELD_NAME: inst_id,
                 self.RSTREQ_SOURCE_REQ_FIELD_NAME: rstreq,
             }
 
