@@ -58,7 +58,6 @@ dt_pwrmgr_wakeup_src_t dt_pwrmgr_wakeup_src(dt_pwrmgr_t dt, size_t idx);
  * from. In principle, some instances could have several reset requests. If this is the case,
  * the `rst_req` can be used to distinguish between those. It should be cast to the
  * `dt_<ip>_reset_req_t` type of the corresponding IP.
- * ```
  */
 %(reset_req_src_struct)s
 

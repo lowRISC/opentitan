@@ -93,7 +93,7 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
  * If this DIF was initialized by `dif_${ip.name_snake}_init_from_dt(dt, ..)`
  * then this function will return `dt`. Otherwise it will return an error.
  *
- * @param dt A ${ip.name_snake} handle.
+ * @param ${ip.name_snake} A ${ip.name_snake} handle.
  * @param[out] dt DT handle.
  * @return `kDifBadArg` if the DIF has no DT information, `kDifOk` otherwise.
  */
