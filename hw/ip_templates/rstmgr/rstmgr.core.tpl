@@ -8,8 +8,8 @@ description: "Reset manager RTL"
 filesets:
   files_rtl:
     depend:
-% if alert_handler_vlnv:
-      - ${alert_handler_vlnv}
+% if with_alert_handler:
+      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg")}
 % endif
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
