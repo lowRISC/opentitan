@@ -51,7 +51,7 @@ All common types and methods defined at the package level can be found in
 
   typedef virtual clkmgr_if clkmgr_vif;
   typedef virtual clk_rst_if clk_rst_vif;
-  typedef enum int {PeriDiv4, PeriDiv2, PeriIo, PeriUsb} peri_e;
+  typedef enum int {PeriIoDiv4, PeriIoDiv2, PeriUsb, PeriIo} peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbnIoDiv4, TransOtbnMain} trans_e;
 ```
 

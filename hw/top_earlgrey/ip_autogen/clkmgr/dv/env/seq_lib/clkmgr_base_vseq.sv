@@ -97,18 +97,21 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   task pre_start();
-    meas_ctrl_regs[ClkMesrIo] = '{"io", ral.io_meas_ctrl_en, ral.io_meas_ctrl_shadowed.hi,
-                                  ral.io_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrIoDiv2] = '{"io div2", ral.io_div2_meas_ctrl_en,
-                                      ral.io_div2_meas_ctrl_shadowed.hi,
-                                      ral.io_div2_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrIoDiv4] = '{"io div4", ral.io_div4_meas_ctrl_en,
-                                      ral.io_div4_meas_ctrl_shadowed.hi,
-                                      ral.io_div4_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrMain] = '{"main", ral.main_meas_ctrl_en, ral.main_meas_ctrl_shadowed.hi,
+    meas_ctrl_regs[ClkMesrIo] = '{"io", ral.io_meas_ctrl_en,
+                                    ral.io_meas_ctrl_shadowed.hi,
+                                    ral.io_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrIoDiv2] = '{"io_div2", ral.io_div2_meas_ctrl_en,
+                                    ral.io_div2_meas_ctrl_shadowed.hi,
+                                    ral.io_div2_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrIoDiv4] = '{"io_div4", ral.io_div4_meas_ctrl_en,
+                                    ral.io_div4_meas_ctrl_shadowed.hi,
+                                    ral.io_div4_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrMain] = '{"main", ral.main_meas_ctrl_en,
+                                    ral.main_meas_ctrl_shadowed.hi,
                                     ral.main_meas_ctrl_shadowed.lo};
-    meas_ctrl_regs[ClkMesrUsb] = '{"usb", ral.usb_meas_ctrl_en, ral.usb_meas_ctrl_shadowed.hi,
-                                   ral.usb_meas_ctrl_shadowed.lo};
+    meas_ctrl_regs[ClkMesrUsb] = '{"usb", ral.usb_meas_ctrl_en,
+                                    ral.usb_meas_ctrl_shadowed.hi,
+                                    ral.usb_meas_ctrl_shadowed.lo};
 
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)

@@ -55,8 +55,8 @@ package clkmgr_env_pkg;
 
   // The enum values for these match the bit order in the CSRs.
   typedef enum int {
-    PeriDiv4,
-    PeriDiv2,
+    PeriIoDiv4,
+    PeriIoDiv2,
     PeriUsb,
     PeriIo
   } peri_e;
