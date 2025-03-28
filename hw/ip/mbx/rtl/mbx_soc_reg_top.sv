@@ -494,7 +494,6 @@ module mbx_soc_reg_top
   end
 
   always_comb begin
-    addr_hit = '0;
     racl_addr_hit_read  = '0;
     racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == MBX_SOC_CONTROL_OFFSET);
@@ -565,7 +564,6 @@ module mbx_soc_reg_top
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = soc_control_we;
     reg_we_check[1] = soc_status_we;
     reg_we_check[2] = soc_doe_intr_msg_addr_we;

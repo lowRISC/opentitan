@@ -1099,7 +1099,6 @@ module trial1_reg_top (
 
   logic [19:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == TRIAL1_RWTYPE0_OFFSET);
     addr_hit[ 1] = (reg_addr == TRIAL1_RWTYPE1_OFFSET);
     addr_hit[ 2] = (reg_addr == TRIAL1_RWTYPE2_OFFSET);
@@ -1228,7 +1227,6 @@ module trial1_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = rwtype0_we;
     reg_we_check[1] = rwtype1_we;
     reg_we_check[2] = rwtype2_we;

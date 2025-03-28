@@ -8087,7 +8087,6 @@ module rv_plic_reg_top (
 
   logic [97:0] addr_hit;
   always_comb begin
-    addr_hit = '0;
     addr_hit[ 0] = (reg_addr == RV_PLIC_PRIO_0_OFFSET);
     addr_hit[ 1] = (reg_addr == RV_PLIC_PRIO_1_OFFSET);
     addr_hit[ 2] = (reg_addr == RV_PLIC_PRIO_2_OFFSET);
@@ -8753,7 +8752,6 @@ module rv_plic_reg_top (
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = prio_0_we;
     reg_we_check[1] = prio_1_we;
     reg_we_check[2] = prio_2_we;

@@ -674,7 +674,6 @@ module sram_ctrl_regs_reg_top
   end
 
   always_comb begin
-    addr_hit = '0;
     racl_addr_hit_read  = '0;
     racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
@@ -762,7 +761,6 @@ module sram_ctrl_regs_reg_top
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = 1'b0;
     reg_we_check[2] = exec_regwen_we;

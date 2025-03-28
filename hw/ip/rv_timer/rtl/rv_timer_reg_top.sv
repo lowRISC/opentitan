@@ -509,7 +509,6 @@ module rv_timer_reg_top
   end
 
   always_comb begin
-    addr_hit = '0;
     racl_addr_hit_read  = '0;
     racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == RV_TIMER_ALERT_TEST_OFFSET);
@@ -605,7 +604,6 @@ module rv_timer_reg_top
 
   // Assign write-enables to checker logic vector.
   always_comb begin
-    reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
     reg_we_check[1] = ctrl_we;
     reg_we_check[2] = intr_enable0_we;
