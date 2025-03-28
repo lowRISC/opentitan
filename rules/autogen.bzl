@@ -618,3 +618,39 @@ autogen_cryptotest_header = rule(
         ),
     },
 )
+
+def _autogen_stamp_include(ctx):
+    """
+    Bazel rule for generating C header containing all stamping variables.
+
+    This rule is instantiated as //rules:autogen_stamp_include.
+    Please see the entry in rules/BUILD for explanation.
+    """
+    output = ctx.actions.declare_file("{}.inc".format(ctx.attr.name))
+
+    if stamping_enabled(ctx):
+        ctx.actions.run_shell(
+            outputs = [output],
+            inputs = [ctx.version_file, ctx.info_file],
+            arguments = [
+                ctx.version_file.path,
+                ctx.info_file.path,
+                output.path,
+            ],
+            command = """
+                cat $1 $2 \
+                | sed -E 's/^(\\w+) (.*)/#define BAZEL_\\1 \\2/' \
+                > $3
+            """,
+        )
+    else:
+        ctx.actions.write(output, "")
+
+    return [
+        DefaultInfo(files = depset([output])),
+    ]
+
+autogen_stamp_include = rule(
+    implementation = _autogen_stamp_include,
+    attrs = stamp_attr(-1, "//rules:stamp_flag"),
+)
