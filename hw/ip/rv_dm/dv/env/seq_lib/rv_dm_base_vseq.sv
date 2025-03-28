@@ -123,6 +123,16 @@ class rv_dm_base_vseq extends cip_base_vseq #(
 
     cfg.rv_dm_vif.lc_dft_en <= bool_to_lc_tx_t(lc_dft_en);
 
+    cfg.rv_dm_vif.lc_check_byp_en <= lc_ctrl_pkg::Off;
+    cfg.rv_dm_vif.lc_escalate_en <= lc_ctrl_pkg::Off;
+    cfg.rv_dm_vif.strap_en_override <= 1'b0;
+`ifdef USE_DMI_INTERFACE
+    // TODO: revisit this. In order to operate in DMI mode we need to assert `strap_en`.
+    cfg.rv_dm_vif.strap_en <= 1'b1;
+`else
+    cfg.rv_dm_vif.strap_en <= 1'b0;
+`endif
+
     // Drive the otp_dis_rv_dm_late_debug_i pin to match pin_late_debug_enable (to avoid assertions
     // that get triggered in prim_lc_sync/prim_mubi8_sync if the input is 'x). We will configure the
     // register a little later, in dut_init.
@@ -165,7 +175,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     end
 
     // TODO: Randomize the contents of the debug ROM & the program buffer once out of reset.
-
     if (pinmux_hw_debug_en) begin
       // We would like to do a DMI transaction here. If this vseq is the first with debug enabled,
       // the "enable" signal will need to make it through the a prim_lc_sync in the design before it
@@ -173,6 +182,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
       // signal: it will go high once everything has been connected. *That* signal is exposed
       // through jtag_mon_if in the tb, which is visible through the jtag agent's mon_vif interface.
       // Exit early if a system reset appears in the meantime.
+`ifndef USE_DMI_INTERFACE
       fork begin : isolation_fork
         fork
           wait(cfg.m_jtag_agent_cfg.mon_vif.trst_n);
@@ -181,6 +191,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
         disable fork;
       end join
       if (!cfg.clk_rst_vif.rst_n) return;
+`endif
 
       // "Activate" the DM to facilitate ease of testing, but only if not in scanmode (where the
       // JTAG driver won't work properly). This will exit early if there is a JTAG reset.
@@ -188,7 +199,6 @@ class rv_dm_base_vseq extends cip_base_vseq #(
         csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
       end
     end
-
     // Start the SBA TL device seq.
     sba_tl_device_seq_start();
   endtask

@@ -111,7 +111,6 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     forever begin
       // Read seq_item_port to get items to drive
       seq_item_port.get_next_item(req);
-
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
 

@@ -32,7 +32,6 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     // Check immediately that the write has been reflected in the debug_req_o output. There's no
     // need to wait because the write goes through a jtag_dmi_agent, which follows the write
     // operation with a read operation (polling) to check that it was applied.
-
     if (cfg.clk_rst_vif.rst_n) `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
   endtask
 
