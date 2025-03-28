@@ -13,6 +13,7 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/opentitanlib/bindgen",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:humantime",
