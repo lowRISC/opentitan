@@ -166,6 +166,7 @@ ld_library(
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
             "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/lib/sigverify",
+            "//sw/device/silicon_creator/rom_ext/imm_section:imm_section_version",
             "//sw/otbn/crypto:boot",
         ] + variation_deps,
     )
