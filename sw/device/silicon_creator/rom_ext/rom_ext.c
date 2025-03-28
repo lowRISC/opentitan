@@ -543,6 +543,9 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data,
         HARDENED_CHECK_EQ(msg_type, kBootSvcEmptyReqType);
         boot_svc_empty_res_init(&boot_svc_msg->empty);
         break;
+      case kBootSvcEnterRescueReqType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcEnterRescueReqType);
+        return rescue_enter_handler(boot_svc_msg);
       case kBootSvcNextBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
         return boot_svc_next_boot_bl0_slot_handler(boot_svc_msg, boot_data,
@@ -557,6 +560,7 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data,
         HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipActivateReqType);
         return ownership_activate_handler(boot_svc_msg, boot_data);
       case kBootSvcEmptyResType:
+      case kBootSvcEnterRescueResType:
       case kBootSvcNextBl0SlotResType:
       case kBootSvcMinBl0SecVerResType:
       case kBootSvcOwnershipUnlockResType:

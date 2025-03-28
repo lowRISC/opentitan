@@ -7,6 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -18,6 +19,8 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 
 #include "hw/top/flash_ctrl_regs.h"
+
+static hardened_bool_t rescue_requested;
 
 const uint32_t kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 const uint32_t kFlashBankSize =
@@ -281,7 +284,16 @@ void rescue_state_init(rescue_state_t *state,
   }
 }
 
+rom_error_t rescue_enter_handler(boot_svc_msg_t *msg) {
+  rescue_requested = kHardenedBoolTrue;
+  boot_svc_enter_rescue_res_init(kErrorOk, &msg->enter_rescue_res);
+  return kErrorOk;
+}
+
 hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
+  if (rescue_requested == kHardenedBoolTrue) {
+    return kHardenedBoolTrue;
+  }
   rescue_detect_t detect = kRescueDetectBreak;
   uint32_t index = 0;
   uint32_t gpio_val = 0;
