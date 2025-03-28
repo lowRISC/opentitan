@@ -20,6 +20,13 @@ then
 fi
 echo "BUILD_SCM_REVISION ${git_rev}"
 
+git_rev_short=$(git rev-parse --short=8 HEAD)
+if [[ $? != 0 ]];
+then
+  exit 1
+fi
+echo "BUILD_SCM_REVISION_SHORT ${git_rev_short}"
+
 git_version=$(git describe --always --tags)
 if [[ $? != 0 ]];
 then
