@@ -6,9 +6,6 @@
 | Name                                                         | Offset   |   Length | Description                                                                |
 |:-------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
 | clkmgr.[`ALERT_TEST`](#alert_test)                           | 0x0      |        4 | Alert Test Register                                                        |
-| clkmgr.[`EXTCLK_CTRL_REGWEN`](#extclk_ctrl_regwen)           | 0x4      |        4 | External clock control write enable                                        |
-| clkmgr.[`EXTCLK_CTRL`](#extclk_ctrl)                         | 0x8      |        4 | Select external clock                                                      |
-| clkmgr.[`EXTCLK_STATUS`](#extclk_status)                     | 0xc      |        4 | Status of requested external clock switch                                  |
 | clkmgr.[`JITTER_REGWEN`](#jitter_regwen)                     | 0x10     |        4 | Jitter write enable                                                        |
 | clkmgr.[`JITTER_ENABLE`](#jitter_enable)                     | 0x14     |        4 | Enable jittery clock                                                       |
 | clkmgr.[`CLK_ENABLES`](#clk_enables)                         | 0x18     |        4 | Clock enable for software gateable clocks.                                 |
@@ -39,96 +36,6 @@ Alert Test Register
 |  31:2  |        |         |             | Reserved                                         |
 |   1    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 |   0    |   wo   |   0x0   | recov_fault | Write 1 to trigger one alert event of this kind. |
-
-## EXTCLK_CTRL_REGWEN
-External clock control write enable
-- Offset: `0x4`
-- Reset default: `0x1`
-- Reset mask: `0x1`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                     |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                        |
-|   0    |  rw0c  |   0x1   | EN     | When 1, the value of [`EXTCLK_CTRL`](#extclk_ctrl) can be set.  When 0, writes to [`EXTCLK_CTRL`](#extclk_ctrl) have no effect. |
-
-## EXTCLK_CTRL
-Select external clock
-- Offset: `0x8`
-- Reset default: `0x99`
-- Reset mask: `0xff`
-- Register enable: [`EXTCLK_CTRL_REGWEN`](#extclk_ctrl_regwen)
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "SEL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HI_SPEED_SEL", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                                       |
-|:------:|:------:|:-------:|:-------------------------------------------|
-|  31:8  |        |         | Reserved                                   |
-|  7:4   |   rw   |   0x9   | [HI_SPEED_SEL](#extclk_ctrl--hi_speed_sel) |
-|  3:0   |   rw   |   0x9   | [SEL](#extclk_ctrl--sel)                   |
-
-### EXTCLK_CTRL . HI_SPEED_SEL
-A value of kMultiBitBool4True selects nominal speed external clock.
-All other values selects low speed clocks.
-
-Note this field only has an effect when the [`EXTCLK_CTRL.SEL`](#extclk_ctrl) field is set to
-kMultiBitBool4True.
-
-Nominal speed means the external clock is approximately the same frequency as
-the internal oscillator source.  When this option is used, all clocks operate
-at roughly the nominal frequency.
-
-Low speed means the external clock is approximately half the frequency of the
-internal oscillator source. When this option is used, the internal dividers are
-stepped down.  As a result, previously undivided clocks now run at half frequency,
-while previously divided clocks run at roughly the nominal frequency.
-
-See external clock switch support in documentation for more details.
-
-### EXTCLK_CTRL . SEL
-When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
-selects external clock as clock for the system.  Writing any other value has
-no impact.
-
-When the current value is kMultiBitBool4True, writing a value of kMultiBitBool4False
-selects internal clock as clock for the system. Writing any other value during this stage
-has no impact.
-
-While this register can always be programmed, it only takes effect when debug functions are enabled
-in life cycle TEST, DEV or RMA states.
-
-## EXTCLK_STATUS
-Status of requested external clock switch
-- Offset: `0xc`
-- Reset default: `0x9`
-- Reset mask: `0xf`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "ACK", "bits": 4, "attr": ["ro"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name                       |
-|:------:|:------:|:-------:|:---------------------------|
-|  31:4  |        |         | Reserved                   |
-|  3:0   |   ro   |   0x9   | [ACK](#extclk_status--ack) |
-
-### EXTCLK_STATUS . ACK
-When [`EXTCLK_CTRL.SEL`](#extclk_ctrl) is set to kMultiBitBool4True, this field reflects
-whether the clock has been switched the external source.
-
-kMultiBitBool4True indicates the switch is complete.
-kMultiBitBool4False indicates the switch is either not possible or still ongoing.
 
 ## JITTER_REGWEN
 Jitter write enable

@@ -33,8 +33,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      monitor_all_clk_byp();
-      monitor_io_clk_byp();
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
@@ -42,76 +40,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       sample_fatal_err_cov();
       sample_recov_err_cov();
     join_none
-  endtask
-
-  task monitor_all_clk_byp();
-    mubi4_t prev_all_clk_byp_req = MuBi4False;
-    forever
-      @cfg.clkmgr_vif.clk_cb begin
-        if (cfg.clkmgr_vif.all_clk_byp_req != prev_all_clk_byp_req) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Got all_clk_byp_req %s",
-                    cfg.clkmgr_vif.all_clk_byp_req == MuBi4True ? "True" : "False"
-                    ), UVM_MEDIUM)
-          prev_all_clk_byp_req = cfg.clkmgr_vif.all_clk_byp_req;
-        end
-        if (cfg.clk_rst_vif.rst_n) begin
-          if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
-                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      end
-  endtask
-
-  task monitor_io_clk_byp();
-    lc_tx_t prev_lc_clk_byp_req = Off;
-    forever
-      @cfg.clkmgr_vif.clk_cb begin
-        if (cfg.clkmgr_vif.lc_clk_byp_req != prev_lc_clk_byp_req) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Got lc_clk_byp_req %s", cfg.clkmgr_vif.lc_clk_byp_req == On ? "On" : "Off"),
-                    UVM_MEDIUM)
-          prev_lc_clk_byp_req = cfg.clkmgr_vif.lc_clk_byp_req;
-        end
-        if (cfg.clk_rst_vif.rst_n) begin
-          if (cfg.en_cov) begin
-            cov.extclk_cg.sample(cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_sel == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.extclk_ctrl_csr_step_down == MuBi4True,
-                                 cfg.clkmgr_vif.clk_cb.lc_hw_debug_en_i == On,
-                                 cfg.clkmgr_vif.clk_cb.lc_clk_byp_req == On,
-                                 cfg.clkmgr_vif.scanmode_i == MuBi4True);
-          end
-        end
-      end
-  endtask
-
-  task monitor_jitter_en();
-    fork
-      forever
-        @cfg.clkmgr_vif.clk_cb begin
-          if (cfg.clk_rst_vif.rst_n) begin
-            @cfg.clkmgr_vif.jitter_enable_csr begin
-              cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
-                           "Mismatching jitter enable output")
-            end
-          end
-        end
-      forever
-        @cfg.clkmgr_vif.clk_cb begin
-          if (cfg.clk_rst_vif.rst_n) begin
-            @cfg.clkmgr_vif.jitter_en_o begin
-              cfg.clk_rst_vif.wait_clks(2);
-              `DV_CHECK_EQ(cfg.clkmgr_vif.jitter_en_o, cfg.clkmgr_vif.jitter_enable_csr,
-                           "Mismatching jitter enable output")
-            end
-          end
-        end
-    join
   endtask
 
   task sample_peri_covs();

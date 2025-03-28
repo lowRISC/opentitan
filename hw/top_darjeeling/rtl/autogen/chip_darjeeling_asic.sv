@@ -1745,12 +1745,6 @@ module chip_darjeeling_asic #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
-    .io_clk_byp_req_o                  ( io_clk_byp_req             ),
-    .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
-    .all_clk_byp_req_o                 ( all_clk_byp_req            ),
-    .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
-    .hi_speed_sel_o                    ( hi_speed_sel               ),
-    .div_step_down_req_i               ( div_step_down_req          ),
     .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage

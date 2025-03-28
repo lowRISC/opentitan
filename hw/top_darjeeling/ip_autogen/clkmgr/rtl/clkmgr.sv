@@ -56,24 +56,6 @@
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [3:0] idle_i,
-
-  // life cycle state output
-  // SEC_CM: LC_CTRL.INTERSIG.MUBI
-  input lc_tx_t lc_hw_debug_en_i,
-
-  // clock bypass control with lc_ctrl
-  // SEC_CM: LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI
-  input lc_tx_t lc_clk_byp_req_i,
-  output lc_tx_t lc_clk_byp_ack_o,
-
-  // clock bypass control with ast
-  // SEC_CM: CLK_HANDSHAKE.INTERSIG.MUBI
-  output mubi4_t io_clk_byp_req_o,
-  input mubi4_t io_clk_byp_ack_i,
-  output mubi4_t all_clk_byp_req_o,
-  input mubi4_t all_clk_byp_ack_i,
-  output mubi4_t hi_speed_sel_o,
-
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
@@ -81,10 +63,6 @@
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
-
-  // external indication for whether dividers should be stepped down
-  // SEC_CM: DIV.INTERSIG.MUBI
-  input mubi4_t div_step_down_req_i,
 
   // clock gated indications going to alert handlers
   output clkmgr_cg_en_t cg_en_o,
@@ -199,14 +177,6 @@
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
-  // No bypass as there are no derived clocks
-
-  // Read inputs and tie-off outputs
-  logic unused_bypass = ^{lc_clk_byp_req_i, all_clk_byp_ack_i, io_clk_byp_ack_i};
-
-  assign all_clk_byp_req_o               = prim_mubi_pkg::MuBi4False;
-  assign io_clk_byp_req_o                = prim_mubi_pkg::MuBi4False;
-  assign all_clkhi_speed_sel_o_byp_req_o = prim_mubi_pkg::MuBi4False;
 
   ////////////////////////////////////////////////////
   // Feed through clocks
@@ -480,7 +450,7 @@
   ) u_clk_io_peri_sw_en_sync (
     .clk_i(clk_io),
     .rst_ni(rst_io_ni),
-    .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
+    .d_i(reg2hw.clk_enables.q),
     .q_o(clk_io_peri_sw_en)
   );
 
@@ -638,9 +608,6 @@
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
   `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
-  `ASSERT_KNOWN(AllClkBypReqKnownO_A, all_clk_byp_req_o)
-  `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
-  `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
   `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)

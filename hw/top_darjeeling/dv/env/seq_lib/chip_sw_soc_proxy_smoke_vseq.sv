@@ -39,7 +39,7 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     // Fork background threads to ensure that most reset domains do *not* get reset.
     fork
       begin
-        cfg.chip_vif.io_div4_clk_rst_if.wait_for_reset(.wait_negedge(1), .wait_posedge(0));
+        cfg.chip_vif.io_clk_rst_if.wait_for_reset(.wait_negedge(1), .wait_posedge(0));
         `dv_error("IO reset domain asserted when it should not!")
       end
       begin
