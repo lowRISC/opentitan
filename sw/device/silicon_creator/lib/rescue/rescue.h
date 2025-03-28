@@ -78,6 +78,11 @@ typedef struct RescueState {
   uint16_t staged_len;
   // Current flash write offset.
   uint32_t flash_offset;
+  // Current flash beginning offset.  This is the partition-relative offset
+  // where we're allowed to start writing to flash.  Normally, this will be
+  // the same as `flash_start`, but if we're allowed to write the ROM_EXT
+  // and we've detected a ROM_EXT, this may be adjusted to zero.
+  uint32_t flash_begin;
   // Range to erase and write for firmware rescue (inclusive).
   uint32_t flash_start;
   uint32_t flash_limit;
