@@ -15,7 +15,6 @@
     n_dio_periph_out: 57
     enable_usb_wakeup: false
     enable_strap_sampling: false
-    scan_role_pkg_vlnv: lowrisc:systems:top_darjeeling_scan_role_pkg
     topname: darjeeling
     uniquified_modules: {}
   }

@@ -17,7 +17,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
       - ${instance_vlnv("lowrisc:fpv:pinmux_common_fpv:0.1")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
-      - ${scan_role_pkg_vlnv}
+      - ${instance_vlnv("lowrisc:systems:scan_role_pkg")}
     files:
       - tb/pinmux_chip_tb.sv
     file_type: systemVerilogSource

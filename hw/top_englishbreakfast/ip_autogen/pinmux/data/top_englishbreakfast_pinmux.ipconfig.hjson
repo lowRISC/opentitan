@@ -15,7 +15,6 @@
     n_dio_periph_out: 12
     enable_usb_wakeup: true
     enable_strap_sampling: true
-    scan_role_pkg_vlnv: lowrisc:systems:top_englishbreakfast_scan_role_pkg
     topname: englishbreakfast
     uniquified_modules: {}
   }
