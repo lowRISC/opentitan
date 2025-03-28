@@ -40,6 +40,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   string common_seq_type;
 
+  // Used to get the gpio data inputs/outputs from the monitor.
+  uvm_analysis_imp #(gpio_seq_item, gpio_scoreboard) analysis_port;
+
   `uvm_component_utils(gpio_scoreboard)
 
   function new (string name = "gpio_scoreboard", uvm_component parent = null);
@@ -49,6 +52,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    analysis_port = new("analysis_port", this);
   endfunction
 
   // Task: run_phase
@@ -124,7 +128,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end else if(data_in_update_queue[$ - 1].needs_update == 1'b1) begin
           // Use previous updated value for "data_in" prediction
           void'(ral.data_in.predict(.value(data_in_update_queue[$ - 1].reg_value),
-                                    .kind(UVM_PREDICT_READ)));
+              .kind(UVM_PREDICT_READ)));
         end
       end
 
@@ -136,11 +140,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         if (intr_state_update_queue[$].needs_update == 1'b1 &&
             (int'((crnt_time - intr_state_update_queue[$].eval_time) / clk_period)) > 1) begin
           void'(ral.intr_state.predict(.value(intr_state_update_queue[$].reg_value),
-                                       .kind(UVM_PREDICT_READ)));
+              .kind(UVM_PREDICT_READ)));
         end else if(intr_state_update_queue[$ - 1].needs_update == 1'b1) begin
           // Use previous updated value for "intr_state" prediction
           void'(ral.intr_state.predict(.value(intr_state_update_queue[$ - 1].reg_value),
-                                       .kind(UVM_PREDICT_READ)));
+              .kind(UVM_PREDICT_READ)));
         end
       end
 
@@ -163,7 +167,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           if (intr_state_update_queue.size() > 0) begin
             gpio_reg_update_due_t intr_state_write_to_clear_update = intr_state_update_queue[$];
             `uvm_info(`gfn, $sformatf("Entry taken out for clearing is %0p",
-                                      intr_state_write_to_clear_update), UVM_HIGH)
+                intr_state_write_to_clear_update), UVM_HIGH)
             // Update time
             intr_state_write_to_clear_update.eval_time = $time;
             for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
@@ -182,7 +186,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             // that caused last interrupt update (As per definition of w1c in comportability
             // specification)
             if (intr_state_write_to_clear_update.eval_time == intr_state_update_queue[$].eval_time)
-                begin
+            begin
               // Re-apply interrupt update
               intr_state_write_to_clear_update.reg_value |= last_intr_update_except_clearing;
               // Delete last entry with same time stamp
@@ -196,10 +200,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                   if (cleared_intr_bits[each_bit]) begin
                     if (last_intr_update_except_clearing[each_bit]) begin
                       cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b1);
+                          $sformatf("%0d", each_bit)}].sample(1'b1);
                     end else begin
                       cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                                          $sformatf("%0d", each_bit)}].sample(1'b0);
+                          $sformatf("%0d", each_bit)}].sample(1'b0);
                     end
                   end
                 end
@@ -219,7 +223,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           end else begin
             // Coverage Sampling: coverage on *out* and *oe* register values
             if (cfg.en_cov && (!uvm_re_match("*out*", csr.get_name()) ||
-                               !uvm_re_match("*oe*", csr.get_name()))) begin
+                  !uvm_re_match("*oe*", csr.get_name()))) begin
               for (uint each_pin = 0; each_pin < NUM_GPIOS; each_pin++) begin
                 cov.out_oe_cov_objs[each_pin][csr.get_name()].sample(item.a_data[each_pin]);
               end
@@ -229,7 +233,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                 {mask, data} = item.a_data;
                 for (uint each_pin = 0; each_pin < NUM_GPIOS/2; each_pin++) begin
                   cov.out_oe_mask_data_cov_objs[each_pin][csr.get_name()].var1_var2_cg.sample(
-                      mask[each_pin], data[each_pin]);
+                    mask[each_pin], data[each_pin]);
                 end
               end
             end
@@ -255,10 +259,10 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           // Checker-3: Check value of interrupt pins against predicted value
           if (csr.get_name() == "intr_state") begin
             bit [TL_DW-1:0] intr_state = (intr_state_update_queue.size() > 0) ?
-                                         intr_state_update_queue[$].reg_value :
-                                         csr.get_mirrored_value();
+                                          intr_state_update_queue[$].reg_value :
+                                          csr.get_mirrored_value();
             bit [TL_DW-1:0] pred_val_intr_pins = intr_state &
-                                                 ral.intr_enable.get_mirrored_value();
+                                                ral.intr_enable.get_mirrored_value();
             // according to issue #841, interrupt is a flop and the value will be updated after one
             // clock cycle. Because the `pred_val_intr_pins` might be updated during the one clk
             // cycle, we store the predicted intr val into a temp automatic variable.
@@ -301,14 +305,14 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             gpio_i_driven[pin_num] = 1'bz;
           end
           `uvm_info(`gfn, $sformatf("pins_oe[%0d] = %0b pins_o[%0d] = %0b gpio_i_driven[%0d] = %0b",
-                                    pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
-                                    cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
-                                    UVM_HIGH)
+              pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
+              cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
+            UVM_HIGH)
         end
 
         `uvm_info(`gfn, $sformatf("pins = 0x%0h [%0b]) gpio_i_driven = 0x%0h [%0b]",
-                                  cfg.gpio_vif.pins, cfg.gpio_vif.pins, gpio_i_driven,
-                                  gpio_i_driven), UVM_HIGH)
+            cfg.gpio_vif.pins, cfg.gpio_vif.pins, gpio_i_driven,
+            gpio_i_driven), UVM_HIGH)
         // Predict effect on gpio pins
         gpio_predict_and_compare();
 
@@ -319,7 +323,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
           foreach (prev_gpio_i[pin]) begin
             gpio_i_transition[pin].transition_occurred =
-                (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
+              (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
             if (gpio_i_transition[pin].transition_occurred) begin
               case (cfg.gpio_vif.pins[pin])
                 1'b0: begin
@@ -354,12 +358,15 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
                     gpio_i_transition[pin].transition_occurred = 1'b0;
                   end
                 end
+                default: begin
+                  `uvm_info(`gfn, "gpio pin undefined!", UVM_HIGH)
+                end
               endcase
             end
           end
           foreach (gpio_i_transition[ii]) begin
             `uvm_info(`gfn, $sformatf("gpio_i_transition[%0d] = %0p", ii, gpio_i_transition[ii]),
-                      UVM_HIGH)
+              UVM_HIGH)
           end
           `uvm_info(`gfn, "Calling gpio_interrupt_predict from monitor_pins_if", UVM_HIGH)
           // Look for interrupt event and update interrupt status
@@ -367,19 +374,17 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           // Update value
           prev_gpio_i = cfg.gpio_vif.pins;
           `uvm_info(`gfn, $sformatf("updated prev_gpio_i = 0x%0h [%0b]", prev_gpio_i, prev_gpio_i),
-                    UVM_HIGH)
+            UVM_HIGH)
         end
         // Update "previous pins if out and out enable" values
         prv_gpio_i_pins_o = cfg.gpio_vif.pins_o;
         prv_gpio_i_pins_oe = cfg.gpio_vif.pins_oe;
         `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_o = 0x%0h [%0b]",
-                                  prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
+            prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_oe = 0x%0h [%0b]",
-                                  prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
+            prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
       end
-
     end // monitor_pins_if
-
   endtask : monitor_gpio_i
 
   // Task: monitor_gpio_interrupt_pins
@@ -421,7 +426,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         "direct_out": begin
           data_out = csr.get_mirrored_value();
           `uvm_info(`gfn, $sformatf("data_out updated to 0x%0h [%0b]", data_out, data_out),
-                    UVM_HIGH)
+            UVM_HIGH)
           // Update mirror values of *out* registers
           update_gpio_out_regs();
         end
@@ -429,13 +434,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           uvm_reg_data_t data = ral.masked_out_lower.data.get_mirrored_value();
 
           for (uint pin_idx = 0;
-               pin_idx < ral.masked_out_lower.mask.get_n_bits(); pin_idx++) begin
+              pin_idx < ral.masked_out_lower.mask.get_n_bits(); pin_idx++) begin
             if (masked_out_lower_mask[pin_idx] == 1'b1) begin
               data_out[pin_idx] = data[pin_idx];
             end
           end
           `uvm_info(`gfn, $sformatf("data_out updated to 0x%0h [%0b]", data_out, data_out),
-                    UVM_HIGH)
+            UVM_HIGH)
           // Update mirror values of *out* registers
           update_gpio_out_regs();
         end
@@ -448,14 +453,14 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             end
           end
           `uvm_info(`gfn, $sformatf("data_out updated to 0x%0h [%0b]", data_out, data_out),
-                    UVM_HIGH)
+            UVM_HIGH)
           // Update mirror values of *out* registers
           update_gpio_out_regs();
         end
         "direct_oe": begin
           data_oe = csr.get_mirrored_value();
           `uvm_info(`gfn, $sformatf("data_out updated to 0x%0h [%0b]", data_out, data_out),
-                    UVM_HIGH)
+            UVM_HIGH)
           // Update mirror values of *oe* registers
           update_gpio_oe_regs();
         end
@@ -469,7 +474,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
             end
           end
           `uvm_info(`gfn, $sformatf("data_oe reg updated to 0x%0h [%0b]", data_oe, data_oe),
-                    UVM_HIGH)
+            UVM_HIGH)
           // Update mirror values of *oe* registers
           update_gpio_oe_regs();
         end
@@ -536,9 +541,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
       `uvm_info(msg_id, $sformatf("data_out_effect_on_gpio_i = 0x%0h [%0b]",
-                                  data_out_effect_on_gpio_i, data_out_effect_on_gpio_i), UVM_HIGH)
+          data_out_effect_on_gpio_i, data_out_effect_on_gpio_i), UVM_HIGH)
       `uvm_info(msg_id, $sformatf("gpio_i_driven = 0x%0h [%0b]", gpio_i_driven, gpio_i_driven),
-                UVM_HIGH)
+        UVM_HIGH)
 
       // Predict effective value of common wire that-
       // (i) drives gpio_i, and
@@ -562,7 +567,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
       `uvm_info(msg_id, $sformatf("pred_val_gpio_pins = %0h(%0b)", pred_val_gpio_pins,
-                                  pred_val_gpio_pins), UVM_HIGH)
+          pred_val_gpio_pins), UVM_HIGH)
 
       // Store latest update to be applied to data_in
       begin
@@ -581,9 +586,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           for (uint each_bit = 0; each_bit < NUM_GPIOS; each_bit++) begin
             cov.data_in_cov_obj[each_bit].sample(pred_val_gpio_pins[each_bit]);
             cov.data_out_data_oe_data_in_cross_cg.sample(each_bit, data_out[each_bit],
-                data_oe[each_bit], pred_val_gpio_pins[each_bit]);
+              data_oe[each_bit], pred_val_gpio_pins[each_bit]);
             cov.gpio_pins_data_in_cross_cg.sample(each_bit, cfg.gpio_vif.pins[each_bit],
-                pred_val_gpio_pins[each_bit]);
+              pred_val_gpio_pins[each_bit]);
           end
         end
       end
@@ -634,13 +639,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     if (cfg.en_cov) begin
       foreach (intr_ctrl_en_rising[each_bit]) begin
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_rising"].sample(
-            intr_ctrl_en_rising[each_bit]);
+          intr_ctrl_en_rising[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_falling"].sample(
-            intr_ctrl_en_falling[each_bit]);
+          intr_ctrl_en_falling[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvlhigh"].sample(
-            intr_ctrl_en_lvlhigh[each_bit]);
+          intr_ctrl_en_lvlhigh[each_bit]);
         cov.intr_ctrl_en_cov_objs[each_bit]["intr_ctrl_en_lvllow"].sample(
-            intr_ctrl_en_lvllow[each_bit]);
+          intr_ctrl_en_lvllow[each_bit]);
       end
     end
     // 1. Look for edge triggerred interrupts
@@ -650,9 +655,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         foreach (rising_edge_intr_events[each_bit]) begin
           if (gpio_i_transition[each_bit].transition_occurred) begin
             rising_edge_intr_events[each_bit]  = gpio_i_transition[each_bit].is_rising_edge &
-                                                 intr_ctrl_en_rising[each_bit];
+              intr_ctrl_en_rising[each_bit];
             falling_edge_intr_events[each_bit] = !gpio_i_transition[each_bit].is_rising_edge &
-                                                 intr_ctrl_en_falling[each_bit];
+              intr_ctrl_en_falling[each_bit];
           end
         end
         foreach (gpio_i_transition[each_bit]) begin
@@ -672,13 +677,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       if (cfg.en_cov) begin
         foreach (rising_edge_intr_events[each_bit]) begin
           cov.intr_event_type_cov_objs[each_bit]["intr_event_rising"].intr_type_cg.sample(
-              intr_ctrl_en_rising[each_bit],
-              intr_enable[each_bit],
-              rising_edge_intr_events[each_bit]);
+            intr_ctrl_en_rising[each_bit],
+            intr_enable[each_bit],
+            rising_edge_intr_events[each_bit]);
           cov.intr_event_type_cov_objs[each_bit]["intr_event_falling"].intr_type_cg.sample(
-              intr_ctrl_en_falling[each_bit],
-              intr_enable[each_bit],
-              falling_edge_intr_events[each_bit]);
+            intr_ctrl_en_falling[each_bit],
+            intr_enable[each_bit],
+            falling_edge_intr_events[each_bit]);
         end
       end
     end
@@ -687,9 +692,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       bit [TL_DW-1:0] lvlhigh_intr_events, lvllow_intr_events;
       for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
         lvlhigh_intr_events[each_bit] = (cfg.gpio_vif.pins[each_bit] == 1'b1) &&
-                                        (intr_ctrl_en_lvlhigh[each_bit] == 1'b1);
+          (intr_ctrl_en_lvlhigh[each_bit] == 1'b1);
         lvllow_intr_events[each_bit]  = (cfg.gpio_vif.pins[each_bit] == 1'b0) &&
-                                        (intr_ctrl_en_lvllow[each_bit] == 1'b1);
+          (intr_ctrl_en_lvllow[each_bit] == 1'b1);
         if (exp_intr_status[each_bit] == 1'b0) begin
           if (lvlhigh_intr_events[each_bit] || lvllow_intr_events[each_bit]) begin
             exp_intr_status[each_bit] = 1'b1;
@@ -705,13 +710,13 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       if (cfg.en_cov) begin
         foreach (lvlhigh_intr_events[each_bit]) begin
           cov.intr_event_type_cov_objs[each_bit]["intr_event_lvlhigh"].intr_type_cg.sample(
-              intr_ctrl_en_lvlhigh[each_bit],
-              intr_enable[each_bit],
-              lvlhigh_intr_events[each_bit]);
+            intr_ctrl_en_lvlhigh[each_bit],
+            intr_enable[each_bit],
+            lvlhigh_intr_events[each_bit]);
           cov.intr_event_type_cov_objs[each_bit]["intr_event_lvllow"].intr_type_cg.sample(
-              intr_ctrl_en_lvllow[each_bit],
-              intr_enable[each_bit],
-              lvllow_intr_events[each_bit]);
+            intr_ctrl_en_lvllow[each_bit],
+            intr_enable[each_bit],
+            lvllow_intr_events[each_bit]);
         end
       end
     end
@@ -737,15 +742,15 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
         // Interrupt Test coverage
         cov.intr_test_cg.sample(each_bit,
-                                last_intr_test_event[each_bit],
-                                intr_enable[each_bit],
-                                exp_intr_status[each_bit]);
+          last_intr_test_event[each_bit],
+          intr_enable[each_bit],
+          exp_intr_status[each_bit]);
       end
     end
     // Clear last_intr_test_event
     last_intr_test_event = '0;
     `uvm_info(msg_id, $sformatf("Predicted interrupt status = 0x%0h [%0b]",
-                                exp_intr_status, exp_intr_status), UVM_HIGH)
+        exp_intr_status, exp_intr_status), UVM_HIGH)
     begin
       gpio_reg_update_due_t crnt_intr_state_update;
       // Keep update pending until register access is done
@@ -775,16 +780,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     // 2. Update masked_out_lower
     data = data_out;
     for (uint idx = ral.masked_out_lower.data.get_n_bits();
-         idx < `UVM_REG_DATA_WIDTH;
-         idx++) begin
+        idx < `UVM_REG_DATA_WIDTH;
+        idx++) begin
       data[idx] = 1'b0;
     end
     void'(ral.masked_out_lower.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
     // 3. Update masked_out_upper
     data = 0;
     for (uint idx = ral.masked_out_upper.data.get_n_bits();
-         idx < `UVM_REG_DATA_WIDTH;
-         idx++) begin
+        idx < `UVM_REG_DATA_WIDTH;
+        idx++) begin
       data[idx - ral.masked_out_upper.data.get_n_bits()] = data_out[idx];
     end
     void'(ral.masked_out_upper.data.predict(.value(data), .kind(UVM_PREDICT_WRITE)));
@@ -826,7 +831,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     if (cfg.en_cov) begin
       for (uint each_bit = 0; each_bit < NUM_GPIOS; each_bit++) begin
         cov.data_out_data_oe_cov_obj[each_bit].var1_var2_cg.sample(data_out[each_bit],
-                                                                   data_oe[each_bit]);
+          data_oe[each_bit]);
       end
     end
   endfunction : sample_data_out_data_oe_coverage
