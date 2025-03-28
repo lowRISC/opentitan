@@ -19,6 +19,7 @@ load(
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:utils.bzl",
     "create_imm_section_targets",
+    "imm_section_bundle",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -143,3 +144,11 @@ ld_library(
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
+
+imm_section_bundle(
+    name = "release_bundle",
+    variants = {
+        variation_name: ":main_binaries_{}_slot_virtual".format(variation_name)
+        for variation_name, _ in ROM_EXT_VARIATIONS.items()
+    },
+)
