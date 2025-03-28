@@ -44,14 +44,30 @@ typedef struct imm_section_version {
    */
   uint32_t minor;
   /**
+   * Build status modifiers.
+   *
+   * Values:
+   *   ' '  : Git workspace is clean, or build without --stamp
+   *   '+'  : Git workspace is dirty
+   */
+  char build_status;
+  /**
+   * Git commit hash truncated to first 4 bytes.
+   *
+   * This field will only be set when building with --stamp, zero otherwise.
+   */
+  uint32_t commit_hash;
+  /**
    * Reserved space for future update.
    */
-  uint8_t reserved[20];
+  uint8_t reserved[12];
 } imm_section_version_t;
 
 OT_ASSERT_MEMBER_OFFSET(imm_section_version_t, magic, 0);
 OT_ASSERT_MEMBER_OFFSET(imm_section_version_t, major, 4);
 OT_ASSERT_MEMBER_OFFSET(imm_section_version_t, minor, 8);
+OT_ASSERT_MEMBER_OFFSET(imm_section_version_t, build_status, 12);
+OT_ASSERT_MEMBER_OFFSET(imm_section_version_t, commit_hash, 16);
 OT_ASSERT_SIZE(imm_section_version_t, 32);
 
 #ifdef __cplusplus
