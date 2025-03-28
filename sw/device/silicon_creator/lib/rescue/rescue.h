@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -80,6 +81,10 @@ typedef struct RescueState {
   // Range to erase and write for firmware rescue (inclusive).
   uint32_t flash_start;
   uint32_t flash_limit;
+  // Pointer to the current bootdata record.
+  boot_data_t *bootdata;
+  // Pointer to the boot log.
+  boot_log_t *boot_log;
   // Rescue configuration.
   const owner_rescue_config_t *config;
   // Data buffer to hold xmodem upload data.
@@ -90,42 +95,41 @@ typedef struct RescueState {
  * Handle rescue modes that involve sending data to the host.
  *
  * @param state Rescue state
- * @param bootdata Boot data
  * @return kErrorOk if nothing to do, kErrorRescueSendStart if the state->data
  *         buffer is ready to send, or an error.
  */
-rom_error_t rescue_send_handler(rescue_state_t *state, boot_data_t *bootdata);
+rom_error_t rescue_send_handler(rescue_state_t *state);
 
 /**
  * Handle rescue movdes that involve receiving data into the device.
  *
  * @param state Rescue state
- * @param bootdata Boot data
  * @return kErrorOk if no error or an error code indicating a problem with
  *         the received data.
  */
-rom_error_t rescue_recv_handler(rescue_state_t *state, boot_data_t *bootdata);
+rom_error_t rescue_recv_handler(rescue_state_t *state);
 
 /**
  * Validate a new rescue mode.
  *
  * @param mode The new mode.
  * @param state Rescue state
- * @param bootdata Boot data
  * @return kErrorOk if the new mode was accepted, kErrorBadMode otherwise.
  *
  * The rescue state is updated: mode, offset and flash_offset.
  */
-rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state,
-                                 boot_data_t *bootdata);
+rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state);
 
 /**
  * Initialize the rescue state.
  *
  * @param state Rescue state
+ * @param bootdata Boot data
+ * @param boot_log The boot_log
  * @param config The ownership rescue config (if any).
  */
-void rescue_state_init(rescue_state_t *state,
+void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
+                       boot_log_t *boot_log,
                        const owner_rescue_config_t *config);
 
 /**
@@ -140,10 +144,11 @@ rom_error_t rescue_enter_handler(boot_svc_msg_t *msg);
  * Perform the rescue protocol.
  *
  * @param bootdata Boot data
+ * @param boot_log The boot_log
  * @param config The ownership rescue config (if any).
  * @return Any error in processing the rescue protocol.
  */
-rom_error_t rescue_protocol(boot_data_t *bootdata,
+rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config);
 
 /**
