@@ -78,6 +78,8 @@ SECTIONS {
     _rom_ext_immutable_start = .;
     KEEP(*(.rom_ext_immutable))
     _rom_ext_immutable_end = .;
+
+    _rom_ext_immutable_size = SIZEOF(.rom_ext_immutable);
   } > rom_ext_flash
 
   /**
