@@ -44,6 +44,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
+#include "sw/device/silicon_creator/rom_ext/imm_section/imm_section_version.h"
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
@@ -59,6 +60,10 @@
 extern char _rom_ext_start_address[];
 // Declaration for the chip_info structure stored in ROM.
 extern const char _rom_chip_info_start[];
+// Declaration for the imm_section end address, populated by the linker
+extern char _rom_ext_immutable_end[];
+// Declaration for the imm_section size, populated by the linker
+extern char _rom_ext_immutable_size[];
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state;
@@ -695,6 +700,15 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
   dbg_printf("ROM_EXT:%u.%u\r\n", self->version_major, self->version_minor);
+
+  // Print the version of immutable section if exists.
+  if ((size_t)_rom_ext_immutable_size > kImmVersionSize) {
+    imm_section_version_t *version =
+        (imm_section_version_t *)((char *)_rom_ext_immutable_end -
+                                  kImmVersionSize);
+    dbg_printf("IMM_SECTION:%u.%u-%x%c\r\n", version->major, version->minor,
+               version->commit_hash, version->build_status);
+  }
 
   uint32_t hash_enforcement =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);

@@ -215,6 +215,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/rom_ext/imm_section:imm_section_version",
         "//sw/otbn/crypto:boot",
     ],
 )
