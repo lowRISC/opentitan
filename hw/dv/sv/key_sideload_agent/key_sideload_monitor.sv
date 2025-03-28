@@ -26,6 +26,21 @@ class key_sideload_monitor #(
     super.run_phase(phase);
   endtask
 
+  virtual task monitor_reset();
+    forever begin
+      if (!cfg.clk_rst_vif.rst_n) begin
+        `uvm_info(`gfn, "reset occurred", UVM_HIGH)
+        cfg.reset_asserted();
+        @(posedge cfg.clk_rst_vif.rst_n);
+        cfg.reset_deasserted();
+        `uvm_info(`gfn, "out of reset", UVM_HIGH)
+      end else begin
+        // wait for a change to rst_n
+        @(cfg.clk_rst_vif.rst_n);
+      end
+    end
+  endtask
+
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans();
     key_sideload_item#(KEY_T) prev_item;
