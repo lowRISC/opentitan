@@ -151,11 +151,10 @@ void dfu_transport_result(dfu_ctx_t *ctx, rom_error_t result) {
   }
 }
 
-rom_error_t rescue_protocol(boot_data_t *bootdata,
+rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config) {
   set_serialnumber();
   dfu_ctx_t ctx = {
-      .bootdata = bootdata,
       .ep0 =
           {
               .device_desc = &device_desc,
@@ -166,7 +165,7 @@ rom_error_t rescue_protocol(boot_data_t *bootdata,
       .dfu_error = kDfuErrOk,
   };
   dbg_printf("USB-DFU rescue ready\r\n");
-  rescue_state_init(&ctx.state, config);
+  rescue_state_init(&ctx.state, bootdata, boot_log, config);
   pinmux_init_usb();
   usb_init();
   usb_ep_init(0, kUsbEpTypeControl, 0x40, dfu_protocol_handler, &ctx);
