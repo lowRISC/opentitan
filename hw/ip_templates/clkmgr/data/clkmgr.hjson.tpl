@@ -162,7 +162,7 @@
       act:     "rcv",
       package: "lc_ctrl_pkg",
     },
-
+  % if len(derived_clks) > 0:
     { struct:  "mubi4",
       type:    "uni",
       name:    "io_clk_byp_req",
@@ -193,15 +193,15 @@
 
     { struct:  "mubi4",
       type:    "uni",
-      name:    "hi_speed_sel",
-      act:     "req",
+      name:    "div_step_down_req",
+      act:     "rcv",
       package: "prim_mubi_pkg",
     },
 
     { struct:  "mubi4",
       type:    "uni",
-      name:    "div_step_down_req",
-      act:     "rcv",
+      name:    "hi_speed_sel",
+      act:     "req",
       package: "prim_mubi_pkg",
     },
 
@@ -218,6 +218,7 @@
       act:     "req",
       package: "lc_ctrl_pkg",
     },
+  % endif
 
     { struct:  "mubi4",
       type:    "uni",
@@ -279,6 +280,7 @@
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
+  % if len(derived_clks) > 0:
     { name: "LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI",
       desc: "The life cycle clock req/ack signals are multibit encoded."
     }
@@ -288,6 +290,7 @@
     { name: "DIV.INTERSIG.MUBI",
       desc: "Divider step down request is multibit encoded."
     }
+  % endif
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
     }

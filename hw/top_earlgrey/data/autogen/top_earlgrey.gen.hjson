@@ -4391,20 +4391,6 @@
           index: -1
         }
         {
-          name: hi_speed_sel
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: clkmgr_aon
-          default: ""
-          external: true
-          top_signame: hi_speed_sel
-          conn_type: false
-          index: -1
-        }
-        {
           name: div_step_down_req
           struct: mubi4
           package: prim_mubi_pkg
@@ -4415,6 +4401,20 @@
           default: ""
           external: true
           top_signame: div_step_down_req
+          conn_type: false
+          index: -1
+        }
+        {
+          name: hi_speed_sel
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr_aon
+          default: ""
+          external: true
+          top_signame: hi_speed_sel
           conn_type: false
           index: -1
         }
@@ -20637,20 +20637,6 @@
         index: -1
       }
       {
-        name: hi_speed_sel
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: clkmgr_aon
-        default: ""
-        external: true
-        top_signame: hi_speed_sel
-        conn_type: false
-        index: -1
-      }
-      {
         name: div_step_down_req
         struct: mubi4
         package: prim_mubi_pkg
@@ -20661,6 +20647,20 @@
         default: ""
         external: true
         top_signame: div_step_down_req
+        conn_type: false
+        index: -1
+      }
+      {
+        name: hi_speed_sel
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr_aon
+        default: ""
+        external: true
+        top_signame: hi_speed_sel
         conn_type: false
         index: -1
       }
