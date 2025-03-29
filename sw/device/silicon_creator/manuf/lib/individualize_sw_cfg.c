@@ -128,6 +128,10 @@ static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
       memcpy(buffer + relative_addr, &kOwnerSwCfgRomBootstrapDisValue,
              sizeof(uint32_t));
       break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET:
+      memcpy(buffer + relative_addr, &kCreatorSwCfgFlashInfoBootDataCfgValue,
+             sizeof(uint32_t));
+      break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
       memcpy(buffer + relative_addr, &kCreatorSwCfgManufStateValue,
              sizeof(uint32_t));
@@ -342,6 +346,10 @@ status_t manuf_individualize_device_partition_expected_read(
           buffer));
       break;
     case kDifOtpCtrlPartitionCreatorSwCfg:
+      TRY(otp_img_expected_value_read(
+          partition,
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET,
+          buffer));
       TRY(otp_img_expected_value_read(
           partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, buffer));
       TRY(otp_img_expected_value_read(
