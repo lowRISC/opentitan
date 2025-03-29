@@ -2,6 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# The version struct will be appened to the end of imm_section.
+IMM_SECTION_MAJOR_VERSION = 0
+IMM_SECTION_MINOR_VERSION = 1
+
+IMM_SECTION_VERSION = "{}.{}".format(IMM_SECTION_MAJOR_VERSION, IMM_SECTION_MINOR_VERSION)
+
 DEFAULT_EXEC_ENV = [
     "//hw/top_earlgrey:fpga_cw310",
     "//hw/top_earlgrey:fpga_cw340",

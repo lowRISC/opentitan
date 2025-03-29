@@ -5,7 +5,12 @@
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl", "DEFAULT_EXEC_ENV")
+load(
+    "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
+    "DEFAULT_EXEC_ENV",
+    "IMM_SECTION_MAJOR_VERSION",
+    "IMM_SECTION_MINOR_VERSION",
+)
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VARIATIONS",
@@ -14,6 +19,7 @@ load(
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:utils.bzl",
     "create_imm_section_targets",
+    "imm_section_bundle",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -28,6 +34,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":imm_section_epmp",
+        ":imm_section_version_def",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:hardened",
@@ -45,6 +52,30 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
     ],
+)
+
+cc_library(
+    name = "imm_section_version",
+    hdrs = ["imm_section_version.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+cc_library(
+    name = "imm_section_version_def",
+    srcs = [
+        "imm_section_version_def.c",
+        "//rules:autogen_stamp_include",
+    ],
+    local_defines = [
+        "IMM_SECTION_MAJOR_VERSION={}".format(IMM_SECTION_MAJOR_VERSION),
+        "IMM_SECTION_MINOR_VERSION={}".format(IMM_SECTION_MINOR_VERSION),
+    ],
+    deps = [
+        ":imm_section_version",
+    ],
+    alwayslink = True,
 )
 
 cc_library(
@@ -113,3 +144,11 @@ ld_library(
     for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS
 ]
+
+imm_section_bundle(
+    name = "release_bundle",
+    variants = {
+        variation_name: ":main_binaries_{}_slot_virtual".format(variation_name)
+        for variation_name, _ in ROM_EXT_VARIATIONS.items()
+    },
+)
