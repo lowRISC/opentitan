@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_clkmgr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static_assert(kDtClkmgrCount >= 1,
+              "This test requires at least one Clkmgr instance");
+
+static dt_clkmgr_t kTestClkmgr = (dt_clkmgr_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -16,9 +20,9 @@ OTTF_DEFINE_TEST_CONFIG();
  * Test that all 'gateable' clocks, directly controlled by software,
  * can be enabled and disabled.
  */
-static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
-  for (dif_clkmgr_gateable_clock_t clock = 0;
-       clock <= kTopEarlgreyGateableClocksLast; ++clock) {
+static void test_gateable_clocks(const dif_clkmgr_t *clkmgr,
+                                 size_t num_clocks) {
+  for (dif_clkmgr_gateable_clock_t clock = 0; clock < num_clocks; ++clock) {
     // Get the initial state of the clock. The clock might be enabled or
     // disabled depending on reset behavior - either is fine for the purposes of
     // this test.
@@ -45,9 +49,8 @@ static void test_gateable_clocks(const dif_clkmgr_t *clkmgr) {
  * Test that all 'hintable' clocks, indirectly controlled by software,
  * can have their hint toggled and status checked.
  */
-void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
-  for (dif_clkmgr_hintable_clock_t clock = 0;
-       clock <= kTopEarlgreyHintableClocksLast; ++clock) {
+void test_hintable_clocks(const dif_clkmgr_t *clkmgr, size_t num_clocks) {
+  for (dif_clkmgr_hintable_clock_t clock = 0; clock < num_clocks; ++clock) {
     // Get the initial state of the hint for the clock The clock hint might be
     // enabled or disabled depending on reset behavior - either is fine for the
     // purposes of this test.
@@ -81,10 +84,10 @@ void test_hintable_clocks(const dif_clkmgr_t *clkmgr) {
 
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-  test_gateable_clocks(&clkmgr);
-  test_hintable_clocks(&clkmgr);
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kTestClkmgr, &clkmgr));
+
+  test_gateable_clocks(&clkmgr, dt_clkmgr_gateable_clock_count(kTestClkmgr));
+  test_hintable_clocks(&clkmgr, dt_clkmgr_hintable_clock_count(kTestClkmgr));
 
   return true;
 }
