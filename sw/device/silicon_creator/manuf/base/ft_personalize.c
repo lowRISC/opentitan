@@ -989,9 +989,6 @@ bool test_main(void) {
     rstmgr_reason_clear(reason);
   }
 
-  // Read the reset reason from SRAM.
-  LOG_INFO("Reset reason: %08x", rstmgr_testutils_reason_get());
-
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
