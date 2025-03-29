@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// class : ${module_instance_name}_dout_din_regs_random_rw_vseq
+// class : gpio_dout_din_regs_random_rw_vseq
 // This gpio random test sequence does any of the following:
 // (i) drives random gpio input data values while gpio outputs are disabled
 // (ii) programs random values of gpio direct output data, gpio direct output enable
 //      gpio masked outputs and gpio masked output enables.
-class ${module_instance_name}_dout_din_regs_random_rw_vseq extends ${module_instance_name}_base_vseq;
+class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
 
-  `uvm_object_utils(${module_instance_name}_dout_din_regs_random_rw_vseq)
+  `uvm_object_utils(gpio_dout_din_regs_random_rw_vseq)
   `uvm_object_new
 
   task body();
@@ -90,4 +90,4 @@ class ${module_instance_name}_dout_din_regs_random_rw_vseq extends ${module_inst
 
   endtask : body
 
-endclass : ${module_instance_name}_dout_din_regs_random_rw_vseq
+endclass : gpio_dout_din_regs_random_rw_vseq
