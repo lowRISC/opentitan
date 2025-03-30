@@ -51,6 +51,7 @@
              "{proj_root}/hw/top_darjeeling/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/gpio/dv/gpio_sim_cfg.hjson",
+             "{proj_root}/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_darjeeling/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
@@ -64,7 +65,6 @@
              //"{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_dmi_volatile_unlock_enabled_sim_cfg.hjson",
              //"{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
-             //"{proj_root}/hw/top_darjeeling/ip_autogen/otp_ctrl/dv/otp_ctrl_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
             ]
 }
