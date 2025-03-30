@@ -8,14 +8,14 @@
 
 // An expression that is true if a_opcode is a valid opcode. Using a macro instead of a function
 // means that this can be used by the constraint solver.
-`define a_opcode_is_valid(a_opcode) (a_opcode inside {Get, PutFullData, PutPartialData})
+`define A_OPCODE_IS_VALID(a_opcode) (a_opcode inside {Get, PutFullData, PutPartialData})
 
 // An expression that is true if a_mask is true for every active byte lane. (This is required by the
 // PutFullData operation).
 //
 // Note that the expression actually works by checking there are the right *number* of bits set in
 // the mask. The alignment requirement is handled separately.
-`define mask_is_full(a_mask, a_size) ($countones(a_mask) == (1 << a_size))
+`define MASK_IS_FULL(a_mask, a_size) ($countones(a_mask) == (1 << a_size))
 
 // The mask must always be LOW for all inactive byte lanes (see TL specification 1.8.1, p26)
 //
@@ -28,16 +28,16 @@
 //
 // Invert this and then AND with a_mask. Any bits high in the result are inactive byte lanes that
 // are HIGH in the mask.
-`define mask_low_in_inactive_lanes(a_mask, a_addr, a_size) \
+`define MASK_LOW_IN_INACTIVE_LANES(a_mask, a_addr, a_size) \
     ((a_mask & ~(((1 << (1 << a_size)) - 1) << a_addr[SizeWidth-1:0])) == 0)
 
 // Addresses should be naturally aligned. The operation addresses (1 << a_size) bytes, so the
 // address should be divisible by that. Equivalently, the bottom a_size bits of a_addr should be
 // zero.
-`define addr_aligned_to_size(a_addr, a_size) ((a_addr & ((1 << a_size) - 1)) == 0)
+`define ADDR_ALIGNED_TO_SIZE(a_addr, a_size) ((a_addr & ((1 << a_size) - 1)) == 0)
 
 // The maximum allowed a_size is 2 (corresponding to a 4-byte / 32-bit operation)
-`define below_max_a_size(a_size) (a_size <= 2)
+`define BELOW_MAX_A_SIZE(a_size) (a_size <= 2)
 
 class tl_seq_item extends uvm_sequence_item;
 
@@ -359,8 +359,8 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 endclass
 
-`undef a_opcode_is_valid
-`undef mask_is_full
-`undef mask_low_in_inactive_lanes
-`undef addr_aligned_to_size
-`undef below_max_a_size
+`undef BELOW_MAX_A_SIZE
+`undef ADDR_ALIGNED_TO_SIZE
+`undef MASK_LOW_IN_INACTIVE_LANES
+`undef MASK_IS_FULL
+`undef A_OPCODE_IS_VALID
