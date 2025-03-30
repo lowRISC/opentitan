@@ -12,6 +12,7 @@
 // and the usbdev's aon wake function that has been de-coupled from the main
 // usbdev.
 
+#include "dt/dt_pinmux.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
@@ -21,10 +22,15 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_pwrmgr_t pwrmgr;
 static dif_usbdev_t usbdev;
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
+static const dt_usbdev_t kUsbdevDt = 0;
+static_assert(kDtUsbdevCount >= 1, "this test expects at least one usbdev");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -34,10 +40,13 @@ static bool compare_wakeup_reasons(dif_pwrmgr_wakeup_reason_t lhs,
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_usbdev_init_from_dt(kUsbdevDt, &usbdev));
+
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupUsbWkupReq, &wakeup_sources));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
@@ -50,7 +59,7 @@ bool test_main(void) {
 
   const dif_pwrmgr_wakeup_reason_t exp_test_wakeup_reason = {
       .types = kDifPwrmgrWakeupTypeRequest,
-      .request_sources = kDifPwrmgrWakeupRequestSourceFour,
+      .request_sources = wakeup_sources,
   };
 
   bool low_power_exit = false;
@@ -82,8 +91,7 @@ bool test_main(void) {
 
     // Enable low power on the next WFI with default settings.
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFour,
-        kDifPwrmgrDomainOptionUsbClockInActivePower));
+        &pwrmgr, wakeup_sources, kDifPwrmgrDomainOptionUsbClockInActivePower));
 
     // Enter low power mode.
     wait_for_interrupt();
