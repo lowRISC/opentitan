@@ -80,6 +80,13 @@ dif_result_t dif_spi_device_init_handle(mmio_region_t base_addr,
   return dif_spi_device_init(base_addr, &spi->dev);
 }
 
+dif_result_t dif_spi_device_init_handle_from_dt(dt_spi_device_t dt,
+                                                dif_spi_device_handle_t *spi) {
+  mmio_region_t addr =
+      mmio_region_from_addr(dt_spi_device_primary_reg_block(dt));
+  return dif_spi_device_init_handle(addr, spi);
+}
+
 dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
                                       dif_spi_device_config_t config) {
   if (spi == NULL) {
