@@ -13,6 +13,6 @@ package prim_otp_cfg_pkg;
     logic done;
   } otp_cfg_rsp_t;
 
-  parameter otp_cfg_rsp_t OTP_CFG_DEFAULT = '0;
+  parameter otp_cfg_t OTP_CFG_DEFAULT = '0;
 
 endpackage // prim_otp_cfg_pkg
