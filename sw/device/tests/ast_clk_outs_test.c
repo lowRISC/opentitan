@@ -12,8 +12,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -43,6 +41,15 @@ enum {
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_clkmgr_t kClkmgrDt = 0;
+static_assert(kDtClkmgrCount >= 1, "this test expects a clkmgr");
+static const dt_sensor_ctrl_t kSensorCtrlDt = 0;
+static_assert(kDtSensorCtrlCount >= 1, "this test expects a sensor_ctrl");
+
 bool test_main(void) {
   dif_sensor_ctrl_t sensor_ctrl;
   dif_aon_timer_t aon_timer;
@@ -51,15 +58,15 @@ bool test_main(void) {
   CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
       kMeasurementsPerRound, &delay_micros));
 
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-  CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
-      &sensor_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
+  CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kSensorCtrlDt, &sensor_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
   LOG_INFO("TEST: wait for ast init");
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
@@ -99,14 +106,13 @@ bool test_main(void) {
     busy_spin_micros(delay_micros);
 
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive,
-        kDifPwrmgrDomainOptionUsbClockInActivePower));
+        &pwrmgr, wakeup_sources, kDifPwrmgrDomainOptionUsbClockInActivePower));
 
     LOG_INFO("TEST: Issue WFI to enter deep sleep");
     wait_for_interrupt();
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, wakeup_sources)) == true) {
     // Fail if some measurements are enabled.
     bool all_disabled = UNWRAP(clkmgr_testutils_check_measurement_enables(
         &clkmgr, kDifToggleDisabled));
