@@ -31,6 +31,8 @@
              "{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/kmac/dv/kmac_unmasked_sim_cfg.hjson",
+             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_dmi_volatile_unlock_disabled_sim_cfg.hjson",
+             "{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_dmi_volatile_unlock_enabled_sim_cfg.hjson",
              "{proj_root}/hw/ip/mbx/dv/mbx_sim_cfg.hjson",
              "{proj_root}/hw/ip/otbn/dv/uvm/otbn_sim_cfg.hjson",
              "{proj_root}/hw/ip/prim/dv/prim_alert/prim_alert_sim_cfg.hjson",
@@ -61,8 +63,6 @@
              // Top level.
              "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson",
              // TODO(#26733): the smoketests here must be fixed before enabling.
-             //"{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_dmi_volatile_unlock_disabled_sim_cfg.hjson",
-             //"{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_dmi_volatile_unlock_enabled_sim_cfg.hjson",
              //"{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
