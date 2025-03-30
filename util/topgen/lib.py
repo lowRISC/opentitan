@@ -30,7 +30,6 @@ class CEnum(object):
     def __init__(self, top_name, name, repr_type=None):
         self.name = top_name + name
         self.repr_type = repr_type
-        self.enum_counter = 0
         self.finalized = False
 
         self.constants = []
@@ -41,8 +40,7 @@ class CEnum(object):
 
         full_name = self.name + constant_name
 
-        value = self.enum_counter
-        self.enum_counter += 1
+        value = len(self.constants)
 
         self.constants.append((full_name, value, docstring))
 
