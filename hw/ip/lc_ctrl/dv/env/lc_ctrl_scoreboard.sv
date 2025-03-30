@@ -223,8 +223,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         tl_item.d_opcode = (jt_item.op === DmiRead) ? tlul_pkg::Get : tlul_pkg::PutFullData;
 
 
-        process_tl_access(tl_item, AddrChannel, "lc_ctrl_regs_reg_block");
-        process_tl_access(tl_item, DataChannel, "lc_ctrl_regs_reg_block");
+        process_tl_access(tl_item, AChannel, "lc_ctrl_regs_reg_block");
+        process_tl_access(tl_item, DChannel, "lc_ctrl_regs_reg_block");
 
 
       end
@@ -257,10 +257,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t  csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     lc_outputs_t    exp = '{default: lc_ctrl_pkg::Off};
     lc_keymgr_div_t exp_div = cfg.parameters_cfg.keymgr_div_invalid;
-    bit             addr_phase_read = (!write && channel == AddrChannel);
-    bit             addr_phase_write = (write && channel == AddrChannel);
-    bit             data_phase_read = (!write && channel == DataChannel);
-    bit             data_phase_write = (write && channel == DataChannel);
+    bit             addr_phase_read = (!write && channel == AChannel);
+    bit             addr_phase_write = (write && channel == AChannel);
+    bit             data_phase_read = (!write && channel == DChannel);
+    bit             data_phase_write = (write && channel == DChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin

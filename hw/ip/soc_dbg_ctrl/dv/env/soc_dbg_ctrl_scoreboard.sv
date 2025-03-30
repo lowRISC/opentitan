@@ -77,10 +77,10 @@ task soc_dbg_ctrl_scoreboard::process_tl_access(tl_seq_item item,
   uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
   tl_phase_e     tl_phase;
 
-  if (!write && channel == AddrChannel) tl_phase = AddrRead;
-  if ( write && channel == AddrChannel) tl_phase = AddrWrite;
-  if (!write && channel == DataChannel) tl_phase = DataRead;
-  if ( write && channel == DataChannel) tl_phase = DataWrite;
+  if (!write && channel == AChannel) tl_phase = AddrRead;
+  if ( write && channel == AChannel) tl_phase = AddrWrite;
+  if (!write && channel == DChannel) tl_phase = DataRead;
+  if ( write && channel == DChannel) tl_phase = DataWrite;
 
   if (ral_name == ral.get_name()) begin
     process_tl_core_access(item, csr_addr, tl_phase);

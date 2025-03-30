@@ -672,10 +672,10 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
   bit     write           = item.is_write();
   uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-  bit addr_phase_read   = (!write && channel == AddrChannel);
-  bit addr_phase_write  = (write && channel == AddrChannel);
-  bit data_phase_read   = (!write && channel == DataChannel);
-  bit data_phase_write  = (write && channel == DataChannel);
+  bit addr_phase_read   = (!write && channel == AChannel);
+  bit addr_phase_write  = (write && channel == AChannel);
+  bit data_phase_read   = (!write && channel == DChannel);
+  bit data_phase_write  = (write && channel == DChannel);
 
   // if access was to a valid csr, get the csr handle
   if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin

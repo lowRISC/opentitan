@@ -126,7 +126,7 @@ class tl_monitor extends dv_base_monitor#(
       end
       if (a_chan_req_item != null) begin
         a_chan_port.write(a_chan_req_item);
-        if (cfg.synchronise_ports) channel_dir_port.write(AddrChannel);
+        if (cfg.synchronise_ports) channel_dir_port.write(AChannel);
         a_chan_req_item = null;
       end
 
@@ -236,7 +236,7 @@ class tl_monitor extends dv_base_monitor#(
       `uvm_info(`gfn, $sformatf("[%0s][d_chan] : %0s", agent_name, rsp.convert2string()), UVM_HIGH)
 
       d_chan_port.write(rsp);
-      if (cfg.synchronise_ports) channel_dir_port.write(DataChannel);
+      if (cfg.synchronise_ports) channel_dir_port.write(DChannel);
 
       if (cfg.en_cov) cov.sample(rsp);
     end

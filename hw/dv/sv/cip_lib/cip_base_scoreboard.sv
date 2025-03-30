@@ -160,13 +160,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       forever begin
         dir_fifo.get(dir);
         case (dir)
-          AddrChannel: begin
+          AChannel: begin
             `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
                             "dir_fifo pointed at A channel, but a_chan_fifo empty")
             process_tl_a_item(ral_name, item);
           end
 
-          DataChannel: begin
+          DChannel: begin
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
                             "dir_fifo pointed at D channel, but d_chan_fifo empty")
             process_tl_d_item(ral_name, item);
@@ -182,11 +182,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     `uvm_info(`gfn, $sformatf("received tl a_chan item: %0s", item.convert2string()), UVM_HIGH)
 
     if (cfg.en_scb_tl_err_chk) begin
-      if (predict_tl_err(item, AddrChannel, ral_name)) return;
+      if (predict_tl_err(item, AChannel, ral_name)) return;
     end
     if (!cfg.en_scb) return;
 
-    process_tl_access(item, AddrChannel, ral_name);
+    process_tl_access(item, AChannel, ral_name);
   endtask
 
   task process_tl_d_item(string ral_name, tl_seq_item item);
@@ -199,7 +199,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                    $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch",
                              item.a_source, item.d_source))
       end
-      if (predict_tl_err(item, DataChannel, ral_name)) return;
+      if (predict_tl_err(item, DChannel, ral_name)) return;
     end
     if (cfg.en_scb_mem_chk && is_mem_addr(item, ral_name)) begin
       if (item.is_write()) begin
@@ -219,7 +219,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         do_read_check(dv_reg, item);
       end
     end
-    process_tl_access(item, DataChannel, ral_name);
+    process_tl_access(item, DChannel, ral_name);
   endtask
 
   // This function implements the generic read checks, any TB can override this method to
@@ -523,7 +523,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                      write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated |
                      csr_read_err;
 
-    if (channel == DataChannel) begin
+    if (channel == DChannel) begin
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
       // passthru memory
       void'(item.is_d_chan_intg_ok(
@@ -545,7 +545,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       end
     end
 
-    if (channel == DataChannel) begin
+    if (channel == DChannel) begin
       `DV_CHECK_EQ(item.d_error, exp_d_error,
           $sformatf({"On interface %0s, TL item: %0s, unmapped_err: %0d, mem_access_err: %0d, ",
                     "bus_intg_err: %0d, byte_wr_err: %0d, csr_size_err: %0d, tl_item_err: %0d, ",

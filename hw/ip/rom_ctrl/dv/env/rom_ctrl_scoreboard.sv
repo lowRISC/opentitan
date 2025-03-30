@@ -245,10 +245,10 @@ function void rom_ctrl_scoreboard::check_reg_access(tl_seq_item item, tl_channel
   bit     do_read_check   = 1'b1;
   bit     write           = item.is_write();
 
-  bit addr_phase_read   = (!write && channel == AddrChannel);
-  bit addr_phase_write  = (write && channel == AddrChannel);
-  bit data_phase_read   = (!write && channel == DataChannel);
-  bit data_phase_write  = (write && channel == DataChannel);
+  bit addr_phase_read   = (!write && channel == AChannel);
+  bit addr_phase_write  = (write && channel == AChannel);
+  bit data_phase_read   = (!write && channel == DChannel);
+  bit data_phase_write  = (write && channel == DChannel);
 
   // If this is an access to an address that doesn't correspond to a CSR, there is nothing to check:
   // the base classes should already predict an error response.

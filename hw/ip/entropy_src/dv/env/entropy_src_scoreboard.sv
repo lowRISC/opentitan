@@ -1579,7 +1579,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_sha3_start": begin
       end
       "fw_ov_rd_data": begin
-        if (!write && channel == AddrChannel) begin
+        if (!write && channel == AChannel) begin
           // Signal that a read is incoming.
           // The actual comparison in the scoreboard happens with a delay. In the DUT the
           // observe FIFO would have been already popped in this cycle. We model this
@@ -1600,7 +1600,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_wr_data": begin
       end
       "fw_ov_wr_fifo_full": begin
-        if (!write && channel == AddrChannel) begin
+        if (!write && channel == AChannel) begin
           fork
             begin
               bit es_fw_ov_insert_mode, es_bypass_mode, module_enable;
@@ -1633,7 +1633,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "observe_fifo_depth": begin
         // If a word is being pushed into the observe FIFO while reading observe_fifo_depth, the
         // prediction will be off by one word. We need to take this into account for predictions.
-        if (!write && channel == AddrChannel) begin
+        if (!write && channel == AChannel) begin
           observe_push_busy_addr_phase = observe_push_busy;
         end
       end
@@ -1653,7 +1653,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
     endcase
 
-    if (channel == AddrChannel) begin
+    if (channel == AChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         if (csr.get_name() == "module_enable") begin
@@ -2009,7 +2009,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     // On reads, if do_read_check is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       case (csr.get_name())
         "intr_state": begin
           // Though we do not predict the interrupt state we do stop here to process any

@@ -236,8 +236,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     return next_addr;
   endfunction
 
-  // Process items on Addr channel
-  task process_tl_addr_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
+  // Process items on A channel
+  task process_tl_a_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     uint expected_txn_size = dma_config.transfer_width_to_a_size(
                                dma_config.per_transfer_width);
     uint expected_per_txn_bytes = dma_config.transfer_width_to_num_bytes(
@@ -420,8 +420,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                               num_bytes_transferred, dma_config.total_data_size), UVM_HIGH);
   endtask
 
-  // Process items on Data channel
-  task process_tl_data_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
+  // Process items on D channel
+  task process_tl_d_txn(string if_name, bit [63:0] a_addr, ref tl_seq_item item);
     bit tl_error_suppressed = 0;
     bit got_source_item = 0;
     bit got_dest_item = 0;
@@ -551,7 +551,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
                         "Transaction detected with no active operation")
         case (dir)
-          AddrChannel: begin
+          AChannel: begin
             `DV_CHECK_FATAL(a_chan_fifo.try_get(item),
                             "dir_fifo pointed at A channel, but a_chan_fifo empty")
             a_addr = item.a_addr;
@@ -563,7 +563,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                       if_name,
                                       item.is_write() ? "write" : "read", a_addr,
                                       item.a_data), UVM_HIGH)
-            process_tl_addr_txn(if_name, a_addr, item);
+            process_tl_a_txn(if_name, a_addr, item);
             // Update num_fifo_reg_write
             if (num_fifo_reg_write > 0) begin
               `uvm_info(`gfn, $sformatf("Processed FIFO clear_intr_src addr: %0x0x", item.a_addr),
@@ -574,7 +574,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
               fifo_intr_cleared = 1;
             end
           end
-          DataChannel: begin
+          DChannel: begin
             `DV_CHECK_FATAL(d_chan_fifo.try_get(item),
                             "dir_fifo pointed at D channel, but d_chan_fifo empty")
             a_addr = item.a_addr;
@@ -583,7 +583,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
             end
             `uvm_info(`gfn, $sformatf("received %s d_chan item with addr: %0x and data: %0x",
                                       if_name, a_addr, item.d_data), UVM_HIGH)
-            process_tl_data_txn(if_name, a_addr, item);
+            process_tl_d_txn(if_name, a_addr, item);
           end
           default: `uvm_fatal(`gfn, "Invalid entry in dir_fifo")
         endcase
@@ -1312,11 +1312,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
     // The access is to a valid CSR, now process it.
     // writes -> update local variable and fifo at A-channel access
     // reads  -> update prediction at address phase and compare at D-channel access
-    if (write && channel == AddrChannel) begin
+    if (write && channel == AChannel) begin
       process_reg_write(item, csr);
     end  // addr_phase_write
 
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       process_reg_read(item,csr);
     end  // data_phase_read
   endtask : process_tl_access

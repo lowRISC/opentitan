@@ -611,8 +611,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   // These two tasks are overridden because the implementation in the base class performs checks
   // against predictions using its own memory model; instead, we choose to update the BFM packet
-  // buffer memory within 'process_tl_addr' below, and then check the DUT read data against it in
-  // 'process_tl_data' below.
+  // buffer memory within 'process_tl_a' below, and then check the DUT read data against it in
+  // 'process_tl_d' below.
   virtual task process_mem_write(tl_seq_item item, string ral_name);
   endtask
   virtual task process_mem_read(tl_seq_item item, string ral_name);
@@ -657,8 +657,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // TL Address Channel transaction.
-  function void process_tl_addr(ref tl_seq_item item, input string ral_name);
+  // TL A channel transaction.
+  function void process_tl_a(ref tl_seq_item item, input string ral_name);
     logic [TL_DW-1:0] wdata = item.a_data;
     int unsigned index;
     uvm_reg csr;
@@ -795,8 +795,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     endcase
   endfunction
 
-  // TL Data Channel transaction.
-  function void process_tl_data(ref tl_seq_item item, input string ral_name);
+  // TL D Channel transaction.
+  function void process_tl_d(ref tl_seq_item item, input string ral_name);
     logic [TL_DW-1:0] rdata = item.d_data;
     int unsigned index;
     uvm_reg csr;
@@ -985,8 +985,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     case (channel)
-      AddrChannel: process_tl_addr(item, ral_name);
-      DataChannel: process_tl_data(item, ral_name);
+      AChannel: process_tl_a(item, ral_name);
+      DChannel: process_tl_d(item, ral_name);
       default: `uvm_fatal(`gfn, $sformatf("Invalid channel: %0h", channel))
     endcase
   endtask

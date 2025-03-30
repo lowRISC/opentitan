@@ -250,7 +250,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    if (channel == AddrChannel) begin
+    if (channel == AChannel) begin
       string csr_name = csr.get_name();
       `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name()), UVM_FULL)
 
@@ -350,7 +350,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     //////////////////////////////////////////////////////////////////////////////
 
     `uvm_info(`gfn, $sformatf("\n\t ---| channel  %h", channel), UVM_DEBUG)
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))

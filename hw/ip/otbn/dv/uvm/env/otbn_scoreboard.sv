@@ -46,9 +46,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
   // start OTBN. We track this because we derive the "start" signal in the model from an internal
   // DUT signal, so need to make sure it stays in sync with the TL side.
   //
-  // If false, there are no transactions pending. This gets set in process_tl_addr when we see a
-  // write to CMD. This runs on a posedge of the clock. We expect to see the model start on the
-  // following negedge. When we process a change to model status that shows things starting (in
+  // If false, there are no transactions pending. This gets set in process_tl_a when we see a write
+  // to CMD. This runs on a posedge of the clock. We expect to see the model start on the following
+  // negedge. When we process a change to model status that shows things starting (in
   // process_model_fifo), we check that the flag is set and then clear it. When setting the flag, we
   // queue a check to run on the following posedge of the clock to make sure the flag isn't still
   // set.
@@ -130,13 +130,13 @@ class otbn_scoreboard extends cip_base_scoreboard #(
 
   task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     case (channel)
-      AddrChannel: process_tl_addr(item);
-      DataChannel: process_tl_data(item);
+      AChannel: process_tl_a(item);
+      DChannel: process_tl_d(item);
       default: `uvm_fatal(`gfn, $sformatf("Invalid channel: %0h", channel))
     endcase
   endtask
 
-  task process_tl_addr(tl_seq_item item);
+  task process_tl_a(tl_seq_item item);
     uvm_reg              csr;
     uvm_reg_addr_t       masked_addr, aligned_addr;
     operational_state_e  state;
@@ -281,7 +281,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     exp_read_values[item.a_source] = exp_read_data;
   endtask
 
-  task process_tl_data(tl_seq_item item);
+  task process_tl_d(tl_seq_item item);
     uvm_reg              csr;
     uvm_reg_addr_t       csr_addr;
     otbn_exp_read_data_t exp_read_data;

@@ -171,7 +171,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    if (channel == AddrChannel) begin
+    if (channel == AChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
@@ -190,7 +190,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       "ctrl": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           if (cfg.en_cov) begin
             cov.baud_rate_w_core_clk_cg.sample(cfg.m_uart_agent_cfg.baud_rate, cfg.clk_freq_mhz);
           end
@@ -212,7 +212,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
       "wdata": begin
         // if tx is enabled, push exp tx data to q
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           uart_item tx_item = uart_item::type_id::create("tx_item");
 
           fork begin
@@ -269,10 +269,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
             predict_tx_watermark_intr(loc_tx_q_size);
           end join_none
-        end // write && channel == AddrChannel
+        end // write && channel == AChannel
       end
       "fifo_ctrl": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           // these fields are WO
           bit txrst_val = bit'(get_field_val(ral.fifo_ctrl.txrst, item.a_data));
           bit rxrst_val = bit'(get_field_val(ral.fifo_ctrl.rxrst, item.a_data));
@@ -303,10 +303,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (txrst_val) cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
             predict_tx_watermark_intr(loc_tx_q_size);
           end join_none
-        end // write && channel == AddrChannel
+        end // write && channel == AChannel
       end
       "intr_test": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           // TxWatermark and RxWatermark are status type interrupts. When `intr_test` is set for
           // these interrupts it acts as if the status for the interrupt is true. In turn when
@@ -333,7 +333,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       "status": begin
         if (!write) begin // read
           case (channel)
-            AddrChannel: begin // predict at address phase
+            AChannel: begin // predict at address phase
               tx_full_exp  = tx_q.size >= TxFifoDepth;
               tx_empty_exp = tx_q.size == 0;
               tx_idle_exp  = tx_q.size == 0 && tx_processing_item_q.size == 0;
@@ -341,7 +341,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               rx_empty_exp = rx_q.size == 0;
               rx_idle_exp  = (uart_rx_clk_pulses == 0) || !rx_enabled;
             end
-            DataChannel: begin // check at data phase
+            DChannel: begin // check at data phase
               int uart_bits;
 
               do_read_check = 1'b0;
@@ -400,7 +400,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         end // if (!write)
       end // status
       "intr_state": begin
-        if (write && channel == AddrChannel) begin // write & address phase
+        if (write && channel == AChannel) begin // write & address phase
           bit[TL_DW-1:0] intr_wdata = item.a_data;
           fork begin
             bit [NumUartIntr-1:0] pre_intr = intr_exp;
@@ -414,9 +414,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             intr_wdata[RxWatermark] = 1'b0;
             intr_exp &= ~intr_wdata;
           end join_none
-        end else if (!write && channel == AddrChannel) begin // read & addr phase
+        end else if (!write && channel == AChannel) begin // read & addr phase
           intr_exp_at_addr_phase = intr_exp;
-        end else if (!write && channel == DataChannel) begin // read & data phase
+        end else if (!write && channel == DChannel) begin // read & data phase
           uart_intr_e     intr;
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           do_read_check = 1'b0;
@@ -453,7 +453,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       "rdata": begin
         if (!write) begin // read only
           // rdata is removed from fifo after addr phase
-          if (channel == AddrChannel) begin
+          if (channel == AChannel) begin
             if (rx_q.size() > 0) begin
               uart_item rx_q_item = rx_q.pop_front();
               rdata_exp = rx_q_item.data;
@@ -462,19 +462,19 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               do_read_check = 1'b0;
               `uvm_error(`gfn, "unexpected read when fifo is empty")
             end // rx_q.size() == 0
-          end else begin //DataChannel
+          end else begin //DChannel
             void'(csr.predict(.value(rdata_exp), .kind(UVM_PREDICT_READ)));
-          end // channel == DataChannel
+          end // channel == DChannel
         end // !write
       end
       "fifo_status": begin
         if (!write) begin
           case (channel)
-            AddrChannel: begin // predict at address phase
+            AChannel: begin // predict at address phase
               txlvl_exp = tx_q.size() > TxFifoDepth ? TxFifoDepth : tx_q.size();
               rxlvl_exp = rx_q.size();
             end
-            DataChannel: begin // check at data phase
+            DChannel: begin // check at data phase
               bit [7:0] txlvl_act, rxlvl_act;
 
               void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
@@ -514,7 +514,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         end
       end
       "val": begin
-        if (!write && channel == DataChannel) begin
+        if (!write && channel == DChannel) begin
           // rx oversampled val, check in test
           do_read_check = 1'b0;
         end
@@ -528,7 +528,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))

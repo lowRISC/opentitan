@@ -83,7 +83,7 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     // if stub_cpu is off, we force connect this DV mem with a sim_sram, accessing the DV mem is to
     // passing info from C to SV, which won't set d_error
     if (mem != null && mem.get_name() == "dv_sim_window" && cfg.chip_vif.stub_cpu) begin
-      if (channel == DataChannel) `DV_CHECK_EQ(item.d_error, 1)
+      if (channel == DChannel) `DV_CHECK_EQ(item.d_error, 1)
       return 1;
     end
     return super.predict_tl_err(item, channel, ral_name);

@@ -226,12 +226,12 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
   uvm_reg_addr_t csr_addr      = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
   tl_phase_e     tl_phase;
 
-  // Note: AddrChannel and DataChannel don't exist in the TL spec. There is a confusion as TileLink
+  // Note: AChannel and DChannel don't exist in the TL spec. There is a confusion as TileLink
   //       defines 5 channels called A, B, C, D and E. But for TLUL version, only A and D are used.
-  if (!write && channel == AddrChannel) tl_phase = AChanRead;
-  if ( write && channel == AddrChannel) tl_phase = AChanWrite;
-  if (!write && channel == DataChannel) tl_phase = DChanRead;
-  if ( write && channel == DataChannel) tl_phase = DChanWrite;
+  if (!write && channel == AChannel) tl_phase = AChanRead;
+  if ( write && channel == AChannel) tl_phase = AChanWrite;
+  if (!write && channel == DChannel) tl_phase = DChanRead;
+  if ( write && channel == DChannel) tl_phase = DChanWrite;
 
   // If access was to a valid csr, get the csr handle
   if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
