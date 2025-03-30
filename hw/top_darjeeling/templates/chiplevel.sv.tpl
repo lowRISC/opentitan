@@ -471,6 +471,10 @@ module chip_${top["name"]}_${target["name"]} #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
+  // OTP DFT configuration
+  prim_otp_cfg_pkg::otp_cfg_t otp_cfg;
+  assign otp_cfg = prim_otp_cfg_pkg::OTP_CFG_DEFAULT;
+
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
   entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
