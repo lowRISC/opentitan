@@ -14,7 +14,7 @@ from reggen.field import Field
 from reggen.interrupt import Interrupt, IntrType
 from reggen.signal import Signal
 from reggen.lib import check_int, check_list, check_str_dict, check_str
-from reggen.multi_register import MultiRegister
+from reggen.multi_register import MultiRegister, EmptyMultiRegException
 from reggen.params import ReggenParams
 from reggen.register import Register
 from reggen.window import Window
@@ -275,8 +275,18 @@ class RegBlock:
 
     def _handle_multireg(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
-        mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
-                           self._params, body, clocks, is_alias)
+        '''Update the register block by adding a multiregister as requested.
+
+        If the multiregister has a count that is not positive, it will be
+        ignored and the register block will not gain any element.
+
+        '''
+
+        try:
+            mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
+                               self._params, body, clocks, is_alias)
+        except EmptyMultiRegException:
+            return
 
         # validate async schemes
         self._validate_async(mr.async_name, mr.async_clk)
