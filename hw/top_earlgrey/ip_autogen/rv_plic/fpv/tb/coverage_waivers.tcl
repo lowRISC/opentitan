@@ -15,3 +15,12 @@ check_cov -waiver -add -start_line 25 -end_line 56 -type {statement} -instance {
 
 # The port data_o in u_data_chk is untied and used nowhere.
 check_cov -waiver -add -start_line 25 -end_line 81 -type {statement} -instance {dut.u_reg.u_chk.u_chk} -comment {data_o is untied}
+
+# These are bunch of software controlled registers with RO and RW Software access. For RO
+# registers, the branch is a deadcode as we for RO is tied to 0 in u_reg under the instantiation of
+# these registers. For RW registers, since ds in untied for all of the software registers inside
+# the instantiation in u_reg and no assertions are affected by ds, the checker coverage is
+# undetectable. ds is the data that will be written into the flop while qs is the current flop
+# value that the software can see so waiving the branch makes more sense then writing an assertion
+# for future flop value when nobody uses it.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 64 -end_line 64 -type {branch} -comment {For RO regs, the branch is a deadcode. For RW regs, the checker is undetectable as ds is unconnected}
