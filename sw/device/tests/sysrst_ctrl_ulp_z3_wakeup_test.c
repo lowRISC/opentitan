@@ -18,11 +18,20 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /* We need control flow for the ujson messages exchanged
  * with the host in OTTF_WAIT_FOR on real devices. */
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_gpio_t kGpioDt = 0;
+static_assert(kDtGpioCount == 1, "this test expects a gpio");
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+static_assert(kDtSysrstCtrlCount == 1, "this test expects a sysrst_ctrl");
 
 // This is updated by the sv/host component of the test.
 // On DV, we must use variables in flash but on a real device,
@@ -53,34 +62,34 @@ enum {
   kTestPhaseDone = 4,
 };
 
-static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+static const dt_sysrst_ctrl_periph_io_t kPeripheralInputs[] = {
+    kDtSysrstCtrlPeriphIoPwrbIn,
+    kDtSysrstCtrlPeriphIoAcPresent,
+    kDtSysrstCtrlPeriphIoLidOpen,
 };
 
-static const dif_pinmux_index_t kInputPadsDV[] = {
-    kTopEarlgreyPinmuxInselIor13,
-    kTopEarlgreyPinmuxInselIoc7,
-    kTopEarlgreyPinmuxInselIoc9,
+static const dt_pad_t kInputPadsDV[] = {
+    kDtPadIor13,
+    kDtPadIoc7,
+    kDtPadIoc9,
 };
 
-static const dif_pinmux_index_t kInputPadsReal[] = {
-    kTopEarlgreyPinmuxInselIor10,
-    kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12,
+static const dt_pad_t kInputPadsReal[] = {
+    kDtPadIor10,
+    kDtPadIor11,
+    kDtPadIor12,
 };
 
-static const dif_pinmux_index_t kPeripheralOutputs[] = {
-    kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
+static const dt_sysrst_ctrl_periph_io_t kPeripheralOutputs[] = {
+    kDtSysrstCtrlPeriphIoZ3Wakeup,
 };
 
-static const dif_pinmux_index_t kOutputPadsDV[] = {
-    kTopEarlgreyPinmuxMioOutIob7,
+static const dt_pad_t kOutputPadsDV[] = {
+    kDtPadIob7,
 };
 
-static const dif_pinmux_index_t kOutputPadsReal[] = {
-    kTopEarlgreyPinmuxMioOutIor5,
+static const dt_pad_t kOutputPadsReal[] = {
+    kDtPadIor5,
 };
 
 // Mask of the GPIOs used on the real device to read the test phase.
@@ -91,18 +100,20 @@ static const uint32_t kGpioMask = 0x7;
  * peripheral as required.
  */
 static void pinmux_setup(void) {
-  const dif_pinmux_index_t *kInputPads =
+  const dt_pad_t *kInputPads =
       kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kNumMioInPads; ++i) {
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kPeripheralInputs[i]),
+        kInputPads[i]));
   }
 
-  const dif_pinmux_index_t *kOutputPads =
+  const dt_pad_t *kOutputPads =
       kDeviceType == kDeviceSimDV ? kOutputPadsDV : kOutputPadsReal;
   for (int i = 0; i < kNumMioOutPads; ++i) {
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
-                                          kPeripheralOutputs[i]));
+    CHECK_DIF_OK(dif_pinmux_mio_select_output(
+        &pinmux, kOutputPads[i],
+        dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kPeripheralOutputs[i])));
   }
   sysrst_ctrl_testutils_setup_dio(&pinmux);
   sysrst_ctrl_testutils_release_dio(&sysrst_ctrl, true, true);
@@ -163,13 +174,19 @@ static void configure_wakeup(void) {
 }
 
 static void go_to_sleep(void) {
-  // Wakeup source is from sysrst_ctrl (source one).
+  // Wakeup source is from sysrst_ctrl.
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
+      &wakeup_sources));
+
   LOG_INFO("Going to sleep.");
   test_status_set(kTestStatusInWfi);
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
-      /*pwrmgr_domain_config=*/0));
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                        /*pwrmgr_domain_config=*/0));
   wait_for_interrupt();
 }
 
@@ -187,31 +204,22 @@ static bool has_wakeup_happened(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
 
   // In DV, we use flash backdoor writes to store the phase.
   // On real devices, we cannot store it in RAM since the wakeup will erase
   // it so use three pins to read the test phase.
   if (kDeviceType != kDeviceSimDV) {
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0,
-        kTopEarlgreyPinmuxInselIob0));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio1,
-        kTopEarlgreyPinmuxInselIob1));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio2,
-        kTopEarlgreyPinmuxInselIob2));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0), kDtPadIob0));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio1), kDtPadIob1));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio2), kDtPadIob2));
   }
   LOG_INFO("reset");
 
