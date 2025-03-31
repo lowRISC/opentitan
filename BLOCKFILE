@@ -48,6 +48,7 @@ hw/ip/keymgr/rtl/*
 hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
+hw/ip/otp_ctrl/rtl/*
 hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*

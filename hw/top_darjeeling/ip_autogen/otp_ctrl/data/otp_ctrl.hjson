@@ -1441,7 +1441,7 @@
     { name: "RomPatchSize",
       desc: "Size of the ROM_PATCH partition",
       type: "int",
-      default: "9784",
+      default: "9848",
       local: "true"
     },
     { name: "RomPatchDataOffset",
@@ -1459,7 +1459,7 @@
     { name: "RomPatchDigestOffset",
       desc: "Offset of ROM_PATCH_DIGEST",
       type: "int",
-      default: "15912",
+      default: "15976",
       local: "true"
     },
     { name: "RomPatchDigestSize",
@@ -1471,7 +1471,7 @@
     { name: "HwCfg0Offset",
       desc: "Offset of the HW_CFG0 partition",
       type: "int",
-      default: "15920",
+      default: "15984",
       local: "true"
     },
     { name: "HwCfg0Size",
@@ -1483,7 +1483,7 @@
     { name: "DeviceIdOffset",
       desc: "Offset of DEVICE_ID",
       type: "int",
-      default: "15920",
+      default: "15984",
       local: "true"
     },
     { name: "DeviceIdSize",
@@ -1495,7 +1495,7 @@
     { name: "ManufStateOffset",
       desc: "Offset of MANUF_STATE",
       type: "int",
-      default: "15952",
+      default: "16016",
       local: "true"
     },
     { name: "ManufStateSize",
@@ -1507,7 +1507,7 @@
     { name: "HwCfg0DigestOffset",
       desc: "Offset of HW_CFG0_DIGEST",
       type: "int",
-      default: "15984",
+      default: "16048",
       local: "true"
     },
     { name: "HwCfg0DigestSize",
@@ -1519,7 +1519,7 @@
     { name: "HwCfg1Offset",
       desc: "Offset of the HW_CFG1 partition",
       type: "int",
-      default: "15992",
+      default: "16056",
       local: "true"
     },
     { name: "HwCfg1Size",
@@ -1531,7 +1531,7 @@
     { name: "SocDbgStateOffset",
       desc: "Offset of SOC_DBG_STATE",
       type: "int",
-      default: "15992",
+      default: "16056",
       local: "true"
     },
     { name: "SocDbgStateSize",
@@ -1543,7 +1543,7 @@
     { name: "EnCsrngSwAppReadOffset",
       desc: "Offset of EN_CSRNG_SW_APP_READ",
       type: "int",
-      default: "15996",
+      default: "16060",
       local: "true"
     },
     { name: "EnCsrngSwAppReadSize",
@@ -1555,7 +1555,7 @@
     { name: "EnSramIfetchOffset",
       desc: "Offset of EN_SRAM_IFETCH",
       type: "int",
-      default: "15997",
+      default: "16061",
       local: "true"
     },
     { name: "EnSramIfetchSize",
@@ -1567,7 +1567,7 @@
     { name: "HwCfg1DigestOffset",
       desc: "Offset of HW_CFG1_DIGEST",
       type: "int",
-      default: "16000",
+      default: "16064",
       local: "true"
     },
     { name: "HwCfg1DigestSize",
@@ -1579,7 +1579,7 @@
     { name: "Secret0Offset",
       desc: "Offset of the SECRET0 partition",
       type: "int",
-      default: "16008",
+      default: "16072",
       local: "true"
     },
     { name: "Secret0Size",
@@ -1591,7 +1591,7 @@
     { name: "TestUnlockTokenOffset",
       desc: "Offset of TEST_UNLOCK_TOKEN",
       type: "int",
-      default: "16008",
+      default: "16072",
       local: "true"
     },
     { name: "TestUnlockTokenSize",
@@ -1603,7 +1603,7 @@
     { name: "TestExitTokenOffset",
       desc: "Offset of TEST_EXIT_TOKEN",
       type: "int",
-      default: "16024",
+      default: "16088",
       local: "true"
     },
     { name: "TestExitTokenSize",
@@ -1615,7 +1615,7 @@
     { name: "Secret0DigestOffset",
       desc: "Offset of SECRET0_DIGEST",
       type: "int",
-      default: "16040",
+      default: "16104",
       local: "true"
     },
     { name: "Secret0DigestSize",
@@ -1627,37 +1627,13 @@
     { name: "Secret1Offset",
       desc: "Offset of the SECRET1 partition",
       type: "int",
-      default: "16048",
+      default: "16112",
       local: "true"
     },
     { name: "Secret1Size",
       desc: "Size of the SECRET1 partition",
       type: "int",
-      default: "88",
-      local: "true"
-    },
-    { name: "FlashAddrKeySeedOffset",
-      desc: "Offset of FLASH_ADDR_KEY_SEED",
-      type: "int",
-      default: "16048",
-      local: "true"
-    },
-    { name: "FlashAddrKeySeedSize",
-      desc: "Size of FLASH_ADDR_KEY_SEED",
-      type: "int",
-      default: "32",
-      local: "true"
-    },
-    { name: "FlashDataKeySeedOffset",
-      desc: "Offset of FLASH_DATA_KEY_SEED",
-      type: "int",
-      default: "16080",
-      local: "true"
-    },
-    { name: "FlashDataKeySeedSize",
-      desc: "Size of FLASH_DATA_KEY_SEED",
-      type: "int",
-      default: "32",
+      default: "24",
       local: "true"
     },
     { name: "SramDataKeySeedOffset",
@@ -1984,15 +1960,6 @@
       package: "otp_ctrl_pkg"
       desc:    "Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1."
     }
-    // Broadcast to Flash Controller
-    { struct:  "flash_otp_key"
-      type:    "req_rsp"
-      name:    "flash_otp_key"
-      act:     "rsp"
-      default: "'0"
-      package: "otp_ctrl_pkg"
-      desc:    "Key derivation interface for FLASH scrambling."
-    }
     // Key request from SRAM scramblers
     { struct:  "sram_otp_key"
       // TODO: would be nice if this could accept parameters.
@@ -2237,7 +2204,7 @@
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"
-      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL and FLASH_CTRL."
+      desc: "OTP controller participate key derivation process by providing scramble key seed to SRAM_CTRL."
     }
     {
       name: "OTP_CTRL.PROGRAM"
@@ -2252,7 +2219,7 @@
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET1"
-      desc: "SRAM and FLASH scrambling key"
+      desc: "SRAM scrambling key"
     }
     {
       name: "OTP_CTRL.PARTITION.SECRET2"

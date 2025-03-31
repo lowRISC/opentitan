@@ -86,6 +86,21 @@ package otp_ctrl_top_specific_pkg;
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
+  ////////////////////////////////
+  // Typedefs for Key Broadcast //
+  ////////////////////////////////
+
+  // Get maximum nonce width
+% if enable_flash_key:
+  localparam int NumNonceChunks =
+    (OtbnNonceWidth > FlashKeyWidth) ?
+    ((OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel) :
+    ((FlashKeyWidth > SramNonceWidth)  ? FlashNonceSel  : SramNonceSel);
+% else:
+  localparam int NumNonceChunks =
+    (OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel;
+% endif
+
   ///////////////////////////////////////////
   // Defaults for random netlist constants //
   ///////////////////////////////////////////

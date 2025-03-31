@@ -28,6 +28,7 @@ class otp_ctrl_parallel_key_req_vseq extends otp_ctrl_parallel_base_vseq;
               if (!base_vseq_done && !cfg.under_reset) req_otbn_key();
             end
           end
+        % if enable_flash_key:
           begin
             // get flash addr key
             if ($urandom_range(0, 1)) begin
@@ -42,6 +43,7 @@ class otp_ctrl_parallel_key_req_vseq extends otp_ctrl_parallel_base_vseq;
               if (!base_vseq_done && !cfg.under_reset) req_flash_data_key();
             end
           end
+        % endif
           begin
             // get sram keys
             if ($urandom_range(0, 1)) begin

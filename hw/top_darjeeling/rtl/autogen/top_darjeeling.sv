@@ -1217,8 +1217,6 @@ module top_darjeeling #(
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
-      .flash_otp_key_i('0),
-      .flash_otp_key_o(),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
       .sram_otp_key_o(otp_ctrl_sram_otp_key_rsp),
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),

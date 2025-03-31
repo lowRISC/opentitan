@@ -261,11 +261,13 @@
             - whether any partition (except life cycle partition) is locked
             '''
     }
+  % if enable_flash_key:
     {
       name: flash_req_cg
       desc: '''Covers whether secret1 partition is locked during `flash` data or address
             request.'''
     }
+  % endif
     {
       name: sram_req_cg
       desc: '''Covers whether secret1 partition is locked during all `srams` key request.'''
@@ -352,6 +354,7 @@
             - whether DAI interface is busy
             '''
     }
+  % if enable_flash_key:
     {
       name: flash_data_req_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:
@@ -368,6 +371,7 @@
             - whether lc_esc_en is On
             '''
     }
+  % endif
     {
       name: sram_0_req_condition_cg
       desc: '''Covers the following conditions when `lc_escalation_en` is On:

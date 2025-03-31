@@ -33,14 +33,6 @@
             lock:  "True",
             items: [
                 {
-                    name:  "FLASH_ADDR_KEY_SEED",
-                    value: "<random>",
-                }
-                {
-                    name:  "FLASH_DATA_KEY_SEED",
-                    value: "<random>",
-                }
-                {
                     name:  "SRAM_DATA_KEY_SEED",
                     value: "<random>",
                 }

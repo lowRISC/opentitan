@@ -4,6 +4,7 @@
 //
 // Scrambling key derivation module for OTP.
 //
+<% otbn_idx = 2 if enable_flash_key else 0 %>\
 
 `include "prim_flop_macros.sv"
 
@@ -26,16 +27,20 @@ module otp_ctrl_kdi
   output logic                                       fsm_err_o,
   // Key seed inputs from OTP
   input  logic                                       scrmbl_key_seed_valid_i,
+% if enable_flash_key:
   input  logic [FlashKeySeedWidth-1:0]               flash_data_key_seed_i,
   input  logic [FlashKeySeedWidth-1:0]               flash_addr_key_seed_i,
+% endif
   input  logic [SramKeySeedWidth-1:0]                sram_data_key_seed_i,
   // EDN interface for requesting entropy
   output logic                                       edn_req_o,
   input                                              edn_ack_i,
   input  [EdnDataWidth-1:0]                          edn_data_i,
   // Scrambling key requests
+% if enable_flash_key:
   input  flash_otp_key_req_t                         flash_otp_key_i,
   output flash_otp_key_rsp_t                         flash_otp_key_o,
+% endif
   input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
@@ -60,12 +65,21 @@ module otp_ctrl_kdi
   // Integration Checks //
   ////////////////////////
 
+% if enable_flash_key:
   // 2xFlash, OTBN + SRAM slots
   localparam int NumReq = 3 + NumSramKeyReqSlots;
+% else:
+  // OTBN + SRAM slots
+  localparam int NumReq = 1 + NumSramKeyReqSlots;
+% endif
   // Make sure key sizes in the system are multiples of 64bit and not larger than 256bit.
+% if enable_flash_key:
   `ASSERT_INIT(KeyNonceSize0_A, (FlashKeySeedWidth <= 256) && ((FlashKeySeedWidth % 64) == 0))
+% endif
   `ASSERT_INIT(KeyNonceSize1_A, (SramKeySeedWidth  <= 256) && ((SramKeySeedWidth  % 64) == 0))
+% if enable_flash_key:
   `ASSERT_INIT(KeyNonceSize2_A, (FlashKeyWidth     <= 256) && ((FlashKeyWidth     % 64) == 0))
+% endif
   `ASSERT_INIT(KeyNonceSize3_A, (SramKeyWidth      <= 256) && ((SramKeyWidth      % 64) == 0))
   `ASSERT_INIT(KeyNonceSize4_A, (SramNonceWidth    <= 256) && ((SramNonceWidth    % 64) == 0))
   `ASSERT_INIT(KeyNonceSize5_A, (OtbnKeyWidth      <= 256) && ((OtbnKeyWidth      % 64) == 0))
@@ -111,19 +125,26 @@ module otp_ctrl_kdi
   logic [NumReq-1:0] req, gnt;
   req_bundle_t req_bundles [NumReq];
 
+% if enable_flash_key:
   assign req[0] = flash_otp_key_i.data_req;
   assign req[1] = flash_otp_key_i.addr_req;
-  assign req[2] = otbn_otp_key_i.req;
+% endif
+  assign req[${otbn_idx}] = otbn_otp_key_i.req;
 
+% if enable_flash_key:
   assign flash_otp_key_o.data_ack = gnt[0];
   assign flash_otp_key_o.addr_ack = gnt[1];
-  assign otbn_otp_key_o.ack       = gnt[2];
+% endif
+  assign otbn_otp_key_o.ack       = gnt[${otbn_idx}];
 
   // anchored seeds
+% if enable_flash_key:
   logic [FlashKeySeedWidth-1:0] flash_data_key_seed;
   logic [FlashKeySeedWidth-1:0] flash_addr_key_seed;
+% endif
   logic [SramKeySeedWidth-1:0]  sram_data_key_seed;
 
+% if enable_flash_key:
   prim_sec_anchor_buf #(
     .Width(FlashKeySeedWidth)
   ) u_flash_data_key_anchor (
@@ -137,6 +158,7 @@ module otp_ctrl_kdi
     .in_i(flash_addr_key_seed_i),
     .out_o(flash_addr_key_seed)
   );
+%endif
 
   prim_sec_anchor_buf #(
     .Width(SramKeySeedWidth)
@@ -145,6 +167,7 @@ module otp_ctrl_kdi
     .out_o(sram_data_key_seed)
   );
 
+% if enable_flash_key:
   // Flash data key
   assign req_bundles[0] = '{ingest_entropy: 1'b0, // no random entropy added
                             chained_digest: 1'b0, // revert to netlist IV between blocks
@@ -161,8 +184,9 @@ module otp_ctrl_kdi
                             nonce_size:     '0,
                             seed_valid:     scrmbl_key_seed_valid_i,
                             seed:           flash_addr_key_seed}; // 2x128bit
+% endif
   // OTBN key
-  assign req_bundles[2] = '{ingest_entropy: 1'b1, // ingest random data
+  assign req_bundles[${otbn_idx}] = '{ingest_entropy: 1'b1, // ingest random data
                             chained_digest: 1'b0, // revert to netlist IV between blocks
                             digest_sel:     SramDataKey,
                             fetch_nonce:    1'b1, // fetch nonce
@@ -172,9 +196,9 @@ module otp_ctrl_kdi
                                              sram_data_key_seed}};
 
   // SRAM keys
-  for (genvar k = 3; k < NumReq; k++) begin : gen_req_assign
-    assign req[k]                      = sram_otp_key_i[k-3].req;
-    assign sram_otp_key_o[k-3].ack = gnt[k];
+  for (genvar k = ${otbn_idx + 1}; k < NumReq; k++) begin : gen_req_assign
+    assign req[k] = sram_otp_key_i[k-${otbn_idx + 1}].req;
+    assign sram_otp_key_o[k-${otbn_idx + 1}].ack = gnt[k];
     assign req_bundles[k] = '{ingest_entropy: 1'b1, // ingest random data
                               chained_digest: 1'b0, // revert to netlist IV between blocks
                               digest_sel:     SramDataKey,
@@ -285,10 +309,12 @@ module otp_ctrl_kdi
   assign otbn_otp_key_o.key          = key_out_q;
   assign otbn_otp_key_o.nonce        = nonce_out_q[OtbnNonceSel-1:0];
   assign otbn_otp_key_o.seed_valid   = seed_valid_q;
+% if enable_flash_key:
 
   assign flash_otp_key_o.key         = key_out_q;
   assign flash_otp_key_o.rand_key    = nonce_out_q[FlashNonceSel-1:0];
   assign flash_otp_key_o.seed_valid  = seed_valid_q;
+% endif
 
   for (genvar k = 0; k < NumSramKeyReqSlots; k++) begin : gen_out_assign
     assign sram_otp_key_o[k].key        = key_out_q;
@@ -313,7 +339,7 @@ module otp_ctrl_kdi
 
   // SEC_CM: KDI.FSM.SPARSE
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 11 -n 10 ${"\\"}
   //      -s 2544133835 --language=sv
   //
   // Hamming distance histogram:
@@ -591,7 +617,9 @@ module otp_ctrl_kdi
 
   `ASSERT_KNOWN(FsmErrKnown_A,             fsm_err_o)
   `ASSERT_KNOWN(EdnReqKnown_A,             edn_req_o)
+% if enable_flash_key:
   `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,     flash_otp_key_o)
+% endif
   `ASSERT_KNOWN(SramOtpKeyRspKnown_A,      sram_otp_key_o)
   `ASSERT_KNOWN(OtbnOtpKeyRspKnown_A,      otbn_otp_key_o)
   `ASSERT_KNOWN(ScrmblMtxReqKnown_A,       scrmbl_mtx_req_o)

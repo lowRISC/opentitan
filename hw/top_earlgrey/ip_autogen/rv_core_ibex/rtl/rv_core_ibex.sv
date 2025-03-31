@@ -977,7 +977,7 @@ module rv_core_ibex
     // Sample icache scramble key for use in assertions below.
     // pragma coverage off
     //VCS coverage off
-    logic [otp_ctrl_pkg::FlashKeyWidth-1:0] icache_otp_key_q;
+    logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] icache_otp_key_q;
     always_ff @(posedge clk_i, negedge rst_ni) begin
       if (!rst_ni) begin
         icache_otp_key_q <= '0;

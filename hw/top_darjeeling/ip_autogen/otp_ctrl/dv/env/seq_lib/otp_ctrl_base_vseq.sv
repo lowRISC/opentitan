@@ -719,54 +719,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(otbn_pull_seq)
   endtask
 
-  virtual task req_flash_addr_key(bit blocking = default_req_blocking);
-    if (cfg.m_flash_addr_pull_agent_cfg.vif.req === 1'b1) return;
-
-    if (blocking) begin
-      req_flash_addr_key_sub();
-    end else begin
-      fork
-        begin
-          req_flash_addr_key_sub();
-        end
-      join_none;
-      // Add #0 to ensure that this thread starts executing before any subsequent call
-      #0;
-    end
-  endtask
-
-  virtual task req_flash_addr_key_sub();
-    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_pull_seq;
-    wait(cfg.under_reset == 0);
-    `uvm_create_on(flash_addr_pull_seq, p_sequencer.flash_addr_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(flash_addr_pull_seq)
-    `uvm_send(flash_addr_pull_seq)
-  endtask
-
-  virtual task req_flash_data_key(bit blocking = default_req_blocking);
-    if (cfg.m_flash_data_pull_agent_cfg.vif.req === 1'b1) return;
-
-    if (blocking) begin
-      req_flash_data_key_sub();
-    end else begin
-      fork
-        begin
-          req_flash_data_key_sub();
-        end
-      join_none;
-      // Add #0 to ensure that this thread starts executing before any subsequent call
-      #0;
-    end
-  endtask
-
-  virtual task req_flash_data_key_sub();
-    push_pull_host_seq#(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_pull_seq;
-    wait(cfg.under_reset == 0);
-    `uvm_create_on(flash_data_pull_seq, p_sequencer.flash_data_pull_sequencer_h);
-    `DV_CHECK_RANDOMIZE_FATAL(flash_data_pull_seq)
-    `uvm_send(flash_data_pull_seq)
-  endtask
-
   virtual task req_lc_transition(bit check_intr = 0,
                                  bit blocking = default_req_blocking,
                                  bit wr_blank_err = !write_unused_addr);

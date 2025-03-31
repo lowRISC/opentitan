@@ -20,8 +20,10 @@ class otp_ctrl_env #(
 
   push_pull_agent#(.DeviceDataWidth(SRAM_DATA_SIZE))  m_sram_pull_agent[NumSramKeyReqSlots];
   push_pull_agent#(.DeviceDataWidth(OTBN_DATA_SIZE))  m_otbn_pull_agent;
+% if enable_flash_key:
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_addr_pull_agent;
   push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE)) m_flash_data_pull_agent;
+% endif
   push_pull_agent#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)) m_lc_prog_pull_agent;
 
   function void build_phase(uvm_phase phase);
@@ -41,6 +43,7 @@ class otp_ctrl_env #(
         "m_otbn_pull_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(
         this, "m_otbn_pull_agent", "cfg", cfg.m_otbn_pull_agent_cfg);
+% if enable_flash_key:
 
     // build flash-otp pull agent
     m_flash_addr_pull_agent = push_pull_agent#(.DeviceDataWidth(FLASH_DATA_SIZE))::type_id::create(
@@ -51,6 +54,7 @@ class otp_ctrl_env #(
         "m_flash_data_pull_agent", this);
     uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(
         this, "m_flash_data_pull_agent", "cfg", cfg.m_flash_data_pull_agent_cfg);
+% endif
 
     // build lc-otp program pull agent
     m_lc_prog_pull_agent = push_pull_agent#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
@@ -86,16 +90,20 @@ class otp_ctrl_env #(
     end
 
     virtual_sequencer.otbn_pull_sequencer_h       = m_otbn_pull_agent.sequencer;
+  % if enable_flash_key:
     virtual_sequencer.flash_addr_pull_sequencer_h = m_flash_addr_pull_agent.sequencer;
     virtual_sequencer.flash_data_pull_sequencer_h = m_flash_data_pull_agent.sequencer;
+  % endif
     virtual_sequencer.lc_prog_pull_sequencer_h    = m_lc_prog_pull_agent.sequencer;
 
     if (cfg.en_scb) begin
       m_otbn_pull_agent.monitor.analysis_port.connect(scoreboard.otbn_fifo.analysis_export);
+    % if enable_flash_key:
       m_flash_addr_pull_agent.monitor.analysis_port.connect(
           scoreboard.flash_addr_fifo.analysis_export);
       m_flash_data_pull_agent.monitor.analysis_port.connect(
           scoreboard.flash_data_fifo.analysis_export);
+    % endif
       m_lc_prog_pull_agent.monitor.analysis_port.connect(scoreboard.lc_prog_fifo.analysis_export);
     end
 
