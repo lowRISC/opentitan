@@ -62,6 +62,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
       pinmux, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
       kPadUart0Tx));
 
+#ifdef OPENTITAN_IS_EARLGREY
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
   if (kDeviceType == kDeviceSimDV) {
@@ -75,6 +76,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
     CHECK_DIF_OK(
         dif_pinmux_pad_write_attrs_dt(pinmux, kPadUart0Rx, in_attr, &out_attr));
   };
+#endif
 
 #ifdef HAS_UART1
   // Configure UART1 RX input.
@@ -88,8 +90,8 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
 #endif /* HAS_UART1 */
 
 #ifdef OPENTITAN_IS_EARLGREY
-  // Configure a higher drive strength for the USB_P and USB_N pads because we
-  // must the pad drivers must be capable of overpowering the 'pull' signal
+  // Configure a higher drive strength for the USB_P and USB_N pads because
+  // the pad drivers must be capable of overpowering the 'pull' signal
   // strength of the internal pull ups in the differential receiver.
   //
   // 'pull' strength is required because at the host end of the USB, there
