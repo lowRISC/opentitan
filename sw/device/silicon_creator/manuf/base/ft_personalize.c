@@ -602,7 +602,7 @@ static status_t boot_data_cfg_initialize(void) {
   }
 
   // Loads the boot data configuration from OTP.
-  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_boot_data_cfg_get();
 
   flash_ctrl_perms_t perm = {
       .read = kMultiBitBool4False,
@@ -615,8 +615,8 @@ static status_t boot_data_cfg_initialize(void) {
   // next boot.
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData0, perm);
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageBootData1, perm);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, cfg);
-  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, cfg);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
 
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageBootData0,
                             kFlashCtrlEraseTypePage));
@@ -648,8 +648,8 @@ static status_t install_owner(void) {
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
 
-  //  Initializes the boot data flash configuration in OTP, and
-  //  erases the boot data pages to avoid integrity errors in the next boot.
+  // Initializes the boot data flash configuration in OTP, and erases the boot
+  // data pages to avoid integrity errors in the next boot.
   // `sku_creator_owner_init` will write the owner block to the flash.
   TRY(boot_data_cfg_initialize());
 

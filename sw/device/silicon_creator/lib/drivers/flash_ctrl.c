@@ -284,14 +284,7 @@ void flash_ctrl_init(void) {
   };
   flash_ctrl_data_default_cfg_set(data_default_cfg);
   // Configure scrambling, ECC, and HE for `boot_data` pages.
-  otp_val =
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
-  flash_ctrl_cfg_t boot_data_cfg = {
-      .scrambling =
-          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
-      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
-      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
-  };
+  flash_ctrl_cfg_t boot_data_cfg = flash_ctrl_boot_data_cfg_get();
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData0, boot_data_cfg);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageBootData1, boot_data_cfg);
 }
@@ -547,6 +540,17 @@ flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void) {
                                    FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD),
       .he = bitfield_field32_read(default_region,
                                   FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD),
+  };
+}
+
+flash_ctrl_cfg_t flash_ctrl_boot_data_cfg_get(void) {
+  uint32_t otp_val =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET);
+  return (flash_ctrl_cfg_t){
+      .scrambling =
+          bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+      .ecc = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+      .he = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
   };
 }
 
