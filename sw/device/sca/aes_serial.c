@@ -13,7 +13,7 @@
 #include "sw/device/sca/lib/simple_serial.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #include "sw/device/lib/testing/aes_testutils.h"
 #endif
 
@@ -223,12 +223,17 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
-#if !OT_IS_ENGLISH_BREAKFAST
-  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+
+  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
 #endif
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   if (transaction.force_masks) {
     // Disable masking. Force the masking PRNG output value to 0.
     aes_sca_load_fixed_seed();
@@ -805,10 +810,15 @@ bool test_main(void) {
   LOG_INFO("Initializing AES unit.");
   init_aes();
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
-    CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
+    const dif_csrng_t csrng = {
+        .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+    const dif_edn_t edn0 = {
+        .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+
+    CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed(&csrng, &edn0));
     aes_sca_load_fixed_seed();
   }
 #endif

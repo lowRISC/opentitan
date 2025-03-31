@@ -8,15 +8,11 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#ifdef OPENTITAN_IS_EARLGREY
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_csrng.h"
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #include "sw/device/lib/dif/dif_csrng_shared.h"
-#include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
 
 // `extern` declarations to give the inline functions in the
@@ -39,7 +35,7 @@ enum {
   kAesTestutilsTimeout = (10 * 1000 * 1000),
 };
 
-#ifdef OPENTITAN_IS_EARLGREY
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 /**
  * Constants for switching AES masking off.
  */
@@ -92,18 +88,14 @@ const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
     0x96994362, 0x7ef8f0b9, 0x5b5332dc, 0xd0df9b12, 0x96dfbaa9, 0xac0b5af7,
     0xec2504be, 0xb00fb68c, 0xf37e0a7f, 0x88172eec, 0x4e4b5f58, 0xfec120c0};
 
-status_t aes_testutils_masking_prng_zero_output_seed(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-
+status_t aes_testutils_masking_prng_zero_output_seed(const dif_csrng_t *csrng,
+                                                     const dif_edn_t *edn0) {
   // Shutdown EDN0 and CSRNG
-  TRY(dif_edn_stop(&edn0));
-  TRY(dif_csrng_stop(&csrng));
+  TRY(dif_edn_stop(edn0));
+  TRY(dif_csrng_stop(csrng));
 
   // Re-enable CSRNG
-  TRY(dif_csrng_configure(&csrng));
+  TRY(dif_csrng_configure(csrng));
 
   // Re-enable EDN0 and configure it to produce the seed that if loaded into AES
   // causes the AES masking PRNG to output and all-zero output.
@@ -147,14 +139,11 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
          kEdnSeedMaterialInstantiate, sizeof(kEdnSeedMaterialInstantiate));
   memcpy(edn0_params.reseed_cmd.seed_material.data, kEdnSeedMaterialReseed,
          sizeof(kEdnSeedMaterialReseed));
-  TRY(dif_edn_set_auto_mode(&edn0, edn0_params));
+  TRY(dif_edn_set_auto_mode(edn0, edn0_params));
   return OK_STATUS();
 }
 
-status_t aes_testutils_csrng_kat(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-
+status_t aes_testutils_csrng_kat(const dif_csrng_t *csrng) {
   // Instantiate CSRNG with seed material suitable for switching the AES masking
   // off.
   dif_csrng_seed_material_t seed_material_instantiate = {
@@ -171,7 +160,7 @@ status_t aes_testutils_csrng_kat(void) {
          sizeof(kCsrngVInstantiate));
   memcpy(expected_state_instantiate.key, kCsrngKeyInstantiate,
          sizeof(kCsrngKeyInstantiate));
-  TRY(csrng_testutils_kat_instantiate(&csrng, false, &seed_material_instantiate,
+  TRY(csrng_testutils_kat_instantiate(csrng, false, &seed_material_instantiate,
                                       &expected_state_instantiate));
 
   // Generate one block containing the required seed for the AES masking PRNG
@@ -184,7 +173,7 @@ status_t aes_testutils_csrng_kat(void) {
   memcpy(expected_state_generate.v, kCsrngVGenerate, sizeof(kCsrngVGenerate));
   memcpy(expected_state_generate.key, kCsrngKeyGenerate,
          sizeof(kCsrngKeyGenerate));
-  TRY(csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
+  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
 
@@ -204,12 +193,12 @@ status_t aes_testutils_csrng_kat(void) {
          sizeof(kCsrngVInstantiate));
   memcpy(expected_state_reseed.key, kCsrngKeyInstantiate,
          sizeof(kCsrngKeyInstantiate));
-  TRY(csrng_testutils_kat_reseed(&csrng, &seed_material_reseed,
+  TRY(csrng_testutils_kat_reseed(csrng, &seed_material_reseed,
                                  &expected_state_reseed));
 
   // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
-  TRY(csrng_testutils_kat_generate(&csrng, 1, kCsrngBlockLen,
+  TRY(csrng_testutils_kat_generate(csrng, 1, kCsrngBlockLen,
                                    kAesMaskingPrngZeroOutputSeed,
                                    &expected_state_generate));
   return OK_STATUS();

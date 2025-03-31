@@ -6,6 +6,10 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_
 
 #include "sw/device/lib/dif/dif_aes.h"
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_edn.h"
+#endif
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -33,7 +37,7 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t status) {
   IBEX_TRY_SPIN_FOR(aes_testutils_get_status((aes_), (status_)) == (flag_), \
                     (timeout_usec_))
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 /**
  * Initializes the entropy complex for performing AES SCA measurements with
  * masking switched off.
@@ -42,10 +46,13 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t status) {
  * into AES causes the AES masking PRNG to output an all-zero vector. Entropy
  * src and EDN1 are left untouched.
  *
+ * @param csrng A CSRNG DIF handle.
+ * @param edn0 An EDN DIF handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_testutils_masking_prng_zero_output_seed(void);
+status_t aes_testutils_masking_prng_zero_output_seed(const dif_csrng_t *csrng,
+                                                     const dif_edn_t *edn0);
 
 /**
  * CTR_DRBG Known-Answer-Test (KAT) using the CSRNG SW application interface.
@@ -54,10 +61,11 @@ status_t aes_testutils_masking_prng_zero_output_seed(void);
  * ensure the seed leading to an all-zero output of the AES masking PRNG can
  * repeatedly be generated.
  *
+ * @param csrng A CSRNG DIF handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t aes_testutils_csrng_kat(void);
+status_t aes_testutils_csrng_kat(const dif_csrng_t *csrng);
 #endif
 
 /**
