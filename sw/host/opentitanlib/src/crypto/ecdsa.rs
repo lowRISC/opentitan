@@ -166,7 +166,10 @@ impl EcdsaRawSignature {
         self.r.iter().all(|&v| v == 0) && self.s.iter().all(|&v| v == 0)
     }
 
-    fn from_der(data: &[u8]) -> Result<EcdsaRawSignature> {
+    pub fn from_der_with_reverse(
+        data: &[u8],
+        reverse_byte_order: bool,
+    ) -> Result<EcdsaRawSignature> {
         let sig = Signature::<NistP256>::from_der(data).with_context(|| "Failed to parse DER")?;
 
         // R and S are integers in big endian format. The size of the numbers is
@@ -178,14 +181,23 @@ impl EcdsaRawSignature {
         let mut r: Vec<u8> = sig.r().to_bytes().to_vec();
         let mut s: Vec<u8> = sig.s().to_bytes().to_vec();
 
-        // Convert to little endian format.
-        r.reverse();
-        s.reverse();
+        // Convert to little endian format if requested.
+        if reverse_byte_order {
+            log::trace!("Reversing byte order of ECDSA sig");
+            r.reverse();
+            s.reverse();
+        }
 
-        r.resize(32, 0u8);
-        s.resize(32, 0u8);
+        // Pad with zeros if needed. This is required because the size of R and S
+        // is not fixed in the ASN.1 DER format.
+        r.resize(32, 0u8); // pad with zeros if needed.
+        s.resize(32, 0u8); // pad with zeros if needed.
 
         Ok(EcdsaRawSignature { r, s })
+    }
+
+    pub fn from_der(data: &[u8]) -> Result<EcdsaRawSignature> {
+        EcdsaRawSignature::from_der_with_reverse(data, true)
     }
 }
 
