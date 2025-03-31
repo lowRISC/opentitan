@@ -418,17 +418,19 @@ impl CommandDispatch for DigestCommand {
     }
 }
 
-/// Compute spx-message command.
+/// Compute the pre-image of the signature algorithm has function. Used for
+/// interoperability with signing tools that do not support pre-hashed signatures.
 #[derive(Debug, Args)]
-pub struct SpxMessageCommand {
-    /// Filename for the image to calculate the digest for.
+pub struct SignatureHashPreimageCommand {
+    /// Raw image file, with with unsigned regions
     image: PathBuf,
-    /// Filename for an output bin file.
-    #[arg(short, long)]
+    /// Filename to output the signature hash preimage. This file's hash
+    /// is identical to the output of the 'image digest' commands
+    #[arg(short, long, value_name = "FILE")]
     output: PathBuf,
 }
 
-impl CommandDispatch for SpxMessageCommand {
+impl CommandDispatch for SignatureHashPreimageCommand {
     fn run(
         &self,
         _context: &dyn Any,
@@ -459,5 +461,6 @@ pub enum Image {
     #[command(subcommand)]
     Manifest(ManifestCommand),
     Digest(DigestCommand),
-    SpxMessage(SpxMessageCommand),
+    #[command(visible_alias = "spx-message")]
+    SignatureHashPreimage(SignatureHashPreimageCommand),
 }
