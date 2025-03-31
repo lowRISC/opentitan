@@ -1,9 +1,9 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (${module_instance_name}_env_cfg),
-                                                                       .RAL_T (${module_instance_name}_reg_block),
-                                                                       .COV_T (${module_instance_name}_env_cov));
+class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
+                                                                       .RAL_T (gpio_reg_block),
+                                                                       .COV_T (gpio_env_cov));
 
   // predicted value of DATA_OUT rtl implementation register
   bit   [NUM_GPIOS-1:0] data_out;
