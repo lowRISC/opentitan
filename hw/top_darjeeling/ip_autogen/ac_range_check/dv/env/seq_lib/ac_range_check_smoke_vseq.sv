@@ -13,6 +13,7 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   extern constraint num_trans_c;
   extern constraint tmp_c;
   extern constraint range_c;
+  extern constraint range_perm_c;
   extern constraint range_racl_policy_c;
   extern constraint tl_main_vars_addr_c;
   extern constraint tl_main_vars_mask_c;
@@ -44,6 +45,28 @@ constraint ac_range_check_smoke_vseq::range_c {
       // Range size in 32-bit words, it shouldn't be too large and let it be 1 word size
       ((dut_cfg.range_limit[i] - dut_cfg.range_base[i]) >> 2) inside {[1:49]};
     }
+  }
+}
+
+// Enable/allow the range 2/3 of the time, to get more granted accesses
+constraint ac_range_check_smoke_vseq::range_perm_c {
+  foreach (dut_cfg.range_base[i]) {
+    dut_cfg.range_perm[i].execute_access dist {
+      0 :/ 1,
+      1 :/ 2
+    };
+    dut_cfg.range_perm[i].write_access dist {
+      0 :/ 1,
+      1 :/ 2
+    };
+    dut_cfg.range_perm[i].read_access dist {
+      0 :/ 1,
+      1 :/ 2
+    };
+    dut_cfg.range_perm[i].enable dist {
+      0 :/ 1,
+      1 :/ 2
+    };
   }
 }
 
