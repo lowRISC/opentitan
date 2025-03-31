@@ -47,10 +47,10 @@ module rstmgr
   // software initiated reset request
   output mubi4_t sw_rst_req_o,
 
-  // Interface to alert handler
+  // Interface to alert handler(s') crash dump
   input alert_handler_pkg::alert_crashdump_t alert_dump_i,
 
-  // Interface to cpu crash dump
+  // Interface to cpu(s') crash dump
   input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
 
   // dft bypass
@@ -1236,6 +1236,11 @@ module rstmgr
     .slot_o(hw2reg.alert_info.d)
   );
 
+  // once dump is captured, no more information is captured until
+  // re-enabled by software.
+  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
+
   rstmgr_crash_info #(
     .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
   ) u_cpu_info (
@@ -1250,8 +1255,6 @@ module rstmgr
 
   // once dump is captured, no more information is captured until
   // re-enabled by software.
-  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
   assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
   assign hw2reg.cpu_info_ctrl.en.de = dump_capture_halt;
 

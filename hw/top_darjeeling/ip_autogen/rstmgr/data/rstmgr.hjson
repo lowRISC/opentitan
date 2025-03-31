@@ -235,7 +235,7 @@
       act:     "rcv",
       package: "alert_handler_pkg",
       desc:    '''
-        Alert handler crash dump information.
+        Crash dump info for alert handler 0.
       '''
     },
 
@@ -245,7 +245,7 @@
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
-        Main processing element crash dump information.
+        Crash dump info for CPU 0.
       '''
     },
 
@@ -339,7 +339,7 @@
     },
 
     { name: "ALERT_REGWEN",
-      desc: "Alert write enable",
+      desc: "Alert[0] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -355,7 +355,7 @@
 
     { name: "ALERT_INFO_CTRL",
       desc: '''
-            Alert info dump controls.
+            Alert[0] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
@@ -366,7 +366,7 @@
           name: "EN",
           hwaccess: "hrw",
           desc: '''
-            Enable alert dump to capture new information.
+            Enable alert[0] dump to capture new information.
             This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
             '''
           resval: "0"
@@ -384,7 +384,7 @@
 
     { name: "ALERT_INFO_ATTR",
       desc: '''
-            Alert info dump attributes.
+            Alert[0] info dump attributes.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -396,7 +396,7 @@
           swaccess: "ro",
           hwaccess: "hwo",
           desc: '''
-            The number of 32-bit values contained in the alert info dump.
+            The number of 32-bit values contained in the alert[0] info dump.
             '''
           resval: "0",
           tags: [// This field is tied to a design constant, thus the
@@ -409,7 +409,7 @@
 
     { name: "ALERT_INFO",
       desc: '''
-              Alert dump information prior to last reset.
+              Alert[0] dump information prior to last reset.
               Which value read is controlled by the !!ALERT_INFO_CTRL register.
             ''',
       swaccess: "ro",
@@ -427,7 +427,7 @@
       ]
     },
     { name: "CPU_REGWEN",
-      desc: "Cpu write enable",
+      desc: "Cpu[0] write enable",
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
@@ -443,7 +443,7 @@
 
     { name: "CPU_INFO_CTRL",
       desc: '''
-            Cpu info dump controls.
+            Cpu[0] info dump controls.
             ''',
       swaccess: "rw",
       hwaccess: "hro",
@@ -454,7 +454,7 @@
           name: "EN",
           hwaccess: "hrw",
           desc: '''
-            Enable cpu dump to capture new information.
+            Enable cpu[0] dump to capture new information.
             This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
             '''
           resval: "0"
@@ -472,7 +472,7 @@
 
     { name: "CPU_INFO_ATTR",
       desc: '''
-            Cpu info dump attributes.
+            Cpu[0] info dump attributes.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -484,7 +484,7 @@
           swaccess: "ro",
           hwaccess: "hwo",
           desc: '''
-            The number of 32-bit values contained in the cpu info dump.
+            The number of 32-bit values contained in the cpu[0] info dump.
             '''
           resval: "0",
           tags: [// This field is tied to a design constant, thus the
@@ -497,7 +497,7 @@
 
     { name: "CPU_INFO",
       desc: '''
-              Cpu dump information prior to last reset.
+              Cpu[0] dump information prior to last reset.
               Which value read is controlled by the !!CPU_INFO_CTRL register.
             ''',
       swaccess: "ro",

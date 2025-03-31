@@ -8,6 +8,14 @@
 
 <%
 from topgen.lib import Name
+
+num_handlers = len(alert_handler_pkgs)
+# Create "_{i}" only when there's more than 1
+def pluralize(i, n):
+    if n == 0 or n == 1:
+        return ""
+    else:
+        return f"_{i}"
 %>\
 
 // This top level controller is fairly hardcoded right now, but will be switched to a template
@@ -47,11 +55,15 @@ module rstmgr
   // software initiated reset request
   output mubi4_t sw_rst_req_o,
 
-  // Interface to alert handler
-  input alert_handler_pkg::alert_crashdump_t alert_dump_i,
+  // Interface to alert handler(s') crash dump
+% for i in range(num_handlers):
+  input ${alert_handler_pkgs[i]}::alert_crashdump_t alert_dump${pluralize(i, num_handlers)}_i,
+% endfor
 
-  // Interface to cpu crash dump
-  input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
+  // Interface to cpu(s') crash dump
+% for i in range(num_cores):
+  input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump${pluralize(i, num_cores)}_i,
+% endfor
 
   // dft bypass
   input scan_rst_ni,
@@ -413,37 +425,44 @@ module rstmgr
   logic dump_capture_halt;
   assign dump_capture_halt = rst_hw_req;
 
+% for i in range(num_handlers):
   rstmgr_crash_info #(
-    .CrashDumpWidth($bits(alert_handler_pkg::alert_crashdump_t))
-  ) u_alert_info (
+    .CrashDumpWidth($bits(${alert_handler_pkgs[i]}::alert_crashdump_t))
+  ) u_alert_info${pluralize(i, num_handlers)} (
     .clk_i(clk_por_i),
     .rst_ni(rst_por_ni),
-    .dump_i(alert_dump_i),
-    .dump_capture_i(dump_capture & reg2hw.alert_info_ctrl.en.q),
-    .slot_sel_i(reg2hw.alert_info_ctrl.index.q),
-    .slots_cnt_o(hw2reg.alert_info_attr.d),
-    .slot_o(hw2reg.alert_info.d)
-  );
-
-  rstmgr_crash_info #(
-    .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
-  ) u_cpu_info (
-    .clk_i(clk_por_i),
-    .rst_ni(rst_por_ni),
-    .dump_i(cpu_dump_i),
-    .dump_capture_i(dump_capture & reg2hw.cpu_info_ctrl.en.q),
-    .slot_sel_i(reg2hw.cpu_info_ctrl.index.q),
-    .slots_cnt_o(hw2reg.cpu_info_attr.d),
-    .slot_o(hw2reg.cpu_info.d)
+    .dump_i(alert_dump${pluralize(i, num_handlers)}_i),
+    .dump_capture_i(dump_capture & reg2hw.alert${pluralize(i, num_handlers)}_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.alert${pluralize(i, num_handlers)}_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.alert${pluralize(i, num_handlers)}_info_attr.d),
+    .slot_o(hw2reg.alert${pluralize(i, num_handlers)}_info.d)
   );
 
   // once dump is captured, no more information is captured until
   // re-enabled by software.
-  assign hw2reg.alert_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.alert_info_ctrl.en.de = dump_capture_halt;
-  assign hw2reg.cpu_info_ctrl.en.d  = 1'b0;
-  assign hw2reg.cpu_info_ctrl.en.de = dump_capture_halt;
+  assign hw2reg.alert${pluralize(i, num_handlers)}_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.alert${pluralize(i, num_handlers)}_info_ctrl.en.de = dump_capture_halt;
 
+% endfor
+% for i in range(num_cores):
+  rstmgr_crash_info #(
+    .CrashDumpWidth($bits(rv_core_ibex_pkg::cpu_crash_dump_t))
+  ) u_cpu_info${pluralize(i, num_cores)} (
+    .clk_i(clk_por_i),
+    .rst_ni(rst_por_ni),
+    .dump_i(cpu_dump${pluralize(i, num_cores)}_i),
+    .dump_capture_i(dump_capture & reg2hw.cpu${pluralize(i, num_cores)}_info_ctrl.en.q),
+    .slot_sel_i(reg2hw.cpu${pluralize(i, num_cores)}_info_ctrl.index.q),
+    .slots_cnt_o(hw2reg.cpu${pluralize(i, num_cores)}_info_attr.d),
+    .slot_o(hw2reg.cpu${pluralize(i, num_cores)}_info.d)
+  );
+
+  // once dump is captured, no more information is captured until
+  // re-enabled by software.
+  assign hw2reg.cpu${pluralize(i, num_cores)}_info_ctrl.en.d  = 1'b0;
+  assign hw2reg.cpu${pluralize(i, num_cores)}_info_ctrl.en.de = dump_capture_halt;
+
+% endfor
   ////////////////////////////////////////////////////
   // Exported resets                                //
   ////////////////////////////////////////////////////

@@ -3090,7 +3090,7 @@
         }
         {
           name: alert_dump
-          desc: Alert handler crash dump information.
+          desc: Crash dump info for alert handler 0.
           struct: alert_crashdump
           package: alert_handler_pkg
           type: uni
@@ -3103,7 +3103,7 @@
         }
         {
           name: cpu_dump
-          desc: Main processing element crash dump information.
+          desc: Crash dump info for CPU 0.
           struct: cpu_crash_dump
           package: rv_core_ibex_pkg
           type: uni
@@ -21913,7 +21913,7 @@
       }
       {
         name: alert_dump
-        desc: Alert handler crash dump information.
+        desc: Crash dump info for alert handler 0.
         struct: alert_crashdump
         package: alert_handler_pkg
         type: uni
@@ -21926,7 +21926,7 @@
       }
       {
         name: cpu_dump
-        desc: Main processing element crash dump information.
+        desc: Crash dump info for CPU 0.
         struct: cpu_crash_dump
         package: rv_core_ibex_pkg
         type: uni

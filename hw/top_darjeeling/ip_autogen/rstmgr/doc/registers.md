@@ -8,14 +8,14 @@
 | rstmgr.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                                                |
 | rstmgr.[`RESET_REQ`](#reset_req)             | 0x4      |        4 | Software requested system reset.                                   |
 | rstmgr.[`RESET_INFO`](#reset_info)           | 0x8      |        4 | Device reset reason.                                               |
-| rstmgr.[`ALERT_REGWEN`](#alert_regwen)       | 0xc      |        4 | Alert write enable                                                 |
-| rstmgr.[`ALERT_INFO_CTRL`](#alert_info_ctrl) | 0x10     |        4 | Alert info dump controls.                                          |
-| rstmgr.[`ALERT_INFO_ATTR`](#alert_info_attr) | 0x14     |        4 | Alert info dump attributes.                                        |
-| rstmgr.[`ALERT_INFO`](#alert_info)           | 0x18     |        4 | Alert dump information prior to last reset.                        |
-| rstmgr.[`CPU_REGWEN`](#cpu_regwen)           | 0x1c     |        4 | Cpu write enable                                                   |
-| rstmgr.[`CPU_INFO_CTRL`](#cpu_info_ctrl)     | 0x20     |        4 | Cpu info dump controls.                                            |
-| rstmgr.[`CPU_INFO_ATTR`](#cpu_info_attr)     | 0x24     |        4 | Cpu info dump attributes.                                          |
-| rstmgr.[`CPU_INFO`](#cpu_info)               | 0x28     |        4 | Cpu dump information prior to last reset.                          |
+| rstmgr.[`ALERT_REGWEN`](#alert_regwen)       | 0xc      |        4 | Alert[0] write enable                                              |
+| rstmgr.[`ALERT_INFO_CTRL`](#alert_info_ctrl) | 0x10     |        4 | Alert[0] info dump controls.                                       |
+| rstmgr.[`ALERT_INFO_ATTR`](#alert_info_attr) | 0x14     |        4 | Alert[0] info dump attributes.                                     |
+| rstmgr.[`ALERT_INFO`](#alert_info)           | 0x18     |        4 | Alert[0] dump information prior to last reset.                     |
+| rstmgr.[`CPU_REGWEN`](#cpu_regwen)           | 0x1c     |        4 | Cpu[0] write enable                                                |
+| rstmgr.[`CPU_INFO_CTRL`](#cpu_info_ctrl)     | 0x20     |        4 | Cpu[0] info dump controls.                                         |
+| rstmgr.[`CPU_INFO_ATTR`](#cpu_info_attr)     | 0x24     |        4 | Cpu[0] info dump attributes.                                       |
+| rstmgr.[`CPU_INFO`](#cpu_info)               | 0x28     |        4 | Cpu[0] dump information prior to last reset.                       |
 | rstmgr.[`SW_RST_REGWEN_0`](#sw_rst_regwen)   | 0x2c     |        4 | Register write enable for software controllable resets.            |
 | rstmgr.[`SW_RST_REGWEN_1`](#sw_rst_regwen)   | 0x30     |        4 | Register write enable for software controllable resets.            |
 | rstmgr.[`SW_RST_REGWEN_2`](#sw_rst_regwen)   | 0x34     |        4 | Register write enable for software controllable resets.            |
@@ -98,7 +98,7 @@ Indicates when a device has reset due low power exit.
 Indicates when a device has reset due to power up.
 
 ## ALERT_REGWEN
-Alert write enable
+Alert[0] write enable
 - Offset: `0xc`
 - Reset default: `0x1`
 - Reset mask: `0x1`
@@ -115,7 +115,7 @@ Alert write enable
 |   0    |  rw0c  |   0x1   | EN     | When 1, [`ALERT_INFO_CTRL`](#alert_info_ctrl) can be modified. |
 
 ## ALERT_INFO_CTRL
-Alert info dump controls.
+Alert[0] info dump controls.
 - Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0xf1`
@@ -127,15 +127,15 @@ Alert info dump controls.
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "INDEX", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                         |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |        | Reserved                                                                                                                            |
-|  7:4   |   rw   |   0x0   | INDEX  | Controls which 32-bit value to read.                                                                                                |
-|  3:1   |        |         |        | Reserved                                                                                                                            |
-|   0    |   rw   |   0x0   | EN     | Enable alert dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                            |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |        | Reserved                                                                                                                               |
+|  7:4   |   rw   |   0x0   | INDEX  | Controls which 32-bit value to read.                                                                                                   |
+|  3:1   |        |         |        | Reserved                                                                                                                               |
+|   0    |   rw   |   0x0   | EN     | Enable alert[0] dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
 
 ## ALERT_INFO_ATTR
-Alert info dump attributes.
+Alert[0] info dump attributes.
 - Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0xf`
@@ -146,13 +146,13 @@ Alert info dump attributes.
 {"reg": [{"name": "CNT_AVAIL", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                   |
-|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------|
-|  31:4  |        |         |           | Reserved                                                      |
-|  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the alert info dump. |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                      |
+|:------:|:------:|:-------:|:----------|:-----------------------------------------------------------------|
+|  31:4  |        |         |           | Reserved                                                         |
+|  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the alert[0] info dump. |
 
 ## ALERT_INFO
-  Alert dump information prior to last reset.
+  Alert[0] dump information prior to last reset.
   Which value read is controlled by the [`ALERT_INFO_CTRL`](#alert_info_ctrl) register.
 - Offset: `0x18`
 - Reset default: `0x0`
@@ -169,7 +169,7 @@ Alert info dump attributes.
 |  31:0  |   ro   |   0x0   | VALUE  | The current 32-bit value of crash dump. |
 
 ## CPU_REGWEN
-Cpu write enable
+Cpu[0] write enable
 - Offset: `0x1c`
 - Reset default: `0x1`
 - Reset mask: `0x1`
@@ -186,7 +186,7 @@ Cpu write enable
 |   0    |  rw0c  |   0x1   | EN     | When 1, [`CPU_INFO_CTRL`](#cpu_info_ctrl) can be modified. |
 
 ## CPU_INFO_CTRL
-Cpu info dump controls.
+Cpu[0] info dump controls.
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xf1`
@@ -198,15 +198,15 @@ Cpu info dump controls.
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "INDEX", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |        | Reserved                                                                                                                          |
-|  7:4   |   rw   |   0x0   | INDEX  | Controls which 32-bit value to read.                                                                                              |
-|  3:1   |        |         |        | Reserved                                                                                                                          |
-|   0    |   rw   |   0x0   | EN     | Enable cpu dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                          |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |        | Reserved                                                                                                                             |
+|  7:4   |   rw   |   0x0   | INDEX  | Controls which 32-bit value to read.                                                                                                 |
+|  3:1   |        |         |        | Reserved                                                                                                                             |
+|   0    |   rw   |   0x0   | EN     | Enable cpu[0] dump to capture new information. This field is automatically set to 0 upon system reset (even if rstmgr is not reset). |
 
 ## CPU_INFO_ATTR
-Cpu info dump attributes.
+Cpu[0] info dump attributes.
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xf`
@@ -217,13 +217,13 @@ Cpu info dump attributes.
 {"reg": [{"name": "CNT_AVAIL", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                 |
-|:------:|:------:|:-------:|:----------|:------------------------------------------------------------|
-|  31:4  |        |         |           | Reserved                                                    |
-|  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the cpu info dump. |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                    |
+|:------:|:------:|:-------:|:----------|:---------------------------------------------------------------|
+|  31:4  |        |         |           | Reserved                                                       |
+|  3:0   |   ro   |   0x0   | CNT_AVAIL | The number of 32-bit values contained in the cpu[0] info dump. |
 
 ## CPU_INFO
-  Cpu dump information prior to last reset.
+  Cpu[0] dump information prior to last reset.
   Which value read is controlled by the [`CPU_INFO_CTRL`](#cpu_info_ctrl) register.
 - Offset: `0x28`
 - Reset default: `0x0`
