@@ -274,13 +274,12 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
-    bit            addr_phase_read = (!write && channel == AChannel);
-    bit            addr_phase_write = (write && channel == AChannel);
-    bit            data_phase_read = (!write && channel == DChannel);
-    bit            data_phase_write = (write && channel == DChannel);
+    bit            a_chan_read = (!write && channel == AChannel);
+    bit            a_chan_write = (write && channel == AChannel);
+    bit            d_chan_read = (!write && channel == DChannel);
+    bit            d_chan_write = (write && channel == DChannel);
 
     string         access_str = write ? "write" : "read";
-    string         channel_str = channel == AChannel ? "address" : "data";
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -291,25 +290,25 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     end
 
     // If incoming access is a write to a valid csr, update prediction right away.
-    if (addr_phase_write) begin
+    if (a_chan_write) begin
       `uvm_info(`gfn, $sformatf("Writing 0x%0x to %s", item.a_data, csr.get_name()), UVM_MEDIUM)
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
     // Process the csr req:
-    // - For write, update local variable and fifo at address phase.
-    // - For read, update prediction at address phase and compare at data phase.
+    // - For write, update local variable and fifo on the A channel.
+    // - For read, update prediction at A channel message and compare at D channel message.
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
         // FIXME
       end
       "extclk_ctrl_regwen": begin
-        if (addr_phase_write) extclk_ctrl_regwen = item.a_data;
+        if (a_chan_write) extclk_ctrl_regwen = item.a_data;
       end
       "extclk_ctrl": begin
         typedef logic [2*$bits(prim_mubi_pkg::mubi4_t) - 1:0] extclk_ctrl_t;
-        if (addr_phase_write && extclk_ctrl_regwen) begin
+        if (a_chan_write && extclk_ctrl_regwen) begin
           `DV_CHECK_EQ(extclk_ctrl_t'(item.a_data), {
                        cfg.clkmgr_vif.extclk_ctrl_csr_step_down, cfg.clkmgr_vif.extclk_ctrl_csr_sel
                        })
@@ -321,18 +320,18 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "jitter_regwen": begin
       end
       "jitter_enable": begin
-        if (addr_phase_write && `gmv(ral.jitter_regwen)) begin
+        if (a_chan_write && `gmv(ral.jitter_regwen)) begin
           `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
         end
       end
       "clk_enables": begin
-        if (addr_phase_write) begin
+        if (a_chan_write) begin
           `DV_CHECK_EQ(clk_enables_t'(item.a_data), cfg.clkmgr_vif.clk_enables_csr)
         end
       end
       "clk_hints": begin
         // Clearing a hint sets an expectation for the status to transition to zero.
-        if (addr_phase_write) begin
+        if (a_chan_write) begin
           `DV_CHECK_EQ(clk_hints_t'(item.a_data), cfg.clkmgr_vif.clk_hints_csr)
         end
       end
@@ -342,7 +341,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       "measure_ctrl_regwen": begin
-        if (addr_phase_write) measure_ctrl_regwen = item.a_data;
+        if (a_chan_write) measure_ctrl_regwen = item.a_data;
       end
       "io_meas_ctrl_en": begin
       end
@@ -376,7 +375,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-    if (data_phase_read) begin
+    if (d_chan_read) begin
       `uvm_info(`gfn, $sformatf("Reading 0x%0x from %s", item.d_data, csr.get_name()), UVM_MEDIUM)
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
