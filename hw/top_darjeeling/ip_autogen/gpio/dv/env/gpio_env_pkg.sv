@@ -55,6 +55,7 @@ package gpio_env_pkg;
 
   // package sources
   `include "gpio_agent/gpio_strap_agent_cfg.sv"
+  `include "gpio_agent/gpio_data_agent_cfg.sv"
   `include "gpio_env_cfg.sv"
   `include "seq_lib/gpio_seq_item.sv"
   `include "gpio_virtual_sequencer.sv"

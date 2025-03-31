@@ -26,27 +26,19 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     super.new(name);
   endfunction
 
-  // Read hw_straps_data_in and hw_straps_data_in_valid and
+  // Read hw_straps_data_in and hw_straps_data_in_valid
+  // in a shuffle order and
   // check they match the expected value in
   // the scoreboard
   task csr_strap_read();
-    uvm_status_e status_data_in;
-    uvm_status_e status_data_in_valid;
-
-    `uvm_info(`gfn, $sformatf("Reading the data_in status = %0d", status_data_in), UVM_HIGH)
-    ral.hw_straps_data_in.mirror(.status(status_data_in), .check(UVM_CHECK), .prior(100));
-    cfg.clk_rst_vif.wait_clks_or_rst(1);
-    `uvm_info(`gfn, $sformatf("Reading the data valid status = %0d",
-                              status_data_in_valid), UVM_HIGH)
-    ral.hw_straps_data_in_valid.mirror(.status(status_data_in_valid),
-                                       .check(UVM_CHECK),
-                                       .prior(100));
-    // Check for errors if is not under reset.
-    if (!cfg.clk_rst_vif.rst_n) begin
-      `uvm_info(`gfn, $sformatf("Reading ignored because is under reset"), UVM_LOW)
-    end else begin
-      `DV_CHECK_EQ(status_data_in, UVM_IS_OK)
-      `DV_CHECK_EQ(status_data_in_valid, UVM_IS_OK)
+    uvm_reg regs[$] = '{ral.hw_straps_data_in, ral.hw_straps_data_in_valid};
+    regs.shuffle();
+    foreach(regs[i]) begin
+      uvm_status_e status;
+      regs[i].mirror(.status(status), .check(UVM_CHECK), .prior(100));
+      if(status != UVM_IS_OK && !cfg.under_reset) begin
+        `uvm_error(`gfn, $sformatf("Error reading %s", regs[i].get_full_name()))
+      end
     end
   endtask : csr_strap_read
 

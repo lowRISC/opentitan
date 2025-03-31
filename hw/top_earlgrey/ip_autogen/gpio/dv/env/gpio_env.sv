@@ -11,9 +11,11 @@ class gpio_env extends cip_base_env #(
   `uvm_component_utils(gpio_env)
 
   gpio_strap_agent   m_strap_agent;
+  gpio_data_agent    m_data_agent;
   straps_vif         m_straps_vif;
   virtual clk_rst_if m_clk_rst_vif;
   gpio_vif           m_gpio_vif;
+  gpio_model         model;
 
   function new (string name, uvm_component parent = null);
     super.new (name, parent);
@@ -24,6 +26,15 @@ class gpio_env extends cip_base_env #(
 
     // Create and configure the gpio_strap_agent
     m_strap_agent = gpio_strap_agent::type_id::create("m_strap_agent", this);
+
+    // Create and configure the gpio_strap_agent
+    m_data_agent = gpio_data_agent::type_id::create("m_data_agent", this);
+
+    // Create and configure the gpio_strap_agent
+    model = gpio_model::type_id::create("model", this);
+
+    // Set the model in the config DB
+    uvm_config_db#(gpio_model)::set(this, "*", "gpio_model", model);
 
     if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", m_straps_vif)) begin
       `uvm_fatal("gpio_strap_driver", "Could not get m_straps_vif from uvm_config_db ")
@@ -43,7 +54,9 @@ class gpio_env extends cip_base_env #(
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     // Connect the strap monitor to the scoreboard
-    m_strap_agent.strap_monitor.mon_ap.connect(scoreboard.analysis_port);
+    m_strap_agent.strap_monitor.mon_ap.connect(scoreboard.strap_analysis_port);
+    // Connect the gpio data monitor to the scoreboard
+    m_data_agent.data_monitor.mon_ap.connect(scoreboard.data_analysis_port);
     // Register a strap agent sub-sequencer into the virtual sequencer
     // to be able to access it through the main sequence test.
     virtual_sequencer.register_sequencer("strap_sequencer", m_strap_agent.strap_sqr);

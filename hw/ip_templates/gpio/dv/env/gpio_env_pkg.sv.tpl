@@ -55,6 +55,7 @@ package ${module_instance_name}_env_pkg;
 
   // package sources
   `include "${module_instance_name}_agent/${module_instance_name}_strap_agent_cfg.sv"
+  `include "${module_instance_name}_agent/${module_instance_name}_data_agent_cfg.sv"
   `include "${module_instance_name}_env_cfg.sv"
   `include "seq_lib/${module_instance_name}_seq_item.sv"
   `include "${module_instance_name}_virtual_sequencer.sv"
