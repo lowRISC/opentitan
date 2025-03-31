@@ -52,13 +52,16 @@ exports_files(glob([
 opentitan_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
