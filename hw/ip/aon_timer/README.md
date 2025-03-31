@@ -38,7 +38,7 @@ When it reaches / exceeds the wake threshold and the prescaler reaches the value
 The level wakeup signal (`wkup_req_o`) stays high until there's a system reset or it's explicitly acknowledged by software by writing a 0 to the [`WKUP_CAUSE`](doc/registers.md#wkup_cause) register.
 To clear the level interrupt (`intr_wkup_timer_expired_o`) write 1 to the field [`INTR_STATE.wkup_timer_expired`](doc/registers.md#intr_state).
 Note that if [`WKUP_COUNT`](doc/registers.md#wkup_count) is not zeroed and remains at or above the wake threshold and the wakeup timer isn't disabled, the wakeup and interrupt will trigger again at the next clock tick.
-The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy). **TODO: specify accuracy**
+The wakeup timer can be used like a real-time clock for long periods in a low-power mode (though it does not give any guarantees of time-accuracy).
 
 ### AON Watchdog timer
 
