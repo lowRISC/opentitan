@@ -125,7 +125,7 @@ class gpio_base_vseq extends cip_base_vseq #(
   endtask : pgm_intr_regs
 
   // Wait a few cycles. If force_positive is true, wait at least one clock cycle.
-  // If a reset is detected wait for the reset process is done and return immediately.
+  // If a reset is detected, wait until the reset is released.
   task short_wait(bit force_positive);
     int unsigned delay;
     `DV_CHECK_FATAL(std::randomize(delay) with

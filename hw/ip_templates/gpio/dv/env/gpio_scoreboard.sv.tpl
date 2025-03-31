@@ -87,7 +87,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
       // apply pending update for `data_in` register
       if (data_in_update_queue.size() > 0) begin
         if (data_in_update_queue[$].needs_update == 1'b1 &&
-           (int'((crnt_time - data_in_update_queue[$].eval_time) / clk_period)) > 1) begin
+            (int'((crnt_time - data_in_update_queue[$].eval_time) / clk_period)) > 1) begin
           void'(ral.data_in.predict(.value(data_in_update_queue[$].reg_value),
                                     .kind(UVM_PREDICT_READ)));
         end else if(data_in_update_queue[$ - 1].needs_update == 1'b1) begin
@@ -103,7 +103,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
         // read on same or next clock will not give latest updated value. So, look for time stamp
         // of latest update to decide which value to predict for "intr_state" mirrored value
         if (intr_state_update_queue[$].needs_update == 1'b1 &&
-           (int'((crnt_time - intr_state_update_queue[$].eval_time) / clk_period)) > 1) begin
+            (int'((crnt_time - intr_state_update_queue[$].eval_time) / clk_period)) > 1) begin
           void'(ral.intr_state.predict(.value(intr_state_update_queue[$].reg_value),
                                        .kind(UVM_PREDICT_READ)));
         end else if(intr_state_update_queue[$ - 1].needs_update == 1'b1) begin
@@ -132,7 +132,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
           if (intr_state_update_queue.size() > 0) begin
             gpio_reg_update_due_t intr_state_write_to_clear_update = intr_state_update_queue[$];
             `uvm_info(`gfn, $sformatf("Entry taken out for clearing is %0p",
-                                       intr_state_write_to_clear_update), UVM_HIGH)
+                                      intr_state_write_to_clear_update), UVM_HIGH)
             // Update time
             intr_state_write_to_clear_update.eval_time = $time;
             for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
@@ -165,10 +165,10 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
                   if (cleared_intr_bits[each_bit]) begin
                     if (last_intr_update_except_clearing[each_bit]) begin
                       cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                      $sformatf("%0d", each_bit)}].sample(1'b1);
+                                          $sformatf("%0d", each_bit)}].sample(1'b1);
                     end else begin
                       cov.sticky_intr_cov[{"gpio_sticky_intr_pin",
-                      $sformatf("%0d", each_bit)}].sample(1'b0);
+                                          $sformatf("%0d", each_bit)}].sample(1'b0);
                     end
                   end
                 end
@@ -188,7 +188,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
           end else begin
             // Coverage Sampling: coverage on *out* and *oe* register values
             if (cfg.en_cov && (!uvm_re_match("*out*", csr.get_name()) ||
-            !uvm_re_match("*oe*", csr.get_name()))) begin
+                               !uvm_re_match("*oe*", csr.get_name()))) begin
               for (uint each_pin = 0; each_pin < NUM_GPIOS; each_pin++) begin
                 cov.out_oe_cov_objs[each_pin][csr.get_name()].sample(item.a_data[each_pin]);
               end
@@ -198,7 +198,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
                 {mask, data} = item.a_data;
                 for (uint each_pin = 0; each_pin < NUM_GPIOS/2; each_pin++) begin
                   cov.out_oe_mask_data_cov_objs[each_pin][csr.get_name()].var1_var2_cg.sample(
-                  mask[each_pin], data[each_pin]);
+                      mask[each_pin], data[each_pin]);
                 end
               end
             end
@@ -216,12 +216,12 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
       end // if (write)
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
-        % for cnt_idx in range(num_inp_period_counters):
+% for cnt_idx in range(num_inp_period_counters):
         if (csr.get_name() == "inp_prd_cnt_val_${cnt_idx}") begin
           // TODO(#26544): Check values read from all input period counters.
           do_read_check = 1'b0;
         end
-        % endfor
+% endfor
         // If do_read_check, is set, then check mirrored_value against item.d_data
         if (do_read_check) begin
           // Checker-2: Check if reg read data matches expected value or not
@@ -229,8 +229,8 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
           // Checker-3: Check value of interrupt pins against predicted value
           if (csr.get_name() == "intr_state") begin
             bit [TL_DW-1:0] intr_state = (intr_state_update_queue.size() > 0) ?
-                                          intr_state_update_queue[$].reg_value :
-                                          csr.get_mirrored_value();
+                                         intr_state_update_queue[$].reg_value :
+                                         csr.get_mirrored_value();
             bit [TL_DW-1:0] pred_val_intr_pins = intr_state &
                                                  ral.intr_enable.get_mirrored_value();
             // according to issue #841, interrupt is a flop and the value will be updated after one
@@ -257,7 +257,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
     forever begin : monitor_pins_if
       @(cfg.gpio_vif.pins or cfg.under_reset);
       `uvm_info(`gfn, $sformatf("cfg.gpio_vif.pins = %0h, under_reset = %0b",
-      cfg.gpio_vif.pins, cfg.under_reset), UVM_HIGH)
+                                cfg.gpio_vif.pins, cfg.under_reset), UVM_HIGH)
       if (cfg.under_reset == 1'b0) begin
         // Coverage Sampling: gpio pin values' coverage
         if (cfg.en_cov) begin
@@ -273,14 +273,14 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
             gpio_i_driven[pin_num] = 1'bz;
           end
           `uvm_info(`gfn, $sformatf("pins_oe[%0d] = %0b pins_o[%0d] = %0b gpio_i_driven[%0d] = %0b",
-                                     pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
-                                     cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
-                                     UVM_HIGH)
+                                    pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
+                                    cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
+                                    UVM_HIGH)
         end
 
         `uvm_info(`gfn, $sformatf("pins = 0x%0h [%0b]) gpio_i_driven = 0x%0h [%0b]",
-                                   cfg.gpio_vif.pins, cfg.gpio_vif.pins, gpio_i_driven,
-                                   gpio_i_driven), UVM_HIGH)
+                                  cfg.gpio_vif.pins, cfg.gpio_vif.pins, gpio_i_driven,
+                                  gpio_i_driven), UVM_HIGH)
         // Predict effect on gpio pins
         gpio_predict_and_compare();
 
@@ -291,7 +291,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
           gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
           foreach (prev_gpio_i[pin]) begin
             gpio_i_transition[pin].transition_occurred =
-            (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
+                (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
             if (gpio_i_transition[pin].transition_occurred) begin
               case (cfg.gpio_vif.pins[pin])
                 1'b0: begin
@@ -345,9 +345,9 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
         prv_gpio_i_pins_o = cfg.gpio_vif.pins_o;
         prv_gpio_i_pins_oe = cfg.gpio_vif.pins_oe;
         `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_o = 0x%0h [%0b]",
-                  prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
+                                  prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
         `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_oe = 0x%0h [%0b]",
-                  prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
+                                  prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
       end
 
     end // monitor_pins_if
@@ -373,9 +373,9 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
   virtual task update_gpio_straps_regs(logic [NUM_GPIOS-1:0] gpio_i_sampled, bit data_valid);
     // Update data_in and data_in_valid ral register value based on result of input
     `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(gpio_i_sampled),
-                    .kind(UVM_PREDICT_READ)));
+                                                  .kind(UVM_PREDICT_READ)));
     `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value(data_valid),
-                    .kind(UVM_PREDICT_READ)));
+                                                  .kind(UVM_PREDICT_READ)));
   endtask : update_gpio_straps_regs
 
   // Task: monitor_gpio_straps
@@ -383,6 +383,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T (g
   // and checks the straps output signal after the first strap trigger
   virtual task monitor_gpio_straps();
     logic [NUM_GPIOS-1:0] gpio_i_sampled;
+
     forever begin : monitor_gpio_straps
       @(cfg.straps_vif_inst.tb_port.strap_en or cfg.under_reset) begin
         wait(!cfg.under_reset);

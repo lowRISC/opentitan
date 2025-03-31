@@ -26,10 +26,8 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     super.new(name);
   endfunction
 
-  // Read hw_straps_data_in and hw_straps_data_in_valid
-  // in a shuffle order and
-  // check they match the expected value in
-  // the scoreboard
+  // Read hw_straps_data_in and hw_straps_data_in_valid in a shuffle order and check they match the
+  // expected value in the scoreboard.
   task csr_strap_read();
     uvm_reg regs[$] = '{ral.hw_straps_data_in, ral.hw_straps_data_in_valid};
     regs.shuffle();
@@ -53,7 +51,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     // Trigger the snapshot of gpio_in to be stored in the straps registers
     cfg.straps_vif_inst.tb_port.strap_en = 1;
     // Wait at least one clock cycle to update the strap register values.
-    cfg.clk_rst_vif.wait_clks_or_rst(1);
+    cfg.clk_rst_vif.wait_clks_or_rst(2);
     if (!cfg.clk_rst_vif.rst_n) return;
     // Read the hw_straps_data_in registers and check the expected value in the scoreboard
     csr_strap_read();
@@ -90,10 +88,9 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     if (!cfg.clk_rst_vif.rst_n) return;
   endtask : test_straps_gpio_out
 
-  // This task start the strap en test. First it will test the strap enable
-  // with the driven gpio_i. On a second step drive the gpio_out and check the strap
-  // registers based on that. And finally applies a second reset and check if the strap registers
-  // are reseted.
+  // This task start the strap en test. First it will test the strap enable with the driven gpio_i.
+  // On a second step drive the gpio_out and check the strap registers based on that. And finally
+  // applies a second reset and check if the strap registers are reseted.
   task start_test();
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
