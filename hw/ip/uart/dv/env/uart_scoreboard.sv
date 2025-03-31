@@ -395,6 +395,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                     rx_enabled, uart_rx_clk_pulses))
               end
             end
+            default: `uvm_fatal(`gfn, $sformatf("invalid channel: %0p", channel))
           endcase
         end // if (!write)
       end // status
@@ -508,6 +509,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                 cov.rx_fifo_level_cg.sample(.lvl(rxlvl_act), .rst(0));
               end
             end
+            default: `uvm_fatal(`gfn, $sformatf("invalid channel: %0p", channel))
           endcase
         end
       end
