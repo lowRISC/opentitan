@@ -1,9 +1,0 @@
-# Copyright lowRISC contributors (OpenTitan project).
-# Licensed under the Apache License, Version 2.0, see LICENSE for details.
-# SPDX-License-Identifier: Apache-2.0
-#
-# waiver file for aon_timer
-
-# This waiver applies to prim_sync_slow_fast but needs to be applied to the instantiating module
-waive -rules {CLOCK_USE} -location {aon_timer.sv} -regexp {'clk_aon_i' is connected to 'prim_sync_slow_fast' port} \
-      -comment "The slow to fast sync primitive samples this clock edge as a data input"
