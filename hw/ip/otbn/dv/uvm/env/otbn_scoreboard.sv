@@ -286,9 +286,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t       csr_addr;
     otbn_exp_read_data_t exp_read_data;
 
-    // The data-channel response to a write is just an ack, which isn't particularly interesting.
-    // Check for integrity errors (which should lock the block), but otherwise there's nothing to
-    // do.
+    // The D channel response to a write is just an ack, which isn't particularly interesting. Check
+    // for integrity errors (which should lock the block), but otherwise there's nothing to do.
     if (item.is_write()) begin
       if (item.d_error) locked = 1'b1;
       return;

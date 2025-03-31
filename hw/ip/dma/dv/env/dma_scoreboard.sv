@@ -291,7 +291,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
       // Push addr item to source queue
       src_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for source item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for source item"), UVM_HIGH)
 
       // Update the count of bytes read from the source.
       // Note that this is complicated by the fact that the TL-UL host adapter always fetches
@@ -315,7 +315,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       intr_source = intr_addr_lookup(a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
-      `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("A channel checks done for destination item"), UVM_HIGH)
 
       // The range of memory addresses that should be touched by the DMA controller depends upon
       // whether chunks overlap.
@@ -466,7 +466,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAckData},
                 $sformatf("Invalid opcode %s for source data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in source queue", queue_idx),
                 UVM_HIGH)
       src_queue.delete(queue_idx);
@@ -487,7 +487,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Check if data item opcode is as expected
       `DV_CHECK(d_opcode inside {AccessAck},
                 $sformatf("Invalid opcode %s for destination data item", d_opcode))
-      // Delete after all checks related to data channel are done
+      // Delete after all checks related to D channel are done
       `uvm_info(`gfn, $sformatf("Deleting element at %d index in destination queue", queue_idx),
                 UVM_HIGH)
       dst_queue.delete(queue_idx);
@@ -507,8 +507,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end else if (got_dest_item) begin
       // Is this the final destination write?
       //
-      // Note: we must perform this on the data channel (write response) because an error may occur
-      //       on the very final write transaction, in which case DONE should not be seen.
+      // Note: we must perform this on the D channel (write response) because an error may occur on
+      //       the very final write transaction, in which case DONE should not be seen.
       if (num_bytes_transferred >= exp_bytes_transferred) begin
         // Whether an interrupt is expected also depends upon whether it is enabled.
         // Have we yet completed the entire transfer?

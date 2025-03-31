@@ -121,8 +121,8 @@ Please refer to the covergroups section under [testplan](#testplan) for coverpoi
 #### Scoreboard
 The `kmac_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: TL address channel
-* tl_d_chan_fifo: TL data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 * kmac_app_req_fifo[NUM_APP_INTF]: An array of analysis FIFOs to hold request transactions coming from the various application interfaces
 * kmac_app_rsp_fifo[NUM_APP_INTF]: An array of analysis FIFOs to hold response transactions coming from the various application interfaces
 * edn_fifo: FIFO used to hold transactions coming from the EDN interface

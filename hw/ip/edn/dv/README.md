@@ -78,7 +78,7 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `edn_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo, tl_d_chan_fifo:           These 2 fifos provide transaction items at the end of Tilelink address channel and data channel respectively
+* `tl_a_chan_fifo`, `tl_d_chan_fifo`: These 2 fifos provide transaction items at the end of Tilelink A and D channel, respectively
 <!-- * analysis port1:
 * analysis port2:
 explain inputs monitored, flow of data and outputs checked -->

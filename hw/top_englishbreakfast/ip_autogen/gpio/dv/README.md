@@ -84,8 +84,8 @@ To ensure high quality constrained random stimulus, it is necessary to develop a
 #### Scoreboard
 The `gpio_scoreboard` is primarily used for end to end checking.
 It creates the following tlm analysis fifos to retrieve the data monitored by tlul interface agent monitors:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 
 GPIO scoreboard monitors all valid GPIO CSR register accesses, activity on GPIO IOs, and interrupt pins. For any monitored write transaction, CSR values are updated in RAL. Based on monitored activity, GPIO scoreboard predicts updated values of required CSRs.
 

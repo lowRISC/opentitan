@@ -449,9 +449,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // Checks if the TL access is valid.
   //
-  // On the Addr channel, returns 1 if the item should cause a TL error.
+  // On the A channel, returns 1 if the item should cause a TL error.
   //
-  // On the Data channel, this also asserts that the item's D channel integrity is correct (because
+  // On the D channel, this also asserts that the item's D channel integrity is correct (because
   // the DUT should never inject errors) and that item.d_error matches the prediction (to check that
   // the DUT correctly spots TL errors on the A channel). If TL integrity generation is enabled,
   // this also calls update_tl_alert_field_prediction() to update the mirrored value of any "I've

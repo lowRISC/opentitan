@@ -78,7 +78,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // grab completed transactions from data channel; ignore packets from address channel
+    // grab completed transactions from D channel; ignore packets from A channel
     if (channel == AChannel) begin
       // Clock period in nano seconds (timeunit)
       real clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;

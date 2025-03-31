@@ -78,7 +78,7 @@ interface dma_sys_tl_if
                         !addr_matches;
 
   assign tl_h2d = '{
-    // Host->device address channel
+    // Host->device A channel
     a_valid:   h2d_a_valid,
     a_opcode:  h2d_opcode,
     a_param:   3'b0,
