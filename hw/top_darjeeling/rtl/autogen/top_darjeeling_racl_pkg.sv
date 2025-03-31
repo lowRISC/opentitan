@@ -71,6 +71,22 @@ package top_darjeeling_racl_pkg;
     RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
 
   /**
+   * Policy selection vector for mbx3
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   */
+  parameter racl_policy_sel_t RACL_POLICY_SEL_VEC_MBX3_SOC [4] = '{
+    RACL_POLICY_SEL_ALL_RD_WR,   // 0 SOC_CONTROL           : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR,   // 1 SOC_STATUS            : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR,   // 2 SOC_DOE_INTR_MSG_ADDR : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR    // 3 SOC_DOE_INTR_MSG_DATA : Policy Idx 0
+  };
+  parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX3_SOC_WDATA =
+    RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
+  parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX3_SOC_RDATA =
+    RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
+
+  /**
    * Policy selection vector for mbx4
    *   TLUL interface name: soc
    *   RACL group: Null
@@ -100,6 +116,22 @@ package top_darjeeling_racl_pkg;
   parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX5_SOC_WDATA =
     RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
   parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX5_SOC_RDATA =
+    RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
+
+  /**
+   * Policy selection vector for mbx6
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   */
+  parameter racl_policy_sel_t RACL_POLICY_SEL_VEC_MBX6_SOC [4] = '{
+    RACL_POLICY_SEL_ALL_RD_WR,   // 0 SOC_CONTROL           : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR,   // 1 SOC_STATUS            : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR,   // 2 SOC_DOE_INTR_MSG_ADDR : Policy Idx 0
+    RACL_POLICY_SEL_ALL_RD_WR    // 3 SOC_DOE_INTR_MSG_DATA : Policy Idx 0
+  };
+  parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX6_SOC_WDATA =
+    RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
+  parameter racl_policy_sel_t RACL_POLICY_SEL_WIN_MBX6_SOC_RDATA =
     RACL_POLICY_SEL_ALL_RD_WR;   // Policy Idx 0
 
   /**

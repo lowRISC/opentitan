@@ -5,10 +5,13 @@
 module mbx_hostif
   import mbx_reg_pkg::*;
 #(
-    parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-    parameter int unsigned CfgSramAddrWidth      = 32,
-    parameter int unsigned CfgSramDataWidth      = 32,
-    parameter int unsigned CfgObjectSizeWidth    = 11
+    parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
+    parameter int unsigned                    CfgSramAddrWidth                  = 32,
+    parameter int unsigned                    CfgSramDataWidth                  = 32,
+    parameter int unsigned                    CfgObjectSizeWidth                = 11,
+    parameter bit                             EnableRacl                        = 1'b0,
+    parameter bit                             RaclErrorRsp                      = 1'b1,
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecCore[NumRegsCore] = '{NumRegsCore{0}}
 ) (
   input  logic                          clk_i,
   input  logic                          rst_ni,
@@ -59,7 +62,10 @@ module mbx_hostif
   input  logic [CfgSramAddrWidth-1:0]   sysif_intr_msg_addr_i,
   input  logic [CfgSramDataWidth-1:0]   sysif_intr_msg_data_i,
   // Control inputs coming from the system registers interface
-  input  logic                          sysif_control_abort_set_i
+  input  logic                          sysif_control_abort_set_i,
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o
 );
   mbx_reg_pkg::mbx_core_reg2hw_t reg2hw;
   mbx_reg_pkg::mbx_core_hw2reg_t hw2reg;
@@ -97,14 +103,20 @@ module mbx_hostif
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: ADDRESS_RANGE.CONFIG.REGWEN_MUBI
-  mbx_core_reg_top u_regs(
-    .clk_i      ( clk_i         ),
-    .rst_ni     ( rst_ni        ),
-    .tl_i       ( tl_host_i     ),
-    .tl_o       ( tl_host_o     ),
-    .reg2hw     ( reg2hw        ),
-    .hw2reg     ( hw2reg        ),
-    .intg_err_o ( tlul_intg_err )
+  mbx_core_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVecCore)
+  ) u_regs(
+    .clk_i           ( clk_i           ),
+    .rst_ni          ( rst_ni          ),
+    .tl_i            ( tl_host_i       ),
+    .tl_o            ( tl_host_o       ),
+    .reg2hw          ( reg2hw          ),
+    .hw2reg          ( hw2reg          ),
+    .racl_policies_i ( racl_policies_i ),
+    .racl_error_o    ( racl_error_o    ),
+    .intg_err_o      ( tlul_intg_err   )
   );
 
   logic intr_ready_de, intr_abort_de, intr_error_de;

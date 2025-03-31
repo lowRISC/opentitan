@@ -19,7 +19,7 @@
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "core" }
+    { protocol: "tlul", direction: "device", name: "core", racl_support: true }
     { protocol: "tlul", direction: "host",   name: "sram" }
     { protocol: "tlul", direction: "device", name: "soc", racl_support: true }
   ]

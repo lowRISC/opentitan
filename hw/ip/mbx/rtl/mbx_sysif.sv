@@ -63,7 +63,6 @@ module mbx_sysif
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
   output top_racl_pkg::racl_error_log_t  racl_error_o
 );
-  import mbx_reg_pkg::*;
 
   mbx_soc_reg2hw_t reg2hw;
   mbx_soc_hw2reg_t hw2reg;
