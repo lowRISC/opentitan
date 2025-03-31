@@ -54,8 +54,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // gpio model
   gpio_model model;
 
+  semaphore sema;
+
   function new (string name = "gpio_scoreboard", uvm_component parent = null);
     super.new (name, parent);
+    sema = new(1);
   endfunction
 
   // Function: build_phase
@@ -87,7 +90,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
 
     // Assign the item gpio_i to the previous gpio_i
-    prev_gpio_i = item.cio_gpio_i;
+    prev_gpio_i = item.pins;
 
     // Coverage Sampling: gpio pin values' coverage
     sample_data_coverage();
@@ -95,34 +98,105 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     `uvm_info(`gfn, $sformatf("Check gpio_i_driven = 0x%0h [%0b]", gpio_i_driven, gpio_i_driven),
       UVM_HIGH)
 
-    // Based on pins output enable, evaluate the driven values
-    // should be from gpio_i or 1'bz.
-    gpio_i_driven = model.evaluate_data_in_out();
+    `uvm_info(`gfn, $sformatf("gpio_i_driven evaluated = 0x%0h", gpio_i_driven),
+      UVM_HIGH)
 
     `uvm_info(`gfn, $sformatf("Check prev_gpio_i = 0x%0h [%0b]", prev_gpio_i, prev_gpio_i),
       UVM_HIGH)
 
+    // evaluate gpio input driven to dut
+    foreach (cfg.gpio_vif.pins_oe[pin_num]) begin
+      if (cfg.gpio_vif.pins_oe[pin_num] == 1'b1) begin
+        gpio_i_driven[pin_num] = cfg.gpio_vif.pins_o[pin_num];
+      end else begin
+        gpio_i_driven[pin_num] = 1'bz;
+      end
+      `uvm_info(`gfn, $sformatf("pins_oe[%0d] = %0b pins_o[%0d] = %0b gpio_i_driven[%0d] = %0b",
+          pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
+          cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
+        UVM_HIGH)
+    end
+
+    `uvm_info(`gfn, $sformatf("pins = 0x%0h [%0b]) gpio_i_driven = 0x%0h [%0b]",
+        cfg.gpio_vif.pins, cfg.gpio_vif.pins, gpio_i_driven,
+        gpio_i_driven), UVM_HIGH)
+
     // Predict effect on gpio pins and check.
-    gpio_predict_and_compare();
+    gpio_predict_and_compare(null, item);
 
     if (prev_gpio_i !== cfg.gpio_vif.pins) begin
-      model.process_gpio_transition(gpio_i_transition);
+      // Flag to indicate:
+      // (i) if there was any change in value on gpio_i pin - Bit0
+      // (ii) what change occurred on gpio_i pin - Bit1
+      gpio_transition_t [NUM_GPIOS-1:0] gpio_i_transition;
+      foreach (prev_gpio_i[pin]) begin
+        gpio_i_transition[pin].transition_occurred =
+          (cfg.gpio_vif.pins[pin] !== prev_gpio_i[pin]);
+        if (gpio_i_transition[pin].transition_occurred) begin
+          case (cfg.gpio_vif.pins[pin])
+            1'b0: begin
+              // Negedge seen on pin, indicated by 0 value
+              gpio_i_transition[pin].is_rising_edge = 1'b0;
+            end
+            1'b1: begin
+              // Posedge seen on pin, indicated by 1 value
+              gpio_i_transition[pin].is_rising_edge = 1'b1;
+            end
+            1'bz: begin
+              if (prev_gpio_i[pin] === 1'b1) begin
+                // Negedge seen on pin, indicated by 0 value
+                gpio_i_transition[pin].is_rising_edge = 1'b0;
+              end else if (prev_gpio_i[pin] === 1'b0) begin
+                // Posedge seen on pin, indicated by 1 value
+                gpio_i_transition[pin].is_rising_edge = 1'b1;
+              end else begin
+                // x->z does not indicate useful transition, reset transition bit
+                gpio_i_transition[pin].transition_occurred = 1'b0;
+              end
+            end
+            1'bx: begin
+              if (prev_gpio_i[pin] === 1'b1) begin
+                // Negedge seen on pin, indicated by 0 value
+                gpio_i_transition[pin].is_rising_edge = 1'b0;
+              end else if (prev_gpio_i[pin] === 1'b0) begin
+                // Posedge seen on pin, indicated by 1 value
+                gpio_i_transition[pin].is_rising_edge = 1'b1;
+              end else begin
+                // z->x does not indicate useful transition, reset transition bit
+                gpio_i_transition[pin].transition_occurred = 1'b0;
+              end
+            end
+            default: begin
+              `uvm_info(`gfn, "gpio pin undefined!", UVM_HIGH)
+            end
+          endcase
+        end
+      end
+      foreach (gpio_i_transition[ii]) begin
+        `uvm_info(`gfn, $sformatf("gpio_i_transition[%0d] = %0p", ii, gpio_i_transition[ii]),
+          UVM_HIGH)
+      end
       `uvm_info(`gfn, "Calling gpio_interrupt_predict from monitor_pins_if", UVM_HIGH)
       // Look for interrupt event and update interrupt status
       gpio_interrupt_predict(gpio_i_transition);
       // Update value
       prev_gpio_i = cfg.gpio_vif.pins;
       `uvm_info(`gfn, $sformatf("updated prev_gpio_i = 0x%0h [%0b]", prev_gpio_i, prev_gpio_i),
-      UVM_HIGH)
+        UVM_HIGH)
     end
-
     // Update "previous pins if out and out enable" values
     prv_gpio_i_pins_o = cfg.gpio_vif.pins_o;
     prv_gpio_i_pins_oe = cfg.gpio_vif.pins_oe;
     `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_o = 0x%0h [%0b]",
-    prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
+        prv_gpio_i_pins_o, prv_gpio_i_pins_o), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("prv_gpio_i_pins_oe = 0x%0h [%0b]",
-    prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
+        prv_gpio_i_pins_oe, prv_gpio_i_pins_oe), UVM_HIGH)
+
+    fork
+      // Blocks the current thread until the semaphore is released
+      // by the process_tl_access task.
+      sema.put(1);
+    join_none
 
   endfunction : write_data
 
@@ -140,30 +214,42 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   virtual function void write_strap(gpio_seq_item item);
     logic [NUM_GPIOS-1:0] gpio_i_sampled;
     // Get the gpio_i input data from the monitor.
-    gpio_i_sampled = item.cio_gpio_i;
+    gpio_i_sampled = item.pins;
 
     if(item.strap_en_i == 1'b1) begin
-      // Update the register model.
       update_straps_regs(gpio_i_sampled, 'b1);
+    end else begin
+      update_straps_regs('b0, 'b0);
+    end
+    // Check the strap output data and valid for all the gpio pins
+    check_straps(gpio_i_sampled, item.strap_en_i, item);
+  endfunction : write_strap
+
+  // Function: check_straps
+  // Check the strap output data and valid for all the gpio pins
+  // except when the data output is enabled.
+  function void check_straps(logic [NUM_GPIOS-1:0] sampled,
+                             bit strap_en_i,
+                             gpio_seq_item item);
+    if(strap_en_i == 1'b1) begin
       // Checker: Compare those values of gpio pins
       // against the output strap_data.
-      `DV_CHECK_CASE_EQ(gpio_i_sampled, item.sampled_straps_o.data)
+      `DV_CHECK_CASE_EQ(sampled, item.sampled_straps_o.data)
       // Check the output data_in_valid
       `DV_CHECK_CASE_EQ('b1, item.sampled_straps_o.valid)
     end else begin
-      update_straps_regs('b0, 'b0);
       // Checker: Compare if the values are zero if the strap is disabled.
       `DV_CHECK_CASE_EQ('b0, item.sampled_straps_o.data)
       // Check the register hw_straps_data_in_valid zero value.
       `DV_CHECK_CASE_EQ('b0, item.sampled_straps_o.valid)
     end
-  endfunction : write_strap
+  endfunction : check_straps
 
-  virtual function void update_straps_regs(logic [NUM_GPIOS-1:0] sampled, bit data_valid);
+  virtual function void update_straps_regs(logic [NUM_GPIOS-1:0] pin_data, bit data_valid);
     // Update data_in valid register value based on result of input
     `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value(data_valid),
                                                         .kind(UVM_PREDICT_DIRECT)));
-    `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(sampled),
+    `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(pin_data),
                                                   .kind(UVM_PREDICT_DIRECT)));
   endfunction : update_straps_regs
 
@@ -318,6 +404,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
         `uvm_info(`gfn, "Calling gpio_predict_and_compare on reg write", UVM_HIGH)
         gpio_predict_and_compare(csr);
+        // Release semaphore to indicate that the process_tl_access task
+        // has completed its work and the next task can proceed.
+        sema.get(1);
       end // if (write)
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
@@ -480,7 +569,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   endfunction : actual_gpio_i_activity
 
   // Function : gpio_predict_and_compare
-  function void gpio_predict_and_compare(uvm_reg csr = null);
+  function void gpio_predict_and_compare(uvm_reg csr = null, gpio_seq_item item = null);
     string msg_id = {`gfn, " gpio_predict_and_compare: "};
     // Predicted value of "pins" from within gpio_vif
     logic [NUM_GPIOS-1:0] pred_val_gpio_pins;
@@ -598,11 +687,11 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     end
 
     // Check gpio_i_driven value
-    check_gpio_data(
-    gpio_data_check,
-    pred_val_gpio_pins,
-    csr,
-    msg_id);
+    check_gpio_data (gpio_data_check,
+                     pred_val_gpio_pins,
+                     csr,
+                     msg_id,
+                     item);
 
   endfunction : gpio_predict_and_compare
 
@@ -611,8 +700,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     bit gpio_data_check,
     logic [NUM_GPIOS-1:0] pred_val_gpio_pins,
     uvm_reg csr = null,
-    string msg_id
-    );
+    string msg_id,
+    gpio_seq_item item = null
+  );
     // GPIO inout signal value check
     if (gpio_data_check == 1'b1) begin
       // effect of gpio_o on gpio_i based on gpio_oe
@@ -633,7 +723,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
       // Predict effective value of common wire that-
       // (i) drives gpio_i, and
-      // (ii) gets driven by gpio_o based on gpiooe value
+      // (ii) gets driven by gpio_o based on gpio output enable value
       for (uint pin_num = 0; pin_num < NUM_GPIOS; pin_num++) begin
         if (data_out_effect_on_gpio_i[pin_num] === 1'bz) begin
           pred_val_gpio_pins[pin_num] = gpio_i_driven[pin_num];
@@ -680,15 +770,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end
       // If update was due to register write, we can call predict right away
       if (csr != null) begin
+        `uvm_info(`gfn, $sformatf("Update predict data_in = %0h", pred_val_gpio_pins), UVM_HIGH)
         // Update data_in register value based on result of input and output
         void'(ral.data_in.data_in.predict(.value(pred_val_gpio_pins), .kind(UVM_PREDICT_DIRECT)));
       end
 
       // Checker-1: Compare predicted and actual values of gpio pins
       // Avoid calling this checker due to weak pull-up or pull-down effect
-      if ((csr != null) ||
-      ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
-        `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
+      if (((csr != null) ||
+      ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) && item != null) begin
+        `DV_CHECK_CASE_EQ(pred_val_gpio_pins, item.pins)
       end
     end
   endfunction : check_gpio_data

@@ -60,11 +60,11 @@ class gpio_data_monitor extends dv_base_monitor #(
   // monitor gpio input pins interface
   virtual task monitor_gpio_data();
     forever begin : monitor_pins_if
-      @(m_gpio_vif.pins);
-      if (m_clk_rst_vif.rst_n) begin
+      @(m_gpio_vif.pins or m_env_cfg.under_reset);
+      if (m_env_cfg.under_reset == 1'b0) begin
         `uvm_info(`gfn, "Sending pins data to the scoreboard", UVM_HIGH)
         item = new();
-        item.cio_gpio_i = m_gpio_vif.pins;
+        item.pins = m_gpio_vif.pins;
         // Send the sampled gpio pins to the gpio scoreboard.
         mon_ap.write(item);
       end

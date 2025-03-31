@@ -63,8 +63,8 @@ class gpio_strap_monitor extends dv_base_monitor #(.ITEM_T(uvm_sequence_item),
         //Wait for the reset to be de-asserted
         wait(!m_gpio_env_cfg.under_reset);
         // Get the gpio data in
-        item.cio_gpio_i = m_gpio_vif.pins;
-        // Wait for one clock cycle to update the registers
+        item.pins = m_gpio_vif.pins;
+        // Wait for 1 clock cycle to get the updated output values.
         m_clk_rst_vif.wait_clks(2);
 
         item.strap_en_i = m_straps_vif.strap_en;

@@ -65,33 +65,34 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
   endtask : set_strap_en
 
   task test_straps_gpio_in();
-
+    // Drive the gpio_in
     drive_gpio_in(gpio_in);
     cfg.clk_rst_vif.wait_clks_or_rst(1);
-
     // Random wait to drive the strap_en
     short_wait(0);
     if (!cfg.clk_rst_vif.rst_n) return;
-
     // Trigger the snapshot of gpio_in to be stored in the straps registers
-    set_strap_en('b1);
-    if (!cfg.clk_rst_vif.rst_n) return;
+    cfg.straps_vif_inst.tb_port.strap_en = 1;
     // Wait at least one clock cycle to update the strap register values.
     cfg.clk_rst_vif.wait_clks_or_rst(4);
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Read the hw_straps_data_in registers and check the expected value in the scoreboard
     csr_strap_read();
     cfg.clk_rst_vif.wait_clks_or_rst(1);
     // Random wait
     short_wait(0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Stop driving gpio_in to make sure that, this is not affecting the strap_en registers
     // so it will keep the same values were stored before.
     undrive_gpio_in();
     cfg.clk_rst_vif.wait_clks_or_rst(1);
     // Random wait
     short_wait(1);
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Read to make sure that if does not affect the straps registers after undrive the gpio_in
     csr_strap_read();
     cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (!cfg.clk_rst_vif.rst_n) return;
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
@@ -100,11 +101,14 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     cfg.gpio_vif.drive_en('0);
     csr_wr(ral.direct_out, gpio_out);
     cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (!cfg.clk_rst_vif.rst_n) return;
     csr_wr(ral.direct_oe, gpio_oe);
-    cfg.clk_rst_vif.wait_clks_or_rst(2);
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Read to make sure that if does not affect the straps registers after drive the gpio_out
     csr_strap_read();
     cfg.clk_rst_vif.wait_clks_or_rst(1);
+    if (!cfg.clk_rst_vif.rst_n) return;
   endtask : test_straps_gpio_out
 
   task start_test();

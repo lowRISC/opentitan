@@ -36,17 +36,17 @@ class gpio_model #(int NUM_GPIOS = 32) extends uvm_component;
   endfunction
 
   // Function: Evaluate gpio input driven to dut.
-  function automatic pins_t evaluate_data_in_out();
-    foreach (cfg.gpio_vif.pins_oe[pin_num]) begin
-      if (cfg.gpio_vif.pins_oe[pin_num] == 1'b1) begin
-        gpio_i_driven[pin_num] = cfg.gpio_vif.pins_o[pin_num];
+  function automatic pins_t evaluate_data_in_out(gpio_seq_item item);
+    foreach (item.cio_gpio_oe[pin_num]) begin
+      if (item.cio_gpio_oe[pin_num] == 1'b1) begin
+        gpio_i_driven[pin_num] = item.cio_gpio_o[pin_num];
       end else begin
         gpio_i_driven[pin_num] = 1'bz;
       end
 
       `uvm_info(`gfn, $sformatf("pins_oe[%0d] = %0b pins_o[%0d] = %0b gpio_i_driven[%0d] = %0b",
-      pin_num, cfg.gpio_vif.pins_oe[pin_num], pin_num,
-      cfg.gpio_vif.pins_o[pin_num], pin_num, gpio_i_driven[pin_num]),
+      pin_num, item.cio_gpio_oe[pin_num], pin_num,
+      item.cio_gpio_o[pin_num], pin_num, gpio_i_driven[pin_num]),
       UVM_HIGH)
 
       return gpio_i_driven;
@@ -113,4 +113,3 @@ class gpio_model #(int NUM_GPIOS = 32) extends uvm_component;
     end
 endfunction
 endclass : gpio_model
-
