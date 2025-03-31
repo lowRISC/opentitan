@@ -81,9 +81,11 @@ EARLGREY_SKUS = {
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/rom_ext/sival:sival_owner"],
         "rom_ext": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
-        # TODO(cfrantz, ttrippel): This owner_fw isn't signed with the sival owner keys,
-        # so we expect the ROM_EXT to BFV with `kErrorOwnershipKeyNotFound`,
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
+        # TODO(cfrantz, ttrippel): This owner_fw isn't signed with the sival owner keys,
+        # so we expect the ROM_EXT to BFV with `kErrorOwnershipKeyNotFound`. Therefore,
+        # we mark success when the ROM_EXT detects a valid ownership state.
+        "owner_fw_boot_str": "ownership: OWND",
         "ecdsa_key": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
         "spx_key": {},
         "signature_prefix": None,
