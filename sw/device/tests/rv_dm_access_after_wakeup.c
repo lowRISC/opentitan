@@ -45,7 +45,7 @@ static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtSysrstCtrlCount >= 1,
               "this test expects at least one sysrst_ctrl");
-static const dt_sysrst_ctrl_t kSysrtCtrlDt = 0;
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
 static const dt_pinmux_t kPinmuxDt = 0;
 
@@ -79,8 +79,9 @@ static void put_to_sleep(dif_pwrmgr_t *pwrmgr, bool deep_sleep) {
 
   dif_pwrmgr_request_sources_t wakeup_sources;
   CHECK_DIF_OK(dif_pwrmgr_find_request_source(
-      pwrmgr, kDifPwrmgrReqTypeWakeup, dt_sysrst_ctrl_instance_id(kSysrtCtrlDt),
-      kDtSysrstCtrlWakeupWkupReq, &wakeup_sources));
+      pwrmgr, kDifPwrmgrReqTypeWakeup,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
+      &wakeup_sources));
   CHECK_STATUS_OK(
       pwrmgr_testutils_enable_low_power(pwrmgr, wakeup_sources, cfg));
   LOG_INFO("%s",
@@ -100,7 +101,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrtCtrlDt, &sysrst_ctrl));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
 
   const volatile uint8_t *const software_barrier = (kDeviceType == kDeviceSimDV)
                                                        ? &kSoftwareBarrierDv
@@ -131,7 +132,7 @@ bool test_main(void) {
           dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
       CHECK_DIF_OK(dif_pinmux_mio_select_input(
           &pinmux,
-          dt_sysrst_ctrl_periph_io(kSysrtCtrlDt, kDtSysrstCtrlPeriphIoPwrbIn),
+          dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kDtSysrstCtrlPeriphIoPwrbIn),
           kDtPadIor13));
 
       // Put the device in a normal sleep.
