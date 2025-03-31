@@ -59,8 +59,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
+% if enable_flash_key:
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
+% endif
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)))
                         lc_prog_fifo;
 
@@ -74,8 +76,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       sram_fifos[i] = new($sformatf("sram_fifos[%0d]", i), this);
     end
     otbn_fifo       = new("otbn_fifo", this);
+  % if enable_flash_key:
     flash_addr_fifo = new("flash_addr_fifo", this);
     flash_data_fifo = new("flash_data_fifo", this);
+  % endif
     lc_prog_fifo    = new("lc_prog_fifo", this);
   endfunction
 
@@ -92,7 +96,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       process_lc_prog_req();
       process_edn_req();
       check_otbn_rsp();
+    % if enable_flash_key:
       check_flash_rsps();
+    % endif
       check_sram_rsps();
       recover_lc_prog_req();
     join_none
@@ -422,6 +428,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
   endtask
 
+% if enable_flash_key:
   virtual task check_flash_rsps();
     for (int i = FlashDataKey; i <= FlashAddrKey; i++) begin
       automatic digest_sel_e sel_flash = digest_sel_e'(i);
@@ -468,6 +475,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
   endtask
 
+% endif
   virtual task check_sram_rsps();
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       automatic int index = i;
@@ -1110,8 +1118,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     super.reset(kind);
     // flush fifos
     otbn_fifo.flush();
+  % if enable_flash_key:
     flash_addr_fifo.flush();
     flash_data_fifo.flush();
+  % endif
     lc_prog_fifo.flush();
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       sram_fifos[i].flush();
@@ -1148,8 +1158,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                  // vary depends on the push-pull-agent, we are going to ignore the checking if
                  // this scenario happens.
                  cfg.m_otbn_pull_agent_cfg.vif.req ||
+                % if enable_flash_key:
                  cfg.m_flash_data_pull_agent_cfg.vif.req ||
                  cfg.m_flash_addr_pull_agent_cfg.vif.req ||
+                % endif
                  cfg.m_sram_pull_agent_cfg[0].vif.req ||
                  cfg.m_sram_pull_agent_cfg[1].vif.req ||
                  cfg.m_sram_pull_agent_cfg[2].vif.req ||

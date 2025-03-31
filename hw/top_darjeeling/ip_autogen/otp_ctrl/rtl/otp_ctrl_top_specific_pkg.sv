@@ -86,6 +86,14 @@ package otp_ctrl_top_specific_pkg;
     DigestFinalize
   } otp_scrmbl_cmd_e;
 
+  ////////////////////////////////
+  // Typedefs for Key Broadcast //
+  ////////////////////////////////
+
+  // Get maximum nonce width
+  localparam int NumNonceChunks =
+    (OtbnNonceWidth > SramNonceWidth) ? OtbnNonceSel : SramNonceSel;
+
   ///////////////////////////////////////////
   // Defaults for random netlist constants //
   ///////////////////////////////////////////

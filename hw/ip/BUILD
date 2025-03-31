@@ -26,6 +26,7 @@ filegroup(
         "//hw/ip/kmac:rtl_files",
         "//hw/ip/lc_ctrl:rtl_files",
         "//hw/ip/otbn:rtl_files",
+        "//hw/ip/otp_ctrl:rtl_files",
         "//hw/ip/pattgen:rtl_files",
         "//hw/ip/prim:rtl_files",
         "//hw/ip/prim_generic:rtl_files",

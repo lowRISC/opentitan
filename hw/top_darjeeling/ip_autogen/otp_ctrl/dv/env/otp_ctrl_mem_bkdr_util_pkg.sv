@@ -85,32 +85,19 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_secret1_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [FlashAddrKeySeedSize*8-1:0] flash_addr_key_seed,
-      bit [FlashDataKeySeedSize*8-1:0] flash_data_key_seed,
       bit [SramDataKeySeedSize*8-1:0]  sram_data_key_seed
   );
     bit [Secret1DigestSize*8-1:0] digest;
 
-    bit [FlashAddrKeySeedSize*8-1:0] scrambled_flash_addr_key;
-    bit [FlashDataKeySeedSize*8-1:0] scrambled_flash_data_key;
     bit [SramDataKeySeedSize*8-1:0] scrambled_sram_data_key;
     bit [bus_params_pkg::BUS_DW-1:0] secret_data[$];
 
-    for (int i = 0; i < FlashAddrKeySeedSize; i += 8) begin
-      scrambled_flash_addr_key[i*8+:64] = scramble_data(flash_addr_key_seed[i*8+:64], Secret1Idx);
-      mem_bkdr_util_h.write64(i + FlashAddrKeySeedOffset, scrambled_flash_addr_key[i*8+:64]);
-    end
-    for (int i = 0; i < FlashDataKeySeedSize; i += 8) begin
-      scrambled_flash_data_key[i*8+:64] = scramble_data(flash_data_key_seed[i*8+:64], Secret1Idx);
-      mem_bkdr_util_h.write64(i + FlashDataKeySeedOffset, scrambled_flash_data_key[i*8+:64]);
-    end
     for (int i = 0; i < SramDataKeySeedSize; i += 8) begin
       scrambled_sram_data_key[i*8+:64] = scramble_data(sram_data_key_seed[i*8+:64], Secret1Idx);
       mem_bkdr_util_h.write64(i + SramDataKeySeedOffset, scrambled_sram_data_key[i*8+:64]);
     end
 
-    secret_data = {<<32 {scrambled_sram_data_key, scrambled_flash_data_key,
-                         scrambled_flash_addr_key}};
+    secret_data = {<<32 {scrambled_sram_data_key}};
     digest = cal_digest(Secret1Idx, secret_data);
 
     mem_bkdr_util_h.write64(Secret1DigestOffset, digest);

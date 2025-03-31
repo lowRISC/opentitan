@@ -45,8 +45,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(SRAM_DATA_SIZE)))
                         sram_fifos[NumSramKeyReqSlots];
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(OTBN_DATA_SIZE)))  otbn_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_addr_fifo;
-  uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE))) flash_data_fifo;
   uvm_tlm_analysis_fifo #(push_pull_item#(.DeviceDataWidth(1), .HostDataWidth(LC_PROG_DATA_SIZE)))
                         lc_prog_fifo;
 
@@ -60,8 +58,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       sram_fifos[i] = new($sformatf("sram_fifos[%0d]", i), this);
     end
     otbn_fifo       = new("otbn_fifo", this);
-    flash_addr_fifo = new("flash_addr_fifo", this);
-    flash_data_fifo = new("flash_data_fifo", this);
     lc_prog_fifo    = new("lc_prog_fifo", this);
   endfunction
 
@@ -78,7 +74,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       process_lc_prog_req();
       process_edn_req();
       check_otbn_rsp();
-      check_flash_rsps();
       check_sram_rsps();
       recover_lc_prog_req();
     join_none
@@ -443,52 +438,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                    edn_data_q.size()))
       end
       edn_data_q.delete();
-    end
-  endtask
-
-  virtual task check_flash_rsps();
-    for (int i = FlashDataKey; i <= FlashAddrKey; i++) begin
-      automatic digest_sel_e sel_flash = digest_sel_e'(i);
-      fork
-        forever begin
-          push_pull_item#(.DeviceDataWidth(FLASH_DATA_SIZE)) rcv_item;
-          bit [SCRAMBLE_KEY_SIZE-1:0]  flash_key;
-          bit [SCRAMBLE_DATA_SIZE-1:0] exp_key_lower, exp_key_higher;
-          bit [FlashKeyWidth-1:0]      key, exp_key;
-          bit                          seed_valid, part_locked;
-          int                          flash_key_index;
-
-          if (sel_flash == FlashAddrKey) begin
-            flash_addr_fifo.get(rcv_item);
-            flash_key_index = FlashAddrKeySeedOffset / 4;
-          end else begin
-            flash_data_fifo.get(rcv_item);
-            flash_key_index = FlashDataKeySeedOffset / 4;
-          end
-          seed_valid  = rcv_item.d_data[0];
-          key         = rcv_item.d_data[1+:FlashKeyWidth];
-          part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
-          `DV_CHECK_EQ(seed_valid, part_locked,
-                      $sformatf("flash %0s seed_valid mismatch", sel_flash.name()))
-
-          // calculate key
-          flash_key = get_key_from_otp(part_locked, flash_key_index);
-          exp_key_lower = present_encode_with_final_const(
-                          .data(RndCnstDigestIV[sel_flash]),
-                          .key(flash_key),
-                          .final_const(RndCnstDigestConst[sel_flash]));
-
-          flash_key = get_key_from_otp(part_locked, flash_key_index + 4);
-          exp_key_higher = present_encode_with_final_const(
-                           .data(RndCnstDigestIV[sel_flash]),
-                           .key(flash_key),
-                           .final_const(RndCnstDigestConst[sel_flash]));
-          exp_key = {exp_key_higher, exp_key_lower};
-          `DV_CHECK_EQ(key, exp_key, $sformatf("flash %s key mismatch", sel_flash.name()))
-
-          if (cfg.en_cov) cov.flash_req_cg.sample(sel_flash, part_locked);
-        end
-      join_none;
     end
   endtask
 
@@ -1357,8 +1306,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     super.reset(kind);
     // flush fifos
     otbn_fifo.flush();
-    flash_addr_fifo.flush();
-    flash_data_fifo.flush();
     lc_prog_fifo.flush();
     for (int i = 0; i < NumSramKeyReqSlots; i++) begin
       sram_fifos[i].flush();
@@ -1395,8 +1342,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                  // vary depends on the push-pull-agent, we are going to ignore the checking if
                  // this scenario happens.
                  cfg.m_otbn_pull_agent_cfg.vif.req ||
-                 cfg.m_flash_data_pull_agent_cfg.vif.req ||
-                 cfg.m_flash_addr_pull_agent_cfg.vif.req ||
                  cfg.m_sram_pull_agent_cfg[0].vif.req ||
                  cfg.m_sram_pull_agent_cfg[1].vif.req ||
                  cfg.m_sram_pull_agent_cfg[2].vif.req ||

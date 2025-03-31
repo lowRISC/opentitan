@@ -47,7 +47,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | lc_dft_en                | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Test enable qualifier coming from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.                                                                                  |
 | lc_check_byp_en          | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures. |
 | otp_keymgr_key           | otp_ctrl_pkg::otp_keymgr_key     | uni     | req   |       1 | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                                                                                      |
-| flash_otp_key            | otp_ctrl_pkg::flash_otp_key      | req_rsp | rsp   |       1 | Key derivation interface for FLASH scrambling.                                                                                                                                                                  |
 | sram_otp_key             | otp_ctrl_pkg::sram_otp_key       | req_rsp | rsp   |       4 | Array with key derivation interfaces for SRAM scrambling devices.                                                                                                                                               |
 | otbn_otp_key             | otp_ctrl_pkg::otbn_otp_key       | req_rsp | rsp   |       1 | Key derivation interface for OTBN scrambling devices.                                                                                                                                                           |
 | otp_broadcast            | otp_ctrl_part_pkg::otp_broadcast | uni     | req   |       1 | Output of the HW partitions with breakout data types.                                                                                                                                                           |
@@ -231,37 +230,6 @@ Otherwise, this signal is tied to a random netlist constant.
 
 Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
-### Interface to Flash Scrambler
-
-The interface to the FLASH scrambling device is a simple req/ack interface that provides the flash controller with the two 128bit keys for data and address scrambling.
-
-The keys can be requested as illustrated below:
-
-```wavejson
-{signal: [
-  {name: 'clk_i',                      wave: 'p...........'},
-  {name: 'flash_otp_key_i.data_req',   wave: '01.|..0.|...'},
-  {name: 'flash_otp_key_i.addr_req',   wave: '01.|....|..0'},
-  {name: 'flash_otp_key_o.data_ack',   wave: '0..|.10.|...'},
-  {name: 'flash_otp_key_o.addr_ack',   wave: '0..|....|.10'},
-  {name: 'flash_otp_key_o.key',        wave: '0..|.30.|.40'},
-  {name: 'flash_otp_key_o.seed_valid', wave: '0..|.10.|.10'},
-]}
-```
-
-The keys are derived from the FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED values stored in the `SECRET1` partition using the [scrambling primitive](#scrambling-datapath).
-If the key seeds have not yet been provisioned, the keys are derived from all-zero constants, and the `flash_otp_key_o.seed_valid` signal will be set to 0 in the response.
-The resulting scrambling key is still ephemeral (i.e., it is derived using entropy from CSRNG) and okay to be used.
-
-Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_sync_reqack.sv` primitive as shown below.
-
-![OTP Key Req Ack](../doc/otp_ctrl_key_req_ack.svg)
-
-Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
-Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
-If the scrambling device runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
-
 ### Interfaces to SRAM and OTBN Scramblers
 
 The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).
@@ -285,7 +253,13 @@ The resulting scrambling key is still ephemeral (i.e., it is derived using entro
 It should be noted that this mechanism requires the EDN and entropy distribution network to be operational, and a key derivation request will block if they are not.
 
 Note that the req/ack protocol runs on the OTP clock.
-It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [flash scrambler interface](#interface-to-flash-scrambler).
+It is the task of the scrambling device to synchronize the handshake protocol by instantiating the `prim_sync_reqack.sv` primitive as shown below.
+
+![OTP Key Req Ack](../doc/otp_ctrl_key_req_ack.svg)
+
+Note that the key and nonce output signals on the OTP controller side are guaranteed to remain stable for at least 62 OTP clock cycles after the `ack` signal is pulsed high, because the derivation of a 64bit half-key takes at least two passes through the 31-cycle PRESENT primitive.
+Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
+If the scrambling device runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
 
 ### Hardware Config Bits
 

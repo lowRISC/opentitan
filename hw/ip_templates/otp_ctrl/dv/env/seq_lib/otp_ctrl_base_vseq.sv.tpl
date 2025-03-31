@@ -520,6 +520,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(otbn_pull_seq)
   endtask
 
+% if enable_flash_key:
   virtual task req_flash_addr_key(bit blocking = default_req_blocking);
     if (cfg.m_flash_addr_pull_agent_cfg.vif.req === 1'b1) return;
 
@@ -568,6 +569,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_send(flash_data_pull_seq)
   endtask
 
+% endif
   virtual task req_lc_transition(bit check_intr = 0,
                                  bit blocking = default_req_blocking,
                                  bit wr_blank_err = !write_unused_addr);

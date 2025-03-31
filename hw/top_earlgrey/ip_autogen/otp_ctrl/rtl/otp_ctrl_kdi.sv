@@ -173,7 +173,7 @@ module otp_ctrl_kdi
 
   // SRAM keys
   for (genvar k = 3; k < NumReq; k++) begin : gen_req_assign
-    assign req[k]                      = sram_otp_key_i[k-3].req;
+    assign req[k] = sram_otp_key_i[k-3].req;
     assign sram_otp_key_o[k-3].ack = gnt[k];
     assign req_bundles[k] = '{ingest_entropy: 1'b1, // ingest random data
                               chained_digest: 1'b0, // revert to netlist IV between blocks

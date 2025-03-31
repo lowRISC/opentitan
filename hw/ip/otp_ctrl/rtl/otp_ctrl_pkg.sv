@@ -120,12 +120,6 @@ package otp_ctrl_pkg;
   localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
-  // Get maximum nonce width
-  localparam int NumNonceChunks =
-    (OtbnNonceWidth > FlashKeyWidth) ?
-    ((OtbnNonceWidth > SramNonceSel) ? OtbnNonceSel : SramNonceSel) :
-    ((FlashKeyWidth > SramNonceSel)  ? FlashNonceSel  : SramNonceSel);
-
   typedef struct packed {
     logic [KeyMgrKeyWidth-1:0] creator_root_key_share0;
     logic creator_root_key_share0_valid;
