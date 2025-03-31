@@ -10,8 +10,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"  // Generated.
+
+static_assert(kDtKmacCount >= 1,
+              "This test requires at least one KMAC instance");
+
+static dt_kmac_t kTestKmac = (dt_kmac_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -138,8 +142,7 @@ status_t test_kmac_entropy_stall(void) {
 
   // Initialize KMAC HWIP
   dif_kmac_t kmac;
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kTestKmac, &kmac));
 
   // Configure KMAC to use EDN entropy
   dif_kmac_config_t config = {
@@ -225,8 +228,7 @@ status_t test_kmac_entropy(void) {
 
   // Initialize KMAC HWIP
   dif_kmac_t kmac;
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kTestKmac, &kmac));
 
   // Configure KMAC to use EDN entropy
   dif_kmac_config_t config = {
