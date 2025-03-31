@@ -13,7 +13,13 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static_assert(kDtAonTimerCount >= 1,
+              "This test requires at least one AON Timer instance");
+static_assert(kDtRvCoreIbexCount >= 1,
+              "This test requires at least one rv_core_ibex instance");
+
+static const dt_aon_timer_t kTestAonTimer = (dt_aon_timer_t)0;
+static const dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -99,11 +105,8 @@ bool test_main(void) {
   LOG_INFO("Running AON timer test");
 
   // Initialise AON Timer.
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kTestAonTimer, &aon));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kTestRvCoreIbex, &rv_core_ibex));
 
   aon_timer_test_wakeup_timer(&aon);
   aon_timer_test_watchdog_timer(&aon);
