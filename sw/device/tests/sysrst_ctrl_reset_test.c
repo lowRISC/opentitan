@@ -15,14 +15,26 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_gpio_t gpio;
+
+static dif_pwrmgr_request_sources_t reset_sources, wakeup_sources,
+    other_wakeup_sources;
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_gpio_t kGpioDt = 0;
+static_assert(kDtGpioCount == 1, "this test expects a gpio");
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+static_assert(kDtSysrstCtrlCount == 1, "this test expects a sysrst_ctrl");
 
 enum {
   kTestPhaseCheckComboReset = 0,
@@ -44,27 +56,20 @@ enum {
   kOutputNumMioPads = 6,
 };
 
-static const dif_pinmux_index_t kPeripheralInputs[] = {
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+static const dt_sysrst_ctrl_periph_io_t kPeripheralInputs[] = {
+    kDtSysrstCtrlPeriphIoKey0In,    kDtSysrstCtrlPeriphIoKey1In,
+    kDtSysrstCtrlPeriphIoKey2In,    kDtSysrstCtrlPeriphIoPwrbIn,
+    kDtSysrstCtrlPeriphIoAcPresent, kDtSysrstCtrlPeriphIoLidOpen,
 };
 
-static const dif_pinmux_index_t kInputPadsDV[] = {
-    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIob9,
-    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
+static const dt_pad_t kInputPadsDV[] = {
+    kDtPadIob3, kDtPadIob6, kDtPadIob8, kDtPadIob9, kDtPadIoc7, kDtPadIoc9,
 };
 
 // We need different pins on the hyperdebug boards since certain
 // pins are not routed to the hyperdebug.
-static const dif_pinmux_index_t kInputPadsReal[] = {
-    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor5,
-    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
+static const dt_pad_t kInputPadsReal[] = {
+    kDtPadIor10, kDtPadIor11, kDtPadIor12, kDtPadIor5, kDtPadIor6, kDtPadIor7,
 };
 
 // On DV this device is in the flash and written by the testbench.
@@ -95,9 +100,8 @@ static void check_combo_reset(void) {
                                      .override_value = true}));
   // Prepare rstmgr for a reset with sysrst_ctrl (source one).
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
@@ -113,8 +117,8 @@ static void check_deep_sleep_wakeup(void) {
   // Setup low power.
   // Wakeup source is from sysrst_ctrl (source one).
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceOne, 0));
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
@@ -143,52 +147,57 @@ static void check_deep_sleep_reset(void) {
   // Setup low power.
   // Reset source is from sysrst_ctrl (source one).
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   // Enable low power with wakeup source other than
   // sysrst_ctrl (e.g. source two) as we don't want
   // a wakeup request but instead a reset.
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, other_wakeup_sources, 0));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
+
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
+      &wakeup_sources));
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlResetReqRstReq,
+      &reset_sources));
+  // Any wakeup source different from sysrst_ctrl.
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupPinWkupReq, &other_wakeup_sources));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   dif_pinmux_t pinmux;
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  const dif_pinmux_index_t *kInputPads =
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+  const dt_pad_t *kInputPads =
       kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kOutputNumMioPads; ++i) {
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kPeripheralInputs[i]),
+        kInputPads[i]));
   }
   // On real devices, we also need to configure the DIO pins and two more pins
   // to read the test phase.
   if (kDeviceType != kDeviceSimDV) {
     sysrst_ctrl_testutils_setup_dio(&pinmux);
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0,
-        kTopEarlgreyPinmuxInselIob0));
-    CHECK_DIF_OK(dif_pinmux_input_select(
-        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio1,
-        kTopEarlgreyPinmuxInselIob1));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0), kDtPadIob0));
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(
+        &pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio1), kDtPadIob1));
   }
 
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
