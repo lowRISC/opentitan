@@ -11,6 +11,8 @@ The diagram below depicts high level functionality and connectivity between AON 
 The output signals `intr_wkup_timer_expired_o`, `intr_wdog_timer_bark_o` and `nmi_wdog_timer_bark_o` are driven on the SYS domain.
 The output signals `wkup_req_o` and `aon_timer_rst_req_o` are driven on the AON domain.
 Note the signal `nmi_wdog_timer_bark_o` is a copy of `intr_wdog_timer_bark_o`.
+Furthermore, the block also has RACL ports `racl_policies_i` and `racl_error_o` which are not depicted in the diagram below.
+In order to enable the RACL ports, the parameter `EnableRacl` should be set to 1.
 
 ### Block diagram
 
