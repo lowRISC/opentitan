@@ -90,8 +90,8 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrore
 
 #define IBEXFI_FAULTY_ADDRESSES_DATA(field, string) \
     field(err_status, uint32_t) \
-    field(addresses, uint32_t, 8) \
-    field(data, uint32_t, 8) \
+    field(addresses, uint32_t, 12) \
+    field(data, uint32_t, 12) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiFaultyAddressesData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESSES_DATA);
