@@ -264,7 +264,7 @@ impl HyperdebugI2cBus {
         rbuf[..databytes].clone_from_slice(&resp.data[..databytes]);
         let mut index = databytes;
         while index < rbuf.len() {
-            let databytes = self.usb_read_bulk(&mut resp.data[index..])?;
+            let databytes = self.usb_read_bulk(&mut rbuf[index..])?;
             ensure!(
                 databytes > 0,
                 TransportError::CommunicationError(
