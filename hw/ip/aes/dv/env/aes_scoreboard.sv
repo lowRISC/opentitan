@@ -187,7 +187,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // Handle a write to a named CSR on the A channel
-  function void on_addr_channel_write(string csr_name, logic [31:0] wdata);
+  function void on_a_channel_write(string csr_name, logic [31:0] wdata);
     alert_test_t alert_test;
     // add individual case item for each csr
     case (1)
@@ -257,7 +257,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-        on_addr_channel_write(csr_name, item.a_data);
+        on_a_channel_write(csr_name, item.a_data);
       end
 
       ///////////////////////////////////////
