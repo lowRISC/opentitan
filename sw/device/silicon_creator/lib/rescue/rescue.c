@@ -139,10 +139,6 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
       dbg_printf("ok: reboot\r\n");
       state->mode = (rescue_mode_t)mode;
       goto exitproc;
-    case kRescueModeWait:
-      dbg_printf("ok: wait after upload\r\n");
-      state->reboot = false;
-      goto exitproc;
 #ifdef ROM_EXT_KLOBBER_ALLOWED
     case kRescueModeKlobber:
       ownership_erase();

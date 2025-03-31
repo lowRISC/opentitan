@@ -68,8 +68,6 @@ typedef enum {
 
 typedef struct RescueState {
   rescue_mode_t mode;
-  // Whether to reboot automatically after an xmodem upload.
-  bool reboot;
   // Current xmodem frame.
   uint32_t frame;
   // Current data offset.

@@ -84,8 +84,6 @@ static rom_error_t protocol(rescue_state_t *state) {
   uint8_t command;
   uint32_t next_mode = 0;
 
-  // TODO: remove automatic reboots.
-  state->reboot = false;
   validate_mode(kRescueModeFirmware, state);
 
   xmodem_recv_start(iohandle);
@@ -115,13 +113,10 @@ static rom_error_t protocol(rescue_state_t *state) {
           HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
         }
         xmodem_ack(iohandle, true);
-        if (!state->reboot) {
-          state->frame = 1;
-          state->offset = 0;
-          state->flash_offset = 0;
-          continue;
-        }
-        return kErrorRescueReboot;
+        state->frame = 1;
+        state->offset = 0;
+        state->flash_offset = 0;
+        continue;
       case kErrorXModemCrc:
         xmodem_ack(iohandle, false);
         continue;
