@@ -70,8 +70,6 @@ module otp_ctrl
   output otp_lc_data_t                               otp_lc_data_o,
   output otp_keymgr_key_t                            otp_keymgr_key_o,
   // Scrambling key requests
-  input  flash_otp_key_req_t                         flash_otp_key_i,
-  output flash_otp_key_rsp_t                         flash_otp_key_o,
   input  sram_otp_key_req_t [NumSramKeyReqSlots-1:0] sram_otp_key_i,
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
@@ -1103,7 +1101,6 @@ end
 
   logic scrmbl_key_seed_valid;
   logic [SramKeySeedWidth-1:0] sram_data_key_seed;
-  logic [FlashKeySeedWidth-1:0] flash_data_key_seed, flash_addr_key_seed;
 
   otp_ctrl_kdi #(
     .RndCnstScrmblKeyInit(RndCnstScrmblKeyInit)
@@ -1114,14 +1111,10 @@ end
     .escalate_en_i           ( lc_escalate_en[KdiIdx]  ),
     .fsm_err_o               ( part_fsm_err[KdiIdx]    ),
     .scrmbl_key_seed_valid_i ( scrmbl_key_seed_valid   ),
-    .flash_data_key_seed_i   ( flash_data_key_seed     ),
-    .flash_addr_key_seed_i   ( flash_addr_key_seed     ),
     .sram_data_key_seed_i    ( sram_data_key_seed      ),
     .edn_req_o               ( key_edn_req             ),
     .edn_ack_i               ( key_edn_ack             ),
     .edn_data_i              ( edn_data                ),
-    .flash_otp_key_i,
-    .flash_otp_key_o,
     .sram_otp_key_i,
     .sram_otp_key_o,
     .otbn_otp_key_i,
@@ -1438,10 +1431,6 @@ end
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
   assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
                                                SramDataKeySeedSize];
-  assign flash_data_key_seed   = part_buf_data[FlashDataKeySeedOffset +:
-                                               FlashDataKeySeedSize];
-  assign flash_addr_key_seed   = part_buf_data[FlashAddrKeySeedOffset +:
-                                               FlashAddrKeySeedSize];
 
   // Test unlock and exit tokens and RMA token
   assign otp_lc_data_o.test_exit_token   = part_buf_data[TestExitTokenOffset +:
@@ -1511,8 +1500,6 @@ end
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A, KeyMgrKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A, KeyMgrKeyWidth == CreatorRootKeyShare1Size * 8)
-  `ASSERT_INIT(FlashDataKeySeedSize_A,     FlashKeySeedWidth == FlashDataKeySeedSize * 8)
-  `ASSERT_INIT(FlashAddrKeySeedSize_A,     FlashKeySeedWidth == FlashAddrKeySeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
   `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)
@@ -1531,7 +1518,6 @@ end
   `ASSERT_KNOWN(LcOtpProgramRspKnown_A,      lc_otp_program_o)
   `ASSERT_KNOWN(OtpLcDataKnown_A,            otp_lc_data_o)
   `ASSERT_KNOWN(OtpKeymgrKeyKnown_A,         otp_keymgr_key_o)
-  `ASSERT_KNOWN(FlashOtpKeyRspKnown_A,       flash_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)
   `ASSERT_KNOWN(OtpBroadcastKnown_A,         otp_broadcast_o)

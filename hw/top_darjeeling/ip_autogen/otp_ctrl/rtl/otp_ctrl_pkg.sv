@@ -102,10 +102,8 @@ package otp_ctrl_pkg;
   // Typedefs for Key Broadcast //
   ////////////////////////////////
 
-  parameter int FlashKeySeedWidth = 256;
   parameter int SramKeySeedWidth  = 128;
   parameter int KeyMgrKeyWidth    = 256;
-  parameter int FlashKeyWidth     = 128;
   parameter int SramKeyWidth      = 128;
   parameter int SramNonceWidth    = 128;
   parameter int OtbnKeyWidth      = 128;
@@ -117,14 +115,11 @@ package otp_ctrl_pkg;
   typedef logic [OtbnNonceWidth-1:0] otbn_nonce_t;
 
   localparam int OtbnNonceSel  = OtbnNonceWidth / ScrmblBlockWidth;
-  localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
   // Get maximum nonce width
   localparam int NumNonceChunks =
-    (OtbnNonceWidth > FlashKeyWidth) ?
-    ((OtbnNonceWidth > SramNonceSel) ? OtbnNonceSel : SramNonceSel) :
-    ((FlashKeyWidth > SramNonceSel)  ? FlashNonceSel  : SramNonceSel);
+    (OtbnNonceWidth > SramNonceSel) ? OtbnNonceSel : SramNonceSel;
 
   typedef struct packed {
     logic [KeyMgrKeyWidth-1:0] creator_root_key_share0;
@@ -149,35 +144,12 @@ package otp_ctrl_pkg;
   };
 
   typedef struct packed {
-    logic data_req; // Requests static key for data scrambling.
-    logic addr_req; // Requests static key for address scrambling.
-  } flash_otp_key_req_t;
-
-  typedef struct packed {
     logic req; // Requests ephemeral scrambling key and nonce.
   } sram_otp_key_req_t;
 
   typedef struct packed {
     logic req; // Requests ephemeral scrambling key and nonce.
   } otbn_otp_key_req_t;
-
-  typedef struct packed {
-    logic data_ack;                    // Ack for data key.
-    logic addr_ack;                    // Ack for address key.
-    logic [FlashKeyWidth-1:0] key;     // 128bit static scrambling key.
-    logic [FlashKeyWidth-1:0] rand_key;
-    logic seed_valid;                  // Set to 1 if the key seed has been provisioned and is
-                                       // valid.
-  } flash_otp_key_rsp_t;
-
-  // Default for dangling connection
-  parameter flash_otp_key_rsp_t FLASH_OTP_KEY_RSP_DEFAULT = '{
-    data_ack: 1'b1,
-    addr_ack: 1'b1,
-    key: '0,
-    rand_key: '0,
-    seed_valid: 1'b1
-  };
 
   typedef struct packed {
     logic        ack;        // Ack for key.

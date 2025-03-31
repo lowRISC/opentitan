@@ -120,6 +120,7 @@ Otherwise, this signal is tied to a random netlist constant.
 
 Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `otp_keymgr_key_o` signals.
 
+% if enable_flash_key:
 ${"###"} Interface to Flash Scrambler
 
 The interface to the FLASH scrambling device is a simple req/ack interface that provides the flash controller with the two 128bit keys for data and address scrambling.
@@ -151,6 +152,7 @@ Note that the key and nonce output signals on the OTP controller side are guaran
 Hence, if the scrambling device clock is faster or in the same order of magnitude as the OTP clock, the data can be directly sampled upon assertion of `src_ack_o`.
 If the scrambling device runs on a significantly slower clock than OTP, an additional register (as indicated with dashed grey lines in the figure) has to be added.
 
+% endif
 ${"###"} Interfaces to SRAM and OTBN Scramblers
 
 The interfaces to the SRAM and OTBN scrambling devices follow a req / ack protocol, where the scrambling device first requests a new ephemeral key by asserting the request channel (`sram_otp_key_i[*]`, `otbn_otp_key_i`).

@@ -16,7 +16,7 @@ package otp_ctrl_part_pkg;
   ////////////////////////////////////
 
   parameter int NumScrmblKeys = 4;
-  parameter int NumDigestSets = 4;
+  parameter int NumDigestSets = 2;
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
   parameter int DigestSetSelWidth = vbits(NumDigestSets);
@@ -42,8 +42,6 @@ package otp_ctrl_part_pkg;
 
   typedef enum logic [ConstSelWidth-1:0] {
     CnstyDigest,
-    FlashDataKey,
-    FlashAddrKey,
     SramDataKey
   } digest_sel_e;
 
@@ -59,15 +57,11 @@ package otp_ctrl_part_pkg;
   // Note: digest set 0 is used for computing the partition digests. Constants at
   // higher indices are used to compute the scrambling keys.
   parameter digest_const_array_t RndCnstDigestConst = {
-    128'h63B9485A3856C417CF7A50A9A91EF7F7,
-    128'hF98C48B1F93772844A22D4B78FE0266F,
     128'hB7474D640F8A7F5D60822E1FAEC5C72,
     128'hE048B657396B4B83277195FC471E4B26
   };
 
   parameter digest_iv_array_t RndCnstDigestIV = {
-    64'hBEE3958332F2939B,
-    64'h90C7F21F6224F027,
     64'hB6641214B61D1B43,
     64'h4D5A89AA9109294A
   };
@@ -335,7 +329,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           14'd6136,
-      size:             9784,
+      size:             9848,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -349,7 +343,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           14'd15920,
+      offset:           14'd15984,
       size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -364,7 +358,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           14'd15992,
+      offset:           14'd16056,
       size:             16,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -379,7 +373,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           14'd16008,
+      offset:           14'd16072,
       size:             40,
       key_sel:          Secret0Key,
       secret:           1'b1,
@@ -394,8 +388,8 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           14'd16048,
-      size:             88,
+      offset:           14'd16112,
+      size:             24,
       key_sel:          Secret1Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -496,9 +490,9 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
-    hw_cfg0_digest: 64'hB7A0C53617A6A31C,
-    manuf_state: 256'h40119A3C6E63CDF358840E458E4029A6B5AC1F53D00A08C3B28B5C0FEE5F4C02,
-    device_id: 256'hB3A5B4421F462370FFF698183664DC7EDF3888886BD10DC67ABB319BDA0529AE
+    hw_cfg0_digest: 64'h8CBBAD02BB4CA928,
+    manuf_state: 256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
+    device_id: 256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
   };
   typedef struct packed {
     logic [63:0] hw_cfg1_digest;
@@ -510,7 +504,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
-    hw_cfg1_digest: 64'hB8138A3BBDAAE552,
+    hw_cfg1_digest: 64'hAA3F4C71234F097C,
     unallocated: 16'h0,
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69),
     en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
@@ -534,93 +528,91 @@ package otp_ctrl_part_pkg;
   // OTP invalid partition default for buffered partitions.
   parameter logic [131071:0] PartInvDefault = 131072'({
     704'({
-      320'hF87BED95CFBA3727BBF4A76885E754F2BE193854E9CA60A0C469C593E5DC0DA88CBBAD02BB4CA928,
-      384'hA445C3C29F71A2564947DD361344767A0340A5B93BB19342E29749216775E8A515F164D7930C9D1920440F25BB053FB5
+      320'h1136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE93B61DE417B9FB33,
+      384'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819A0D1E90E8C9FDDFA01E46311FD36D954
     }),
     320'({
-      64'hDD3C869E21D220A3,
-      256'h93B61DE417B9FB339605F051E74379CBCC6596C7174EBA643E725E464F593C87
+      64'h3BF7D79A9FF747F6,
+      256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667
     }),
     960'({
-      64'h3E01C22789430178,
-      256'h1136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE,
-      256'h279FC51CC7C626E315FD2B871D88819A0D1E90E8C9FDDFA01E46311FD36D954,
-      256'h5E58D0AA97A0F8F6D3D58610F4851667D68C96F0B3D1FEED688098A43C33459F,
-      128'hD0BAC511D08ECE0E2C0DBDDEDF7A854D
-    }),
-    704'({
-      64'h725A4C748BE1317E,
-      128'h94CD3DED94B578192A4D8B51F5D41C8A,
-      256'h55D0320379A0D260426D99D374E699CAE00E9680BD9B70291C752824C7DDC896,
-      256'hDBB9844327F20FB5D396D1CE085BDC31105733EAA3880C5A234729143F97B62A
-    }),
-    320'({
-      64'h50DE28C64D4C187,
-      128'hDBC827839FE2DCC27E17D06B5D4E0DDD,
+      64'h41837480464544A1,
+      256'hE00E9680BD9B70291C752824C7DDC89694CD3DED94B578192A4D8B51F5D41C8A,
+      256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA,
+      256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31,
       128'h711D135F59A50322B6711DB6F5D40A37
     }),
+    192'({
+      64'h6FDFE93D3146B0F,
+      128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
+    }),
+    320'({
+      64'h67BBE3B4555DF35C,
+      128'h40119A3C6E63CDF358840E458E4029A6,
+      128'hDF3888886BD10DC67ABB319BDA0529AE
+    }),
     128'({
-      64'hB8138A3BBDAAE552,
+      64'hAA3F4C71234F097C,
       16'h0, // unallocated space
       8'h69,
       8'h69,
       32'h0
     }),
     576'({
-      64'hB7A0C53617A6A31C,
-      256'h40119A3C6E63CDF358840E458E4029A6B5AC1F53D00A08C3B28B5C0FEE5F4C02,
-      256'hB3A5B4421F462370FFF698183664DC7EDF3888886BD10DC67ABB319BDA0529AE
+      64'h8CBBAD02BB4CA928,
+      256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E,
+      256'h90C7F21F6224F027F98C48B1F93772844A22D4B78FE0266FBEE3958332F2939B
     }),
-    78272'({
-      64'h4D104B5B0B3D8FDD,
-      4672'h0, // unallocated space
+    78784'({
+      64'hC469C593E5DC0DA8,
+      5184'h0, // unallocated space
       73536'h0
     }),
     8192'({
       8192'h0
     }),
     2624'({
-      64'h47508BAB4DC75216,
+      64'hBE193854E9CA60A0,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'h563C0C2920F6372,
+      64'hBBF4A76885E754F2,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'h644C4723CF740F6A,
+      64'hF87BED95CFBA3727,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'hBF1F41B783B6DB8C,
+      64'h20440F25BB053FB5,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'hB8DE43EDFF17AA86,
+      64'h15F164D7930C9D19,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'h60BAE4A876D70627,
+      64'hE29749216775E8A5,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'h2DCDD92FA5B24BF3,
+      64'h340A5B93BB19342,
       1280'h0,
       1280'h0
     }),
     2624'({
-      64'h3BF7D79A9FF747F6,
+      64'h4947DD361344767A,
       1280'h0,
       1280'h0
     }),
     11392'({
-      64'h41837480464544A1,
+      64'hA445C3C29F71A256,
       32'h0, // unallocated space
       6144'h0,
       1280'h0,
@@ -635,7 +627,7 @@ package otp_ctrl_part_pkg;
       128'h0
     }),
     5056'({
-      64'h6FDFE93D3146B0F,
+      64'h3E725E464F593C87,
       128'h0, // unallocated space
       32'h0,
       32'h0,
@@ -656,7 +648,7 @@ package otp_ctrl_part_pkg;
       32'h0
     }),
     2560'({
-      64'h67BBE3B4555DF35C,
+      64'hCC6596C7174EBA64,
       160'h0, // unallocated space
       32'h0,
       32'h0,
@@ -694,7 +686,7 @@ package otp_ctrl_part_pkg;
       992'h0
     }),
     512'({
-      64'hAA3F4C71234F097C,
+      64'h9605F051E74379CB,
       448'h0
     })});
 

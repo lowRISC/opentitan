@@ -62,8 +62,10 @@ package otp_ctrl_env_pkg;
   parameter uint SRAM_DATA_SIZE = 1 + SramKeyWidth + SramNonceWidth;
   // otbn rsp data has 1 bit for seed_valid, the rest are for key and nonce
   parameter uint OTBN_DATA_SIZE = 1 + OtbnKeyWidth + OtbnNonceWidth;
+% if enable_flash_key:
   // flash rsp data has 1 bit for seed_valid, the rest are for key
   parameter uint FLASH_DATA_SIZE = 1 + FlashKeyWidth;
+% endif
   // lc program data has lc_state data and lc_cnt data
   parameter uint LC_PROG_DATA_SIZE = LcStateWidth + LcCountWidth;
 
