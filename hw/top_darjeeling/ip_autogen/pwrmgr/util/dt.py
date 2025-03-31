@@ -76,7 +76,7 @@ size_t dt_pwrmgr_reset_request_src_count(dt_pwrmgr_t dt);
  *
  * @param dt Instance of pwrmgr.
  * @param idx Index of the reset request source, between 0 and
- *            `dt_pwrmgr_reset_request_count(dt)-1`.
+ *            `dt_pwrmgr_reset_request_src_count(dt)-1`.
  * @return Description of the reset.
  */
 dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request_src(dt_pwrmgr_t dt, size_t idx);
