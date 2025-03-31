@@ -27,3 +27,11 @@ check_cov -waiver -add -start_line 33 -end_line 33 -instance {dut.u_gateway} -co
 # To support the waivers above, this assertion is added. So, if interrupts are no longer level
 # triggered, this will fail.
 assert -name InterruptsLevelTriggered_A {!$rose(dut.u_gateway.le_i)}
+
+# The ds output port is not connected for any instantiation of prim_subreg or prim_subreg_ext in
+# rv_plic. This would only be connected for a writeable register that has an asynchronous clock
+# (see reg_top.sv.tpl), and rv_plic doesn't have any of these. As such, the code that is waived
+# here (which drives the port) is undetectable.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv}\
+ -start_line 64 -end_line 64 -type {branch} -comment {Checker coverage is undetectable as ds is\
+ unconnected}
