@@ -18,7 +18,8 @@ module mbx
   parameter bit                             RaclErrorRsp                    = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecSoc[NumRegsSoc] = '{NumRegsSoc{0}},
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinSocWdata        = 0,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinSocRdata        = 0
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinSocRdata        = 0,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecCore[NumRegsCore] = '{NumRegsCore{0}}
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -47,6 +48,26 @@ module mbx
   input   tlul_pkg::tl_d2h_t                        sram_tl_h_i,
   output  tlul_pkg::tl_h2d_t                        sram_tl_h_o
 );
+
+  top_racl_pkg::racl_error_log_t racl_error[2];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 2 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    always_comb begin
+      unused_signals = ^{racl_error[0], racl_error[1]};
+      racl_error_o   = '0;
+    end
+  end
+
   //////////////////////////////////////////////////////////////////////////////
   // General signals for the mailbox
   //////////////////////////////////////////////////////////////////////////////
@@ -99,10 +120,13 @@ module mbx
   logic [CfgObjectSizeWidth-1:0] hostif_ombx_object_size_wdata, hostif_ombx_object_size_rdata;
 
   mbx_hostif #(
-    .AlertAsyncOn      ( AlertAsyncOn       ),
-    .CfgSramAddrWidth  ( CfgSramAddrWidth   ),
-    .CfgSramDataWidth  ( CfgSramDataWidth   ),
-    .CfgObjectSizeWidth( CfgObjectSizeWidth )
+    .AlertAsyncOn         ( AlertAsyncOn         ),
+    .CfgSramAddrWidth     ( CfgSramAddrWidth     ),
+    .CfgSramDataWidth     ( CfgSramDataWidth     ),
+    .CfgObjectSizeWidth   ( CfgObjectSizeWidth   ),
+    .EnableRacl           ( EnableRacl           ),
+    .RaclErrorRsp         ( RaclErrorRsp         ),
+    .RaclPolicySelVecCore ( RaclPolicySelVecCore )
   ) u_hostif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
@@ -149,7 +173,10 @@ module mbx
     .sysif_intr_msg_addr_i                ( sysif_intr_msg_addr               ),
     .sysif_intr_msg_data_i                ( sysif_intr_msg_data               ),
     // Control and status inputs coming from the system registers interface
-    .sysif_control_abort_set_i            ( sysif_control_abort_set           )
+    .sysif_control_abort_set_i            ( sysif_control_abort_set           ),
+    // RACL interface
+    .racl_policies_i                      ( racl_policies_i                   ),
+    .racl_error_o                         ( racl_error[0]                     )
   );
 
   //////////////////////////////////////////////////////////////////////////////
@@ -245,7 +272,7 @@ module mbx
     .read_data_i                         ( sysif_read_data                    ),
     // RACL interface
     .racl_policies_i                     ( racl_policies_i                    ),
-    .racl_error_o                        ( racl_error_o                       )
+    .racl_error_o                        ( racl_error[1]                      )
   );
 
 

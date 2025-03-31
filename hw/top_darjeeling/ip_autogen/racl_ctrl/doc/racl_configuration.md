@@ -62,6 +62,22 @@
 | mbx2.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x1465218 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 | mbx2.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x146521c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 
+### RACL configuration for `mbx3` and interface `soc`
+
+- IP: mbx
+- Instance base address: 0x1465300
+- RACL group: Null
+
+
+| Name                             | Offset   | Address   | Width   | Policy        | ROT   | ROLE1   | SOC   |
+|:---------------------------------|:---------|:----------|:--------|:--------------|:------|:--------|:------|
+| mbx3.soc.`SOC_CONTROL`           | 0x8      | 0x1465308 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx3.soc.`SOC_STATUS`            | 0xc      | 0x146530c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx3.soc.`WDATA`                 | 0x10     | 0x1465310 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx3.soc.`RDATA`                 | 0x14     | 0x1465314 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx3.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x1465318 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx3.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x146531c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+
 ### RACL configuration for `mbx4` and interface `soc`
 
 - IP: mbx
@@ -93,6 +109,22 @@
 | mbx5.soc.`RDATA`                 | 0x14     | 0x1465514 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 | mbx5.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x1465518 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 | mbx5.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x146551c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+
+### RACL configuration for `mbx6` and interface `soc`
+
+- IP: mbx
+- Instance base address: 0x1496000
+- RACL group: Null
+
+
+| Name                             | Offset   | Address   | Width   | Policy        | ROT   | ROLE1   | SOC   |
+|:---------------------------------|:---------|:----------|:--------|:--------------|:------|:--------|:------|
+| mbx6.soc.`SOC_CONTROL`           | 0x8      | 0x1496008 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx6.soc.`SOC_STATUS`            | 0xc      | 0x149600c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx6.soc.`WDATA`                 | 0x10     | 0x1496010 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx6.soc.`RDATA`                 | 0x14     | 0x1496014 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx6.soc.`SOC_DOE_INTR_MSG_ADDR` | 0x18     | 0x1496018 | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
+| mbx6.soc.`SOC_DOE_INTR_MSG_DATA` | 0x1c     | 0x149601c | 0x4     | 0 (ALL_RD_WR) | R / W | R / W   | R / W |
 
 ### RACL configuration for `mbx_jtag` and interface `soc`
 

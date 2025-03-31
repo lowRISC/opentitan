@@ -8421,6 +8421,26 @@
           soc_mbx: 0x01465300
         }
       }
+      racl_mappings:
+      {
+        soc:
+        {
+          racl_group: Null
+          register_mapping:
+          {
+            SOC_CONTROL: 0
+            SOC_STATUS: 0
+            SOC_DOE_INTR_MSG_ADDR: 0
+            SOC_DOE_INTR_MSG_DATA: 0
+          }
+          window_mapping:
+          {
+            WDATA: 0
+            RDATA: 0
+          }
+          range_mapping: []
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -8498,6 +8518,8 @@
           act: rcv
           width: 1
           inst_name: mbx3
+          default: ""
+          top_signame: racl_ctrl_racl_policies
           index: -1
         }
         {
@@ -8509,7 +8531,9 @@
           act: req
           width: 1
           inst_name: mbx3
-          index: -1
+          default: ""
+          top_signame: racl_ctrl_racl_error
+          index: 3
         }
         {
           name: sram_tl_h
@@ -8695,7 +8719,7 @@
           inst_name: mbx4
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 3
+          index: 4
         }
         {
           name: sram_tl_h
@@ -8881,7 +8905,7 @@
           inst_name: mbx5
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 4
+          index: 5
         }
         {
           name: sram_tl_h
@@ -8953,6 +8977,26 @@
         soc:
         {
           soc_mbx: 0x01496000
+        }
+      }
+      racl_mappings:
+      {
+        soc:
+        {
+          racl_group: Null
+          register_mapping:
+          {
+            SOC_CONTROL: 0
+            SOC_STATUS: 0
+            SOC_DOE_INTR_MSG_ADDR: 0
+            SOC_DOE_INTR_MSG_DATA: 0
+          }
+          window_mapping:
+          {
+            WDATA: 0
+            RDATA: 0
+          }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -9032,6 +9076,8 @@
           act: rcv
           width: 1
           inst_name: mbx6
+          default: ""
+          top_signame: racl_ctrl_racl_policies
           index: -1
         }
         {
@@ -9043,7 +9089,9 @@
           act: req
           width: 1
           inst_name: mbx6
-          index: -1
+          default: ""
+          top_signame: racl_ctrl_racl_error
+          index: 6
         }
         {
           name: sram_tl_h
@@ -9229,7 +9277,7 @@
           inst_name: mbx_jtag
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 5
+          index: 7
         }
         {
           name: sram_tl_h
@@ -9415,7 +9463,7 @@
           inst_name: mbx_pcie0
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 6
+          index: 8
         }
         {
           name: sram_tl_h
@@ -9601,7 +9649,7 @@
           inst_name: mbx_pcie1
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 7
+          index: 9
         }
         {
           name: sram_tl_h
@@ -9858,7 +9906,7 @@
           name: NumSubscribingIps
           desc: Number of subscribing RACL IPs
           type: int
-          default: 9
+          default: 11
           local: "true"
           expose: "true"
           name_top: RaclCtrlNumSubscribingIps
@@ -9909,7 +9957,7 @@
             desc: Number of subscribing RACL IPs
             param_type: int
             unpacked_dimensions: null
-            default: 9
+            default: 11
             local: true
             expose: true
             name_top: RaclCtrlNumSubscribingIps
@@ -10106,7 +10154,7 @@
           inst_name: ac_range_check
           default: ""
           top_signame: racl_ctrl_racl_error
-          index: 8
+          index: 10
         }
         {
           name: tl
@@ -11761,8 +11809,10 @@
         mbx0.racl_policies
         mbx1.racl_policies
         mbx2.racl_policies
+        mbx3.racl_policies
         mbx4.racl_policies
         mbx5.racl_policies
+        mbx6.racl_policies
         mbx_jtag.racl_policies
         mbx_pcie0.racl_policies
         mbx_pcie1.racl_policies
@@ -11773,8 +11823,10 @@
         mbx0.racl_error
         mbx1.racl_error
         mbx2.racl_error
+        mbx3.racl_error
         mbx4.racl_error
         mbx5.racl_error
+        mbx6.racl_error
         mbx_jtag.racl_error
         mbx_pcie0.racl_error
         mbx_pcie1.racl_error
@@ -24876,6 +24928,8 @@
         act: rcv
         width: 1
         inst_name: mbx3
+        default: ""
+        top_signame: racl_ctrl_racl_policies
         index: -1
       }
       {
@@ -24887,7 +24941,9 @@
         act: req
         width: 1
         inst_name: mbx3
-        index: -1
+        default: ""
+        top_signame: racl_ctrl_racl_error
+        index: 3
       }
       {
         name: sram_tl_h
@@ -25011,7 +25067,7 @@
         inst_name: mbx4
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 3
+        index: 4
       }
       {
         name: sram_tl_h
@@ -25135,7 +25191,7 @@
         inst_name: mbx5
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 4
+        index: 5
       }
       {
         name: sram_tl_h
@@ -25244,6 +25300,8 @@
         act: rcv
         width: 1
         inst_name: mbx6
+        default: ""
+        top_signame: racl_ctrl_racl_policies
         index: -1
       }
       {
@@ -25255,7 +25313,9 @@
         act: req
         width: 1
         inst_name: mbx6
-        index: -1
+        default: ""
+        top_signame: racl_ctrl_racl_error
+        index: 6
       }
       {
         name: sram_tl_h
@@ -25379,7 +25439,7 @@
         inst_name: mbx_jtag
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 5
+        index: 7
       }
       {
         name: sram_tl_h
@@ -25503,7 +25563,7 @@
         inst_name: mbx_pcie0
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 6
+        index: 8
       }
       {
         name: sram_tl_h
@@ -25627,7 +25687,7 @@
         inst_name: mbx_pcie1
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 7
+        index: 9
       }
       {
         name: sram_tl_h
@@ -25839,7 +25899,7 @@
           desc: Number of subscribing RACL IPs
           param_type: int
           unpacked_dimensions: null
-          default: 9
+          default: 11
           local: true
           expose: true
           name_top: RaclCtrlNumSubscribingIps
@@ -25992,7 +26052,7 @@
         inst_name: ac_range_check
         default: ""
         top_signame: racl_ctrl_racl_error
-        index: 8
+        index: 10
       }
       {
         name: tl
@@ -31608,7 +31668,7 @@
           desc: Number of subscribing RACL IPs
           param_type: int
           unpacked_dimensions: null
-          default: 9
+          default: 11
           local: true
           expose: true
           name_top: RaclCtrlNumSubscribingIps

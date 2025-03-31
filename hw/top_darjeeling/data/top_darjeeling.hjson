@@ -954,6 +954,9 @@
         core: {hart: "0x22000300"},
         soc:  {soc_mbx: "0x01465300"},
       },
+      racl_mappings: {
+        soc: 'racl/all_rd_wr_mapping.hjson'
+      }
     },
     { name: "mbx4",
       type: "mbx",
@@ -990,6 +993,9 @@
         core: {hart: "0x22000600"},
         soc:  {soc_mbx: "0x01496000"},
       },
+      racl_mappings: {
+        soc: 'racl/all_rd_wr_mapping.hjson'
+      }
     },
     { name: "mbx_jtag",
       type: "mbx",
