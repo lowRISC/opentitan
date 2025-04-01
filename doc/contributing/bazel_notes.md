@@ -310,6 +310,7 @@ So in order to avoid accidental conflicts between sites, the `.bazelrc-site` fil
 
 Bazel can use a directory on the file system as a remote cache.
 This is useful for sharing build artifacts across multiple [`git` worktrees](https://git-scm.com/docs/git-worktree) or multiple workspaces of the same project, such as multiple checkouts.
+This is also useful for persisting build artifacts when switching tops; if disk cache is not configured, Bazel tends to rebuild everything from scratch.
 
 Use the `--disk_cache=<filename>` to specify a cache directory.
 For example, running
