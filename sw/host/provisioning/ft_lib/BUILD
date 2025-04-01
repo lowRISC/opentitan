@@ -17,6 +17,7 @@ package(default_visibility = ["//visibility:public"])
         crate_name = "ft_lib",
         deps = [
             "//sw/host/opentitanlib",
+            "//sw/host/opentitanlib/bindgen",
             "//sw/host/ot_certs",
             "//sw/host/ot_hal",
             "//sw/host/provisioning/cert_lib",
