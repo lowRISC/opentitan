@@ -6,12 +6,19 @@
 class alert_sender_seq extends alert_sender_base_seq;
 
   `uvm_object_utils(alert_sender_seq)
-  `uvm_object_new
 
-  constraint alert_sender_seq_c {
-    s_alert_send     == 1;
-    s_alert_ping_rsp == 0;
-    ping_timeout     == 0;
-  }
+  constraint alert_sender_seq_c;
+
+  extern function new (string name = "");
 
 endclass : alert_sender_seq
+
+function alert_sender_seq::new (string name = "");
+  super.new(name);
+endfunction : new
+
+constraint alert_sender_seq::alert_sender_seq_c {
+  s_alert_send     == 1;
+  s_alert_ping_rsp == 0;
+  ping_timeout     == 0;
+}
