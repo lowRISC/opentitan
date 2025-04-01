@@ -55,19 +55,25 @@ class alert_esc_agent_cov extends dv_base_agent_cov #(alert_esc_agent_cfg);
   alert_lpg_cg                m_alert_lpg_cg;
 
   `uvm_component_utils(alert_esc_agent_cov)
-  `uvm_component_new
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    if (cfg.en_ping_cov) begin
-      if (cfg.is_alert) m_alert_trans_cg = new();
-      else m_esc_trans_cg = new();
-    end
-    if (cfg.en_lpg_cov && cfg.is_alert) begin
-      m_alert_lpg_cg = new();
-    end
-    if (cfg.is_alert)    m_alert_handshake_complete_cg = new();
-    else                 m_esc_handshake_complete_cg = new();
-  endfunction : build_phase
+  extern function new (string name="", uvm_component parent=null);
+  extern function void build_phase(uvm_phase phase);
 
-endclass
+endclass : alert_esc_agent_cov
+
+function alert_esc_agent_cov::new (string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction : new
+
+function void alert_esc_agent_cov::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  if (cfg.en_ping_cov) begin
+    if (cfg.is_alert) m_alert_trans_cg = new();
+    else m_esc_trans_cg = new();
+  end
+  if (cfg.en_lpg_cov && cfg.is_alert) begin
+    m_alert_lpg_cg = new();
+  end
+  if (cfg.is_alert)    m_alert_handshake_complete_cg = new();
+  else                 m_esc_handshake_complete_cg = new();
+endfunction : build_phase
