@@ -9,6 +9,9 @@ multilingual = false
 src = "."
 title = "OpenTitan Documentation"
 
+[build]
+create-missing = false
+
 [output.html]
 site-url = "book/"
 fold = { enable = true}

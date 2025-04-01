@@ -482,7 +482,6 @@
   - [Build & Test Rules](./rules/opentitan/README.md)
     - [Top selection](./hw/top/README.md)
     - [FPGA Bitstreams](./hw/bitstream/README.md)
-    - [OTP Preload Image Generator](./util/design/README.md#otp_preload_image_generator)
   - [Device Libraries](./sw/device/lib/README.md)
     - [DIF Library](./sw/device/lib/dif/README.md)
       - [ADC Checklist](sw/device/lib/dif/dif_adc_ctrl.md)
