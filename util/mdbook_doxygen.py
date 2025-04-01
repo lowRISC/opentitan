@@ -56,8 +56,7 @@ def main() -> None:
 
         buffer = io.StringIO()
         buffer.write(f"# {file_name}\n")
-        difgen.gen_listing_html(html_out_dir, combined_xml, str(book_root / src_path),
-                                buffer)
+        difgen.gen_listing_html(html_out_dir, combined_xml, src_path, buffer)
         buffer.write(
             "\n<details><summary>\nGenerated from <a href=\"{}\">{}</a></summary>\n"
             .format(
