@@ -7,7 +7,7 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     .RAL_T(RAL_T),
     .COV_T(chip_env_cov)
   );
-  `uvm_component_utils(chip_scoreboard)
+  `uvm_component_param_utils(chip_scoreboard#(RAL_T))
 
   // local variables
 
