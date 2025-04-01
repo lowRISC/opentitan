@@ -10,35 +10,35 @@ requires-python = ">=3.10"
 
 dependencies = [
   # Dependency management
-  "uv==0.6.1",
+  "uv ~= 0.6",
 
   # Keep sorted
-  "beautifulsoup4==4.12.2",
+  "beautifulsoup4 ~= 4.12",
   "hjson==3.1.0",
   "libclang==16.0.0",
-  "libcst == 1.1.0", # 1.2.0+ needs Python 3.9+
+  "libcst ~= 1.1",
   "lxml ~= 5.0",
-  "mako ~= 1.2.2",
-  "ninja==1.11.1.1",
+  "mako ~= 1.2",
+  "ninja ~= 1.11.1.1",
   "pluralizer==1.2.0",
-  "pycryptodome ~= 3.19.1",
+  "pycryptodome ~= 3.19",
   "pyelftools==0.29",
-  "pytest-timeout==2.1.0",
+  "pytest-timeout ~= 2.1",
   "pytest ~= 7.2",
-  "pyyaml ~= 6.0.2",
+  "pyyaml ~= 6.0",
   "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
   "semantic_version==2.10.0",
   "tabulate==0.8.10",
   "typer==0.6.1",
 
   # Dependencies: bitstreams cache
-  "jsonschema==4.17.3",
+  "jsonschema ~= 4.17",
 
   # Dependencies: gen-flash-img.py
   "pyfinite==1.9.1",
 
   # Dependencies: dv_sim
-  "enlighten==1.10.2",
+  "enlighten ~= 1.10",
   "mistletoe==0.9.0",
   # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files
   # argument that is now mandatory, but didn't exist in previous versions.
@@ -52,17 +52,17 @@ dependencies = [
 
   # Linters
   "flake8 ~= 7.1",
-  "isort==5.10.1",
+  "isort ~= 5.10",
   "mypy == 0.991",
   "yapf==0.32.0",
   "ruff>=0.9.6",
 
   # Type stubs for mypy checking.
-  "types-pyyaml==6.0.11",
+  "types-pyyaml ~= 6.0",
   "types-tabulate==0.8.11",
 
   # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
-  "anytree==2.8.0",
+  "anytree ~= 2.8",
 
   # Dependency of third_party/tock
   "tockloader==1.13",
