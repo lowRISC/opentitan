@@ -1003,27 +1003,28 @@ def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
 
 def get_interrupt_modules(top: ConfigT,
                           name_to_block: IpBlocksT,
-                          allow_missing_blocks=False):
-    '''Return an existing top['interrupt_module'] or generate one.
+                          allow_missing_blocks=False) -> List[str]:
+    """Return an existing top["interrupt_module"] or generate one.
 
-    If the config has an 'interrupt_module' it is taken as the true list
+    If the config has an "interrupt_module" it is taken as the true list
     of modules that will connect their interrupts to rv_plic. This allows
     some configs where some modules have their interrupts handled in
     more custom ways.
 
-    When 'interrupt_module' is not in the config the list is generated with
-    all modules that have some interrupts.
-    '''
-    if 'interrupt_module' in top:
-        return top['interrupt_module']
+    When "interrupt_module" is not in the config the list is generated with
+    all modules that have some interrupts and no "outgoing_interrupt".
+    """
+    if "interrupt_module" in top:
+        return top["interrupt_module"]
 
     modules = []
-    for module in top['module']:
-        block = name_to_block.get(module['type'])
+    for module in top["module"]:
+        block = name_to_block.get(module["type"])
         if block is None and allow_missing_blocks:
             continue
         if block.interrupts:
-            modules.append(module['name'])
+            if "outgoing_interrupt" not in module:
+                modules.append(module["name"])
 
     return modules
 
@@ -1033,16 +1034,51 @@ def commit_interrupt_modules(top: ConfigT, name_to_block: IpBlocksT):
     top['interrupt_module'] = get_interrupt_modules(top, name_to_block)
 
 
+def get_outgoing_interrupt_modules(top: ConfigT,
+                                   name_to_block: IpBlocksT,
+                                   allow_missing_blocks=False) -> List[str]:
+    """Return an existing top["outgoing_interrupt_module"] or generate one.
+
+    If the config has an "outgoing_interrupt_module" entry it is taken as the
+    true list of modules that will send their interrupts out of this top. This
+    allows some interrupts to be handled in some other top.
+
+    When "outgoing_interrupt_module" is not in the config the list is generated
+    with all modules that have some outgoing interrupt.
+    """
+    if "outgoing_interrupt_module" in top:
+        return top["outgoing_interrupt_module"]
+
+    modules = defaultdict(list)
+    for module in top["module"]:
+        block = name_to_block.get(module["type"])
+        if block is None and allow_missing_blocks:
+            continue
+        if block.interrupts:
+            if "outgoing_interrupt" in module:
+                modules[module["outgoing_interrupt"]].append(module["name"])
+
+    return modules
+
+
+def commit_outgoing_interrupt_modules(top: ConfigT, name_to_block: IpBlocksT):
+    """Ensure top["outgoing_interrupt_module"] is populated in the final config."""
+    top["outgoing_interrupt_module"] = get_outgoing_interrupt_modules(top, name_to_block)
+
+
 def amend_interrupt(top: ConfigT,
                     name_to_block: IpBlocksT,
                     allow_missing_blocks=False):
     modules = get_interrupt_modules(top, name_to_block, allow_missing_blocks)
+    outgoing_modules = get_outgoing_interrupt_modules(top, name_to_block,
+                                                      allow_missing_blocks)
 
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
     interrupts = []
-    for m in modules:
+    outgoing_interrupts = defaultdict(list)
+    for m in modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
             log.warning(
@@ -1061,7 +1097,10 @@ def amend_interrupt(top: ConfigT,
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual["incoming"] = False
-            interrupts.append(qual)
+            if "outgoing_interrupt" in ip:
+                outgoing_interrupts[ip["outgoing_interrupt"]].append(qual)
+            else:
+                interrupts.append(qual)
 
     for irqs in top['incoming_interrupt'].values():
         for irq in irqs:
@@ -1075,6 +1114,7 @@ def amend_interrupt(top: ConfigT,
             interrupts.append(qual_irq)
 
     top["interrupt"] = interrupts
+    top["outgoing_interrupt"] = outgoing_interrupts
 
 
 def get_alert_modules(top: ConfigT,

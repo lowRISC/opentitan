@@ -40,7 +40,8 @@ from topgen.lib import find_module, find_modules, load_cfg
 from topgen.merge import (
     amend_alert, amend_interrupt, amend_pinmux_io, amend_racl,
     amend_reset_request, amend_resets, amend_wkup, commit_alert_modules,
-    commit_interrupt_modules, commit_outgoing_alert_modules, connect_clocks,
+    commit_interrupt_modules, commit_outgoing_alert_modules,
+    commit_outgoing_interrupt_modules, connect_clocks,
     create_alert_lpgs, elaborate_instance, extract_clocks)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
@@ -367,6 +368,28 @@ def generate_outgoing_alerts(top: ConfigT, out_path: Path) -> None:
                         f'outgoing_alerts_{alert_group}.hjson',
                         alert_group=alert_group,
                         alerts=alerts)
+
+
+def generate_outgoing_interrupts(top: ConfigT, out_path: Path) -> None:
+    log.info("Generating outgoing interrupt definitions")
+
+    def render_template(template_path: Path, rendered_path: Path,
+                        **other_info):
+        template_contents = generate_top(top, None, str(template_path),
+                                         **other_info)
+
+        rendered_path.parent.mkdir(exist_ok=True, parents=True)
+        with rendered_path.open(mode="w", encoding="UTF-8") as fout:
+            fout.write(template_contents)
+
+    for interrupt_group, interrupts in top["outgoing_interrupt"].items():
+        # Outgoing interrupt definition
+        # "outgoing_interrupts.hjson.tpl" -> "data/autogen/{top_name}.sv"
+        render_template(TOPGEN_TEMPLATE_PATH / "outgoing_interrupts.hjson.tpl",
+                        out_path / "data" / "autogen" /
+                        f"outgoing_interrupts_{interrupt_group}.hjson",
+                        interrupt_group=interrupt_group,
+                        interrupts=interrupts)
 
 
 def _get_rv_plic_params(top: ConfigT) -> ParamsT:
@@ -1261,6 +1284,7 @@ def complete_topcfg(topcfg: ConfigT, name_to_block: IpBlocksT) -> None:
     commit_alert_modules(topcfg, name_to_block)
     commit_interrupt_modules(topcfg, name_to_block)
     commit_outgoing_alert_modules(topcfg, name_to_block)
+    commit_outgoing_interrupt_modules(topcfg, name_to_block)
 
 
 def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
@@ -1305,6 +1329,9 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
 
     # Generate outgoing alerts
     generate_outgoing_alerts(topcfg, out_path)
+
+    # Generate outgoing interrupts
+    generate_outgoing_interrupts(topcfg, out_path)
 
     # Generate otp_ctrl if there is an instance. It needs an extra argument
     # than the other ipgens, so it cannot call generate_modules.

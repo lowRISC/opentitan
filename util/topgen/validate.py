@@ -67,6 +67,7 @@ top_optional = {
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
+    'outgoing_interrupt': ['g', 'the outgoing interrupt groups'],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
     'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
@@ -266,6 +267,10 @@ module_optional = {
     ],
     'outgoing_alert': [
         's', 'optional string to indicate alerts are routed externally to '
+        'the named group'
+    ],
+    'outgoing_interrupt': [
+        's', 'optional string to indicate interrupts are routed externally to '
         'the named group'
     ],
     'incoming_alert': [
@@ -599,6 +604,14 @@ def check_incoming_alerts(top: ConfigT, prefix: str) -> int:
 
 def check_outgoing_alerts(top: ConfigT, prefix: str) -> int:
     if 'outgoing_alert' not in top:
+        return 0
+    error = 0
+    # TODO
+    return error
+
+
+def check_outgoing_interrupts(top: ConfigT, prefix: str) -> int:
+    if "outgoing_interrupt" not in top:
         return 0
     error = 0
     # TODO
@@ -1211,6 +1224,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_alerts(top, component)
     error += check_incoming_alerts(top, component)
     error += check_outgoing_alerts(top, component)
+    error += check_outgoing_interrupts(top, component)
     error += check_interrupts(top, component)
     error += check_incoming_interrupts(top, component)
 
