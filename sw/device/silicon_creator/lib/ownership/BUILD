@@ -11,6 +11,10 @@ load(
     "//rules/opentitan:defs.bzl",
     "opentitan_test",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "TEST_OWNER_CONFIGS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -234,98 +238,26 @@ cc_library(
     alwayslink = True,
 )
 
-cc_library(
-    name = "test_owner_hybrid",
-    testonly = True,
-    srcs = ["test_owner.c"],
-    defines = [
-        "TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE=1",
-    ],
-    deps = [
-        ":datatypes",
-        ":owner_block",
-        ":ownership",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
-        "//sw/device/silicon_creator/lib/rescue",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "test_owner_update_mode_newversion",
-    testonly = True,
-    srcs = ["test_owner.c"],
-    defines = [
-        "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
-    ],
-    deps = [
-        ":datatypes",
-        ":owner_block",
-        ":ownership",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
-        "//sw/device/silicon_creator/lib/rescue",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "test_owner_usbdfu",
-    testonly = True,
-    srcs = ["test_owner.c"],
-    defines = [
-        # 0x55 is 'U'sb.
-        "WITH_RESCUE_PROTOCOL=0x55",
-        # Trigger 2 is strap pins combination.
-        "WITH_RESCUE_TRIGGER=2",
-        # Strapping value of 3.
-        "WITH_RESCUE_INDEX=3",
-    ],
-    deps = [
-        ":datatypes",
-        ":owner_block",
-        ":ownership",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
-        "//sw/device/silicon_creator/lib/rescue",
-    ],
-    alwayslink = True,
-)
-
-cc_library(
-    name = "test_owner_spidfu",
-    testonly = True,
-    srcs = ["test_owner.c"],
-    defines = [
-        # 0x53 is 'S'pi.
-        "WITH_RESCUE_PROTOCOL=0x53",
-        # Trigger 3 is GPIO pin.
-        "WITH_RESCUE_TRIGGER=3",
-        # When the trigger is GPIO, the index is the MuxedPad to us as the sense
-        # input. Index 2 is kTopEarlgreyMuxedPadsIoa2.
-        "WITH_RESCUE_INDEX=2",
-        # GPIO param 3 means enable the internal pull resistor and trigger
-        # rescue when the GPIO is high.
-        "WITH_RESCUE_GPIO_PARAM=3",
-    ],
-    deps = [
-        ":datatypes",
-        ":owner_block",
-        ":ownership",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
-        "//sw/device/silicon_creator/lib/rescue",
-    ],
-    alwayslink = True,
-)
+[
+    cc_library(
+        name = "test_owner_{}".format(name),
+        testonly = True,
+        srcs = ["test_owner.c"],
+        defines = param["owner_defines"],
+        deps = [
+            ":datatypes",
+            ":owner_block",
+            ":ownership",
+            "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+            "//sw/device/silicon_creator/lib/rescue",
+        ],
+        alwayslink = True,
+    )
+    for name, param in TEST_OWNER_CONFIGS.items()
+]
 
 cc_library(
     name = "owner_verify",
