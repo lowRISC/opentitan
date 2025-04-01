@@ -58,7 +58,6 @@ top_required = {
 }
 
 top_optional = {
-    'ac_range_check': ['g', 'Optional AC range configuration'],
     'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'datawidth': ['pn', "default data width"],
