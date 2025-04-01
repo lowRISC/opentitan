@@ -68,6 +68,8 @@ typedef enum {
 
 typedef struct RescueState {
   rescue_mode_t mode;
+  // Inactivity deadline.
+  uint64_t inactivity_deadline;
   // Current xmodem frame.
   uint32_t frame;
   // Current data offset.
@@ -144,6 +146,15 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
 rom_error_t rescue_enter_handler(boot_svc_msg_t *msg);
 
 /**
+ * Return an error if the inactivity deadline has passed.
+ *
+ * @param state Rescue state
+ * @return kErrorOk if the deadline has not passed,
+ *         kErrorRescueInactivity if it has.
+ */
+rom_error_t rescue_inactivity(rescue_state_t *state);
+
+/**
  * Perform the rescue protocol.
  *
  * @param bootdata Boot data
@@ -153,6 +164,18 @@ rom_error_t rescue_enter_handler(boot_svc_msg_t *msg);
  */
 rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config);
+
+/**
+ * Enter rescue mode on boot failure.
+ * @param config The ownership rescue config (if any).
+ * @return whether to enter rescue mode.
+ */
+hardened_bool_t rescue_enter_on_fail(const owner_rescue_config_t *config);
+
+/**
+ * Send ourself a message to skip rescue entry on the next boot.
+ */
+void rescue_skip_next_boot(void);
 
 /**
  * Detect rescue entry.

@@ -208,6 +208,7 @@ enum module_ {
   X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
   X(kErrorRescueSendStart,            ERROR_(4, kModuleRescue, kInternal)), \
+  X(kErrorRescueInactivity,           ERROR_(5, kModuleRescue, kDeadlineExceeded)), \
   \
   X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
   X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \

@@ -89,6 +89,8 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
     return kErrorUsbBadSetup;
   }
 
+  // Cancel the inactivity deadline.
+  ctx->state.inactivity_deadline = 0;
   dfu_state_transition_t *tr = &dfu_state_table[setup->request][ctx->dfu_state];
 
   // Carry out the action for this state transition.
@@ -174,6 +176,9 @@ static rom_error_t dfu_control(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
 }
 
 static rom_error_t vendor_request(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
+  // Cancel the inactivity deadline.
+  ctx->state.inactivity_deadline = 0;
+
   switch (setup->request) {
     // Proprietary vendor version of SetInterface that constructs the
     // FourCC from the value and index fields.
@@ -195,6 +200,14 @@ static rom_error_t interface_request(dfu_ctx_t *ctx, usb_setup_data_t *setup) {
   switch (setup->request) {
     case kUsbSetupReqSetInterface:
       if (validate_mode(setup->value, &ctx->state) == kErrorOk) {
+        // A typical OS USB stack will issue SET_INTERFACE to activate
+        // AltSetting 0.  Since this probably is not real user activity,
+        // we won't cancel the inactivity deadline for this action when it
+        // doesn't actually change the interface.  For all other SET_INTERFACE,
+        // we will cancel the inactivity deadline.
+        if (!(ctx->interface == 0 && setup->value == 0)) {
+          ctx->state.inactivity_deadline = 0;
+        }
         ctx->interface = (uint8_t)setup->value;
         dfu_transport_data(ctx, kUsbDirIn, NULL, 0, 0);
       } else {
@@ -231,6 +244,8 @@ void dfu_protocol_handler(void *_ctx, uint8_t ep, usb_transfer_flags_t flags,
   if (flags & kUsbTransferFlagsSetupData) {
     usb_setup_data_t *setup = (usb_setup_data_t *)data;
 
+    // If we receive any Class, Interface or Vendor specific request,
+    // we cancel the inactivity deadline.
     rom_error_t error = kErrorOk;
     if ((setup->request_type & kUsbReqTypeTypeMask) == kUsbReqTypeClass) {
       // If its a class-level request, call the DFU control function.
