@@ -314,6 +314,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task check_alert_triggered(string alert_name);
+    int unsigned ping_count = cfg.m_alert_agent_cfgs[alert_name].ping_count;
     // If the alert happens when we are in the middle of ping handshake phases then wait until we
     // are out of ping.
     wait(!cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake &&
@@ -323,6 +324,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
+    // Ignore the alert if it's due to a ping by checking if there's been a ping since the
+    // check started
+    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) return;
     // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
     // alert bit is set.
     if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
