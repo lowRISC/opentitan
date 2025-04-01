@@ -12,11 +12,11 @@ class alert_receiver_ping_seq extends dv_base_seq #(.REQ         (alert_esc_seq_
   `uvm_object_utils(alert_receiver_ping_seq)
   extern function new (string name="");
   extern virtual task body();
-endclass
+endclass : alert_receiver_ping_seq
 
 function alert_receiver_ping_seq::new (string name="");
   super.new(name);
-endfunction
+endfunction : new
 
 task alert_receiver_ping_seq::body();
   forever begin
@@ -31,4 +31,4 @@ task alert_receiver_ping_seq::body();
     finish_item(req);
     get_response(req);
   end
-endtask
+endtask : body
