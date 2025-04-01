@@ -9,7 +9,7 @@
 class ac_range_check_dut_cfg extends uvm_object;
   rand bit [TL_DW-1:0] range_base[NUM_RANGES];  // Granularity is 32-bit words, 2-LSBs are ignored
   rand bit [TL_DW-1:0] range_limit[NUM_RANGES]; // Granularity is 32-bit words, 2-LSBs are ignored
-  rand range_perm_t    range_perm[NUM_RANGES];
+  rand range_attr_t    range_attr[NUM_RANGES];
   rand racl_policy_t   range_racl_policy[NUM_RANGES];
 
   // Standard SV/UVM methods
@@ -40,9 +40,9 @@ function void ac_range_check_dut_cfg::do_print(uvm_printer printer);
   `uvm_info(this.get_name(), "do_print function has been called", UVM_DEBUG);
   super.do_print(printer);
 
-  foreach (range_perm[i]) begin
-    printer.print_field($sformatf("range_perm[%0d]", i), "range_perm_t", $bits(range_perm[i]),
-                        $sformatf("%p", range_perm[i]));
+  foreach (range_attr[i]) begin
+    printer.print_field($sformatf("range_attr[%0d]", i), "range_attr_t", $bits(range_attr[i]),
+                        $sformatf("%p", range_attr[i]));
   end
 
   foreach (range_racl_policy[i]) begin

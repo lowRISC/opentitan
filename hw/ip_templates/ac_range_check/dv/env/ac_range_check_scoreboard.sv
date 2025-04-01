@@ -106,7 +106,7 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
   // Due to the note above, we should keep this loop starting from index 0
   for (int i=0; i<NUM_RANGES; i++) begin
     // Only consider the enabled ranges, continue when the range is not enabled
-    if (!dut_cfg.range_perm[i].enable) begin
+    if (!dut_cfg.range_attr[i].enable) begin
       continue;  // Jump to the next index of the for loop
     end else begin
       // Break and try further if the address is not matching this index range
@@ -119,9 +119,9 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
         if (!item.is_write()) begin
           // Access is an EXECUTE (a_user contains this information if a_opcode indicates a read)
           if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
-            if (!dut_cfg.range_perm[i].execute_access) begin
+            if (!dut_cfg.range_attr[i].execute_access) begin
               `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
               return AccessDenied;
             end else begin
               // RACL policy READ permission should also be set
@@ -137,9 +137,9 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
             end
           // Access is a READ
           end else begin
-            if (!dut_cfg.range_perm[i].read_access) begin
+            if (!dut_cfg.range_attr[i].read_access) begin
               `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
               return AccessDenied;
             end else begin
               // RACL policy READ permission should also be set
@@ -156,9 +156,9 @@ function access_decision_e ac_range_check_scoreboard::check_access(tl_seq_item i
           end
         // Access is a WRITE
         end else begin
-          if (!dut_cfg.range_perm[i].write_access) begin
+          if (!dut_cfg.range_attr[i].write_access) begin
             `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-              "configured in range_perm index #%0d"}, item.a_addr, i), UVM_MEDIUM)
+              "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
             return AccessDenied;
           end else begin
             // RACL policy WRITE permission should also be set
@@ -391,8 +391,8 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
       csr_name = "range_base";
     end else if (csr.get_type_name() == "ac_range_check_reg_range_limit") begin
       csr_name = "range_limit";
-    end else if (csr.get_type_name() == "ac_range_check_reg_range_perm") begin
-      csr_name = "range_perm";
+    end else if (csr.get_type_name() == "ac_range_check_reg_range_attr") begin
+      csr_name = "range_attr";
     end else if (csr.get_type_name() == "ac_range_check_reg_range_racl_policy_shadowed") begin
       csr_name = "range_racl_policy_shadowed";
     end else begin
@@ -451,18 +451,18 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
         dut_cfg.range_limit[csr_idx] = `gmv(ral.range_limit[csr_idx]);
       end
     end
-    "range_perm": begin
+    "range_attr": begin
       if (tl_phase == AChanWrite) begin
-        dut_cfg.range_perm[csr_idx].log_denied_access =
-          mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].log_denied_access));
-        dut_cfg.range_perm[csr_idx].execute_access    =
-          mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].execute_access));
-        dut_cfg.range_perm[csr_idx].write_access      =
-          mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].write_access));
-        dut_cfg.range_perm[csr_idx].read_access       =
-          mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].read_access));
-        dut_cfg.range_perm[csr_idx].enable            =
-          mubi4_logic_test_true_strict(`gmv(ral.range_perm[csr_idx].enable));
+        dut_cfg.range_attr[csr_idx].log_denied_access =
+          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].log_denied_access));
+        dut_cfg.range_attr[csr_idx].execute_access    =
+          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].execute_access));
+        dut_cfg.range_attr[csr_idx].write_access      =
+          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].write_access));
+        dut_cfg.range_attr[csr_idx].read_access       =
+          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].read_access));
+        dut_cfg.range_attr[csr_idx].enable            =
+          mubi4_logic_test_true_strict(`gmv(ral.range_attr[csr_idx].enable));
       end
     end
     "range_racl_policy_shadowed": begin

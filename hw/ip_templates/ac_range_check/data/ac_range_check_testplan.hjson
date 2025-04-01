@@ -18,7 +18,7 @@
                 - Assert range_check_overwrite_i to MuBi8::False
                 - Configure a random number of ranges:
                   * Randomize the RANGE_BASE and RANGE_LIMIT register (RANGE_LIMIT > RANGE_BASE)
-                  * Randomize the RANGE_PERM register and set the RANGE_PERM.enable bit to 1
+                  * Randomize the RANGE_ATTR register and set the RANGE_ATTR.enable bit to 1
                   * Set RANGE_RACL_POLICY_SHADOWED.read_perm and
                     RANGE_RACL_POLICY_SHADOWED.write_perm to 0xFFFF (disables RACL checks)
                 - Perform random TLUL requests on the unfiltered interface (ctn_tl_h2d_i) and
@@ -50,7 +50,7 @@
               Test the range lock functionality
 
               Stimulus:
-              - Configure a range's RANGE_BASE, RANGE_LIMIT, RANGE_PERM, RANGE_RACL_POLICY_SHADOWED
+              - Configure a range's RANGE_BASE, RANGE_LIMIT, RANGE_ATTR, RANGE_RACL_POLICY_SHADOWED
                 register
               - Clear RANGE_REGWEN to MuBi4::False in a randomized way
               - Try to reconfigure the range with different values

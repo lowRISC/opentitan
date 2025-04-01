@@ -10237,38 +10237,38 @@
             RANGE_LIMIT_29: 2
             RANGE_LIMIT_30: 2
             RANGE_LIMIT_31: 2
-            RANGE_PERM_0: 2
-            RANGE_PERM_1: 2
-            RANGE_PERM_2: 2
-            RANGE_PERM_3: 2
-            RANGE_PERM_4: 2
-            RANGE_PERM_5: 2
-            RANGE_PERM_6: 2
-            RANGE_PERM_7: 2
-            RANGE_PERM_8: 2
-            RANGE_PERM_9: 2
-            RANGE_PERM_10: 2
-            RANGE_PERM_11: 2
-            RANGE_PERM_12: 2
-            RANGE_PERM_13: 2
-            RANGE_PERM_14: 2
-            RANGE_PERM_15: 2
-            RANGE_PERM_16: 2
-            RANGE_PERM_17: 2
-            RANGE_PERM_18: 2
-            RANGE_PERM_19: 2
-            RANGE_PERM_20: 2
-            RANGE_PERM_21: 2
-            RANGE_PERM_22: 2
-            RANGE_PERM_23: 2
-            RANGE_PERM_24: 2
-            RANGE_PERM_25: 2
-            RANGE_PERM_26: 2
-            RANGE_PERM_27: 2
-            RANGE_PERM_28: 2
-            RANGE_PERM_29: 2
-            RANGE_PERM_30: 2
-            RANGE_PERM_31: 2
+            RANGE_ATTR_0: 2
+            RANGE_ATTR_1: 2
+            RANGE_ATTR_2: 2
+            RANGE_ATTR_3: 2
+            RANGE_ATTR_4: 2
+            RANGE_ATTR_5: 2
+            RANGE_ATTR_6: 2
+            RANGE_ATTR_7: 2
+            RANGE_ATTR_8: 2
+            RANGE_ATTR_9: 2
+            RANGE_ATTR_10: 2
+            RANGE_ATTR_11: 2
+            RANGE_ATTR_12: 2
+            RANGE_ATTR_13: 2
+            RANGE_ATTR_14: 2
+            RANGE_ATTR_15: 2
+            RANGE_ATTR_16: 2
+            RANGE_ATTR_17: 2
+            RANGE_ATTR_18: 2
+            RANGE_ATTR_19: 2
+            RANGE_ATTR_20: 2
+            RANGE_ATTR_21: 2
+            RANGE_ATTR_22: 2
+            RANGE_ATTR_23: 2
+            RANGE_ATTR_24: 2
+            RANGE_ATTR_25: 2
+            RANGE_ATTR_26: 2
+            RANGE_ATTR_27: 2
+            RANGE_ATTR_28: 2
+            RANGE_ATTR_29: 2
+            RANGE_ATTR_30: 2
+            RANGE_ATTR_31: 2
             RANGE_RACL_POLICY_SHADOWED_0: 2
             RANGE_RACL_POLICY_SHADOWED_1: 2
             RANGE_RACL_POLICY_SHADOWED_2: 2
