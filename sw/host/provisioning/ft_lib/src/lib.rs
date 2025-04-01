@@ -126,9 +126,25 @@ pub fn test_exit(
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
     let mut jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
-    // Check that LC state is currently `TEST_UNLOCKED1`.
-    let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, DifLcCtrlState::TestUnlocked1.redundant_encoding());
+    // Check that LC state is currently `TEST_UNLOCKED*`.
+    let state =
+        DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
+    match state {
+        DifLcCtrlState::TestUnlocked0
+        | DifLcCtrlState::TestUnlocked1
+        | DifLcCtrlState::TestUnlocked2
+        | DifLcCtrlState::TestUnlocked3
+        | DifLcCtrlState::TestUnlocked4
+        | DifLcCtrlState::TestUnlocked5
+        | DifLcCtrlState::TestUnlocked6
+        | DifLcCtrlState::TestUnlocked7 => {
+            log::info!("Starting test exit LC transition ...")
+        }
+        _ => panic!(
+            "Cannot perform test exit LC transition from {:x?} LC state.",
+            state
+        ),
+    }
 
     // ROM execution should now be enabled in OTP so we cannot safely reconnect to the LC TAP after
     // the transition without risking the chip resetting. Therefore, it is the responsibility of the
