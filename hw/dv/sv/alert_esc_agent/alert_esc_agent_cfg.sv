@@ -83,14 +83,20 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int(ping_delay_min,  UVM_DEFAULT)
     `uvm_field_int(ping_delay_max,  UVM_DEFAULT)
   `uvm_object_utils_end
-  `uvm_object_new
 
-  function bit get_esc_en();
-    if (if_mode == Device && is_active) begin
-      return probe_vif.get_esc_en();
-    end
-    // Only support escalation ping request interrupted by real escalation request in device mode.
-    return 0;
-  endfunction
+  extern function new (string name="");
+  extern function bit get_esc_en();
 
 endclass : alert_esc_agent_cfg
+
+function alert_esc_agent_cfg::new (string name="");
+  super.new(name);
+endfunction : new
+
+function bit alert_esc_agent_cfg::get_esc_en();
+  if (if_mode == Device && is_active) begin
+    return probe_vif.get_esc_en();
+  end
+  // Only support escalation ping request interrupted by real escalation request in device mode.
+  return 0;
+endfunction
