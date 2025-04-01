@@ -58,9 +58,7 @@ def check_bool(x: Union[bool, str], err_prefix: str) -> Tuple[bool, bool]:
         return (x.lower() == "true"), False
 
 
-def check_ln(obj: Dict[str, object],
-             x: str,
-             withwidth: bool,
+def check_ln(obj: Dict[str, object], x: str, withwidth: bool,
              err_prefix: str) -> int:
     error = 0
     entry = obj[x]
@@ -84,11 +82,9 @@ def check_ln(obj: Dict[str, object],
     return error
 
 
-def check_keys(obj: Dict[str, object],
-               required_keys: Dict[str, List[str]],
+def check_keys(obj: Dict[str, object], required_keys: Dict[str, List[str]],
                optional_keys: Dict[str, List[str]],
-               added_keys: Dict[str, List[str]],
-               err_prefix: str) -> int:
+               added_keys: Dict[str, List[str]], err_prefix: str) -> int:
     error = 0
     for x in required_keys:
         if x not in obj:

@@ -18,21 +18,19 @@ OPTIONAL_FIELDS = {
     'default': ['s', "item default value"],
     'local': ['pb', "to be localparam"],
     'expose': ['pb', "to be exposed to top"],
-    'randcount': [
-        's', "number of bits to randomize in the parameter. 0 by default."
-    ],
+    'randcount':
+    ['s', "number of bits to randomize in the parameter. 0 by default."],
     'randtype': ['s', "type of randomization to perform. none by default"],
     'unpacked_dimensions': [
-        's', "unpacked dimensions of parameter e.g. [16] for a single unpacked "
-             "dimension of size 16. none by default"],
+        's', "unpacked dimensions of parameter e.g. [16] for a single "
+        "unpacked dimension of size 16. none by default"
+    ],
 }
 
 
 class BaseParam:
-    def __init__(self,
-                 name: str,
-                 desc: Optional[str],
-                 param_type: str,
+
+    def __init__(self, name: str, desc: Optional[str], param_type: str,
                  unpacked_dimensions: Optional[str]):
         self.name = name
         self.desc = desc
@@ -41,10 +39,9 @@ class BaseParam:
 
     def apply_default(self, value: str) -> None:
         if self.param_type[:3] == 'int':
-            check_int(value,
-                      'default value for parameter {} '
-                      '(which has type {})'
-                      .format(self.name, self.param_type))
+            check_int(
+                value, f'default value for parameter {self.name} (which has '
+                f'(type {self.param_type})')
         self.default: Union[str, int] = value
 
     def as_dict(self) -> Dict[str, object]:
@@ -59,12 +56,9 @@ class BaseParam:
 
 
 class LocalParam(BaseParam):
-    def __init__(self,
-                 name: str,
-                 desc: Optional[str],
-                 param_type: str,
-                 unpacked_dimensions: Optional[str],
-                 value: str):
+
+    def __init__(self, name: str, desc: Optional[str], param_type: str,
+                 unpacked_dimensions: Optional[str], value: str):
         super().__init__(name, desc, param_type, unpacked_dimensions)
         self.value = value
 
@@ -72,9 +66,9 @@ class LocalParam(BaseParam):
         try:
             return int(self.value, 0)
         except ValueError:
-            raise ValueError("When {}, the {} value expanded as "
-                             "{}, which doesn't parse as an integer."
-                             .format(when, self.name, self.value)) from None
+            raise ValueError(
+                f"When {when}, the {self.name} value expanded as "
+                f"{self.value}, which doesn't parse as an integer.") from None
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
@@ -84,13 +78,9 @@ class LocalParam(BaseParam):
 
 
 class Parameter(BaseParam):
-    def __init__(self,
-                 name: str,
-                 desc: Optional[str],
-                 param_type: str,
-                 unpacked_dimensions: Optional[str],
-                 default: str,
-                 local: bool,
+
+    def __init__(self, name: str, desc: Optional[str], param_type: str,
+                 unpacked_dimensions: Optional[str], default: str, local: bool,
                  expose: bool):
         super().__init__(name, desc, param_type, unpacked_dimensions)
         self.default = default
@@ -108,12 +98,9 @@ class Parameter(BaseParam):
 
 
 class RandParameter(BaseParam):
-    def __init__(self,
-                 name: str,
-                 desc: Optional[str],
-                 param_type: str,
-                 randcount: int,
-                 randtype: str):
+
+    def __init__(self, name: str, desc: Optional[str], param_type: str,
+                 randcount: int, randtype: str):
         assert randcount > 0
         assert randtype in ['perm', 'data']
         super().__init__(name, desc, param_type, None)
@@ -121,9 +108,9 @@ class RandParameter(BaseParam):
         self.randtype = randtype
 
     def apply_default(self, value: str) -> None:
-        raise ValueError('Cannot apply a default value of {!r} to '
-                         'parameter {}: it is a random netlist constant.'
-                         .format(self.name, value))
+        raise ValueError(
+            f'Cannot apply a default value of {value!r} to parameter '
+            f'{self.name}: it is a random netlist constant.')
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
@@ -133,16 +120,13 @@ class RandParameter(BaseParam):
 
 
 class MemSizeParameter(BaseParam):
-    def __init__(self,
-                 name: str,
-                 desc: Optional[str],
-                 param_type: str):
+
+    def __init__(self, name: str, desc: Optional[str], param_type: str):
         super().__init__(name, desc, param_type, None)
 
 
 def _parse_parameter(where: str, raw: object) -> BaseParam:
-    rd = check_keys(raw, where,
-                    list(REQUIRED_FIELDS.keys()),
+    rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()),
                     list(OPTIONAL_FIELDS.keys()))
 
     # TODO: Check if PascalCase or ALL_CAPS
@@ -170,54 +154,51 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         randtype = check_str(rd.get('randtype', 'none'),
                              'randtype field of ' + where)
         if randtype not in ['perm', 'data']:
-            raise ValueError('At {}, parameter {} has a name that implies it '
-                             'is a random netlist constant, which means it '
-                             'must specify a randtype of "perm" or "data", '
-                             'rather than {!r}.'
-                             .format(where, name, randtype))
+            raise ValueError(
+                f'At {where}, parameter {name} has a name that implies it '
+                'is a random netlist constant, which means it must specify a '
+                f'randtype of "perm" or "data", rather than {randtype!r}.')
 
         r_randcount = rd.get('randcount')
         if r_randcount is None:
-            raise ValueError('At {}, the random netlist constant {} has no '
-                             'randcount field.'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the random netlist constant {name} has no '
+                'randcount field.')
         randcount = check_int(r_randcount, 'randcount field of ' + where)
         if randcount <= 0:
-            raise ValueError('At {}, the random netlist constant {} has a '
-                             'randcount of {}, which is not positive.'
-                             .format(where, name, randcount))
+            raise ValueError(
+                f'At {where}, the random netlist constant {name} has a '
+                f'randcount of {randcount}, which is not positive.')
 
         r_type = rd.get('type')
         if r_type is None:
-            raise ValueError('At {}, parameter {} has no type field (which is '
-                             'required for random netlist constants).'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, parameter {name} has no type field (which is '
+                'required for random netlist constants).')
         param_type = check_str(r_type, 'type field of ' + where)
 
         local = check_bool(rd.get('local', 'false'), 'local field of ' + where)
         if local:
-            raise ValueError('At {}, the parameter {} specifies local = true, '
-                             'meaning that it is a localparam. This is '
-                             'incompatible with being a random netlist '
-                             'constant (how would it be set?)'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the parameter {name} specifies local = true, '
+                'meaning that it is a localparam. This is incompatible with '
+                'being a random netlist constant (how would it be set?)')
 
         r_default = rd.get('default')
         if r_default is not None:
-            raise ValueError('At {}, the parameter {} specifies a value for '
-                             'the "default" field. This is incompatible with '
-                             'being a random netlist constant: the value will '
-                             'be set by the random generator.'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the parameter {name} specifies a value for '
+                'the "default" field. This is incompatible with being a '
+                'random netlist constant: the value will be set by the '
+                'random generator.')
 
         expose = check_bool(rd.get('expose', 'false'),
                             'expose field of ' + where)
         if expose:
-            raise ValueError('At {}, the parameter {} specifies expose = '
-                             'true, meaning that the parameter is exposed to '
-                             'the top-level. This is incompatible with being '
-                             'a random netlist constant.'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the parameter {name} specifies expose = true, '
+                'meaning that the parameter is exposed to the top-level. '
+                'This is incompatible with being a random netlist constant.')
 
         return RandParameter(name, desc, param_type, randcount, randtype)
 
@@ -228,36 +209,34 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
             raise ValueError("At {where}, the parameter {name} specifies "
                              "{fld} but the name doesn't look like a random "
                              "netlist constant. To use {fld}, prefix the name "
-                             "with RndCnst."
-                             .format(where=where, name=name, fld=fld))
+                             "with RndCnst.")
 
     if name.lower().startswith('memsize'):
         r_type = rd.get('type')
         if r_type is None:
-            raise ValueError('At {}, parameter {} has no type field (which is '
-                             'required for memory size parameters).'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, parameter {name} has no type field (which is '
+                'required for memory size parameters).')
         param_type = check_str(r_type, 'type field of ' + where)
 
         if rd.get('type') != "int":
-            raise ValueError('At {}, memory size parameter {} must be of type integer.'
-                             .format(where, name))
+            raise ValueError(f'At {where}, memory size parameter {name} must '
+                             'be of type integer.')
 
         local = check_bool(rd.get('local', 'false'), 'local field of ' + where)
         if local:
-            raise ValueError('At {}, the parameter {} specifies local = true, '
-                             'meaning that it is a localparam. This is '
-                             'incompatible with being a memory size parameter.'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the parameter {name} specifies local = true, '
+                'meaning that it is a localparam. This is incompatible with '
+                'being a memory size parameter.')
 
         expose = check_bool(rd.get('expose', 'false'),
                             'expose field of ' + where)
         if expose:
-            raise ValueError('At {}, the parameter {} specifies expose = '
-                             'true, meaning that the parameter is exposed to '
-                             'the top-level. This is incompatible with '
-                             'being a memory size parameter.'
-                             .format(where, name))
+            raise ValueError(
+                f'At {where}, the parameter {name} specifies expose = true, '
+                'meaning that the parameter is exposed to the top-level. '
+                'This is incompatible with being a memory size parameter.')
 
         return MemSizeParameter(name, desc, param_type)
 
@@ -272,21 +251,21 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
 
     r_default = rd.get('default')
     if r_default is None:
-        raise ValueError('At {}, the {} param has no default field.'
-                         .format(where, name))
+        raise ValueError(f'At {where}, the {name} param has no default field.')
     else:
         default = check_str(r_default, 'default field of ' + where)
         if param_type[:3] == 'int':
             check_int(default,
-                      'default field of {}, (an integer parameter)'
-                      .format(name))
+                      f'default field of {name}, (an integer parameter)')
 
     if local and expose:
-        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
+        return Parameter(name, desc, param_type, unpacked_dimensions, default,
+                         local, expose)
     elif local:
         return LocalParam(name, desc, param_type, unpacked_dimensions, default)
     else:
-        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
+        return Parameter(name, desc, param_type, unpacked_dimensions, default,
+                         local, expose)
 
 
 # Note: With a modern enough Python, we'd like this to derive from
@@ -294,6 +273,7 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
 #       class only become subscriptable in Python 3.9. So we derive from just
 #       "MutableMapping" and tell mypy not to worry about it.
 class Params(MutableMapping):  # type: ignore
+
     def __init__(self) -> None:
         self.by_name = {}  # type: Dict[str, BaseParam]
 
@@ -323,9 +303,8 @@ class Params(MutableMapping):  # type: ignore
         for idx, (key, value) in enumerate(defaults):
             param = self.by_name[key]
             if param is None:
-                raise KeyError('Cannot find parameter '
-                               '{} to set default value.'
-                               .format(key))
+                raise KeyError(
+                    f'Cannot find parameter {key} to set default value.')
 
             param.apply_default(value)
 
@@ -338,17 +317,15 @@ class Params(MutableMapping):  # type: ignore
 
         param = self.by_name.get(value)
         if param is None:
-            raise ValueError('Cannot find a parameter called {} when {}. '
-                             'Known parameters: {}.'
-                             .format(value,
-                                     when,
-                                     ', '.join(self.by_name.keys())))
+            raise ValueError(
+                f'Cannot find a parameter called {value} when {when}. '
+                f'Known parameters: {", ".join(self.by_name.keys())}.')
 
         # Only allow localparams in the expansion (because otherwise we're at
         # the mercy of whatever instantiates the block).
         if not isinstance(param, LocalParam):
-            raise ValueError("When {}, {} is a not a local parameter."
-                             .format(when, value))
+            raise ValueError(
+                f"When {when}, {value} is a not a local parameter.")
 
         return param.expand_value(when)
 
@@ -373,8 +350,7 @@ class Params(MutableMapping):  # type: ignore
                 continue
 
             term = self._expand_one(tok.strip(),
-                                    'expanding term {} of {}'
-                                    .format(idx // 2, where))
+                                    f'expanding term {idx // 2} of {where}')
             acc += -term if is_neg else term
 
         return acc
@@ -384,17 +360,18 @@ class Params(MutableMapping):  # type: ignore
 
 
 class ReggenParams(Params):
+
     @staticmethod
     def from_raw(where: str, raw: object) -> 'ReggenParams':
         ret = ReggenParams()
         rl = check_list(raw, where)
         for idx, r_param in enumerate(rl):
-            entry_where = 'entry {} in {}'.format(idx + 1, where)
+            entry_where = f'entry {idx + 1} in {where}'
             param = _parse_parameter(entry_where, r_param)
             if param.name in ret:
-                raise ValueError('At {}, found a duplicate parameter with '
-                                 'name {}.'
-                                 .format(entry_where, param.name))
+                raise ValueError(
+                    f'At {entry_where}, found a duplicate parameter with '
+                    f'name {param.name}.')
             ret.add(param)
         return ret
 

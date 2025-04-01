@@ -6,9 +6,8 @@ Generates the documentation for the register tool
 
 """
 from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import (validate,
-                    ip_block, enum_entry, field,
-                    register, multi_register, window)
+from reggen import (validate, ip_block, enum_entry, field, register,
+                    multi_register, window)
 
 from typing import Any, Optional, TextIO
 
@@ -212,8 +211,8 @@ def doc_tbl_head(outfile: TextIO, use: bool) -> None:
         genout(outfile, "--- | -----------\n")
 
 
-def doc_tbl_line(outfile: TextIO, key: str,
-                 use: Optional[str], desc: Any) -> None:
+def doc_tbl_line(outfile: TextIO, key: str, use: Optional[str],
+                 desc: Any) -> None:
     if use is not None:
         desc_key, desc_txt = desc
         val_type = (validate.val_types[desc_key][0]

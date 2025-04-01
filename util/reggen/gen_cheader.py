@@ -12,7 +12,6 @@ import textwrap
 import warnings
 from typing import List, Optional, Set, TextIO
 
-
 from reggen.field import Field
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam
@@ -112,12 +111,9 @@ def gen_define(name: str,
     return define_declare + ' \\\n' + indent + body + '\n'
 
 
-def gen_cdefine_register(outstr: TextIO,
-                         reg: Register,
-                         comp: str,
-                         width: int,
-                         rnames: Set[str],
-                         existing_defines: Set[str]) -> None:
+def gen_cdefine_register(outstr: TextIO, reg: Register, comp: str, width: int,
+                         rnames: Set[str], existing_defines: Set[str]) -> None:
+
     def uint_literal(n: int) -> str:
         return hex(n) + 'u'
 
@@ -131,8 +127,8 @@ def gen_cdefine_register(outstr: TextIO,
         gen_define(defname + '_REG_OFFSET', [], hex(offset), existing_defines))
     genout(
         outstr,
-        gen_define(defname + '_REG_RESVAL', [],
-                   uint_literal(reg.resval), existing_defines))
+        gen_define(defname + '_REG_RESVAL', [], uint_literal(reg.resval),
+                   existing_defines))
 
     for field in reg.fields:
         dname = defname + '_' + as_define(field.name)
@@ -159,9 +155,9 @@ def gen_cdefine_register(outstr: TextIO,
                 genout(
                     outstr,
                     gen_define(
-                        dname + '_FIELD', [],
-                        '((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})'
-                        .format(dname=dname), existing_defines))
+                        dname + '_FIELD', [], '((bitfield_field32_t) { .mask '
+                        f'= {dname}_MASK, .index = {dname}_OFFSET ' '})',
+                        existing_defines))
         if field.enum is not None:
             for enum in field.enum:
                 ename = as_define(enum.name)
@@ -169,18 +165,14 @@ def gen_cdefine_register(outstr: TextIO,
                 genout(
                     outstr,
                     gen_define(
-                        defname + '_' + as_define(field.name) +
-                        '_VALUE_' + ename, [], value, existing_defines))
+                        defname + '_' + as_define(field.name) + '_VALUE_' +
+                        ename, [], value, existing_defines))
     genout(outstr, '\n')
     return
 
 
-def gen_cdefine_window(outstr: TextIO,
-                       win: Window,
-                       comp: str,
-                       regwidth: int,
-                       rnames: Set[str],
-                       existing_defines: Set[str]) -> None:
+def gen_cdefine_window(outstr: TextIO, win: Window, comp: str, regwidth: int,
+                       rnames: Set[str], existing_defines: Set[str]) -> None:
     offset = win.offset
 
     genout(outstr, format_comment('Memory area: ' + first_line(win.desc)))
@@ -204,16 +196,15 @@ def gen_cdefine_window(outstr: TextIO,
                gen_define(defname + '_MASK ', [], hex(mask), existing_defines))
 
 
-def gen_cdefines_module_param(outstr: TextIO,
-                              param: LocalParam,
+def gen_cdefines_module_param(outstr: TextIO, param: LocalParam,
                               module_name: str,
                               existing_defines: Set[str]) -> None:
     # Presently there is only one type (int), however if the new types are
     # added, they potentially need to be handled differently.
     known_types = ["int", "int unsigned"]
     if param.param_type not in known_types:
-        warnings.warn("Cannot generate a module define of type {}"
-                      .format(param.param_type))
+        warnings.warn(
+            f"Cannot generate a module define of type {param.param_type}")
         return
 
     if param.desc is not None:
@@ -223,17 +214,14 @@ def gen_cdefines_module_param(outstr: TextIO,
     param_name = param.name if '_' in param.name else to_snake_case(param.name)
     define_name = as_define(module_name + '_PARAM_' + param_name)
     if param.param_type == "int" or param.param_type == "int unsigned":
-        define = gen_define(define_name, [], param.value,
-                            existing_defines)
+        define = gen_define(define_name, [], param.value, existing_defines)
 
     genout(outstr, define)
     genout(outstr, '\n')
 
 
-def gen_cdefines_module_params(outstr: TextIO,
-                               module_data: IpBlock,
-                               module_name: str,
-                               register_width: int,
+def gen_cdefines_module_params(outstr: TextIO, module_data: IpBlock,
+                               module_name: str, register_width: int,
                                existing_defines: Set[str]) -> None:
     module_params = module_data.params
 
@@ -247,18 +235,18 @@ def gen_cdefines_module_params(outstr: TextIO,
     genout(outstr, '\n')
 
 
-def gen_multireg_field_defines(outstr: TextIO,
-                               regname: str,
-                               fields: List[Field],
-                               subreg_num: int,
+def gen_multireg_field_defines(outstr: TextIO, regname: str,
+                               fields: List[Field], subreg_num: int,
                                regwidth: int,
                                existing_defines: Set[str]) -> None:
 
     for each_field in fields:
         field_width = each_field.bits.width()
 
-        define_name = regname + '_' + as_define(each_field.name + "_FIELD_WIDTH")
-        define = gen_define(define_name, [], str(field_width), existing_defines)
+        define_name = regname + '_' + as_define(each_field.name +
+                                                "_FIELD_WIDTH")
+        define = gen_define(define_name, [], str(field_width),
+                            existing_defines)
         genout(outstr, define)
 
     define_name = regname + "_MULTIREG_COUNT"
@@ -268,18 +256,16 @@ def gen_multireg_field_defines(outstr: TextIO,
     genout(outstr, '\n')
 
 
-def gen_cdefine_multireg(outstr: TextIO,
-                         multireg: MultiRegister,
-                         component: str,
-                         regwidth: int,
-                         rnames: Set[str],
+def gen_cdefine_multireg(outstr: TextIO, multireg: MultiRegister,
+                         component: str, regwidth: int, rnames: Set[str],
                          existing_defines: Set[str]) -> None:
     comment = multireg.reg.desc + " (common parameters)"
     genout(outstr, format_comment(first_line(comment)))
     if len(multireg.reg.fields) >= 1:
         regname = as_define(component + '_' + multireg.reg.name)
         gen_multireg_field_defines(outstr, regname, multireg.reg.fields,
-                                   len(multireg.regs), regwidth, existing_defines)
+                                   len(multireg.regs), regwidth,
+                                   existing_defines)
     else:
         log.warn("Fieldless multireg " + multireg.reg.name +
                  " skip multireg specific data generation.")
@@ -289,10 +275,8 @@ def gen_cdefine_multireg(outstr: TextIO,
                              existing_defines)
 
 
-def gen_cdefines_interrupt_field(outstr: TextIO,
-                                 interrupt: Signal,
-                                 component: str,
-                                 regwidth: int,
+def gen_cdefines_interrupt_field(outstr: TextIO, interrupt: Signal,
+                                 component: str, regwidth: int,
                                  existing_defines: Set[str]) -> None:
     fieldlsb = interrupt.bits.lsb
     iname = interrupt.name
@@ -317,16 +301,13 @@ def gen_cdefines_interrupt_field(outstr: TextIO,
             genout(
                 outstr,
                 gen_define(
-                    defname + '_FIELD', [],
-                    '((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})'
-                    .format(dname=defname), existing_defines))
+                    defname + '_FIELD', [], '((bitfield_field32_t) { .mask '
+                    f'= {defname}_MASK, .index = {defname}_OFFSET ' '})',
+                    existing_defines))
 
 
-def gen_cdefines_interrupts(outstr: TextIO,
-                            block: IpBlock,
-                            component: str,
-                            regwidth: int,
-                            existing_defines: Set[str]) -> None:
+def gen_cdefines_interrupts(outstr: TextIO, block: IpBlock, component: str,
+                            regwidth: int, existing_defines: Set[str]) -> None:
     # If no_auto_intr_regs is true, then we do not generate common defines,
     # because the bit offsets for a particular interrupt may differ between
     # the interrupt enable/state/test registers.
@@ -340,9 +321,7 @@ def gen_cdefines_interrupts(outstr: TextIO,
     genout(outstr, '\n')
 
 
-def gen_cdefines(block: IpBlock,
-                 outfile: TextIO,
-                 src_lic: Optional[str],
+def gen_cdefines(block: IpBlock, outfile: TextIO, src_lic: Optional[str],
                  src_copy: str) -> int:
     rnames = block.get_rnames()
 
@@ -361,13 +340,13 @@ def gen_cdefines(block: IpBlock,
     for rb in block.reg_blocks.values():
         for x in rb.entries:
             if isinstance(x, Register):
-                gen_cdefine_register(outstr, x, block.name, block.regwidth, rnames,
-                                     existing_defines)
+                gen_cdefine_register(outstr, x, block.name, block.regwidth,
+                                     rnames, existing_defines)
                 continue
 
             if isinstance(x, MultiRegister):
-                gen_cdefine_multireg(outstr, x, block.name, block.regwidth, rnames,
-                                     existing_defines)
+                gen_cdefine_multireg(outstr, x, block.name, block.regwidth,
+                                     rnames, existing_defines)
                 continue
 
             if isinstance(x, Window):

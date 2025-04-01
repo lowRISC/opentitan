@@ -11,8 +11,8 @@ class RegBase:
     '''An abstract class inherited by Register and MultiRegister
 
     This represents a block of one or more registers with a base address.
-
     '''
+
     def __init__(self, offset: int):
         self.offset = offset
 

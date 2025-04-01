@@ -1068,7 +1068,8 @@ def amend_interrupt(top: ConfigT,
             # Qualify name with module name
             qual_irq = deepcopy(irq)
             qual_irq["name"] = f"{irq['module_name']}_{irq['name']}"
-            qual_irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
+            qual_irq["desc"] = (f"{irq['module_name']} {irq['name']} "
+                                "incoming interrupt")
             qual_irq["incoming"] = True
             qual_irq["width"] = 1
             interrupts.append(qual_irq)
