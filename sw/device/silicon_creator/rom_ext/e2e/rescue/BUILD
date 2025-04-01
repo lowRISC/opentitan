@@ -46,6 +46,8 @@ _RESCUE_ROMEXT_RESULTS = {
 _CONFIGS = {
     "xmodem": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        # This alternate rom_ext has enter-on-fail and a timeout enabled.
+        "alt_rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_timeout",
         "params": "",
         "setup": "",
         "tags": [],
@@ -161,6 +163,7 @@ genrule(
                 ":boot_test_{}".format(name): "payload",
                 ":bad_rom_ext": "bad_rom_ext",
             },
+            changes_otp = True,
             exit_failure = _RESCUE_ROMEXT_RESULTS[name == rxslot]["failure"],
             exit_success = _RESCUE_ROMEXT_RESULTS[name == rxslot]["success"].format(slot = name),
             image_name = "/tmp/rescue_rom_ext_{}.img".format(name),
@@ -218,7 +221,6 @@ genrule(
                 --exec="gpio apply RESET"
                 --exec="gpio remove RESET"
                 --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
                 no-op
             """,
         ),
@@ -261,7 +263,6 @@ genrule(
                 --exec="rescue {params} boot-svc set-next-bl0-slot --primary=SlotA --get-response=false"
                 --exec="no-op --info='##### Check for firmware execution in slot A'"
                 --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
-                --exec="fpga clear-bitstream"
                 no-op
             """,
         ),
@@ -287,10 +288,74 @@ opentitan_test(
             # First make sure the ROM_EXT is faulting because there is no firmware
             --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
             # Load firmware via rescue
-            --exec="rescue firmware --rate=230400 {payload:signed_bin}"
+            --exec="rescue firmware --rate=115200 {payload:signed_bin}"
             # Check for firmware execution
             --exec="console --baudrate=115200 --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             no-op
         """,
     ),
 )
+
+opentitan_test(
+    name = "rescue_inactivity_timeout",
+    srcs = [
+        "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_timeout",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            # Trigger rescue and do nothing.  We expect the inactivity timer to
+            # cause rescue to exit and then boot the firmware.
+            --exec="rescue no-op"
+            # Check for firmware execution
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+[
+    opentitan_test(
+        name = "rescue_enter_on_fail_{}".format(name),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            changes_otp = True,
+            exit_success = "BFV:05524304\r\n",
+            rom_ext = config.get(
+                "alt_rom_ext",
+                config["rom_ext"],
+            ),
+            setup = config["setup"],
+            tags = config["tags"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                {setup}
+                # Load only the ROM_EXT so the boot will fail because of no firmware.
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                # Check that the final boot-fault is "kErrorRescueInactivity".
+                --exec="console --non-interactive --exit-success='{exit_success}' --timeout=10s"
+                no-op
+            """,
+        ),
+    )
+    for name, config in _CONFIGS.items()
+]
