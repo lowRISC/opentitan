@@ -574,6 +574,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     if (error != kErrorOk) {
       continue;
     }
+    HARDENED_CHECK_EQ(error, kErrorOk);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
