@@ -216,6 +216,16 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
     ${lib.Name.from_snake_case("peripheral_count").as_camel_case()}
   } peripheral_e;
 
+  % if len(top["outgoing_interrupt"]) > 0:
+  %   for interrupt_group, interrupts in top["outgoing_interrupt"].items():
+<%
+  num_interrupts = sum(interrupt["width"] for interrupt in interrupts)
+%>\
+  // Number of ${interrupt_group} outgoing interrupts
+  parameter int unsigned NOutgoingInterrupts${interrupt_group.capitalize()} = ${num_interrupts};
+  %   endfor
+
+  % endif
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.
 

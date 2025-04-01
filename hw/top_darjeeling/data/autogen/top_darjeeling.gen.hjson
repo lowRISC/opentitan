@@ -19718,6 +19718,7 @@
       incoming: false
     }
   ]
+  outgoing_interrupt: {}
   alert_module:
   [
     uart0
@@ -19800,6 +19801,7 @@
     ac_range_check
   ]
   outgoing_alert_module: {}
+  outgoing_interrupt_module: {}
   alert_lpgs:
   [
     {
