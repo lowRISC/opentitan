@@ -42,6 +42,7 @@
              "{proj_root}/hw/ip/prim/dv/prim_prince/prim_prince_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_32kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
+             "{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson",
@@ -63,7 +64,6 @@
              // Top level.
              "{proj_root}/hw/top_darjeeling/dv/chip_sim_cfg.hjson",
              // TODO(#26733): the smoketests here must be fixed before enabling.
-             //"{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_dmi_interface_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
              //"{proj_root}/hw/top_darjeeling/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
             ]
