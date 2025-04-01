@@ -289,7 +289,6 @@ pub fn load_elf_sram_program(
                 .chunks(4)
                 .map(LittleEndian::read_u32)
                 .collect();
-            println!("{:?}", data32);
             let mut read_data32 = vec![0u32; data32.len()];
             log::info!("Read back data to verify");
             jtag.read_memory32(section.address() as u32, &mut read_data32)?;

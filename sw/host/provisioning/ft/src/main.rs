@@ -221,7 +221,6 @@ fn main() -> Result<()> {
                 opts.init.bootstrap.options.reset_delay,
                 &opts.sram_program,
                 opts.timeout,
-                &spi_console_device,
             )?;
             response.stats.log_elapsed_time("ft-individualize", t0);
 

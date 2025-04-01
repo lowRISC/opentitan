@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load("@//rules:manuf.bzl", "ft_device_id")
+load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_SIGNED_PERSO_BINS",
@@ -180,10 +180,8 @@ opentitan_test(
             "//sw/device/lib/dif:gpio",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
-            "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:pinmux_testutils",
             "//sw/device/lib/testing/test_framework:check",
-            "//sw/device/lib/testing/test_framework:ottf_console",
             "//sw/device/lib/testing/test_framework:ottf_test_config",
             "//sw/device/lib/testing/test_framework:status",
             "//sw/device/silicon_creator/manuf/lib:individualize",
