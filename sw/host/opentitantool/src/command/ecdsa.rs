@@ -292,6 +292,38 @@ impl CommandDispatch for EcdsaVerifyCommand {
     }
 }
 
+/// Converts an ECDSA signature to raw format used by OpenTitan. Useful for integration with other signing backends.
+#[derive(Debug, Args)]
+pub struct EcdsaSigConvertCommand {
+    /// Signature file in the standard der format, form openssl or other standard tools
+    der_signature_file_in: PathBuf,
+    /// Output file to write signature in the format used by OpenTitan.
+    raw_signature_file_out: PathBuf,
+    /// Do not the byte order of the signature (default: false).
+    #[arg(long, short = 'n', default_value_t = false)]
+    no_reverse_byte_order: bool,
+}
+
+impl CommandDispatch for EcdsaSigConvertCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let reverse_byte_order: bool = !self.no_reverse_byte_order;
+        log::trace!("reverse_byte_order: {}", reverse_byte_order);
+
+        let raw_signature = EcdsaRawSignature::from_der_with_reverse(
+            &std::fs::read(&self.der_signature_file_in)?,
+            reverse_byte_order,
+        )?;
+        let mut file = File::create(&self.raw_signature_file_out)?;
+        raw_signature.write(&mut file)?;
+
+        Ok(None)
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 /// ECDSA commands.
 pub enum Ecdsa {
@@ -299,4 +331,5 @@ pub enum Ecdsa {
     Key(EcdsaKeySubcommands),
     Sign(EcdsaSignCommand),
     Verify(EcdsaVerifyCommand),
+    ConvertSig(EcdsaSigConvertCommand),
 }
