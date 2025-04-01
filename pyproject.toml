@@ -53,7 +53,7 @@ dependencies = [
   # Linters
   "flake8 ~= 7.1",
   "isort==5.10.1",
-  "mypy==0.971",
+  "mypy == 0.991",
   "yapf==0.32.0",
   "ruff>=0.9.6",
 
