@@ -579,6 +579,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
         {"//hw/top_earlgrey:silicon_creator": None},
     ),
     deps = [
@@ -5469,6 +5470,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
         },
