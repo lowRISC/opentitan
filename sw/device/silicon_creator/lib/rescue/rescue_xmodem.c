@@ -94,13 +94,17 @@ static rom_error_t protocol(rescue_state_t *state) {
     result = xmodem_recv_frame(
         iohandle, state->frame, state->data + state->offset,
         sizeof(state->data) - state->offset, &rxlen, &command);
+
+    HARDENED_RETURN_IF_ERROR(rescue_inactivity(state));
     if (state->frame == 1 && result == kErrorXModemTimeoutStart) {
       xmodem_recv_start(iohandle);
       continue;
     }
+
     switch (result) {
       case kErrorOk:
-        // Packet ok.
+        // Packet ok. Cancel the inactivity deadline.
+        state->inactivity_deadline = 0;
         state->offset += rxlen;
         HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
         xmodem_ack(iohandle, true);
@@ -127,6 +131,8 @@ static rom_error_t protocol(rescue_state_t *state) {
       case kErrorXModemUnknown:
         if (state->frame == 1) {
           if (command == '\r') {
+            // Mode change request.  Cancel the inactivity deadline.
+            state->inactivity_deadline = 0;
             validate_mode(next_mode, state);
             next_mode = 0;
           } else {

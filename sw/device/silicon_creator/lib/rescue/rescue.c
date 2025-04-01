@@ -8,9 +8,11 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_enter_rescue.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -22,7 +24,13 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 
-static hardened_bool_t rescue_requested;
+typedef enum rescue_request {
+  kRescueRequestNone = 0,
+  kRescueRequestEnter = 0x739,
+  kRescueRequestSkip = 0x1d4,
+} rescue_request_t;
+
+static rescue_request_t rescue_requested;
 
 const uint32_t kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE;
 const uint32_t kFlashBankSize =
@@ -311,22 +319,56 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     // after the ROM_EXT and ends at the end of the flash bank.
     state->flash_start = CHIP_ROM_EXT_SIZE_MAX;
     state->flash_limit = kFlashBankSize;
+    state->inactivity_deadline = 0;
   } else {
     state->flash_start = (uint32_t)config->start * kFlashPageSize;
     state->flash_limit =
         (uint32_t)(config->start + config->size) * kFlashPageSize;
+    uint32_t timeout =
+        bitfield_field32_read(config->timeout, RESCUE_TIMEOUT_SECONDS);
+    state->inactivity_deadline =
+        timeout ? ibex_mcycle() + ibex_time_to_cycles(1000000 * timeout) : 0;
   }
 }
 
 rom_error_t rescue_enter_handler(boot_svc_msg_t *msg) {
-  rescue_requested = kHardenedBoolTrue;
+  rescue_requested = msg->enter_rescue_req.skip_once == kHardenedBoolTrue
+                         ? kRescueRequestSkip
+                         : kRescueRequestEnter;
   boot_svc_enter_rescue_res_init(kErrorOk, &msg->enter_rescue_res);
   return kErrorOk;
 }
 
+rom_error_t rescue_inactivity(rescue_state_t *state) {
+  if (state->inactivity_deadline &&
+      ibex_mcycle() > state->inactivity_deadline) {
+    return kErrorRescueInactivity;
+  }
+  return kErrorOk;
+}
+
+hardened_bool_t rescue_enter_on_fail(const owner_rescue_config_t *config) {
+  if ((hardened_bool_t)config != kHardenedBoolFalse) {
+    if (bitfield_bit32_read(config->timeout, RESCUE_ENTER_ON_FAIL_BIT)) {
+      return kHardenedBoolTrue;
+    }
+  }
+  return kHardenedBoolFalse;
+}
+
+void rescue_skip_next_boot(void) {
+  boot_svc_msg_t *msg = &retention_sram_get()->creator.boot_svc_msg;
+  boot_svc_enter_rescue_req_init(kHardenedBoolTrue, &msg->enter_rescue_req);
+}
+
 hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
-  if (rescue_requested == kHardenedBoolTrue) {
-    return kHardenedBoolTrue;
+  switch (rescue_requested) {
+    case kRescueRequestEnter:
+      return kHardenedBoolTrue;
+    case kRescueRequestSkip:
+      return kHardenedBoolFalse;
+    default:
+        /* do nothing and continue with trigger detection */;
   }
   rescue_protocol_t protocol = kRescueProtocolXmodem;
   rescue_detect_t detect = kRescueDetectBreak;
