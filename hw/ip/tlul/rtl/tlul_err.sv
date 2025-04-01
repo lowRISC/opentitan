@@ -86,10 +86,6 @@ module tlul_err import tlul_pkg::*; (
           fulldata_chk = 1'b0;
         end
       endcase
-    end else begin
-      addr_sz_chk  = 1'b0;
-      mask_chk     = 1'b0;
-      fulldata_chk = 1'b0;
     end
   end
 
