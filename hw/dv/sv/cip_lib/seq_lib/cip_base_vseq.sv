@@ -986,7 +986,8 @@ class cip_base_vseq #(
       `DV_SPINWAIT_EXIT(
           forever begin
             // 1 extra cycle to make sure no race condition
-            repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1) begin
+            // Plus 2 extra cycles due to alert sampling delay of 2 cycles at the VIF
+            repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + 2) begin
               cfg.clk_rst_vif.wait_n_clks(1);
               if (cfg.m_alert_agent_cfgs[alert_name].vif.get_alert() == 1) break;
             end
