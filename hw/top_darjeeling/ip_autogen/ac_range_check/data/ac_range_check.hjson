@@ -266,7 +266,7 @@
     { multireg: {
         name: "RANGE_REGWEN"
         desc: '''
-              This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register.
+              This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register.
               When cleared to Mubi4::False, the corresponding range configuration registers are locked and cannot be changed until the next reset.
               '''
         count: "NumRanges"
@@ -328,11 +328,11 @@
       }
     }
     { multireg: {
-        name: "RANGE_PERM"
+        name: "RANGE_ATTR"
         desc: '''
-              Permission configuration of the range.
-              The permission register exists per range and determines the access permissions of the particular range.
-              If it is not enabled, the range is not considered during the range check.
+              Attributes of the range.
+              This register exists per range and determines attributes (including permissions) of the particular range.
+              A range and its attributes are only considered if its `enable` field in this register is not set to `Mubi4::False`.
               '''
         count: "NumRanges"
         cname: "BASE"
@@ -366,7 +366,7 @@
             resval: false
           }
           { name: "enable"
-            desc: "When set to Mubi4::True, the range is considered in the range check."
+            desc: "When set to Mubi4::False, the range is _not_ considered in the range check; for any other value, the range _is_ considered in the range check."
             bits: "3:0"
             mubi: true
             resval: false

@@ -156,7 +156,7 @@ module ${module_instance_name}
 
     // Request hits an enabled range and comparison logic
     assign addr_hit[i] = prim_mubi_pkg::mubi4_test_true_loose(
-                           prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].enable.q)) & tor_hit;
+                           prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].enable.q)) & tor_hit;
 
     // Perform RACL checks - check if the incoming role matches with the configured policy
     assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q);
@@ -165,13 +165,13 @@ module ${module_instance_name}
     // Decode the multi-bit access fields for convenient access
     logic perm_read_access, perm_write_access, perm_execute_access;
     assign perm_read_access = prim_mubi_pkg::mubi4_test_true_strict(
-                                prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].read_access.q)) &
+                                prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].read_access.q)) &
                                 racl_read_hit[i];
     assign perm_write_access = prim_mubi_pkg::mubi4_test_true_strict(
-                                 prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].write_access.q)) &
+                                 prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].write_access.q)) &
                                  racl_write_hit[i];
     assign perm_execute_access = prim_mubi_pkg::mubi4_test_true_strict(
-                                   prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].execute_access.q)) &
+                                   prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].execute_access.q)) &
                                    racl_read_hit[i];
 
     // A range grants a request if the request address hits and the type of the access (R/W/X) is
@@ -190,7 +190,7 @@ module ${module_instance_name}
 
     // TODO(#25456) Use log_enable_mask to mask logging
     assign log_enable_mask[NumRanges - 1 - i] = prim_mubi_pkg::mubi4_test_true_strict(
-      prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].log_denied_access.q));
+      prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].log_denied_access.q));
   end
 
   // The overall grant and deny mask is simply the OR combination of the access-type-specific masks.

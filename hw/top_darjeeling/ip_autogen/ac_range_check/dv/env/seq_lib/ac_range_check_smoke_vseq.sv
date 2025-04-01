@@ -13,7 +13,7 @@ class ac_range_check_smoke_vseq extends ac_range_check_base_vseq;
   extern constraint num_trans_c;
   extern constraint tmp_c;
   extern constraint range_c;
-  extern constraint range_perm_c;
+  extern constraint range_attr_c;
   extern constraint range_racl_policy_c;
   extern constraint tl_main_vars_addr_c;
   extern constraint tl_main_vars_mask_c;
@@ -31,7 +31,7 @@ constraint ac_range_check_smoke_vseq::num_trans_c {
 // TODO remove this temporary directed constraint
 constraint ac_range_check_smoke_vseq::tmp_c {
   foreach (dut_cfg.range_base[i]) {
-    dut_cfg.range_perm[i].log_denied_access == 1;
+    dut_cfg.range_attr[i].log_denied_access == 1;
   }
 }
 
@@ -49,21 +49,21 @@ constraint ac_range_check_smoke_vseq::range_c {
 }
 
 // Enable/allow the range 2/3 of the time, to get more granted accesses
-constraint ac_range_check_smoke_vseq::range_perm_c {
+constraint ac_range_check_smoke_vseq::range_attr_c {
   foreach (dut_cfg.range_base[i]) {
-    dut_cfg.range_perm[i].execute_access dist {
+    dut_cfg.range_attr[i].execute_access dist {
       0 :/ 1,
       1 :/ 2
     };
-    dut_cfg.range_perm[i].write_access dist {
+    dut_cfg.range_attr[i].write_access dist {
       0 :/ 1,
       1 :/ 2
     };
-    dut_cfg.range_perm[i].read_access dist {
+    dut_cfg.range_attr[i].read_access dist {
       0 :/ 1,
       1 :/ 2
     };
-    dut_cfg.range_perm[i].enable dist {
+    dut_cfg.range_attr[i].enable dist {
       0 :/ 1,
       1 :/ 2
     };

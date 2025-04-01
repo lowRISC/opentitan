@@ -292,38 +292,38 @@ package top_darjeeling_racl_pkg;
     RACL_POLICY_SEL_SOC_ROT,     // 101 RANGE_LIMIT_29                : Policy Idx 2
     RACL_POLICY_SEL_SOC_ROT,     // 102 RANGE_LIMIT_30                : Policy Idx 2
     RACL_POLICY_SEL_SOC_ROT,     // 103 RANGE_LIMIT_31                : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 104 RANGE_PERM_0                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 105 RANGE_PERM_1                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 106 RANGE_PERM_2                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 107 RANGE_PERM_3                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 108 RANGE_PERM_4                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 109 RANGE_PERM_5                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 110 RANGE_PERM_6                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 111 RANGE_PERM_7                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 112 RANGE_PERM_8                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 113 RANGE_PERM_9                  : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 114 RANGE_PERM_10                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 115 RANGE_PERM_11                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 116 RANGE_PERM_12                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 117 RANGE_PERM_13                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 118 RANGE_PERM_14                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 119 RANGE_PERM_15                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 120 RANGE_PERM_16                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 121 RANGE_PERM_17                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 122 RANGE_PERM_18                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 123 RANGE_PERM_19                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 124 RANGE_PERM_20                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 125 RANGE_PERM_21                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 126 RANGE_PERM_22                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 127 RANGE_PERM_23                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 128 RANGE_PERM_24                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 129 RANGE_PERM_25                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 130 RANGE_PERM_26                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 131 RANGE_PERM_27                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 132 RANGE_PERM_28                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 133 RANGE_PERM_29                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 134 RANGE_PERM_30                 : Policy Idx 2
-    RACL_POLICY_SEL_SOC_ROT,     // 135 RANGE_PERM_31                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 104 RANGE_ATTR_0                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 105 RANGE_ATTR_1                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 106 RANGE_ATTR_2                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 107 RANGE_ATTR_3                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 108 RANGE_ATTR_4                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 109 RANGE_ATTR_5                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 110 RANGE_ATTR_6                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 111 RANGE_ATTR_7                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 112 RANGE_ATTR_8                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 113 RANGE_ATTR_9                  : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 114 RANGE_ATTR_10                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 115 RANGE_ATTR_11                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 116 RANGE_ATTR_12                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 117 RANGE_ATTR_13                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 118 RANGE_ATTR_14                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 119 RANGE_ATTR_15                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 120 RANGE_ATTR_16                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 121 RANGE_ATTR_17                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 122 RANGE_ATTR_18                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 123 RANGE_ATTR_19                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 124 RANGE_ATTR_20                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 125 RANGE_ATTR_21                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 126 RANGE_ATTR_22                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 127 RANGE_ATTR_23                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 128 RANGE_ATTR_24                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 129 RANGE_ATTR_25                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 130 RANGE_ATTR_26                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 131 RANGE_ATTR_27                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 132 RANGE_ATTR_28                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 133 RANGE_ATTR_29                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 134 RANGE_ATTR_30                 : Policy Idx 2
+    RACL_POLICY_SEL_SOC_ROT,     // 135 RANGE_ATTR_31                 : Policy Idx 2
     RACL_POLICY_SEL_SOC_ROT,     // 136 RANGE_RACL_POLICY_SHADOWED_0  : Policy Idx 2
     RACL_POLICY_SEL_SOC_ROT,     // 137 RANGE_RACL_POLICY_SHADOWED_1  : Policy Idx 2
     RACL_POLICY_SEL_SOC_ROT,     // 138 RANGE_RACL_POLICY_SHADOWED_2  : Policy Idx 2

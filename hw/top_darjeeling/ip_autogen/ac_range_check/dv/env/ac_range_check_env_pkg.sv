@@ -60,7 +60,7 @@ package ac_range_check_env_pkg;
     bit write_access;
     bit read_access;
     bit enable;
-  } range_perm_t;
+  } range_attr_t;
 
   typedef struct packed {
     bit [15:0] write_perm;

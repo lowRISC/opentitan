@@ -33,7 +33,7 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   extern task ac_range_check_init();
   extern task cfg_range_base();
   extern task cfg_range_limit();
-  extern task cfg_range_perm();
+  extern task cfg_range_attr();
   extern task cfg_range_racl_policy();
   extern task send_single_tl_unfilt_tr(bit zero_delays = 0);
   extern task tl_filt_device_auto_resp(int min_rsp_delay = 0, int max_rsp_delay = 80,
@@ -74,7 +74,7 @@ task ac_range_check_base_vseq::ac_range_check_init();
   fork
     cfg_range_base();
     cfg_range_limit();
-    cfg_range_perm();
+    cfg_range_attr();
     cfg_range_racl_policy();
   join
   // TODO lastly, randomly lock the configuration with RANGE_REGWEN
@@ -95,17 +95,17 @@ task ac_range_check_base_vseq::cfg_range_limit();
   end
 endtask : cfg_range_limit
 
-task ac_range_check_base_vseq::cfg_range_perm();
-  foreach (dut_cfg.range_perm[i]) begin
-    ral.range_perm[i].log_denied_access.set(mubi4_bool_to_mubi(
-      dut_cfg.range_perm[i].log_denied_access));
-    ral.range_perm[i].execute_access.set(mubi4_bool_to_mubi(dut_cfg.range_perm[i].execute_access));
-    ral.range_perm[i].write_access.set(mubi4_bool_to_mubi(dut_cfg.range_perm[i].write_access));
-    ral.range_perm[i].read_access.set(mubi4_bool_to_mubi(dut_cfg.range_perm[i].read_access));
-    ral.range_perm[i].enable.set(mubi4_bool_to_mubi(dut_cfg.range_perm[i].enable));
-    csr_update(.csr(ral.range_perm[i]));
+task ac_range_check_base_vseq::cfg_range_attr();
+  foreach (dut_cfg.range_attr[i]) begin
+    ral.range_attr[i].log_denied_access.set(mubi4_bool_to_mubi(
+      dut_cfg.range_attr[i].log_denied_access));
+    ral.range_attr[i].execute_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].execute_access));
+    ral.range_attr[i].write_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].write_access));
+    ral.range_attr[i].read_access.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].read_access));
+    ral.range_attr[i].enable.set(mubi4_bool_to_mubi(dut_cfg.range_attr[i].enable));
+    csr_update(.csr(ral.range_attr[i]));
   end
-endtask : cfg_range_perm
+endtask : cfg_range_attr
 
 task ac_range_check_base_vseq::cfg_range_racl_policy();
   foreach (dut_cfg.range_racl_policy[i]) begin

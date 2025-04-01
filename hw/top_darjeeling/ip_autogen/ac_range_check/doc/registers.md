@@ -13,38 +13,38 @@
 | ac_range_check.[`LOG_CONFIG`](#log_config)                                    | 0x14     |        4 |                                                                                                                                                           |
 | ac_range_check.[`LOG_STATUS`](#log_status)                                    | 0x18     |        4 | The LOG_STATUS register stores the number of denied accesses and gives more detailed diagnostics to the first denied request.                             |
 | ac_range_check.[`LOG_ADDRESS`](#log_address)                                  | 0x1c     |        4 | First denied request address (if logging is enabled) gets written into that register.                                                                     |
-| ac_range_check.[`RANGE_REGWEN_0`](#range_regwen)                              | 0x20     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_1`](#range_regwen)                              | 0x24     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_2`](#range_regwen)                              | 0x28     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_3`](#range_regwen)                              | 0x2c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_4`](#range_regwen)                              | 0x30     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_5`](#range_regwen)                              | 0x34     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_6`](#range_regwen)                              | 0x38     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_7`](#range_regwen)                              | 0x3c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_8`](#range_regwen)                              | 0x40     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_9`](#range_regwen)                              | 0x44     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_10`](#range_regwen)                             | 0x48     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_11`](#range_regwen)                             | 0x4c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_12`](#range_regwen)                             | 0x50     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_13`](#range_regwen)                             | 0x54     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_14`](#range_regwen)                             | 0x58     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_15`](#range_regwen)                             | 0x5c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_16`](#range_regwen)                             | 0x60     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_17`](#range_regwen)                             | 0x64     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_18`](#range_regwen)                             | 0x68     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_19`](#range_regwen)                             | 0x6c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_20`](#range_regwen)                             | 0x70     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_21`](#range_regwen)                             | 0x74     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_22`](#range_regwen)                             | 0x78     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_23`](#range_regwen)                             | 0x7c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_24`](#range_regwen)                             | 0x80     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_25`](#range_regwen)                             | 0x84     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_26`](#range_regwen)                             | 0x88     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_27`](#range_regwen)                             | 0x8c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_28`](#range_regwen)                             | 0x90     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_29`](#range_regwen)                             | 0x94     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_30`](#range_regwen)                             | 0x98     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
-| ac_range_check.[`RANGE_REGWEN_31`](#range_regwen)                             | 0x9c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_0`](#range_regwen)                              | 0x20     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_1`](#range_regwen)                              | 0x24     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_2`](#range_regwen)                              | 0x28     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_3`](#range_regwen)                              | 0x2c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_4`](#range_regwen)                              | 0x30     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_5`](#range_regwen)                              | 0x34     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_6`](#range_regwen)                              | 0x38     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_7`](#range_regwen)                              | 0x3c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_8`](#range_regwen)                              | 0x40     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_9`](#range_regwen)                              | 0x44     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_10`](#range_regwen)                             | 0x48     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_11`](#range_regwen)                             | 0x4c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_12`](#range_regwen)                             | 0x50     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_13`](#range_regwen)                             | 0x54     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_14`](#range_regwen)                             | 0x58     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_15`](#range_regwen)                             | 0x5c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_16`](#range_regwen)                             | 0x60     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_17`](#range_regwen)                             | 0x64     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_18`](#range_regwen)                             | 0x68     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_19`](#range_regwen)                             | 0x6c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_20`](#range_regwen)                             | 0x70     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_21`](#range_regwen)                             | 0x74     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_22`](#range_regwen)                             | 0x78     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_23`](#range_regwen)                             | 0x7c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_24`](#range_regwen)                             | 0x80     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_25`](#range_regwen)                             | 0x84     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_26`](#range_regwen)                             | 0x88     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_27`](#range_regwen)                             | 0x8c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_28`](#range_regwen)                             | 0x90     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_29`](#range_regwen)                             | 0x94     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_30`](#range_regwen)                             | 0x98     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
+| ac_range_check.[`RANGE_REGWEN_31`](#range_regwen)                             | 0x9c     |        4 | This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register. |
 | ac_range_check.[`RANGE_BASE_0`](#range_base)                                  | 0xa0     |        4 | Base address for the range check.                                                                                                                         |
 | ac_range_check.[`RANGE_BASE_1`](#range_base)                                  | 0xa4     |        4 | Base address for the range check.                                                                                                                         |
 | ac_range_check.[`RANGE_BASE_2`](#range_base)                                  | 0xa8     |        4 | Base address for the range check.                                                                                                                         |
@@ -109,38 +109,38 @@
 | ac_range_check.[`RANGE_LIMIT_29`](#range_limit)                               | 0x194    |        4 | The (exclusive) limit address register used for the address matching.                                                                                     |
 | ac_range_check.[`RANGE_LIMIT_30`](#range_limit)                               | 0x198    |        4 | The (exclusive) limit address register used for the address matching.                                                                                     |
 | ac_range_check.[`RANGE_LIMIT_31`](#range_limit)                               | 0x19c    |        4 | The (exclusive) limit address register used for the address matching.                                                                                     |
-| ac_range_check.[`RANGE_PERM_0`](#range_perm)                                  | 0x1a0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_1`](#range_perm)                                  | 0x1a4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_2`](#range_perm)                                  | 0x1a8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_3`](#range_perm)                                  | 0x1ac    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_4`](#range_perm)                                  | 0x1b0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_5`](#range_perm)                                  | 0x1b4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_6`](#range_perm)                                  | 0x1b8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_7`](#range_perm)                                  | 0x1bc    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_8`](#range_perm)                                  | 0x1c0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_9`](#range_perm)                                  | 0x1c4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_10`](#range_perm)                                 | 0x1c8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_11`](#range_perm)                                 | 0x1cc    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_12`](#range_perm)                                 | 0x1d0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_13`](#range_perm)                                 | 0x1d4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_14`](#range_perm)                                 | 0x1d8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_15`](#range_perm)                                 | 0x1dc    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_16`](#range_perm)                                 | 0x1e0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_17`](#range_perm)                                 | 0x1e4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_18`](#range_perm)                                 | 0x1e8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_19`](#range_perm)                                 | 0x1ec    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_20`](#range_perm)                                 | 0x1f0    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_21`](#range_perm)                                 | 0x1f4    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_22`](#range_perm)                                 | 0x1f8    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_23`](#range_perm)                                 | 0x1fc    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_24`](#range_perm)                                 | 0x200    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_25`](#range_perm)                                 | 0x204    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_26`](#range_perm)                                 | 0x208    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_27`](#range_perm)                                 | 0x20c    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_28`](#range_perm)                                 | 0x210    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_29`](#range_perm)                                 | 0x214    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_30`](#range_perm)                                 | 0x218    |        4 | Permission configuration of the range.                                                                                                                    |
-| ac_range_check.[`RANGE_PERM_31`](#range_perm)                                 | 0x21c    |        4 | Permission configuration of the range.                                                                                                                    |
+| ac_range_check.[`RANGE_ATTR_0`](#range_attr)                                  | 0x1a0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_1`](#range_attr)                                  | 0x1a4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_2`](#range_attr)                                  | 0x1a8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_3`](#range_attr)                                  | 0x1ac    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_4`](#range_attr)                                  | 0x1b0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_5`](#range_attr)                                  | 0x1b4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_6`](#range_attr)                                  | 0x1b8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_7`](#range_attr)                                  | 0x1bc    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_8`](#range_attr)                                  | 0x1c0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_9`](#range_attr)                                  | 0x1c4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_10`](#range_attr)                                 | 0x1c8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_11`](#range_attr)                                 | 0x1cc    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_12`](#range_attr)                                 | 0x1d0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_13`](#range_attr)                                 | 0x1d4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_14`](#range_attr)                                 | 0x1d8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_15`](#range_attr)                                 | 0x1dc    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_16`](#range_attr)                                 | 0x1e0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_17`](#range_attr)                                 | 0x1e4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_18`](#range_attr)                                 | 0x1e8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_19`](#range_attr)                                 | 0x1ec    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_20`](#range_attr)                                 | 0x1f0    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_21`](#range_attr)                                 | 0x1f4    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_22`](#range_attr)                                 | 0x1f8    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_23`](#range_attr)                                 | 0x1fc    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_24`](#range_attr)                                 | 0x200    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_25`](#range_attr)                                 | 0x204    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_26`](#range_attr)                                 | 0x208    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_27`](#range_attr)                                 | 0x20c    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_28`](#range_attr)                                 | 0x210    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_29`](#range_attr)                                 | 0x214    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_30`](#range_attr)                                 | 0x218    |        4 | Attributes of the range.                                                                                                                                  |
+| ac_range_check.[`RANGE_ATTR_31`](#range_attr)                                 | 0x21c    |        4 | Attributes of the range.                                                                                                                                  |
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_0`](#range_racl_policy_shadowed)  | 0x220    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_1`](#range_racl_policy_shadowed)  | 0x224    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
 | ac_range_check.[`RANGE_RACL_POLICY_SHADOWED_2`](#range_racl_policy_shadowed)  | 0x228    |        4 | The RACL policy register allows the system to further restrict the access to specific source roles.                                                       |
@@ -326,7 +326,7 @@ First denied request address (if logging is enabled) gets written into that regi
 |  31:0  |   ro   |   0x0   | log_address | First denied request address. |
 
 ## RANGE_REGWEN
-This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register.
+This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_ATTR_x, and RANGE_RACL_POLICY_SHADOWED_x register.
 When cleared to Mubi4::False, the corresponding range configuration registers are locked and cannot be changed until the next reset.
 - Reset default: `0x6`
 - Reset mask: `0xf`
@@ -493,10 +493,10 @@ The (exclusive) limit address register used for the address matching.
 |  31:2  |   rw   |   0x0   | limit  | Exclusive limit address. |
 |  1:0   |        |         |        | Reserved                 |
 
-## RANGE_PERM
-Permission configuration of the range.
-The permission register exists per range and determines the access permissions of the particular range.
-If it is not enabled, the range is not considered during the range check.
+## RANGE_ATTR
+Attributes of the range.
+This register exists per range and determines attributes (including permissions) of the particular range.
+A range and its attributes are only considered if its `enable` field in this register is not set to `Mubi4::False`.
 - Reset default: `0x69999`
 - Reset mask: `0xfffff`
 - Register enable: [`RANGE_REGWEN`](#range_regwen)
@@ -505,38 +505,38 @@ If it is not enabled, the range is not considered during the range check.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| RANGE_PERM_0  | 0x1a0    |
-| RANGE_PERM_1  | 0x1a4    |
-| RANGE_PERM_2  | 0x1a8    |
-| RANGE_PERM_3  | 0x1ac    |
-| RANGE_PERM_4  | 0x1b0    |
-| RANGE_PERM_5  | 0x1b4    |
-| RANGE_PERM_6  | 0x1b8    |
-| RANGE_PERM_7  | 0x1bc    |
-| RANGE_PERM_8  | 0x1c0    |
-| RANGE_PERM_9  | 0x1c4    |
-| RANGE_PERM_10 | 0x1c8    |
-| RANGE_PERM_11 | 0x1cc    |
-| RANGE_PERM_12 | 0x1d0    |
-| RANGE_PERM_13 | 0x1d4    |
-| RANGE_PERM_14 | 0x1d8    |
-| RANGE_PERM_15 | 0x1dc    |
-| RANGE_PERM_16 | 0x1e0    |
-| RANGE_PERM_17 | 0x1e4    |
-| RANGE_PERM_18 | 0x1e8    |
-| RANGE_PERM_19 | 0x1ec    |
-| RANGE_PERM_20 | 0x1f0    |
-| RANGE_PERM_21 | 0x1f4    |
-| RANGE_PERM_22 | 0x1f8    |
-| RANGE_PERM_23 | 0x1fc    |
-| RANGE_PERM_24 | 0x200    |
-| RANGE_PERM_25 | 0x204    |
-| RANGE_PERM_26 | 0x208    |
-| RANGE_PERM_27 | 0x20c    |
-| RANGE_PERM_28 | 0x210    |
-| RANGE_PERM_29 | 0x214    |
-| RANGE_PERM_30 | 0x218    |
-| RANGE_PERM_31 | 0x21c    |
+| RANGE_ATTR_0  | 0x1a0    |
+| RANGE_ATTR_1  | 0x1a4    |
+| RANGE_ATTR_2  | 0x1a8    |
+| RANGE_ATTR_3  | 0x1ac    |
+| RANGE_ATTR_4  | 0x1b0    |
+| RANGE_ATTR_5  | 0x1b4    |
+| RANGE_ATTR_6  | 0x1b8    |
+| RANGE_ATTR_7  | 0x1bc    |
+| RANGE_ATTR_8  | 0x1c0    |
+| RANGE_ATTR_9  | 0x1c4    |
+| RANGE_ATTR_10 | 0x1c8    |
+| RANGE_ATTR_11 | 0x1cc    |
+| RANGE_ATTR_12 | 0x1d0    |
+| RANGE_ATTR_13 | 0x1d4    |
+| RANGE_ATTR_14 | 0x1d8    |
+| RANGE_ATTR_15 | 0x1dc    |
+| RANGE_ATTR_16 | 0x1e0    |
+| RANGE_ATTR_17 | 0x1e4    |
+| RANGE_ATTR_18 | 0x1e8    |
+| RANGE_ATTR_19 | 0x1ec    |
+| RANGE_ATTR_20 | 0x1f0    |
+| RANGE_ATTR_21 | 0x1f4    |
+| RANGE_ATTR_22 | 0x1f8    |
+| RANGE_ATTR_23 | 0x1fc    |
+| RANGE_ATTR_24 | 0x200    |
+| RANGE_ATTR_25 | 0x204    |
+| RANGE_ATTR_26 | 0x208    |
+| RANGE_ATTR_27 | 0x20c    |
+| RANGE_ATTR_28 | 0x210    |
+| RANGE_ATTR_29 | 0x214    |
+| RANGE_ATTR_30 | 0x218    |
+| RANGE_ATTR_31 | 0x21c    |
 
 
 ### Fields
@@ -545,14 +545,14 @@ If it is not enabled, the range is not considered during the range check.
 {"reg": [{"name": "enable", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "read_access", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "write_access", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "execute_access", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "log_denied_access", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name              | Description                                                                      |
-|:------:|:------:|:-------:|:------------------|:---------------------------------------------------------------------------------|
-| 31:20  |        |         |                   | Reserved                                                                         |
-| 19:16  |   rw   |   0x6   | log_denied_access | When set to Mubi4::True, a denied access based on in this range is being logged. |
-| 15:12  |   rw   |   0x9   | execute_access    | When set to Mubi4::True, code execution from this range is allowed.              |
-|  11:8  |   rw   |   0x9   | write_access      | When set to Mubi4::True, write access to that range is allowed.                  |
-|  7:4   |   rw   |   0x9   | read_access       | When set to Mubi4::True, read access from that range is allowed.                 |
-|  3:0   |   rw   |   0x9   | enable            | When set to Mubi4::True, the range is considered in the range check.             |
+|  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                    |
+|:------:|:------:|:-------:|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:20  |        |         |                   | Reserved                                                                                                                                       |
+| 19:16  |   rw   |   0x6   | log_denied_access | When set to Mubi4::True, a denied access based on in this range is being logged.                                                               |
+| 15:12  |   rw   |   0x9   | execute_access    | When set to Mubi4::True, code execution from this range is allowed.                                                                            |
+|  11:8  |   rw   |   0x9   | write_access      | When set to Mubi4::True, write access to that range is allowed.                                                                                |
+|  7:4   |   rw   |   0x9   | read_access       | When set to Mubi4::True, read access from that range is allowed.                                                                               |
+|  3:0   |   rw   |   0x9   | enable            | When set to Mubi4::False, the range is _not_ considered in the range check; for any other value, the range _is_ considered in the range check. |
 
 ## RANGE_RACL_POLICY_SHADOWED
 The RACL policy register allows the system to further restrict the access to specific source roles.
