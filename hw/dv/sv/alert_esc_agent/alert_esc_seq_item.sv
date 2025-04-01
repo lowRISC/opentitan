@@ -32,25 +32,12 @@ class alert_esc_seq_item extends uvm_sequence_item;
   rand int unsigned alert_delay;
   rand int unsigned int_err_cyc;
 
-  constraint delay_c {
-    soft ping_delay  dist {0 :/ 5, [1:10] :/ 5};
-    soft ack_delay   dist {0 :/ 5, [1:10] :/ 5};
-    soft alert_delay dist {0 :/ 5, [1:10] :/ 5};
-    soft ack_stable  dist {1 :/ 5, [2:10] :/ 5};
-    soft int_err_cyc dist {1 :/ 5, [2:10] :/ 5};
-  }
-
+  extern constraint delay_c;
   // if agent is alert mode, cannot send any esc_rsp signal
   // if agent is esc mode, cannot send any alert related signals
-  constraint alert_esc_mode_c {
-    r_esc_rsp == 1 -> (!s_alert_send && !r_alert_rsp && !r_alert_ping_send && !s_alert_ping_rsp);
-    (s_alert_send || r_alert_rsp || r_alert_ping_send || s_alert_ping_rsp) -> !r_esc_rsp;
-  }
-
+  extern constraint alert_esc_mode_c;
   // TODO: temp constraint, will support soon
-  constraint sig_int_err_c {
-    alert_int_err_type == NoAlertBeforeAfterIntFail;
-  }
+  extern constraint sig_int_err_c;
 
   `uvm_object_utils_begin(alert_esc_seq_item)
     `uvm_field_int (s_alert_send,      UVM_DEFAULT)
@@ -73,8 +60,27 @@ class alert_esc_seq_item extends uvm_sequence_item;
     `uvm_field_enum(esc_handshake_e,        esc_handshake_sta,   UVM_DEFAULT)
   `uvm_object_utils_end
 
-  function new (string name = "");
-    super.new(name);
-  endfunction : new
+  extern function new (string name = "");
 
 endclass : alert_esc_seq_item
+
+constraint alert_esc_seq_item::delay_c {
+  soft ping_delay  dist {0 :/ 5, [1:10] :/ 5};
+  soft ack_delay   dist {0 :/ 5, [1:10] :/ 5};
+  soft alert_delay dist {0 :/ 5, [1:10] :/ 5};
+  soft ack_stable  dist {1 :/ 5, [2:10] :/ 5};
+  soft int_err_cyc dist {1 :/ 5, [2:10] :/ 5};
+}
+
+constraint alert_esc_seq_item::alert_esc_mode_c {
+  r_esc_rsp == 1 -> (!s_alert_send && !r_alert_rsp && !r_alert_ping_send && !s_alert_ping_rsp);
+  (s_alert_send || r_alert_rsp || r_alert_ping_send || s_alert_ping_rsp) -> !r_esc_rsp;
+}
+
+constraint alert_esc_seq_item::sig_int_err_c {
+  alert_int_err_type == NoAlertBeforeAfterIntFail;
+}
+
+function alert_esc_seq_item::new (string name = "");
+  super.new(name);
+endfunction : new
