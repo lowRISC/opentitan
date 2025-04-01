@@ -11,6 +11,7 @@ from reggen.lib import check_str
 
 
 class JsonEnum(Enum):
+
     def for_json(x) -> str:
         return str(x)
 
@@ -47,6 +48,7 @@ class HwAccess(JsonEnum):
 
 # swaccess permitted values
 # text description, access enum, wr access enum, rd access enum, ok in window
+# yapf: disable
 SWACCESS_PERMITTED = {
     'none':  ("No access",                                              # noqa: E241
               SwAccess.NONE, SwWrAccess.NONE, SwRdAccess.NONE, False),  # noqa: E241
@@ -67,6 +69,7 @@ SWACCESS_PERMITTED = {
     'wo':    ("Write Only",                                             # noqa: E241
               SwAccess.WO,   SwWrAccess.WR,   SwRdAccess.NONE, True)    # noqa: E241
 }
+# yapf: enable
 
 # hwaccess permitted values
 HWACCESS_PERMITTED = {
@@ -78,20 +81,22 @@ HWACCESS_PERMITTED = {
 
 
 class SWAccess:
+
     def __init__(self, where: str, raw: object, is_mubi: bool = False):
         self.key = check_str(raw, 'swaccess for {}'.format(where))
         self.is_mubi = is_mubi
         try:
             self.value = SWACCESS_PERMITTED[self.key]
         except KeyError:
-            raise ValueError('Unknown swaccess key, {}, for {}.'
-                             .format(self.key, where)) from None
+            raise ValueError(
+                f'Unknown swaccess key, {self.key}, for {where}.') from None
 
     def dv_rights(self) -> str:
         '''Return a UVM access string as used by uvm_field::set_access().'''
         if self.key == 'r0w1c':
             return 'W1C'
-        elif self.key in ['rw1s', 'rw1c', 'rw0c', 'r0w1c', 'rc'] and self.is_mubi:
+        elif self.key in ['rw1s', 'rw1c', 'rw0c', 'r0w1c', 'rc'
+                          ] and self.is_mubi:
             # The native UVM implementations for these access modes are
             # incompatible with Mubi's. We hence have to use regular RW access
             # at the lowest level for the UVM RAL implementation, and model the
@@ -139,13 +144,14 @@ class SWAccess:
 
 
 class HWAccess:
+
     def __init__(self, where: str, raw: object):
         self.key = check_str(raw, 'hwaccess for {}'.format(where))
         try:
             self.value = HWACCESS_PERMITTED[self.key]
         except KeyError:
-            raise ValueError('Unknown hwaccess key, {}, for {}.'
-                             .format(self.key, where)) from None
+            raise ValueError(
+                f'Unknown hwaccess key, {self.key}, for {where}.') from None
 
     def allows_read(self) -> bool:
         return self.key in ['hro', 'hrw']

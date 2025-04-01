@@ -8,7 +8,6 @@ from reggen.access import SWAccess
 from reggen.lib import check_keys, check_str, check_bool, check_int
 from reggen.params import ReggenParams
 
-
 REQUIRED_FIELDS = {
     'name': ['s', "name of the window"],
     'desc': ['t', "description of the window"],
@@ -46,17 +45,10 @@ OPTIONAL_FIELDS = {
 
 class Window:
     '''A class representing a memory window'''
-    def __init__(self,
-                 name: str,
-                 desc: str,
-                 unusual: bool,
-                 byte_write: bool,
-                 data_intg_passthru: bool,
-                 validbits: int,
-                 items: int,
-                 size_in_bytes: int,
-                 offset: int,
-                 swaccess: SWAccess):
+
+    def __init__(self, name: str, desc: str, unusual: bool, byte_write: bool,
+                 data_intg_passthru: bool, validbits: int, items: int,
+                 size_in_bytes: int, offset: int, swaccess: SWAccess):
         assert 0 < validbits
         assert 0 < items <= size_in_bytes
 
@@ -77,17 +69,14 @@ class Window:
         assert not (offset & (po2_size - 1))
 
     @staticmethod
-    def from_raw(offset: int,
-                 reg_width: int,
-                 params: ReggenParams,
+    def from_raw(offset: int, reg_width: int, params: ReggenParams,
                  raw: object) -> 'Window':
-        rd = check_keys(raw, 'window',
-                        list(REQUIRED_FIELDS.keys()),
+        rd = check_keys(raw, 'window', list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
-        wind_desc = 'window at offset {:#x}'.format(offset)
+        wind_desc = f'window at offset {offset:#x}'
         name = check_str(rd['name'], wind_desc)
-        wind_desc = '{!r} {}'.format(name, wind_desc)
+        wind_desc = f'{name!r} {wind_desc}'
 
         desc = check_str(rd['desc'], 'desc field for ' + wind_desc)
 
@@ -95,25 +84,25 @@ class Window:
                              'unusual field for ' + wind_desc)
         byte_write = check_bool(rd.get('byte-write', False),
                                 'byte-write field for ' + wind_desc)
-        data_intg_passthru = check_bool(rd.get('data-intg-passthru', False),
-                                        'data-intg-passthru field for ' + wind_desc)
+        data_intg_passthru = check_bool(
+            rd.get('data-intg-passthru', False),
+            'data-intg-passthru field for ' + wind_desc)
 
         validbits = check_int(rd.get('validbits', reg_width),
                               'validbits field for ' + wind_desc)
         if validbits <= 0:
-            raise ValueError('validbits field for {} is not positive.'
-                             .format(wind_desc))
+            raise ValueError(
+                f'validbits field for {wind_desc} is not positive.')
         if validbits > reg_width:
-            raise ValueError('validbits field for {} is {}, '
-                             'which is greater than {}, the register width.'
-                             .format(wind_desc, validbits, reg_width))
+            raise ValueError(
+                f'validbits field for {wind_desc} is {validbits}, which is '
+                f'greater than {reg_width}, the register width.')
 
         r_items = check_str(rd['items'], 'items field for ' + wind_desc)
         items = params.expand(r_items, 'items field for ' + wind_desc)
         if items <= 0:
-            raise ValueError("Items field for {} is {}, "
-                             "which isn't positive."
-                             .format(wind_desc, items))
+            raise ValueError(f"Items field for {wind_desc} is {items}, "
+                             "which isn't positive.")
 
         assert reg_width % 8 == 0
         size_in_bytes = items * (reg_width // 8)
@@ -127,12 +116,11 @@ class Window:
         # A size that isn't a power of 2 is not allowed unless the unusual flag
         # is set.
         if po2_size != size_in_bytes and not unusual:
-            raise ValueError('Items field for {} is {}, which gives a size of '
-                             '{} bytes. This is not a power of 2 (next power '
-                             'of 2 is {}). If you want to do this even so, '
-                             'set the "unusual" flag.'
-                             .format(wind_desc, items,
-                                     size_in_bytes, po2_size))
+            raise ValueError(
+                f'Items field for {wind_desc} is {items}, which gives a size '
+                f'of {size_in_bytes} bytes. This is not a power of 2 (next '
+                f'power of 2 is {po2_size}). If you want to do this even so, '
+                'set the "unusual" flag.')
 
         # Adjust offset if necessary to make sure the base address of the first
         # item in the window has all zeros in the low bits.
@@ -143,10 +131,10 @@ class Window:
 
         swaccess = SWAccess(wind_desc, rd['swaccess'])
         if not (swaccess.value[4] or unusual):
-            raise ValueError('swaccess field for {} is {}, which is an '
-                             'unusual access type for a window. If you want '
-                             'to do this, set the "unusual" flag.'
-                             .format(wind_desc, swaccess.key))
+            raise ValueError(
+                f'swaccess field for {wind_desc} is {swaccess.key}, which is '
+                'an unusual access type for a window. If you want to do this, '
+                'set the "unusual" flag.')
 
         return Window(name, desc, unusual, byte_write, data_intg_passthru,
                       validbits, items, size_in_bytes, offset, swaccess)

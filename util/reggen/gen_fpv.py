@@ -45,11 +45,12 @@ def gen_fpv(block: IpBlock, outdir: str) -> int:
         reg_top_path = os.path.join(outdir, filename)
         with open(reg_top_path, 'w', encoding='UTF-8') as fout:
             try:
-                fout.write(fpv_csr_tpl.render(block=block,
-                                              reg_block_path=reg_block_path,
-                                              mod_base=mod_base,
-                                              if_name=if_name,
-                                              rb=rb))
+                fout.write(
+                    fpv_csr_tpl.render(block=block,
+                                       reg_block_path=reg_block_path,
+                                       mod_base=mod_base,
+                                       if_name=if_name,
+                                       rb=rb))
             except:  # noqa F722 for template Exception handling
                 log.error(exceptions.text_error_template().render())
                 return 1

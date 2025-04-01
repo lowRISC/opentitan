@@ -788,14 +788,15 @@ def _get_gpio_params(top: ConfigT) -> ParamsT:
     params = {
         # TODO(#26553): Remove the following code once topgen automatically
         # incorporates template parameters.
-        "num_inp_period_counters": module.get("ipgen_param", {}).get("num_inp_period_counters", 0),
-        "module_instance_name": module["type"]
+        "num_inp_period_counters":
+        module.get("ipgen_param", {}).get("num_inp_period_counters", 0),
+        "module_instance_name":
+        module["type"]
     }
     return params
 
 
-def generate_gpio(top: ConfigT, module: ConfigT,
-                  out_path: Path) -> None:
+def generate_gpio(top: ConfigT, module: ConfigT, out_path: Path) -> None:
     log.info('Generating GPIO with ipgen')
     params = _get_gpio_params(top)
     generate_ipgen(top, module, params, out_path)
@@ -824,14 +825,11 @@ def _get_pwm_params(top: ConfigT) -> ParamsT:
     """Extracts parameters for PWM ipgen."""
 
     pwm = lib.find_module(top["module"], "pwm")
-    params = {
-        "module_instance_name": pwm["type"]
-    }
+    params = {"module_instance_name": pwm["type"]}
     return params
 
 
-def generate_pwm(top: ConfigT, module: ConfigT,
-                 out_path: Path) -> None:
+def generate_pwm(top: ConfigT, module: ConfigT, out_path: Path) -> None:
     log.info('Generating PWM with ipgen')
     params = _get_pwm_params(top)
     generate_ipgen(top, module, params, out_path)
@@ -1329,7 +1327,8 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     generate_modules("gpio", generate_gpio, single_instance=True)
 
     # Generate rv_core_ibex if there is an instance
-    generate_modules("rv_core_ibex", generate_rv_core_ibex,
+    generate_modules("rv_core_ibex",
+                     generate_rv_core_ibex,
                      single_instance=True)
     # Generate pwm if there is an instance
     generate_modules("pwm", generate_pwm, single_instance=True)

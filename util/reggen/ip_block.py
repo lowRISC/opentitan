@@ -641,8 +641,9 @@ class IpBlock:
         for rb in self.reg_blocks.values():
             rb_name = rb.name if rb.name else "default"
             log.debug(f"Register block: {rb_name}")
-            regwen_names: List[str] = [reg.name for reg in rb.registers
-                                       if "REGWEN" in reg.name]
+            regwen_names: List[str] = [
+                reg.name for reg in rb.registers if "REGWEN" in reg.name
+            ]
             unused_regwens: List[str] = []
             for regwen in regwen_names:
                 regwen_users = []

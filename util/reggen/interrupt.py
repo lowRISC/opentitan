@@ -20,8 +20,8 @@ _intr_type_map = {'event': IntrType.Event, 'status': IntrType.Status}
 
 class Interrupt(Signal):
 
-    def __init__(self, name: str, desc: str, bits: Bits,
-                 auto_split: bool, intr_type: IntrType, default_val: bool):
+    def __init__(self, name: str, desc: str, bits: Bits, auto_split: bool,
+                 intr_type: IntrType, default_val: bool):
         super().__init__(name, desc, bits)
         self.intr_type = intr_type
         self.auto_split = auto_split
@@ -44,7 +44,8 @@ class Interrupt(Signal):
         bits = Bits(lsb + width - 1, lsb)
         intr_type_str = check_str(rd.get('type', 'event'),
                                   'intr_type field of ' + what)
-        auto_split = check_bool(rd.get('auto_split', False), 'auto_split of ' + what)
+        auto_split = check_bool(rd.get('auto_split', False),
+                                'auto_split of ' + what)
 
         try:
             intr_type = _intr_type_map[intr_type_str.lower()]

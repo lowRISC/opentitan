@@ -53,8 +53,8 @@ def rcname(esc_if_name: str, r: Union[Register, MultiRegister]) -> str:
     return '{}_reg_{}'.format(esc_if_name, r.name.lower())
 
 
-def alias_rcname(esc_if_name: str,
-                 r: Union[Register, MultiRegister]) -> Optional[str]:
+def alias_rcname(esc_if_name: str, r: Union[Register,
+                                            MultiRegister]) -> Optional[str]:
     '''Get the name of the dv_base_reg subclass for this alias register'''
     if r.alias_target is not None:
         return '{}_reg_{}'.format(esc_if_name, r.alias_target.lower())
@@ -72,9 +72,7 @@ def miname(m: Window) -> str:
     return m.name.lower()
 
 
-def gen_core_file(outdir: str,
-                  lblock: str,
-                  dv_base_names: List[str],
+def gen_core_file(outdir: str, lblock: str, dv_base_names: List[str],
                   paths: List[str]) -> None:
     depends = ["lowrisc:dv:dv_base_reg"]
     blocks_base_names = get_dv_base_names_objects(dv_base_names)
@@ -111,7 +109,8 @@ def gen_core_file(outdir: str,
         yaml.dump(core_data, core_file, encoding='utf-8')
 
 
-def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames]:
+def get_dv_base_names_objects(
+        dv_base_names: List[str]) -> Dict[str, DvBaseNames]:
     '''Returns a dictionary mapping a `DvBaseNames` object to a block.
 
     `dv_base_names` is a list of base class entity names provided on the command-line, in the
@@ -124,7 +123,7 @@ def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames
     if dv_base_names is None:
         return None
 
-    dv_base_names_dict = defaultdict(DvBaseNames)  # type: Dict[str, DvBaseNames]
+    dv_base_names_dict: Dict[str, DvBaseNames] = defaultdict(DvBaseNames)
     for item in dv_base_names:
         try:
             block, base_type, entity = item.split(":")
@@ -135,11 +134,12 @@ def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames
     return dv_base_names_dict
 
 
-def get_block_base_name(dv_base_names_map: Dict[str, DvBaseNames], block: str) -> DvBaseNames:
-    '''Given a dictionary of `DvBaseNames` and return a `DvBaseNames` object for a specific block.
+def get_block_base_name(dv_base_names_map: Dict[str, DvBaseNames],
+                        block: str) -> DvBaseNames:
+    '''Return the item for `block` from a dictionary of `DvBaseNames`.
 
-    If the given dictionary is empty, or cannot find the block name in the list of dictionary keys,
-    this function will return the default `DvBaseNames` object.
+    Return the default `DvBaseNames` if the given dictionary is empty, or
+    the entry for `block` is not found.
     '''
     if dv_base_names_map is None:
         return DvBaseNames()
@@ -152,7 +152,8 @@ def get_block_base_name(dv_base_names_map: Dict[str, DvBaseNames], block: str) -
 def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
     '''Generate DV files for an IpBlock'''
 
-    lookup = TemplateLookup(directories=[str(importlib.resources.files('reggen'))])
+    lookup = TemplateLookup(
+        directories=[str(importlib.resources.files('reggen'))])
     uvm_reg_tpl = lookup.get_template('uvm_reg.sv.tpl')
 
     # Generate the RAL package(s). For a device interface with no name we
@@ -178,11 +179,12 @@ def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
         reg_top_path = os.path.join(outdir, file_name)
         with open(reg_top_path, 'w', encoding='UTF-8') as fout:
             try:
-                fout.write(uvm_reg_tpl.render(rb=rb,
-                                              block=block,
-                                              esc_if_name=mod_base,
-                                              reg_block_path=reg_block_path,
-                                              dv_base_names=block_dv_base_names))
+                fout.write(
+                    uvm_reg_tpl.render(rb=rb,
+                                       block=block,
+                                       esc_if_name=mod_base,
+                                       reg_block_path=reg_block_path,
+                                       dv_base_names=block_dv_base_names))
             except:  # noqa F722 for template Exception handling
                 log.error(exceptions.text_error_template().render())
                 return 1

@@ -17,7 +17,8 @@ from reggen.ip_block import IpBlock
 
 from .lib import IpConfig, IpTemplate, TemplateParameter, TemplateRenderError
 
-_HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors (OpenTitan project).
+_HJSON_LICENSE_HEADER = (
+    """// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 """)
@@ -103,7 +104,8 @@ class IpTemplateRendererBase:
         return self.ip_config.param_values["uniquified_modules"].get(name)
 
     def _replace_uniquified_prefix(self, core_name: str) -> str:
-        uniquified_modules = self.ip_config.param_values.get("uniquified_modules", {})
+        uniquified_modules = self.ip_config.param_values.get(
+            "uniquified_modules", {})
         for name, uniq_name in uniquified_modules.items():
             # This prevents applying the rename multiple times, like when the
             # core file undergoes `module_instance_name` processing during
@@ -264,16 +266,15 @@ class IpBlockRenderer(IpTemplateRendererBase):
         Raises exceptions if any of the file operations fails.
         """
         do_overwrite = overwrite_output_dir and output_dir.exists()
-        output_dir_existing_bak = output_dir.with_suffix(
-            '.bak~' + str(int(time.time())))
+        output_dir_existing_bak = output_dir.with_suffix('.bak~' +
+                                                         str(int(time.time())))
         if do_overwrite:
             try:
                 os.rename(output_dir, output_dir_existing_bak)
             except OSError as e:
                 msg = (f'Cannot move existing directory {output_dir} to '
                        f'{output_dir_existing_bak}.')
-                raise TemplateRenderError(msg).with_traceback(
-                    e.__traceback__)
+                raise TemplateRenderError(msg).with_traceback(e.__traceback__)
 
         try:
             os.rename(staging_dir, output_dir)
@@ -286,10 +287,9 @@ class IpBlockRenderer(IpTemplateRendererBase):
             try:
                 shutil.rmtree(output_dir_existing_bak)
             except Exception as e:
-                msg = (
-                    'Unable to delete the backup directory '
-                    f'{output_dir_existing_bak} of the overwritten data. '
-                    'Please remove it manually.')
+                msg = ('Unable to delete the backup directory '
+                       f'{output_dir_existing_bak} of the overwritten data. '
+                       'Please remove it manually.')
                 raise TemplateRenderError(msg).with_traceback(e.__traceback__)
 
     def render(self, output_dir: Path, overwrite_output_dir: bool) -> None:
@@ -379,8 +379,7 @@ class IpBlockRenderer(IpTemplateRendererBase):
             f'{self.ip_config.instance_name}.ipconfig.hjson',
             header=_HJSON_LICENSE_HEADER)
 
-        self._refresh_directory(staging_dir, output_dir,
-                                overwrite_output_dir)
+        self._refresh_directory(staging_dir, output_dir, overwrite_output_dir)
 
         # Ensure that the staging directory is removed at the end. Ignore
         # errors as the directory should not exist at this point actually.

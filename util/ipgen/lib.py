@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import hjson  # type: ignore
-from reggen.lib import check_bool, check_int, check_keys, check_list, check_name, check_str
+from reggen.lib import (check_bool, check_int, check_keys, check_list,
+                        check_name, check_str)
 from reggen.params import BaseParam, Params
 
 
@@ -81,8 +82,8 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     r_default = rd.get('default')
     param_type: Union[bool, int, str, Dict[str, Any]]
     if param_type == 'bool':
-        default = check_bool(r_default,
-                             f'default field of {name}, (a boolean parameter)')
+        default = check_bool(
+            r_default, f'default field of {name}, (a boolean parameter)')
     elif param_type == 'int':
         default = check_int(
             r_default, f'default field of {name}, (an integer parameter)')
