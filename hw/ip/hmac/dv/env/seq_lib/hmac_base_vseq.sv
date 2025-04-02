@@ -334,13 +334,20 @@ task hmac_base_vseq::wr_msg(bit [7:0] msg[], bit no_sar=0);
 
   // Spawn save and restore task only on some occasions
   fork : sar_simple_thread
+    // To have a better control on the spawned processes in case of a reset as it's a fork join
+    process p;
     begin
       if (!invalid_cfg && !no_sar && !sar_ongoing && (sar_window.get_num_waiters() == 0) &&
           (cfg.save_and_restore_pct > $urandom_range(0, 99)) && (msg_q.size() > 0)) begin
         save_and_restore();
+        if (cfg.under_reset) begin
+          if (p != null) p.kill();
+          cfg.sar_skip_ctxt = 0;
+        end
       end
     end
     begin
+      p = process::self();
       // randomly pick the size of bytes to write
       // unless msg size is smaller than randomized size
       while (msg_q.size() > 0) begin
@@ -421,13 +428,20 @@ task hmac_base_vseq::burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
 
   // Spawn save and restore task only on some occasions
   fork : sar_burst_thread
+    // To have a better control on the spawned processes in case of a reset as it's a fork join
+    process p;
     begin
       if (!invalid_cfg && !sar_ongoing && (sar_window.get_num_waiters() == 0) &&
           (cfg.save_and_restore_pct > $urandom_range(0, 99)) && (msg_q.size() > 0)) begin
         save_and_restore();
+        if (cfg.under_reset) begin
+          if (p != null) p.kill();
+          cfg.sar_skip_ctxt = 0;
+        end
       end
     end
     begin
+      p = process::self();
       while (msg_q.size() > 0) begin
         // wait until HMAC has enough space to burst write
         csr_spinwait(.ptr(ral.status.fifo_depth),
