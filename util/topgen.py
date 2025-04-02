@@ -44,7 +44,8 @@ from topgen.merge import (
     amend_reset_request, amend_resets, amend_wkup, commit_alert_modules,
     commit_interrupt_modules, commit_outgoing_alert_modules,
     commit_outgoing_interrupt_modules, connect_clocks,
-    create_alert_lpgs, elaborate_instance, extract_clocks)
+    create_alert_lpgs, elaborate_instance, extract_clocks,
+    commit_alert_connections)
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
@@ -276,7 +277,7 @@ def get_ipgen_params(module: ConfigT) -> ParamsT:
     return deepcopy(module.get("ipgen_params", {}))
 
 
-def _get_alert_handler_params(top: ConfigT) -> ParamsT:
+def _get_alert_handler_params(top: ConfigT, name: str) -> ParamsT:
     """Returns parameters for alert_hander ipgen from top config."""
     # default values
     esc_cnt_dw = 32
@@ -286,8 +287,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
 
     # Count number of alerts and LPGs, accepting lack of alert_lpgs in top.
     # They are added after the merge pass, so the ip_block won't have them.
-    n_alerts = sum(
-        [int(x["width"]) if "width" in x else 1 for x in top["alert"]])
+    n_alerts = sum(a.get("width", 1) for a in top["alert"] if a.get("handler") == name)
     n_lpgs_int = len(top.get("alert_lpgs", []))
     n_lpgs = n_lpgs_int
     n_lpgs_incoming_offset = n_lpgs
@@ -301,7 +301,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         # set number of alerts to 1 such that the config is still valid
         # that input will be tied off
         n_alerts = 1
-        log.warning("no alerts are defined: is alert_handler needed?")
+        log.warning(f"{name} has no alerts attached to it; is it needed?")
 
     async_on = []
     async_on_format = "1'b{:01b}"
@@ -312,6 +312,9 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         lpg_idx_format = f"{n_lpg_width}'d{{:d}}"
 
     for alert in top["alert"]:
+        if alert["handler"] != name:
+            continue
+
         for _ in range(alert["width"]):
             async_on.append(async_on_format.format(int(alert["async"])))
             if n_lpgs_int:
@@ -328,8 +331,7 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
                         lpg_idx_format.format(lpg_prev_offset +
                                               int(alert["lpg_idx"])))
             lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
-    module = lib.find_module(top["module"], "alert_handler")
-    uniquified_modules.add_module(module["template_type"], module["type"])
+    module = lib.find_module(top["module"], name, use_base_template_type=False)
 
     n_esc_sev = module["param_decl"]["EscNumSeverities"]
     ping_cnt_dw = module["param_decl"]["EscPingCountWidth"]
@@ -1050,7 +1052,8 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     for inst in topcfg["module"]:
         if lib.is_ipgen(inst):
             template_type = inst["template_type"]
-            if template_type != "rv_plic" and template_type in ipgen_instances:
+            if (template_type not in ["rv_plic", "alert_handler"] and
+               template_type in ipgen_instances):
                 multi_instance_ipgens.append(inst)
             else:
                 ipgen_instances[inst["template_type"]].append(inst)
@@ -1104,11 +1107,13 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     if "rstmgr" in ipgen_instances:
         insert_ip_attrs(ipgen_instances["rstmgr"][0],
                         _get_rstmgr_params(topcfg))
-    # Add alert_handler
+    # Add alert_handler(s)
     amend_alert(topcfg, name_to_block, allow_missing_blocks=True)
     if "alert_handler" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["alert_handler"][0],
-                        _get_alert_handler_params(topcfg))
+        for alert_handler_inst in ipgen_instances["alert_handler"]:
+            name = alert_handler_inst["name"]
+            alert_handler_params = _get_alert_handler_params(topcfg, name)
+            insert_ip_attrs(alert_handler_inst, alert_handler_params)
     # Add rv_plic
     amend_interrupt(topcfg, name_to_block, allow_missing_blocks=True)
     for inst in ipgen_instances.get("rv_plic", []):
@@ -1167,7 +1172,7 @@ def _process_top(
     for alert_handler in alert_handlers:
         template_name = alert_handler["template_type"]
         module_name = alert_handler["type"]
-        params = _get_alert_handler_params(topcfg)
+        params = _get_alert_handler_params(topcfg, module_name)
         name_to_block[module_name] = create_ipgen_ip_block(
             topcfg["name"], template_name, module_name, params, alias_cfgs)
     return completecfg, name_to_block, name_to_hjson
@@ -1175,6 +1180,7 @@ def _process_top(
 
 def complete_topcfg(topcfg: ConfigT, name_to_block: IpBlocksT) -> None:
     commit_alert_modules(topcfg, name_to_block)
+    commit_alert_connections(topcfg, name_to_block)
     commit_interrupt_modules(topcfg, name_to_block)
     commit_outgoing_alert_modules(topcfg, name_to_block)
     commit_outgoing_interrupt_modules(topcfg, name_to_block)
@@ -1220,7 +1226,7 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
     # Generate Alert Handler if there is an instance
     if not args.xbar_only:
         generate_modules("alert_handler",
-                         single_instance=True,
+                         single_instance=False,
                          get_params=_get_alert_handler_params)
     if args.alert_handler_only:
         sys.exit()

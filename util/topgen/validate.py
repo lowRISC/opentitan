@@ -12,6 +12,7 @@ from reggen.ip_block import IpBlock
 from reggen.validate import check_keys
 from topgen.resets import Resets, UnmanagedResets
 from topgen.typing import IpBlocksT
+from topgen.lib import find_modules
 
 # For the reference
 # val_types = {
@@ -58,6 +59,7 @@ top_required = {
 }
 
 top_optional = {
+    'alerts': ['g', 'alert handler configuration'],
     'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'datawidth': ['pn', "default data width"],
@@ -291,8 +293,9 @@ module_optional = {
         'represent a dict that associates all interfaces with the given '
         'mapping. It is an error to specify both this and racl_mappings.'
     ],
-    'plic': ['s', 'Interrupt controller managing this module'],
+    'plic': ['s', 'Interrupt controller managing this module\'s interrupts'],
     'targets': ['l', 'Optional list of targets for this PLIC'],
+    'alert_handler': ['s', 'Alert handler managing this module\'s alerts'],
 }
 
 module_added = {
@@ -371,6 +374,7 @@ alert_required = {
     'width': ['d', 'the number of alerts in this signal, typically 1'],
     'async': ['s', 'string interpreted as boolean'],
     'module_name': ['s', 'The module name of the source'],
+    'handler': ['s', 'alert handler managing this alert'],
 }
 alert_optional = {
     'desc': ['s', 'the description of the alert'],
@@ -589,14 +593,37 @@ def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
     return error
 
 
-def check_alerts(top: ConfigT, prefix: str) -> int:
-    if 'alert' not in top:
+def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
+    if "alert" not in top:
         return 0
-    error = 0
-    for alert in top['alert']:
-        error += check_keys(alert, alert_required, alert_optional, alert_added,
-                            prefix + ' Alert')
-    return error
+    errors = 0
+
+    # Check alert keys
+    for alert in top["alert"]:
+        errors += check_keys(alert, alert_required, alert_optional,
+                             alert_added, prefix + " Alert")
+
+    # Check alert_connections for all IPs
+    alert_handlers = find_modules(top["module"], "alert_handler",
+                                  use_base_template_type=True)
+    handler_names = [handler["name"] for handler in alert_handlers]
+
+    # Check that the default handler exists
+    default_handler = None
+    if "alerts" in top and "default_handler" in top["alerts"]:
+        default_handler = top["alerts"]["default_handler"]
+        if default_handler is not None and \
+           default_handler not in handler_names:
+            errors += 1
+            log.error(f"{default_handler} (named as default alert handler) "
+                      f"does not exist")
+
+    for module in top["module"]:
+        log.info(f"Checking alerts for {module['name']}")
+        block = ip_name_to_block[module["type"]]
+        errors += validate_alert(top, module, block, handler_names,
+                                 default_handler)
+    return errors
 
 
 def check_incoming_alerts(top: ConfigT, prefix: str) -> int:
@@ -1083,6 +1110,40 @@ def validate_clock(top: ConfigT,
     return error
 
 
+def validate_alert(top, module, block, handlers, default_handler=None):
+    """Checks that the alert_handler, if specified, exists.
+
+    Note that it's possible for the module `alert_handler` to be null,
+    the toplevel `default_alert_handler` to be null, or both, and for
+    this not to be an error (in the case that a handler doesn't exist
+    at all, like in Englishbreakfast).
+    """
+    errors = 0
+    name = module.name if isinstance(module, IpBlock) else module['name']
+
+    # Check that the named alert handler exists
+    # (the default handler has already been checked)
+    handler = default_handler
+    if "alert_handler" in module:
+        handler = module["alert_handler"]
+        if handler is not None and handler not in handlers:
+            errors += 1
+            log.error(f"{name} specifies {handler} as alert handler but that "
+                      f"alert handler doesn't exist")
+
+    # If there are actually alerts, check that it makes sense:
+    # - if the alert handler exists, that's ok
+    # - otherwise, if the default handler exists, that's ok
+    # - otherwise, if no handlers exist, that's ok
+    if block.alerts and handler is None and handlers:
+        errors += 1
+        log.error(f"{name} doesn't define alert_handler (and "
+                  "default_alert_handler isn't defined), but handlers are "
+                  "available")
+
+    return errors
+
+
 def check_flash(top: ConfigT):
 
     for mem in top['memory']:
@@ -1226,7 +1287,7 @@ def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
     error += check_pinmux(top, component)
     error += check_implementation_targets(top, component)
 
-    error += check_alerts(top, component)
+    error += check_alerts(top, ip_name_to_block, component)
     error += check_incoming_alerts(top, component)
     error += check_outgoing_alerts(top, component)
     error += check_outgoing_interrupts(top, component)

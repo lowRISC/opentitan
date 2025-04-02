@@ -1045,7 +1045,7 @@ module top_darjeeling #(
       .intr_rx_timeout_o    (intr_uart0_rx_timeout),
       .intr_rx_parity_err_o (intr_uart0_rx_parity_err),
       .intr_tx_empty_o      (intr_uart0_tx_empty),
-      // [0]: fatal_fault
+      // alert_handler[0]: fatal_fault
       .alert_tx_o  ( alert_tx[0:0] ),
       .alert_rx_i  ( alert_rx[0:0] ),
 
@@ -1076,7 +1076,7 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_gpio_o (intr_gpio_gpio),
-      // [1]: fatal_fault
+      // alert_handler[1]: fatal_fault
       .alert_tx_o  ( alert_tx[1:1] ),
       .alert_rx_i  ( alert_rx[1:1] ),
 
@@ -1117,7 +1117,7 @@ module top_darjeeling #(
       .intr_tpm_header_not_empty_o     (intr_spi_device_tpm_header_not_empty),
       .intr_tpm_rdfifo_cmd_end_o       (intr_spi_device_tpm_rdfifo_cmd_end),
       .intr_tpm_rdfifo_drop_o          (intr_spi_device_tpm_rdfifo_drop),
-      // [2]: fatal_fault
+      // alert_handler[2]: fatal_fault
       .alert_tx_o  ( alert_tx[2:2] ),
       .alert_rx_i  ( alert_rx[2:2] ),
 
@@ -1174,7 +1174,7 @@ module top_darjeeling #(
       .intr_acq_stretch_o      (intr_i2c0_acq_stretch),
       .intr_unexp_stop_o       (intr_i2c0_unexp_stop),
       .intr_host_timeout_o     (intr_i2c0_host_timeout),
-      // [3]: fatal_fault
+      // alert_handler[3]: fatal_fault
       .alert_tx_o  ( alert_tx[3:3] ),
       .alert_rx_i  ( alert_rx[3:3] ),
 
@@ -1198,7 +1198,7 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_timer_expired_hart0_timer0_o (intr_rv_timer_timer_expired_hart0_timer0),
-      // [4]: fatal_fault
+      // alert_handler[4]: fatal_fault
       .alert_tx_o  ( alert_tx[4:4] ),
       .alert_rx_i  ( alert_rx[4:4] ),
 
@@ -1223,11 +1223,11 @@ module top_darjeeling #(
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
       .intr_otp_error_o          (intr_otp_ctrl_otp_error),
-      // [5]: fatal_macro_error
-      // [6]: fatal_check_error
-      // [7]: fatal_bus_integ_error
-      // [8]: fatal_prim_otp_alert
-      // [9]: recov_prim_otp_alert
+      // alert_handler[5]: fatal_macro_error
+      // alert_handler[6]: fatal_check_error
+      // alert_handler[7]: fatal_bus_integ_error
+      // alert_handler[8]: fatal_prim_otp_alert
+      // alert_handler[9]: recov_prim_otp_alert
       .alert_tx_o  ( alert_tx[9:5] ),
       .alert_rx_i  ( alert_rx[9:5] ),
 
@@ -1318,9 +1318,9 @@ module top_darjeeling #(
     .EscNumSeverities(AlertHandlerEscNumSeverities),
     .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_lc_ctrl (
-      // [10]: fatal_prog_error
-      // [11]: fatal_state_error
-      // [12]: fatal_bus_integ_error
+      // alert_handler[10]: fatal_prog_error
+      // alert_handler[11]: fatal_state_error
+      // alert_handler[12]: fatal_bus_integ_error
       .alert_tx_o  ( alert_tx[12:10] ),
       .alert_rx_i  ( alert_rx[12:10] ),
 
@@ -1433,7 +1433,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_error_o     (intr_spi_host0_error),
       .intr_spi_event_o (intr_spi_host0_spi_event),
-      // [13]: fatal_fault
+      // alert_handler[13]: fatal_fault
       .alert_tx_o  ( alert_tx[13:13] ),
       .alert_rx_i  ( alert_rx[13:13] ),
 
@@ -1459,7 +1459,7 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_wakeup_o (intr_pwrmgr_aon_wakeup),
-      // [14]: fatal_fault
+      // alert_handler[14]: fatal_fault
       .alert_tx_o  ( alert_tx[14:14] ),
       .alert_rx_i  ( alert_rx[14:14] ),
 
@@ -1509,8 +1509,8 @@ module top_darjeeling #(
     .SecCheck(SecRstmgrAonCheck),
     .SecMaxSyncDelay(SecRstmgrAonMaxSyncDelay)
   ) u_rstmgr_aon (
-      // [15]: fatal_fault
-      // [16]: fatal_cnsty_fault
+      // alert_handler[15]: fatal_fault
+      // alert_handler[16]: fatal_cnsty_fault
       .alert_tx_o  ( alert_tx[16:15] ),
       .alert_rx_i  ( alert_rx[16:15] ),
 
@@ -1543,8 +1543,8 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:17]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_clkmgr_aon (
-      // [17]: recov_fault
-      // [18]: fatal_fault
+      // alert_handler[17]: recov_fault
+      // alert_handler[18]: fatal_fault
       .alert_tx_o  ( alert_tx[18:17] ),
       .alert_rx_i  ( alert_rx[18:17] ),
 
@@ -1592,7 +1592,7 @@ module top_darjeeling #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .TargetCfg(PinmuxAonTargetCfg)
   ) u_pinmux_aon (
-      // [19]: fatal_fault
+      // alert_handler[19]: fatal_fault
       .alert_tx_o  ( alert_tx[19:19] ),
       .alert_rx_i  ( alert_rx[19:19] ),
 
@@ -1637,7 +1637,7 @@ module top_darjeeling #(
       // Interrupt
       .intr_wkup_timer_expired_o (intr_aon_timer_aon_wkup_timer_expired),
       .intr_wdog_timer_bark_o    (intr_aon_timer_aon_wdog_timer_bark),
-      // [20]: fatal_fault
+      // alert_handler[20]: fatal_fault
       .alert_tx_o  ( alert_tx[20:20] ),
       .alert_rx_i  ( alert_rx[20:20] ),
 
@@ -1672,35 +1672,35 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_external_o (intr_soc_proxy_external),
-      // [21]: fatal_alert_intg
-      // [22]: fatal_alert_external_0
-      // [23]: fatal_alert_external_1
-      // [24]: fatal_alert_external_2
-      // [25]: fatal_alert_external_3
-      // [26]: fatal_alert_external_4
-      // [27]: fatal_alert_external_5
-      // [28]: fatal_alert_external_6
-      // [29]: fatal_alert_external_7
-      // [30]: fatal_alert_external_8
-      // [31]: fatal_alert_external_9
-      // [32]: fatal_alert_external_10
-      // [33]: fatal_alert_external_11
-      // [34]: fatal_alert_external_12
-      // [35]: fatal_alert_external_13
-      // [36]: fatal_alert_external_14
-      // [37]: fatal_alert_external_15
-      // [38]: fatal_alert_external_16
-      // [39]: fatal_alert_external_17
-      // [40]: fatal_alert_external_18
-      // [41]: fatal_alert_external_19
-      // [42]: fatal_alert_external_20
-      // [43]: fatal_alert_external_21
-      // [44]: fatal_alert_external_22
-      // [45]: fatal_alert_external_23
-      // [46]: recov_alert_external_0
-      // [47]: recov_alert_external_1
-      // [48]: recov_alert_external_2
-      // [49]: recov_alert_external_3
+      // alert_handler[21]: fatal_alert_intg
+      // alert_handler[22]: fatal_alert_external_0
+      // alert_handler[23]: fatal_alert_external_1
+      // alert_handler[24]: fatal_alert_external_2
+      // alert_handler[25]: fatal_alert_external_3
+      // alert_handler[26]: fatal_alert_external_4
+      // alert_handler[27]: fatal_alert_external_5
+      // alert_handler[28]: fatal_alert_external_6
+      // alert_handler[29]: fatal_alert_external_7
+      // alert_handler[30]: fatal_alert_external_8
+      // alert_handler[31]: fatal_alert_external_9
+      // alert_handler[32]: fatal_alert_external_10
+      // alert_handler[33]: fatal_alert_external_11
+      // alert_handler[34]: fatal_alert_external_12
+      // alert_handler[35]: fatal_alert_external_13
+      // alert_handler[36]: fatal_alert_external_14
+      // alert_handler[37]: fatal_alert_external_15
+      // alert_handler[38]: fatal_alert_external_16
+      // alert_handler[39]: fatal_alert_external_17
+      // alert_handler[40]: fatal_alert_external_18
+      // alert_handler[41]: fatal_alert_external_19
+      // alert_handler[42]: fatal_alert_external_20
+      // alert_handler[43]: fatal_alert_external_21
+      // alert_handler[44]: fatal_alert_external_22
+      // alert_handler[45]: fatal_alert_external_23
+      // alert_handler[46]: recov_alert_external_0
+      // alert_handler[47]: recov_alert_external_1
+      // alert_handler[48]: recov_alert_external_2
+      // alert_handler[49]: recov_alert_external_3
       .alert_tx_o  ( alert_tx[49:21] ),
       .alert_rx_i  ( alert_rx[49:21] ),
 
@@ -1755,7 +1755,7 @@ module top_darjeeling #(
     .Outstanding(SramCtrlRetAonOutstanding),
     .EccCorrection(SramCtrlRetAonEccCorrection)
   ) u_sram_ctrl_ret_aon (
-      // [50]: fatal_error
+      // alert_handler[50]: fatal_error
       .alert_tx_o  ( alert_tx[50:50] ),
       .alert_rx_i  ( alert_rx[50:50] ),
       .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -1790,7 +1790,7 @@ module top_darjeeling #(
     .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
     .TlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits)
   ) u_rv_dm (
-      // [51]: fatal_fault
+      // alert_handler[51]: fatal_fault
       .alert_tx_o  ( alert_tx[51:51] ),
       .alert_rx_i  ( alert_rx[51:51] ),
 
@@ -1834,7 +1834,7 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:52]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_rv_plic (
-      // [52]: fatal_fault
+      // alert_handler[52]: fatal_fault
       .alert_tx_o  ( alert_tx[52:52] ),
       .alert_rx_i  ( alert_rx[52:52] ),
 
@@ -1865,8 +1865,8 @@ module top_darjeeling #(
     .RndCnstMaskingLfsrSeed(RndCnstAesMaskingLfsrSeed),
     .RndCnstMaskingLfsrPerm(RndCnstAesMaskingLfsrPerm)
   ) u_aes (
-      // [53]: recov_ctrl_update_err
-      // [54]: fatal_fault
+      // alert_handler[53]: recov_ctrl_update_err
+      // alert_handler[54]: fatal_fault
       .alert_tx_o  ( alert_tx[54:53] ),
       .alert_rx_i  ( alert_rx[54:53] ),
 
@@ -1895,7 +1895,7 @@ module top_darjeeling #(
       .intr_hmac_done_o  (intr_hmac_hmac_done),
       .intr_fifo_empty_o (intr_hmac_fifo_empty),
       .intr_hmac_err_o   (intr_hmac_hmac_err),
-      // [55]: fatal_fault
+      // alert_handler[55]: fatal_fault
       .alert_tx_o  ( alert_tx[55:55] ),
       .alert_rx_i  ( alert_rx[55:55] ),
 
@@ -1927,8 +1927,8 @@ module top_darjeeling #(
       .intr_kmac_done_o  (intr_kmac_kmac_done),
       .intr_fifo_empty_o (intr_kmac_fifo_empty),
       .intr_kmac_err_o   (intr_kmac_kmac_err),
-      // [56]: recov_operation_err
-      // [57]: fatal_fault_err
+      // alert_handler[56]: recov_operation_err
+      // alert_handler[57]: fatal_fault_err
       .alert_tx_o  ( alert_tx[57:56] ),
       .alert_rx_i  ( alert_rx[57:56] ),
 
@@ -1965,8 +1965,8 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_done_o (intr_otbn_done),
-      // [58]: fatal
-      // [59]: recov
+      // alert_handler[58]: fatal
+      // alert_handler[59]: recov
       .alert_tx_o  ( alert_tx[59:58] ),
       .alert_rx_i  ( alert_rx[59:58] ),
 
@@ -2015,8 +2015,8 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_op_done_o (intr_keymgr_dpe_op_done),
-      // [60]: recov_operation_err
-      // [61]: fatal_fault_err
+      // alert_handler[60]: recov_operation_err
+      // alert_handler[61]: fatal_fault_err
       .alert_tx_o  ( alert_tx[61:60] ),
       .alert_rx_i  ( alert_rx[61:60] ),
 
@@ -2057,8 +2057,8 @@ module top_darjeeling #(
       .intr_cs_entropy_req_o  (intr_csrng_cs_entropy_req),
       .intr_cs_hw_inst_exc_o  (intr_csrng_cs_hw_inst_exc),
       .intr_cs_fatal_err_o    (intr_csrng_cs_fatal_err),
-      // [62]: recov_alert
-      // [63]: fatal_alert
+      // alert_handler[62]: recov_alert
+      // alert_handler[63]: fatal_alert
       .alert_tx_o  ( alert_tx[63:62] ),
       .alert_rx_i  ( alert_rx[63:62] ),
 
@@ -2094,8 +2094,8 @@ module top_darjeeling #(
       .intr_es_health_test_failed_o (intr_entropy_src_es_health_test_failed),
       .intr_es_observe_fifo_ready_o (intr_entropy_src_es_observe_fifo_ready),
       .intr_es_fatal_err_o          (intr_entropy_src_es_fatal_err),
-      // [64]: recov_alert
-      // [65]: fatal_alert
+      // alert_handler[64]: recov_alert
+      // alert_handler[65]: fatal_alert
       .alert_tx_o  ( alert_tx[65:64] ),
       .alert_rx_i  ( alert_rx[65:64] ),
 
@@ -2131,8 +2131,8 @@ module top_darjeeling #(
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn0_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn0_edn_fatal_err),
-      // [66]: recov_alert
-      // [67]: fatal_alert
+      // alert_handler[66]: recov_alert
+      // alert_handler[67]: fatal_alert
       .alert_tx_o  ( alert_tx[67:66] ),
       .alert_rx_i  ( alert_rx[67:66] ),
 
@@ -2156,8 +2156,8 @@ module top_darjeeling #(
       // Interrupt
       .intr_edn_cmd_req_done_o (intr_edn1_edn_cmd_req_done),
       .intr_edn_fatal_err_o    (intr_edn1_edn_fatal_err),
-      // [68]: recov_alert
-      // [69]: fatal_alert
+      // alert_handler[68]: recov_alert
+      // alert_handler[69]: fatal_alert
       .alert_tx_o  ( alert_tx[69:68] ),
       .alert_rx_i  ( alert_rx[69:68] ),
 
@@ -2188,7 +2188,7 @@ module top_darjeeling #(
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection)
   ) u_sram_ctrl_main (
-      // [70]: fatal_error
+      // alert_handler[70]: fatal_error
       .alert_tx_o  ( alert_tx[70:70] ),
       .alert_rx_i  ( alert_rx[70:70] ),
       .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -2230,7 +2230,7 @@ module top_darjeeling #(
     .Outstanding(SramCtrlMboxOutstanding),
     .EccCorrection(SramCtrlMboxEccCorrection)
   ) u_sram_ctrl_mbox (
-      // [71]: fatal_error
+      // alert_handler[71]: fatal_error
       .alert_tx_o  ( alert_tx[71:71] ),
       .alert_rx_i  ( alert_rx[71:71] ),
       .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -2267,7 +2267,7 @@ module top_darjeeling #(
     .SecDisableScrambling(SecRomCtrl0DisableScrambling),
     .MemSizeRom(32768)
   ) u_rom_ctrl0 (
-      // [72]: fatal
+      // alert_handler[72]: fatal
       .alert_tx_o  ( alert_tx[72:72] ),
       .alert_rx_i  ( alert_rx[72:72] ),
 
@@ -2296,7 +2296,7 @@ module top_darjeeling #(
     .SecDisableScrambling(SecRomCtrl1DisableScrambling),
     .MemSizeRom(65536)
   ) u_rom_ctrl1 (
-      // [73]: fatal
+      // alert_handler[73]: fatal
       .alert_tx_o  ( alert_tx[73:73] ),
       .alert_rx_i  ( alert_rx[73:73] ),
 
@@ -2329,7 +2329,7 @@ module top_darjeeling #(
       .intr_dma_done_o       (intr_dma_dma_done),
       .intr_dma_chunk_done_o (intr_dma_dma_chunk_done),
       .intr_dma_error_o      (intr_dma_dma_error),
-      // [74]: fatal_fault
+      // alert_handler[74]: fatal_fault
       .alert_tx_o  ( alert_tx[74:74] ),
       .alert_rx_i  ( alert_rx[74:74] ),
 
@@ -2365,8 +2365,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx0_mbx_abort),
       .intr_mbx_error_o (intr_mbx0_mbx_error),
-      // [75]: fatal_fault
-      // [76]: recov_fault
+      // alert_handler[75]: fatal_fault
+      // alert_handler[76]: recov_fault
       .alert_tx_o  ( alert_tx[76:75] ),
       .alert_rx_i  ( alert_rx[76:75] ),
 
@@ -2402,8 +2402,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx1_mbx_abort),
       .intr_mbx_error_o (intr_mbx1_mbx_error),
-      // [77]: fatal_fault
-      // [78]: recov_fault
+      // alert_handler[77]: fatal_fault
+      // alert_handler[78]: recov_fault
       .alert_tx_o  ( alert_tx[78:77] ),
       .alert_rx_i  ( alert_rx[78:77] ),
 
@@ -2439,8 +2439,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx2_mbx_ready),
       .intr_mbx_abort_o (intr_mbx2_mbx_abort),
       .intr_mbx_error_o (intr_mbx2_mbx_error),
-      // [79]: fatal_fault
-      // [80]: recov_fault
+      // alert_handler[79]: fatal_fault
+      // alert_handler[80]: recov_fault
       .alert_tx_o  ( alert_tx[80:79] ),
       .alert_rx_i  ( alert_rx[80:79] ),
 
@@ -2476,8 +2476,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx3_mbx_ready),
       .intr_mbx_abort_o (intr_mbx3_mbx_abort),
       .intr_mbx_error_o (intr_mbx3_mbx_error),
-      // [81]: fatal_fault
-      // [82]: recov_fault
+      // alert_handler[81]: fatal_fault
+      // alert_handler[82]: recov_fault
       .alert_tx_o  ( alert_tx[82:81] ),
       .alert_rx_i  ( alert_rx[82:81] ),
 
@@ -2513,8 +2513,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx4_mbx_ready),
       .intr_mbx_abort_o (intr_mbx4_mbx_abort),
       .intr_mbx_error_o (intr_mbx4_mbx_error),
-      // [83]: fatal_fault
-      // [84]: recov_fault
+      // alert_handler[83]: fatal_fault
+      // alert_handler[84]: recov_fault
       .alert_tx_o  ( alert_tx[84:83] ),
       .alert_rx_i  ( alert_rx[84:83] ),
 
@@ -2550,8 +2550,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx5_mbx_ready),
       .intr_mbx_abort_o (intr_mbx5_mbx_abort),
       .intr_mbx_error_o (intr_mbx5_mbx_error),
-      // [85]: fatal_fault
-      // [86]: recov_fault
+      // alert_handler[85]: fatal_fault
+      // alert_handler[86]: recov_fault
       .alert_tx_o  ( alert_tx[86:85] ),
       .alert_rx_i  ( alert_rx[86:85] ),
 
@@ -2587,8 +2587,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx6_mbx_ready),
       .intr_mbx_abort_o (intr_mbx6_mbx_abort),
       .intr_mbx_error_o (intr_mbx6_mbx_error),
-      // [87]: fatal_fault
-      // [88]: recov_fault
+      // alert_handler[87]: fatal_fault
+      // alert_handler[88]: recov_fault
       .alert_tx_o  ( alert_tx[88:87] ),
       .alert_rx_i  ( alert_rx[88:87] ),
 
@@ -2624,8 +2624,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx_jtag_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_jtag_mbx_abort),
       .intr_mbx_error_o (intr_mbx_jtag_mbx_error),
-      // [89]: fatal_fault
-      // [90]: recov_fault
+      // alert_handler[89]: fatal_fault
+      // alert_handler[90]: recov_fault
       .alert_tx_o  ( alert_tx[90:89] ),
       .alert_rx_i  ( alert_rx[90:89] ),
 
@@ -2661,8 +2661,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx_pcie0_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie0_mbx_abort),
       .intr_mbx_error_o (intr_mbx_pcie0_mbx_error),
-      // [91]: fatal_fault
-      // [92]: recov_fault
+      // alert_handler[91]: fatal_fault
+      // alert_handler[92]: recov_fault
       .alert_tx_o  ( alert_tx[92:91] ),
       .alert_rx_i  ( alert_rx[92:91] ),
 
@@ -2698,8 +2698,8 @@ module top_darjeeling #(
       .intr_mbx_ready_o (intr_mbx_pcie1_mbx_ready),
       .intr_mbx_abort_o (intr_mbx_pcie1_mbx_abort),
       .intr_mbx_error_o (intr_mbx_pcie1_mbx_error),
-      // [93]: fatal_fault
-      // [94]: recov_fault
+      // alert_handler[93]: fatal_fault
+      // alert_handler[94]: recov_fault
       .alert_tx_o  ( alert_tx[94:93] ),
       .alert_rx_i  ( alert_rx[94:93] ),
 
@@ -2725,8 +2725,8 @@ module top_darjeeling #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[96:95]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_soc_dbg_ctrl (
-      // [95]: fatal_fault
-      // [96]: recov_ctrl_update_err
+      // alert_handler[95]: fatal_fault
+      // alert_handler[96]: recov_ctrl_update_err
       .alert_tx_o  ( alert_tx[96:95] ),
       .alert_rx_i  ( alert_rx[96:95] ),
 
@@ -2759,8 +2759,8 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_racl_error_o (intr_racl_ctrl_racl_error),
-      // [97]: fatal_fault
-      // [98]: recov_ctrl_update_err
+      // alert_handler[97]: fatal_fault
+      // alert_handler[98]: recov_ctrl_update_err
       .alert_tx_o  ( alert_tx[98:97] ),
       .alert_rx_i  ( alert_rx[98:97] ),
 
@@ -2787,8 +2787,8 @@ module top_darjeeling #(
 
       // Interrupt
       .intr_deny_cnt_reached_o (intr_ac_range_check_deny_cnt_reached),
-      // [99]: recov_ctrl_update_err
-      // [100]: fatal_fault
+      // alert_handler[99]: recov_ctrl_update_err
+      // alert_handler[100]: fatal_fault
       .alert_tx_o  ( alert_tx[100:99] ),
       .alert_rx_i  ( alert_rx[100:99] ),
 
@@ -2849,10 +2849,10 @@ module top_darjeeling #(
     .CsrMimpId(RvCoreIbexCsrMimpId),
     .InstructionPipeline(RvCoreIbexInstructionPipeline)
   ) u_rv_core_ibex (
-      // [101]: fatal_sw_err
-      // [102]: recov_sw_err
-      // [103]: fatal_hw_err
-      // [104]: recov_hw_err
+      // alert_handler[101]: fatal_sw_err
+      // alert_handler[102]: recov_sw_err
+      // alert_handler[103]: fatal_hw_err
+      // alert_handler[104]: recov_hw_err
       .alert_tx_o  ( alert_tx[104:101] ),
       .alert_rx_i  ( alert_rx[104:101] ),
 
