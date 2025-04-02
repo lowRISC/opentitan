@@ -210,6 +210,13 @@
     default_plic: "rv_plic"
   }
 
+  // Alert information for the design
+  alerts: {
+    // Any module with alerts that doesn't specify alert_handler
+    // will have its alerts sent here
+    default_handler: null
+  },
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every

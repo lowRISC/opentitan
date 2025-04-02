@@ -235,9 +235,11 @@ class TopGenCTest(TopGenC):
             return alert_peripherals
         all_device_regions = self.all_device_regions()
         all_direct_regions = all_device_regions[addr_space]
+        alerting_modules = self.top["alert_module"]
+
         for entry in self.top['module']:
             inst_name = entry['name']
-            if inst_name not in self.top["alert_module"]:
+            if inst_name not in alerting_modules:
                 continue
 
             if not entry['generate_dif']:
