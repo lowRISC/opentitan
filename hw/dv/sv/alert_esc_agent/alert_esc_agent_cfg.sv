@@ -69,6 +69,9 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
 
   // Incremented by the monitor on each ping
   int unsigned ping_count = 0;
+  // Needed for alert checks starting after a ping
+  // This flag is updated in the alert_monitor task `monitor_ping` when a ping is detected.
+  bit          active_ping = 0;
 
   `uvm_object_utils_begin(alert_esc_agent_cfg)
     `uvm_field_int(alert_delay_min, UVM_DEFAULT)

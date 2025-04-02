@@ -14,8 +14,6 @@ class alert_monitor extends alert_esc_base_monitor;
   // Flags used to know when there are pings/alerts
   // This flag is updated in the task `monitor_alert` when an alert is detected.
   bit active_alert = 1'b0;
-  // This flag is updated in the task `monitor_ping` when a ping is detected.
-  bit active_ping  = 1'b0;
 
   `uvm_component_new
 
@@ -36,7 +34,7 @@ class alert_monitor extends alert_esc_base_monitor;
     bit ping_p;
     forever @(cfg.vif.monitor_cb) begin
       // If we're in a ping, halt until the ping finalises
-      wait (active_ping==0);
+      wait (cfg.active_ping==0);
       if (is_valid_alert() && !cfg.under_ping_handshake &&
           ping_p == cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
         `uvm_info(`gfn, $sformatf("%m - Alert detected: setting 'active_alert'"), UVM_DEBUG)
@@ -54,7 +52,7 @@ class alert_monitor extends alert_esc_base_monitor;
         wait (active_alert==0);
         // Set if there aren't active alerts
         `uvm_info(`gfn, $sformatf("%m - Ping detected: setting 'active_ping'"), UVM_DEBUG)
-        active_ping = 1;
+        cfg.active_ping = 1;
       end
 
       ping_p = cfg.vif.monitor_cb.alert_rx_final.ping_p;
@@ -79,7 +77,7 @@ class alert_monitor extends alert_esc_base_monitor;
               forever @(cfg.vif.monitor_cb) begin
                 if (active_alert && !cfg.under_ping_handshake && !cfg.under_ping_handshake_ph_2)
                   alert_thread();
-                else if (active_alert==0 && active_ping==1)
+                else if (active_alert==0 && cfg.active_ping==1)
                   ping_thread();
               end
             end : thread_arbiter
@@ -97,7 +95,7 @@ class alert_monitor extends alert_esc_base_monitor;
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
       active_alert = 1'b0;
-      active_ping = 1'b0;
+      cfg.active_ping = 1'b0;
       cfg.alert_init_done = 0;
       cfg.under_ping_handshake = 0;
       cfg.under_ping_handshake_ph_2 = 0;
@@ -215,7 +213,7 @@ class alert_monitor extends alert_esc_base_monitor;
     wait_ack_complete();
     `uvm_info(`gfn, "ACK for ping received", UVM_DEBUG)
     cfg.under_ping_handshake_ph_2 = 0;
-    active_ping = 0;
+    cfg.active_ping = 0;
   endtask : ping_thread
 
   // This thread is spawned after an alert is detected if no ping is in the middle of a handshake.
