@@ -80,28 +80,28 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
       // Read back Creator and Owner seeds via Host, and compare with the data presented to the Key Manager Interface.
       randcase
         1: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (creator_prog_flag) check_data_match(flash_op_data, exp_creator_data);
           compare_secret_seed(FlashCreatorPart, flash_op_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (owner_prog_flag) check_data_match(flash_op_data, exp_owner_data);
           compare_secret_seed(FlashOwnerPart, flash_op_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (creator_prog_flag) check_data_match(flash_op_data, exp_creator_data);
           compare_secret_seed(FlashCreatorPart, flash_op_data);
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (owner_prog_flag) check_data_match(flash_op_data, exp_owner_data);
           compare_secret_seed(FlashOwnerPart, flash_op_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (owner_prog_flag) check_data_match(flash_op_data, exp_owner_data);
           compare_secret_seed(FlashOwnerPart, flash_op_data);
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, flash_op_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, flash_op_data);
           if (creator_prog_flag) check_data_match(flash_op_data, exp_creator_data);
           compare_secret_seed(FlashCreatorPart, flash_op_data);
         end
@@ -117,18 +117,18 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
       // Choose Erase/Program Combination to perform this iteration
       unique case (case_sel)
         0: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
         end
         2: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
         end
         3: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpErase, dummy_data);
         end
         default: `uvm_error(`gfn, $sformatf("No case item match, FAIL"))
       endcase
@@ -140,18 +140,18 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
       // Note: Uses case_sel value from above
       unique case (case_sel)
         0: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
         end
         2: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
         end
         3: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpProgram, dummy_data);
         end
         default: `uvm_error(`gfn, $sformatf("No case item match, FAIL"))
       endcase
@@ -162,18 +162,18 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
       randcase
         1: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, exp_creator_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_creator_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, exp_owner_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_owner_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, exp_creator_data);
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, exp_owner_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_creator_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_owner_data);
         end
         1: begin
-          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_pkg::FlashOpRead, exp_owner_data);
-          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_pkg::FlashOpRead, exp_creator_data);
+          do_flash_op_secret_part(FlashOwnerPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_owner_data);
+          do_flash_op_secret_part(FlashCreatorPart, flash_ctrl_top_specific_pkg::FlashOpRead, exp_creator_data);
         end
       endcase
 
@@ -199,7 +199,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
     // DATA PARTITION
 
-    flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+    flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
     mubi4_t default_region_read_en;
     mubi4_t default_region_program_en;
     mubi4_t default_region_erase_en;
@@ -236,10 +236,10 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     flash_bank_mp_info_page_cfg_t info_regions[flash_ctrl_reg_pkg::NumInfos0];
 
     foreach (info_regions[i]) begin
-      // Get secret partition cfg from flash_ctrl_pkg
+      // Get secret partition cfg from flash_ctrl_top_specific_pkg
       if ( i inside {1, 2}) begin
         // Copy protection from hw_cfg0.
-        info_regions[i] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
+        info_regions[i] = conv2env_mp_info(flash_ctrl_top_specific_pkg::CfgAllowRead);
         // Update program and erase control for the test purpose.
         info_regions[i].program_en = MuBi4True;
         info_regions[i].erase_en   = MuBi4True;

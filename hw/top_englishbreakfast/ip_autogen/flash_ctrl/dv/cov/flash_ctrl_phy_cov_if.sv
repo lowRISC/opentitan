@@ -4,7 +4,7 @@
 //
 // Sampling physical interface of the flash
 // tb.dut.u_eflash.u_flash
-import flash_ctrl_pkg::*;
+import flash_ctrl_top_specific_pkg::*;
 interface flash_ctrl_phy_cov_if
 (
   input logic        clk_i,

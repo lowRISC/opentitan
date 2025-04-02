@@ -7,7 +7,7 @@ module tb;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import flash_ctrl_env_pkg::*;
   import flash_ctrl_test_pkg::*;
   import flash_ctrl_bkdr_util_pkg::flash_ctrl_bkdr_util;
@@ -74,7 +74,7 @@ module tb;
   `define FLASH_DEVICE_HIER tb.dut.u_eflash.u_flash
   assign fpp_if.req = `FLASH_DEVICE_HIER.flash_req_i;
   assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_rsp_o;
-  for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_bank_loop
+  for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_bank_loop
     assign fpp_if.rreq[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.req_i;
     assign fpp_if.rdy[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.rdy_o;
 
@@ -258,7 +258,7 @@ module tb;
                  "u_info_mem.gen_generic.u_impl_generic.mem"}, i, j)
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
-    for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_each_bank
+    for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_each_bank
       flash_dv_part_e part = part.first();
 
       initial begin
@@ -275,7 +275,7 @@ module tb;
         part = part.next();
       end
 
-      for (genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++) begin : gen_each_info_type
+      for (genvar j = 0; j < flash_ctrl_top_specific_pkg::InfoTypes; j++) begin : gen_each_info_type
         initial begin
           flash_ctrl_bkdr_util m_mem_bkdr_util;
           m_mem_bkdr_util = new(

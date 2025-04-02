@@ -32,14 +32,14 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
     solve bank before flash_op;
-    bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};
+    bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1) - BytesPerBank / 2]};
   }
 
   constraint flash_op_c {
     flash_op.erase_type dist {
-      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
+      flash_ctrl_top_specific_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
+      flash_ctrl_top_specific_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
 
     flash_op.partition == FlashPartData;
@@ -61,12 +61,12 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   }
 
   // Bit vector representing which of the mp region cfg CSRs to enable.
-  rand bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
+  rand bit [flash_ctrl_top_specific_pkg::MpRegions-1:0] en_mp_regions;
 
   constraint en_mp_regions_c {$countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;}
 
   // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
     solve en_mp_regions before mp_regions;
@@ -106,7 +106,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
   }
 
   // Bank erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  rand bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint bank_erase_en_c {
     foreach (bank_erase_en[i]) {
@@ -413,7 +413,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
   // Controller read data.
   virtual task controller_read_op_data(ref flash_op_t flash_op);
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpRead;
     flash_rd_data.delete();
     flash_ctrl_start_op(flash_op);
     flash_ctrl_read(flash_op.num_words, flash_rd_data, poll_fifo_status);
@@ -423,7 +423,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
   // Controller program data.
   virtual task controller_program_data(ref flash_op_t flash_op, data_q_t flash_op_data);
-    flash_op.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpProgram;
     cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
     flash_ctrl_start_op(flash_op);
     flash_ctrl_write(flash_op_data, poll_fifo_status);
@@ -433,7 +433,7 @@ class flash_ctrl_rd_buff_evict_vseq extends flash_ctrl_base_vseq;
 
   // Erase data.
   virtual task erase_data(ref flash_op_t flash_op);
-    flash_op.op = flash_ctrl_pkg::FlashOpErase;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpErase;
     flash_ctrl_start_op(flash_op);
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));

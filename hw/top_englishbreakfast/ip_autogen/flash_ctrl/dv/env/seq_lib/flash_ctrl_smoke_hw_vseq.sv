@@ -36,7 +36,7 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
     flash_op_t flash_op;
 
     // Bit vector representing which of the mp region cfg CSRs to enable.
-    bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
+    bit [flash_ctrl_top_specific_pkg::MpRegions-1:0] en_mp_regions;
 
     // Memory protection regions settings. One MP region, Single Page
     flash_mp_region_cfg_t mp_region;
@@ -49,7 +49,7 @@ class flash_ctrl_smoke_hw_vseq extends flash_ctrl_base_vseq;
     bank = 0;
 
     flash_op.addr = 0;
-    flash_op.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpProgram;
     flash_op.partition = FlashPartData;
     flash_op.num_words = 10;
 

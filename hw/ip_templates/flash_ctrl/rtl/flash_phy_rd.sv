@@ -44,7 +44,7 @@ module flash_phy_rd
   input pg_erase_i,
   input bk_erase_i,
   input [BusBankAddrW-1:0] addr_i,
-  input flash_ctrl_pkg::flash_part_e part_i,
+  input flash_ctrl_top_specific_pkg::flash_part_e part_i,
   input [InfoTypesWidth-1:0] info_sel_i,
   output logic rdy_o,
   output logic data_valid_o,

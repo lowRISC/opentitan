@@ -191,7 +191,7 @@ typedef struct packed {
     uint             num_words;   // number of words to read or program (TL_DW)
     addr_t           addr;        // starting addr for the op
     // addres for the ctrl interface per bank, 18:0
-    bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
+    bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
 ```

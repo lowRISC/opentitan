@@ -40,19 +40,19 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
     // ERASE
 
     `uvm_info(`gfn, "ERASE", UVM_LOW)
-    do_flash_ops(flash_ctrl_pkg::FlashOpErase, ReadCheckNorm);
+    do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpErase, ReadCheckNorm);
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
     // PROGRAM
 
     `uvm_info(`gfn, "PROGRAM", UVM_LOW)
-    do_flash_ops(flash_ctrl_pkg::FlashOpProgram, ReadCheckNorm);
+    do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpProgram, ReadCheckNorm);
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
     // READ (Compare Expected Data with Data Read : EXPECT DATA MATCH)
 
     `uvm_info(`gfn, "READ", UVM_LOW)
-    do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckNorm);
+    do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpRead, ReadCheckNorm);
 
     // SEND RMA REQUEST (Erases the Flash and Writes Random Data To All Partitions)
     fork
@@ -132,7 +132,7 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
 
     `uvm_info(`gfn, "READ", UVM_LOW)
 
-    do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckRand);
+    do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpRead, ReadCheckRand);
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
   endtask : body

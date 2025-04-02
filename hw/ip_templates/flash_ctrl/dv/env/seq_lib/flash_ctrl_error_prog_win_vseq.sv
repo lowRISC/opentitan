@@ -46,7 +46,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_fetch_code_vseq;
   // Constraint for the Flash Operation
   constraint flash_op_c {
 
-    flash_op.op == flash_ctrl_pkg::FlashOpProgram;  // Only Flash Program Used in this test
+    flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram;  // Only Flash Program Used in this test
     flash_op.partition == FlashPartData;  // Ony Data Partitions Used in this test
 
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
