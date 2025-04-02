@@ -36,7 +36,7 @@ class gpio_env extends cip_base_env #(
     end
     // Set these interfaces instances to the environment configuration object.
     cfg.gpio_vif        = m_gpio_vif;
-    cfg.straps_vif_inst = m_straps_vif;
+    cfg.m_straps_vif    = m_straps_vif;
     cfg.clk_rst_vif     = m_clk_rst_vif;
   endfunction
 

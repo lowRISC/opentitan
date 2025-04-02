@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:opentitan:top_darjeeling_gpio:0.1
+      - lowrisc:darjeeling_ip:gpio:0.1
     files:
       - gpio_env_pkg.sv
       - gpio_env_cfg.sv: {is_include_file: true}

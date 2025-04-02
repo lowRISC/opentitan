@@ -155,7 +155,7 @@ class LintCfg(OneShotCfg):
             self.errors_seen += res.has_signatures(self.fail_severities)
             fail_msgs += f"\n### Messages for Build Mode `'{mode.name}'`\n"
             fail_msgs += res.print_signatures_md(self.report_severities,
-                                                 self.max_msg_count)
+                                                 10000000000000000000000000000000000)
 
         if len(table) > 1:
             self.results_md = results_str + tabulate(

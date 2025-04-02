@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:opentitan:top_${topname}_gpio:0.1
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
     files:
       - gpio_env_pkg.sv
       - gpio_env_cfg.sv: {is_include_file: true}

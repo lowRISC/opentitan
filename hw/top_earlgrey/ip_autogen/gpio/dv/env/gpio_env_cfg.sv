@@ -14,7 +14,7 @@ class gpio_env_cfg extends cip_base_env_cfg #(
   // gpio virtual interface
   gpio_vif gpio_vif;
   // gpio straps virtual interface
-  straps_vif straps_vif_inst;
+  straps_vif m_straps_vif;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
 

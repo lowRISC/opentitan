@@ -14,7 +14,7 @@ class ${module_instance_name}_env_cfg extends cip_base_env_cfg #(
   // ${module_instance_name} virtual interface
   ${module_instance_name}_vif ${module_instance_name}_vif;
   // ${module_instance_name} straps virtual interface
-  straps_vif straps_vif_inst;
+  straps_vif m_straps_vif;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
 
