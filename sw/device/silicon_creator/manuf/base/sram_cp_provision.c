@@ -134,12 +134,11 @@ static status_t flash_info_page_0_read_and_validate(
 
 static status_t wafer_auth_secret_flash_info_page_write(
     manuf_cp_provisioning_data_t *console_in) {
-  uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
       kFlashInfoFieldWaferAuthSecret.bank,
       kFlashInfoFieldWaferAuthSecret.partition, kFlashInfoPage3WritePermissions,
-      &byte_address));
+      /*offset=*/NULL));
   TRY(manuf_flash_info_field_write(
       &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret,
       console_in->wafer_auth_secret,
