@@ -99,6 +99,8 @@ class alert_monitor extends alert_esc_base_monitor;
       active_alert = 1'b0;
       active_ping = 1'b0;
       cfg.alert_init_done = 0;
+      cfg.under_ping_handshake = 0;
+      cfg.under_ping_handshake_ph_2 = 0;
       @(posedge cfg.vif.rst_n);
       // Reset signals at posedge rst_n to avoid race condition at negedge rst_n
       reset_signals();
