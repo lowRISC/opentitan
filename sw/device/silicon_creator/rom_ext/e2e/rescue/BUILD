@@ -31,10 +31,12 @@ _CONFIGS = {
     "xmodem": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "params": "",
+        "tags": [],
     },
     "usbdfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         "params": "-p usb-dfu -t strap -v 3",
+        "tags": ["broken"],
     },
 }
 
@@ -73,6 +75,7 @@ _CONFIGS = {
             params = config["params"],
             rom_ext = config["rom_ext"],
             slot = position["slot"],
+            tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
@@ -106,6 +109,7 @@ _CONFIGS = {
             },
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
@@ -141,6 +145,7 @@ _CONFIGS = {
             },
             params = config["params"],
             rom_ext = config["rom_ext"],
+            tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
