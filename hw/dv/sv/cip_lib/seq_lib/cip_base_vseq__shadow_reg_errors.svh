@@ -165,6 +165,9 @@ endtask
 virtual task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr,
                                                              string alert_name);
   if (cfg.m_alert_agent_cfgs.exists(alert_name)) begin
+    // If the monitor is sampling a ping wait until is finished, so the alert can
+    // be detected afterwards
+    wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
     // add clock cycle delay in case of alert coming out 1 cycle later.
     cfg.clk_rst_vif.wait_clks(2);
     check_fatal_alert_nonblocking(alert_name);
