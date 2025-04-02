@@ -151,14 +151,6 @@ buildSite () {
     mkdir -p "${build_dir}/reports"
     python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
 
-    # CLEANUP
-    # Remove (larger) files from the ${build_dir} that do not need to be deployed
-    # -------
-    # Remove some unneeded files/directories that mdbook copies to the output dir
-    # TODO handle this with a .ignore file or other mechanism
-    for f in .git .github build-site; do
-        rm -rf "${book_out:?}/${f:?}"
-    done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
     # -------
 }
