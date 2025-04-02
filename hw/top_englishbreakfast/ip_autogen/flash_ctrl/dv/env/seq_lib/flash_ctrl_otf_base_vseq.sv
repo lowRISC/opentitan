@@ -109,17 +109,24 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo;
       } else {
-        rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo1;
       } else {
-        rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo1 ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
-    rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+    rand_op.partition dist {
+      FlashPartData := 6,
+      FlashPartInfo := 1,
+      FlashPartInfo1 := 1,
+      FlashPartInfo2 := 1
+    };
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
     cfg.seq_cfg.addr_flash_word_aligned -> rand_op.addr[2] == 1'b0;

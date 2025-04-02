@@ -56,7 +56,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // Configure the FLASH Controller
 
     // Memory protection regions settings. One MP region, Single Page
-    flash_mp_region_cfg_t             mp_regions                [flash_ctrl_top_specific_pkg::MpRegions];
+    flash_mp_region_cfg_t             mp_regions [flash_ctrl_top_specific_pkg::MpRegions];
 
     foreach (mp_regions[i]) begin
       mp_regions[i].en         = mubi4_bool_to_mubi(en_mp_regions[i]);

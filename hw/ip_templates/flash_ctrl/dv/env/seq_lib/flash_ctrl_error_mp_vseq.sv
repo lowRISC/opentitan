@@ -36,7 +36,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   // Copies of the MP Region Settings (Data and Info Partitions)
   flash_mp_region_cfg_t mp_data_regions[flash_ctrl_top_specific_pkg::MpRegions];
   flash_bank_mp_info_page_cfg_t
-    mp_info_regions[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
+    mp_info_regions[flash_ctrl_top_specific_pkg::NumBanks]
+                   [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   // Constraint for Bank.
   constraint bank_c {bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};}
@@ -61,18 +62,23 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
      flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo1 ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
     if (cfg.seq_cfg.op_readonly_on_info2_partition) {
-      if (flash_op.partition == FlashPartInfo2) {flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;}
+      if (flash_op.partition == FlashPartInfo2) {
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      }
     }
 
-    flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram,
+    flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
+                        flash_ctrl_top_specific_pkg::FlashOpProgram,
                         flash_ctrl_top_specific_pkg::FlashOpErase};
 
     flash_op.erase_type dist {
@@ -88,7 +94,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   // Flash ctrl operation data queue - used for programing or reading the flash.
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
-    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
+    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
+                            flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
     } else {
       flash_op_data.size() == 0;
@@ -145,7 +152,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection settings.
   rand flash_bank_mp_info_page_cfg_t
-    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
+    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                 [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
@@ -457,7 +465,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       unique case (flash_op.op)
         flash_ctrl_top_specific_pkg::FlashOpErase : begin
           // Bank Erase Defeats the MP Settings, Only valid for Info Partition (not Info1 or info2)
-          if ((info_part == 0) && (flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank))
+          if ((info_part == 0) &&
+              (flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank))
             rsp = MP_PASS;
           else
             rsp = (mp_info_regions[info_bank][info_part][info_page].erase_en == MuBi4False);
@@ -490,7 +499,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       en_msg = (mp_data_regions[i].en == MuBi4True) ? "Enabled": "Disabled";
       `uvm_info(`gfn,
         $sformatf("MPR%0d : From : 0x%03x, To : 0x%03x : From : 0x%08x, To : 0x%08x, %s", i,
-          mp_data_regions[i].start_page, mp_data_regions[i].start_page+mp_data_regions[i].num_pages,
+          mp_data_regions[i].start_page,
+          mp_data_regions[i].start_page+mp_data_regions[i].num_pages,
             mp_data_regions[i].start_page*(FullPageNumWords*4),
               (mp_data_regions[i].start_page+mp_data_regions[i].num_pages)*(FullPageNumWords*4),
                 en_msg), UVM_MEDIUM)
