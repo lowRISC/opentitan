@@ -368,6 +368,16 @@ virtual task read_check_shadow_reg_status(string msg_id);
   foreach (cfg.shadow_update_err_status_fields[status_field]) begin
     csr_rd_check(.ptr(status_field), .compare_vs_ral(1),
                  .err_msg($sformatf(" %0s: check update_err status", msg_id)));
+
+    // If status_field is RC then reading it will have caused it to become zero again. You might
+    // expect the scoreboard to predict it appropriately, but the shadow_reg_errors sequence gets
+    // run with en_scb=0 (from a plusarg). Update the prediction manually.
+    if (status_field.get_access() == "RC") begin
+      if (!status_field.predict(.value(0), .kind(UVM_PREDICT_DIRECT)))
+        `uvm_error(`gfn,
+                   $sformatf("Failed to predict clear of %0s after read.",
+                             status_field.get_full_name()))
+    end
   end
   foreach (cfg.shadow_storage_err_status_fields[status_field]) begin
     csr_rd_check(.ptr(status_field), .compare_vs_ral(1),
