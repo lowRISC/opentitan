@@ -165,11 +165,6 @@ extern const uint32_t kUartBaud1M50;
   ((cpu_freq_)*10 * (fifo_depth_) / (baud_rate_))
 
 /**
- * The time it takes to transmit the entire UART TX fifo in CPU cycles.
- */
-extern const uint32_t kUartTxFifoCpuCycles;
-
-/**
  * Helper macro to calculate the maximum duration of the AST initialization
  * check poll in CPU cycles.
  *

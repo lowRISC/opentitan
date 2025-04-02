@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -30,6 +31,18 @@ cc_library(
 )
 
 cc_library(
+    name = "uart",
+    srcs = ["uart.c"],
+    hdrs = ["device.h"],
+    target_compatible_with = opentitan_require_ip("uart"),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+cc_library(
     name = "device",
     hdrs = ["device.h"],
     deps = [
@@ -38,15 +51,24 @@ cc_library(
 )
 
 cc_library(
+    name = "stub",
+    srcs = ["stub.c"],
+    deps = [
+        ":device",
+    ],
+)
+
+cc_library(
     name = "fpga_cw305",
     srcs = ["device_fpga_cw305.c"],
     deps = [
         ":device",
-        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
+    ] + opentitan_if_ip(
+        "uart",
+        [":uart"],
+        [":stub"],
+    ),
 )
 
 cc_library(
@@ -54,11 +76,12 @@ cc_library(
     srcs = ["device_fpga_cw310.c"],
     deps = [
         ":device",
-        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
+    ] + opentitan_if_ip(
+        "uart",
+        [":uart"],
+        [":stub"],
+    ),
 )
 
 cc_library(
@@ -66,11 +89,12 @@ cc_library(
     srcs = ["device_fpga_cw340.c"],
     deps = [
         ":device",
-        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
+    ] + opentitan_if_ip(
+        "uart",
+        [":uart"],
+        [":stub"],
+    ),
 )
 
 cc_library(
@@ -78,8 +102,7 @@ cc_library(
     srcs = ["device_silicon.c"],
     deps = [
         ":device",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:uart_c_regs",
+        ":stub",
     ],
 )
 
@@ -88,10 +111,9 @@ cc_library(
     srcs = ["device_sim_dv.c"],
     deps = [
         ":device",
+        ":stub",
         "//hw/top:dt_rv_core_ibex",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:top_lib",
-        "//hw/top:uart_c_regs",
     ],
 )
 
@@ -100,9 +122,9 @@ cc_library(
     srcs = ["device_sim_verilator.c"],
     deps = [
         ":device",
+        ":stub",
         "//hw/top:dt_rv_core_ibex",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:uart_c_regs",
     ],
 )
 
@@ -113,11 +135,12 @@ cc_library(
         ":device",
         "//hw/top:dt_rv_core_ibex",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
+    ] + opentitan_if_ip(
+        "uart",
+        [":uart"],
+        [":stub"],
+    ),
 )
 
 doxygen_gather_all_package_cc(

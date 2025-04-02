@@ -345,6 +345,9 @@ enum {
   kUartFifoSize = UART_PARAM_TX_FIFO_DEPTH,
 };
 
+// Returns the argument if its under the uint32_t max, UINT32_MAX otherwise.
+#define IDENTITY_U32(a) ((uint32_t)((a) < UINT32_MAX ? (a) : UINT32_MAX))
+
 OT_ALWAYS_INLINE
 static void shutdown_tx_wait(void) {
 #ifdef OT_PLATFORM_RV32
@@ -353,13 +356,15 @@ static void shutdown_tx_wait(void) {
                 "Total message length must be less than TX FIFO size.");
   CSR_WRITE(CSR_REG_MCYCLE, 0);
   uint32_t mcycle;
+  uint32_t uart_tx_fifo_cycles = IDENTITY_U32(CALCULATE_UART_TX_FIFO_CPU_CYCLES(
+      kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH));
   bool tx_idle;
   do {
     tx_idle = bitfield_bit32_read(
         abs_mmio_read32(uart0_base() + UART_STATUS_REG_OFFSET),
         UART_STATUS_TXIDLE_BIT);
     CSR_READ(CSR_REG_MCYCLE, &mcycle);
-  } while (mcycle < kUartTxFifoCpuCycles && !tx_idle);
+  } while (mcycle < uart_tx_fifo_cycles && !tx_idle);
 #endif
 }
 
