@@ -88,12 +88,19 @@ package ac_range_check_env_pkg;
     return -1;
   endfunction : get_csr_idx
 
+  // Declare TLMs
+  // Used to connect the prediction output to the DUT input to provide the expected transactions.
+  // This declaration is required as we need multiple implementation ports for the same data type.
+  `uvm_blocking_put_imp_decl(_filt)
+  `uvm_blocking_put_imp_decl(_unfilt)
+
   // Package sources
   `include "ac_range_check_dut_cfg.sv"
   `include "ac_range_check_scb_item.sv"
   `include "ac_range_check_env_cfg.sv"
   `include "ac_range_check_env_cov.sv"
   `include "ac_range_check_virtual_sequencer.sv"
+  `include "ac_range_check_predictor.sv"
   `include "ac_range_check_scoreboard.sv"
   `include "ac_range_check_env.sv"
   `include "ac_range_check_vseq_list.sv"

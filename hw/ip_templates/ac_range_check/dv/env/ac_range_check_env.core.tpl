@@ -18,6 +18,7 @@ filesets:
       - ac_range_check_env_cfg.sv: {is_include_file: true}
       - ac_range_check_env_cov.sv: {is_include_file: true}
       - ac_range_check_virtual_sequencer.sv: {is_include_file: true}
+      - ac_range_check_predictor.sv: {is_include_file: true}
       - ac_range_check_scoreboard.sv: {is_include_file: true}
       - ac_range_check_env.sv: {is_include_file: true}
       - seq_lib/ac_range_check_vseq_list.sv: {is_include_file: true}
