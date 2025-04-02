@@ -4,7 +4,7 @@
 '''Code representing an IP block for reggen'''
 
 import logging as log
-from typing import Sequence
+from typing import Sequence, Optional
 from dataclasses import dataclass
 
 import hjson  # type: ignore
@@ -645,3 +645,9 @@ class IpBlock:
                           f"register block: {', '.join(unused_regwens)}")
                 status = False
         return status
+
+    def get_alert_by_name(self, name: str) -> Optional[Alert]:
+        for alert in self.alerts:
+            if alert.name == name:
+                return alert
+        return None
