@@ -46,6 +46,8 @@
 
 #include "alert_handler_regs.h"  // Generated.
 
+#define IDENTITY_U32(a) ((uint32_t)((a) < UINT32_MAX ? (a) : UINT32_MAX))
+
 /*
   RSTMGR ALERT_INFO Test
 
@@ -510,7 +512,10 @@ static void prgm_alert_handler_round3(void) {
           "kClockFreqPeripheralHz must fit in uint32_t");
     uint32_t cpu_freq = (uint32_t)kClockFreqCpuHz;
     uint32_t peri_freq = (uint32_t)kClockFreqPeripheralHz;
-    uint32_t cycles = kUartTxFifoCpuCycles * (cpu_freq / peri_freq);
+    uint32_t uart_tx_fifo_cycles =
+        IDENTITY_U32(CALCULATE_UART_TX_FIFO_CPU_CYCLES(
+            kUartBaudrate, kClockFreqCpuHz, UART_PARAM_TX_FIFO_DEPTH));
+    uint32_t cycles = uart_tx_fifo_cycles * (cpu_freq / peri_freq);
     class_d_esc[0] = kEscProfiles[kDifAlertHandlerClassD][0];
     class_d_esc[1] = kEscProfiles[kDifAlertHandlerClassD][1];
     class_d_esc[2] = kEscProfiles[kDifAlertHandlerClassD][2];
