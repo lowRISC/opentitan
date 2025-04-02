@@ -193,7 +193,8 @@ module flash_phy_core
   // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
   // A host transaction was granted to the muxed partition, this is illegal
   logic host_gnt_err_event;
-  assign host_gnt_err_event = (host_gnt && muxed_part != flash_ctrl_top_specific_pkg::FlashPartData);
+  assign host_gnt_err_event = (host_gnt && muxed_part !=
+                               flash_ctrl_top_specific_pkg::FlashPartData);
   // Controller fsm became non idle when there are pending host transactions, this is
   // illegal.
   logic host_outstanding_err_event;

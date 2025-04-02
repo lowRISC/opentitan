@@ -19,14 +19,16 @@ class flash_ctrl_legacy_base_vseq extends flash_ctrl_otf_base_vseq;
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo;
       } else {
-        rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo1;
       } else {
-        rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo1 ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
     // This added because in some extending env the info2 has special use.

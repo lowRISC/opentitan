@@ -418,7 +418,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : flash_ctrl_mp_info_page_cfg
 
   // Configure bank erasability.
-  virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en);
+  virtual task flash_ctrl_bank_erase_cfg(
+      bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en);
     csr_wr(.ptr(ral.mp_bank_cfg_shadowed[0]), .value(bank_erase_en));
   endtask : flash_ctrl_bank_erase_cfg
 
@@ -1621,8 +1622,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       // Only scr/ecc enable matter; cfg.ovrd_src_dis can be randomized in directed test,
       // but otherwise it has the same default value as HW_INFO_CFG_OVERRIDE.
       if (page != 3) begin
-        scramble_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en,
-                                                  mubi4_t'(~cfg.ovrd_scr_dis));
+        scramble_en = prim_mubi_pkg::mubi4_and_hi(
+            flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en, mubi4_t'(~cfg.ovrd_scr_dis));
         ecc_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en,
                                              mubi4_t'(~cfg.ovrd_ecc_dis));
       end else begin
