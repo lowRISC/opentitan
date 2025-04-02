@@ -65,9 +65,7 @@ See Priority of Matching for the priority based address matching.
 
 ## Priority of Matching
 
-If a request matches multiple ranges with conflicting permissions, the following priority shall be enforced:
-
-* If multiple ranges allow the operation, the first matching range (based on register configuration order) shall determine the access rights.
+If a request matches multiple enabled ranges with conflicting permissions, the lowest-index enabled range determines the permissions that apply to the request.
 
 ## Error Logging and Interrupt Mechanism
 
