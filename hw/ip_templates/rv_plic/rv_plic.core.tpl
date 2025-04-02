@@ -12,7 +12,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
     % if racl_support:
-      - lowrisc:systems:top_racl_pkg
+      - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
     % endif
     files:
       - rtl/${module_instance_name}_reg_pkg.sv

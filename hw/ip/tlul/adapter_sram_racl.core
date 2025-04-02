@@ -13,7 +13,7 @@ filesets:
       - lowrisc:tlul:common
       - lowrisc:tlul:adapter_racl
       - lowrisc:tlul:adapter_sram
-      - lowrisc:systems:top_racl_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/tlul_adapter_sram_racl.sv
     file_type: systemVerilogSource

@@ -14,7 +14,7 @@ filesets:
       - lowrisc:prim:racl_error_arb
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device_pkg
-      - lowrisc:systems:top_racl_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/spi_host_reg_pkg.sv
       - rtl/spi_host_cmd_pkg.sv

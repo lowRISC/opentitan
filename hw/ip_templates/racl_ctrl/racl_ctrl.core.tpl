@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:all
       - lowrisc:prim:racl_error_arb
-      - lowrisc:systems:top_racl_pkg
+      - ${instance_vlnv("lowrisc:constants:top_racl_pkg")}
     files:
       - rtl/${module_instance_name}_reg_pkg.sv
       - rtl/${module_instance_name}_reg_top.sv

@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:arbiter
-      - lowrisc:systems:top_racl_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/prim_racl_error_arb.sv
     file_type: systemVerilogSource
