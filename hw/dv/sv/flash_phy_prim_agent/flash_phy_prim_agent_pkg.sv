@@ -7,7 +7,7 @@ package flash_phy_prim_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

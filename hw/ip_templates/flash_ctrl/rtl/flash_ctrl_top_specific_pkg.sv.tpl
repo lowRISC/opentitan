@@ -2,10 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Flash Controller package.
+// Flash Controller top-specific package.
 //
 
-package flash_ctrl_pkg;
+package flash_ctrl_top_specific_pkg;
+
+  // Treat items from flash_ctrl_pkg as if they were declared here.
+  import flash_ctrl_pkg::*;
+  export flash_ctrl_pkg::NumSeeds;
+  export flash_ctrl_pkg::CreatorSeedIdx;
+  export flash_ctrl_pkg::OwnerSeedIdx;
+  export flash_ctrl_pkg::SeedWidth;
+  export flash_ctrl_pkg::KeyWidth;
+  export flash_ctrl_pkg::flash_key_t;
+  export flash_ctrl_pkg::keymgr_flash_t;
 
   // design parameters that can be altered through topgen
   parameter int unsigned NumBanks        = flash_ctrl_reg_pkg::RegNumBanks;
@@ -15,19 +25,19 @@ package flash_ctrl_pkg;
   parameter int InfoTypes                = flash_ctrl_reg_pkg::NumInfoTypes;
 
   // fixed parameters of flash derived from topgen parameters
-  parameter int DataWidth       = 64;
-  parameter int MetaDataWidth   = 12;
+  parameter int DataWidth       = ${data_width};
+  parameter int MetaDataWidth   = ${metadata_width};
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-    flash_ctrl_reg_pkg::NumInfos0,
-    flash_ctrl_reg_pkg::NumInfos1,
-    flash_ctrl_reg_pkg::NumInfos2
+% for type in range(info_types):
+    flash_ctrl_reg_pkg::NumInfos${type}${"," if not loop.last else ""}
+% endfor
   };
   parameter int InfosPerBank    = max_info_pages(InfoTypeSize);
-  parameter int WordsPerPage    = 256; // Number of flash words per page
+  parameter int WordsPerPage    = ${words_per_page}; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int BusIntgWidth    = tlul_pkg::DataIntgWidth;
   parameter int BusFullWidth    = BusWidth + BusIntgWidth;
@@ -66,9 +76,9 @@ package flash_ctrl_pkg;
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PageW'(PagesPerBank - 1);
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-    PageW'(InfoTypeSize[0] - 1),
-    PageW'(InfoTypeSize[1] - 1),
-    PageW'(InfoTypeSize[2] - 1)
+% for type in range(info_types):
+    PageW'(InfoTypeSize[${type}] - 1)${"," if not loop.last else ""}
+% endfor
   };
 
   // Flash Disable usage
@@ -90,10 +100,7 @@ package flash_ctrl_pkg;
   ////////////////////////////
 
   // parameters for connected components
-  parameter int SeedWidth = 256;
-  parameter int KeyWidth  = 128;
   parameter int EdnWidth  = edn_pkg::ENDPOINT_BUS_WIDTH;
-  typedef logic [KeyWidth-1:0] flash_key_t;
 
   // Default Lfsr configurations
   // These LFSR parameters have been generated with
@@ -184,11 +191,8 @@ package flash_ctrl_pkg;
   // One page for creator seeds
   // One page for owner seeds
   // One page for isolated flash page
-  parameter int NumSeeds = 2;
   parameter bit [BankW-1:0] SeedBank = 0;
   parameter bit [InfoTypesWidth-1:0] SeedInfoSel = 0;
-  parameter bit [0:0] CreatorSeedIdx = 0;
-  parameter bit [0:0] OwnerSeedIdx = 1;
   parameter bit [PageW-1:0] CreatorInfoPage = 1;
   parameter bit [PageW-1:0] OwnerInfoPage = 2;
   parameter bit [PageW-1:0] IsolatedInfoPage = 3;
@@ -513,19 +517,6 @@ package flash_ctrl_pkg;
      }
   };
 
-
-  // flash_ctrl to keymgr
-  typedef struct packed {
-    logic [NumSeeds-1:0][SeedWidth-1:0] seeds;
-  } keymgr_flash_t;
-
-  parameter keymgr_flash_t KEYMGR_FLASH_DEFAULT = '{
-    seeds: '{
-     256'h9152e32c9380a4bcc3e0ab263581e6b0e8825186e1e445631646e8bef8c45d47,
-     256'hfa365df52da48cd752fb3a026a8e608f0098cfe5fa9810494829d0cd9479eb78
-    }
-  };
-
   // dft_en jtag selection
   typedef enum logic [2:0] {
     FlashLcTckSel,
@@ -571,7 +562,8 @@ package flash_ctrl_pkg;
 
   // RMA control FSM encoding
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 7 -n 10   //      -s 3319803877 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 7 -n 10 \
+  //      -s 3319803877 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -625,4 +617,4 @@ package flash_ctrl_pkg;
     return out_cfg;
   endfunction // max_info_banks
 
-endpackage : flash_ctrl_pkg
+endpackage : flash_ctrl_top_specific_pkg

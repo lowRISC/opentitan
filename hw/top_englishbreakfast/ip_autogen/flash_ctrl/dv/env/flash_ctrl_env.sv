@@ -67,7 +67,7 @@ class flash_ctrl_env #(
     end
 
     if (cfg.scb_otf_en) begin
-      for (int i = 0; i < flash_ctrl_pkg::NumBanks; ++i) begin
+      for (int i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; ++i) begin
         virtual_sequencer.eg_exp_ctrl_port[i].connect(
                 m_otf_scb.eg_exp_ctrl_fifo[i].analysis_export);
         virtual_sequencer.eg_exp_host_port[i].connect(

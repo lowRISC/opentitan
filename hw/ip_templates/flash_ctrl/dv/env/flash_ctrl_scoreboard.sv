@@ -182,7 +182,7 @@ class flash_ctrl_scoreboard #(
 
     flash_read.partition  = FlashPartData;
     flash_read.erase_type = FlashErasePage;
-    flash_read.op         = flash_ctrl_pkg::FlashOpRead;
+    flash_read.op         = flash_ctrl_top_specific_pkg::FlashOpRead;
     flash_read.num_words  = 1;
     flash_read.addr       = trans.a_addr;
 
@@ -423,7 +423,7 @@ class flash_ctrl_scoreboard #(
       if (part_sel == 1 || part == FlashPartData) begin
         for (int j = 0; j < partition_words_num; j++) begin
           scb_flash_model[addr_attr.addr] = ALL_ONES;
-          addr_attr.incr(flash_ctrl_pkg::BusBytes);
+          addr_attr.incr(flash_ctrl_top_specific_pkg::BusBytes);
         end
         case (part)
           FlashPartData: cfg.scb_flash_data = scb_flash_model;

@@ -24,8 +24,8 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
   constraint bank_c {
     solve bank before bank_rd;
     if (bank_same == 1) {bank == bank_rd;} else {bank != bank_rd;}
-    bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};
-    bank_rd inside {[0 : flash_ctrl_pkg::NumBanks - 1]};
+    bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};
+    bank_rd inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};
   }
 
   // Constraint host read address to be in relevant range for the selected partition.
@@ -95,9 +95,9 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
       ), UVM_HIGH)
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
-      if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
+      if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
+      end else if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -120,9 +120,9 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
       ), UVM_HIGH)
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
       cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
-      if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
+      if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
-      end else if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
+      end else if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
       end
       cfg.flash_mem_bkdr_write(.flash_op(flash_op_host_rd), .scheme(FlashMemInitRandomize));
@@ -138,7 +138,7 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
     flash_op.partition = FlashPartData;
     flash_op_host_rd.addr = 0;
     flash_op_host_rd.num_words = 30;
-    flash_op.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpProgram;
     flash_op.addr = 'h14;
     flash_op.num_words = 10;
     cfg.flash_mem_bkdr_init(flash_op_host_rd.partition, FlashMemInitInvalidate);
@@ -175,11 +175,11 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
       end
       begin
         // controller read, program or erase
-        if (flash_op.op == flash_ctrl_pkg::FlashOpRead) begin
+        if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead) begin
           controller_read_data(flash_op);
-        end else if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
+        end else if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram) begin
           controller_program_data(flash_op, flash_op_data);
-        end else begin  //flash_op.op == flash_ctrl_pkg::FlashOpErase
+        end else begin  //flash_op.op == flash_ctrl_top_specific_pkg::FlashOpErase
           controller_erase_data(flash_op);
         end
       end

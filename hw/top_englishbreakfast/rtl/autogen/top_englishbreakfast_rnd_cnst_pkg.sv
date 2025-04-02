@@ -27,18 +27,18 @@ package top_englishbreakfast_rnd_cnst_pkg;
   };
 
   // Compile-time random bits for default seeds
-  parameter flash_ctrl_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
+  parameter flash_ctrl_top_specific_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
     256'hB0F1F422_5B70DE66_AE2A2D2C_AF521284_D078B244_2C4DCDFF_FC136EAE_D4BF1A60,
     256'h0233980B_C4CF2116_DB51EC10_B747B901_1D99F556_B893842A_91CAFC63_CB10B944
   };
 
   // Compile-time random bits for initial LFSR seed
-  parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
+  parameter flash_ctrl_top_specific_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
     32'h601633A4
   };
 
   // Compile-time random permutation for LFSR output
-  parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
+  parameter flash_ctrl_top_specific_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
     160'hEA0DBD7E_58F2DF98_5AE78946_013A6965_1AA0F2A4
   };
 

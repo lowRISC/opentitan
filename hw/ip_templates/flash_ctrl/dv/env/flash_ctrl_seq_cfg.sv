@@ -19,11 +19,12 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
   // Weights for enable bits for each of the flash banks information partitions memory protection
   //  configuration registers.
-  uint mp_info_page_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                         [flash_ctrl_top_specific_pkg::InfoTypes];
 
   // When this knob is NOT FlashOpInvalid (default) the selected operation will be the only
   //  operation to run in the test (FlashOpRead, FlashOpProgram, FlashOpErase).
-  flash_ctrl_pkg::flash_op_e flash_only_op;
+  flash_ctrl_top_specific_pkg::flash_op_e flash_only_op;
 
   // Weights to enable read / program and erase for each mem region.
   uint mp_region_en_pc;
@@ -49,12 +50,18 @@ class flash_ctrl_seq_cfg extends uvm_object;
   // Weights to enable read / program and erase for each information partition page.
   // For each of the information partitions in each of the banks there is a single variable to
   //  control all of this partition pages.
-  uint mp_info_page_read_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
-  uint mp_info_page_program_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
-  uint mp_info_page_erase_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
-  uint mp_info_page_scramble_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
-  uint mp_info_page_ecc_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
-  uint mp_info_page_he_en_pc[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes];
+  uint mp_info_page_read_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                              [flash_ctrl_top_specific_pkg::InfoTypes];
+  uint mp_info_page_program_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                                 [flash_ctrl_top_specific_pkg::InfoTypes];
+  uint mp_info_page_erase_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                               [flash_ctrl_top_specific_pkg::InfoTypes];
+  uint mp_info_page_scramble_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                                  [flash_ctrl_top_specific_pkg::InfoTypes];
+  uint mp_info_page_ecc_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                            [flash_ctrl_top_specific_pkg::InfoTypes];
+  uint mp_info_page_he_en_pc[flash_ctrl_top_specific_pkg::NumBanks]
+                            [flash_ctrl_top_specific_pkg::InfoTypes];
 
   // Control the number of flash ops.
   uint max_flash_ops_per_cfg;
@@ -183,7 +190,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
   virtual function void configure();
     max_num_trans                 = 20;
 
-    num_en_mp_regions             = flash_ctrl_pkg::MpRegions;
+    num_en_mp_regions             = flash_ctrl_top_specific_pkg::MpRegions;
 
     allow_mp_region_overlap       = 1'b0;
 

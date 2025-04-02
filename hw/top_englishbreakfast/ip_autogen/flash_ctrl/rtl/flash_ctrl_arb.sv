@@ -12,7 +12,7 @@
 //
 // This module arbitrates and muxes the controls between the two interfaces.
 
-module flash_ctrl_arb import flash_ctrl_pkg::*; (
+module flash_ctrl_arb import flash_ctrl_top_specific_pkg::*; (
   input clk_i,
   input rst_ni,
 

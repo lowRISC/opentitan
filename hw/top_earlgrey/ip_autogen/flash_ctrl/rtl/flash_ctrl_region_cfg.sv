@@ -9,7 +9,7 @@
 // 2. generate shadow update and storage errors
 
 module flash_ctrl_region_cfg
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import flash_ctrl_reg_pkg::*;
 (
   input clk_i,

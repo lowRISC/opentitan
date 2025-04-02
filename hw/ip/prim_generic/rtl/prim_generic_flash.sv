@@ -52,8 +52,8 @@ module prim_generic_flash #(
   assign init_busy_o = |init_busy;
 
   // this represents the type of program operations that are supported
-  assign prog_type_avail_o[flash_ctrl_pkg::FlashProgNormal] = 1'b1;
-  assign prog_type_avail_o[flash_ctrl_pkg::FlashProgRepair] = 1'b1;
+  assign prog_type_avail_o[flash_ctrl_top_specific_pkg::FlashProgNormal] = 1'b1;
+  assign prog_type_avail_o[flash_ctrl_top_specific_pkg::FlashProgRepair] = 1'b1;
 
   for (genvar bank = 0; bank < NumBanks; bank++) begin : gen_prim_flash_banks
 

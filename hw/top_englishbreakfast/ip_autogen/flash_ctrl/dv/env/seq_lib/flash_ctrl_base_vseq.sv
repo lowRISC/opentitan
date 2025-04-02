@@ -395,7 +395,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     string csr_name = $sformatf("bank%0d_info%0d_page_cfg", bank, info_part);
     // If the selected information partition has only 1 page, no suffix needed to the register
     //  name, if there is more than one page, the page index should be added to the register name.
-    if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
+    if (flash_ctrl_top_specific_pkg::InfoTypeSize[info_part] > 1) begin
       csr_name = $sformatf({csr_name, "_%0d"}, page);
     end
     `uvm_info("mp_info_page_cfg", $sformatf("%s: %p", csr_name, page_cfg), UVM_DEBUG)
@@ -418,7 +418,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : flash_ctrl_mp_info_page_cfg
 
   // Configure bank erasability.
-  virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en);
+  virtual task flash_ctrl_bank_erase_cfg(bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en);
     csr_wr(.ptr(ral.mp_bank_cfg_shadowed[0]), .value(bank_erase_en));
   endtask : flash_ctrl_bank_erase_cfg
 
@@ -685,7 +685,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_op_t        flash_op;
     bit               scr_en;
 
-    scr_en = (flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True);
+    scr_en = (flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en == MuBi4True);
     // Flash Operation Assignments
     flash_op.op                         = op;
     flash_op.partition                  = FlashPartInfo;
@@ -711,12 +711,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     // Perform Flash Opeation via Host Interface
     unique case (flash_op.op)
-      flash_ctrl_pkg::FlashOpErase: begin
+      flash_ctrl_top_specific_pkg::FlashOpErase: begin
         flash_ctrl_start_op(flash_op);
         wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
         if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
       end
-      flash_ctrl_pkg::FlashOpProgram: begin
+      flash_ctrl_top_specific_pkg::FlashOpProgram: begin
         // Write Frontdoor, Read Backdoor
         // Generate Random Key
         for (int i = 0; i < flash_op.num_words; i++) begin
@@ -731,7 +731,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
           cfg.flash_mem_bkdr_read_check(flash_op, exp_data, , scr_en);
         end
       end
-      flash_ctrl_pkg::FlashOpRead: begin
+      flash_ctrl_top_specific_pkg::FlashOpRead: begin
         // Read Frontdoor, Compare Backdoor
         flash_ctrl_start_op(flash_op);
         flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
@@ -982,16 +982,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     // Perform Flash Operations via the Host Interface
     case (flash_op.op)
 
-      flash_ctrl_pkg::FlashOpErase: begin
+      flash_ctrl_top_specific_pkg::FlashOpErase: begin
         if (part inside {FlashCreatorPart, FlashOwnerPart, FlashIsolPart})
-          flash_op.erase_type = flash_ctrl_pkg::FlashErasePage;
-        else flash_op.erase_type = flash_ctrl_pkg::FlashEraseBank;
+          flash_op.erase_type = flash_ctrl_top_specific_pkg::FlashErasePage;
+        else flash_op.erase_type = flash_ctrl_top_specific_pkg::FlashEraseBank;
         flash_ctrl_start_op(flash_op);
         wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
         if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_erase_check(flash_op, exp_data);
       end
 
-      flash_ctrl_pkg::FlashOpProgram: begin
+      flash_ctrl_top_specific_pkg::FlashOpProgram: begin
         // Write Frontdoor, Read/Compare Backdoor
         // Random Data
         for (int i = 0; i < flash_op.num_words; i++)
@@ -999,7 +999,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         flash_ctrl_write_extra(flash_op, flash_op_wdata);
       end
 
-      flash_ctrl_pkg::FlashOpRead: begin
+      flash_ctrl_top_specific_pkg::FlashOpRead: begin
         flash_ctrl_read_extra(flash_op, flash_op_rdata);
         // Compare
         if (cfg.seq_cfg.check_mem_post_tran) begin
@@ -1379,7 +1379,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task controller_read_page(flash_op_t flash_op_r);
     data_q_t flash_read_data;
     bit poll_fifo_status = 1;
-    flash_op_r.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op_r.op = flash_ctrl_top_specific_pkg::FlashOpRead;
     flash_op_r.num_words = 16;
     flash_op_r.addr = {flash_op_r.addr[19:11], {11{1'b0}}};
     for (int i = 0; i < 32; i++) begin
@@ -1393,7 +1393,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Controller program page.
   virtual task controller_program_page(flash_op_t flash_op_p);
     bit poll_fifo_status = 1;
-    flash_op_p.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op_p.op = flash_ctrl_top_specific_pkg::FlashOpProgram;
     flash_op_p.num_words = 16;
     flash_op_p.addr = {flash_op_p.addr[19:11], {11{1'b0}}};
     for (int i = 0; i < 32; i++) begin
@@ -1621,13 +1621,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       // Only scr/ecc enable matter; cfg.ovrd_src_dis can be randomized in directed test,
       // but otherwise it has the same default value as HW_INFO_CFG_OVERRIDE.
       if (page != 3) begin
-        scramble_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.scramble_en,
+        scramble_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en,
                                                   mubi4_t'(~cfg.ovrd_scr_dis));
-        ecc_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.ecc_en,
+        ecc_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en,
                                              mubi4_t'(~cfg.ovrd_ecc_dis));
       end else begin
-        scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-        ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+        scramble_en = flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en;
+        ecc_en = flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en;
       end
       `uvm_info(`gfn, $sformatf(
                 "info page %0d [0x%x : 0x%x] scr_en:%x, ecc_en:%x",

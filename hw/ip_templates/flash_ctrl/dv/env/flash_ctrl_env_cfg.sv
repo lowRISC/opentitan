@@ -14,7 +14,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   typedef per_caller_err_addr_tbl_t err_addr_tbl_t[NumReadTask];
 
   // Flash memory backdoor util instances for each partition in each bank.
-  flash_ctrl_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
+  flash_ctrl_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_top_specific_pkg::NumBanks];
 
   // Pass scoreboard handle to address multiple exp_alert issue.
   flash_ctrl_scoreboard scb_h;
@@ -358,7 +358,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     `uvm_info(`gfn, $sformatf("\nStart back-door updating partition %s memory model\n",
                               part.name()), UVM_MEDIUM)
 
-    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : iterate_all_banks
+    for (int i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : iterate_all_banks
       addr_attr.set_attrs(i * BytesPerBank);
       for (int j = 0; j < partition_words_num; j++) begin : iterate_all_bank_partition_words
         bkdr_rd_data = mem_bkdr_util_h[part][addr_attr.bank].read32(addr_attr.bank_addr);
@@ -367,7 +367,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         end else begin
           scb_flash_model[addr_attr.addr] = bkdr_rd_data;
         end
-        addr_attr.incr(flash_ctrl_pkg::BusBytes);
+        addr_attr.incr(flash_ctrl_top_specific_pkg::BusBytes);
       end : iterate_all_bank_partition_words
     end : iterate_all_banks
 
@@ -509,13 +509,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual function void flash_mem_bkdr_read(flash_op_t flash_op, ref data_q_t data);
     flash_mem_addr_attrs             addr_attrs = new(flash_op.addr);
 
-    if (flash_op.op == flash_ctrl_pkg::FlashOpErase) begin
+    if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpErase) begin
       case (flash_op.erase_type)
-        flash_ctrl_pkg::FlashErasePage: begin
+        flash_ctrl_top_specific_pkg::FlashErasePage: begin
           addr_attrs.set_attrs(addr_attrs.bank_start_addr + addr_attrs.page_start_addr);
           flash_op.num_words = FlashNumBusWordsPerPage;
         end
-        flash_ctrl_pkg::FlashEraseBank: begin
+        flash_ctrl_top_specific_pkg::FlashEraseBank: begin
           addr_attrs.set_attrs(addr_attrs.bank * BytesPerBank);
           case (flash_op.partition)
             FlashPartData: begin
@@ -568,7 +568,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
     // Randomize the lower half-word (if Xs) if the first half-word written in the below loop is
     // corresponding upper half-word.
-    if (addr_attrs.bank_addr[flash_ctrl_pkg::DataByteWidth-1]) begin
+    if (addr_attrs.bank_addr[flash_ctrl_top_specific_pkg::DataByteWidth-1]) begin
       _randomize_uninitialized_half_word(.partition(flash_op.partition), .bank(addr_attrs.bank),
                                          .addr(addr_attrs.word_addr));
     end
@@ -578,13 +578,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         flash_op.num_words = data.size();
       end
       FlashMemInitSet: begin
-        wr_data = {flash_ctrl_pkg::DataWidth{1'b1}};
+        wr_data = {flash_ctrl_top_specific_pkg::DataWidth{1'b1}};
       end
       FlashMemInitClear: begin
-        wr_data = {flash_ctrl_pkg::DataWidth{1'b0}};
+        wr_data = {flash_ctrl_top_specific_pkg::DataWidth{1'b0}};
       end
       FlashMemInitInvalidate: begin
-        wr_data = {flash_ctrl_pkg::DataWidth{1'bx}};
+        wr_data = {flash_ctrl_top_specific_pkg::DataWidth{1'bx}};
       end
       default: ; // Do nothing.
     endcase
@@ -612,7 +612,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
     // Randomize the upper half-word (if Xs) if the last word written in the above loop is
     // corresponding lower half-word.
-    if (addr_attrs.bank_addr[flash_ctrl_pkg::DataByteWidth-1]) begin
+    if (addr_attrs.bank_addr[flash_ctrl_top_specific_pkg::DataByteWidth-1]) begin
       _randomize_uninitialized_half_word(.partition(flash_op.partition), .bank(addr_attrs.bank),
                                          .addr(addr_attrs.bank_addr));
     end
@@ -626,9 +626,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                                   data_t wr_data);
 
     // read back the full flash word
-    logic [flash_ctrl_pkg::DataWidth-1:0] data;
+    logic [flash_ctrl_top_specific_pkg::DataWidth-1:0] data;
     logic [7:0] intg_data;
-    logic is_upper = addr[flash_ctrl_pkg::DataByteWidth-1];
+    logic is_upper = addr[flash_ctrl_top_specific_pkg::DataByteWidth-1];
     addr_t aligned_addr = addr;
 
     if (is_upper) begin
@@ -642,7 +642,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     if (is_upper) begin
       data = {wr_data, data[TL_DW-1:0]};
     end else begin
-      data = {data[flash_ctrl_pkg::DataWidth-1:TL_DW], wr_data};
+      data = {data[flash_ctrl_top_specific_pkg::DataWidth-1:TL_DW], wr_data};
     end
 
     // calculate truncated integrity
@@ -727,12 +727,12 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     uint                             num_words;
 
     case (flash_op.erase_type)
-      flash_ctrl_pkg::FlashErasePage: begin
+      flash_ctrl_top_specific_pkg::FlashErasePage: begin
         erase_check_addr = addr_attrs.page_start_addr;
         num_words = FlashNumBusWordsPerPage;
         erase_page_num_msg = $sformatf("page = %0d, ", addr_attrs.page);
       end
-      flash_ctrl_pkg::FlashEraseBank: begin
+      flash_ctrl_top_specific_pkg::FlashEraseBank: begin
         // This address is relative to the bank it's in.
         erase_check_addr   = 0;
         // No need to state page for bank erase.

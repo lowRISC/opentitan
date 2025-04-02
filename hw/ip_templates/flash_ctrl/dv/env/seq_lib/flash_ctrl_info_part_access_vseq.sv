@@ -121,9 +121,9 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
       scr_en = 1;
       ecc_en = 1;
     end else begin
-      scr_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.scramble_en,
+      scr_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en,
                                            mubi4_t'(~cfg.ovrd_scr_dis)) == MuBi4True);
-      ecc_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.ecc_en,
+      ecc_en = (prim_mubi_pkg::mubi4_and_hi(flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en,
                                            mubi4_t'(~cfg.ovrd_ecc_dis)) == MuBi4True);
     end
 
@@ -174,14 +174,14 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
     for (int i = 1; i < 4; i++) begin
       if (i < 3) begin
          info_regions.scramble_en = prim_mubi_pkg::mubi4_and_hi(
-                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                    flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en,
                                     mubi4_t'(~cfg.ovrd_scr_dis));
          info_regions.ecc_en = prim_mubi_pkg::mubi4_and_hi(
-                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                               flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en,
                                mubi4_t'(~cfg.ovrd_ecc_dis));
       end else begin
-        info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-        info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+        info_regions.scramble_en = flash_ctrl_top_specific_pkg::CfgAllowRead.scramble_en;
+        info_regions.ecc_en = flash_ctrl_top_specific_pkg::CfgAllowRead.ecc_en;
       end
       flash_ctrl_mp_info_page_cfg(0, 0, i, info_regions);
     end

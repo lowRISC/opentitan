@@ -106,7 +106,7 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     key_instr_cross : cross key_cp, instr_type_cp;
   endgroup // fetch_code_cg
 
-  covergroup rma_init_cg with function sample(flash_ctrl_pkg::rma_state_e st);
+  covergroup rma_init_cg with function sample(flash_ctrl_top_specific_pkg::rma_state_e st);
     rma_start_cp: coverpoint st {
       bins rma_st[2] = {StRmaIdle, [StRmaPageSel:StRmaInvalid]};
     }

@@ -34,12 +34,12 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   uint            erase_err_cnt = 0;
 
   // Copies of the MP Region Settings (Data and Info Partitions)
-  flash_mp_region_cfg_t mp_data_regions[flash_ctrl_pkg::MpRegions];
+  flash_mp_region_cfg_t mp_data_regions[flash_ctrl_top_specific_pkg::MpRegions];
   flash_bank_mp_info_page_cfg_t
-    mp_info_regions[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+    mp_info_regions[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   // Constraint for Bank.
-  constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};}
+  constraint bank_c {bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};}
 
   // Constraint for controller address to be in the relevant range for
   // the selected partition.
@@ -58,26 +58,26 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
     // Bank Erase is only supported for Data & 1st Info Partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
-     flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+     flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
     if (cfg.seq_cfg.op_readonly_on_info2_partition) {
-      if (flash_op.partition == FlashPartInfo2) {flash_op.op == flash_ctrl_pkg::FlashOpRead;}
+      if (flash_op.partition == FlashPartInfo2) {flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;}
     }
 
-    flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram,
-                        flash_ctrl_pkg::FlashOpErase};
+    flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram,
+                        flash_ctrl_top_specific_pkg::FlashOpErase};
 
     flash_op.erase_type dist {
-      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
+      flash_ctrl_top_specific_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
+      flash_ctrl_top_specific_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
 
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
@@ -88,14 +88,14 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   // Flash ctrl operation data queue - used for programing or reading the flash.
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
-    if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
+    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
     } else {
       flash_op_data.size() == 0;
     }
   }
 
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
 
@@ -145,12 +145,12 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection settings.
   rand flash_bank_mp_info_page_cfg_t
-    mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
     foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
       foreach (mp_info_pages[i][j][k]) {
         mp_info_pages[i][j][k].scramble_en == MuBi4False;
         mp_info_pages[i][j][k].ecc_en      == MuBi4False;
@@ -170,7 +170,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
   rand mubi4_t default_region_he_en;
 
   // Bank Erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  rand bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint bank_erase_en_c {
     foreach (bank_erase_en[i]) {
@@ -232,7 +232,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
       // Initialise Flash Content
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
-      if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
+      if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
       end else begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
@@ -245,7 +245,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       case (flash_op.op)
 
         // ERASE
-        flash_ctrl_pkg::FlashOpErase : begin
+        flash_ctrl_top_specific_pkg::FlashOpErase : begin
           `uvm_info(`gfn, $sformatf("Flash : ERASE exp_alert:%0d", exp_alert), UVM_LOW)
           flash_ctrl_start_op(flash_op);
           wait_flash_op_done(.clear_op_status(0), .timeout_ns(cfg.seq_cfg.erase_timeout_ns));
@@ -256,7 +256,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
         end
 
         // PROGRAM
-        flash_ctrl_pkg::FlashOpProgram : begin
+        flash_ctrl_top_specific_pkg::FlashOpProgram : begin
           `uvm_info(`gfn, $sformatf("Flash : PROGRAM exp_alert:%0d", exp_alert), UVM_LOW)
           exp_data = cfg.calculate_expected_data(flash_op, flash_op_data);
           flash_ctrl_start_op(flash_op);
@@ -269,7 +269,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
         end
 
         // READ
-        flash_ctrl_pkg::FlashOpRead : begin
+        flash_ctrl_top_specific_pkg::FlashOpRead : begin
           `uvm_info(`gfn, $sformatf("Flash : READ exp_alert:%0d", exp_alert), UVM_LOW)
           flash_op_data.delete();
           flash_ctrl_start_op(flash_op);
@@ -384,9 +384,9 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
     // Assign op_msg to Op Type (used below)
     unique case (flash_op.op)
-      flash_ctrl_pkg::FlashOpErase   : op_msg = "Erase";
-      flash_ctrl_pkg::FlashOpProgram : op_msg = "Program";
-      flash_ctrl_pkg::FlashOpRead    : op_msg = "Read";
+      flash_ctrl_top_specific_pkg::FlashOpErase   : op_msg = "Erase";
+      flash_ctrl_top_specific_pkg::FlashOpProgram : op_msg = "Program";
+      flash_ctrl_top_specific_pkg::FlashOpRead    : op_msg = "Read";
       default : `uvm_fatal(`gfn, "Unrecognised Flash Operation, FAIL")
     endcase
 
@@ -401,16 +401,16 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
           UVM_MEDIUM)
         if (mp_data_regions[i].en == MuBi4True) begin
           unique case (flash_op.op)
-            flash_ctrl_pkg::FlashOpErase : begin
+            flash_ctrl_top_specific_pkg::FlashOpErase : begin
               // Bank Erase Defeats the MP Settings
-              if (flash_op.erase_type == flash_ctrl_pkg::FlashEraseBank)
+              if (flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank)
                 rsp_vec[i] = MP_PASS;
               else
                 rsp_vec[i] = (mp_data_regions[i].erase_en == MuBi4False);
             end
-            flash_ctrl_pkg::FlashOpProgram : rsp_vec[i] =
+            flash_ctrl_top_specific_pkg::FlashOpProgram : rsp_vec[i] =
               (mp_data_regions[i].program_en == MuBi4False);
-            flash_ctrl_pkg::FlashOpRead : rsp_vec[i] =
+            flash_ctrl_top_specific_pkg::FlashOpRead : rsp_vec[i] =
               (mp_data_regions[i].read_en == MuBi4False);
             default : `uvm_fatal(`gfn, "Unrecognised Flash Operation, FAIL")
           endcase
@@ -455,16 +455,16 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     // Look for MP Area Violations
     if (mp_info_regions[info_bank][info_part][info_page].en == MuBi4True) begin
       unique case (flash_op.op)
-        flash_ctrl_pkg::FlashOpErase : begin
+        flash_ctrl_top_specific_pkg::FlashOpErase : begin
           // Bank Erase Defeats the MP Settings, Only valid for Info Partition (not Info1 or info2)
-          if ((info_part == 0) && (flash_op.erase_type == flash_ctrl_pkg::FlashEraseBank))
+          if ((info_part == 0) && (flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank))
             rsp = MP_PASS;
           else
             rsp = (mp_info_regions[info_bank][info_part][info_page].erase_en == MuBi4False);
         end
-        flash_ctrl_pkg::FlashOpProgram :
+        flash_ctrl_top_specific_pkg::FlashOpProgram :
           rsp = (mp_info_regions[info_bank][info_part][info_page].program_en == MuBi4False);
-        flash_ctrl_pkg::FlashOpRead :
+        flash_ctrl_top_specific_pkg::FlashOpRead :
           rsp = (mp_info_regions[info_bank][info_part][info_page].read_en == MuBi4False);
         default : `uvm_fatal(`gfn, "Unrecognised Flash Operation, FAIL")
       endcase
@@ -472,8 +472,8 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     else
     begin
       // Bank Erase Defeats the MP Settings, Only valid for Info Partition (not Info1 or info2)
-      if ((info_part == 0) && (flash_op.op == flash_ctrl_pkg::FlashOpErase) &&
-          (flash_op.erase_type == flash_ctrl_pkg::FlashEraseBank))
+      if ((info_part == 0) && (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpErase) &&
+          (flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank))
         rsp = MP_PASS;
       else
         rsp = MP_VIOLATION;
