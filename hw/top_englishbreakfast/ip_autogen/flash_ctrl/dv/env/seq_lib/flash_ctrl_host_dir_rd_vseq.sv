@@ -34,7 +34,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
   }
 
   constraint flash_op_c {
-    flash_op.op == flash_ctrl_pkg::FlashOpProgram;
+    flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram;
     flash_op.partition == FlashPartData;
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
@@ -172,7 +172,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
 
     // Select FLASH Read Operation
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpRead;
 
     // Start Controller read data
     flash_ctrl_start_op(flash_op);

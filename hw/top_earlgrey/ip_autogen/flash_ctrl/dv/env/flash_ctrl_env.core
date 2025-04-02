@@ -14,7 +14,7 @@ filesets:
       - lowrisc:earlgrey_dv:flash_ctrl_bkdr_util
       - lowrisc:dv:flash_phy_prim_agent
       - lowrisc:dv:mem_bkdr_util
-      - lowrisc:earlgrey_ip:flash_ctrl_pkg
+      - lowrisc:earlgrey_ip:flash_ctrl_top_specific_pkg
       - lowrisc:earlgrey_constants:top_pkg
     files:
       - flash_ctrl_eflash_ral_pkg.sv

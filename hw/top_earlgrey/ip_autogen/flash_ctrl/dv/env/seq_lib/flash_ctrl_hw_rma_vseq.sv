@@ -91,19 +91,19 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
       // ERASE
 
       `uvm_info(`gfn, "ERASE", UVM_LOW)
-      do_flash_ops(flash_ctrl_pkg::FlashOpErase, ReadCheckNorm);
+      do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpErase, ReadCheckNorm);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
       // PROGRAM
 
       `uvm_info(`gfn, "PROGRAM", UVM_LOW)
-      do_flash_ops(flash_ctrl_pkg::FlashOpProgram, ReadCheckNorm);
+      do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpProgram, ReadCheckNorm);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
       // READ (Compare Expected Data with Data Read : EXPECT DATA MATCH)
 
       `uvm_info(`gfn, "READ", UVM_LOW)
-      do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckNorm);
+      do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpRead, ReadCheckNorm);
 
       // SEND RMA REQUEST (Erases the Flash and Writes Random Data To All Partitions)
       fork
@@ -167,7 +167,7 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
       `uvm_info(`gfn, "READ", UVM_LOW)
 
-      do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckRand);
+      do_flash_ops(flash_ctrl_top_specific_pkg::FlashOpRead, ReadCheckRand);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
     end
@@ -178,8 +178,8 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
     // DATA PARTITION
 
-    flash_mp_region_cfg_t mp_regions [flash_ctrl_pkg::MpRegions];
-    bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+    flash_mp_region_cfg_t mp_regions [flash_ctrl_top_specific_pkg::MpRegions];
+    bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
     mubi4_t default_region_read_en;
     mubi4_t default_region_program_en;
     mubi4_t default_region_erase_en;
@@ -263,7 +263,7 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
     `uvm_info(`gfn, "Attempting to READ from Flash", UVM_INFO)
 
     // Attempt to Read from FLASH, No Access Expected after RMA
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpRead;
 
     // Select a Random Partition to try to Read From
     randcase
@@ -292,8 +292,8 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
     // Arbitrary num_words - Access should fail on the first attempt
     flash_op.num_words  = $urandom_range(8, 16);
-    flash_op.erase_type = $urandom ? flash_ctrl_pkg::FlashErasePage :
-                                     flash_ctrl_pkg::FlashEraseBank;
+    flash_op.erase_type = $urandom ? flash_ctrl_top_specific_pkg::FlashErasePage :
+                                     flash_ctrl_top_specific_pkg::FlashEraseBank;
 
     // Start Read Operation
     flash_ctrl_start_op(flash_op);

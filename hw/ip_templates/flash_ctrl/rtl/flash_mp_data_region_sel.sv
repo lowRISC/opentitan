@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module flash_mp_data_region_sel import flash_ctrl_pkg::*; #(
+module flash_mp_data_region_sel import flash_ctrl_top_specific_pkg::*; #(
   parameter int Regions = 4
 ) (
   input req_i,

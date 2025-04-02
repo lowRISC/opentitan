@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-import flash_ctrl_pkg::*;
+import flash_ctrl_top_specific_pkg::*;
 interface flash_ctrl_mem_if (
   input logic clk_i,
   input logic rst_ni,

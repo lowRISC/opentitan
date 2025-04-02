@@ -6,7 +6,7 @@ interface flash_ctrl_dv_if (
   input logic rst_ni
 );
 
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import lc_ctrl_pkg::*;
 
   logic       rd_buf_en;

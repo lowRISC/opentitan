@@ -20,7 +20,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:earlgrey_ip:flash_ctrl_pkg
+      - lowrisc:earlgrey_ip:flash_ctrl_top_specific_pkg
       - lowrisc:earlgrey_ip:flash_ctrl_reg
       - lowrisc:earlgrey_constants:top_pkg
       - lowrisc:ip:jtag_pkg

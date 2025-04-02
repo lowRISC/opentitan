@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
     files:
       - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource

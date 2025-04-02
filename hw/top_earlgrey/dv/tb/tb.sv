@@ -497,7 +497,8 @@ module tb;
           .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
+              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES /
+              flash_ctrl_top_specific_pkg::NumBanks));
       m_mem_bkdr_util[FlashBank1Data] = data1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
 
@@ -509,7 +510,8 @@ module tb;
           .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
-              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
+              top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES /
+              flash_ctrl_top_specific_pkg::NumBanks));
       m_mem_bkdr_util[FlashBank1Info] = info1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 

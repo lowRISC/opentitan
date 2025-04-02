@@ -11,7 +11,7 @@
 // correctly collecting the responses in order.
 
 module flash_phy
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter bit SecScrambleEn = 1'b1

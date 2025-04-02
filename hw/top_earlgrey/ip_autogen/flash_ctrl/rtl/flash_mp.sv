@@ -9,7 +9,7 @@
 
 module flash_mp
 import prim_mubi_pkg::mubi4_t;
-import flash_ctrl_pkg::*;
+import flash_ctrl_top_specific_pkg::*;
 import flash_ctrl_reg_pkg::*; (
   input clk_i,
   input rst_ni,

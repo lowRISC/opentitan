@@ -8,18 +8,18 @@
 package flash_phy_pkg;
 
   // flash phy parameters
-  parameter int unsigned NumBanks       = flash_ctrl_pkg::NumBanks;
-  parameter int unsigned InfosPerBank   = flash_ctrl_pkg::InfosPerBank;
-  parameter int unsigned PagesPerBank   = flash_ctrl_pkg::PagesPerBank;
-  parameter int unsigned WordsPerPage   = flash_ctrl_pkg::WordsPerPage;
-  parameter int unsigned BankW          = flash_ctrl_pkg::BankW;
-  parameter int unsigned PageW          = flash_ctrl_pkg::PageW;
-  parameter int unsigned WordW          = flash_ctrl_pkg::WordW;
-  parameter int unsigned BankAddrW      = flash_ctrl_pkg::BankAddrW;
-  parameter int unsigned DataWidth      = flash_ctrl_pkg::DataWidth;
+  parameter int unsigned NumBanks       = flash_ctrl_top_specific_pkg::NumBanks;
+  parameter int unsigned InfosPerBank   = flash_ctrl_top_specific_pkg::InfosPerBank;
+  parameter int unsigned PagesPerBank   = flash_ctrl_top_specific_pkg::PagesPerBank;
+  parameter int unsigned WordsPerPage   = flash_ctrl_top_specific_pkg::WordsPerPage;
+  parameter int unsigned BankW          = flash_ctrl_top_specific_pkg::BankW;
+  parameter int unsigned PageW          = flash_ctrl_top_specific_pkg::PageW;
+  parameter int unsigned WordW          = flash_ctrl_top_specific_pkg::WordW;
+  parameter int unsigned BankAddrW      = flash_ctrl_top_specific_pkg::BankAddrW;
+  parameter int unsigned DataWidth      = flash_ctrl_top_specific_pkg::DataWidth;
   parameter int unsigned EccWidth       = 8;
-  parameter int unsigned MetaDataWidth  = flash_ctrl_pkg::MetaDataWidth;
-  parameter int unsigned WidthMultiple  = flash_ctrl_pkg::WidthMultiple;
+  parameter int unsigned MetaDataWidth  = flash_ctrl_top_specific_pkg::MetaDataWidth;
+  parameter int unsigned WidthMultiple  = flash_ctrl_top_specific_pkg::WidthMultiple;
   parameter int unsigned NumBuf         = 4; // number of flash read buffers
   parameter int unsigned RspOrderDepth  = 2; // this should be DataWidth / BusWidth
                                              // will switch to this after bus widening
@@ -27,15 +27,15 @@ package flash_phy_pkg;
   parameter int unsigned PlainDataWidth = DataWidth + PlainIntgWidth;
   //parameter int unsigned ScrDataWidth   = DataWidth + EccWidth;
   parameter int unsigned FullDataWidth  = DataWidth + MetaDataWidth;
-  parameter int unsigned InfoTypes      = flash_ctrl_pkg::InfoTypes;
-  parameter int unsigned InfoTypesWidth = flash_ctrl_pkg::InfoTypesWidth;
+  parameter int unsigned InfoTypes      = flash_ctrl_top_specific_pkg::InfoTypes;
+  parameter int unsigned InfoTypesWidth = flash_ctrl_top_specific_pkg::InfoTypesWidth;
 
   // flash ctrl / bus parameters
-  parameter int unsigned BusWidth       = flash_ctrl_pkg::BusWidth;
-  parameter int unsigned BusFullWidth   = flash_ctrl_pkg::BusFullWidth;
-  parameter int unsigned BusBankAddrW   = flash_ctrl_pkg::BusBankAddrW;
-  parameter int unsigned BusWordW       = flash_ctrl_pkg::BusWordW;
-  parameter int unsigned ProgTypes      = flash_ctrl_pkg::ProgTypes;
+  parameter int unsigned BusWidth       = flash_ctrl_top_specific_pkg::BusWidth;
+  parameter int unsigned BusFullWidth   = flash_ctrl_top_specific_pkg::BusFullWidth;
+  parameter int unsigned BusBankAddrW   = flash_ctrl_top_specific_pkg::BusBankAddrW;
+  parameter int unsigned BusWordW       = flash_ctrl_top_specific_pkg::BusWordW;
+  parameter int unsigned ProgTypes      = flash_ctrl_top_specific_pkg::ProgTypes;
 
   // address bits remain must be 0
   parameter int unsigned AddrBitsRemain = DataWidth % BusWidth;
@@ -119,13 +119,13 @@ package flash_phy_pkg;
     logic rd_req;
     logic prog_req;
     logic prog_last;
-    flash_ctrl_pkg::flash_prog_e prog_type;
+    flash_ctrl_top_specific_pkg::flash_prog_e prog_type;
     logic pg_erase_req;
     logic bk_erase_req;
     logic erase_suspend_req;
     logic he;
     logic [BankAddrW-1:0] addr;
-    flash_ctrl_pkg::flash_part_e part;
+    flash_ctrl_top_specific_pkg::flash_part_e part;
     logic [InfoTypesWidth-1:0] info_sel;
     logic [FullDataWidth-1:0] prog_full_data;
   } flash_phy_prim_flash_req_t;

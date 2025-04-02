@@ -419,19 +419,19 @@
     },
     { name:      "RndCnstAllSeeds",
       desc:      "Compile-time random bits for default seeds",
-      type:      "flash_ctrl_pkg::all_seeds_t"
+      type:      "flash_ctrl_top_specific_pkg::all_seeds_t"
       randcount: "512",
       randtype:  "data", // randomize randcount databits
     },
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "flash_ctrl_pkg::lfsr_seed_t"
+      type:      "flash_ctrl_top_specific_pkg::lfsr_seed_t"
       randcount: "32",
       randtype:  "data",
     },
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "flash_ctrl_pkg::lfsr_perm_t"
+      type:      "flash_ctrl_top_specific_pkg::lfsr_perm_t"
       randcount: "32",
       randtype:  "perm",
     },

@@ -29,12 +29,12 @@ module flash_phy_core
   input                              pg_erase_i,
   input                              bk_erase_i,
   input                              erase_suspend_req_i,
-  input flash_ctrl_pkg::flash_part_e part_i,
+  input flash_ctrl_top_specific_pkg::flash_part_e part_i,
   input [InfoTypesWidth-1:0]         info_sel_i,
   input [BusBankAddrW-1:0]           addr_i,
   input [BusFullWidth-1:0]           prog_data_i,
   input                              prog_last_i,
-  input flash_ctrl_pkg::flash_prog_e prog_type_i,
+  input flash_ctrl_top_specific_pkg::flash_prog_e prog_type_i,
   input                              rd_buf_en_i,
   input prim_mubi_pkg::mubi4_t       flash_disable_i,
   output scramble_req_t              scramble_req_o,
@@ -122,7 +122,7 @@ module flash_phy_core
 
   // interface with flash macro
   logic [BusBankAddrW-1:0] muxed_addr;
-  flash_ctrl_pkg::flash_part_e muxed_part;
+  flash_ctrl_top_specific_pkg::flash_part_e muxed_part;
   logic muxed_scramble_en;
   logic muxed_ecc_en;
 
@@ -193,7 +193,7 @@ module flash_phy_core
   // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
   // A host transaction was granted to the muxed partition, this is illegal
   logic host_gnt_err_event;
-  assign host_gnt_err_event = (host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData);
+  assign host_gnt_err_event = (host_gnt && muxed_part != flash_ctrl_top_specific_pkg::FlashPartData);
   // Controller fsm became non idle when there are pending host transactions, this is
   // illegal.
   logic host_outstanding_err_event;
@@ -390,7 +390,7 @@ module flash_phy_core
 
   // transactions coming from flash controller are always data type
   assign muxed_addr = host_sel ? host_addr_i : addr_i;
-  assign muxed_part = host_sel ? flash_ctrl_pkg::FlashPartData : part_i;
+  assign muxed_part = host_sel ? flash_ctrl_top_specific_pkg::FlashPartData : part_i;
   assign muxed_scramble_en = host_sel ? host_scramble_en_i : scramble_en_i;
   assign muxed_ecc_en = host_sel ? host_ecc_en_i : ecc_en_i;
   assign rd_done_o = ctrl_rsp_vld & rd_i;
