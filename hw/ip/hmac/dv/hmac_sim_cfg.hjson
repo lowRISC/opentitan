@@ -144,13 +144,13 @@
     {
       // Append the common stress_tests.hjson entry for more run_opts.
       name: hmac_stress_all
-      reseed: 25
+      reseed: 50
     }
 
     {
       // Append the common stress_tests.hjson entry for more run_opts.
       name: hmac_stress_all_with_rand_reset
-      reseed: 25
+      reseed: 35
     }
 
     {
