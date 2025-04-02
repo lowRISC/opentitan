@@ -1043,7 +1043,7 @@
         ],
 
         add_pads: [
-          // Additional infrastucture pads
+          // Additional infrastructure pads
           { name: 'IO_CLK',           type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'Extra clock input for FPGA target'}
           { name: 'POR_BUTTON_N',     type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'POR from the push-button'}
           // Custom USB pads
