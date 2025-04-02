@@ -294,6 +294,7 @@ manifest(d = {
         manifest = ":manifest_perso",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
+            ":flash_info_permissions",
             ":perso_tlv_data",
             ":personalize_ext",
             "//hw/top:otp_ctrl_c_regs",
@@ -305,7 +306,9 @@ manifest(d = {
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
             "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:otp_ctrl_testutils",
             "//sw/device/lib/testing:pinmux_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/json:provisioning_data",
