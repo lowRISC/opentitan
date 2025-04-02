@@ -8,7 +8,7 @@ filesets:
   files_rtl_generic:
     depend:
       # Place the autogen packages first to avoid conflicts
-      - lowrisc:systems:top_darjeeling_racl_pkg
+      - lowrisc:darjeeling_constants:top_racl_pkg
       - lowrisc:darjeeling_ip:alert_handler_reg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1

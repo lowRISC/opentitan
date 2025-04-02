@@ -13,7 +13,7 @@ filesets:
       - lowrisc:tlul:common
       - lowrisc:tlul:adapter_reg
       - lowrisc:tlul:request_loopback
-      - lowrisc:systems:top_racl_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/tlul_adapter_reg_racl.sv
     file_type: systemVerilogSource

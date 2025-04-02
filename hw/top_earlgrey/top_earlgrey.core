@@ -8,7 +8,7 @@ filesets:
   files_rtl_generic:
     depend:
       # Place the autogen packages first to avoid conflicts
-      - lowrisc:systems:top_earlgrey_racl_pkg
+      - lowrisc:earlgrey_constants:top_racl_pkg
       - lowrisc:earlgrey_ip:alert_handler_reg
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1

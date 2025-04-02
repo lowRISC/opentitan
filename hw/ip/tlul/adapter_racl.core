@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:tlul:common
       - lowrisc:tlul:request_loopback
-      - lowrisc:systems:top_racl_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/tlul_adapter_racl.sv
     file_type: systemVerilogSource
