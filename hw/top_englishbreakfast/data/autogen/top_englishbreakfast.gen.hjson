@@ -446,6 +446,10 @@
   {
     default_plic: rv_plic
   }
+  alerts:
+  {
+    default_handler: null
+  }
   addr_spaces:
   [
     {
@@ -7912,6 +7916,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: uart0
       desc: uart0 fatal_fault alert
       lpg_name: peri_lc_io_div4_0
@@ -7922,6 +7927,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: uart1
       desc: uart1 fatal_fault alert
       lpg_name: peri_lc_io_div4_0
@@ -7932,6 +7938,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: gpio
       desc: gpio fatal_fault alert
       lpg_name: peri_sys_io_div4_0
@@ -7942,6 +7949,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: spi_device
       desc: spi_device fatal_fault alert
       lpg_name: peri_spi_device_0
@@ -7952,6 +7960,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: spi_host0
       desc: spi_host0 fatal_fault alert
       lpg_name: peri_spi_host0_0
@@ -7962,6 +7971,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_timer
       desc: rv_timer fatal_fault alert
       lpg_name: timers_sys_io_div4_0
@@ -7972,6 +7982,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: usbdev
       desc: usbdev fatal_fault alert
       lpg_name: peri_usb_0
@@ -7982,6 +7993,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: pwrmgr_aon
       desc: pwrmgr_aon fatal_fault alert
       lpg_name: powerup_por_io_div4_Aon
@@ -7992,6 +8004,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rstmgr_aon
       desc: rstmgr_aon fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
@@ -8002,6 +8015,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rstmgr_aon
       desc: rstmgr_aon fatal_cnsty_fault alert
       lpg_name: powerup_lc_io_div4_Aon
@@ -8012,6 +8026,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: clkmgr_aon
       desc: clkmgr_aon recov_fault alert
       lpg_name: powerup_por_io_div4_Aon
@@ -8022,6 +8037,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: clkmgr_aon
       desc: clkmgr_aon fatal_fault alert
       lpg_name: powerup_por_io_div4_Aon
@@ -8032,6 +8048,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: pinmux_aon
       desc: pinmux_aon fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
@@ -8042,6 +8059,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: aon_timer_aon
       desc: aon_timer_aon fatal_fault alert
       lpg_name: timers_sys_io_div4_Aon
@@ -8052,6 +8070,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: flash_ctrl
       desc: flash_ctrl recov_err alert
       lpg_name: infra_lc_0
@@ -8062,6 +8081,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: flash_ctrl
       desc: flash_ctrl fatal_std_err alert
       lpg_name: infra_lc_0
@@ -8072,6 +8092,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: flash_ctrl
       desc: flash_ctrl fatal_err alert
       lpg_name: infra_lc_0
@@ -8082,6 +8103,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: flash_ctrl
       desc: flash_ctrl fatal_prim_flash_alert alert
       lpg_name: infra_lc_0
@@ -8092,6 +8114,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: flash_ctrl
       desc: flash_ctrl recov_prim_flash_alert alert
       lpg_name: infra_lc_0
@@ -8102,6 +8125,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_plic
       desc: rv_plic fatal_fault alert
       lpg_name: secure_sys_0
@@ -8112,6 +8136,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: aes
       desc: aes recov_ctrl_update_err alert
       lpg_name: aes_trans_sys_0
@@ -8122,6 +8147,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: aes
       desc: aes fatal_fault alert
       lpg_name: aes_trans_sys_0
@@ -8132,6 +8158,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: sram_ctrl_main
       desc: sram_ctrl_main fatal_error alert
       lpg_name: secure_sys_0
@@ -8142,6 +8169,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rom_ctrl
       desc: rom_ctrl fatal alert
       lpg_name: infra_sys_0
@@ -8152,6 +8180,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_sw_err alert
       lpg_name: infra_sys_0
@@ -8162,6 +8191,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_sw_err alert
       lpg_name: infra_sys_0
@@ -8172,6 +8202,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_hw_err alert
       lpg_name: infra_sys_0
@@ -8182,6 +8213,7 @@
       width: 1
       type: alert
       async: "1"
+      handler: null
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_hw_err alert
       lpg_name: infra_sys_0
@@ -8886,6 +8918,7 @@
     rom_ctrl
     rv_core_ibex
   ]
+  alert_connections: {}
   outgoing_alert_module: {}
   outgoing_interrupt_module: {}
   alert_lpgs:
