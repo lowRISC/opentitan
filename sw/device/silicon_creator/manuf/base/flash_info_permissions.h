@@ -23,6 +23,9 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
 
 /**
  * Access permissions for flash info page 3 (holds wafer_auth_secret).
+ *
+ * Note: scrambling must be disabled as the flash scrambling seeds are not
+ * programmed into OTP until the individualization FW is executed.
  */
 dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
     .ecc_en = kMultiBitBool4True,
@@ -30,6 +33,20 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
     .erase_en = kMultiBitBool4True,
     .prog_en = kMultiBitBool4True,
     .rd_en = kMultiBitBool4False,
+    .scramble_en = kMultiBitBool4False};
+
+/**
+ * Access permissions for flash info page 3 (holds wafer_auth_secret).
+ *
+ * Note: scrambling must be disabled as it is disabled when the page is written
+ * during CP.
+ */
+dif_flash_ctrl_region_properties_t kFlashInfoPage3ReadPermissions = {
+    .ecc_en = kMultiBitBool4True,
+    .high_endurance_en = kMultiBitBool4False,
+    .erase_en = kMultiBitBool4False,
+    .prog_en = kMultiBitBool4False,
+    .rd_en = kMultiBitBool4True,
     .scramble_en = kMultiBitBool4False};
 
 /**
