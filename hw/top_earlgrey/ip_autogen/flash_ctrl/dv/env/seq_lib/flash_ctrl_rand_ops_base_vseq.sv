@@ -61,13 +61,16 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
     flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo1 ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
-    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
+    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
+                            flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op.num_words inside {[1 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
       flash_op.num_words <= cfg.seq_cfg.op_max_words;
       // end of transaction must be within the program resolution
@@ -81,7 +84,8 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   rand data_q_t             flash_op_data;
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
-    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
+    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
+                            flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
     } else {
       flash_op_data.size() == 0;

@@ -448,7 +448,9 @@ module prim_generic_flash_bank #(
   end
 
   assign rd_data_info = rd_nom_data_info[info_sel_q];
-  assign rd_data_d    = rd_part_q == flash_ctrl_top_specific_pkg::FlashPartData ? rd_data_main : rd_data_info;
+  assign rd_data_d    = rd_part_q == flash_ctrl_top_specific_pkg::FlashPartData
+                                         ? rd_data_main
+                                         : rd_data_info;
 
   flash_ctrl_top_specific_pkg::flash_prog_e unused_prog_type;
   assign unused_prog_type = cmd_q.prog_type;

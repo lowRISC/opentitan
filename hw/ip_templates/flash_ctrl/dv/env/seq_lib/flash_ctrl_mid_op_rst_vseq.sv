@@ -59,7 +59,8 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection pages settings.
   rand flash_bank_mp_info_page_cfg_t
-         mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
+         mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                      [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
     foreach (mp_info_pages[i, j]) {

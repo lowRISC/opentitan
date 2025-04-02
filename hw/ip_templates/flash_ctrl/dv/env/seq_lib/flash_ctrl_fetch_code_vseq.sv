@@ -67,16 +67,21 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 -> flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+      flash_op.partition == FlashPartInfo1 ->
+        flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
     }
 
-    if (flash_op.partition == FlashPartInfo2) {flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;}
+    if (flash_op.partition == FlashPartInfo2) {
+      flash_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
+    }
 
-    flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram,
+    flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,
+                        flash_ctrl_top_specific_pkg::FlashOpProgram,
                         flash_ctrl_top_specific_pkg::FlashOpErase};
 
     flash_op.erase_type dist {
@@ -93,7 +98,8 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   // Flash ctrl operation data queue - used for programing or reading the flash.
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
-    if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
+    if (flash_op.op inside {
+        flash_ctrl_top_specific_pkg::FlashOpRead, flash_ctrl_top_specific_pkg::FlashOpProgram}) {
       flash_op_data.size() == flash_op.num_words;
     } else {
       flash_op_data.size() == 0;
@@ -142,7 +148,8 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection settings.
   rand flash_bank_mp_info_page_cfg_t
-    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
+    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                 [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
