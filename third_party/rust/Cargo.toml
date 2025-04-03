@@ -44,6 +44,7 @@ ftdi-mpsse = "0.1.1"
 embedded-hal = "1.0.0"
 heck = "0.5"
 hex = { version = "0.4.3", features = ["serde"] }
+hmac = "0.12.1"
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.18"
