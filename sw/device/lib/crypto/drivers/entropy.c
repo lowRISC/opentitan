@@ -584,10 +584,17 @@ static status_t edn_configure(const edn_config_t *config) {
   abs_mmio_write32(base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
                    config->reseed_interval);
 
-  uint32_t reg =
-      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
+  // Clear the EDN recoverable alert status register.
+  abs_mmio_write32(base_address + EDN_RECOV_ALERT_STS_REG_OFFSET, 0);
+
+  uint32_t reg = bitfield_field32_write(
+      EDN_CTRL_REG_RESVAL, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
+                               kMultiBitBool4False);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4False);
   abs_mmio_write32(base_address + EDN_CTRL_REG_OFFSET, reg);
 
   HARDENED_TRY(edn_ready_block(base_address));
