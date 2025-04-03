@@ -270,7 +270,7 @@ TEST_P(OwnershipActivateValidStateTest, OwnerPageValid) {
       .WillOnce(Return(kErrorOk));
 
   if (state != kOwnershipStateUnlockedSelf) {
-    EXPECT_CALL(ownership_key_, secret_new()).WillOnce(Return(kErrorOk));
+    EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
   }
 
   // The nonce will be regenerated.
@@ -340,7 +340,7 @@ TEST_P(OwnershipActivateValidStateTest, UpdateBootdataBl0) {
       .WillOnce(Return(kErrorOk));
 
   if (state != kOwnershipStateUnlockedSelf) {
-    EXPECT_CALL(ownership_key_, secret_new()).WillOnce(Return(kErrorOk));
+    EXPECT_CALL(ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
   }
 
   // The nonce will be regenerated.

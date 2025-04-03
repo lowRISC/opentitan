@@ -403,8 +403,8 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
 
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
-    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding,
-    owner_app_domain_t key_domain) {
+    hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
+    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain) {
   // Handles the certificates from the immutable rom_ext first.
   RETURN_IF_ERROR(dice_chain_attestation_check_uds());
   RETURN_IF_ERROR(dice_chain_attestation_check_cdi_0());
@@ -442,7 +442,7 @@ rom_error_t dice_chain_attestation_owner(
     size_t updated_cert_size = kScratchCertSizeBytes;
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
-        (hmac_digest_t *)bl0_measurement, owner_measurement,
+        (hmac_digest_t *)bl0_measurement, owner_measurement, owner_history_hash,
         owner_manifest->security_version, key_domain, &dice_chain.key_ids,
         &dice_chain.subject_pubkey, dice_chain.scratch_cert,
         &updated_cert_size));
