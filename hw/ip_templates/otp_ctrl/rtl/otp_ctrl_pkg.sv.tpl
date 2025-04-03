@@ -102,10 +102,14 @@ package otp_ctrl_pkg;
   // Typedefs for Key Broadcast //
   ////////////////////////////////
 
+% if enable_flash_key:
   parameter int FlashKeySeedWidth = 256;
+% endif
   parameter int SramKeySeedWidth  = 128;
   parameter int KeyMgrKeyWidth    = 256;
+% if enable_flash_key:
   parameter int FlashKeyWidth     = 128;
+% endif
   parameter int SramKeyWidth      = 128;
   parameter int SramNonceWidth    = 128;
   parameter int OtbnKeyWidth      = 128;
@@ -117,14 +121,21 @@ package otp_ctrl_pkg;
   typedef logic [OtbnNonceWidth-1:0] otbn_nonce_t;
 
   localparam int OtbnNonceSel  = OtbnNonceWidth / ScrmblBlockWidth;
+% if enable_flash_key:
   localparam int FlashNonceSel = FlashKeyWidth / ScrmblBlockWidth;
+% endif
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
   // Get maximum nonce width
+% if enable_flash_key:
   localparam int NumNonceChunks =
     (OtbnNonceWidth > FlashKeyWidth) ?
     ((OtbnNonceWidth > SramNonceSel) ? OtbnNonceSel : SramNonceSel) :
     ((FlashKeyWidth > SramNonceSel)  ? FlashNonceSel  : SramNonceSel);
+% else:
+  localparam int NumNonceChunks =
+    (OtbnNonceWidth > SramNonceSel) ? OtbnNonceSel : SramNonceSel;
+% endif
 
   typedef struct packed {
     logic [KeyMgrKeyWidth-1:0] creator_root_key_share0;
@@ -148,11 +159,13 @@ package otp_ctrl_pkg;
     owner_seed_valid: 1'b1
   };
 
+% if enable_flash_key:
   typedef struct packed {
     logic data_req; // Requests static key for data scrambling.
     logic addr_req; // Requests static key for address scrambling.
   } flash_otp_key_req_t;
 
+% endif
   typedef struct packed {
     logic req; // Requests ephemeral scrambling key and nonce.
   } sram_otp_key_req_t;
@@ -161,6 +174,7 @@ package otp_ctrl_pkg;
     logic req; // Requests ephemeral scrambling key and nonce.
   } otbn_otp_key_req_t;
 
+% if enable_flash_key:
   typedef struct packed {
     logic data_ack;                    // Ack for data key.
     logic addr_ack;                    // Ack for address key.
@@ -179,6 +193,7 @@ package otp_ctrl_pkg;
     seed_valid: 1'b1
   };
 
+% endif
   typedef struct packed {
     logic        ack;        // Ack for key.
     sram_key_t   key;        // 128bit ephemeral scrambling key.

@@ -12,12 +12,6 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
 
     // make sure it is unlocked and empty to start
     for (int i = 0; i < 4; i++) begin
-      cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashAddrKeySeedOffset + i*8,
-                                       '0);
-
-      cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::FlashDataKeySeedOffset + i*8,
-                                       '0);
-
       cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::SramDataKeySeedOffset + i*8,
                                        '0);
     end

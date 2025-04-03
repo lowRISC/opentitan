@@ -31,8 +31,10 @@ module tb;
   end
 
   wire clk, rst_n;
+% if enable_flash_key:
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
+% endif
   wire otp_ctrl_pkg::otbn_otp_key_req_t  otbn_req;
   wire otp_ctrl_pkg::otbn_otp_key_rsp_t  otbn_rsp;
   wire otp_ctrl_pkg::sram_otp_key_req_t[NumSramKeyReqSlots-1:0] sram_req;
@@ -57,8 +59,10 @@ module tb;
   push_pull_if #(.DeviceDataWidth(SRAM_DATA_SIZE))
                sram_if[NumSramKeyReqSlots](.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_if(.clk(clk), .rst_n(rst_n));
+% if enable_flash_key:
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_addr_if(.clk(clk), .rst_n(rst_n));
   push_pull_if #(.DeviceDataWidth(FLASH_DATA_SIZE)) flash_data_if(.clk(clk), .rst_n(rst_n));
+% endif
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   tl_if prim_tl_if(.clk(clk), .rst_n(rst_n));
@@ -75,7 +79,9 @@ module tb;
 
   // Assign to otp_ctrl_if for assertion checks.
   assign otp_ctrl_if.lc_prog_ack = lc_prog_if.ack;
+% if enable_flash_key:
   assign otp_ctrl_if.flash_acks = flash_data_if.ack;
+% endif
   assign otp_ctrl_if.otbn_ack  = otbn_if.ack;
 
   // This signal probes design's alert request to avoid additional logic for triggering alert and
@@ -129,9 +135,11 @@ module tb;
     .otp_lc_data_o              (otp_ctrl_if.lc_data_o),
     // keymgr
     .otp_keymgr_key_o           (otp_ctrl_if.keymgr_key_o),
+  % if enable_flash_key:
     // flash
     .flash_otp_key_i            (flash_req),
     .flash_otp_key_o            (flash_rsp),
+  % endif
     // sram
     .sram_otp_key_i             (sram_req),
     .sram_otp_key_o             (sram_rsp),
@@ -166,11 +174,13 @@ module tb;
   assign otbn_if.ack    = otbn_rsp.ack;
   assign otbn_if.d_data = {otbn_rsp.key, otbn_rsp.nonce, otbn_rsp.seed_valid};
 
+% if enable_flash_key:
   assign flash_req            = {flash_data_if.req, flash_addr_if.req};
   assign flash_data_if.ack    = flash_rsp.data_ack;
   assign flash_addr_if.ack    = flash_rsp.addr_ack;
   assign flash_data_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
   assign flash_addr_if.d_data = {flash_rsp.key, flash_rsp.seed_valid};
+% endif
 
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
@@ -179,10 +189,10 @@ module tb;
   // Proprietary IP will instantiate their own backdoor util
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic
-    `define MEM_MODULE_PATH \
+    `define MEM_MODULE_PATH ${"\\"}
         tb.dut.u_otp.gen_generic.u_impl_generic.u_prim_ram_1p_adv.gen_ram_inst[0]
 
-    `define MEM_ARRAY_PATH \
+    `define MEM_ARRAY_PATH ${"\\"}
         `MEM_MODULE_PATH.u_mem.gen_generic.u_impl_generic.mem
 
     initial begin : mem_bkdr_util_gen
@@ -221,10 +231,12 @@ module tb;
                                        "vif", prim_tl_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
                    "*env.m_otbn_pull_agent*", "vif", otbn_if);
+  % if enable_flash_key:
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_data_pull_agent*", "vif", flash_data_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(FLASH_DATA_SIZE)))::set(null,
                    "*env.m_flash_addr_pull_agent*", "vif", flash_addr_if);
+  % endif
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1)))::
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
 

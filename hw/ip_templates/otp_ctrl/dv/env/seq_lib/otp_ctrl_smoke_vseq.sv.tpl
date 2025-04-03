@@ -133,8 +133,10 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs) begin
         req_otbn_key();
+      % if enable_flash_key:
         req_flash_addr_key();
         req_flash_data_key();
+      % endif
         req_all_sram_keys();
       end
       if (do_lc_trans && !cfg.otp_ctrl_vif.alert_reqs) begin
@@ -240,8 +242,10 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       if (do_req_keys && !cfg.otp_ctrl_vif.alert_reqs && !cfg.smoke_test) begin
         req_otbn_key();
+      % if enable_flash_key:
         req_flash_addr_key();
         req_flash_data_key();
+      % endif
         req_all_sram_keys();
       end
 

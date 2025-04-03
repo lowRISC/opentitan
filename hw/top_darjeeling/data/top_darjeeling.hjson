@@ -341,6 +341,9 @@
     { name: "otp_ctrl",
       type: "otp_ctrl",
       template_type: "otp_ctrl",
+      ipgen_param: {
+        enable_flash_key: false
+      }
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},

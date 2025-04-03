@@ -48,19 +48,9 @@
             cnst_value: 298124614738804023684088847145512094502
           }
           {
-            name: FlashDataKey
+            name: SramDataKey
             iv_value: 13142649492737956675
             cnst_value: 15226184123672563655096903138034867314
-          }
-          {
-            name: FlashAddrKey
-            iv_value: 10432573278431539239
-            cnst_value: 331706166944643955321785563334435677807
-          }
-          {
-            name: SramDataKey
-            iv_value: 13755002077647639451
-            cnst_value: 132555613982997757926354237115728852983
           }
         ]
       }
@@ -97,7 +87,7 @@
               offset: 56
               ismubi: false
               isdigest: true
-              inv_default: 12267607958787918204
+              inv_default: 10810310715135719883
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -476,7 +466,7 @@
               offset: 376
               ismubi: false
               isdigest: true
-              inv_default: 7474818370217309020
+              inv_default: 14728343938218768996
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -682,7 +672,7 @@
               offset: 1008
               ismubi: false
               isdigest: true
-              inv_default: 503838644190341903
+              inv_default: 4499762633768516743
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -922,7 +912,7 @@
               offset: 2480
               ismubi: false
               isdigest: true
-              inv_default: 4720744928697992353
+              inv_default: 11837082436279312982
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -989,7 +979,7 @@
               offset: 2808
               ismubi: false
               isdigest: true
-              inv_default: 4321159426593998838
+              inv_default: 5280432312436422266
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1056,7 +1046,7 @@
               offset: 3136
               ismubi: false
               isdigest: true
-              inv_default: 3300532900599057395
+              inv_default: 234369395612291906
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1123,7 +1113,7 @@
               offset: 3464
               ismubi: false
               isdigest: true
-              inv_default: 6970134785508705831
+              inv_default: 16327599381873551525
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1190,7 +1180,7 @@
               offset: 3792
               ismubi: false
               isdigest: true
-              inv_default: 13321159437274557062
+              inv_default: 1581155821231578393
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1257,7 +1247,7 @@
               offset: 4120
               ismubi: false
               isdigest: true
-              inv_default: 13771798441966885772
+              inv_default: 2324999962355908533
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1324,7 +1314,7 @@
               offset: 4448
               ismubi: false
               isdigest: true
-              inv_default: 7227229721152720746
+              inv_default: 17905165971232536359
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1391,7 +1381,7 @@
               offset: 4776
               ismubi: false
               isdigest: true
-              inv_default: 388365934790665074
+              inv_default: 13543634046774891762
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1458,7 +1448,7 @@
               offset: 5104
               ismubi: false
               isdigest: true
-              inv_default: 5138760742690312726
+              inv_default: 13698041678974836896
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1543,10 +1533,10 @@
             {
               name: ROM_PATCH_DIGEST
               size: 8
-              offset: 15912
+              offset: 15976
               ismubi: false
               isdigest: true
-              inv_default: 5553021194950512605
+              inv_default: 14153060542995762600
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1554,7 +1544,7 @@
           desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 9784
+          size: 9848
           offset: 6136
         }
         {
@@ -1573,30 +1563,30 @@
             {
               name: DEVICE_ID
               size: 32
-              inv_default: 81256773759085553590251771618097271052792280600555849662047277760132860422574
+              inv_default: 65486323830591328446043131873451991034742910176203639508789261283277535351707
               isdigest: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15920
+              offset: 15984
             }
             {
               name: MANUF_STATE
               size: 32
-              inv_default: 28979123207589896436497502269821436538902023475862784930259344116068944661506
+              inv_default: 45106338074792724304821242469256559359553488864622296623233734261107367140478
               isdigest: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15952
+              offset: 16016
             }
             {
               name: HW_CFG0_DIGEST
               size: 8
-              offset: 15984
+              offset: 16048
               ismubi: false
               isdigest: true
-              inv_default: 13231792541330219804
+              inv_default: 10140889213198706984
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1612,7 +1602,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 72
-          offset: 15920
+          offset: 15984
         }
         {
           name: HW_CFG1
@@ -1647,7 +1637,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15992
+              offset: 16056
             }
             {
               name: EN_CSRNG_SW_APP_READ
@@ -1664,7 +1654,7 @@
               isdigest: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15996
+              offset: 16060
             }
             {
               name: EN_SRAM_IFETCH
@@ -1674,15 +1664,15 @@
               isdigest: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15997
+              offset: 16061
             }
             {
               name: HW_CFG1_DIGEST
               size: 8
-              offset: 16000
+              offset: 16064
               ismubi: false
               isdigest: true
-              inv_default: 13264097316726039890
+              inv_default: 12267607958787918204
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1708,7 +1698,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 16
-          offset: 15992
+          offset: 16056
         }
         {
           name: SECRET0
@@ -1725,31 +1715,31 @@
           [
             {
               name: TEST_UNLOCK_TOKEN
-              inv_default: 150353733052794565317978902093985221175
+              inv_default: 296711380900218015171120952374769035694
               size: 16
               isdigest: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16008
+              offset: 16072
             }
             {
               name: TEST_EXIT_TOKEN
-              inv_default: 292140191890949749780621917839409679837
+              inv_default: 85161989055762428459190056485751105958
               size: 16
               isdigest: false
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16024
+              offset: 16088
             }
             {
               name: SECRET0_DIGEST
               size: 8
-              offset: 16040
+              offset: 16104
               ismubi: false
               isdigest: true
-              inv_default: 364196237501841799
+              inv_default: 7474818370217309020
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1763,7 +1753,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 40
-          offset: 16008
+          offset: 16072
         }
         {
           name: SECRET1
@@ -1779,28 +1769,8 @@
           items:
           [
             {
-              name: FLASH_ADDR_KEY_SEED
-              inv_default: 99384293387760300854449600575324305105411001866428193504478753183549638555178
-              size: 32
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              offset: 16048
-            }
-            {
-              name: FLASH_DATA_KEY_SEED
-              inv_default: 38814441500057672017335312405494979779257105989744047190036253646062333315222
-              size: 32
-              isdigest: false
-              ismubi: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              offset: 16080
-            }
-            {
               name: SRAM_DATA_KEY_SEED
-              inv_default: 197791420282250691661260177080212266122
+              inv_default: 241483977691757977923367841809339206658
               size: 16
               isdigest: false
               ismubi: false
@@ -1814,7 +1784,7 @@
               offset: 16128
               ismubi: false
               isdigest: true
-              inv_default: 8239982531674452350
+              inv_default: 503838644190341903
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1822,13 +1792,13 @@
           desc:
             '''
             Secret partition 1.
-            This contains SRAM and flash scrambling keys.
+            This contains the SRAM scrambling key seed.
             '''
           absorb: false
           iskeymgr_creator: false
           iskeymgr_owner: false
-          size: 88
-          offset: 16048
+          size: 24
+          offset: 16112
         }
         {
           name: SECRET2
@@ -1845,7 +1815,7 @@
           [
             {
               name: RMA_TOKEN
-              inv_default: 277449187385066184202615139448003396941
+              inv_default: 150353733052794565317978902093985221175
               size: 16
               isdigest: false
               ismubi: false
@@ -1855,7 +1825,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
-              inv_default: 42674330470926980475213495781321682493466151735469203603345579470514264688031
+              inv_default: 99410155969389534278404680059562745406179175357375916509714598543499986721841
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -1865,7 +1835,7 @@
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
-              inv_default: 1120155637374664855185290527946769138206986700190628506580202980715210922324
+              inv_default: 7391079586881058628634247621478375370202976073106929415694865999470879218122
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -1875,7 +1845,7 @@
             }
             {
               name: CREATOR_SEED
-              inv_default: 486631087464711132701499347019667055309060048237121089079485173130930646974
+              inv_default: 101343852674351727018162199551656737563182757336330864139602722951993660546186
               size: 32
               iskeymgr_creator: true
               isdigest: false
@@ -1889,7 +1859,7 @@
               offset: 16248
               ismubi: false
               isdigest: true
-              inv_default: 4468065780390625656
+              inv_default: 4720744928697992353
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1920,7 +1890,7 @@
           [
             {
               name: OWNER_SEED
-              inv_default: 66811761207540413034971297187170994293973443726025940164646970994927536258183
+              inv_default: 94411066183681302546622452158435937172067990320926238136744201607471434110567
               size: 32
               iskeymgr_owner: true
               isdigest: false
@@ -1934,7 +1904,7 @@
               offset: 16288
               ismubi: false
               isdigest: true
-              inv_default: 15941764794715087011
+              inv_default: 4321159426593998838
               iskeymgr_creator: false
               iskeymgr_owner: false
             }
@@ -1965,7 +1935,7 @@
           [
             {
               name: LC_TRANSITION_CNT
-              inv_default: 25283854627019714730581267052739223508902103880390507329789576351568549647905897976711414103002515926044760045076405
+              inv_default: 33022140810555236579668719714372256268318002252766629331496500220362429561986227479059320688363086585586147527154004
               size: 48
               isdigest: false
               ismubi: false
@@ -1975,7 +1945,7 @@
             }
             {
               name: LC_STATE
-              inv_default: 2073276575949915156582572495874492333682185188009011646190809543994273356493467859637226911344936
+              inv_default: 8976759128772494558324922685029952774256516170895712485227985363288402422095425232881151769395
               size: 40
               isdigest: false
               ismubi: false
@@ -2004,6 +1974,7 @@
         }
       ]
     }
+    enable_flash_key: false
     topname: darjeeling
     uniquified_modules: {}
   }

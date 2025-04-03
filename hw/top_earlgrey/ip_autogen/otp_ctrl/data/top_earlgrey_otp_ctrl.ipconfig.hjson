@@ -1985,6 +1985,7 @@
         }
       ]
     }
+    enable_flash_key: true
     topname: earlgrey
     uniquified_modules: {}
   }
