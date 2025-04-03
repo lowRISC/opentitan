@@ -76,13 +76,6 @@ uint32_t
 #define CONDBRANCHBLT "blt x5, x6, endfitestfaultyblt\n"
 #define CONDBRANCHBLTU "bltu x5, x6, endfitestfaultybltu\n"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
-#define NOP1000 \
-  NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100
-
 // Init x5 = 0 macro.
 #define INITX5 "addi x5, x0, 0"
 
