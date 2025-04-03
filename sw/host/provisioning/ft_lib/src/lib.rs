@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -325,16 +326,20 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-tbs-export", t0);
 
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
-    // During the process, both:
+    // During the process:
     //   1. prepare a UJSON payload of endorsed certs to send back to the device,
-    //   2. collect the certs that were endorsed to verify their endorsement signatures with OpenSSL, and
-    //   3. hash all certs to check the integrity of what gets written back to the device.
+    //   2. collect the TBS certs to HMAC them with the WAS,
+    //   3. collect the certs that were endorsed to verify their endorsement signatures with OpenSSL, and
+    //   4. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
     let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
+    let mut device_was_hmac: Vec<u8> = Vec::new();
+    let mut device_id: Vec<u8> = Vec::new();
+    let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(&[0u8; 32])?;
 
     // Extract CAs.
     let dice_ca_cert = &ca_cfgs["dice"].certificate;
@@ -355,6 +360,19 @@ fn provision_certificates(
         start += obj_header_size;
         match header.obj_type {
             ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {}
+            ObjType::WasTbsHmac => {
+                let was_tbs_hmac_size = header.obj_size - obj_header_size;
+                device_was_hmac
+                    .extend_from_slice(&perso_blob.body[start..start + was_tbs_hmac_size]);
+                start += was_tbs_hmac_size;
+                continue;
+            }
+            ObjType::DeviceId => {
+                let device_id_size = header.obj_size - obj_header_size;
+                device_id.extend_from_slice(&perso_blob.body[start..start + device_id_size]);
+                start += device_id_size;
+                continue;
+            }
             ObjType::DevSeed => {
                 let dev_seed_size = header.obj_size - obj_header_size;
                 let seeds = &perso_blob.body[start..start + dev_seed_size];
@@ -374,6 +392,7 @@ fn provision_certificates(
 
         // Extract the certificate bytes and endorse the cert if needed.
         let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
+            host_was_hmac.update(cert.cert_body.as_slice());
             // Endorse the cert and updates its size.
             let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
                 parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
@@ -433,6 +452,10 @@ fn provision_certificates(
     let t0 = Instant::now();
     endorsed_cert_concat = ft_ext(endorsed_cert_concat)?;
     response.stats.log_elapsed_time("perso-ft-ext", t0);
+
+    // Authenticate WAS HMAC.
+    let host_was_hmac_bytes = host_was_hmac.finalize().into_bytes();
+    assert_eq!(host_was_hmac_bytes[..], device_was_hmac[..]);
 
     // Complete hash of all certs that will be sent back to the device and written to flash. This
     // is used as integrity check on what will be written to flash.
