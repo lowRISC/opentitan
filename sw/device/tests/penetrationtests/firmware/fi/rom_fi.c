@@ -19,11 +19,6 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rom_ctrl_regs.h"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
-
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
