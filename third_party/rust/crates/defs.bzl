@@ -326,6 +326,7 @@ _NORMAL_DEPENDENCIES = {
             "ftdi-mpsse": "@crate_index__ftdi-mpsse-0.1.1//:ftdi_mpsse",
             "heck": "@crate_index__heck-0.4.1//:heck",
             "hex": "@crate_index__hex-0.4.3//:hex",
+            "hmac": "@crate_index__hmac-0.12.1//:hmac",
             "humantime": "@crate_index__humantime-2.1.0//:humantime",
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
             "indexmap": "@crate_index__indexmap-2.0.0//:indexmap",
