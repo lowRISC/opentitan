@@ -20,7 +20,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "aon_timer_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 /*
    PWRMGR BACK TO BACK DEEP SLEEP, RESET / WAKEUP TEST
 
@@ -35,6 +34,21 @@
 
  */
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+static_assert(kDtFlashCtrlCount >= 1,
+              "this library expects at least one flash_ctrl");
+static_assert(kDtSysrstCtrlCount >= 1,
+              "this test expects at least one sysrst_ctrl");
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
 
 static volatile const uint8_t kNumRound;
 
@@ -54,9 +68,10 @@ static void prgm_push_button_wakeup(void) {
   };
   CHECK_DIF_OK(
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopEarlgreyPinmuxInselIor13));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      &pinmux,
+      dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kDtSysrstCtrlPeriphIoPwrbIn),
+      kDtPadIor13));
 }
 
 bool test_main(void) {
@@ -69,27 +84,20 @@ bool test_main(void) {
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
 
   // Initialize sysrst_ctrl
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
 
   // Initialize pinmux
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
   // First check the flash stored value
   uint32_t event_idx = 0;
@@ -113,13 +121,26 @@ bool test_main(void) {
   LOG_INFO("wakeup type:%d   wakeup reason: 0x%02X", wakeup_reason.types,
            wakeup_reason.request_sources);
 
+  dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &pwrmgr_aon_timer_wakeups));
+  dif_pwrmgr_request_sources_t pwrmgr_sysrst_ctrl_wakeups;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
+      &pwrmgr_sysrst_ctrl_wakeups));
+  dif_pwrmgr_request_sources_t pwrmgr_all_wakeups;
+  CHECK_DIF_OK(dif_pwrmgr_get_all_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &pwrmgr_all_wakeups));
+
   if (wakeup_reason.types == 0) {
     // POR reset
     CHECK(wakeup_reason.request_sources == 0);
   } else if (wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) {
     // sysrst_ctrl or aon_timer
-    CHECK(wakeup_reason.request_sources == (kDifPwrmgrWakeupRequestSourceOne |
-                                            kDifPwrmgrWakeupRequestSourceFive));
+    CHECK(wakeup_reason.request_sources ==
+          (pwrmgr_sysrst_ctrl_wakeups | pwrmgr_aon_timer_wakeups));
   } else {
     LOG_ERROR("unexpected wakeup_type: 0x%x", wakeup_reason.types);
   }
@@ -136,8 +157,7 @@ bool test_main(void) {
   }
 
   dif_aon_timer_t aon_timer;
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
   // Status clean up
   if (event_idx > 0) {
@@ -172,12 +192,8 @@ bool test_main(void) {
       aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 
   // Deep sleep.
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr,
-      (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
-      0));
+  CHECK_STATUS_OK(
+      pwrmgr_testutils_enable_low_power(&pwrmgr, pwrmgr_all_wakeups, 0));
 
   // Enter low power mode.
   wait_for_interrupt();
