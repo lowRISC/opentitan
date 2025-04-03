@@ -24,8 +24,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
     // Override the test exit token to match SW test's input token.
     otp_write_secret0_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .unlock_token(dec_otp_token_from_lc_csrs(lc_unlock_token)),
-        .exit_token(dec_otp_token_from_lc_csrs(lc_exit_token)));
+        .test_unlock_token(dec_otp_token_from_lc_csrs(lc_unlock_token)),
+        .test_exit_token(dec_otp_token_from_lc_csrs(lc_exit_token)));
   endfunction
 
   virtual task body();
