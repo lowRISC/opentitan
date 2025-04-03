@@ -5665,6 +5665,7 @@ opentitan_test(
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:i2c_testutils",

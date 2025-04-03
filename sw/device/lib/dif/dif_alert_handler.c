@@ -456,6 +456,43 @@ dif_result_t dif_alert_handler_configure_class(
   return kDifOk;
 }
 
+dif_result_t dif_alert_handler_crash_dump_trigger_set(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class,
+    dif_alert_handler_class_state_t crashdump_phase) {
+  if (alert_handler == NULL ||
+      crashdump_phase < kDifAlertHandlerClassStatePhase0 ||
+      crashdump_phase > kDifAlertHandlerClassStatePhase3) {
+    return kDifBadArg;
+  }
+#define ALERT_CLASS_CONFIG_REGS_CASE_(class_, value_)                        \
+  case kDifAlertHandlerClass##class_:                                        \
+    class_regwen_offset = ALERT_HANDLER_CLASS##class_##_REGWEN_REG_OFFSET;   \
+    crashdump_phase_reg_offset =                                             \
+        ALERT_HANDLER_CLASS##class_##_CRASHDUMP_TRIGGER_SHADOWED_REG_OFFSET; \
+    break;
+
+  ptrdiff_t class_regwen_offset;
+  ptrdiff_t crashdump_phase_reg_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_CONFIG_REGS_CASE_)
+    default:
+      return kDifBadArg;
+  }
+#undef ALERT_CLASS_CONFIG_REGS_CASE_
+
+  // Check if class configuration is locked.
+  if (!mmio_region_read32(alert_handler->base_addr, class_regwen_offset)) {
+    return kDifLocked;
+  }
+
+  // Configure the crashdump phase.
+  mmio_region_write32_shadowed(
+      alert_handler->base_addr, crashdump_phase_reg_offset,
+      (uint32_t)(crashdump_phase - kDifAlertHandlerClassStatePhase0));
+  return kDifOk;
+}
+
 dif_result_t dif_alert_handler_configure_ping_timer(
     const dif_alert_handler_t *alert_handler, uint32_t ping_timeout,
     dif_toggle_t enabled, dif_toggle_t locked) {
@@ -831,6 +868,32 @@ dif_result_t dif_alert_handler_get_escalation_counter(
 #undef ALERT_CLASS_ESC_CNT_CASE_
 
   *cycles = mmio_region_read32(alert_handler->base_addr, reg_offset);
+
+  return kDifOk;
+}
+
+dif_result_t dif_alert_handler_is_class_enabled(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, bool *is_enabled) {
+  if (alert_handler == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+#define ALERT_CLASS_CTRL_CASE_(class_, value_)                           \
+  case kDifAlertHandlerClass##class_:                                    \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_CTRL_SHADOWED_REG_OFFSET; \
+    break;
+
+  ptrdiff_t reg_offset;
+  switch (alert_class) {
+    LIST_OF_CLASSES(ALERT_CLASS_CTRL_CASE_)
+    default:
+      return kDifBadArg;
+  }
+#undef ALERT_CLASS_CTRL_CASE_
+
+  uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
+  *is_enabled =
+      bitfield_bit32_read(reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT);
 
   return kDifOk;
 }

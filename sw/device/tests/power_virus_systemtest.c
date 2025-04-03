@@ -27,6 +27,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
@@ -58,30 +59,32 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
 /**
  * Peripheral DIF Handles.
  */
-static dif_pinmux_t pinmux;
-static dif_gpio_t gpio;
 static dif_adc_ctrl_t adc_ctrl;
-static dif_entropy_src_t entropy_src;
+static dif_aes_t aes;
+static dif_alert_handler_t alert_handler;
 static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
-static dif_aes_t aes;
+static dif_entropy_src_t entropy_src;
+static dif_flash_ctrl_state_t flash_ctrl;
+static dif_gpio_t gpio;
 static dif_hmac_t hmac;
-static dif_kmac_t kmac;
-static dif_otbn_t otbn;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
+static dif_kmac_t kmac;
+static dif_otbn_t otbn;
+static dif_pattgen_t pattgen;
+static dif_pinmux_t pinmux;
+static dif_pwm_t pwm;
+static dif_rstmgr_t rstmgr;
+static dif_rv_plic_t rv_plic;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
 static dif_spi_host_t spi_host_1;
 static dif_uart_t uart_1;
 static dif_uart_t uart_2;
 static dif_uart_t uart_3;
-static dif_pattgen_t pattgen;
-static dif_pwm_t pwm;
-static dif_flash_ctrl_state_t flash_ctrl;
-static dif_rv_plic_t rv_plic;
 
 static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
@@ -352,6 +355,9 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
   CHECK_DIF_OK(
       dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(
@@ -393,6 +399,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_PATTGEN_BASE_ADDR), &pattgen));
   CHECK_DIF_OK(dif_pwm_init(
       mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
@@ -1449,6 +1457,15 @@ bool test_main(void) {
   // Initialize and configure all IPs.
   // ***************************************************************************
   init_peripheral_handles();
+
+  if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceFpgaCw310 ||
+      kDeviceType == kDeviceFpgaCw340) {
+    CHECK_STATUS_OK(alert_handler_testutils_status_log(&alert_handler));
+    CHECK_STATUS_OK(alert_handler_testutils_dump_log(&rstmgr));
+    CHECK_STATUS_OK(
+        alert_handler_testutils_dump_enable(&alert_handler, &rstmgr));
+  }
+
   configure_pinmux();
   // To be compatible with the configs in chip_if.sv,
   // apply the additional pinmux settings.
