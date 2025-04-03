@@ -29,11 +29,6 @@ static dif_otbn_t otbn;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
-
 enum {
   kKeySideloadNumIt = 16,
   /**
