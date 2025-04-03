@@ -75,11 +75,6 @@ package ac_range_check_env_pkg;
     bit [DataWidth-1:0] data;
   } tl_main_vars_t;
 
-  typedef struct {
-    tl_seq_item item;
-    int         cnt;
-  } tl_filt_t;
-
   // Functions
   // Retrieve the index of the CSR based on its name
   function automatic int get_csr_idx(string csr_ral_name, string csr_name);
@@ -95,6 +90,7 @@ package ac_range_check_env_pkg;
 
   // Package sources
   `include "ac_range_check_dut_cfg.sv"
+  `include "ac_range_check_scb_item.sv"
   `include "ac_range_check_env_cfg.sv"
   `include "ac_range_check_env_cov.sv"
   `include "ac_range_check_virtual_sequencer.sv"

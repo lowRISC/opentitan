@@ -14,6 +14,7 @@ filesets:
     files:
       - ac_range_check_env_pkg.sv
       - ac_range_check_dut_cfg.sv: {is_include_file: true}
+      - ac_range_check_scb_item.sv: {is_include_file: true}
       - ac_range_check_env_cfg.sv: {is_include_file: true}
       - ac_range_check_env_cov.sv: {is_include_file: true}
       - ac_range_check_virtual_sequencer.sv: {is_include_file: true}
