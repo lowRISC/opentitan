@@ -87,9 +87,12 @@ rom_error_t ownership_seal_check(size_t page);
 /**
  * Replace the owner secret with new entropy and update the ownership history.
  *
+ * @param prior_key_alg The key algorithm of the prior owner_key.
+ * @param prior_owner_key The prior owner key.
  * @return Success or error code.
  */
-rom_error_t ownership_secret_new(void);
+rom_error_t ownership_secret_new(uint32_t prior_key_alg,
+                                 const owner_keydata_t *prior_owner_key);
 
 /**
  * Retrieve the owner history digest from the OwnerSecret page.

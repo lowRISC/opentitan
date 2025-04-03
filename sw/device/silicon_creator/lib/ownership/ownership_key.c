@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -170,7 +171,8 @@ static void secret_page_enable(multi_bit_bool_t read, multi_bit_bool_t write) {
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSecret, perm);
 }
 
-rom_error_t ownership_secret_new(void) {
+rom_error_t ownership_secret_new(uint32_t prior_key_alg,
+                                 const owner_keydata_t *prior_owner_key) {
   owner_secret_page_t secret;
 
   secret_page_enable(/*read=*/kMultiBitBool4True, /*write=*/kMultiBitBool4True);
@@ -178,14 +180,19 @@ rom_error_t ownership_secret_new(void) {
       flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret, 0,
                            sizeof(secret) / sizeof(uint32_t), &secret);
   if (error != kErrorOk) {
-    HARDENED_CHECK_NE(error, kErrorOk);
-    // This should only happen on the FPGA during the first ownership transfer.
-    // TODO: What should we do if we ever encounter this error on silicon?
-    // A successful erase and reprogram will "heal" the chip, but any
-    // ownership history will be lost.
-    error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
-                                  kFlashCtrlEraseTypePage);
-    memset(&secret, 0xFF, sizeof(secret));
+    if (kDeviceType == kDeviceSilicon) {
+      // This should never happen on silicon because this page is initialized
+      // during personalization.
+      goto exitproc;
+    } else {
+      // This should only happen on the FPGA during the first ownership
+      // transfer.
+      HARDENED_CHECK_NE(error, kErrorOk);
+      HARDENED_CHECK_NE(kDeviceType, kDeviceSilicon);
+      error = flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSecret,
+                                    kFlashCtrlEraseTypePage);
+      memset(&secret, 0xFF, sizeof(secret));
+    }
   }
   if (error != kErrorOk)
     goto exitproc;
@@ -194,14 +201,20 @@ rom_error_t ownership_secret_new(void) {
   // owner_history = HASH(owner_history || new_owner_key)
   hmac_sha256_init();
   hmac_sha256_update(&secret.owner_history, sizeof(secret.owner_history));
-  size_t keysz = sizeof(owner_page[0].owner_key);
-  switch (owner_page[0].ownership_key_alg) {
-    case kOwnershipKeyAlgEcdsaP256:
-      keysz = sizeof(owner_page[0].owner_key.ecdsa);
+  size_t keysz = sizeof(*prior_owner_key);
+  switch (prior_key_alg & kOwnershipKeyAlgCategoryMask) {
+    case kOwnershipKeyAlgCategoryEcdsa:
+      keysz = sizeof(prior_owner_key->ecdsa);
+      break;
+    case kOwnershipKeyAlgCategorySpx:
+      keysz = sizeof(prior_owner_key->spx);
+      break;
+    case kOwnershipKeyAlgCategoryHybrid:
+      keysz = sizeof(prior_owner_key->hybrid);
       break;
     default:;
   }
-  hmac_sha256_update(&owner_page[0].owner_key, keysz);
+  hmac_sha256_update(prior_owner_key, keysz);
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_history);
   // TODO(cfrantz): when merging to master, use the big-endian form of
@@ -215,7 +228,7 @@ rom_error_t ownership_secret_new(void) {
   // TODO: is this sufficient, or should we generate new entropy?
   hmac_sha256_init();
   hmac_sha256_update(&secret.owner_secret, sizeof(secret.owner_secret));
-  hmac_sha256_update(&owner_page[0].owner_key, keysz);
+  hmac_sha256_update(prior_owner_key, keysz);
   hmac_sha256_process();
   hmac_sha256_final(&secret.owner_secret);
 
@@ -239,6 +252,10 @@ rom_error_t ownership_history_get(hmac_digest_t *history) {
       flash_ctrl_info_read(&kFlashCtrlInfoPageOwnerSecret,
                            offsetof(owner_secret_page_t, owner_history),
                            sizeof(*history) / sizeof(uint32_t), history);
+  if (error != kErrorOk) {
+    // If there was an error reading the history, use all ones as a result.
+    memset(history, 0xFF, sizeof(*history));
+  }
   secret_page_enable(/*read=*/kMultiBitBool4False,
                      /*write=*/kMultiBitBool4False);
   return error;

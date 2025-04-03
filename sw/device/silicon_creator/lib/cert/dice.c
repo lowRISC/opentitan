@@ -146,13 +146,11 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   return kErrorOk;
 }
 
-rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
-                                  hmac_digest_t *owner_manifest_measurement,
-                                  uint32_t owner_security_version,
-                                  owner_app_domain_t key_domain,
-                                  cert_key_id_pair_t *key_ids,
-                                  ecdsa_p256_public_key_t *cdi_1_pubkey,
-                                  uint8_t *cert, size_t *cert_size) {
+rom_error_t dice_cdi_1_cert_build(
+    hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
+    hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
+    owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
+    ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size) {
   hmac_digest_t owner_hash = *owner_measurement;
   hmac_digest_t owner_manifest_hash = *owner_manifest_measurement;
   util_reverse_bytes(&owner_hash, sizeof(owner_hash));
@@ -167,6 +165,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerHash, owner_hash.digest);
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerManifestHash,
                owner_manifest_hash.digest);
+  TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerHistoryHash,
+               owner_history_hash->digest);
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, OwnerSecurityVersion,
                &owner_security_version_be);
   TEMPLATE_SET(cdi_1_tbs_params, Cdi1, DebugFlag,
