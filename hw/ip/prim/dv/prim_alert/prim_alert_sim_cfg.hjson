@@ -74,5 +74,9 @@
       name: vcs_cov_cfg_file
       value: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_alert/data/prim_alert_cover.cfg"
     }
+    {
+      name: xcelium_cov_cfg_file
+      value: ""
+    }
   ]
 }
