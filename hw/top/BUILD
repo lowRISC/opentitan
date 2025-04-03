@@ -88,6 +88,14 @@ alias(
     }),
 )
 
+alias(
+    name = "top_otp_map",
+    actual = select({
+        "is_{}".format(top): "//hw/top_{}/data/otp:otp_ctrl_mmap.hjson".format(top)
+        for top in ALL_TOP_NAMES
+    }),
+)
+
 # C register headers for all IPs.
 [
     opentitan_ip_c_header(

@@ -33,3 +33,9 @@ ${top_name.upper()} = opentitan_top(
 % endfor
     ],
 )
+
+${top_name.upper()}_ALERTS = [
+% for alert in top["alert"]:
+    "${alert["name"]}",
+% endfor
+]
