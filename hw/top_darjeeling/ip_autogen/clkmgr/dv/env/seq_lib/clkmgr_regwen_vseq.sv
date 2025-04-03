@@ -10,6 +10,7 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   task check_jitter_regwen();
+    uvm_reg_data_t prev_data;
     bit enable;
     mubi4_t prev_value;
     mubi4_t new_value;
@@ -18,8 +19,9 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
     new_value = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(2));
     `uvm_info(`gfn, $sformatf("Check jitter_regwen = %b", enable), UVM_MEDIUM)
     csr_wr(.ptr(ral.jitter_regwen), .value(enable));
-    csr_rd(.ptr(ral.jitter_enable), .value(prev_value));
+    csr_rd(.ptr(ral.jitter_enable), .value(prev_data));
     csr_wr(.ptr(ral.jitter_enable), .value(new_value));
+    prev_value = mubi4_t'(prev_data);
     csr_rd_check(.ptr(ral. jitter_enable), .compare_value(enable ? new_value : prev_value));
     `uvm_info(`gfn, "Check jitter_regwen done", UVM_MEDIUM)
   endtask : check_jitter_regwen
@@ -64,27 +66,59 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       csr_rd(.ptr(ctrl_shadowed), .value(prev_ctrl));
       csr_wr(.ptr(ctrl_shadowed), .value(new_ctrl));
       csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(new_en));
+      // We must obviously read back the `enable` state before quickly disabling it.
       csr_rd_check(.ptr(meas_ctrl_regs[clk_mesr].en),
                    .compare_value(mubi4_t'(regwen_enable ? new_en : prev_en)));
+      // Disable the measurement (if we did indeed enable it).
+      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
+      // Now check whether the shadowed `ctrl` register has the expected value.
       csr_rd_check(.ptr(ctrl_shadowed), .compare_value(regwen_enable ? new_ctrl : prev_ctrl),
                    .compare_mask(lo_mask | hi_mask));
       `uvm_info(`gfn, $sformatf("Check %0s regwen done", meas_ctrl_regs[clk_mesr].name),
                 UVM_MEDIUM)
-      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
     end
   endtask : check_meas_ctrl_regwen
 
+  // Set the maximum delays to be used in randomized TL-UL timing.
+  task set_tlul_delays(int unsigned a_max, int unsigned d_max);
+    cfg.m_tl_agent_cfg.a_valid_delay_max = a_max;
+    cfg.m_tl_agent_cfg.d_ready_delay_max = d_max;
+  endtask
+
   task body();
-    // Make sure the aon clock is running as slow as it is meant to, otherwise the aon clock
+    int unsigned aon_clk_freq_khz = AonClkHz / 1_000;
+    int unsigned prev_a_valid_delay_max;
+    int unsigned prev_d_ready_delay_max;
+
+    // Make sure the aon clock is running as slowly as it is meant to, otherwise the aon clock
     // runs fast enough that we could end up triggering faults due to the random settings for
     // the thresholds.
-    cfg.aon_clk_rst_vif.set_freq_khz(AonClkHz / 1_000);
+    cfg.aon_clk_rst_vif.set_freq_khz(aon_clk_freq_khz);
+
+    // Ensure that the TL-UL interface is running sufficiently faster than the AON clock and that
+    // there are no randomization delays on the TL-UL interface because otherwise we may produce
+    // clock measurements during the time window for which measurement is enabled in
+    // `check_meas_ctrl_regwen` above.
+    if (cfg.clk_rst_vif.clk_freq_mhz * 1000 < 8 * aon_clk_freq_khz) begin
+      // Allowing eight TL-UL cycles per AON clock cycle is sufficient to accommodate the latency
+      // of read accesses and the CDC delays on the `disable measurement` write operation, even in
+      // the presence of CDC randomization.
+      cfg.clk_rst_vif.set_freq_khz(8 * aon_clk_freq_khz);
+    end
+    prev_a_valid_delay_max = cfg.m_tl_agent_cfg.a_valid_delay_max;
+    prev_d_ready_delay_max = cfg.m_tl_agent_cfg.d_ready_delay_max;
 
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       check_jitter_regwen();
       check_extclk_regwen();
+
+      // Disable the randomized TL-UL delays just for the `meas_ctrl` testing.
+      set_tlul_delays(0, 0);
       check_meas_ctrl_regwen();
+      // Reinstate the previous configuration.
+      set_tlul_delays(prev_a_valid_delay_max, prev_d_ready_delay_max);
+
       apply_reset("HARD");
       // This is to make sure we don't start writes immediately after reset,
       // otherwise the tl_agent could mistakenly consider the following read
