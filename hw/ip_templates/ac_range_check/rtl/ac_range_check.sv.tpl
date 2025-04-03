@@ -380,15 +380,15 @@ module ${module_instance_name}
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(DenyCntIrqKnown_A, intr_deny_cnt_reached_o)
 
-  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
-  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+  `ASSERT_KNOWN_IF(TlODKnown_A, tl_o, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
 
-  `ASSERT_KNOWN(TlCtnDValidKnownO_A, ctn_tl_d2h_o.d_valid)
-  `ASSERT_KNOWN(TlCtnAReadyKnownO_A, ctn_tl_d2h_o.a_ready)
-  `ASSERT_KNOWN(TlCtnFilteredAValidKnownO_A, ctn_filtered_tl_h2d_o.a_valid)
-  `ASSERT_KNOWN(TlCtnFilteredDReadyKnownO_A, ctn_filtered_tl_h2d_o.d_ready)
+  `ASSERT_KNOWN_IF(TlCtnODKnown_A, ctn_tl_d2h_o, ctn_tl_d2h_o.d_valid)
+  `ASSERT_KNOWN(TlCtnOAReadyKnown_A, ctn_tl_d2h_o.a_ready)
+  `ASSERT_KNOWN_IF(TlCtnFilteredOAKnown_A, ctn_filtered_tl_h2d_o, ctn_filtered_tl_h2d_o.a_valid)
+  `ASSERT_KNOWN(TlCtnFilteredODReadyKnown_A, ctn_filtered_tl_h2d_o.d_ready)
 
-  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
