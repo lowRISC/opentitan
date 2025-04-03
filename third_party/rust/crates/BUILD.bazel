@@ -212,6 +212,12 @@ alias(
 )
 
 alias(
+    name = "hmac",
+    actual = "@crate_index__hmac-0.12.1//:hmac",
+    tags = ["manual"],
+)
+
+alias(
     name = "humantime",
     actual = "@crate_index__humantime-2.1.0//:humantime",
     tags = ["manual"],

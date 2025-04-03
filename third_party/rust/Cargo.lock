@@ -323,6 +323,7 @@ dependencies = [
  "ftdi-mpsse",
  "heck",
  "hex",
+ "hmac",
  "humantime",
  "humantime-serde",
  "indexmap 2.0.0",
