@@ -987,7 +987,11 @@ class cip_base_vseq #(
           forever begin
             // 1 extra cycle to make sure no race condition
             // Plus 2 extra cycles due to alert sampling delay of 2 cycles at the VIF
-            repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + 2) begin
+            for (int i = 0; i <  (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + 2); i++) begin
+              if (cfg.m_alert_agent_cfgs[alert_name].active_ping) begin
+                wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+                i = 0; // restart the delay, since alert may take longer now ping is happening
+              end
               cfg.clk_rst_vif.wait_n_clks(1);
               if (cfg.m_alert_agent_cfgs[alert_name].vif.get_alert() == 1) break;
             end
