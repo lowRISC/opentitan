@@ -15,11 +15,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
-
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_lc_ctrl_t lc;
 
