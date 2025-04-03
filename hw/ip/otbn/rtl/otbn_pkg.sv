@@ -140,11 +140,6 @@ package otbn_pkg;
   } controller_bad_int_t;
 
   typedef struct packed {
-    logic imem_gnt_missed_err;
-    logic dmem_gnt_missed_err;
-  } missed_gnt_t;
-
-  typedef struct packed {
     logic rf_base_intg_err;
     logic rf_bignum_intg_err;
     logic mod_ispr_intg_err;
