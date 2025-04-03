@@ -102,7 +102,21 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
       CompareCtrlFlowConsistency: begin
         string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
         bit rdata;
+        // VIF declared for easier readability
+        virtual alert_esc_if alert_vif = cfg.m_alert_agent_cfgs["fatal"].vif;
         pick_err_inj_point();
+        // If there's a ping on-flight wait until it's finished. Otherwise, the alert due to the
+        // fault injection may be hard to predict since it will come after the ping, but
+        // dependant on the exact ping timing
+        if (alert_vif.state_q == alert_vif.PingSt) begin
+          // There's 2-cycles sampling delay in the monitor, so if the VIF has already seen the ping
+          // Wait for it. Otherwise there may be scenarios where the `active_ping` is not yet set
+          // in the monitor due to the 2-cycle delay. Which causes issues predicting the value in
+          // `fatal_alert_cause`
+          wait (cfg.m_alert_agent_cfgs["fatal"].active_ping == 1);
+        end
+        wait (cfg.m_alert_agent_cfgs["fatal"].active_ping == 0);
+
         do begin
           `DV_CHECK(uvm_hdl_read(start_chk_path, rdata))
           @(posedge cfg.clk_rst_vif.clk);
