@@ -35,8 +35,7 @@ class scoreboard#(type ITEM_T = uvm_object,
   bit                               allow_packet_drop;
   bit                               disable_scoreboard;
 
-  `uvm_component_param_utils(scoreboard#(ITEM_T, dv_base_reg_block,
-                                         dv_base_env_cfg, dv_base_env_cov))
+  `uvm_component_param_utils(scoreboard#(ITEM_T, RAL_T, CFG_T, COV_T))
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
