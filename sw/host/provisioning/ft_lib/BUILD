@@ -28,6 +28,7 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:arrayvec",
             "@crate_index//:clap",
             "@crate_index//:hex",
+            "@crate_index//:hmac",
             "@crate_index//:indexmap",
             "@crate_index//:log",
             "@crate_index//:serde",
