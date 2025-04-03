@@ -76,7 +76,7 @@ status_t ast_program_init(bool verbose) {
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition,
       (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
+          .ecc_en = kMultiBitBool4False,
           .high_endurance_en = kMultiBitBool4False,
           .erase_en = kMultiBitBool4True,
           .prog_en = kMultiBitBool4True,
