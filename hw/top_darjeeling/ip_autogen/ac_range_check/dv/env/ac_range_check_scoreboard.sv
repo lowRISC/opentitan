@@ -38,14 +38,15 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern function void report_phase(uvm_phase phase);
 
   // Class specific methods
-  extern task process_tl_unfilt_a_chan_fifo(output tl_filt_t tl_unfilt);
-  extern task get_tl_unfilt_d_chan_item(output tl_filt_t tl_unfilt);
-  extern task get_tl_filt_a_chan_item(output tl_filt_t tl_filt);
-  extern task get_tl_filt_d_chan_item(output tl_filt_t tl_filt);
+  extern task process_tl_unfilt_a_chan_fifo(output ac_range_check_scb_item tl_unfilt);
+  extern task get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
+  extern task get_tl_filt_a_chan_item(output ac_range_check_scb_item tl_filt);
+  extern task get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern task manage_tl_fifos();
   extern function void reset(string kind = "HARD");
-  extern function void compare_tl_item(string tl_type, tl_filt_t exp, tl_filt_t act);
+  extern function void compare_tl_item(string tl_type, ac_range_check_scb_item exp,
+    ac_range_check_scb_item act);
   extern function access_decision_e check_access(tl_seq_item item);
   extern function cip_tl_seq_item predict_tl_unfilt_d_chan();
 endclass : ac_range_check_scoreboard
@@ -231,10 +232,15 @@ endfunction : predict_tl_unfilt_d_chan
 // process_tl_unfilt_a_chan_fifo task (by calling the check_access function). Gets the ACTUAL item
 //  from its dedicated queue. When both items are available, calls the comparison function.
 task ac_range_check_scoreboard::manage_tl_fifos();
-  tl_filt_t exp_tl_filt_a_chan;
-  tl_filt_t act_tl_filt_a_chan;
-  tl_filt_t exp_tl_unfilt_d_chan;
-  tl_filt_t act_tl_unfilt_d_chan;
+  ac_range_check_scb_item exp_tl_filt_a_chan;
+  ac_range_check_scb_item act_tl_filt_a_chan;
+  ac_range_check_scb_item exp_tl_unfilt_d_chan;
+  ac_range_check_scb_item act_tl_unfilt_d_chan;
+
+  exp_tl_filt_a_chan   = ac_range_check_scb_item::type_id::create("exp_tl_filt_a_chan");
+  act_tl_filt_a_chan   = ac_range_check_scb_item::type_id::create("act_tl_filt_a_chan");
+  exp_tl_unfilt_d_chan = ac_range_check_scb_item::type_id::create("exp_tl_unfilt_d_chan");
+  act_tl_unfilt_d_chan = ac_range_check_scb_item::type_id::create("act_tl_unfilt_d_chan");
 
   forever begin
     // Wait until a transaction is available on the tl_unfilt_a_chan port and process it
@@ -271,7 +277,9 @@ endtask : manage_tl_fifos
 
 // Get an item from the tl_unfilt_a_chan_fifo and call the check_access function to assess whether
 // the current transaction should be granted or denied.
-task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo(output tl_filt_t tl_unfilt);
+task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo(
+  output ac_range_check_scb_item tl_unfilt);
+  tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
   tl_unfilt_a_chan_fifo.get(tl_unfilt.item);
   all_unfilt_a_chan_cnt++;
   `uvm_info(`gfn, $sformatf("Received tl_unfilt_a_chan unfiltered item #%0d:\n%0s",
@@ -293,7 +301,8 @@ task ac_range_check_scoreboard::process_tl_unfilt_a_chan_fifo(output tl_filt_t t
   end
 endtask : process_tl_unfilt_a_chan_fifo
 
-task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output tl_filt_t tl_unfilt);
+task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output ac_range_check_scb_item tl_unfilt);
+  tl_unfilt = ac_range_check_scb_item::type_id::create("tl_unfilt");
   // Timeout with an error if the FIFO remains empty
   fork
     `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_unfilt_d_chan_fifo.", 0)
@@ -307,7 +316,8 @@ task ac_range_check_scoreboard::get_tl_unfilt_d_chan_item(output tl_filt_t tl_un
             "forwarded for comparison"}, act_unfilt_d_chan_cnt), UVM_LOW)
 endtask : get_tl_unfilt_d_chan_item
 
-task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output tl_filt_t tl_filt);
+task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output ac_range_check_scb_item tl_filt);
+  tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
     `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_filt_a_chan_fifo.", 0)
@@ -322,7 +332,8 @@ task ac_range_check_scoreboard::get_tl_filt_a_chan_item(output tl_filt_t tl_filt
 endtask : get_tl_filt_a_chan_item
 
 // Get the item generated from the TB and sent to the tl_filt D channel.
-task ac_range_check_scoreboard::get_tl_filt_d_chan_item(output tl_filt_t tl_filt);
+task ac_range_check_scoreboard::get_tl_filt_d_chan_item(output ac_range_check_scb_item tl_filt);
+  tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
     `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_filt_d_chan_fifo.", 0)
@@ -335,7 +346,8 @@ task ac_range_check_scoreboard::get_tl_filt_d_chan_item(output tl_filt_t tl_filt
 endtask : get_tl_filt_d_chan_item
 
 function void ac_range_check_scoreboard::compare_tl_item(string tl_type,
-                                                         tl_filt_t exp, tl_filt_t act);
+                                                         ac_range_check_scb_item exp,
+                                                         ac_range_check_scb_item act);
   int unsigned matching_cnt_increment = 0;
 
   `uvm_info(`gfn, $sformatf("EXPECTED %0s item:\n%0s", tl_type, exp.item.sprint()), UVM_HIGH)
