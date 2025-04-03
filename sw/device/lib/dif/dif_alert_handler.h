@@ -380,6 +380,21 @@ dif_result_t dif_alert_handler_configure_class(
     dif_toggle_t locked);
 
 /**
+ * Configures the crash dump trigger for an alert class in the alert
+ * handler.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert_class The class to be configured.
+ * @param crashdump_phase The crash dump trigger phase.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_crash_dump_trigger_set(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class,
+    dif_alert_handler_class_state_t crashdump_phase);
+
+/**
  * Configures the ping timer in the alert handler.
  *
  * This operation is lock-protected, meaning once the configuration is locked,
@@ -677,6 +692,19 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_get_escalation_counter(
     const dif_alert_handler_t *alert_handler,
     dif_alert_handler_class_t alert_class, uint32_t *cycles);
+
+/**
+ * Checks whether this class is enabled.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert_class The class to check.
+ * @param[out] is_enabled Out-param for the enablement state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_is_class_enabled(
+    const dif_alert_handler_t *alert_handler,
+    dif_alert_handler_class_t alert_class, bool *is_enabled);
 
 /**
  * Gets the current state of this class.
