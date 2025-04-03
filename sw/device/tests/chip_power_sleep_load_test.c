@@ -39,6 +39,11 @@ static volatile bool nmi_fired = false;
 static volatile bool ext_irq_fired = false;
 static volatile bool irq_is_pending = false;
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+
 static dif_aon_timer_t aon_timer;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
@@ -117,13 +122,11 @@ static void prepare_to_exit(void) {
 
 bool test_main(void) {
   // Define access to DUT IPs:
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
   CHECK_DIF_OK(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
   CHECK_DIF_OK(dif_rv_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &rv_timer));
   CHECK_DIF_OK(dif_alert_handler_init(
@@ -167,12 +170,16 @@ bool test_main(void) {
   LOG_INFO("wakeup type:%d. wakeup reason: 0x%02X", wakeup_reason.types,
            wakeup_reason.request_sources);
 
+  static dif_pwrmgr_request_sources_t pwrmgr_aon_timer_wakeups;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &pwrmgr_aon_timer_wakeups));
+
   if (wakeup_reason.types == 0) {
     // Wakeup due to Power Up - DO NOTHING HERE - go on with the rest of the
     // test's flow....
   } else if ((wakeup_reason.types == kDifPwrmgrWakeupTypeRequest) &&
-             (wakeup_reason.request_sources ==
-              kDifPwrmgrWakeupRequestSourceFive)) {
+             (wakeup_reason.request_sources == pwrmgr_aon_timer_wakeups)) {
     // Wakeup due to a peripheral request and reason is AON Timer.
     prepare_to_exit();
     return true;
@@ -415,10 +422,8 @@ bool test_main(void) {
   dif_pwrmgr_request_sources_t pwrmgr_wakeups;
 
   // Specify which request sources are enabled for wake-up.
-  pwrmgr_wakeups =
-      (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
-       kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
-       kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix);
+  CHECK_DIF_OK(dif_pwrmgr_get_all_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &pwrmgr_wakeups));
 
   // Power manager configuration.
   pwrmgr_cfg = ((kCoreClkOff ? 0 : kDifPwrmgrDomainOptionCoreClockInLowPower) |
