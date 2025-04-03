@@ -24,13 +24,8 @@ public_domain="${2}"
 public_port="${3}"
 
 case "$command" in
-  "build"|"build-staging")
+  "build"|"build-staging"|"build-local"|"serve"|"serve-proxy")
     book_out="${build_dir}/book"
-    ;;
-  "build-local"|"serve"|"serve-proxy")
-    # Build book at the root when serving docs by themselves since we won't have
-    # a landing page.
-    book_out="${build_dir}"
     ;;
   "help"|*)
     echo "USAGE: $0 <command> [public_domain] [public_port]"
