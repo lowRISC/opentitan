@@ -8,7 +8,9 @@
 //
 // NB: this package is only suitable for top-level environments since it depends on SKU-dependent
 // OTP ctrl fields.
-
+<%
+from topgen.lib import Name
+%>
 package otp_ctrl_mem_bkdr_util_pkg;
 
   import otp_ctrl_part_pkg::*;
@@ -52,184 +54,210 @@ package otp_ctrl_mem_bkdr_util_pkg;
     otp_write_lc_partition_state(mem_bkdr_util_h, lc_state);
   endfunction : otp_write_lc_partition
 
+  // The following steps are needed to backdoor write a non-secret partition:
+  // 1). Backdoor write the input data to OTP memory.
+  // 2). Calculate the correct digest for the secret partition.
+  // 3). Backdoor write digest data to OTP memory.
+
   // The following steps are needed to backdoor write a secret partition:
   // 1). Scramble the RAW input data.
   // 2). Backdoor write the scrambled input data to OTP memory.
   // 3). Calculate the correct digest for the secret partition.
   // 4). Backdoor write digest data to OTP memory.
-  function automatic void otp_write_secret0_partition(
+
+  // The HW_CFG1 partition needs to be a special case since it has items
+  // smaller than 4 bytes and need to be concatenated. To make sure
+  // this special case won't end up broken if the OTP layout changes
+  // beyond what this supports the following checks are in place and
+  // will cause a failure.
+  // - No other partition except for HW_CFG1 has such small items.
+  // - The small items in HW_CFG1 will be contained within 32 bits.
+
+% for part in otp_mmap["partitions"]:
+<%
+if part["variant"] != "Buffered":
+  continue
+part_name = Name.from_snake_case(part["name"])
+part_name_camel = part_name.as_camel_case()
+part_name_snake = part_name.as_snake_case()
+has_digest = part["hw_digest"] or part["sw_digest"]
+part_items = part["items"][:-1] if has_digest else part["items"]
+%>\
+## Declare function and ports.
+  function automatic void otp_write_${part_name_snake}_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [TestUnlockTokenSize*8-1:0] unlock_token,
-      bit [TestExitTokenSize*8-1:0]   exit_token
+  % for item in part_items:
+<%
+item_name = Name.from_snake_case(item["name"])
+sep = "" if loop.last else ","
+%>\
+      bit [${item_name.as_camel_case()}Size*8-1:0] ${item_name.as_snake_case()}${sep}
+  % endfor
   );
-    bit [Secret0DigestSize*8-1:0] digest;
+    bit [${part_name_camel}DigestSize*8-1:0] digest;
+    bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
+  % if part_name_snake == "hw_cfg1":
+##############################################
+## Handle the hw_cfg1 partition.            ##
+##############################################
+<%
+## Check that all small items are 1 byte, will fit in 32 bits, and are
+## consecutive
+weird_sized_items = [
+    it for it in part_items if it["size"] != 1 and it["size"] % 4]
+if weird_sized_items:
+  weirds_string = (", ".join(f'{i["name"]} size {i["size"]}'
+                   for i in weird_sized_items))
+  raise ValueError(
+      "In HW_CFG1 expected sizes of 1 or multiples of 4 bytes, got "
+      "{weirds_string}")
+item_sizes = [i["size"] for i in part_items]
+ones_at = [i for i, s in enumerate(item_sizes) if s == 1]
+consecutive = all(x2 - x1 == 1 for x1, x2 in zip(ones_at[:-1], ones_at[1:]))
+if not consecutive:
+  raise ValueError("non consecutive items with size 1 byte in HW_CFG1")
+## Require all to fit in one word. Extend this if needed.
+if len(ones_at) > 4:
+  raise ValueError("Expected no more than 4 single byte in HW_CFG1")
+%>\
+##############################################
+## Emit the hw_cfg1 partition's function body.
+##############################################
+    bit [bus_params_pkg::BUS_DW-1:0] concat_data[$];
+    bit [31:0] word;
 
-    bit [TestUnlockTokenSize*8-1:0] scrambled_unlock_token;
-    bit [TestExitTokenSize*8-1:0] scrambled_exit_token;
-    bit [bus_params_pkg::BUS_DW-1:0] secret_data[$];
-
-    for (int i = 0; i < TestUnlockTokenSize; i += 8) begin
-      scrambled_unlock_token[i*8+:64] = scramble_data(unlock_token[i*8+:64], Secret0Idx);
-      mem_bkdr_util_h.write64(i + TestUnlockTokenOffset, scrambled_unlock_token[i*8+:64]);
+## Write all leading consecutive non-single byte variables.
+% if ones_at[0] != 0:
+  % for item in part_items[:ones_at[0]]:
+<%
+item_name = Name.from_snake_case(item["name"])
+item_name_camel = item_name.as_camel_case()
+item_name_snake = item_name.as_snake_case()
+%>\
+    for (int i = 0; i < ${item_name_camel}Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + ${item_name_camel}Offset, ${item_name_snake}[i*8+:32]);
+      concat_data.push_front(${item_name_snake}[i*8+:32]);
     end
-    for (int i = 0; i < TestExitTokenSize; i += 8) begin
-      scrambled_exit_token[i*8+:64] = scramble_data(exit_token[i*8+:64], Secret0Idx);
-      mem_bkdr_util_h.write64(i + TestExitTokenOffset, scrambled_exit_token[i*8+:64]);
-    end
-
-    secret_data = {<<32{scrambled_exit_token, scrambled_unlock_token}};
-    digest = cal_digest(Secret0Idx, secret_data);
-
-    mem_bkdr_util_h.write64(Secret0DigestOffset, digest);
-  endfunction
-
-  function automatic void otp_write_secret1_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-    % if enable_flash_key:
-      bit [FlashAddrKeySeedSize*8-1:0] flash_addr_key_seed,
-      bit [FlashDataKeySeedSize*8-1:0] flash_data_key_seed,
-    % endif
-      bit [SramDataKeySeedSize*8-1:0]  sram_data_key_seed
-  );
-    bit [Secret1DigestSize*8-1:0] digest;
-
-  % if enable_flash_key:
-    bit [FlashAddrKeySeedSize*8-1:0] scrambled_flash_addr_key;
-    bit [FlashDataKeySeedSize*8-1:0] scrambled_flash_data_key;
-  % endif
-    bit [SramDataKeySeedSize*8-1:0] scrambled_sram_data_key;
-    bit [bus_params_pkg::BUS_DW-1:0] secret_data[$];
-
-  % if enable_flash_key:
-    for (int i = 0; i < FlashAddrKeySeedSize; i += 8) begin
-      scrambled_flash_addr_key[i*8+:64] = scramble_data(flash_addr_key_seed[i*8+:64], Secret1Idx);
-      mem_bkdr_util_h.write64(i + FlashAddrKeySeedOffset, scrambled_flash_addr_key[i*8+:64]);
-    end
-    for (int i = 0; i < FlashDataKeySeedSize; i += 8) begin
-      scrambled_flash_data_key[i*8+:64] = scramble_data(flash_data_key_seed[i*8+:64], Secret1Idx);
-      mem_bkdr_util_h.write64(i + FlashDataKeySeedOffset, scrambled_flash_data_key[i*8+:64]);
-    end
-  % endif
-    for (int i = 0; i < SramDataKeySeedSize; i += 8) begin
-      scrambled_sram_data_key[i*8+:64] = scramble_data(sram_data_key_seed[i*8+:64], Secret1Idx);
-      mem_bkdr_util_h.write64(i + SramDataKeySeedOffset, scrambled_sram_data_key[i*8+:64]);
-    end
-
-% if enable_flash_key:
-    secret_data = {<<32 {scrambled_sram_data_key, scrambled_flash_data_key,
-                         scrambled_flash_addr_key}};
-% else:
-    secret_data = {<<32 {scrambled_sram_data_key}};
+  % endfor
 % endif
-    digest = cal_digest(Secret1Idx, secret_data);
+## Concatenate all single-byte variables into a word in descending order and
+## write the value.
+    word = {
+% for i in list(reversed(ones_at)):
+<%
+item_name = Name.from_snake_case(part_items[i]["name"])
+sep = "" if loop.last else ","
+%>\
+      ${item_name.as_snake_case()}${sep}
+% endfor
+    };
+## Write the word.
+<%
+first_item_name = Name.from_snake_case(part_items[ones_at[0]]["name"])
+first_item_name_camel = first_item_name.as_camel_case()
+%>\
+    mem_bkdr_util_h.write32(${ones_at[0]} + ${first_item_name_camel}Offset, word);
+    concat_data.push_front(word);
 
-    mem_bkdr_util_h.write64(Secret1DigestOffset, digest);
+## Write all trailing consecutive non-single byte variables.
+% if ones_at[-1] < len(part_items) - 1:
+  % for item in part_items[ones_at[-1] + 1:]:
+<%
+item_name = Name.from_snake_case(item["name"])
+item_name_camel = item_name.as_camel_case()
+item_name_snake = item_name.as_snake_case()
+%>\
+    for (int i = 0; i < ${item_name_camel}Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + ${item_name_camel}Offset, ${item_name_snake}[i*8+:32]);
+      concat_data.push_front(${item_name_snake}[i*8+:32]);
+    end
+  % endfor
+% endif
+    partition_data = {<<32{concat_data}};
+    digest = cal_digest(${part_name_camel}Idx, partition_data);
+    mem_bkdr_util_h.write64(${part_name_camel}DigestOffset, digest);
   endfunction
 
-  function automatic void otp_write_secret2_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [RmaTokenSize*8-1:0] rma_unlock_token,
-      bit [CreatorRootKeyShare0Size*8-1:0] creator_root_key0,
-      bit [CreatorRootKeyShare1Size*8-1:0] creator_root_key1
-  );
+## Done with HW_CFG1
+##
+  % else:
+##################################################
+## Handle other buffered partitions.            ##
+##################################################
+    % if part["secret"]:
+#############################################
+## Emit the secret partition's function body.
+#############################################
+## Declare variables to hold scrambled data.
+      % for item in part_items:
+<%
+if item["size"] < 4:
+  raise ValueError(
+      f"Unexpected item {item['name']} smaller than 4 bytes in partition {part['name']}")
+item_name = Name.from_snake_case(item["name"])
+item_name_camel = item_name.as_camel_case()
+item_name_snake = item_name.as_snake_case()
+%>\
+    bit [${item_name.as_camel_case()}Size*8-1:0] scrambled_${item_name.as_snake_case()};
+      % endfor
+    % endif
 
-    bit [Secret2DigestSize*8-1:0] digest;
-
-    bit [RmaTokenSize*8-1:0] scrambled_unlock_token;
-    bit [CreatorRootKeyShare0Size*8-1:0] scrambled_root_key0;
-    bit [CreatorRootKeyShare1Size*8-1:0] scrambled_root_key1;
-    bit [bus_params_pkg::BUS_DW-1:0] secret_data[$];
-
-    for (int i = 0; i < RmaTokenSize; i+=8) begin
-      scrambled_unlock_token[i*8+:64] = scramble_data(rma_unlock_token[i*8+:64], Secret2Idx);
-      mem_bkdr_util_h.write64(i + RmaTokenOffset, scrambled_unlock_token[i*8+:64]);
+    % for item in part_items:
+<%
+item_name = Name.from_snake_case(item["name"])
+item_name_camel = item_name.as_camel_case()
+item_name_snake = item_name.as_snake_case()
+%>\
+      % if part["secret"]:
+    for (int i = 0; i < ${item_name_camel}Size; i += 8) begin
+      scrambled_${item_name.as_snake_case()}[i*8+:64] = scramble_data(
+          ${item_name_snake}[i*8+:64], ${part_name_camel}Idx);
+      mem_bkdr_util_h.write64(i + ${item_name_camel}Offset,
+                              scrambled_${item_name.as_snake_case()}[i*8+:64]);
     end
-    for (int i = 0; i < CreatorRootKeyShare0Size; i+=8) begin
-      scrambled_root_key0[i*8+:64] = scramble_data(creator_root_key0[i*8+:64], Secret2Idx);
-      mem_bkdr_util_h.write64(i + CreatorRootKeyShare0Offset, scrambled_root_key0[i*8+:64]);
+      % else:
+    for (int i = 0; i < ${item_name_camel}Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + ${item_name_camel}Offset, ${item_name_snake}[i*8+:32]);
     end
-    for (int i = 0; i < CreatorRootKeyShare1Size; i+=8) begin
-      scrambled_root_key1[i*8+:64] = scramble_data(creator_root_key1[i*8+:64], Secret2Idx);
-      mem_bkdr_util_h.write64(i + CreatorRootKeyShare1Offset, scrambled_root_key1[i*8+:64]);
-    end
+      % endif
+    % endfor
 
-    secret_data = {<<32 {scrambled_root_key1, scrambled_root_key0, scrambled_unlock_token}};
-    digest = cal_digest(Secret2Idx, secret_data);
-
-    mem_bkdr_util_h.write64(Secret2DigestOffset, digest);
+    partition_data = {<<32{
+    % for item in list(reversed(part_items)):
+<%
+item_name = Name.from_snake_case(item["name"])
+sep = "" if loop.last else ","
+%>\
+      % if part["secret"]:
+      scrambled_${item_name.as_snake_case()}${sep}
+      % else:
+      ${item_name.as_snake_case()}${sep}
+      % endif
+    % endfor
+    }};
+    digest = cal_digest(${part_name_camel}Idx, partition_data);
+    mem_bkdr_util_h.write64(${part_name_camel}DigestOffset, digest);
   endfunction
 
-  function automatic void otp_write_hw_cfg0_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state
-  );
-    bit [HwCfg0DigestSize*8-1:0] digest;
-
-    bit [bus_params_pkg::BUS_DW-1:0] hw_cfg0_data[$];
-
-    for (int i = 0; i < DeviceIdSize; i += 4) begin
-      mem_bkdr_util_h.write32(i + DeviceIdOffset, device_id[i*8+:32]);
-    end
-    for (int i = 0; i < ManufStateSize; i += 4) begin
-      mem_bkdr_util_h.write32(i + ManufStateOffset, manuf_state[i*8+:32]);
-    end
-
-    hw_cfg0_data = {<<32 {manuf_state, device_id}};
-    digest = cal_digest(HwCfg0Idx, hw_cfg0_data);
-
-    mem_bkdr_util_h.write64(HwCfg0DigestOffset, digest);
-  endfunction
-
-  function automatic void otp_write_hw_cfg1_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
-      bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
-      bit [EnSramIfetchSize*8-1:0] dis_rv_dm_late_debug
-  );
-    bit [HwCfg1DigestSize*8-1:0] digest;
-
-    bit [bus_params_pkg::BUS_DW-1:0] hw_cfg1_data[$];
-
-    mem_bkdr_util_h.write32(EnSramIfetchOffset,
-                            {dis_rv_dm_late_debug, en_csrng_sw_app_read, en_sram_ifetch});
-
-    hw_cfg1_data = {<<32 {32'h0, dis_rv_dm_late_debug, en_csrng_sw_app_read, en_sram_ifetch}};
-    digest = cal_digest(HwCfg1Idx, hw_cfg1_data);
-
-    mem_bkdr_util_h.write64(HwCfg1DigestOffset, digest);
-  endfunction
-
+  % endif
+% endfor
   // Functions that clear the provisioning state of the buffered partitions.
   // This is useful in tests that make front-door accesses for provisioning purposes.
-  function automatic void otp_clear_secret0_partition(
+% for part in otp_mmap["partitions"]:
+  % if part["variant"] == "Buffered":
+<%
+part_name = Name.from_snake_case(part["name"])
+part_name_camel = part_name.as_camel_case()
+part_name_snake = part_name.as_snake_case()
+%>\
+  function automatic void otp_clear_${part_name_snake}_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
   );
-    for (int i = 0; i < Secret0Size; i += 4) begin
-      mem_bkdr_util_h.write32(i + Secret0Offset, 32'h0);
+    for (int i = 0; i < ${part_name_camel}Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + ${part_name_camel}Offset, 32'h0);
     end
   endfunction
 
-  function automatic void otp_clear_secret1_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
-  );
-    for (int i = 0; i < Secret1Size; i += 4) begin
-      mem_bkdr_util_h.write32(i + Secret1Offset, 32'h0);
-    end
-  endfunction
-
-  function automatic void otp_clear_secret2_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
-  );
-    for (int i = 0; i < Secret2Size; i += 4) begin
-      mem_bkdr_util_h.write32(i + Secret2Offset, 32'h0);
-    end
-  endfunction
-
-  function automatic void otp_clear_hw_cfg0_partition(
-      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
-  );
-    for (int i = 0; i < HwCfg0Size; i += 4) begin
-      mem_bkdr_util_h.write32(i + HwCfg0Offset, 32'h0);
-    end
-  endfunction
+  % endif
+% endfor
 endpackage : otp_ctrl_mem_bkdr_util_pkg
