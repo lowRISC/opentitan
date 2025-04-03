@@ -87,6 +87,9 @@ owner_config_t owner_config;
 // Owner application keys.
 owner_application_keyring_t keyring;
 
+// Hash chain of all previous owners.
+hmac_digest_t owner_history_hash;
+
 // Verifying key index
 size_t verify_key;
 
@@ -320,8 +323,8 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Generate CDI_1 attestation keys and certificate.
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
-      manifest, &boot_measurements.bl0, &owner_measurement, &sealing_binding,
-      key->key_domain));
+      manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
+      &sealing_binding, key->key_domain));
 
   // Write the DICE certs to flash if they have been updated.
   HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
@@ -683,6 +686,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Configure SRAM execution as the owner requested.
   rom_ext_sram_exec(owner_config.sram_exec);
+
+  // Get the ownership history.  We discard the error because there is no
+  // meaningful action we could take in the event of an error.  If there
+  // was an error, ownership_history_get will default history hash result to
+  // all ones.
+  OT_DISCARD(ownership_history_get(&owner_history_hash));
 
   // Handle any pending boot_svc commands.
   uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
