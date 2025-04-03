@@ -84,6 +84,7 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
  *
  * @param owner_measurement Pointer to the owner firmware measurement.
  * @param owner_manifest_measurement Pointer to the owner manifest measurement.
+ * @param owner_history_hash Pointer to the owner history hash.
  * @param owner_security_version Owner firmware security version.
  * @param key_domain Domain of the Owner SW signing key.
  * @param key_ids Pointer to the (current and endorsement) public key IDs.
@@ -95,13 +96,11 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
-                                  hmac_digest_t *owner_manifest_measurement,
-                                  uint32_t owner_security_version,
-                                  owner_app_domain_t key_domain,
-                                  cert_key_id_pair_t *key_ids,
-                                  ecdsa_p256_public_key_t *cdi_1_pubkey,
-                                  uint8_t *cert, size_t *cert_size);
+rom_error_t dice_cdi_1_cert_build(
+    hmac_digest_t *owner_measurement, hmac_digest_t *owner_manifest_measurement,
+    hmac_digest_t *owner_history_hash, uint32_t owner_security_version,
+    owner_app_domain_t key_domain, cert_key_id_pair_t *key_ids,
+    ecdsa_p256_public_key_t *cdi_1_pubkey, uint8_t *cert, size_t *cert_size);
 
 /**
  * Check if a subject pubkey ID (serial number) or subject pubkey match the

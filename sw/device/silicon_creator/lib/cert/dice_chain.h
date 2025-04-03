@@ -58,8 +58,8 @@ rom_error_t dice_chain_attestation_creator(
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
-    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding,
-    owner_app_domain_t key_domain);
+    hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
+    keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain);
 
 /**
  * Write back the certificate chain to flash if changed.
