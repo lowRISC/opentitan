@@ -184,7 +184,7 @@ static status_t manuf_individualize_device_ast_cfg(
       kFlashInfoFieldAstCalibrationData.bank,
       kFlashInfoFieldAstCalibrationData.partition,
       (dif_flash_ctrl_region_properties_t){
-          .ecc_en = kMultiBitBool4True,
+          .ecc_en = kMultiBitBool4False,
           .high_endurance_en = kMultiBitBool4False,
           .erase_en = kMultiBitBool4False,
           .prog_en = kMultiBitBool4False,
