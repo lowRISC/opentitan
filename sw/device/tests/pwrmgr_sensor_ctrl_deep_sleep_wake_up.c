@@ -92,8 +92,13 @@ bool test_main(void) {
         &pwrmgr, kDifToggleEnabled));
     // This enters deep sleep, so the clock control bits are irrelevant since
     // they are reset on wakeup.
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, 0));
+    dif_pwrmgr_request_sources_t wakeup_sources;
+    CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+        &pwrmgr, kDifPwrmgrReqTypeWakeup,
+        dt_sensor_ctrl_instance_id(kSensorCtrlDt), kDtSensorCtrlWakeupWkupReq,
+        &wakeup_sources));
+    CHECK_STATUS_OK(
+        pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
     LOG_INFO("Issue WFI to enter sensor_ctrl sleep");
     wait_for_interrupt();
 
