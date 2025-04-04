@@ -26,6 +26,15 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+static_assert(kDtSysrstCtrlCount == 1, "this test expects a sysrst_ctrl");
+
 enum {
   kAllZero = 0x0,
   kAllOne = 0x3,
@@ -74,11 +83,15 @@ static void configure_combo_reset(void) {
                         .debounce_time_threshold = kDebounceTimeThreshold,
                         .input_changes = kDifSysrstCtrlInputKey0H2L |
                                          kDifSysrstCtrlInputKey1H2L}));
-  // Prepare rstmgr for a reset with sysrst_ctrl (source one).
+  // Prepare rstmgr for a reset with sysrst_ctrl.
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlResetReqRstReq,
+      &reset_sources));
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   // Issue WFI and wait for reset condition.
   LOG_INFO("wait for combo (key0&1 low)");
   test_status_set(kTestStatusInWfi);
@@ -86,15 +99,10 @@ static void configure_combo_reset(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+  CHECK_DIF_OK(dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   pinmux_setup();
   sysrst_ctrl_testutils_setup_dio(&pinmux);
