@@ -243,6 +243,19 @@ dif_result_t dif_pwrmgr_find_request_source(
     dif_pwrmgr_request_sources_t *sources);
 
 /**
+ * Obtain a bit mask of all wakeups/reset requests.
+ *
+ * @param pwrmgr A power manager handle.
+ * @param req_type Request type (wake up or reset request).
+ * @param[out] sources The bitmask corresponding to all wakeups or resets
+ * @return `kDifError` if no DIF was not initialized by DT, `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_get_all_request_sources(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
+    dif_pwrmgr_request_sources_t *sources);
+
+/**
  * Enables or disables low power state.
  *
  * When enabled, the power manager transitions to low power state on the next
