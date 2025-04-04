@@ -19,7 +19,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
   uint                                          bank;
 
   // Bit vector representing which of the mp region cfg CSRs to enable.
-  bit           [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
+  bit           [flash_ctrl_top_specific_pkg::MpRegions-1:0] en_mp_regions;
 
   // Indicates whether to poll before writing to the prog_fifo or reading from the rd_fifo. If interupts are
   // enabled, the interrupt signals will be used instead. When set to 0, it will continuously write
@@ -56,7 +56,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // Configure the FLASH Controller
 
     // Memory protection regions settings. One MP region, Single Page
-    flash_mp_region_cfg_t             mp_regions                [flash_ctrl_pkg::MpRegions];
+    flash_mp_region_cfg_t             mp_regions [flash_ctrl_top_specific_pkg::MpRegions];
 
     foreach (mp_regions[i]) begin
       mp_regions[i].en         = mubi4_bool_to_mubi(en_mp_regions[i]);
@@ -106,7 +106,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // Read Frontdoor, Compare Backdoor
 
     // Select FLASH Read Operation
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpRead;
 
     // Start Controller
     flash_ctrl_start_op(flash_op);
@@ -118,10 +118,10 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // FLASH ERASE
 
     // Select FLASH Read Operation
-    flash_op.op = flash_ctrl_pkg::FlashOpErase;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpErase;
 
     // Select Page Erase
-    flash_op.erase_type = flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type = flash_ctrl_top_specific_pkg::FlashErasePage;
 
     // Start Controller
     flash_ctrl_start_op(flash_op);
@@ -133,7 +133,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // Write Frontdoor, Read backdoor
 
     // Select FLASH Operation
-    flash_op.op = flash_ctrl_pkg::FlashOpProgram;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpProgram;
 
     // Randomize Write Data
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op_data, flash_op_data.size == flash_op.num_words;)
@@ -152,7 +152,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
     // Read Frontdoor, Compare Backdoor
 
     // Select FLASH Read Operation
-    flash_op.op = flash_ctrl_pkg::FlashOpRead;
+    flash_op.op = flash_ctrl_top_specific_pkg::FlashOpRead;
 
     // Start Controller
     flash_ctrl_start_op(flash_op);

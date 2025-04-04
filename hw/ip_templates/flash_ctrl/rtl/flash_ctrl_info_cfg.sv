@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module flash_ctrl_info_cfg import flash_ctrl_pkg::*; # (
+module flash_ctrl_info_cfg import flash_ctrl_top_specific_pkg::*; # (
   parameter logic [BankW-1:0] Bank = 0,
   parameter logic [InfoTypesWidth-1:0] InfoSel = 0
 ) (

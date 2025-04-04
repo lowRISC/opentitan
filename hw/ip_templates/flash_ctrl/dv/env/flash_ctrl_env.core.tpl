@@ -14,7 +14,7 @@ filesets:
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_bkdr_util")}
       - lowrisc:dv:flash_phy_prim_agent
       - lowrisc:dv:mem_bkdr_util
-      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
     files:
       - flash_ctrl_eflash_ral_pkg.sv

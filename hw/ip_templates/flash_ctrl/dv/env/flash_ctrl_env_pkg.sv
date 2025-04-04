@@ -12,7 +12,7 @@ package flash_ctrl_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import flash_ctrl_core_ral_pkg::*;
   import flash_ctrl_eflash_ral_pkg::*;
   import flash_ctrl_prim_ral_pkg::*;
@@ -48,9 +48,10 @@ package flash_ctrl_env_pkg;
   };
 
   parameter uint NUM_ALERTS = 5;
-  parameter uint FlashNumPages = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
-  parameter uint FlashSizeBytes = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
-                                  flash_ctrl_pkg::DataWidth / 8;
+  parameter uint FlashNumPages = flash_ctrl_top_specific_pkg::NumBanks *
+                                 flash_ctrl_top_specific_pkg::PagesPerBank;
+  parameter uint FlashSizeBytes = FlashNumPages * flash_ctrl_top_specific_pkg::WordsPerPage *
+                                  flash_ctrl_top_specific_pkg::DataWidth / 8;
 
   parameter uint ProgFifoDepth = 4;
   parameter uint ReadFifoDepth = 16;
@@ -59,31 +60,33 @@ package flash_ctrl_env_pkg;
   parameter uint BytesPerPage = FlashSizeBytes / FlashNumPages;
 
   // Num of bytes in each of the flash banks for each of the flash partitions.
-  parameter uint BytesPerBank = FlashSizeBytes / flash_ctrl_pkg::NumBanks;
+  parameter uint BytesPerBank = FlashSizeBytes / flash_ctrl_top_specific_pkg::NumBanks;
 
-  parameter uint InfoTypeBytes[flash_ctrl_pkg::InfoTypes] = '{
-      flash_ctrl_pkg::InfoTypeSize[0] * BytesPerPage,
-      flash_ctrl_pkg::InfoTypeSize[1] * BytesPerPage,
-      flash_ctrl_pkg::InfoTypeSize[2] * BytesPerPage
+  parameter uint InfoTypeBytes[flash_ctrl_top_specific_pkg::InfoTypes] = '{
+      flash_ctrl_top_specific_pkg::InfoTypeSize[0] * BytesPerPage,
+      flash_ctrl_top_specific_pkg::InfoTypeSize[1] * BytesPerPage,
+      flash_ctrl_top_specific_pkg::InfoTypeSize[2] * BytesPerPage
   };
 
   parameter uint FlashNumBusWords = FlashSizeBytes / top_pkg::TL_DBW;
-  parameter uint FlashNumBusWordsPerBank = FlashNumBusWords / flash_ctrl_pkg::NumBanks;
-  parameter uint FlashNumBusWordsPerPage = FlashNumBusWordsPerBank / flash_ctrl_pkg::PagesPerBank;
+  parameter uint FlashNumBusWordsPerBank = FlashNumBusWords /
+                                           flash_ctrl_top_specific_pkg::NumBanks;
+  parameter uint FlashNumBusWordsPerPage = FlashNumBusWordsPerBank /
+                                           flash_ctrl_top_specific_pkg::PagesPerBank;
 
-  parameter uint InfoTypeBusWords[flash_ctrl_pkg::InfoTypes] = '{
-      flash_ctrl_pkg::InfoTypeSize[0] * FlashNumBusWordsPerPage,
-      flash_ctrl_pkg::InfoTypeSize[1] * FlashNumBusWordsPerPage,
-      flash_ctrl_pkg::InfoTypeSize[2] * FlashNumBusWordsPerPage
+  parameter uint InfoTypeBusWords[flash_ctrl_top_specific_pkg::InfoTypes] = '{
+      flash_ctrl_top_specific_pkg::InfoTypeSize[0] * FlashNumBusWordsPerPage,
+      flash_ctrl_top_specific_pkg::InfoTypeSize[1] * FlashNumBusWordsPerPage,
+      flash_ctrl_top_specific_pkg::InfoTypeSize[2] * FlashNumBusWordsPerPage
   };
 
-  parameter uint FlashBankBytesPerWord = flash_ctrl_pkg::DataWidth / 8;
+  parameter uint FlashBankBytesPerWord = flash_ctrl_top_specific_pkg::DataWidth / 8;
 
   parameter uint FlashDataByteWidth = $clog2(FlashBankBytesPerWord);
-  parameter uint FlashWordLineWidth = $clog2(flash_ctrl_pkg::WordsPerPage);
-  parameter uint FlashPageWidth = $clog2(flash_ctrl_pkg::PagesPerBank);
-  parameter uint FlashBankWidth = $clog2(flash_ctrl_pkg::NumBanks);
-  parameter uint FlashPgmRes = flash_ctrl_pkg::BusPgmRes;
+  parameter uint FlashWordLineWidth = $clog2(flash_ctrl_top_specific_pkg::WordsPerPage);
+  parameter uint FlashPageWidth = $clog2(flash_ctrl_top_specific_pkg::PagesPerBank);
+  parameter uint FlashBankWidth = $clog2(flash_ctrl_top_specific_pkg::NumBanks);
+  parameter uint FlashPgmRes = flash_ctrl_top_specific_pkg::BusPgmRes;
   parameter uint FlashPgmResWidth = $clog2(FlashPgmRes);
 
   parameter uint FlashMemAddrWordMsbBit = FlashDataByteWidth - 1;
@@ -99,10 +102,10 @@ package flash_ctrl_env_pkg;
   parameter uint NUM_BK_INFO_WORDS = InfoTypeBusWords[0];  // 10 pages
 
   // params for num of pages
-  parameter uint NUM_PAGE_PART_DATA = flash_ctrl_pkg::PagesPerBank;
-  parameter uint NUM_PAGE_PART_INFO0 = flash_ctrl_pkg::InfoTypeSize[0];
-  parameter uint NUM_PAGE_PART_INFO1 = flash_ctrl_pkg::InfoTypeSize[1];
-  parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_pkg::InfoTypeSize[2];
+  parameter uint NUM_PAGE_PART_DATA = flash_ctrl_top_specific_pkg::PagesPerBank;
+  parameter uint NUM_PAGE_PART_INFO0 = flash_ctrl_top_specific_pkg::InfoTypeSize[0];
+  parameter uint NUM_PAGE_PART_INFO1 = flash_ctrl_top_specific_pkg::InfoTypeSize[1];
+  parameter uint NUM_PAGE_PART_INFO2 = flash_ctrl_top_specific_pkg::InfoTypeSize[2];
 
   parameter otp_ctrl_pkg::flash_otp_key_rsp_t FLASH_OTP_RSP_DEFAULT = '{
       data_ack: 1'b1,
@@ -214,7 +217,8 @@ package flash_ctrl_env_pkg;
   } flash_mem_init_e;
 
   // Partition select for DV
-  typedef enum logic [flash_ctrl_pkg::InfoTypes:0] {  // Data partition and all info partitions
+  // Data partition and all info partitions
+  typedef enum logic [flash_ctrl_top_specific_pkg::InfoTypes:0] {
     FlashPartData  = 0,
     FlashPartInfo  = 1,
     FlashPartInfo1 = 2,
@@ -300,7 +304,7 @@ package flash_ctrl_env_pkg;
   // Useful for the flash model.
   typedef data_t data_model_t[addr_t];
   // Otf address in a bank.
-  typedef bit [flash_ctrl_pkg::BusAddrByteW-FlashBankWidth-1 : 0] otf_addr_t;
+  typedef bit [flash_ctrl_top_specific_pkg::BusAddrByteW-FlashBankWidth-1 : 0] otf_addr_t;
 
   typedef struct packed {
     flash_dv_part_e  partition;   // data or one of the info partitions
@@ -310,7 +314,7 @@ package flash_ctrl_env_pkg;
     uint             num_words;   // number of words to read or program (TL_DW)
     addr_t           addr;        // starting addr for the op
     // address for the ctrl interface per bank, 18:0
-    bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
+    bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
   // Address combined with region
@@ -331,7 +335,8 @@ package flash_ctrl_env_pkg;
   parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
   // Indicate host read
-  parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - FlashBankWidth; // bit19
+  parameter int unsigned OTFBankId = flash_ctrl_top_specific_pkg::BusAddrByteW - // bit 19
+                                     FlashBankWidth;
   parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
   parameter int unsigned DVPageMSB = 18;
   parameter int unsigned DVPageLSB = 11;
@@ -348,7 +353,7 @@ package flash_ctrl_env_pkg;
   localparam int unsigned FlashAddrWidth = 16;
 
   // remove bank select
-  localparam int unsigned FlashByteAddrWidth = flash_ctrl_pkg::BusAddrByteW - 1;
+  localparam int unsigned FlashByteAddrWidth = flash_ctrl_top_specific_pkg::BusAddrByteW - 1;
 
   function automatic bit[63:0] create_flash_data(
            bit [FlashDataWidth-1:0] data, bit [FlashByteAddrWidth-1:0] byte_addr,

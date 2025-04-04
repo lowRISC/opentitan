@@ -117,18 +117,18 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   // Compile-time random bits for default seeds
-  parameter flash_ctrl_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
+  parameter flash_ctrl_top_specific_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
     256'hF67F318B_5A490E55_F7D8B832_5652A924_82CC3446_8C37BFEE_731A0AB4_30181CDE,
     256'h15F40D83_472DD252_E38F2C5E_24D201BD_B435D5CF_F95C40A1_643CC8F5_40230522
   };
 
   // Compile-time random bits for initial LFSR seed
-  parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
+  parameter flash_ctrl_top_specific_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
     32'hD33A4EA4
   };
 
   // Compile-time random permutation for LFSR output
-  parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
+  parameter flash_ctrl_top_specific_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
     160'hB16325F5_4D0ED9E3_1C04C3EB_9D5F8812_7F41CDD0
   };
 

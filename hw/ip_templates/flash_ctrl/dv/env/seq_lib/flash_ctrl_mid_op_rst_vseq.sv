@@ -42,7 +42,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
 
   constraint flash_op_c {
     flash_op.prog_sel == FlashProgSelNormal;
-    flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
     flash_op.num_words inside {[1 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
@@ -55,15 +55,16 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
   }
 
   // Memory protection regions settings.
-  flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   // Information partitions memory protection pages settings.
   rand flash_bank_mp_info_page_cfg_t
-         mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+         mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                      [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
     foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
       foreach (mp_info_pages[i][j][k]) {
         mp_info_pages[i][j][k].en == MuBi4True;
         mp_info_pages[i][j][k].read_en == MuBi4True;
@@ -88,7 +89,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
   mubi4_t default_region_ecc_en;
 
   // Bank erasability.
-  bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {

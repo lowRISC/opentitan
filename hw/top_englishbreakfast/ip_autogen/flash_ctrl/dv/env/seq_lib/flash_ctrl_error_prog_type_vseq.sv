@@ -37,7 +37,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
   constraint y_max_c { y_max inside {[16:32]}; }  // Inner Loop - Num Transactions
 
   // Constraint for Bank.
-  constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};}
+  constraint bank_c {bank inside {[0 : flash_ctrl_top_specific_pkg::NumBanks - 1]};}
 
   // Constraint for controller address to be in relevant range the for the selected partition.
   constraint addr_c {
@@ -47,8 +47,8 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
 
   // Constraint for the Flash Operation
   constraint flash_op_c {
-    flash_op.op == flash_ctrl_pkg::FlashOpProgram;  // Only Flash Program Used in this test
-    flash_op.partition == FlashPartData;  // Ony Data Partitions Used in this test
+    flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram;  // Use only Flash Program
+    flash_op.partition == FlashPartData;  // Use only Data Partitions
 
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
@@ -62,7 +62,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     flash_op_data.size() == flash_op.num_words;
   }
 
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
 
@@ -99,12 +99,12 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection settings.
   rand flash_bank_mp_info_page_cfg_t
-    mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+    mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
     foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
       foreach (mp_info_pages[i][j][k]) {
         mp_info_pages[i][j][k].en == MuBi4True;
         mp_info_pages[i][j][k].read_en == MuBi4True;
@@ -128,7 +128,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
   rand mubi4_t default_region_ecc_en;
 
   // Bank Erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  rand bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint bank_erase_en_c {
     foreach (bank_erase_en[i]) {

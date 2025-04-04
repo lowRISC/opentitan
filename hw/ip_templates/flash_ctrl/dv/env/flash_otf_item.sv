@@ -7,9 +7,9 @@ class flash_otf_item extends uvm_object;
   flash_op_t cmd;
   data_q_t   dq;
   fdata_q_t  raw_fq, fq;
-  bit[flash_ctrl_pkg::BusAddrByteW-1:0] start_addr;
+  bit[flash_ctrl_top_specific_pkg::BusAddrByteW-1:0] start_addr;
   bit[flash_phy_pkg::KeySize-1:0]      addr_key, data_key;
-  bit [flash_ctrl_pkg::BusAddrByteW-2:0] mem_addr;
+  bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] mem_addr;
   bit                                    head_pad, tail_pad;
   bit                                    scr_en, ecc_en;
   int                                    page;
@@ -115,7 +115,7 @@ class flash_otf_item extends uvm_object;
   // Use 'create_flash_data' function from package
   function void scramble(bit [flash_phy_pkg::KeySize-1:0] addr_key,
                          bit [flash_phy_pkg::KeySize-1:0] data_key,
-                         bit [flash_ctrl_pkg::BusAddrByteW-2:0] addr,
+                         bit [flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] addr,
                          bit dis = 1,
                          bit add_icv_err = 0);
     bit [FlashDataWidth-1:0] data;
@@ -173,7 +173,7 @@ class flash_otf_item extends uvm_object;
     prim_secded_pkg::secded_hamming_76_68_t dec68;
     bit [flash_phy_pkg::FullDataWidth-1:0] data; // 76 bits
     bit [71:0]               data_with_icv;
-    bit[flash_ctrl_pkg::BusAddrByteW-2:0] addr = mem_addr;
+    bit[flash_ctrl_top_specific_pkg::BusAddrByteW-2:0] addr = mem_addr;
     data_q_t   tmp_dq;
 
     ecc_err = 'h0;

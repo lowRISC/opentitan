@@ -47,15 +47,15 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
   constraint flash_op_c {
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
-    flash_op.op == flash_ctrl_pkg::FlashOpErase;
+    flash_op.op == flash_ctrl_top_specific_pkg::FlashOpErase;
 
     // Bank erase is supported only for data & 1st info partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
-    flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     flash_op.erase_type dist {
-      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
+      flash_ctrl_top_specific_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
+      flash_ctrl_top_specific_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
@@ -63,12 +63,12 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   }
 
   // Bit vector representing which of the mp region cfg CSRs to enable.
-  rand bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
+  rand bit [flash_ctrl_top_specific_pkg::MpRegions-1:0] en_mp_regions;
 
   constraint en_mp_regions_c {$countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;}
 
   // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   constraint mp_regions_c {
     solve en_mp_regions before mp_regions;
@@ -112,13 +112,14 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
 
   // Information partitions memory protection pages settings.
   rand flash_bank_mp_info_page_cfg_t
-             mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+             mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                          [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
 
     foreach (mp_info_pages[i, j]) {
 
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
 
       foreach (mp_info_pages[i][j][k]) {
 
@@ -163,7 +164,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
   }
 
   // Bank erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  rand bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint bank_erase_en_c {
     foreach (bank_erase_en[i]) {
@@ -265,7 +266,7 @@ class flash_ctrl_erase_suspend_vseq extends flash_ctrl_base_vseq;
                      flash_op.partition != flash_op_erase.partition ||
                      flash_op.addr[FlashMemAddrBankMsbBit-:(FlashBankWidth+FlashPageWidth)] !=
                      flash_op_erase.addr[FlashMemAddrBankMsbBit-:(FlashBankWidth+FlashPageWidth)];
-                     if (flash_op_erase.erase_type == flash_ctrl_pkg::FlashEraseBank) {
+                     if (flash_op_erase.erase_type == flash_ctrl_top_specific_pkg::FlashEraseBank) {
                        flash_op.addr[FlashMemAddrBankMsbBit] !=
                        flash_op_erase.addr[FlashMemAddrBankMsbBit];
                      })

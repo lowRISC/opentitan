@@ -6,7 +6,7 @@
 //
 
 module flash_ctrl_lcmgr
-  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
   import lc_ctrl_pkg::lc_tx_t;
 #(
   parameter flash_key_t RndCnstAddrKey  = RndCnstAddrKeyDefault,
