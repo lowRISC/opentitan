@@ -11,6 +11,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - gpio_bind.sv
+      - gpio_strap_check.sv
     file_type: systemVerilogSource
 
   files_formal:
