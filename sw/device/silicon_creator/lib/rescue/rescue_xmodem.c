@@ -52,36 +52,33 @@ static void change_speed(void) {
   }
 }
 
-static rom_error_t validate_mode(uint32_t mode, rescue_state_t *state,
-                                 boot_data_t *bootdata) {
+static rom_error_t validate_mode(uint32_t mode, rescue_state_t *state) {
   if (mode == kRescueModeBaud) {
     change_speed();
     return kErrorOk;
   }
-  return rescue_validate_mode(mode, state, bootdata);
+  return rescue_validate_mode(mode, state);
 }
 
-static rom_error_t handle_send_modes(rescue_state_t *state,
-                                     boot_data_t *bootdata) {
-  rom_error_t error = rescue_send_handler(state, bootdata);
+static rom_error_t handle_send_modes(rescue_state_t *state) {
+  rom_error_t error = rescue_send_handler(state);
   if (error == kErrorRescueSendStart && state->staged_len > 0) {
     error = xmodem_send(iohandle, state->data, state->staged_len);
     state->staged_len = 0;
-    validate_mode(kRescueModeFirmware, state, bootdata);
+    validate_mode(kRescueModeFirmware, state);
   }
   return error;
 }
 
-static rom_error_t handle_recv_modes(rescue_state_t *state,
-                                     boot_data_t *bootdata) {
-  rom_error_t error = rescue_recv_handler(state, bootdata);
+static rom_error_t handle_recv_modes(rescue_state_t *state) {
+  rom_error_t error = rescue_recv_handler(state);
   if (error == kErrorRescueImageTooBig || error == kErrorRescueBadMode) {
     xmodem_cancel(iohandle);
   }
   return error;
 }
 
-static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
+static rom_error_t protocol(rescue_state_t *state) {
   rom_error_t result;
   size_t rxlen;
   uint8_t command;
@@ -89,11 +86,11 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
 
   // TODO: remove automatic reboots.
   state->reboot = false;
-  validate_mode(kRescueModeFirmware, state, bootdata);
+  validate_mode(kRescueModeFirmware, state);
 
   xmodem_recv_start(iohandle);
   while (true) {
-    HARDENED_RETURN_IF_ERROR(handle_send_modes(state, bootdata));
+    HARDENED_RETURN_IF_ERROR(handle_send_modes(state));
     result = xmodem_recv_frame(
         iohandle, state->frame, state->data + state->offset,
         sizeof(state->data) - state->offset, &rxlen, &command);
@@ -105,7 +102,7 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
       case kErrorOk:
         // Packet ok.
         state->offset += rxlen;
-        HARDENED_RETURN_IF_ERROR(handle_recv_modes(state, bootdata));
+        HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
         xmodem_ack(iohandle, true);
         break;
       case kErrorXModemEndOfFile:
@@ -115,7 +112,7 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
           while (state->offset % 2048 != 0) {
             state->data[state->offset++] = 0xFF;
           }
-          HARDENED_RETURN_IF_ERROR(handle_recv_modes(state, bootdata));
+          HARDENED_RETURN_IF_ERROR(handle_recv_modes(state));
         }
         xmodem_ack(iohandle, true);
         if (!state->reboot) {
@@ -133,7 +130,7 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
       case kErrorXModemUnknown:
         if (state->frame == 1) {
           if (command == '\r') {
-            validate_mode(next_mode, state, bootdata);
+            validate_mode(next_mode, state);
             next_mode = 0;
           } else {
             next_mode = (next_mode << 8) | command;
@@ -148,11 +145,11 @@ static rom_error_t protocol(rescue_state_t *state, boot_data_t *bootdata) {
   }
 }
 
-rom_error_t rescue_protocol(boot_data_t *bootdata,
+rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
                             const owner_rescue_config_t *config) {
   rescue_state_t rescue_state;
-  rescue_state_init(&rescue_state, config);
-  rom_error_t result = protocol(&rescue_state, bootdata);
+  rescue_state_init(&rescue_state, bootdata, boot_log, config);
+  rom_error_t result = protocol(&rescue_state);
   if (result == kErrorRescueReboot) {
     rstmgr_reset();
   }
