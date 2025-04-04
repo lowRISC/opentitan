@@ -18,7 +18,13 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects exactly one rstmgr");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -39,9 +45,12 @@ static void config_wdog(const dif_aon_timer_t *aon_timer,
            (uint32_t)bark_time_us, (uint32_t)bite_time_us);
 
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   // Setup the wdog bark and bite timeouts.
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
@@ -58,9 +67,12 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 
   // The `intr_state` takes 3 aon clock cycles to rise plus 2 extra cycles as a
   // precaution.
+  uint64_t aon_timer_clock_freq_hz = dt_clock_frequency(
+      dt_aon_timer_clock(kDtAonTimerAon, kDtAonTimerClockAon));
   uint32_t wait_us =
-      bark_time_us + (uint32_t)udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1,
-                                           kClockFreqAonHz, NULL);
+      (uint32_t)bark_time_us +
+      (uint32_t)udiv64_slow(5 * 1000000 + aon_timer_clock_freq_hz - 1,
+                            aon_timer_clock_freq_hz, NULL);
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);
@@ -79,18 +91,15 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
 bool test_main(void) {
   // Initialize pwrmgr.
   dif_pwrmgr_t pwrmgr;
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize rstmgr to check the reset reason.
   dif_rstmgr_t rstmgr;
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Initialize aon timer to use the wdog.
   dif_aon_timer_t aon_timer;
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
   // Check if there was a HW reset caused by the wdog bite.
   dif_rstmgr_reset_info_bitfield_t rst_info;
