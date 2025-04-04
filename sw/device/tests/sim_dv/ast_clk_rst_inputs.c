@@ -55,7 +55,6 @@ static dif_sensor_ctrl_t sensor_ctrl;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t rv_plic;
-static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_entropy_src_t entropy_src;
@@ -206,7 +205,6 @@ void init_units(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
   CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kSensorCtrlDt, &sensor_ctrl));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
-  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
   CHECK_DIF_OK(dif_adc_ctrl_init_from_dt(kAdcCtrlDt, &adc_ctrl));
 }
@@ -272,7 +270,7 @@ void adc_setup(bool first_adc_setup) {
     CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
   }
 
-  en_plic_irqs(&plic);
+  en_plic_irqs(&rv_plic);
   // Setup ADC filters. There is one filter for each channel.
   CHECK_DIF_OK(dif_adc_ctrl_configure_filter(
       &adc_ctrl, kDifAdcCtrlChannel0,
@@ -528,7 +526,7 @@ void set_edn_auto_mode(void) {
 }
 
 void ottf_external_isr(uint32_t *exc_info) {
-  plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
+  plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 
   adc_ctrl_isr_ctx_t adc_ctrl_ctx = {
