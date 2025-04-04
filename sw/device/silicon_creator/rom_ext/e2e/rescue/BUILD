@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -11,8 +14,6 @@ load(
     "opentitan_binary",
     "opentitan_test",
 )
-load("//rules:const.bzl", "CONST", "hex")
-load("//rules:manifest.bzl", "manifest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -31,12 +32,21 @@ _CONFIGS = {
     "xmodem": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "params": "",
+        "setup": "",
         "tags": [],
     },
     "usbdfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         "params": "-p usb-dfu -t strap -v 3",
+        "setup": "",
         "tags": ["broken"],
+    },
+    "spidfu": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
+        # Use spi-dfu, trigger with GPIO IOA2 high.
+        "params": "-p spi-dfu -t gpio -v +Ioa2",
+        "setup": "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        "tags": [],
     },
 }
 
@@ -74,12 +84,14 @@ _CONFIGS = {
             },
             params = config["params"],
             rom_ext = config["rom_ext"],
+            setup = config["setup"],
             slot = position["slot"],
             tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
+                {setup}
                 --exec="bootstrap --clear-uart=true {rom_ext}"
                 # First make sure the ROM_EXT is faulting because there is no firmware
                 --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
@@ -109,12 +121,14 @@ _CONFIGS = {
             },
             params = config["params"],
             rom_ext = config["rom_ext"],
+            setup = config["setup"],
             tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true {firmware}"
+                {setup}
                 --exec="no-op --info='##### Set next slot via the rescue protocol'"
                 --exec="rescue {params} boot-svc set-next-bl0-slot --next=SlotB --get-response=false"
                 --exec="no-op --info='##### Check for firmware execution in slot B'"
@@ -145,12 +159,14 @@ _CONFIGS = {
             },
             params = config["params"],
             rom_ext = config["rom_ext"],
+            setup = config["setup"],
             tags = config["tags"],
             test_cmd = """
                 --exec="transport init"
                 --exec="fpga clear-bitstream"
                 --exec="fpga load-bitstream {bitstream}"
                 --exec="bootstrap --clear-uart=true {firmware}"
+                {setup}
                 --exec="no-op --info='##### Set primary slot via the rescue protocol'"
                 --exec="rescue {params} boot-svc set-next-bl0-slot --primary=SlotB"
                 --exec="no-op --info='##### Check for firmware execution in slot B'"

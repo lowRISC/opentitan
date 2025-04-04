@@ -14,7 +14,7 @@ use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::util::voltage::Voltage;
 
-#[derive(Clone, Debug, Args, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, Args, Serialize, Deserialize)]
 pub struct SpiParams {
     /// SPI instance.
     #[arg(long)]
