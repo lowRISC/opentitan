@@ -298,7 +298,9 @@ fn process_dev_seeds(seeds: &[u8]) -> Result<Vec<Vec<u8>>> {
     Ok(response)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn provision_certificates(
+    wafer_auth_secret: &ArrayVec<u8, 32>,
     ca_cfgs: HashMap<String, CaConfig>,
     ca_keys: HashMap<String, CaKey>,
     perso_certgen_inputs: &ManufCertgenInputs,
@@ -339,7 +341,7 @@ fn provision_certificates(
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
     let mut device_was_hmac: Vec<u8> = Vec::new();
     let mut device_id: Vec<u8> = Vec::new();
-    let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(&[0u8; 32])?;
+    let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(wafer_auth_secret.as_slice())?;
 
     // Extract CAs.
     let dice_ca_cert = &ca_cfgs["dice"].certificate;
@@ -530,6 +532,7 @@ fn provision_certificates(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
+    wafer_auth_secret: &ArrayVec<u8, 32>,
     rma_unlock_token: &ArrayVec<u32, 4>,
     ca_cfgs: HashMap<String, CaConfig>,
     ca_keys: HashMap<String, CaKey>,
@@ -564,6 +567,7 @@ pub fn run_ft_personalize(
     // Provision all device certificates.
     let t0 = Instant::now();
     provision_certificates(
+        wafer_auth_secret,
         ca_cfgs,
         ca_keys,
         perso_certgen_inputs,
