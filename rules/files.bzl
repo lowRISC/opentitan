@@ -103,7 +103,7 @@ copy_files = rule(
         ),
         "filter": attr.string_list(
             default = [],
-            doc = "Substrings that must match the filename to qualify the file for copying.",
+            doc = "Substrings that must match the filename to qualify the file for copying.  The rule will copy files if any one of the substrings matches.",
         ),
         "workspace_env": attr.string(
             default = "BUILD_WORKSPACE_DIRECTORY",
