@@ -188,6 +188,20 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex",
+    srcs = ["ibex.c"],
+    hdrs = ["ibex.h"],
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
