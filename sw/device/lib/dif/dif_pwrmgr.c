@@ -170,6 +170,17 @@ static dif_result_t request_reg_bitfield(const dif_pwrmgr_t *pwrmgr,
   return kDifOk;
 }
 
+dif_result_t dif_pwrmgr_get_all_request_sources(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_req_type_t req_type,
+    dif_pwrmgr_request_sources_t *sources) {
+  bitfield_field32_t bitfield;
+  dif_result_t res = request_reg_bitfield(pwrmgr, req_type, &bitfield);
+  if (res == kDifOk) {
+    *sources = bitfield.mask;
+  }
+  return res;
+}
+
 /**
  * Checks if a value is a valid `dif_pwrmgr_req_type_t`.
  */
