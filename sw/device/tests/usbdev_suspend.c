@@ -93,9 +93,6 @@
 #include "sw/device/lib/testing/usb_testutils_streams.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
-
 #define MODULE_ID MAKE_MODULE_ID('u', 'd', 'u')
 
 // Set up the recording of function points for this module
@@ -391,6 +388,19 @@ static usb_testutils_ctx_t usbdev;
 static usb_testutils_controlep_ctx_t usbdev_control;
 static usb_testutils_streams_ctx_t usbdev_streams;
 
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this library expects exactly one rstmgr");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
+
+enum {
+  kPlicTarget = 0,
+};
+
 /**
  * Pinmux handle
  */
@@ -407,6 +417,10 @@ static dif_pwrmgr_t pwrmgr;
  * Interrupt controller handle
  */
 static dif_rv_plic_t rv_plic;
+/**
+ * Wakeup sources for USB.
+ */
+static dif_pwrmgr_request_sources_t wakeup_sources;
 /**
  * Do we expect this host to put the device into suspend?
  */
@@ -443,15 +457,6 @@ static bool verbose = true;
  * UART FIFO space.
  */
 static bool s_verbose = false;
-
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
 
 // Configuration for streaming layer. This specifies the transfer type of each
 // of the streams being used and checked if we're testing with traffic enabled.
@@ -723,11 +728,13 @@ status_t collect_wake_status(usbdev_suspend_ctx_t *ctx) {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(void) {
-  dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
-
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid != dt_pwrmgr_instance_id(kPwrmgrDt) ||
+      irq_id != dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    return false;
+  }
+  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
 
   if (false) {
     const bool debug = false;
@@ -744,11 +751,7 @@ void ottf_external_isr(void) {
       LOG_INFO("Received Wakeup IRQ in sleep");
     }
   }
-
-  // Check that both the peripheral and the irq id are correct.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+  return true;
 }
 
 /**
@@ -1369,7 +1372,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
             // because otherwise when we return to the active state, the
             // usbdev clock will not be restored.
             TRY(pwrmgr_testutils_enable_low_power(
-                &pwrmgr, kDifPwrmgrWakeupRequestSourceFour,
+                &pwrmgr, wakeup_sources,
                 /*domain_config=*/
                 kDifPwrmgrDomainOptionUsbClockInActivePower));
 
@@ -1382,7 +1385,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
 
             // Normal sleep.
             TRY(pwrmgr_testutils_enable_low_power(
-                &pwrmgr, /*wakeups=*/kDifPwrmgrWakeupRequestSourceFour,
+                &pwrmgr, /*wakeups=*/wakeup_sources,
                 /*domain_config=*/
                 kDifPwrmgrDomainOptionCoreClockInLowPower |
                     kDifPwrmgrDomainOptionUsbClockInActivePower |
@@ -1842,33 +1845,30 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
   ctx->with_traffic = with_traffic;
 
   // Initialize pinmux.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   pinmux_testutils_init(&pinmux);
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInUsbdevSense,
       kTopEarlgreyPinmuxInselIoc7));
 
   // Initialize pwrmgr.
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
 
   // Initialize rstmgr
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Enable all the AON interrupts used in this test.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  dif_rv_plic_irq_id_t irq_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  rv_plic_testutils_irq_range_enable(&rv_plic, kPlicTarget, irq_id, irq_id);
 
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeWakeup,
-                                              kDifPwrmgrWakeupRequestSourceFour,
-                                              kDifToggleEnabled));
+  // The USB wakeup signal comes from the pinmux.
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupUsbWkupReq, &wakeup_sources));
 
   // Enable pwrmgr interrupt.
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));

@@ -16,36 +16,35 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "pwrmgr_regs.h"
 
-dif_pwrmgr_t pwrmgr;
-dif_rv_plic_t rv_plic;
+enum {
+  kPlicTarget = 0,
+};
 
-static dif_pwrmgr_request_sources_t wakeup_src =
-    kDifPwrmgrWakeupRequestSourceFive;
-static uint32_t wakeup_source = PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX;
-
+static dif_pwrmgr_t pwrmgr;
+static dif_rv_plic_t rv_plic;
 static dif_aon_timer_t timer;
 
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_claim(&rv_plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+static dif_pwrmgr_request_sources_t wakeup_src;
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_aon_timer_instance_id(kAonTimerDt)) {
     LOG_INFO("AON Timer ISR");
     dif_aon_timer_irq_t irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+        dt_aon_timer_irq_from_plic_id(kAonTimerDt, irq_id);
 
-    if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired) {
+    if (irq == kDtAonTimerIrqWkupTimerExpired) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&timer));
-    } else if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark) {
+    } else if (irq == kDtAonTimerIrqWdogTimerBark) {
       CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&timer));
     }
     CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&timer, irq));
@@ -53,21 +52,16 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
         &timer, kDifAonTimerIrqWkupTimerExpired, &is_pending));
     CHECK(!is_pending);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon) {
+    return true;
+  } else if (devid == dt_pwrmgr_instance_id(kPwrmgrDt)) {
     LOG_INFO("Pwrmgr ISR");
-    dif_pwrmgr_irq_t irq =
-        (dif_pwrmgr_irq_t)(irq_id - (dif_rv_plic_irq_id_t)
-                                        kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
-    CHECK(irq == kDifPwrmgrIrqWakeup, "Pwrmgr IRQ ID: %d is incorrect", irq);
-    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, irq));
+    CHECK(irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup),
+          "Pwrmgr IRQ ID: %d is incorrect", irq_id);
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
   } else {
-    CHECK(false, "IRQ peripheral: %d is incorrect", peripheral);
+    return false;
   }
-
-  // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
-  // register
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_complete(&rv_plic, kTopEarlgreyPlicTargetIbex0, irq_id));
 }
 
 static bool get_wakeup_status(void) {
@@ -89,25 +83,27 @@ static void test_init(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
+
+  CHECK_DIF_OK(
+      dif_pwrmgr_find_request_source(&pwrmgr, kDifPwrmgrReqTypeWakeup,
+                                     dt_aon_timer_instance_id(kDtAonTimerAon),
+                                     kDtAonTimerWakeupWkupReq, &wakeup_src));
 
   // Enable AON interrupts.
-  rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  dif_rv_plic_irq_id_t plic_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  rv_plic_testutils_irq_range_enable(&rv_plic, kPlicTarget, plic_id, plic_id);
   rv_plic_testutils_irq_range_enable(
-      &rv_plic, kTopEarlgreyPlicTargetIbex0,
-      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &rv_plic, kPlicTarget,
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWkupTimerExpired),
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWdogTimerBark));
 
   // Enable pwrmgr interrupt
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &timer));
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&timer));
 }
 
@@ -139,7 +135,7 @@ static void test_sleep(bool wfi_fallthrough) {
     set_timer(100);
   }
   wait_for_interrupt();
-  LOG_INFO("Woke up by source %d", wakeup_source);
+  LOG_INFO("Woke up by source %x", wakeup_src);
   CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(&pwrmgr, kDifToggleDisabled,
                                                 kDifToggleDisabled));
   IBEX_SPIN_FOR(lowpower_hint_is_cleared(), 100);

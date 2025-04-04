@@ -18,16 +18,24 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "usbdev_regs.h"
+
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects exactly one rstmgr");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static const dt_usbdev_t kUsbdevDt = 0;
+static_assert(kDtUsbdevCount >= 1, "this test expects at least one usbdev");
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_aon_timer_t aon_timer;
 static dif_usbdev_t usbdev;
 
-static const uint32_t kExpectedHunkAddress =
-    TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET;
+static const uint32_t kExpectedHungOffset = USBDEV_INTR_ENABLE_REG_OFFSET;
 
 static void usbdev_csr_access(void) {
   CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, kDifUsbdevIrqPowered,
@@ -42,14 +50,10 @@ bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_usbdev_init(
-      mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_usbdev_init_from_dt(kUsbdevDt, &usbdev));
 
   // Enable cpu dump capture.
   CHECK_DIF_OK(dif_rstmgr_cpu_info_set_enabled(&rstmgr, kDifToggleEnabled));
@@ -72,9 +76,12 @@ bool test_main(void) {
                                                         bite_cycles, false));
 
     // Enable watchdog bite reset.
-    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                                kDifPwrmgrResetRequestSourceTwo,
-                                                kDifToggleDisabled));
+    dif_pwrmgr_request_sources_t reset_sources;
+    CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+        &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+        kDtAonTimerResetReqAonTimer, &reset_sources));
+    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+        &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleDisabled));
 
     // Disable the USB in active mode, and wait some microseconds for the
     // register update to propagate to the AST.
@@ -109,7 +116,9 @@ bool test_main(void) {
     LOG_INFO("PREV_EXC_PC    = 0x%x", cpu_dump[6]);
     LOG_INFO("PREV_VALID     = 0x%x", cpu_dump[7]);
     // The cpu dump has the address that was last accessed at index 2.
-    CHECK(cpu_dump[2] == kExpectedHunkAddress, "Unexpected hung address");
+    uint32_t expected_addr =
+        dt_usbdev_primary_reg_block(kUsbdevDt) + kExpectedHungOffset;
+    CHECK(cpu_dump[2] == expected_addr, "Unexpected hung address");
     return true;
   } else {
     dif_rstmgr_reset_info_bitfield_t reset_info;

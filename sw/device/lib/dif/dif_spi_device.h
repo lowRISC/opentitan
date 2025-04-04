@@ -98,12 +98,23 @@ extern const uint16_t kDifSpiDeviceBufferLen;
  * Initializes a SPI device handle for use.
  *
  * @param base_addr The MMIO base address of the spi_device peripheral.
- * @param[out] Out param for the initialized handle.
+ * @param[out] spi Out param for the initialized handle.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_init_handle(mmio_region_t base_addr,
                                         dif_spi_device_handle_t *spi);
+
+/**
+ * Initializes a SPI device handle for use.
+ *
+ * @param dt The DT handle of the spi_device peripheral.
+ * @param[out] spi Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_init_handle_from_dt(dt_spi_device_t dt,
+                                                dif_spi_device_handle_t *spi);
 
 /**
  * Configures SPI with runtime information.

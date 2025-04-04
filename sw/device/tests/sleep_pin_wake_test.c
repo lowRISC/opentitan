@@ -17,7 +17,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
 // Below includes are generated during compile time.
 #include "flash_ctrl_regs.h"
 #include "pinmux_regs.h"
@@ -26,11 +25,25 @@
  * with the host in OTTF_WAIT_FOR on real devices. */
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this library expects exactly one rv_plic");
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+static_assert(kDtFlashCtrlCount >= 1,
+              "this library expects at least one flash_ctrl");
+
 // PLIC structures
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
 static dif_flash_ctrl_state_t flash_ctrl_state;
+
+enum {
+  kPlicTarget = 0,
+};
 
 static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 
@@ -38,15 +51,6 @@ static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 // The list should be incremental order (see the code below)
 #define NUM_DIRECT_DIO 5
 static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
-
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
 
 // Preserve wakeup_detector_selected over multiple resets
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t wakeup_detector_idx;)
@@ -61,16 +65,15 @@ bool sival_ready_to_sleep = false;
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
-
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
-
-  // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_pwrmgr_instance_id(kPwrmgrDt) &&
+      irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool test_main(void) {
@@ -84,15 +87,17 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   // Initialize power manager
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_state,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+  CHECK_DIF_OK(
+      dif_flash_ctrl_init_state_from_dt(&flash_ctrl_state, kFlashCtrlDt));
+
+  // Wakeup source for pinmux.
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
 
   if (kDeviceType == kDeviceSimDV) {
     // Enable access to flash for storing info across resets.
@@ -150,9 +155,9 @@ bool test_main(void) {
     // Enable AonWakeup Interrupt if normal sleep
     if (deep_powerdown_en == 0) {
       // Enable all the AON interrupts used in this test.
-      rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      dif_rv_plic_irq_id_t irq_id =
+          dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+      rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, irq_id, irq_id);
       // Enable pwrmgr interrupt
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }
@@ -211,15 +216,14 @@ bool test_main(void) {
     }
 
     // Enter low power
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                                      pwrmgr_domain_cfg));
 
     LOG_INFO("Entering low power mode.");
     wait_for_interrupt();
   }
 
-  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-          &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
+  if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources))) {
     LOG_INFO("Test in post-sleep pin wakeup phase");
     uint32_t wakeup_cause;
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
