@@ -25,7 +25,7 @@ def name_width(x: Signal) -> str:
 
 def gen_kv(outfile: TextIO, key: str, value: str) -> None:
     genout(outfile,
-           '<p><i>{}:</i> {}</p>\n'.format(key, value))
+           f'<p><i>{key}:</i> {value}</p>\n')
 
 
 def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
@@ -40,25 +40,29 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
            .format(url=comport_url, mod_name=cfgs.name))
 
     # clocks
-    gen_kv(outfile,
-           'Primary Clock',
-           '<b><code>{}</code></b>'.format(cfgs.clocking.primary.clock))
+    gen_kv(outfile, 'Primary Clock',
+           f'<b><code>{cfgs.clocking.primary.clock}</code></b>')
     other_clocks = cfgs.clocking.other_clocks()
     if other_clocks:
-        other_clocks_str = ['<b><code>{}</code></b>'.format(clk)
-                            for clk in other_clocks]
+        other_clocks_str = [
+            f'<b><code>{clk}</code></b>' for clk in other_clocks
+        ]
         gen_kv(outfile, 'Other Clocks', ', '.join(other_clocks_str))
     else:
         gen_kv(outfile, 'Other Clocks', '<i>none</i>')
 
     # bus interfaces
-    dev_ports = ['<b><code>{}</code></b>'.format(port)
-                 for port in cfgs.bus_interfaces.get_port_names(False, True)]
+    dev_ports = [
+        f'<b><code>{port}</code></b>'
+        for port in cfgs.bus_interfaces.get_port_names(False, True)
+    ]
     assert dev_ports
     gen_kv(outfile, 'Bus Device Interfaces (TL-UL)', ', '.join(dev_ports))
 
-    host_ports = ['<b><code>{}</code></b>'.format(port)
-                  for port in cfgs.bus_interfaces.get_port_names(True, False)]
+    host_ports = [
+        f'<b><code>{port}</code></b>'
+        for port in cfgs.bus_interfaces.get_port_names(True, False)
+    ]
     if host_ports:
         gen_kv(outfile, 'Bus Host Interfaces (TL-UL)', ', '.join(host_ports))
     else:
@@ -110,7 +114,8 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
 
         for ims in cfgs.inter_signals:
             name = ims.name
-            pkg_struct = ims.package + "::" + ims.struct if ims.package is not None else ims.struct
+            pkg_struct = (ims.package + "::" + ims.struct
+                          if ims.package is not None else ims.struct)
             sig_type = ims.signal_type
             act = ims.act
             width = str(ims.width) if ims.width is not None else "1"
@@ -154,9 +159,8 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
             "<th>Description</th></tr>\n")
         for x in cfgs.alerts:
             genout(outfile,
-                   '<tr><td>{}</td>{}</tr>'
-                   .format(x.name,
-                           render_td(x.desc, rnames, None)))
+                   '<tr><td>{}</td>{}</tr>'.format(
+                       x.name, render_td(x.desc, rnames, None)))
         genout(outfile, "</table>\n")
 
     if not cfgs.countermeasures:
@@ -164,11 +168,12 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     else:
         genout(outfile, "<p><i>Security Countermeasures:</i></p>\n")
         genout(
-            outfile, "<table class=\"cfgtable\"><tr><th>Countermeasure ID</th>" +
+            outfile,
+            "<table class=\"cfgtable\"><tr><th>Countermeasure ID</th>" +
             "<th>Description</th></tr>\n")
         for cm in cfgs.countermeasures:
-            genout(outfile,
-                   '<tr><td>{}</td>{}</tr>'
-                   .format(cfgs.name.upper() + '.' + str(cm),
-                           render_td(cm.desc, rnames, None)))
+            genout(
+                outfile, '<tr><td>{}</td>{}</tr>'.format(
+                    cfgs.name.upper() + '.' + str(cm),
+                    render_td(cm.desc, rnames, None)))
         genout(outfile, "</table>\n")

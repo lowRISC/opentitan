@@ -38,8 +38,7 @@ class Feature:
             elif len(fields) == 2:
                 instance, name = fields
         except ValueError:
-            raise ValueError(
-                f'Invalid feature ID format: {name} ({what}).')
+            raise ValueError(f'Invalid feature ID format: {name} ({what}).')
 
         name = name.replace('.', '_').replace('-', '_')
         name = check_name(name, f'name of {what}')

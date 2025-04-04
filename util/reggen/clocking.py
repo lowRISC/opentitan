@@ -1,7 +1,6 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''Code representing clocking or resets for an IP block'''
 
 from typing import Dict, List, Optional
@@ -11,12 +10,9 @@ from reggen.lib import check_keys, check_list, check_bool, check_optional_name
 
 
 class ClockingItem:
-    def __init__(self,
-                 clock: Optional[str],
-                 reset: Optional[str],
-                 idle: Optional[str],
-                 primary: bool,
-                 internal: bool,
+
+    def __init__(self, clock: Optional[str], reset: Optional[str],
+                 idle: Optional[str], primary: bool, internal: bool,
                  clock_base_name: Optional[str]):
         if primary:
             assert clock is not None
@@ -35,7 +31,8 @@ class ClockingItem:
     @staticmethod
     def from_raw(raw: object, only_item: bool, where: str) -> 'ClockingItem':
         what = f'clocking item at {where}'
-        rd = check_keys(raw, what, [], ['clock', 'reset', 'idle', 'primary', 'internal'])
+        rd = check_keys(raw, what, [],
+                        ['clock', 'reset', 'idle', 'primary', 'internal'])
 
         clock = check_optional_name(rd.get('clock'), 'clock field of ' + what)
         reset = check_optional_name(rd.get('reset'), 'reset field of ' + what)
@@ -51,8 +48,9 @@ class ClockingItem:
         elif match:
             clock_base_name = match.group(1)
         else:
-            raise ValueError(f'clock name must be of the form clk_*_i or clk_i. '
-                             f'{clock} is illegal.')
+            raise ValueError(
+                f'clock name must be of the form clk_*_i or clk_i. '
+                f'{clock} is illegal.')
 
         if primary:
             if clock is None:
@@ -62,7 +60,8 @@ class ClockingItem:
                 raise ValueError('No reset signal for primary '
                                  f'clocking item at {what}.')
 
-        return ClockingItem(clock, reset, idle, primary, internal, clock_base_name)
+        return ClockingItem(clock, reset, idle, primary, internal,
+                            clock_base_name)
 
     def _asdict(self) -> Dict[str, object]:
         ret = {}  # type: Dict[str, object]
@@ -78,6 +77,7 @@ class ClockingItem:
 
 
 class Clocking:
+
     def __init__(self, items: List[ClockingItem], primary: ClockingItem):
         assert items
         self.items = items
@@ -118,8 +118,10 @@ class Clocking:
         # By default clock_signals returns all clocks, including internal clocks.
         # If the ret_internal input is set to false, then only externally supplied
         # clocks are returned.
-        return [item.clock for item in self.items if item.clock is not None and
-                (ret_internal or not item.internal)]
+        return [
+            item.clock for item in self.items
+            if item.clock is not None and (ret_internal or not item.internal)
+        ]
 
     def reset_signals(self) -> List[str]:
         return [item.reset for item in self.items if item.reset is not None]

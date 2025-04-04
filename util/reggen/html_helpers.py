@@ -27,13 +27,14 @@ def expand_paras(s: str, rnames: Set[str]) -> List[str]:
     !!FOO.field will generate a link to that register.
 
     Returns a list of rendered paragraphs
-
     '''
     # Start by splitting into paragraphs. The regex matches a newline followed
     # by one or more lines that just contain whitespace. Then render each
     # paragraph with the _expand_paragraph worker function.
-    paras = [_expand_paragraph(paragraph.strip(), rnames)
-             for paragraph in re.split(r'\n(?:\s*\n)+', s)]
+    paras = [
+        _expand_paragraph(paragraph.strip(), rnames)
+        for paragraph in re.split(r'\n(?:\s*\n)+', s)
+    ]
 
     # There will always be at least one paragraph (splitting an empty string
     # gives [''])
@@ -43,6 +44,7 @@ def expand_paras(s: str, rnames: Set[str]) -> List[str]:
 
 def _expand_paragraph(s: str, rnames: Set[str]) -> str:
     '''Expand a single paragraph, as described in _get_desc_paras'''
+
     def fieldsub(match: Match[str]) -> str:
         base = match.group(1).partition('.')[0].lower()
         # If we do not find the register name, there is a chance that this

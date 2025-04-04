@@ -36,32 +36,25 @@ OPTIONAL_FIELDS.update({
         'pb', "If true, regwen term increments"
         " along with current multireg count."
     ],
-    'compact': [
-        'pb', "If true, allow multireg compacting."
-        "If false, do not compact."
-    ],
+    'compact':
+    ['pb', "If true, allow multireg compacting."
+     "If false, do not compact."],
     'cdc': [
-        's',
-        "indicates the register must cross to a different "
-        "clock domain before use.  The value shown here "
-        "should correspond to one of the module's clocks."
+        's', "indicates the register must cross to a different clock domain "
+        "before use.  The value shown here should correspond to one of the "
+        "module's clocks."
     ],
 })
 
 
 class MultiRegister(RegBase):
-    def __init__(self,
-                 offset: int,
-                 addrsep: int,
-                 reg_width: int,
-                 params: ReggenParams,
-                 raw: object,
-                 clocks: Clocking,
+
+    def __init__(self, offset: int, addrsep: int, reg_width: int,
+                 params: ReggenParams, raw: object, clocks: Clocking,
                  is_alias: bool):
         super().__init__(offset)
 
-        rd = check_keys(raw, 'multireg',
-                        list(REQUIRED_FIELDS.keys()),
+        rd = check_keys(raw, 'multireg', list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
 
         # Now that we've checked the schema of rd, we make a "reg" version of
@@ -70,9 +63,10 @@ class MultiRegister(RegBase):
         # method.
         reg_allowed_keys = (set(register.REQUIRED_FIELDS.keys()) |
                             set(register.OPTIONAL_FIELDS.keys()))
-        reg_rd = {key: value
-                  for key, value in rd.items()
-                  if key in reg_allowed_keys}
+        reg_rd = {
+            key: value
+            for key, value in rd.items() if key in reg_allowed_keys
+        }
         self.reg = Register.from_raw(reg_width, offset, params, reg_rd, clocks,
                                      is_alias)
 
@@ -85,53 +79,52 @@ class MultiRegister(RegBase):
         self.sync_clk = self.reg.sync_clk
 
         self.cname = check_name(rd['cname'],
-                                'cname field of multireg {}'
-                                .format(self.reg.name))
+                                f'cname field of multireg {self.reg.name}')
         self.name = self.reg.name
 
         self.alias_target = None
         if is_alias:
             if 'alias_target' in rd:
-                self.alias_target = check_name(rd['alias_target'],
-                                               'name of alias target multiregister')
+                self.alias_target = check_name(
+                    rd['alias_target'], 'name of alias target multiregister')
             else:
-                raise ValueError('alias multiregister {} does not define the '
-                                 'alias_target key.'
-                                 .format(self.name))
+                raise ValueError(
+                    f'alias multiregister {self.name} does not define the '
+                    'alias_target key.')
         else:
             if 'alias_target' in rd:
                 if rd['alias_target'] is not None:
-                    raise ValueError('Illegal alias_target key in multiregister {} '
-                                     '(this is not an alias register block).'
-                                     .format(self.name))
+                    raise ValueError(
+                        f'Illegal alias_target key in multiregister {self.name} '
+                        '(this is not an alias register block).')
 
-        self.regwen_multi = check_bool(rd.get('regwen_multi', False),
-                                       'regwen_multi field of multireg {}'
-                                       .format(self.reg.name))
+        self.regwen_multi = check_bool(
+            rd.get('regwen_multi', False),
+            f'regwen_multi field of multireg {self.reg.name}')
 
-        default_compact = True if len(self.reg.fields) == 1 and not self.regwen_multi else False
-        self.compact = check_bool(rd.get('compact', default_compact),
-                                  'compact field of multireg {}'
-                                  .format(self.reg.name))
+        default_compact = True if len(
+            self.reg.fields) == 1 and not self.regwen_multi else False
+        self.compact = check_bool(
+            rd.get('compact', default_compact),
+            f'compact field of multireg {self.reg.name}')
         if self.compact and len(self.reg.fields) > 1:
-            raise ValueError('Multireg {} sets the compact flag '
-                             'but has multiple fields.'
-                             .format(self.reg.name))
+            raise ValueError(
+                f'Multireg {self.reg.name} sets the compact flag but has '
+                'multiple fields.')
 
         if self.regwen_multi and self.compact:
-            raise ValueError('Multireg {} sets the compact flag '
-                             'but has regwen_multi set.'
-                             .format(self.reg.name))
+            raise ValueError(
+                f'Multireg {self.reg.name} sets the compact flag but has '
+                'regwen_multi set.')
 
         count_str = check_str(rd['count'],
-                              'count field of multireg {}'
-                              .format(self.reg.name))
+                              f'count field of multireg {self.reg.name}')
         self.count = params.expand(count_str,
                                    'count field of multireg ' + self.reg.name)
         if self.count <= 0:
-            raise ValueError("Multireg {} has a count of {}, "
-                             "which isn't positive."
-                             .format(self.reg.name, self.count))
+            raise ValueError(
+                f"Multireg {self.reg.name} has a count of {self.count}, "
+                "which isn't positive.")
 
         # Generate the registers that this multireg expands into. Here, a
         # "creg" is a "compacted register", which might contain multiple actual
@@ -151,10 +144,10 @@ class MultiRegister(RegBase):
             max_reg_idx = min(min_reg_idx + regs_per_creg, self.count) - 1
             creg_offset = offset + creg_idx * addrsep
 
-            reg = self.reg.make_multi(reg_width,
-                                      creg_offset, creg_idx, creg_count,
-                                      self.regwen_multi, self.compact,
-                                      min_reg_idx, max_reg_idx, self.cname)
+            reg = self.reg.make_multi(reg_width, creg_offset, creg_idx,
+                                      creg_count, self.regwen_multi,
+                                      self.compact, min_reg_idx, max_reg_idx,
+                                      self.cname)
             self.regs.append(reg)
 
         # dv_compact is true if the multireg can be equally divided, and we can
@@ -201,14 +194,16 @@ class MultiRegister(RegBase):
         attributes like 'name', 'desc', 'resval' and 'tags'.
         '''
         # Attributes to be crosschecked
-        attrs = ['async_name', 'async_clk', 'sync_name', 'sync_clk', 'count',
-                 'regwen_multi', 'compact']
+        attrs = [
+            'async_name', 'async_clk', 'sync_name', 'sync_clk', 'count',
+            'regwen_multi', 'compact'
+        ]
         for attr in attrs:
             if getattr(self, attr) != getattr(alias_reg, attr):
-                raise ValueError('Value mismatch for attribute {} between '
-                                 'alias multireg {} and multireg {} in {}.'
-                                 .format(attr, self.name,
-                                         alias_reg.name, where))
+                raise ValueError(
+                    f'Value mismatch for attribute {attr} between alias '
+                    f'multireg {self.name} and multireg {alias_reg.name} in '
+                    f'{where}.')
 
         # These attributes can be overridden by the aliasing mechanism.
         self.name = alias_reg.name

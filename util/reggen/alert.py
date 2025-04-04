@@ -10,15 +10,14 @@ from reggen.lib import check_keys, check_name, check_str, check_list
 
 
 class Alert(Signal):
+
     def __init__(self, name: str, desc: str, bit: int, fatal: bool):
         super().__init__(name, desc, Bits(bit, bit))
         self.bit = bit
         self.fatal = fatal
 
     @staticmethod
-    def from_raw(what: str,
-                 lsb: int,
-                 raw: object) -> 'Alert':
+    def from_raw(what: str, lsb: int, raw: object) -> 'Alert':
         rd = check_keys(raw, what, ['name', 'desc'], [])
 
         name = check_name(rd['name'], 'name field of ' + what)
@@ -32,9 +31,9 @@ class Alert(Signal):
         elif pfx == 'fatal':
             fatal = True
         else:
-            raise ValueError('Invalid name field of {}: alert names must be '
-                             'prefixed with "recov_" or "fatal_". Saw {!r}.'
-                             .format(what, name))
+            raise ValueError(
+                f'Invalid name field of {what}: alert names must be prefixed '
+                f'with "recov_" or "fatal_". Saw {name!r}.')
 
         return Alert(name, desc, lsb, fatal)
 

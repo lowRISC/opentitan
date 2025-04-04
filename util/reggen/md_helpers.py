@@ -12,10 +12,8 @@ from reggen.signal import Signal
 
 def name_width(x: Signal) -> str:
     '''Returns the name of the given signal followed by it's width.'''
-    return (
-        '{}[{}:0]'.format(x.name, x.bits.msb)
-        if x.bits.width() != 1 else x.name
-    )
+    return ('{}[{}:0]'.format(x.name, x.bits.msb)
+            if x.bits.width() != 1 else x.name)
 
 
 def coderef(s: str) -> str:
@@ -84,6 +82,7 @@ def regref_to_link(s: str, file: Optional[str] = None) -> str:
     Returns:
         str: The content after the substitutions have been performed.
     '''
+
     def linkify(match: Match[str]) -> str:
         name = match.group(1)
         register = match.group(1).partition('.')[0].lower()  # remove field
@@ -116,7 +115,8 @@ def table(header: List[str],
     '''
     header = [sanitise_for_md_table(x) for x in header]
     rows = [[sanitise_for_md_table(x) for x in row] for row in rows]
-    # For some unknown reason,
-    # the "github" format of tabulate is "pipe" without the align specifiers,
-    # despite alignment being part of the GitHub Markdown format.
-    return "\n" + tabulate.tabulate(rows, header, "pipe", colalign=colalign) + "\n\n"
+    # For some unknown reason, the "github" format of tabulate is "pipe"
+    # without the align specifiers, despite alignment being part of the
+    # GitHub Markdown format.
+    return "\n" + tabulate.tabulate(rows, header, "pipe",
+                                    colalign=colalign) + "\n\n"

@@ -10,6 +10,7 @@ from reggen.lib import check_keys, check_str, check_list
 
 # The documentation of assets and cm_types can be found here
 # https://opentitan.org/book/doc/contributing/hw/comportability/#security-countermeasures
+# yapf: disable
 CM_ASSETS = [
     'KEY',
     'ADDR',
@@ -67,6 +68,7 @@ CM_TYPES = [
     'COUNT',
     'CM'
 ]
+# yapf: enable
 
 # Tag to look for when extracting RTL annotations.
 CM_RTL_TAG = 'SEC_CM:'

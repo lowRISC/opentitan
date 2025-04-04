@@ -9,6 +9,7 @@ from reggen.lib import check_keys, check_name, check_str, check_int, check_list
 
 
 class Signal:
+
     def __init__(self, name: str, desc: str, bits: Bits):
         self.name = name
         self.desc = desc
@@ -16,17 +17,14 @@ class Signal:
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Signal':
-        rd = check_keys(raw, what,
-                        ['name', 'desc'],
-                        ['width'])
+        rd = check_keys(raw, what, ['name', 'desc'], ['width'])
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
         width = check_int(rd.get('width', 1), 'width field of ' + what)
         if width <= 0:
-            raise ValueError('The width field of signal {} ({}) '
-                             'has value {}, but should be positive.'
-                             .format(name, what, width))
+            raise ValueError(f'The width field of signal {name} ({what}) '
+                             f'has value {width}, but should be positive.')
 
         bits = Bits(lsb + width - 1, lsb)
 
@@ -58,6 +56,8 @@ class Signal:
         integration.
 
         '''
-        return {'name': self.name,
-                'width': self.bits.width(),
-                'type': type_field}
+        return {
+            'name': self.name,
+            'width': self.bits.width(),
+            'type': type_field
+        }

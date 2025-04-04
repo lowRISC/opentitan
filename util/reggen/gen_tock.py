@@ -401,7 +401,8 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     if version.scm_version() is not None:
         genout(outfile, '// Built for {}\n', version.scm_version())
     if version.scm_revision() is not None:
-        genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n', version.scm_revision())
+        genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n',
+               version.scm_revision())
     if version.scm_status() is not None:
         genout(outfile, '// Tree status: {}\n', version.scm_status())
 

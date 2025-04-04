@@ -12,7 +12,9 @@ from reggen.md_helpers import (
 from reggen.params import Parameter
 
 
-def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = None) -> None:
+def gen_cfg_md(cfgs: IpBlock,
+               output: TextIO,
+               register_file: Optional[str] = None) -> None:
     comport_url = url(
         "Comportable guideline for peripheral device functionality",
         "https://opentitan.org/book/doc/contributing/hw/comportability",
@@ -23,11 +25,7 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     )
 
     list_items: List[str] = []
-    tables: List[Tuple[
-        str,
-        List[str],
-        List[List[str]],
-    ]] = []
+    tables: List[Tuple[str, List[str], List[List[str]], ]] = []
 
     # Clocks
     primary_clock = cfgs.clocking.primary.clock
@@ -35,21 +33,24 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     list_items.append('Primary Clock: ' + coderef(primary_clock))
 
     other_clocks = cfgs.clocking.other_clocks()
-    list_items.append(
-        "Other Clocks: " +
-        (", ".join(coderef(clk) for clk in other_clocks) if other_clocks else italic("none"))
-    )
+    list_items.append("Other Clocks: " + (", ".join(
+        coderef(clk)
+        for clk in other_clocks) if other_clocks else italic("none")))
 
     # Bus Interfaces
-    dev_ports = [coderef(port) for port in cfgs.bus_interfaces.get_port_names(False, True)]
+    dev_ports = [
+        coderef(port)
+        for port in cfgs.bus_interfaces.get_port_names(False, True)
+    ]
     assert dev_ports
     list_items.append("Bus Device Interfaces (TL-UL): " + ", ".join(dev_ports))
 
-    host_ports = [coderef(port) for port in cfgs.bus_interfaces.get_port_names(True, False)]
-    list_items.append(
-        "Bus Host Interfaces (TL-UL): " +
-        (", ".join(host_ports) if host_ports else italic("none"))
-    )
+    host_ports = [
+        coderef(port)
+        for port in cfgs.bus_interfaces.get_port_names(True, False)
+    ]
+    list_items.append("Bus Host Interfaces (TL-UL): " + (
+        ", ".join(host_ports) if host_ports else italic("none")))
 
     # IO
     ios = ([('input', x) for x in cfgs.xputs[1]] +
@@ -59,10 +60,10 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     if not ios:
         list_items.append("Peripheral Pins for Chip IO: " + italic("none"))
     else:
-        rows = [
-            [name_width(x), direction, regref_to_link(x.desc, register_file)]
-            for direction, x in ios
-        ]
+        rows = [[
+            name_width(x), direction,
+            regref_to_link(x.desc, register_file)
+        ] for direction, x in ios]
         tables.append((
             "Peripheral Pins for Chip IO",
             ["Pin name", "Direction", "Description"],
@@ -88,11 +89,13 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
 
         comportibility_url = (
             "https://opentitan.org/book/doc/contributing/hw/comportability/index.html"
-            "#inter-signal-handling"
-        )
+            "#inter-signal-handling")
         tables.append((
             url("Inter-Module Signals", comportibility_url),
-            ["Port Name", "Package::Struct", "Type", "Act", "Width", "Description"],
+            [
+                "Port Name", "Package::Struct", "Type", "Act", "Width",
+                "Description"
+            ],
             rows,
         ))
 
@@ -100,10 +103,10 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     if not cfgs.interrupts:
         list_items.append("Interrupts: " + italic("none"))
     else:
-        rows = [
-            [name_width(x), x.intr_type.name, regref_to_link(x.desc, register_file)]
-            for x in cfgs.interrupts
-        ]
+        rows = [[
+            name_width(x), x.intr_type.name,
+            regref_to_link(x.desc, register_file)
+        ] for x in cfgs.interrupts]
         tables.append((
             "Interrupts",
             ["Interrupt Name", "Type", "Description"],
@@ -114,10 +117,8 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     if not cfgs.alerts:
         list_items.append("Security Alerts: " + italic("none"))
     else:
-        rows = [
-            [x.name, regref_to_link(x.desc, register_file)]
-            for x in cfgs.alerts
-        ]
+        rows = [[x.name, regref_to_link(x.desc, register_file)]
+                for x in cfgs.alerts]
         tables.append((
             "Security Alerts",
             ["Alert Name", "Description"],
@@ -128,10 +129,10 @@ def gen_cfg_md(cfgs: IpBlock, output: TextIO, register_file: Optional[str] = Non
     if not cfgs.countermeasures:
         list_items.append("Security Countermeasures: " + italic("none"))
     else:
-        rows = [
-            [cfgs.name.upper() + '.' + str(cm), regref_to_link(cm.desc, register_file)]
-            for cm in cfgs.countermeasures
-        ]
+        rows = [[
+            cfgs.name.upper() + '.' + str(cm),
+            regref_to_link(cm.desc, register_file)
+        ] for cm in cfgs.countermeasures]
         tables.append((
             "Security Countermeasures",
             ["Countermeasure ID", "Description"],

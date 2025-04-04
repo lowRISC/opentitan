@@ -19,9 +19,9 @@ from version_file import VersionInformation
 # Ignore flake8 warning as the function is used in the template
 # disable isort formatting, as conflicting with flake8
 from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
-from .intermodule import im_portname, im_defname, im_netname # noqa : F401 # isort:skip
-from .intermodule import get_direction # noqa : F401 # isort:skip
-from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
+from .intermodule import im_portname, im_defname, im_netname  # noqa : F401 # isort:skip
+from .intermodule import get_direction  # noqa : F401 # isort:skip
+from .intermodule import get_dangling_im_def  # noqa : F401 # isort:skip
 from .typing import IpBlocksT
 
 
@@ -442,7 +442,8 @@ def get_ip_hjson_path(ip_name_snake: str, topcfg: ConfigT,
     modules, since find_module is called with use_base_template_type
     set to False.
     """
-    m = find_module(topcfg["module"], ip_name_snake,
+    m = find_module(topcfg["module"],
+                    ip_name_snake,
                     use_base_template_type=False)
     if is_ipgen(m):
         data_dir = repotop / "hw/top_{}/ip_autogen/{}/data".format(

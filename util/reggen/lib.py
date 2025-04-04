@@ -1,12 +1,10 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''Parsing support code for reggen'''
 
 import re
 from typing import Dict, List, Optional, cast
-
 
 # Names that are prohibited (used as reserved keywords in systemverilog)
 _VERILOG_KEYWORDS = {
@@ -48,25 +46,23 @@ _VERILOG_KEYWORDS = {
 
 def check_str_dict(obj: object, what: str) -> Dict[str, object]:
     if not isinstance(obj, dict):
-        raise ValueError("{} is expected to be a dict, but was actually a {}."
-                         .format(what, type(obj).__name__))
+        raise ValueError(
+            f"{what} is expected to be a dict, but was actually a "
+            f"{type(obj).__name__}.")
 
     for key in obj:
         if not isinstance(key, str):
-            raise ValueError('{} has a key {!r}, which is not a string.'
-                             .format(what, key))
+            raise ValueError(
+                f'{what} has a key {key!r}, which is not a string.')
 
     return cast(Dict[str, object], obj)
 
 
-def check_keys(obj: object,
-               what: str,
-               required_keys: List[str],
+def check_keys(obj: object, what: str, required_keys: List[str],
                optional_keys: List[str]) -> Dict[str, object]:
     '''Check that obj is a dict object with the expected keys
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     od = check_str_dict(obj, what)
 
@@ -88,15 +84,12 @@ def check_keys(obj: object,
             unexpected.append(key)
 
     if missing or unexpected:
-        mstr = ('The following required fields were missing: {}.'
-                .format(', '.join(missing)) if missing else '')
-        ustr = ('The following unexpected fields were found: {}.'
-                .format(', '.join(unexpected)) if unexpected else '')
-        raise ValueError("{} doesn't have the right keys. {}{}{}"
-                         .format(what,
-                                 mstr,
-                                 ' ' if mstr and ustr else '',
-                                 ustr))
+        mstr = ('The following required fields were missing: '
+                f'{", ".join(missing)}.') if missing else ''
+        ustr = ('The following unexpected fields were found: '
+                f'{", ".join(unexpected)}.') if unexpected else ''
+        raise ValueError(f"{what} doesn't have the right keys. "
+                         f"{mstr}{' ' if mstr and ustr else ''}{ustr}")
 
     return od
 
@@ -105,11 +98,10 @@ def check_str(obj: object, what: str) -> str:
     '''Check that the given object is a string
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     if not isinstance(obj, str):
-        raise ValueError('{} is of type {}, not a string.'
-                         .format(what, type(obj).__name__))
+        raise ValueError(
+            f'{what} is of type {type(obj).__name__}, not a string.')
     return obj
 
 
@@ -117,22 +109,19 @@ def check_name(obj: object, what: str) -> str:
     '''Check that obj is a string that's a valid name.
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     as_str = check_str(obj, what)
 
     # Allow the usual symbol constituents (alphanumeric plus underscore; no
     # leading numbers)
     if not re.match(r'[a-zA-Z_][a-zA-Z_0-9]*$', as_str):
-        raise ValueError("{} is {!r}, which isn't a valid symbol in "
-                         "C / Verilog, so isn't allowed as a name."
-                         .format(what, as_str))
+        raise ValueError(f"{what} is {as_str!r}, which isn't a valid symbol "
+                         "in C / Verilog, so isn't allowed as a name.")
 
     # Also check that this isn't a reserved word.
     if as_str in _VERILOG_KEYWORDS:
-        raise ValueError("{} is {!r}, which is a reserved word in "
-                         "SystemVerilog, so isn't allowed as a name."
-                         .format(what, as_str))
+        raise ValueError(f"{what} is {as_str!r}, which is a reserved word in "
+                         "SystemVerilog, so isn't allowed as a name.")
 
     return as_str
 
@@ -151,26 +140,24 @@ def check_bool(obj: object, what: str) -> bool:
             '0': False
         }.get(obj.lower())
         if as_bool is None:
-            raise ValueError('{} is {!r}, which cannot be parsed as a bool.'
-                             .format(what, obj))
+            raise ValueError(
+                f'{what} is {obj!r}, which cannot be parsed as a bool.')
         return as_bool
 
     if obj is True or obj is False:
         return obj
 
-    raise ValueError('{} is of type {}, not a bool.'
-                     .format(what, type(obj).__name__))
+    raise ValueError(f'{what} is of type {type(obj).__name__}, not a bool.')
 
 
 def check_list(obj: object, what: str) -> List[object]:
     '''Check that the given object is a list
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     if not isinstance(obj, list):
-        raise ValueError('{} is of type {}, not a list.'
-                         .format(what, type(obj).__name__))
+        raise ValueError(
+            f'{what} is of type {type(obj).__name__}, not a list.')
     return obj
 
 
@@ -178,14 +165,13 @@ def check_str_list(obj: object, what: str) -> List[str]:
     '''Check that the given object is a list of strings
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     lst = check_list(obj, what)
     for idx, elt in enumerate(lst):
         if not isinstance(elt, str):
-            raise ValueError('Element {} of {} is of type {}, '
-                             'not a string.'
-                             .format(idx, what, type(elt).__name__))
+            raise ValueError(
+                f'Element {idx} of {what} is of type {type(elt).__name__}, '
+                'not a string.')
     return cast(List[str], lst)
 
 
@@ -193,7 +179,6 @@ def check_int(obj: object, what: str) -> int:
     '''Check that obj is an integer or a string that parses to an integer.
 
     If not, raise a ValueError; the what argument names the object.
-
     '''
     if isinstance(obj, int):
         return obj
@@ -202,11 +187,12 @@ def check_int(obj: object, what: str) -> int:
         try:
             return int(obj, 0)
         except ValueError:
-            raise ValueError('{} is {!r}, which cannot be parsed as an int.'
-                             .format(what, obj)) from None
+            raise ValueError(
+                f'{what} is {obj!r}, which cannot be parsed as an int.'
+            ) from None
 
-    raise ValueError('{} is of type {}, not an integer.'
-                     .format(what, type(obj).__name__))
+    raise ValueError(
+        f'{what} is of type {type(obj).__name__}, not an integer.')
 
 
 def check_xint(obj: object, what: str) -> Optional[int]:
@@ -215,7 +201,6 @@ def check_xint(obj: object, what: str) -> Optional[int]:
     On success, return an integer value if there is one or None if the value
     was 'x'. On failure, raise a ValueError; the what argument names the
     object.
-
     '''
     if isinstance(obj, int):
         return obj
@@ -226,12 +211,12 @@ def check_xint(obj: object, what: str) -> Optional[int]:
         try:
             return int(obj, 0)
         except ValueError:
-            raise ValueError('{} is {!r}, which is not "x", '
-                             'nor can it be parsed as an int.'
-                             .format(what, obj)) from None
+            raise ValueError(
+                f'{what} is {obj!r}, which is not "x", nor can it be parsed '
+                'as an int.')
 
-    raise ValueError('{} is of type {}, not an integer.'
-                     .format(what, type(obj).__name__))
+    raise ValueError(
+        f'{what} is of type {type(obj).__name__}, not an integer.')
 
 
 def check_optional_str(obj: object, what: str) -> Optional[str]:
