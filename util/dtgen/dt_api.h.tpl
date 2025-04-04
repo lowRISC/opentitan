@@ -16,6 +16,18 @@ include_guard = "OPENTITAN_TOP_{}_DT_API_H_".format(top["name"].upper())
 #ifndef ${include_guard}
 #define ${include_guard}
 
+/**
+ * @file
+ * @brief Device Tables (DT) API for top ${top["name"]}
+ *
+ * This file contains the type definitions and global functions of the DT.
+ *
+ * The DT models the chip as a collection of instances. Each instance has
+ * a type (the IP block) and a number of attributes such as I/Os, IRQs
+ * and so on. The DT also provides top-specific lists of global resources
+ * such as I/O pads, clocks and interrupts.
+ */
+
 #include <stddef.h>
 #include <stdint.h>
 #include "${top_lib_header}"
@@ -63,13 +75,14 @@ static const dt_plic_irq_id_t kDtPlicIrqIdNone=${top_name.as_c_enum()}PlicIrqIdN
  * is `kDtInstanceIdUart0`. One can then use the type specific function to retrieve the
  * IRQ name, for example `dt_uart_irq_from_plic_id` for the UART.
  *
- * @param dev A PLIC ID.
+ * @param irq A PLIC ID.
  * @return The instance ID, or `kDtInstanceIdUnknown` if the PLIC ID is not valid.
  */
 dt_instance_id_t dt_plic_id_to_instance_id(dt_plic_irq_id_t irq);
 
 % if helper.has_alert_handler():
-/* Alert ID type.
+/**
+ * Alert ID type.
  *
  * This type represents a raw alert ID from the Alert Handler.
  *
@@ -80,6 +93,7 @@ typedef ${top_name.as_snake_case()}_alert_id_t dt_alert_id_t;
 
 /** Number of alerts. */
 enum {
+  /** Total number of alert IDs. */
   kDtAlertCount = ${top_name.as_c_enum()}AlertIdLast + 1,
 };
 
@@ -90,7 +104,7 @@ enum {
  * `kDtInstanceIdUart0`. One can then use the type specific function to retrieve the
  * alert name, for example `dt_uart_alert_from_alert_id` for the UART.
  *
- * @param dev An alert ID.
+ * @param alert An alert ID.
  * @return The instance ID, or `kDtInstanceIdUnknown` if the alert ID is not valid.
  */
 dt_instance_id_t dt_alert_id_to_instance_id(dt_alert_id_t alert);
@@ -106,7 +120,7 @@ ${helper.clock_enum.render()}
 /**
  * Get the frequency of a clock.
  *
- * @param dev A clock ID.
+ * @param clk A clock ID.
  * @return Clock frequency in Hz.
  */
 uint32_t dt_clock_frequency(dt_clock_t clk);
@@ -138,22 +152,22 @@ typedef ${top_name.as_snake_case()}_muxed_pads_t  dt_pinmux_muxed_pad_t;
 
 /** Type of peripheral I/O. */
 typedef enum dt_periph_io_type {
-  /* This peripheral I/O is connected to a muxed IO (MIO). */
+  /** This peripheral I/O is connected to a muxed IO (MIO). */
   kDtPeriphIoTypeMio,
-  /* This peripheral I/O is connected to a direct IO (DIO). */
+  /** This peripheral I/O is connected to a direct IO (DIO). */
   kDtPeriphIoTypeDio,
-  /* This peripheral I/O is not connected to either a MIO or a DIO. */
+  /** This peripheral I/O is not connected to either a MIO or a DIO. */
   kDtPeriphIoTypeUnspecified,
 } dt_periph_io_type_t;
 
 
 /** Direction of a peripheral I/O. */
 typedef enum dt_periph_io_dir {
-  /* This peripheral I/O is an input. */
+  /** This peripheral I/O is an input. */
   kDtPeriphIoDirIn,
-  /* This peripheral I/O is an output */
+  /** This peripheral I/O is an output */
   kDtPeriphIoDirOut,
-  /* This peripheral I/O is an input-output */
+  /** This peripheral I/O is an input-output */
   kDtPeriphIoDirInout,
 } dt_periph_io_dir_t;
 
@@ -164,7 +178,7 @@ typedef enum dt_periph_io_dir {
  * whether it is connected a MIO or a direct IO on the pinmux, and the relevant information necessary to
  * configure it.
  *
- * NOTE The fields of this structure are internal, use the dt_periph_io_* functions to access them.
+ * **Note:** The fields of this structure are internal, use the dt_periph_io_* functions to access them.
  */
 ${helper.periph_io_struct.render_type_def()}
 
@@ -189,7 +203,7 @@ extern const dt_periph_io_t kDtPeriphIoConstantOne;
 /**
  * Return the type of a `dt_periph_io_t`.
  *
- * @param dev A peripheral I/O description.
+ * @param periph_io A peripheral I/O description.
  * @return The peripheral I/O type (MIO, DIO, etc).
  */
 static inline dt_periph_io_type_t dt_periph_io_type(dt_periph_io_t periph_io) {
@@ -199,7 +213,7 @@ static inline dt_periph_io_type_t dt_periph_io_type(dt_periph_io_t periph_io) {
 /**
  * Return the direction of a `dt_periph_io_t`.
  *
- * @param dev A peripheral I/O description.
+ * @param periph_io A peripheral I/O description.
  * @return The peripheral I/O direction.
  */
 static inline dt_periph_io_dir_t dt_periph_io_dir(dt_periph_io_t periph_io) {
@@ -211,10 +225,10 @@ static inline dt_periph_io_dir_t dt_periph_io_dir(dt_periph_io_t periph_io) {
  *
  * This is the index of the `MIO_PERIPH_INSEL` pinmux register that controls this peripheral I/O.
  *
- * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
+ * @param periph_io A peripheral I/O of type `kDtPeriphIoTypeMio`.
  * @return The peripheral input number of the MIO that this peripheral I/O is connected to.
  *
- * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
+ * **Note:** This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
  * inputs (`kDtPeriphIoDirIn`). For any other peripheral I/O, the return value is unspecified.
  */
 static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_io_t periph_io) {
@@ -226,10 +240,10 @@ static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_
  *
  * This is the value to put in the `MIO_OUTSEL` pinmux registers to connect a pad to this peripheral I/O.
  *
- * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
+ * @param periph_io A peripheral I/O of type `kDtPeriphIoTypeMio`.
  * @return The outsel of the MIO that this peripheral I/O is connected to.
  *
- * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
+ * **Note:** This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
  * outputs (`kDtPeriphIoDirOut`). For any other peripheral I/O, the return value is unspecified.
  */
 static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_io) {
@@ -241,10 +255,10 @@ static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_i
  *
  * This is the index of the various `DIO_PAD_*` pinmux registers that control this peripheral I/O.
  *
- * @param dev A peripheral I/O of type `kDtPeriphIoTypeDio`.
+ * @param periph_io A peripheral I/O of type `kDtPeriphIoTypeDio`.
  * @return The direct pad number of the DIO that this peripheral I/O is connected to.
  *
- * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
+ * **Note:** This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other peripheral I/O type, the return value is unspecified.
  */
 static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad_index(dt_periph_io_t periph_io) {
@@ -254,10 +268,10 @@ static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad_index(dt_periph_io_t p
 /**
  * Return the pad of a DIO peripheral I/O.
  *
- * @param dev A peripheral I/O of type `kDtPeriphIoTypeDio`.
+ * @param periph_io A peripheral I/O of type `kDtPeriphIoTypeDio`.
  * @return The pad to which this peripheral I/O is connected to.
  *
- * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
+ * **Note:** This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other peripheral I/O type, the return value is unspecified.
  */
 static inline dt_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_io) {
@@ -266,18 +280,18 @@ static inline dt_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_io) {
 
 /** Type of a pad. */
 typedef enum dt_pad_type {
-  /* This pad is a muxed IO (MIO). */
+  /** This pad is a muxed IO (MIO). */
   kDtPadTypeMio,
-  /* This pad is a direct IO (DIO). */
+  /** This pad is a direct IO (DIO). */
   kDtPadTypeDio,
-  /* This pad is not an MIO or a DIO. */
+  /** This pad is not an MIO or a DIO. */
   kDtPadTypeUnspecified,
 } dt_pad_type_t;
 
 /**
  * Return the type of a `dt_pad_t`.
  *
- * @param dev A pad description.
+ * @param pad A pad description.
  * @return The pad type (MIO, DIO, etc).
  */
 dt_pad_type_t dt_pad_type(dt_pad_t pad);
@@ -288,10 +302,10 @@ dt_pad_type_t dt_pad_type(dt_pad_t pad);
  * This is the index of the `MIO_OUT` registers that control this pad
  * (or the output part of this pad).
  *
- * @param dev A pad of type `kDtPadTypeMio`.
+ * @param pad A pad of type `kDtPadTypeMio`.
  * @return The pad out number of the MIO.
  *
- * NOTE This function only makes sense for pads of type `kDtPadTypeMio` which are
+ * **Note:** This function only makes sense for pads of type `kDtPadTypeMio` which are
  * either inputs or inouts. For any other pad, the return value is unspecified.
  */
 dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad);
@@ -302,10 +316,10 @@ dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad);
  * This is the index of the `MIO_PAD` registers that control this pad
  * (or the output part of this pad).
  *
- * @param dev A pad of type `kDtPadTypeMio`.
+ * @param pad A pad of type `kDtPadTypeMio`.
  * @return The pad out number of the MIO.
  *
- * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
+ * **Note:** This function only makes sense for pads of type `kDtPadTypeMio`.
  * For any other pad, the return value is unspecified.
  */
 dt_pinmux_muxed_pad_t dt_pad_mio_pad_index(dt_pad_t pad);
@@ -315,10 +329,10 @@ dt_pinmux_muxed_pad_t dt_pad_mio_pad_index(dt_pad_t pad);
  *
  * This is the value to put in the `MIO_PERIPH_INSEL` registers to connect a peripheral I/O to this pad.
  *
- * @param dev A pad of type `kDtPadTypeMio`.
+ * @param pad A pad of type `kDtPadTypeMio`.
  * @return The insel of the MIO that this pad is connected to.
  *
- * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
+ * **Note:** This function only makes sense for pads of type `kDtPadTypeMio`.
  * For any other pad, the return value is unspecified.
  */
 dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad);
@@ -328,10 +342,10 @@ dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad);
  *
  * This is the index of the various `DIO_PAD_*` registers that control this pad.
  *
- * @param dev A pad of type `kDtPadTypeDio`.
+ * @param pad A pad of type `kDtPadTypeDio`.
  * @return The direct pad number of the DID that this pad is connected to.
  *
- * NOTE This function only makes sense for pads of type `kDtPeriphIoTypeDio` which are
+ * **Note:** This function only makes sense for pads of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other pad type, the return value is unspecified.
  */
 dt_pinmux_direct_pad_t dt_pad_dio_pad_index(dt_pad_t pad);

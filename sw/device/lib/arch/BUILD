@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -116,4 +118,8 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:ibex",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
+)
+
+doxygen_gather_all_package_cc(
+    name = "doxy_target",
 )

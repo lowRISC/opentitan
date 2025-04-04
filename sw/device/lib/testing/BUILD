@@ -2,8 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
-load("//hw/top:defs.bzl", "opentitan_if_ip")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_select_top")
+load("//rules/opentitan:util.bzl", "flatten")
+load("//rules:doxygen.bzl", "doxygen_gather_cc")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -612,4 +614,38 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
+)
+
+# Some testutils are not multitop yet.
+TESTUTILS_EXCEPTIONS = [
+    "aes",
+    "csrng",
+    "i2c",
+    "uart",
+    "rstmgr",
+]
+
+# We need to transition to the opentitan platform since
+# testutils are not compatible with the host platform.
+doxygen_gather_cc(
+    name = "doxy_target",
+    platform = OPENTITAN_PLATFORM,
+    deps = [
+        "isr_testutils",
+    ] + flatten([
+        # Add all compatible register headers
+        opentitan_if_ip(
+            ip,
+            [":{}_testutils".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+        if existing_rule("{}_testutils".format(ip)) != None and
+           ip not in TESTUTILS_EXCEPTIONS
+    ]) + opentitan_select_top(
+        {
+            "earlgrey": ["{}_testutils".format(ip) for ip in TESTUTILS_EXCEPTIONS],
+        },
+        [],
+    ),
 )

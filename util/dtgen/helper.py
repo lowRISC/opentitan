@@ -362,8 +362,23 @@ class TopHelper:
             if 'width' in pad and pad['width'] > 1:
                 name += str(pad['idx'])
             self._pad_map[name] = pad
+            # Direct pads usually do not have a description, instead the "pad" attribute
+            # points to the actual pad in top.pinout.pads which contains the details.
+            if pad["connection"] == "direct":
+                desc = None
+                for io_pad in self.top["pinout"]["pads"]:
+                    if io_pad["name"] == pad["pad"]:
+                        desc = io_pad["desc"]
+                        break
+                if desc is None:
+                    logging.warning(f"could not find description of pad {name}:" +
+                                    " could not find {} in pinout.pads".format(pad["pad"]))
+                    desc = ""
+            else:
+                desc = pad["desc"]
             self.pad_enum.add_constant(
                 Name.from_snake_case(name),
+                desc
             )
         if isinstance(self.pad_enum, CEnum):
             self.pad_enum.add_count_constant("Number of pads")
@@ -373,7 +388,7 @@ class TopHelper:
         clocks = self.top['clocks']
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
-            self.clock_enum.add_constant(clock_name)
+            self.clock_enum.add_constant(clock_name, "clock {}".format(clock["name"]))
         self.clock_enum.add_count_constant("Number of clocks")
 
         # List of all reset nodes and put them in an enum.
@@ -381,7 +396,7 @@ class TopHelper:
         self.reset_enum.add_constant(Name(["unknown"]), "Unknown reset")
         for reset_node in self.top["resets"]["nodes"]:
             reset_name = Name.from_snake_case(reset_node["name"])
-            self.reset_enum.add_constant(reset_name)
+            self.reset_enum.add_constant(reset_name, "Reset node {}".format(reset_node["name"]))
         self.reset_enum.add_count_constant("Number of resets")
 
         # Create structure to describe a peripheral I/O and a pad.
@@ -697,7 +712,7 @@ class IpHelper:
             else:
                 clk = clk.removeprefix("clk_").removesuffix("_i")
             self.clock_map[clk_orig] = clk
-            self.clock_enum.add_constant(Name.from_snake_case(clk))
+            self.clock_enum.add_constant(Name.from_snake_case(clk), f"Clock port {clk_orig}")
         if isinstance(self.reg_block_enum, CEnum):
             self.clock_enum.add_count_constant("Number of clock ports")
 
@@ -718,12 +733,13 @@ class IpHelper:
         self.reset_req_map = OrderedDict()
         # Resets are listed alongside clocks.
         for req in self.ip.reset_requests:
+            desc = req.desc
             req = req.name
             req_orig = req
             req = self.simplify_reset_request_name(req)
 
             self.reset_req_map[req_orig] = req
-            self.reset_req_enum.add_constant(Name.from_snake_case(req))
+            self.reset_req_enum.add_constant(Name.from_snake_case(req), desc)
         if isinstance(self.reset_req_enum, CEnum):
             self.reset_req_enum.add_count_constant("Number of reset requests")
 
@@ -745,7 +761,7 @@ class IpHelper:
             else:
                 rst = rst.removeprefix("rst_").removesuffix("_ni")
             self.reset_map[rst_orig] = rst
-            self.reset_enum.add_constant(Name.from_snake_case(rst))
+            self.reset_enum.add_constant(Name.from_snake_case(rst), f"Reset port {rst_orig}")
         if isinstance(self.reset_enum, CEnum):
             self.reset_enum.add_count_constant("Number of reset ports")
 
@@ -808,7 +824,7 @@ class IpHelper:
             else:
                 inst_name = m["name"]
             inst_name = Name.from_snake_case(inst_name) if inst_name != "" else Name([])
-            self.inst_enum.add_constant(inst_name)
+            self.inst_enum.add_constant(inst_name, m["name"])
             if self.first_inst_id is None:
                 self.first_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.last_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
@@ -1049,7 +1065,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
             # names from top.pinmux.ios for DIOs, but that the connections use the names
             # from top.pinmux.pads, we need to map between the two.
             padname = None
-            for io in self.top['pinmux']['ios']:
+            for io in self.top_helper._pad_map.values():
                 if io["connection"] == "direct" and io["pad"] == conn["pad"]:
                     if padname is not None:
                         raise RuntimeError(

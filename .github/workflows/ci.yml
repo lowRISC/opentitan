@@ -138,6 +138,12 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build documentation
         run: util/site/build-docs.sh build
+      - name: Upload files as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: build-site/
+          overwrite: true
       - name: Upload files
         if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
         run: |
