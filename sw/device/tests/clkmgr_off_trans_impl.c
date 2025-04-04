@@ -27,6 +27,9 @@
 #include "kmac_regs.h"
 #include "otbn_regs.h"
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+
 /**
  * Test an access to a transactional unit that has been disabled causes
  * a hang access, resulting in a watchdog reset. Check the crash dump
@@ -161,8 +164,7 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize aon timer.
   CHECK_DIF_OK(dif_aon_timer_init(
