@@ -62,7 +62,7 @@
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
+                        .console.test_may_clobber = false);
 
 enum {
   /**
@@ -102,8 +102,11 @@ static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 
 // ATE Indicator GPIOs.
-static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
-static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 1;
+static const dif_gpio_pin_t kGpioPinTestStart = 0;
+static const dif_gpio_pin_t kGpioPinTestDone = 1;
+static const dif_gpio_pin_t kGpioPinTestError = 2;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 
 /**
  * Keymgr binding values.
@@ -1032,12 +1035,75 @@ static status_t finalize_otp_partitions(void) {
 }
 
 static status_t configure_ate_gpio_indicators(void) {
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-                               kTopEarlgreyPinmuxOutselGpioGpio0));
-  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-                               kTopEarlgreyPinmuxOutselGpioGpio1));
-  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first two GPIOs.
-  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
+  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+  // IOA0 / GPIO2 is for error reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
+  // IOA1 / GPIO1 is for test done reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
+  // IOA4 / GPIO0 is for test start reporting.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1f));  // Enable first 5 GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));    // Intialize all to 0.
+  return OK_STATUS();
+}
+
+static status_t provision(ujson_t *uj) {
+  // Provision OTP, flash secrets, certs, and install the first owner.
+  TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
+  TRY(personalize_otp_and_flash_secrets(uj));
+  TRY(personalize_gen_dice_certificates(uj));
+  TRY(install_owner());
+  personalize_extension_pre_endorse_t pre_endorse = {
+      .uj = uj,
+      .certgen_inputs = &certgen_inputs,
+      .perso_blob_to_host = &perso_blob_to_host,
+      .cert_flash_layout = cert_flash_layout,
+      .flash_ctrl_handle = &flash_ctrl_state,
+      .uds_pubkey = &uds_pubkey,
+      .uds_pubkey_id = &uds_pubkey_id,
+      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
+      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
+      .otp_rot_creator_auth_codesign_measurement =
+          &otp_rot_creator_auth_codesign_measurement,
+      .otp_rot_creator_auth_state_measurement =
+          &otp_rot_creator_auth_state_measurement};
+  TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
+  TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
+
+  // Endorse TBS certs and install in flash.
+  TRY(personalize_endorse_certificates(uj));
+  TRY(hash_all_certs());
+  personalize_extension_post_endorse_t post_endorse = {
+      .uj = uj,
+      .perso_blob_from_host = &perso_blob_from_host,
+      .cert_flash_layout = cert_flash_layout};
+  TRY(personalize_extension_post_cert_endorse(&post_endorse));
+
+  // Log the hash of all perso objects to the host and console.
+  serdes_sha256_hash_t hash;
+  hmac_sha256_process();
+  hmac_sha256_final((hmac_digest_t *)&hash);
+  TRY(send_final_hash(uj, &hash));
+  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
+           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
+           hash.data[2], hash.data[1], hash.data[0]);
+
+  // Complete any remaining OTP programming.
+  TRY(finalize_otp_partitions());
+
   return OK_STATUS();
 }
 
@@ -1046,10 +1112,11 @@ bool test_main(void) {
   // This is needed to avoid a watchdog reset if enabled in the ROM.
   watchdog_disable();
 
-  // Initialize all peripherals, GPIO ATE indicators, and UJSON console.
+  // Enable peripherals, ATE GPIO indicators, and the SPI console.
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
   CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
 
@@ -1063,51 +1130,13 @@ bool test_main(void) {
     rstmgr_reason_clear(reason);
   }
 
-  CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
-
-  // Provision OTP and flash secrets.
-  CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
-
-  // Generate all TBS certs and install the initial owner configuration.
-  CHECK_STATUS_OK(personalize_gen_dice_certificates(&uj));
-  CHECK_STATUS_OK(install_owner());
-  personalize_extension_pre_endorse_t pre_endorse = {
-      .uj = &uj,
-      .certgen_inputs = &certgen_inputs,
-      .perso_blob_to_host = &perso_blob_to_host,
-      .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state,
-      .uds_pubkey = &uds_pubkey,
-      .uds_pubkey_id = &uds_pubkey_id,
-      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
-      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
-      .otp_rot_creator_auth_codesign_measurement =
-          &otp_rot_creator_auth_codesign_measurement,
-      .otp_rot_creator_auth_state_measurement =
-          &otp_rot_creator_auth_state_measurement};
-  CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(&pre_endorse));
-  CHECK_STATUS_OK(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
-
-  // Endorse TBS certs and install in flash.
-  CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
-  CHECK_STATUS_OK(hash_all_certs());
-  personalize_extension_post_endorse_t post_endorse = {
-      .uj = &uj,
-      .perso_blob_from_host = &perso_blob_from_host,
-      .cert_flash_layout = cert_flash_layout};
-  CHECK_STATUS_OK(personalize_extension_post_cert_endorse(&post_endorse));
-
-  // Log the hash of all perso objects to the host and console.
-  serdes_sha256_hash_t hash;
-  hmac_sha256_process();
-  hmac_sha256_final((hmac_digest_t *)&hash);
-  CHECK_STATUS_OK(send_final_hash(&uj, &hash));
-  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
-           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
-           hash.data[2], hash.data[1], hash.data[0]);
-
-  // Complete OTP programming.
-  CHECK_STATUS_OK(finalize_otp_partitions());
+  // Execute personalization provisioning sequence.
+  status_t result = provision(&uj);
+  if (!status_ok(result)) {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestError, true));
+  } else {
+    CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
+  }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
