@@ -15,13 +15,20 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
-
 OTTF_DEFINE_TEST_CONFIG();
+
+static const dt_adc_ctrl_t kAdcCtrlDt = 0;
+static_assert(kDtAdcCtrlCount == 1, "this test expects a adc_ctrl");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
 
 enum {
   kPowerUpTimeAonCycles = 7,
+  kPlicTarget = 0,
 };
 
 // These constants will be setup from the testbench
@@ -58,40 +65,30 @@ static dif_rv_plic_t plic;
 static volatile bool interrupt_expected = false;
 static volatile bool interrupt_serviced = false;
 
-void ottf_external_isr(uint32_t *exc_info) {
-  plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                             .hart_id = kTopEarlgreyPlicTargetIbex0};
-
-  adc_ctrl_isr_ctx_t adc_ctrl_ctx = {
-      .adc_ctrl = &adc_ctrl,
-      .plic_adc_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending,
-      .expected_irq = 0,
-      .is_only_irq = true};
-
-  top_earlgrey_plic_peripheral_t peripheral;
-  dif_adc_ctrl_irq_t adc_ctrl_irq;
-  isr_testutils_adc_ctrl_isr(plic_ctx, adc_ctrl_ctx, false, &peripheral,
-                             &adc_ctrl_irq);
-
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralAdcCtrlAon);
-  CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchPending);
-  interrupt_serviced = true;
-
-  // Verify this interrupt was actually expected.
-  CHECK(interrupt_expected);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_adc_ctrl_instance_id(kAdcCtrlDt) &&
+      irq_id ==
+          dt_adc_ctrl_irq_to_plic_id(kAdcCtrlDt, kDtAdcCtrlIrqMatchPending)) {
+    // Verify this interrupt was actually expected.
+    CHECK(interrupt_expected);
+    interrupt_serviced = true;
+    CHECK_DIF_OK(
+        dif_adc_ctrl_irq_acknowledge(&adc_ctrl, kDtAdcCtrlIrqMatchPending));
+    return true;
+  } else {
+    return false;
+  }
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
-  top_earlgrey_plic_irq_id_t plic_irqs[] = {
-      kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending};
+  dif_rv_plic_irq_id_t plic_id =
+      dt_adc_ctrl_irq_to_plic_id(kAdcCtrlDt, kDtAdcCtrlIrqMatchPending);
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, plic_id, kPlicTarget,
+                                           kDifToggleEnabled));
 
-  for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
-    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
-
-    // Assign a default priority
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i], 0x1));
-  }
+  // Assign a default priority
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_id, 0x1));
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -102,14 +99,15 @@ bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_adc_ctrl_init_from_dt(kAdcCtrlDt, &adc_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_adc_ctrl_instance_id(kAdcCtrlDt),
+      kDtAdcCtrlWakeupWkupReq, &wakeup_sources));
 
   // Enable adc interrupts.
   CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(
@@ -166,14 +164,14 @@ bool test_main(void) {
 
     // Setup low power.
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
+    CHECK_STATUS_OK(
+        pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
     // Enter low power mode.
     LOG_INFO("Issued WFI to enter sleep.");
     test_status_set(kTestStatusInWfi);
     wait_for_interrupt();
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
+                 &pwrmgr, wakeup_sources)) == true) {
     LOG_INFO("Wakeup reset.");
     interrupt_expected = true;
     en_plic_irqs(&plic);
