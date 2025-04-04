@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Fusesoc core file used for building the file list.
+  fusesoc_core: ${instance_vlnv("lowrisc:dv:racl_ctrl_sim:0.1")}
+
+  // RAL spec - used to generate the RAL model.
+  ral_spec: "{proj_root}/hw/ip/racl_ctrl/data/racl_ctrl.hjson"
+
+  // Import the underlying sim_cfg (not templated)
+  import_cfgs: ["{proj_root}/hw/ip/racl_ctrl/dv/racl_ctrl_tests.hjson"]
+}
