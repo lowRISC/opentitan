@@ -178,7 +178,7 @@ dif_result_t dif_alert_handler_configure_alert(
   ptrdiff_t enable_reg_offset = ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET +
                                 (ptrdiff_t)alert * (ptrdiff_t)sizeof(uint32_t);
   mmio_region_write32_shadowed(alert_handler->base_addr, enable_reg_offset,
-                               0x1);
+                               dif_toggle_to_bool(enabled));
 
   // Lock the configuration.
   if (locked == kDifToggleEnabled) {
