@@ -47,6 +47,11 @@ enum {
   kMeasurementsPerRound = 100,
 };
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_clkmgr_t kClkmgrDt = 0;
+static_assert(kDtClkmgrCount == 1, "this test expects a clkmgr");
+
 static dif_clkmgr_t clkmgr;
 static dif_pwrmgr_t pwrmgr;
 
@@ -105,13 +110,11 @@ bool test_main(void) {
   CHECK_STATUS_OK(aon_timer_testutils_get_us_from_aon_cycles(
       kMeasurementsPerRound, &delay_micros));
 
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
   CHECK_DIF_OK(dif_sensor_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
       &sensor_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   LOG_INFO("TEST: wait for ast init");
   IBEX_SPIN_FOR(sensor_ctrl_ast_init_done(&sensor_ctrl), 1000);
