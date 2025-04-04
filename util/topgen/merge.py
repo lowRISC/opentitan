@@ -1106,9 +1106,37 @@ def get_alert_modules(top: ConfigT,
     return modules
 
 
+def get_alert_connections(top: ConfigT,
+                          name_to_block: IpBlocksT,
+                          allow_missing_blocks=False) -> List[str]:
+    '''Return an existing top['alert_connections'] or generate one.
+    '''
+    if 'alert_connections' in top:
+        return top['alert_connections']
+
+    connections = defaultdict(list)
+    for module in top['module']:
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
+        if block.alerts and 'outgoing_alert' not in module:
+            if 'alert_connections' in module:
+                alert_connections = module['alert_connections']
+                for alert in block.alerts:
+                    handler = alert_connections[alert.name]
+                    connections[handler].append((module['name'], alert.name))
+
+    return connections
+
+
 def commit_alert_modules(top: ConfigT, name_to_block: IpBlocksT):
     """Make sure top['alert_module'] is populated in the final config."""
     top['alert_module'] = get_alert_modules(top, name_to_block)
+
+
+def commit_alert_connections(top: ConfigT, name_to_block: IpBlocksT):
+    """Make sure top['alert_connections'] is populated in the final config."""
+    top['alert_connections'] = get_alert_connections(top, name_to_block)
 
 
 def get_outgoing_alert_modules(top: ConfigT,
@@ -1177,6 +1205,10 @@ def amend_alert(top: ConfigT,
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
             alert_dict['async'] = '1'
+            if 'alert_connections' in ip:
+                alert_dict['handler'] = ip['alert_connections'][alert.name]
+            else:
+                alert_dict['handler'] = None
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
             alert_name = alert_dict['name']

@@ -255,15 +255,20 @@ module top_${top["name"]} #(
 % endfor
 
   // Alert list
-  prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
-  prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
+<% alert_handlers = [m["name"] for m in top["module"] if "template_type" in m and m["template_type"] == "alert_handler"] %>\
+% for handler in alert_handlers:
+  prim_alert_pkg::alert_tx_t [${handler}_pkg::NAlerts-1:0]  alert${handler.replace("alert_handler", "")}_tx;
+  prim_alert_pkg::alert_rx_t [${handler}_pkg::NAlerts-1:0]  alert${handler.replace("alert_handler", "")}_rx;
+% endfor
 
 % if not top["alert"]:
-  for (genvar k = 0; k < alert_handler_pkg::NAlerts; k++) begin : gen_alert_tie_off
+%    for handler in alert_handlers:
+  for (genvar k = 0; k < ${handler}_pkg::NAlerts; k++) begin : gen_alert_tie_off
     // tie off if no alerts present in the system
-    assign alert_tx[k].alert_p = 1'b0;
-    assign alert_tx[k].alert_n = 1'b1;
+    assign alert${handler}_tx[k].alert_p = 1'b0;
+    assign alert${handler}_tx[k].alert_n = 1'b1;
   end
+%    endfor
 % endif
 
 ## Inter-module Definitions
@@ -472,10 +477,13 @@ for rst in output_rsts:
 
   // Peripheral Instantiation
 
-<% alert_idx = 0 %>\
-<% outgoing_alert_idx = defaultdict(int) %>
+
+<%
+alert_idx = defaultdict(int)
+outgoing_alert_idx = defaultdict(int) %>\
 % for m in top["module"]:
 <%
+async_alert_idx = alert_idx.copy() ## handler -> count
 if not lib.is_inst(m):
      continue
 
@@ -491,20 +499,41 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
   ${m["type"]} #(
 <%include file="/toplevel_racl.tpl" args="m=m,top=top"/>\
   % if block.alerts:
-<%
-w = len(block.alerts)
-if 'outgoing_alert' in m:
-  outgoing_alert = m['outgoing_alert']
-  lo = outgoing_alert_idx[outgoing_alert]
+  <%
+## Assemble array of block alerts
+alert_handlers_used = set(m["alert_connections"].values())
+if len(alert_handlers_used) == 1: ## they're all the same
+  handler, = alert_handlers_used ## get the one handler out of the set
+  w = len(block.alerts)
+  if 'outgoing_alert' in m:
+    outgoing_alert = m['outgoing_alert']
+    lo = outgoing_alert_idx[outgoing_alert]
+    async_exp = "AsyncOnOutgoingAlert" + alert_group.capitalize()
+  else:
+    lo = alert_idx[handler]
+    async_exp = f"{handler}_reg_pkg::AsyncOn"
+  slice = f"{lo+w-1}:{lo}"
+  async_expr = async_exp + "[" + slice + "]"
+  alert_tx_expr = "alert" + handler.replace("alert_handler", "") + f"_tx[{slice}]"
+  alert_rx_expr = "alert" + handler.replace("alert_handler", "") + f"_rx[{slice}]"
 else:
-  lo = alert_idx
-slice = f"{lo+w-1}:{lo}"
+  handler_list = []
+  handler_indices = []
+  for a in block.alerts:
+    handler = m["alert_connections"][a.name].replace("alert_handler", "")
+    handler_list.append(handler)
+    handler_indices.append(async_alert_idx[handler])
+    async_alert_idx[handler] += 1
+  async_slices = ["{}_reg_pkg::AsyncOn[{}]".format(h, i) for h, i in zip(handler_list, handler_indices)]
+  async_expr = "{" + (",\n"+19*" ").join(async_slices) + "}"
+
+  alert_tx_slices = ["alert{}_tx[{}]".format(h, i) for h, i in zip(handler_list, handler_indices)]
+  alert_tx_expr = "{" + (",\n"+22*" ").join(alert_tx_slices) + "}"
+  alert_rx_slices = ["alert{}_rx[{}]".format(h, i) for h, i in zip(handler_list, handler_indices)]
+  alert_rx_expr = "{" + (",\n"+22*" ").join(alert_rx_slices) + "}"
+
 %>\
-  % if 'outgoing_alert' in m:
-    .AlertAsyncOn(AsyncOnOutgoingAlert${alert_group.capitalize()}[${slice}])${"," if m["param_list"] else ""}
-  % else:
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
-  % endif
+  .AlertAsyncOn(${async_expr})${"," if m["param_list"] else ""}
   % endif
     % for i in m["param_list"]:
     .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
@@ -536,19 +565,21 @@ slice = f"{lo+w-1}:{lo}"
       .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
     % endfor
     % if block.alerts:
-      % for alert in block.alerts:
+      % for i, alert in enumerate(block.alerts):
         % if 'outgoing_alert' in m:
       // External alert group "${m['outgoing_alert']}" [${outgoing_alert_idx[m['outgoing_alert']]}]: ${alert.name}<% outgoing_alert_idx[m['outgoing_alert']] += 1 %>
+        % elif len(alert_handlers_used) == 1:
+      // ${handler}[${alert_idx[handler]}]: ${alert.name}<% alert_idx[handler] += 1 %>
         % else:
-      // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
+      // ${handler_list[i]}[${handler_indices[i]}]: ${alert.name}<% alert_idx[handler_list[i]] += 1 %>
         % endif
       % endfor
       % if 'outgoing_alert' in m:
       .alert_tx_o  ( outgoing_alert_${m['outgoing_alert']}_tx_o[${slice}] ),
       .alert_rx_i  ( outgoing_alert_${m['outgoing_alert']}_rx_i[${slice}] ),
       % else:
-      .alert_tx_o  ( alert_tx[${slice}] ),
-      .alert_rx_i  ( alert_rx[${slice}] ),
+      .alert_tx_o  ( ${alert_tx_expr} ),
+      .alert_rx_i  ( ${alert_rx_expr} ),
       % endif
     % endif
     ## TODO: Inter-module Connection
@@ -595,8 +626,8 @@ slice = f"{lo+w-1}:{lo}"
     % endif
     % if m.get("template_type") == "alert_handler":
       // alert signals
-      .alert_rx_o  ( alert_rx ),
-      .alert_tx_i  ( alert_tx ),
+      .alert_rx_o  ( alert${m["type"].replace("alert_handler", "")}_rx ),
+      .alert_tx_i  ( alert${m["type"].replace("alert_handler", "")}_tx ),
       // synchronized clock gated / reset asserted
       // indications for each alert
       .lpg_cg_en_i  ( lpg_cg_en  ),
