@@ -57,40 +57,53 @@ dif_pwrmgr_t pwrmgr_actual;
 dif_sysrst_ctrl_t sysrst_ctrl_aon_actual;
 dif_rstmgr_t rstmgr_actual;
 
+static dif_pwrmgr_request_sources_t aon_timer_wakeup_sources;
+static dif_pwrmgr_request_sources_t sysrst_ctrl_wakeup_sources;
+
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static const dt_alert_handler_t kAlertHandlerDt = 0;
+static_assert(kDtAlertHandlerCount == 1,
+              "this library expects exactly one alert_handler");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1,
+              "this library expects exactly one aon_timer");
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+static_assert(kDtFlashCtrlCount >= 1,
+              "this test expects at least one flash_ctrl");
+static_assert(kDtSysrstCtrlCount >= 1,
+              "this test expects at least one sysrst_ctrl");
+static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount >= 1, "this test expects at least one rv_plic");
+
 void init_peripherals(void) {
   // Initialize pwrmgr.
-  CHECK_DIF_OK(
-      dif_pwrmgr_init(mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR),
-                      &pwrmgr_actual));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr_actual));
   pwrmgr = &pwrmgr_actual;
 
   // Initialize sysrst_ctrl.
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl_aon_actual));
+  CHECK_DIF_OK(
+      dif_sysrst_ctrl_init_from_dt(kSysrstCtrlDt, &sysrst_ctrl_aon_actual));
   sysrst_ctrl_aon = &sysrst_ctrl_aon_actual;
 
   // Initialize rstmgr to check the reset reason.
-  CHECK_DIF_OK(
-      dif_rstmgr_init(mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR),
-                      &rstmgr_actual));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr_actual));
   rstmgr = &rstmgr_actual;
 
   // Initialize aon timer to use the wdog.
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-      &aon_timer_actual));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer_actual));
   aon_timer = &aon_timer_actual;
 
   // Initialize flash_ctrl
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl_actual,
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  CHECK_DIF_OK(
+      dif_flash_ctrl_init_state_from_dt(&flash_ctrl_actual, kFlashCtrlDt));
   flash_ctrl = &flash_ctrl_actual;
 
   // Initialize plic.
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic_actual));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic_actual));
   plic = &plic_actual;
 
   rv_plic_testutils_irq_range_enable(
@@ -98,10 +111,18 @@ void init_peripherals(void) {
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
   // Initialize alert handler.
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler_actual));
+  CHECK_DIF_OK(
+      dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler_actual));
   alert_handler = &alert_handler_actual;
+
+  // Wakeup sources.
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &aon_timer_wakeup_sources));
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeWakeup,
+      dt_sysrst_ctrl_instance_id(kSysrstCtrlDt), kDtSysrstCtrlWakeupWkupReq,
+      &sysrst_ctrl_wakeup_sources));
 }
 
 void config_alert_handler(void) {
@@ -249,9 +270,10 @@ void prepare_for_wdog(pwrmgr_sleep_resets_lib_modes_t mode) {
                          kDifPwrmgrDomainOptionMainPowerInLowPower;
 
     // Program the pwrmgr to go to deep sleep state (clocks off).
-    // Enter in low power mode.
+    // Enter in low power mode. Choose a wakeup source different
+    // from the aon_timer (we expect a reset, not a wakeup).
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, config));
+        pwrmgr, sysrst_ctrl_wakeup_sources, config));
     wait_for_interrupt();
   }
   // If we arrive here the test must fail.
@@ -273,7 +295,7 @@ void prepare_for_sysrst(pwrmgr_sleep_resets_lib_modes_t mode) {
                          kDifPwrmgrDomainOptionIoClockInLowPower |
                          kDifPwrmgrDomainOptionMainPowerInLowPower;
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        pwrmgr, kDifPwrmgrWakeupRequestSourceOne, config));
+        pwrmgr, sysrst_ctrl_wakeup_sources, config));
     // Log message to synchronize with host side: emit it as close as
     // possible before WFI so the host has no chance of sending the reset
     // before it is enabled.
