@@ -62,7 +62,8 @@
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false);
+                        .console.test_may_clobber = false,
+                        .silence_console_prints = true);
 
 enum {
   /**
