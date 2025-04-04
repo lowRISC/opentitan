@@ -61,7 +61,7 @@ We expect to use the `cSHAKE256` algorithm, with prefix "ROM_CTRL".
 The [Application Interface](../../kmac/README.md#application-interface) section of the KMAC documentation details the parameters used.
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
-Each read produces 39 bits of data, which are padded with zeros to 64 bits to match the interface expected by the KMAC block.
+Each read produces 39 bits of data, which are padded with a zero to 40 bits to match the interface expected by the KMAC block.
 The checker FSM loops through almost all the words in ROM (from bottom to top), passing each to the KMAC block with the ready/valid interface and setting the `kmac_data_o.last` bit for the last word that is sent.
 Once the last word has been sent, the FSM releases the multiplexer; this now switches over permanently to allow access through the TL-UL SRAM adapter.
 
