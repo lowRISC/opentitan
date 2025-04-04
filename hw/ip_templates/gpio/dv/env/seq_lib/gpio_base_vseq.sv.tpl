@@ -124,7 +124,8 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
     end
   endtask : pgm_intr_regs
 
-  // Wait a few cycles. If force_positive is true, Wait at least one clock cycle.
+  // Wait a few cycles. If force_positive is true, wait at least one clock cycle.
+  // If a reset is detected, wait until the reset is released.
   task short_wait(bit force_positive);
     int unsigned delay;
     `DV_CHECK_FATAL(std::randomize(delay) with
@@ -132,7 +133,7 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
                       delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
                       force_positive -> delay > 0;
                     })
-    cfg.clk_rst_vif.wait_clks(delay);
+    cfg.clk_rst_vif.wait_clks_or_rst(delay);
   endtask
 
 endclass : ${module_instance_name}_base_vseq
