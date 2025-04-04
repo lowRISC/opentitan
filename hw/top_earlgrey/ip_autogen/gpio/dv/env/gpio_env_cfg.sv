@@ -13,8 +13,8 @@ class gpio_env_cfg extends cip_base_env_cfg #(
   rand bit pulldown_en;
   // gpio virtual interface
   gpio_vif gpio_vif;
-  // gpio straps interface
-  straps_vif straps_vif_inst;
+  // gpio straps virtual interface
+  straps_vif m_straps_vif;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
 
@@ -35,6 +35,6 @@ class gpio_env_cfg extends cip_base_env_cfg #(
 
     // Used to allow reset operation during a stress all tests and check the CSR after that.
     can_reset_with_csr_accesses = 1'b1;
-  endfunction : initialize
 
+  endfunction : initialize
 endclass

@@ -13,6 +13,11 @@ filesets:
       - ${module_instance_name}_env_pkg.sv
       - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
       - ${module_instance_name}_env_cov.sv: {is_include_file: true}
+      - ${module_instance_name}_virtual_sequencer.sv: {is_include_file: true}
+      - gpio_agent/gpio_strap_agent_cfg.sv: {is_include_file: true}
+      - gpio_agent/gpio_strap_driver.sv: {is_include_file: true}
+      - gpio_agent/gpio_strap_monitor.sv: {is_include_file: true}
+      - gpio_agent/gpio_strap_agent.sv: {is_include_file: true}
       - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
       - ${module_instance_name}_env.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_vseq_list.sv: {is_include_file: true}
@@ -32,6 +37,8 @@ filesets:
       - seq_lib/${module_instance_name}_intr_rand_pgm_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_intr_with_filter_rand_intr_event_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_rand_straps_vseq.sv : {is_include_file: true}
+      - seq_lib/gpio_seq_item.sv: {is_include_file: true}
+      - seq_lib/gpio_strap_en_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
