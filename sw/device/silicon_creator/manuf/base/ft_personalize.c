@@ -612,9 +612,9 @@ static status_t compute_tbs_was_hmac(perso_blob_t *perso_blob_to_host) {
       kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
 
   // Compute HMAC of TBS certs with WAS as the key.
-  // Most HSMs and host tooling will compute an HMAC in big endian format, so we
-  // do the same to make comparison easier.
-  hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
+  // HSMs and host tooling will compute an HMAC in big endian format, so we do
+  // the same to make the comparison easier.
+  sc_hmac_hmac_sha256_init(was, /*big_endian_digest=*/true);
   uint8_t *tlv_buf = perso_blob_to_host->body;
   uint16_t obj_size;
   perso_tlv_object_type_t obj_type;
