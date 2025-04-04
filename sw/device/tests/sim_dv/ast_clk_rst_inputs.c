@@ -63,6 +63,26 @@ static dif_entropy_src_t entropy_src;
 static dif_clkmgr_t clkmgr;
 static dif_adc_ctrl_t adc_ctrl;
 
+static const dt_adc_ctrl_t kAdcCtrlDt = 0;
+static_assert(kDtAdcCtrlCount == 1, "this test expects a adc_ctrl");
+static const dt_clkmgr_t kClkmgrDt = 0;
+static_assert(kDtClkmgrCount == 1, "this test expects a clkmgr");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtEntropySrcCount == 1, "this test expects an entropy_src");
+static const dt_entropy_src_t kEntropySrcDt = 0;
+static const dt_alert_handler_t kAlertHandlerDt = 0;
+static_assert(kDtAlertHandlerCount == 1,
+              "this library expects exactly one alert_handler");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_sensor_ctrl_t kSensorCtrlDt = 0;
+static_assert(kDtSensorCtrlCount >= 1, "this test expects a sensor_ctrl");
+
 static volatile bool interrupt_serviced = false;
 static bool first_adc_setup = true;
 
@@ -179,28 +199,16 @@ static void test_event(uint32_t idx, dif_toggle_t fatal, bool set_event) {
 }
 
 void init_units(void) {
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
-  CHECK_DIF_OK(dif_sensor_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR),
-      &sensor_ctrl));
-  CHECK_DIF_OK(dif_alert_handler_init(
-      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
-      &alert_handler));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kEntropySrcDt, &entropy_src));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
+  CHECK_DIF_OK(dif_sensor_ctrl_init_from_dt(kSensorCtrlDt, &sensor_ctrl));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
+  CHECK_DIF_OK(dif_adc_ctrl_init_from_dt(kAdcCtrlDt, &adc_ctrl));
 }
 
 /**
@@ -313,6 +321,11 @@ void ast_enter_sleep_states_and_check_functionality(
     deepsleep = false;
   }
 
+  dif_pwrmgr_request_sources_t adc_ctrl_wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_adc_ctrl_instance_id(kAdcCtrlDt),
+      kDtAdcCtrlWakeupWkupReq, &adc_ctrl_wakeup_sources));
+
   if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) ==
       true) {
     // Make sure ENTROPY_SRC is enabled and then empty the observe FIFO to
@@ -348,7 +361,7 @@ void ast_enter_sleep_states_and_check_functionality(
 
     // set sleep mode
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, pwrmgr_config));
+        &pwrmgr, adc_ctrl_wakeup_sources, pwrmgr_config));
 
     // Enter low power mode.
     LOG_INFO("Issued WFI to enter sleep.");
@@ -361,7 +374,7 @@ void ast_enter_sleep_states_and_check_functionality(
     interrupt_serviced = false;
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo)) == true) {
+                 &pwrmgr, adc_ctrl_wakeup_sources))) {
     if (deepsleep) {
       first_adc_setup = false;
       // Configure ADC after deep sleep
