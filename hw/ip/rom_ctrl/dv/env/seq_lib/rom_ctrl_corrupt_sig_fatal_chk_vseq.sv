@@ -41,6 +41,12 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // in the comparison module.
   extern local task test_fsm_invalid_transitions();
 
+  // Once rom_ctrl has handed control of the mux to the bus, the internal FSM counter should point
+  // at the top of ROM. The unexpected_counter_change signal in rom_ctrl_fsm goes high and generates
+  // a fatal alert if that counter is perturbed in any way. To test this, corrupt the counter's
+  // address to some value other than the ROM's top address.
+  extern local task test_counter_consistency();
+
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
@@ -55,19 +61,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
       // an alert inside the comparison module.
       LocalEscalation: test_fsm_invalid_transitions();
 
-      // Once rom_ctrl has handed control of the mux to the bus, the internal FSM counter should
-      // point at the top of ROM. The unexpected_counter_change signal in rom_ctrl_fsm goes high
-      // and generates a fatal alert if that counter is perturbed in any way. To test this,
-      // addr_q in the counter is corrupted with any value other than the ROM's top address.
-      CheckerCtrConsistency: begin
-        bit [12:0] invalid_addr;
-        wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
-        wait_with_bound(10000);
-        // Pick the index of a ROM word other than the top one
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, (invalid_addr < (RomSizeWords-1)););
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_counter.addr_q", invalid_addr);
-        wait_for_fatal_alert();
-      end
+      CheckerCtrConsistency: test_counter_consistency();
+
       // The main checker FSM steps on internal 'done' signals, coming from its address counter,
       // the KMAC response and its comparison counter. If any of these are asserted at times we
       // don't expect, the FSM jumps to an invalid state. This triggers an alert and will not set
@@ -367,4 +362,25 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
     // again: we'll just get to the same place again.
     if (cur_state == rom_ctrl_pkg::Done) break;
   end
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
+  bit [12:0] invalid_addr;
+
+  // Wait until rom_ctrl says that it has finished computing the ROM checksum.
+  wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
+
+  // Now wait slightly longer (so we're not messing around with stuff at exactly the moment it
+  // finishes)
+  wait_with_bound(1000);
+
+  // Pick the index of some ROM word other than the top one
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, (invalid_addr < (RomSizeWords-1)););
+
+  // Set the silly value for a cycle. This should be picked up by the counter suddenly deciding it's
+  // not done and the code in rom_ctrl_fsm noticing the change.
+  force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_counter.addr_q", invalid_addr);
+
+  // Wait for a fatal alert to come out, to make sure that the dut notices the corruption
+  wait_for_fatal_alert();
 endtask
