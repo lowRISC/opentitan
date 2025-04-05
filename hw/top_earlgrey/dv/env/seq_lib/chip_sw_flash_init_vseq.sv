@@ -342,7 +342,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
             // The actual data is irrelevant as long as the partition becomes locked.
             otp_write_secret2_partition(
               .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-              .rma_unlock_token('0), .creator_root_key0('0), .creator_root_key1('0));
+              .rma_token('0), .creator_root_key_share0('0), .creator_root_key_share1('0));
           end
 
           KeyMgrTest1: begin

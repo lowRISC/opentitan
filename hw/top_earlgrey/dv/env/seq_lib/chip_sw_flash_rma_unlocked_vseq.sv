@@ -147,9 +147,9 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // Override the rma unlock token to match SW test's input token.
     otp_write_secret2_partition(
         .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-        .rma_unlock_token(dec_otp_token_from_lc_csrs(rma_unlock_token)),
-        .creator_root_key0(get_otp_key(creator_root_key0)),
-        .creator_root_key1(get_otp_key(creator_root_key1)));
+        .rma_token(dec_otp_token_from_lc_csrs(rma_unlock_token)),
+        .creator_root_key_share0(get_otp_key(creator_root_key0)),
+        .creator_root_key_share1(get_otp_key(creator_root_key1)));
     // Convert to right format for jtag_lc_state_transition function below.
     rma_unlock_token_vector = {<< byte {rma_unlock_token}};
   endtask
