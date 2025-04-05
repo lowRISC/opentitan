@@ -28,9 +28,18 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task wait_with_bound(int max_clks);
   extern task force_sig(string path, int value);
   extern task chk_fsm_state();
-  extern task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
+
+  // Wait until the FSM state is a value in the queue. When that happens, write that state to
+  // state_seen.
+  extern local task wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
+                                              output rom_ctrl_pkg::fsm_state_e state_seen);
+
   extern task pick_err_inj_point(bit force_early = 1'b0);
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
+
+  // Cover all possible FSM transitions to the invalid state by triggering alerts at opportune times
+  // in the comparison module.
+  extern local task test_fsm_invalid_transitions();
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
@@ -44,26 +53,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
     case (cm_id)
       // This test tries to cover all possible FSM transitions to the invalid state by triggering
       // an alert inside the comparison module.
-      LocalEscalation: begin
-        rom_ctrl_pkg::fsm_state_e s;
-        rom_ctrl_pkg::fsm_state_e states_to_visit[$];
-        // This FSM assumes a linear progression through the FSM states.
-        // Make sure the last state is the Invalid state.
-        `DV_CHECK_EQ(s.last(), rom_ctrl_pkg::Invalid)
-        s = s.first();
-        while (s != s.last()) begin
-          states_to_visit.push_back(s);
-          s = s.next();
-        end
-        while (states_to_visit.size() > 0) begin
-          wait_for_fsm_state_inside(states_to_visit);
-          // This is a sparsely encoded FSM, where all-zero is always an invalid state, hence we
-          // can use all-zero to trigger an alert.
-          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_d", '0);
-          wait_for_fatal_alert();
-          dut_init();
-        end
-      end
+      LocalEscalation: test_fsm_invalid_transitions();
+
       // Once rom_ctrl has handed control of the mux to the bus, the internal FSM counter should
       // point at the top of ROM. The unexpected_counter_change signal in rom_ctrl_fsm goes high
       // and generates a fatal alert if that counter is perturbed in any way. To test this,
@@ -266,22 +257,21 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::chk_fsm_state();
   `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
 endtask: chk_fsm_state
 
-// Wait until FSM state has progressed to a state within the list.
-// The task removes all previous states including the one that has been reached afterwards.
-// Note that this assumes no loops and linear progression through the state enum entries.
-task rom_ctrl_corrupt_sig_fatal_chk_vseq::wait_for_fsm_state_inside(
-                                              ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
+task
+  rom_ctrl_corrupt_sig_fatal_chk_vseq::
+    wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
+                              output rom_ctrl_pkg::fsm_state_e state_seen);
   string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
-  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
-  string  path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
+  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] raw_state;
+
+  // Step through the middles of cycles until the FSM state is in the list of states to visit.
   do begin
     @(negedge cfg.clk_rst_vif.clk);
-    `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
-  end while (!(rdata_state inside {states_to_visit}));
-  `uvm_info(`gfn, $sformatf("reached FSM state %x", rdata_state), UVM_LOW)
-  // Remove previous states from queue, including the one that has been reached.
-  while (states_to_visit.pop_front() != rdata_state);
-endtask: wait_for_fsm_state_inside
+    `DV_CHECK(uvm_hdl_read(state_q_path, raw_state))
+  end while (!(raw_state inside {states_to_visit}));
+
+  state_seen = rom_ctrl_pkg::fsm_state_e'(raw_state);
+endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
@@ -319,3 +309,57 @@ function prim_mubi_pkg::mubi4_t rom_ctrl_corrupt_sig_fatal_chk_vseq::get_invalid
   `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, ~(val inside {MuBi4True, MuBi4False});)
   return prim_mubi_pkg::mubi4_t'(val);
 endfunction
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
+  import rom_ctrl_pkg::fsm_state_e;
+
+  bit in_bad_state = 1'b0;
+  rom_ctrl_pkg::fsm_state_e s;
+  rom_ctrl_pkg::fsm_state_e states_to_visit[$];
+
+  // There are several possible FSM states (encoded with the fsm_state_e enum) and any of them has
+  // an edge to Invalid. Make a list of all of the states other than Invalid.
+  s = s.first();
+  forever begin
+    if (s != rom_ctrl_pkg::Invalid) states_to_visit.push_back(s);
+    if (s == s.last()) break;
+    s = s.next();
+  end
+
+  // Now try to see each FSM state. Repeatedly wait until the FSM gets to some state that we haven't
+  // ticked off, then tick that state off. This probably won't tick all the states off (for example,
+  // we might not see both RomAhead and KmacAhead). To avoid getting stuck, give up after we've
+  // jumped from the (normally) terminal Done state to Invalid.
+  forever begin
+    rom_ctrl_pkg::fsm_state_e cur_state;
+
+    // If this is not the first time around the loop then we'll be in an Invalid state at this
+    // point (and the block will be dead). Force a reset to get back into a good state.
+    if (in_bad_state) dut_init();
+
+    // If states_to_visit is empty, we have finished our work! Drop out.
+    if (!states_to_visit.size()) break;
+
+    wait_for_fsm_state_inside(states_to_visit, cur_state);
+
+    // This is a sparsely encoded FSM where all-zero is always an invalid state. So we can pick that
+    // value to trigger an alert.
+    force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_d", '0);
+    wait_for_fatal_alert();
+
+    in_bad_state = 1'b1;
+
+    // Since we've jumped from cur_state, delete it from the queue
+    for (int unsigned i = 0; i < states_to_visit.size(); i++) begin
+      if (states_to_visit[i] == cur_state) begin
+        states_to_visit.delete(i);
+        break;
+      end
+    end
+
+    // If cur_state was Done, we must have run through the FSM to that "check complete" state
+    // without hitting any of the other items in states_to_visit. There's not much point in trying
+    // again: we'll just get to the same place again.
+    if (cur_state == rom_ctrl_pkg::Done) break;
+  end
+endtask
