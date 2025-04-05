@@ -261,6 +261,67 @@ typedef struct dif_otp_ctrl_config {
  * A hardware-level status code.
  */
 typedef enum dif_otp_ctrl_status_code {
+  /**
+   * Indicates an error occurred in any of the partitions.
+   */
+  kDifOtpCtrlStatusCodePartitionError,
+  /**
+   * Indicates an error occurred in the direct access interface.
+   */
+  kDifOtpCtrlStatusCodeDaiError,
+  /**
+   * Indicates an error occurred in the lifecycle interface.
+   */
+  kDifOtpCtrlStatusCodeLciError,
+  /**
+   * This is not a status code; rather, it represents the last error code which
+   * has a corresponding "cause" register.
+   *
+   * See `dif_otp_ctrl_status_t` for information on how to use this.
+   */
+  kDifOtpCtrlStatusCodeHasCauseLast = kDifOtpCtrlStatusCodeLciError,
+  /**
+   * Indicates that an integrity or consistency check has timed out.
+   *
+   * This error is unrecoverable.
+   */
+  kDifOtpCtrlStatusCodeTimeoutError,
+  /**
+   * Indicates that the LFSR that generates pseudo-random integrity and
+   * consistency checks is in a bad state.
+   *
+   * This error is unrecoverable.
+   */
+  kDifOtpCtrlStatusCodeLfsrError,
+  /**
+   * Indicates that the scrambling hardware is in a bad state.
+   *
+   * This error is unrecoverable.
+   */
+  kDifOtpCtrlStatusCodeScramblingError,
+  /**
+   * Indicates that the key derivation hardware is in a bad state.
+   *
+   * This error is unrecoverable.
+   */
+  kDifOtpCtrlStatusCodeKdfError,
+  /**
+   * Indicates a bus integrity error.
+   *
+   * This error will raise an alert.
+   */
+  kDifOtpCtrlStatusCodeBusIntegError,
+  /**
+   * Indicates that the direct access interface is idle.
+   */
+  kDifOtpCtrlStatusCodeDaiIdle,
+  /**
+   * Indicates that an integrity or consistency check is currently pending.
+   */
+  kDifOtpCtrlStatusCodeCheckPending,
+} dif_otp_ctrl_status_code_t;
+
+typedef enum dif_otp_ctrl_partition_error_code {
   // NOTE: This enum's API *requires* that all "error"-like codes (that is,
   // those which have associated cause registers) be a prefix of the enum
   // values.
@@ -375,60 +436,10 @@ typedef enum dif_otp_ctrl_status_code {
    */
   kDifOtpCtrlStatusCodeLifeCycleError,
   /**
-   * Indicates an error occurred in the direct access interface.
+   * Indicates the last partition error
    */
-  kDifOtpCtrlStatusCodeDaiError,
-  /**
-   * Indicates an error occurred in the lifecycle interface.
-   */
-  kDifOtpCtrlStatusCodeLciError,
-  /**
-   * This is not a status code; rather, it represents the last error code which
-   * has a corresponding "cause" register.
-   *
-   * See `dif_otp_ctrl_status_t` for information on how to use this.
-   */
-  kDifOtpCtrlStatusCodeHasCauseLast = kDifOtpCtrlStatusCodeLciError,
-  /**
-   * Indicates that an integrity or consistency check has timed out.
-   *
-   * This error is unrecoverable.
-   */
-  kDifOtpCtrlStatusCodeTimeoutError,
-  /**
-   * Indicates that the LFSR that generates pseudo-random integrity and
-   * consistency checks is in a bad state.
-   *
-   * This error is unrecoverable.
-   */
-  kDifOtpCtrlStatusCodeLfsrError,
-  /**
-   * Indicates that the scrambling hardware is in a bad state.
-   *
-   * This error is unrecoverable.
-   */
-  kDifOtpCtrlStatusCodeScramblingError,
-  /**
-   * Indicates that the key derivation hardware is in a bad state.
-   *
-   * This error is unrecoverable.
-   */
-  kDifOtpCtrlStatusCodeKdfError,
-  /**
-   * Indicates a bus integrity error.
-   *
-   * This error will raise an alert.
-   */
-  kDifOtpCtrlStatusCodeBusIntegError,
-  /**
-   * Indicates that the direct access interface is idle.
-   */
-  kDifOtpCtrlStatusCodeDaiIdle,
-  /**
-   * Indicates that an integrity or consistency check is currently pending.
-   */
-  kDifOtpCtrlStatusCodeCheckPending,
-} dif_otp_ctrl_status_code_t;
+  kDifOtpCtrlStatusPartitionLastEror = kDifOtpCtrlStatusCodeLifeCycleError,
+} dif_otp_ctrl_partition_error_t;
 
 /**
  * A hardware-level error code, associated with a particular error defined in
