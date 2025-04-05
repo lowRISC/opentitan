@@ -120,6 +120,10 @@ module top_${top["name"]} #(
   // Incoming interrupt of group ${irq_group}
   input logic [${len(irqs)-1}:0] incoming_interrupt_${irq_group}_i,
   % endfor
+  % for irq_group, irqs in top["outgoing_interrupt"].items():
+  // Outgoing interrupt of group ${irq_group}
+  output logic [top_${top["name"]}_pkg::NOutgoingInterrupts${irq_group.capitalize()}-1:0] outgoing_interrupt_${irq_group}_o,
+  % endfor
 
   // All externally supplied clocks
   % for clk in top['clocks'].typed_clocks().ast_clks:
@@ -487,6 +491,7 @@ for rst in output_rsts:
 
 <% alert_idx = 0 %>\
 <% outgoing_alert_idx = defaultdict(int) %>
+<% outgoing_interrupt_idx = defaultdict(int) %>\
 % for m in top["module"]:
 <%
 if not lib.is_inst(m):
@@ -546,7 +551,18 @@ slice = f"{lo+w-1}:{lo}"
 
       // Interrupt
       % endif
+      % if "outgoing_interrupt" in m:
+<%
+        intr_group = m["outgoing_interrupt"]
+        intr_idx = outgoing_interrupt_idx[intr_group]
+        intr_slice = str(intr_idx + intr.bits.width() - 1) + ":" + str(intr_idx)
+        outgoing_interrupt_idx[intr_group] += intr.bits.width()
+%>\
+      // External interrupt group "${intr_group}" [${intr_slice}]: ${intr.name}
+      .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (outgoing_interrupt_${intr_group}_o[${intr_slice}]),
+      % else:
       .${lib.ljust("intr_"+intr.name+"_o",max_intrwidth+7)} (intr_${m["name"]}_${intr.name}),
+      % endif
     % endfor
     % if block.alerts:
       % for alert in block.alerts:
