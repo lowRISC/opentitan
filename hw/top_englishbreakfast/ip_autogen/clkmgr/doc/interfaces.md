@@ -20,8 +20,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | io_clk_byp_ack    | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
 | all_clk_byp_req   | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
 | all_clk_byp_ack   | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
-| hi_speed_sel      | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
 | div_step_down_req | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
+| hi_speed_sel      | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
 | lc_clk_byp_req    | lc_ctrl_pkg::lc_tx       | uni     | rcv   |       1 |                                                          |
 | lc_clk_byp_ack    | lc_ctrl_pkg::lc_tx       | uni     | req   |       1 |                                                          |
 | jitter_en         | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |

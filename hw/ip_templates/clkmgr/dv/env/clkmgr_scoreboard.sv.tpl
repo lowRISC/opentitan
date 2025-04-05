@@ -42,8 +42,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
+    % if len(derived_clks) > 0:
       monitor_all_clk_byp();
       monitor_io_clk_byp();
+    % endif
       monitor_jitter_en();
       sample_peri_covs();
       sample_trans_covs();
@@ -53,6 +55,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     join_none
   endtask
 
+% if len(derived_clks) > 0:
   task monitor_all_clk_byp();
     mubi4_t prev_all_clk_byp_req = MuBi4False;
     forever
@@ -123,6 +126,7 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     join
   endtask
 
+%  endif
   task sample_peri_covs();
     fork
 % for clk in typed_clocks['sw_clks'].values():
