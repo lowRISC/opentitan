@@ -86,7 +86,7 @@ static rom_error_t owner_spx_verify(
   }
   uint32_t result = 0;
   uint32_t diff = 0;
-  *flash_exec = 0;
+  *flash_exec = kErrorOk ^ kSigverifySpxSuccess;
   for (--i; launder32(i) < kSigverifySpxRootNumWords; --i) {
     uint32_t val = expected_root.data[i] ^ actual_root.data[i];
     diff |= val ^ shares[i];
@@ -95,7 +95,7 @@ static rom_error_t owner_spx_verify(
     result ^= val;
     result |= diff;
 
-    *flash_exec ^= actual_root.data[i];
+    *flash_exec ^= val;
     *flash_exec |= diff;
   }
   HARDENED_CHECK_EQ(i, SIZE_MAX);
