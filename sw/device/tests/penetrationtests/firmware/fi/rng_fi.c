@@ -23,11 +23,6 @@
 #include "edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
-
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
   kCsrngExpectedOutputLen = 16,
