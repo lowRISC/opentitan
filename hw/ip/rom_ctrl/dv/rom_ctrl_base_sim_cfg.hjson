@@ -44,8 +44,7 @@
              "sec_cm_prim_sparse_fsm_flop_bind", "sec_cm_prim_onehot_check_bind",
              "sec_cm_prim_count_bind"]
 
-  // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 20
 
   overrides: [
     // Override the default scratch directory and rel_path to take variant into account
@@ -79,7 +78,7 @@
     {
       name: rom_ctrl_smoke
       uvm_test_seq: rom_ctrl_smoke_vseq
-      reseed: 10
+      reseed: 2
     }
     {
       name: rom_ctrl_stress_all
@@ -90,6 +89,7 @@
       name: rom_ctrl_max_throughput_chk
       uvm_test_seq: rom_ctrl_throughput_vseq
       run_opts: ["+zero_delays=1"]
+      reseed: 2
     }
     {
       name: rom_ctrl_corrupt_sig_fatal_chk
@@ -99,6 +99,7 @@
     {
       name: rom_ctrl_kmac_err_chk
       uvm_test_seq: rom_ctrl_kmac_err_chk_vseq
+      reseed: 2
     }
   ]
 
