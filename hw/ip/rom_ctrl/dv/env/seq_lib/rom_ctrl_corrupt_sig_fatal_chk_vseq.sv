@@ -27,7 +27,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task body();
   extern task wait_with_bound(int max_clks);
   extern task force_sig(string path, int value);
-  extern task chk_fsm_state();
 
   // Wait until the FSM state is a value in the queue. When that happens, write that state to
   // state_seen.
@@ -238,15 +237,6 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::force_sig(string path, int value);
   @(negedge cfg.clk_rst_vif.clk);
   `DV_CHECK(uvm_hdl_release(path));
 endtask: force_sig
-
-task rom_ctrl_corrupt_sig_fatal_chk_vseq::chk_fsm_state();
-  string alert_o_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o";
-  string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
-  bit rdata_alert;
-  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
-
-  `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
-endtask: chk_fsm_state
 
 task
   rom_ctrl_corrupt_sig_fatal_chk_vseq::
