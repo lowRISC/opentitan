@@ -16,7 +16,8 @@ filesets:
       - lowrisc:dv:rom_ctrl_sva
       - lowrisc:dv:rom_ctrl_cov
     files:
-      - tb.sv
+      - tb/tb.sv
+      - tb/rom_ctrl_compare_if.sv
     file_type: systemVerilogSource
 
 targets:
