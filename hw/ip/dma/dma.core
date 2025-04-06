@@ -13,6 +13,7 @@ filesets:
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:tlul
       - lowrisc:ip:dma_pkg
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/dma_reg_top.sv
       - rtl/dma.sv

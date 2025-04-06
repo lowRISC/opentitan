@@ -9,12 +9,15 @@ module dma
   import dma_pkg::*;
   import dma_reg_pkg::*;
 #(
-    parameter logic [NumAlerts-1:0]      AlertAsyncOn           = {NumAlerts{1'b1}},
-    parameter bit                        EnableDataIntgGen      = 1'b1,
-    parameter bit                        EnableRspDataIntgCheck = 1'b1,
-    parameter logic [RsvdWidth-1:0]      TlUserRsvd             = '0,
-    parameter logic [SYS_RACL_WIDTH-1:0] SysRacl                = '0,
-    parameter int unsigned               OtAgentId              = 0
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             EnableDataIntgGen         = 1'b1,
+  parameter bit                             EnableRspDataIntgCheck    = 1'b1,
+  parameter logic [RsvdWidth-1:0]           TlUserRsvd                = '0,
+  parameter logic [SYS_RACL_WIDTH-1:0]      SysRacl                   = '0,
+  parameter int unsigned                    OtAgentId                 = 0,
+  parameter bit                             EnableRacl                = 1'b0,
+  parameter bit                             RaclErrorRsp              = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
@@ -27,6 +30,9 @@ module dma
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t            racl_policies_i,
+  output top_racl_pkg::racl_error_log_t             racl_error_o,
   // Device port
   input   tlul_pkg::tl_h2d_t                        tl_d_i,
   output  tlul_pkg::tl_d2h_t                        tl_d_o,
@@ -152,13 +158,19 @@ module dma
   logic reg_intg_error;
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: RANGE.CONFIG.REGWEN_MUBI
-  dma_reg_top u_dma_reg (
+  dma_reg_top #(
+    .EnableRacl       ( EnableRacl       ),
+    .RaclErrorRsp     ( RaclErrorRsp     ),
+    .RaclPolicySelVec ( RaclPolicySelVec )
+  ) u_dma_reg (
     .clk_i     ( clk_i          ),
     .rst_ni    ( rst_ni         ),
     .tl_i      ( tl_d_i         ),
     .tl_o      ( tl_d_o         ),
-    .reg2hw    ( reg2hw         ),
-    .hw2reg    ( hw2reg         ),
+    .reg2hw,
+    .hw2reg,
+    .racl_policies_i,
+    .racl_error_o,
     .intg_err_o( reg_intg_error )
   );
 
@@ -1531,6 +1543,7 @@ module dma
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
   `ASSERT_KNOWN(IntrDmaDoneKnown_A, intr_dma_done_o)
   `ASSERT_KNOWN(IntrDmaChunkDoneKnown_A, intr_dma_chunk_done_o)
   `ASSERT_KNOWN(IntrDmaErrorKnown_A, intr_dma_error_o)

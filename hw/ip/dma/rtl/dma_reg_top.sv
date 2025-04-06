@@ -6,7 +6,13 @@
 
 `include "prim_assert.sv"
 
-module dma_reg_top (
+module dma_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[dma_reg_pkg::NumRegs] =
+      '{dma_reg_pkg::NumRegs{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -14,6 +20,10 @@ module dma_reg_top (
   // To HW
   output dma_reg_pkg::dma_reg2hw_t reg2hw, // Write
   input  dma_reg_pkg::dma_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -110,7 +120,8 @@ module dma_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o.valid))
   );
 
   // cdc oversampling signals
@@ -3015,8 +3026,32 @@ module dma_reg_top (
 
 
   logic [62:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [62:0] racl_addr_hit_read;
+  logic [62:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[ 0] = (reg_addr == DMA_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == DMA_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == DMA_INTR_TEST_OFFSET);
@@ -3080,136 +3115,164 @@ module dma_reg_top (
     addr_hit[60] = (reg_addr == DMA_INTR_SRC_WR_VAL_8_OFFSET);
     addr_hit[61] = (reg_addr == DMA_INTR_SRC_WR_VAL_9_OFFSET);
     addr_hit[62] = (reg_addr == DMA_INTR_SRC_WR_VAL_10_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 63; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit, access, but failed the RACL check
+  assign racl_error_o.valid = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
+                                           (reg_we & ~|racl_addr_hit_write));
+  assign racl_error_o.request_address = top_pkg::TL_AW'(reg_addr);
+  assign racl_error_o.racl_role       = racl_role;
+  assign racl_error_o.overflow        = 1'b0;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_o.ctn_uid     = '0;
+    assign racl_error_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(DMA_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(DMA_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(DMA_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(DMA_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(DMA_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(DMA_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(DMA_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(DMA_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(DMA_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(DMA_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(DMA_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(DMA_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(DMA_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(DMA_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(DMA_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(DMA_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(DMA_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(DMA_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(DMA_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(DMA_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(DMA_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(DMA_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(DMA_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(DMA_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(DMA_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(DMA_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(DMA_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(DMA_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(DMA_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(DMA_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(DMA_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(DMA_PERMIT[31] & ~reg_be))) |
-               (addr_hit[32] & (|(DMA_PERMIT[32] & ~reg_be))) |
-               (addr_hit[33] & (|(DMA_PERMIT[33] & ~reg_be))) |
-               (addr_hit[34] & (|(DMA_PERMIT[34] & ~reg_be))) |
-               (addr_hit[35] & (|(DMA_PERMIT[35] & ~reg_be))) |
-               (addr_hit[36] & (|(DMA_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(DMA_PERMIT[37] & ~reg_be))) |
-               (addr_hit[38] & (|(DMA_PERMIT[38] & ~reg_be))) |
-               (addr_hit[39] & (|(DMA_PERMIT[39] & ~reg_be))) |
-               (addr_hit[40] & (|(DMA_PERMIT[40] & ~reg_be))) |
-               (addr_hit[41] & (|(DMA_PERMIT[41] & ~reg_be))) |
-               (addr_hit[42] & (|(DMA_PERMIT[42] & ~reg_be))) |
-               (addr_hit[43] & (|(DMA_PERMIT[43] & ~reg_be))) |
-               (addr_hit[44] & (|(DMA_PERMIT[44] & ~reg_be))) |
-               (addr_hit[45] & (|(DMA_PERMIT[45] & ~reg_be))) |
-               (addr_hit[46] & (|(DMA_PERMIT[46] & ~reg_be))) |
-               (addr_hit[47] & (|(DMA_PERMIT[47] & ~reg_be))) |
-               (addr_hit[48] & (|(DMA_PERMIT[48] & ~reg_be))) |
-               (addr_hit[49] & (|(DMA_PERMIT[49] & ~reg_be))) |
-               (addr_hit[50] & (|(DMA_PERMIT[50] & ~reg_be))) |
-               (addr_hit[51] & (|(DMA_PERMIT[51] & ~reg_be))) |
-               (addr_hit[52] & (|(DMA_PERMIT[52] & ~reg_be))) |
-               (addr_hit[53] & (|(DMA_PERMIT[53] & ~reg_be))) |
-               (addr_hit[54] & (|(DMA_PERMIT[54] & ~reg_be))) |
-               (addr_hit[55] & (|(DMA_PERMIT[55] & ~reg_be))) |
-               (addr_hit[56] & (|(DMA_PERMIT[56] & ~reg_be))) |
-               (addr_hit[57] & (|(DMA_PERMIT[57] & ~reg_be))) |
-               (addr_hit[58] & (|(DMA_PERMIT[58] & ~reg_be))) |
-               (addr_hit[59] & (|(DMA_PERMIT[59] & ~reg_be))) |
-               (addr_hit[60] & (|(DMA_PERMIT[60] & ~reg_be))) |
-               (addr_hit[61] & (|(DMA_PERMIT[61] & ~reg_be))) |
-               (addr_hit[62] & (|(DMA_PERMIT[62] & ~reg_be)))));
+              ((racl_addr_hit_write[ 0] & (|(DMA_PERMIT[ 0] & ~reg_be))) |
+               (racl_addr_hit_write[ 1] & (|(DMA_PERMIT[ 1] & ~reg_be))) |
+               (racl_addr_hit_write[ 2] & (|(DMA_PERMIT[ 2] & ~reg_be))) |
+               (racl_addr_hit_write[ 3] & (|(DMA_PERMIT[ 3] & ~reg_be))) |
+               (racl_addr_hit_write[ 4] & (|(DMA_PERMIT[ 4] & ~reg_be))) |
+               (racl_addr_hit_write[ 5] & (|(DMA_PERMIT[ 5] & ~reg_be))) |
+               (racl_addr_hit_write[ 6] & (|(DMA_PERMIT[ 6] & ~reg_be))) |
+               (racl_addr_hit_write[ 7] & (|(DMA_PERMIT[ 7] & ~reg_be))) |
+               (racl_addr_hit_write[ 8] & (|(DMA_PERMIT[ 8] & ~reg_be))) |
+               (racl_addr_hit_write[ 9] & (|(DMA_PERMIT[ 9] & ~reg_be))) |
+               (racl_addr_hit_write[10] & (|(DMA_PERMIT[10] & ~reg_be))) |
+               (racl_addr_hit_write[11] & (|(DMA_PERMIT[11] & ~reg_be))) |
+               (racl_addr_hit_write[12] & (|(DMA_PERMIT[12] & ~reg_be))) |
+               (racl_addr_hit_write[13] & (|(DMA_PERMIT[13] & ~reg_be))) |
+               (racl_addr_hit_write[14] & (|(DMA_PERMIT[14] & ~reg_be))) |
+               (racl_addr_hit_write[15] & (|(DMA_PERMIT[15] & ~reg_be))) |
+               (racl_addr_hit_write[16] & (|(DMA_PERMIT[16] & ~reg_be))) |
+               (racl_addr_hit_write[17] & (|(DMA_PERMIT[17] & ~reg_be))) |
+               (racl_addr_hit_write[18] & (|(DMA_PERMIT[18] & ~reg_be))) |
+               (racl_addr_hit_write[19] & (|(DMA_PERMIT[19] & ~reg_be))) |
+               (racl_addr_hit_write[20] & (|(DMA_PERMIT[20] & ~reg_be))) |
+               (racl_addr_hit_write[21] & (|(DMA_PERMIT[21] & ~reg_be))) |
+               (racl_addr_hit_write[22] & (|(DMA_PERMIT[22] & ~reg_be))) |
+               (racl_addr_hit_write[23] & (|(DMA_PERMIT[23] & ~reg_be))) |
+               (racl_addr_hit_write[24] & (|(DMA_PERMIT[24] & ~reg_be))) |
+               (racl_addr_hit_write[25] & (|(DMA_PERMIT[25] & ~reg_be))) |
+               (racl_addr_hit_write[26] & (|(DMA_PERMIT[26] & ~reg_be))) |
+               (racl_addr_hit_write[27] & (|(DMA_PERMIT[27] & ~reg_be))) |
+               (racl_addr_hit_write[28] & (|(DMA_PERMIT[28] & ~reg_be))) |
+               (racl_addr_hit_write[29] & (|(DMA_PERMIT[29] & ~reg_be))) |
+               (racl_addr_hit_write[30] & (|(DMA_PERMIT[30] & ~reg_be))) |
+               (racl_addr_hit_write[31] & (|(DMA_PERMIT[31] & ~reg_be))) |
+               (racl_addr_hit_write[32] & (|(DMA_PERMIT[32] & ~reg_be))) |
+               (racl_addr_hit_write[33] & (|(DMA_PERMIT[33] & ~reg_be))) |
+               (racl_addr_hit_write[34] & (|(DMA_PERMIT[34] & ~reg_be))) |
+               (racl_addr_hit_write[35] & (|(DMA_PERMIT[35] & ~reg_be))) |
+               (racl_addr_hit_write[36] & (|(DMA_PERMIT[36] & ~reg_be))) |
+               (racl_addr_hit_write[37] & (|(DMA_PERMIT[37] & ~reg_be))) |
+               (racl_addr_hit_write[38] & (|(DMA_PERMIT[38] & ~reg_be))) |
+               (racl_addr_hit_write[39] & (|(DMA_PERMIT[39] & ~reg_be))) |
+               (racl_addr_hit_write[40] & (|(DMA_PERMIT[40] & ~reg_be))) |
+               (racl_addr_hit_write[41] & (|(DMA_PERMIT[41] & ~reg_be))) |
+               (racl_addr_hit_write[42] & (|(DMA_PERMIT[42] & ~reg_be))) |
+               (racl_addr_hit_write[43] & (|(DMA_PERMIT[43] & ~reg_be))) |
+               (racl_addr_hit_write[44] & (|(DMA_PERMIT[44] & ~reg_be))) |
+               (racl_addr_hit_write[45] & (|(DMA_PERMIT[45] & ~reg_be))) |
+               (racl_addr_hit_write[46] & (|(DMA_PERMIT[46] & ~reg_be))) |
+               (racl_addr_hit_write[47] & (|(DMA_PERMIT[47] & ~reg_be))) |
+               (racl_addr_hit_write[48] & (|(DMA_PERMIT[48] & ~reg_be))) |
+               (racl_addr_hit_write[49] & (|(DMA_PERMIT[49] & ~reg_be))) |
+               (racl_addr_hit_write[50] & (|(DMA_PERMIT[50] & ~reg_be))) |
+               (racl_addr_hit_write[51] & (|(DMA_PERMIT[51] & ~reg_be))) |
+               (racl_addr_hit_write[52] & (|(DMA_PERMIT[52] & ~reg_be))) |
+               (racl_addr_hit_write[53] & (|(DMA_PERMIT[53] & ~reg_be))) |
+               (racl_addr_hit_write[54] & (|(DMA_PERMIT[54] & ~reg_be))) |
+               (racl_addr_hit_write[55] & (|(DMA_PERMIT[55] & ~reg_be))) |
+               (racl_addr_hit_write[56] & (|(DMA_PERMIT[56] & ~reg_be))) |
+               (racl_addr_hit_write[57] & (|(DMA_PERMIT[57] & ~reg_be))) |
+               (racl_addr_hit_write[58] & (|(DMA_PERMIT[58] & ~reg_be))) |
+               (racl_addr_hit_write[59] & (|(DMA_PERMIT[59] & ~reg_be))) |
+               (racl_addr_hit_write[60] & (|(DMA_PERMIT[60] & ~reg_be))) |
+               (racl_addr_hit_write[61] & (|(DMA_PERMIT[61] & ~reg_be))) |
+               (racl_addr_hit_write[62] & (|(DMA_PERMIT[62] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+  assign intr_enable_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign intr_enable_dma_done_wd = reg_wdata[0];
 
   assign intr_enable_dma_chunk_done_wd = reg_wdata[1];
 
   assign intr_enable_dma_error_wd = reg_wdata[2];
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_test_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign intr_test_dma_done_wd = reg_wdata[0];
 
   assign intr_test_dma_chunk_done_wd = reg_wdata[1];
 
   assign intr_test_dma_error_wd = reg_wdata[2];
-  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign src_addr_lo_we = addr_hit[4] & reg_we & !reg_error;
+  assign src_addr_lo_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
   assign src_addr_lo_wd = reg_wdata[31:0];
-  assign src_addr_hi_we = addr_hit[5] & reg_we & !reg_error;
+  assign src_addr_hi_we = racl_addr_hit_write[5] & reg_we & !reg_error;
 
   assign src_addr_hi_wd = reg_wdata[31:0];
-  assign dst_addr_lo_we = addr_hit[6] & reg_we & !reg_error;
+  assign dst_addr_lo_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign dst_addr_lo_wd = reg_wdata[31:0];
-  assign dst_addr_hi_we = addr_hit[7] & reg_we & !reg_error;
+  assign dst_addr_hi_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign dst_addr_hi_wd = reg_wdata[31:0];
-  assign addr_space_id_we = addr_hit[8] & reg_we & !reg_error;
+  assign addr_space_id_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign addr_space_id_src_asid_wd = reg_wdata[3:0];
 
   assign addr_space_id_dst_asid_wd = reg_wdata[7:4];
-  assign enabled_memory_range_base_we = addr_hit[9] & reg_we & !reg_error;
+  assign enabled_memory_range_base_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
   assign enabled_memory_range_base_wd = reg_wdata[31:0];
-  assign enabled_memory_range_limit_we = addr_hit[10] & reg_we & !reg_error;
+  assign enabled_memory_range_limit_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign enabled_memory_range_limit_wd = reg_wdata[31:0];
-  assign range_valid_we = addr_hit[11] & reg_we & !reg_error;
+  assign range_valid_we = racl_addr_hit_write[11] & reg_we & !reg_error;
 
   assign range_valid_wd = reg_wdata[0];
-  assign range_regwen_we = addr_hit[12] & reg_we & !reg_error;
+  assign range_regwen_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
   assign range_regwen_wd = reg_wdata[3:0];
-  assign cfg_regwen_re = addr_hit[13] & reg_re & !reg_error;
-  assign total_data_size_we = addr_hit[14] & reg_we & !reg_error;
+  assign cfg_regwen_re = racl_addr_hit_read[13] & reg_re & !reg_error;
+  assign total_data_size_we = racl_addr_hit_write[14] & reg_we & !reg_error;
 
   assign total_data_size_wd = reg_wdata[31:0];
-  assign chunk_data_size_we = addr_hit[15] & reg_we & !reg_error;
+  assign chunk_data_size_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign chunk_data_size_wd = reg_wdata[31:0];
-  assign transfer_width_we = addr_hit[16] & reg_we & !reg_error;
+  assign transfer_width_we = racl_addr_hit_write[16] & reg_we & !reg_error;
 
   assign transfer_width_wd = reg_wdata[1:0];
-  assign control_we = addr_hit[17] & reg_we & !reg_error;
+  assign control_we = racl_addr_hit_write[17] & reg_we & !reg_error;
 
   assign control_opcode_wd = reg_wdata[3:0];
 
@@ -3222,17 +3285,17 @@ module dma_reg_top (
   assign control_abort_wd = reg_wdata[27];
 
   assign control_go_wd = reg_wdata[31];
-  assign src_config_we = addr_hit[18] & reg_we & !reg_error;
+  assign src_config_we = racl_addr_hit_write[18] & reg_we & !reg_error;
 
   assign src_config_increment_wd = reg_wdata[0];
 
   assign src_config_wrap_wd = reg_wdata[1];
-  assign dst_config_we = addr_hit[19] & reg_we & !reg_error;
+  assign dst_config_we = racl_addr_hit_write[19] & reg_we & !reg_error;
 
   assign dst_config_increment_wd = reg_wdata[0];
 
   assign dst_config_wrap_wd = reg_wdata[1];
-  assign status_we = addr_hit[20] & reg_we & !reg_error;
+  assign status_we = racl_addr_hit_write[20] & reg_we & !reg_error;
 
   assign status_done_wd = reg_wdata[1];
 
@@ -3241,79 +3304,79 @@ module dma_reg_top (
   assign status_error_wd = reg_wdata[3];
 
   assign status_chunk_done_wd = reg_wdata[5];
-  assign handshake_intr_enable_we = addr_hit[38] & reg_we & !reg_error;
+  assign handshake_intr_enable_we = racl_addr_hit_write[38] & reg_we & !reg_error;
 
   assign handshake_intr_enable_wd = reg_wdata[10:0];
-  assign clear_intr_src_we = addr_hit[39] & reg_we & !reg_error;
+  assign clear_intr_src_we = racl_addr_hit_write[39] & reg_we & !reg_error;
 
   assign clear_intr_src_wd = reg_wdata[10:0];
-  assign clear_intr_bus_we = addr_hit[40] & reg_we & !reg_error;
+  assign clear_intr_bus_we = racl_addr_hit_write[40] & reg_we & !reg_error;
 
   assign clear_intr_bus_wd = reg_wdata[10:0];
-  assign intr_src_addr_0_we = addr_hit[41] & reg_we & !reg_error;
+  assign intr_src_addr_0_we = racl_addr_hit_write[41] & reg_we & !reg_error;
 
   assign intr_src_addr_0_wd = reg_wdata[31:0];
-  assign intr_src_addr_1_we = addr_hit[42] & reg_we & !reg_error;
+  assign intr_src_addr_1_we = racl_addr_hit_write[42] & reg_we & !reg_error;
 
   assign intr_src_addr_1_wd = reg_wdata[31:0];
-  assign intr_src_addr_2_we = addr_hit[43] & reg_we & !reg_error;
+  assign intr_src_addr_2_we = racl_addr_hit_write[43] & reg_we & !reg_error;
 
   assign intr_src_addr_2_wd = reg_wdata[31:0];
-  assign intr_src_addr_3_we = addr_hit[44] & reg_we & !reg_error;
+  assign intr_src_addr_3_we = racl_addr_hit_write[44] & reg_we & !reg_error;
 
   assign intr_src_addr_3_wd = reg_wdata[31:0];
-  assign intr_src_addr_4_we = addr_hit[45] & reg_we & !reg_error;
+  assign intr_src_addr_4_we = racl_addr_hit_write[45] & reg_we & !reg_error;
 
   assign intr_src_addr_4_wd = reg_wdata[31:0];
-  assign intr_src_addr_5_we = addr_hit[46] & reg_we & !reg_error;
+  assign intr_src_addr_5_we = racl_addr_hit_write[46] & reg_we & !reg_error;
 
   assign intr_src_addr_5_wd = reg_wdata[31:0];
-  assign intr_src_addr_6_we = addr_hit[47] & reg_we & !reg_error;
+  assign intr_src_addr_6_we = racl_addr_hit_write[47] & reg_we & !reg_error;
 
   assign intr_src_addr_6_wd = reg_wdata[31:0];
-  assign intr_src_addr_7_we = addr_hit[48] & reg_we & !reg_error;
+  assign intr_src_addr_7_we = racl_addr_hit_write[48] & reg_we & !reg_error;
 
   assign intr_src_addr_7_wd = reg_wdata[31:0];
-  assign intr_src_addr_8_we = addr_hit[49] & reg_we & !reg_error;
+  assign intr_src_addr_8_we = racl_addr_hit_write[49] & reg_we & !reg_error;
 
   assign intr_src_addr_8_wd = reg_wdata[31:0];
-  assign intr_src_addr_9_we = addr_hit[50] & reg_we & !reg_error;
+  assign intr_src_addr_9_we = racl_addr_hit_write[50] & reg_we & !reg_error;
 
   assign intr_src_addr_9_wd = reg_wdata[31:0];
-  assign intr_src_addr_10_we = addr_hit[51] & reg_we & !reg_error;
+  assign intr_src_addr_10_we = racl_addr_hit_write[51] & reg_we & !reg_error;
 
   assign intr_src_addr_10_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_0_we = addr_hit[52] & reg_we & !reg_error;
+  assign intr_src_wr_val_0_we = racl_addr_hit_write[52] & reg_we & !reg_error;
 
   assign intr_src_wr_val_0_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_1_we = addr_hit[53] & reg_we & !reg_error;
+  assign intr_src_wr_val_1_we = racl_addr_hit_write[53] & reg_we & !reg_error;
 
   assign intr_src_wr_val_1_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_2_we = addr_hit[54] & reg_we & !reg_error;
+  assign intr_src_wr_val_2_we = racl_addr_hit_write[54] & reg_we & !reg_error;
 
   assign intr_src_wr_val_2_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_3_we = addr_hit[55] & reg_we & !reg_error;
+  assign intr_src_wr_val_3_we = racl_addr_hit_write[55] & reg_we & !reg_error;
 
   assign intr_src_wr_val_3_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_4_we = addr_hit[56] & reg_we & !reg_error;
+  assign intr_src_wr_val_4_we = racl_addr_hit_write[56] & reg_we & !reg_error;
 
   assign intr_src_wr_val_4_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_5_we = addr_hit[57] & reg_we & !reg_error;
+  assign intr_src_wr_val_5_we = racl_addr_hit_write[57] & reg_we & !reg_error;
 
   assign intr_src_wr_val_5_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_6_we = addr_hit[58] & reg_we & !reg_error;
+  assign intr_src_wr_val_6_we = racl_addr_hit_write[58] & reg_we & !reg_error;
 
   assign intr_src_wr_val_6_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_7_we = addr_hit[59] & reg_we & !reg_error;
+  assign intr_src_wr_val_7_we = racl_addr_hit_write[59] & reg_we & !reg_error;
 
   assign intr_src_wr_val_7_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_8_we = addr_hit[60] & reg_we & !reg_error;
+  assign intr_src_wr_val_8_we = racl_addr_hit_write[60] & reg_we & !reg_error;
 
   assign intr_src_wr_val_8_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_9_we = addr_hit[61] & reg_we & !reg_error;
+  assign intr_src_wr_val_9_we = racl_addr_hit_write[61] & reg_we & !reg_error;
 
   assign intr_src_wr_val_9_wd = reg_wdata[31:0];
-  assign intr_src_wr_val_10_we = addr_hit[62] & reg_we & !reg_error;
+  assign intr_src_wr_val_10_we = racl_addr_hit_write[62] & reg_we & !reg_error;
 
   assign intr_src_wr_val_10_wd = reg_wdata[31:0];
 
@@ -3389,82 +3452,82 @@ module dma_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = intr_state_dma_done_qs;
         reg_rdata_next[1] = intr_state_dma_chunk_done_qs;
         reg_rdata_next[2] = intr_state_dma_error_qs;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = intr_enable_dma_done_qs;
         reg_rdata_next[1] = intr_enable_dma_chunk_done_qs;
         reg_rdata_next[2] = intr_enable_dma_error_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
       end
 
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[4]: begin
+      racl_addr_hit_read[4]: begin
         reg_rdata_next[31:0] = src_addr_lo_qs;
       end
 
-      addr_hit[5]: begin
+      racl_addr_hit_read[5]: begin
         reg_rdata_next[31:0] = src_addr_hi_qs;
       end
 
-      addr_hit[6]: begin
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[31:0] = dst_addr_lo_qs;
       end
 
-      addr_hit[7]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next[31:0] = dst_addr_hi_qs;
       end
 
-      addr_hit[8]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next[3:0] = addr_space_id_src_asid_qs;
         reg_rdata_next[7:4] = addr_space_id_dst_asid_qs;
       end
 
-      addr_hit[9]: begin
+      racl_addr_hit_read[9]: begin
         reg_rdata_next[31:0] = enabled_memory_range_base_qs;
       end
 
-      addr_hit[10]: begin
+      racl_addr_hit_read[10]: begin
         reg_rdata_next[31:0] = enabled_memory_range_limit_qs;
       end
 
-      addr_hit[11]: begin
+      racl_addr_hit_read[11]: begin
         reg_rdata_next[0] = range_valid_qs;
       end
 
-      addr_hit[12]: begin
+      racl_addr_hit_read[12]: begin
         reg_rdata_next[3:0] = range_regwen_qs;
       end
 
-      addr_hit[13]: begin
+      racl_addr_hit_read[13]: begin
         reg_rdata_next[3:0] = cfg_regwen_qs;
       end
 
-      addr_hit[14]: begin
+      racl_addr_hit_read[14]: begin
         reg_rdata_next[31:0] = total_data_size_qs;
       end
 
-      addr_hit[15]: begin
+      racl_addr_hit_read[15]: begin
         reg_rdata_next[31:0] = chunk_data_size_qs;
       end
 
-      addr_hit[16]: begin
+      racl_addr_hit_read[16]: begin
         reg_rdata_next[1:0] = transfer_width_qs;
       end
 
-      addr_hit[17]: begin
+      racl_addr_hit_read[17]: begin
         reg_rdata_next[3:0] = control_opcode_qs;
         reg_rdata_next[4] = control_hardware_handshake_enable_qs;
         reg_rdata_next[5] = control_digest_swap_qs;
@@ -3473,17 +3536,17 @@ module dma_reg_top (
         reg_rdata_next[31] = control_go_qs;
       end
 
-      addr_hit[18]: begin
+      racl_addr_hit_read[18]: begin
         reg_rdata_next[0] = src_config_increment_qs;
         reg_rdata_next[1] = src_config_wrap_qs;
       end
 
-      addr_hit[19]: begin
+      racl_addr_hit_read[19]: begin
         reg_rdata_next[0] = dst_config_increment_qs;
         reg_rdata_next[1] = dst_config_wrap_qs;
       end
 
-      addr_hit[20]: begin
+      racl_addr_hit_read[20]: begin
         reg_rdata_next[0] = status_busy_qs;
         reg_rdata_next[1] = status_done_qs;
         reg_rdata_next[2] = status_aborted_qs;
@@ -3492,7 +3555,7 @@ module dma_reg_top (
         reg_rdata_next[5] = status_chunk_done_qs;
       end
 
-      addr_hit[21]: begin
+      racl_addr_hit_read[21]: begin
         reg_rdata_next[0] = error_code_src_addr_error_qs;
         reg_rdata_next[1] = error_code_dst_addr_error_qs;
         reg_rdata_next[2] = error_code_opcode_error_qs;
@@ -3503,167 +3566,167 @@ module dma_reg_top (
         reg_rdata_next[7] = error_code_asid_error_qs;
       end
 
-      addr_hit[22]: begin
+      racl_addr_hit_read[22]: begin
         reg_rdata_next[31:0] = sha2_digest_0_qs;
       end
 
-      addr_hit[23]: begin
+      racl_addr_hit_read[23]: begin
         reg_rdata_next[31:0] = sha2_digest_1_qs;
       end
 
-      addr_hit[24]: begin
+      racl_addr_hit_read[24]: begin
         reg_rdata_next[31:0] = sha2_digest_2_qs;
       end
 
-      addr_hit[25]: begin
+      racl_addr_hit_read[25]: begin
         reg_rdata_next[31:0] = sha2_digest_3_qs;
       end
 
-      addr_hit[26]: begin
+      racl_addr_hit_read[26]: begin
         reg_rdata_next[31:0] = sha2_digest_4_qs;
       end
 
-      addr_hit[27]: begin
+      racl_addr_hit_read[27]: begin
         reg_rdata_next[31:0] = sha2_digest_5_qs;
       end
 
-      addr_hit[28]: begin
+      racl_addr_hit_read[28]: begin
         reg_rdata_next[31:0] = sha2_digest_6_qs;
       end
 
-      addr_hit[29]: begin
+      racl_addr_hit_read[29]: begin
         reg_rdata_next[31:0] = sha2_digest_7_qs;
       end
 
-      addr_hit[30]: begin
+      racl_addr_hit_read[30]: begin
         reg_rdata_next[31:0] = sha2_digest_8_qs;
       end
 
-      addr_hit[31]: begin
+      racl_addr_hit_read[31]: begin
         reg_rdata_next[31:0] = sha2_digest_9_qs;
       end
 
-      addr_hit[32]: begin
+      racl_addr_hit_read[32]: begin
         reg_rdata_next[31:0] = sha2_digest_10_qs;
       end
 
-      addr_hit[33]: begin
+      racl_addr_hit_read[33]: begin
         reg_rdata_next[31:0] = sha2_digest_11_qs;
       end
 
-      addr_hit[34]: begin
+      racl_addr_hit_read[34]: begin
         reg_rdata_next[31:0] = sha2_digest_12_qs;
       end
 
-      addr_hit[35]: begin
+      racl_addr_hit_read[35]: begin
         reg_rdata_next[31:0] = sha2_digest_13_qs;
       end
 
-      addr_hit[36]: begin
+      racl_addr_hit_read[36]: begin
         reg_rdata_next[31:0] = sha2_digest_14_qs;
       end
 
-      addr_hit[37]: begin
+      racl_addr_hit_read[37]: begin
         reg_rdata_next[31:0] = sha2_digest_15_qs;
       end
 
-      addr_hit[38]: begin
+      racl_addr_hit_read[38]: begin
         reg_rdata_next[10:0] = handshake_intr_enable_qs;
       end
 
-      addr_hit[39]: begin
+      racl_addr_hit_read[39]: begin
         reg_rdata_next[10:0] = clear_intr_src_qs;
       end
 
-      addr_hit[40]: begin
+      racl_addr_hit_read[40]: begin
         reg_rdata_next[10:0] = clear_intr_bus_qs;
       end
 
-      addr_hit[41]: begin
+      racl_addr_hit_read[41]: begin
         reg_rdata_next[31:0] = intr_src_addr_0_qs;
       end
 
-      addr_hit[42]: begin
+      racl_addr_hit_read[42]: begin
         reg_rdata_next[31:0] = intr_src_addr_1_qs;
       end
 
-      addr_hit[43]: begin
+      racl_addr_hit_read[43]: begin
         reg_rdata_next[31:0] = intr_src_addr_2_qs;
       end
 
-      addr_hit[44]: begin
+      racl_addr_hit_read[44]: begin
         reg_rdata_next[31:0] = intr_src_addr_3_qs;
       end
 
-      addr_hit[45]: begin
+      racl_addr_hit_read[45]: begin
         reg_rdata_next[31:0] = intr_src_addr_4_qs;
       end
 
-      addr_hit[46]: begin
+      racl_addr_hit_read[46]: begin
         reg_rdata_next[31:0] = intr_src_addr_5_qs;
       end
 
-      addr_hit[47]: begin
+      racl_addr_hit_read[47]: begin
         reg_rdata_next[31:0] = intr_src_addr_6_qs;
       end
 
-      addr_hit[48]: begin
+      racl_addr_hit_read[48]: begin
         reg_rdata_next[31:0] = intr_src_addr_7_qs;
       end
 
-      addr_hit[49]: begin
+      racl_addr_hit_read[49]: begin
         reg_rdata_next[31:0] = intr_src_addr_8_qs;
       end
 
-      addr_hit[50]: begin
+      racl_addr_hit_read[50]: begin
         reg_rdata_next[31:0] = intr_src_addr_9_qs;
       end
 
-      addr_hit[51]: begin
+      racl_addr_hit_read[51]: begin
         reg_rdata_next[31:0] = intr_src_addr_10_qs;
       end
 
-      addr_hit[52]: begin
+      racl_addr_hit_read[52]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_0_qs;
       end
 
-      addr_hit[53]: begin
+      racl_addr_hit_read[53]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_1_qs;
       end
 
-      addr_hit[54]: begin
+      racl_addr_hit_read[54]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_2_qs;
       end
 
-      addr_hit[55]: begin
+      racl_addr_hit_read[55]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_3_qs;
       end
 
-      addr_hit[56]: begin
+      racl_addr_hit_read[56]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_4_qs;
       end
 
-      addr_hit[57]: begin
+      racl_addr_hit_read[57]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_5_qs;
       end
 
-      addr_hit[58]: begin
+      racl_addr_hit_read[58]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_6_qs;
       end
 
-      addr_hit[59]: begin
+      racl_addr_hit_read[59]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_7_qs;
       end
 
-      addr_hit[60]: begin
+      racl_addr_hit_read[60]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_8_qs;
       end
 
-      addr_hit[61]: begin
+      racl_addr_hit_read[61]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_9_qs;
       end
 
-      addr_hit[62]: begin
+      racl_addr_hit_read[62]: begin
         reg_rdata_next[31:0] = intr_src_wr_val_10_qs;
       end
 
@@ -3688,6 +3751,8 @@ module dma_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
