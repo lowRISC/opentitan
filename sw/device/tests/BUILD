@@ -557,7 +557,6 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
