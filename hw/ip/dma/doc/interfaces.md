@@ -10,14 +10,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name    | Package::Struct       | Type    | Act   |   Width | Description                                                      |
-|:-------------|:----------------------|:--------|:------|--------:|:-----------------------------------------------------------------|
-| lsio_trigger | dma_pkg::lsio_trigger | uni     | rcv   |       1 |                                                                  |
-| sys          | dma_pkg::sys          | req_rsp | req   |       1 |                                                                  |
-| ctn_tl_h2d   | tlul_pkg::tl_h2d      | uni     | req   |       1 | TL-UL host port for egress into CTN (request part), synchronous  |
-| ctn_tl_d2h   | tlul_pkg::tl_d2h      | uni     | rcv   |       1 | TL-UL host port for egress into CTN (response part), synchronous |
-| host_tl_h    | tlul_pkg::tl          | req_rsp | req   |       1 |                                                                  |
-| tl_d         | tlul_pkg::tl          | req_rsp | rsp   |       1 |                                                                  |
+| Port Name     | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
+|:--------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
+| lsio_trigger  | dma_pkg::lsio_trigger         | uni     | rcv   |       1 |                                                                                                                                      |
+| sys           | dma_pkg::sys                  | req_rsp | req   |       1 |                                                                                                                                      |
+| ctn_tl_h2d    | tlul_pkg::tl_h2d              | uni     | req   |       1 | TL-UL host port for egress into CTN (request part), synchronous                                                                      |
+| ctn_tl_d2h    | tlul_pkg::tl_d2h              | uni     | rcv   |       1 | TL-UL host port for egress into CTN (response part), synchronous                                                                     |
+| racl_policies | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error    | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| host_tl_h     | tlul_pkg::tl                  | req_rsp | req   |       1 |                                                                                                                                      |
+| tl_d          | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Interrupts
 

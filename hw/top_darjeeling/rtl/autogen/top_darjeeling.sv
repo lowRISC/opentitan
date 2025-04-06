@@ -2208,6 +2208,8 @@ module top_darjeeling #(
       .sys_i(dma_sys_rsp_i),
       .ctn_tl_h2d_o(soc_proxy_dma_tl_h2d),
       .ctn_tl_d2h_i(soc_proxy_dma_tl_d2h),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
       .host_tl_h_o(main_tl_dma__host_req),
       .host_tl_h_i(main_tl_dma__host_rsp),
       .tl_d_i(dma_tl_d_req),
