@@ -48,6 +48,12 @@ module ${module_instance_name}
       ibex_pkg::RndCnstIbexNonceDefault,
   parameter int unsigned                    NEscalationSeverities = 4,
   parameter int unsigned                    WidthPingCounter      = 16,
+% if racl_support:
+  parameter bit                             EnableRacl             = 1'b0,
+  parameter bit                             RaclErrorRsp           = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegs] = 
+    '{${module_instance_name}_reg_pkg::NumRegs{0}},
+% endif
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0
 ) (
   // Clock and Reset
@@ -122,6 +128,12 @@ module ${module_instance_name}
   // fpga build info
   input [31:0] fpga_info_i,
 
+% if racl_support:
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
+
+% endif
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
@@ -717,13 +729,25 @@ module ${module_instance_name}
   logic intg_err;
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
+% if racl_support:
+  ${module_instance_name}_cfg_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg_wrap (
+% else:
   ${module_instance_name}_cfg_reg_top u_reg_cfg (
+% endif
     .clk_i,
     .rst_ni,
     .tl_i(cfg_tl_d_i),
     .tl_o(cfg_tl_d_o),
     .reg2hw,
     .hw2reg,
+  % if racl_support:
+    .racl_policies_i,
+    .racl_error_o,
+  % endif
     .intg_err_o (intg_err),
     .tl_win_o(tl_win_h2d),
     .tl_win_i(tl_win_d2h)
@@ -929,6 +953,9 @@ module ${module_instance_name}
   );
 
   `ASSERT_INIT(ICacheNWaysCorrect_A, ICacheNWays == ibex_pkg::IC_NUM_WAYS)
+% if racl_support:
+  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
+% endif
 
   // Assertions for CPU enable
   // Allow 2 or 3 cycles for input to enable due to synchronizers

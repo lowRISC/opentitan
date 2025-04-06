@@ -807,6 +807,7 @@ def _get_rv_core_ibex_params(topcfg: Dict[str, object]) -> Dict[str, object]:
     uniquified_modules.add_module(module["template_type"], module["type"])
 
     return {
+        "racl_support": module.get("ipgen_param", {}).get("racl_support", False),
         "num_regions": module['ipgen_param']['NumRegions'],
         'module_instance_name': module['type']
     }
