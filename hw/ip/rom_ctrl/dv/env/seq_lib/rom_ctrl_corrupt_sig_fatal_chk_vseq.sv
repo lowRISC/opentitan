@@ -28,6 +28,9 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task wait_with_bound(int max_clks);
   extern task force_sig(string path, int value);
 
+  // Snoop to get the current state of the checker FSM
+  extern local function rom_ctrl_pkg::fsm_state_e get_checker_fsm_state();
+
   // Wait until the FSM state is a value in the queue. When that happens, write that state to
   // state_seen.
   extern local task wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
@@ -52,6 +55,16 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // 'done' signal for pwrmgr to continue boot.
   extern local task test_checker_ctrl_flow_consistency();
 
+  // The checker runs when its start_i signal goes high. If an attacker managed to poke this early,
+  // they might manage to do so before there KMAC had reported a digest or we had read the expected
+  // digest. It would then check that 0 == 0, and we'd lose any security from the check.
+  //
+  // To make sure this doesn't happen, the FSM requires that the "checker done" signal only goes
+  // high when the FSM is in a state where we expect to have started it. This task starts the
+  // checker early. 8 cycles later, we expect it to report completion and the FSM check will fail,
+  // locking up the FSM and raising an alert.
+  extern local task run_compare_early();
+
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
@@ -70,27 +83,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
 
       CheckerCtrlFlowConsistency: test_checker_ctrl_flow_consistency();
 
-      // The main checker FSM steps on internal 'done' signals, coming from its address counter,
-      // the KMAC response and its comparison counter. If any of these are asserted at times
-      // we don't expect, the FSM jumps to an invalid state. This triggers an alert and will not
-      // set the external 'done' signal for pwrmgr to continue boot. To test this start_checker_q
-      // signal from rom_ctrl_fsm is asserted randomly.
-      CompareCtrlFlowConsistency: begin
-        string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
-        bit rdata;
-        pick_err_inj_point();
-        // If there's a ping on-flight wait until it's finished. Otherwise, the alert due to the
-        // fault injection may be hard to predict since it will come after the ping, but
-        // dependant on the exact ping timing
-        wait_until_ping_is_finished(cfg.m_alert_agent_cfgs["fatal"]);
+      CompareCtrlFlowConsistency: run_compare_early();
 
-        do begin
-          `DV_CHECK(uvm_hdl_read(start_chk_path, rdata))
-          @(posedge cfg.clk_rst_vif.clk);
-        end while (rdata != 0);
-        force_sig(start_chk_path, 1'b1);
-        wait_for_fatal_alert();
-      end
       // The hash comparison module has an internal count. If this glitches to a nonzero value
       // before the comparison starts (state=Waiting) or to a value other than the last index
       // after the comparison ends (state=Done) then a fatal alert is generated.
@@ -238,20 +232,26 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::force_sig(string path, int value);
   `DV_CHECK(uvm_hdl_release(path));
 endtask: force_sig
 
+function rom_ctrl_pkg::fsm_state_e rom_ctrl_corrupt_sig_fatal_chk_vseq::get_checker_fsm_state();
+  string path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
+  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] raw_state;
+
+  `DV_CHECK(uvm_hdl_read(path, raw_state))
+
+  return rom_ctrl_pkg::fsm_state_e'(raw_state);
+endfunction
+
 task
   rom_ctrl_corrupt_sig_fatal_chk_vseq::
     wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
                               output rom_ctrl_pkg::fsm_state_e state_seen);
   string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
-  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] raw_state;
 
   // Step through the middles of cycles until the FSM state is in the list of states to visit.
   do begin
     @(negedge cfg.clk_rst_vif.clk);
-    `DV_CHECK(uvm_hdl_read(state_q_path, raw_state))
-  end while (!(raw_state inside {states_to_visit}));
-
-  state_seen = rom_ctrl_pkg::fsm_state_e'(raw_state);
+    state_seen = get_checker_fsm_state();
+  end while (!(state_seen inside {states_to_visit}));
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
@@ -385,4 +385,34 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
     // happen.
     wait_for_fatal_alert();
   end
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::run_compare_early();
+  string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
+  virtual alert_esc_if alert_vif = cfg.m_alert_agent_cfgs["fatal"].vif;
+
+  // Wait a short time (to avoid always starting at exactly the start)
+  wait_with_bound(100);
+
+  // If there's a ping in flight wait until it's finished. Otherwise, the alert due to the fault
+  // injection may be hard to predict since it will come after the ping, but dependant on the exact
+  // ping timing
+  if (alert_vif.in_ping_st()) begin
+    // There's 2-cycles sampling delay in the monitor, so if the VIF has already seen the ping Wait
+    // for it. Otherwise there may be scenarios where the `active_ping` is not yet set in the
+    // monitor due to the 2-cycle delay. Which causes issues predicting the value in
+    // `fatal_alert_cause`
+    wait (cfg.m_alert_agent_cfgs["fatal"].active_ping == 1);
+  end
+  wait (cfg.m_alert_agent_cfgs["fatal"].active_ping == 0);
+
+  // Forcing this signal is (obviously) only going to work if we are still early enough. Snoop
+  // quickly on the FSM state and check that it is ReadingLow (meaning we're pretty certain that if
+  // we start it now, the checker will finish its job before the FSM is ready for it).
+  `DV_CHECK(get_checker_fsm_state() == rom_ctrl_pkg::ReadingLow)
+
+  // Start an early check
+  force_sig(start_chk_path, 1'b1);
+
+  wait_for_fatal_alert();
 endtask
