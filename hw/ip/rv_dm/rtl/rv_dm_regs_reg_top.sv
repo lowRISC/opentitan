@@ -6,13 +6,23 @@
 
 `include "prim_assert.sv"
 
-module rv_dm_regs_reg_top (
+module rv_dm_regs_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[rv_dm_reg_pkg::NumRegsRegs] =
+      '{rv_dm_reg_pkg::NumRegsRegs{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
   output rv_dm_reg_pkg::rv_dm_regs_reg2hw_t reg2hw, // Write
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -109,7 +119,8 @@ module rv_dm_regs_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o.valid))
   );
 
   // cdc oversampling signals
@@ -211,31 +222,83 @@ module rv_dm_regs_reg_top (
 
 
   logic [2:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [2:0] racl_addr_hit_read;
+  logic [2:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == RV_DM_ALERT_TEST_OFFSET);
     addr_hit[1] = (reg_addr == RV_DM_LATE_DEBUG_ENABLE_REGWEN_OFFSET);
     addr_hit[2] = (reg_addr == RV_DM_LATE_DEBUG_ENABLE_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 3; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit, access, but failed the RACL check
+  assign racl_error_o.valid = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
+                                           (reg_we & ~|racl_addr_hit_write));
+  assign racl_error_o.request_address = top_pkg::TL_AW'(reg_addr);
+  assign racl_error_o.racl_role       = racl_role;
+  assign racl_error_o.overflow        = 1'b0;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_o.ctn_uid     = '0;
+    assign racl_error_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(RV_DM_REGS_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(RV_DM_REGS_PERMIT[2] & ~reg_be)))));
+              ((racl_addr_hit_write[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be))) |
+               (racl_addr_hit_write[1] & (|(RV_DM_REGS_PERMIT[1] & ~reg_be))) |
+               (racl_addr_hit_write[2] & (|(RV_DM_REGS_PERMIT[2] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign late_debug_enable_regwen_we = addr_hit[1] & reg_we & !reg_error;
+  assign late_debug_enable_regwen_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign late_debug_enable_regwen_wd = reg_wdata[0];
-  assign late_debug_enable_we = addr_hit[2] & reg_we & !reg_error;
+  assign late_debug_enable_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign late_debug_enable_wd = reg_wdata[31:0];
 
@@ -251,15 +314,15 @@ module rv_dm_regs_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = late_debug_enable_regwen_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[31:0] = late_debug_enable_qs;
       end
 
@@ -284,6 +347,8 @@ module rv_dm_regs_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)

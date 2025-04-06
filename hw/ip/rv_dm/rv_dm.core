@@ -18,6 +18,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
       - pulp-platform:riscv-dbg:0.1
+      - lowrisc:virtual_constants:top_racl_pkg
     files:
       - rtl/rv_dm_reg_pkg.sv
       - rtl/rv_dm_regs_reg_top.sv

@@ -15,11 +15,14 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]           AlertAsyncOn           = {NumAlerts{1'b1}},
-  parameter logic [31:0]                    IdcodeValue            = 32'h 0000_0001,
-  parameter bit                             UseDmiInterface        = 1'b0,
-  parameter bit                             SecVolatileRawUnlockEn = 0,
-  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn                  = {NumAlerts{1'b1}},
+  parameter logic [31:0]                    IdcodeValue                   = 32'h 0000_0001,
+  parameter bit                             UseDmiInterface               = 1'b0,
+  parameter bit                             SecVolatileRawUnlockEn        = 0,
+  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits          = 0,
+  parameter bit                             EnableRacl                    = 1'b0,
+  parameter bit                             RaclErrorRsp                  = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegsRegs] = '{NumRegsRegs{0}}
 ) (
   input  logic                clk_i,       // clock
   input  logic                clk_lc_i,    // only declared here so that the topgen
@@ -67,6 +70,10 @@ module rv_dm
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // JTAG TAP
   input  jtag_pkg::jtag_req_t jtag_i,
@@ -118,12 +125,18 @@ module rv_dm
   logic regs_intg_error, rom_intg_error, dmi_intg_error, dbg_intg_error;
   logic sba_gate_intg_error, rom_gate_intg_error;
 
-  rv_dm_regs_reg_top u_reg_regs (
+  rv_dm_regs_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg_regs (
     .clk_i,
     .rst_ni,
     .tl_i      (regs_tl_d_i    ),
     .tl_o      (regs_tl_d_o    ),
     .reg2hw    (regs_reg2hw    ),
+    .racl_policies_i,
+    .racl_error_o,
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(regs_intg_error)
   );
@@ -708,6 +721,7 @@ module rv_dm
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
   `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
+  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
 
   if (UseDmiInterface) begin : gen_dmi_assertions
     `ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
