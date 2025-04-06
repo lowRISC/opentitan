@@ -39,7 +39,7 @@ static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount >= 1,
               "this test expects at least one aon_timer");
 static const dt_rstmgr_t kRstmgrDt = 0;
-static_assert(kDtPwrmgrCount == 1, "this test expects a rstmgr");
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
 static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1, "this test expects an alert_handler");
 static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
