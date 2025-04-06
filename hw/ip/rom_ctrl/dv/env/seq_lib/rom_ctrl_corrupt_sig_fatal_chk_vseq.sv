@@ -86,8 +86,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
 endclass
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
-  int num_reps;
-  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reps, (num_reps >= 10  && num_reps <= 20);)
+  int num_reps = 15;
   for (int i = 0; i < num_reps; i++) begin
     `DV_CHECK_STD_RANDOMIZE_FATAL(cm_id)
     `uvm_info(`gfn, $sformatf("iteration %0d/%0d, cmd_id = %s", i, num_reps, cm_id.name()),
@@ -96,28 +95,18 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
       // This test tries to cover all possible FSM transitions to the invalid state by triggering
       // an alert inside the comparison module.
       LocalEscalation: test_fsm_invalid_transitions();
-
       CheckerCtrConsistency: test_counter_consistency();
-
       CheckerCtrlFlowConsistency: test_checker_ctrl_flow_consistency();
-
       CompareCtrlFlowConsistency: run_compare_early();
-
       CompareCtrConsistencyWaiting: corrupt_compare_counter_early();
-
       CompareCtrConsistencyDone: corrupt_compare_state();
-
       MuxMubi: corrupt_mux_select_signals();
-
       MuxConsistency: corrupt_select_from_bus_to_checker();
-
       CtrlRedun: corrupt_rom_address();
 
-      default: begin
-        // do nothing
-      end
+      default: `uvm_fatal(`gfn, $sformatf("Bad cm_id: %0d", cm_id))
     endcase
-    wait_with_bound(10);
+
     dut_init();
 
     // If we ran corrupt_rom_address, it will have forced a signal that would make
