@@ -78,7 +78,12 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // force it back to the checker and check that an alert comes out.
   extern local task corrupt_select_from_bus_to_checker();
 
-endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
+  // Inject errors into bus_rom_rom_index (which is how an attacker would get a different memory
+  // word) and then check that the data that gets read doesn't match the data stored at the glitched
+  // address.
+  extern local task corrupt_rom_address();
+
+endclass
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
   int num_reps;
@@ -106,73 +111,18 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
 
       MuxConsistency: corrupt_select_from_bus_to_checker();
 
-      // Inject errors into bus_rom_rom_index (which is how an attacker would get a different
-      // memory word) and then check that the data that gets read doesn't match the data stored
-      // at the glitched address.
-      CtrlRedun: begin
-        addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
-        bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
-        bit [TL_AW-1:0] addr;
-        int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
-        bit [12:0]      bus_rom_rom_index_val;
-        bit [12:0]      corr_bus_rom_rom_index_val;
-        bit [TL_AW-1:0]      tgt_addr;
-        cip_tl_seq_item tl_access_rsp;
-        bit             completed, saw_err;
-        string          path;
+      CtrlRedun: corrupt_rom_address();
 
-        wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
-        wait_with_bound(10);
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
-                                           addr inside {[loc_mem_range[mem_idx].start_addr :
-                                           loc_mem_range[mem_idx].end_addr]};)
-        bus_rom_rom_index_val = addr[2 +: RomIndexWidth];
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tgt_addr,
-                                           tgt_addr inside {[loc_mem_range[mem_idx].start_addr :
-                                           loc_mem_range[mem_idx].end_addr]};
-                                           (tgt_addr != addr);)
-        corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
-        tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
-                      .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                      .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
-        void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
-                                              .en_data_intg_chk(1),
-                                              .throw_error(1)));
-        tl_access_sub(.addr(tgt_addr), .write(0), .data(rdata_tgt), .completed(completed),
-                      .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                      .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
-        void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
-                                              .en_data_intg_chk(1),
-                                              .throw_error(1)));
-
-        $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
-        fork
-          begin
-            cfg.en_scb_tl_err_chk = 0;
-            cfg.scoreboard.disable_rom_acc_chk = 1;
-            tl_access_sub(.addr(addr), .write(0), .data(corr_data), .completed(completed),
-                          .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
-                          .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"])
-                         );
-            `DV_CHECK_EQ(completed, 1)
-            `DV_CHECK_EQ(saw_err, 0)
-            if ((corr_data == rdata) || (corr_data == rdata_tgt)) begin
-              `uvm_error(`gfn, "corr_data matching data in rom")
-            end
-            cfg.en_scb_tl_err_chk = 1;
-            cfg.scoreboard.disable_rom_acc_chk = 0;
-          end
-          begin
-            cfg.rom_ctrl_vif.override_bus_rom_index(corr_bus_rom_rom_index_val);
-          end
-        join
-      end
       default: begin
         // do nothing
       end
     endcase
     wait_with_bound(10);
     dut_init();
+
+    // If we ran corrupt_rom_address, it will have forced a signal that would make
+    // BusRomIndicesMatch_A fail. We turned that assertion off then, but should turn it back on
+    // again now.
     $asserton(0, "tb.dut.BusRomIndicesMatch_A");
   end
 endtask : body
@@ -402,4 +352,63 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_select_from_bus_to_checker();
   wait_with_bound(10);
   cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
   wait_for_fatal_alert(.check_fsm_state(1'b0));
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_rom_address();
+  addr_range_t loc_mem_range[$] = cfg.ral_models["rom_ctrl_prim_reg_block"].mem_ranges;
+  bit [TL_DW-1:0] rdata, rdata_tgt, corr_data;
+  bit [TL_AW-1:0] addr;
+  int             mem_idx = $urandom_range(0, loc_mem_range.size - 1);
+  bit [12:0]      bus_rom_rom_index_val;
+  bit [12:0]      corr_bus_rom_rom_index_val;
+  bit [TL_AW-1:0] tgt_addr;
+  cip_tl_seq_item tl_access_rsp;
+  bit             completed, saw_err;
+  string          path;
+
+  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  wait_with_bound(10);
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                                     addr inside {[loc_mem_range[mem_idx].start_addr :
+                                     loc_mem_range[mem_idx].end_addr]};)
+  bus_rom_rom_index_val = addr[2 +: RomIndexWidth];
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(tgt_addr,
+                                     tgt_addr inside {[loc_mem_range[mem_idx].start_addr :
+                                     loc_mem_range[mem_idx].end_addr]};
+                                     (tgt_addr != addr);)
+  corr_bus_rom_rom_index_val = tgt_addr[2 +: RomIndexWidth];
+  tl_access_sub(.addr(addr), .write(0), .data(rdata), .completed(completed),
+                .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
+  void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
+                                        .en_data_intg_chk(1),
+                                        .throw_error(1)));
+  tl_access_sub(.addr(tgt_addr), .write(0), .data(rdata_tgt), .completed(completed),
+                .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"]));
+  void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
+                                        .en_data_intg_chk(1),
+                                        .throw_error(1)));
+
+  $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
+  fork
+    begin
+      cfg.en_scb_tl_err_chk = 0;
+      cfg.scoreboard.disable_rom_acc_chk = 1;
+      tl_access_sub(.addr(addr), .write(0), .data(corr_data), .completed(completed),
+                    .saw_err(saw_err), .check_rsp(1), .rsp(tl_access_rsp),
+                    .tl_sequencer_h(p_sequencer.tl_sequencer_hs["rom_ctrl_prim_reg_block"])
+                   );
+      `DV_CHECK_EQ(completed, 1)
+      `DV_CHECK_EQ(saw_err, 0)
+      if ((corr_data == rdata) || (corr_data == rdata_tgt)) begin
+        `uvm_error(`gfn, "corr_data matching data in rom")
+      end
+      cfg.en_scb_tl_err_chk = 1;
+      cfg.scoreboard.disable_rom_acc_chk = 0;
+    end
+    begin
+      cfg.rom_ctrl_vif.override_bus_rom_index(corr_bus_rom_rom_index_val);
+    end
+  join
 endtask
