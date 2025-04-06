@@ -68,6 +68,10 @@ module tb;
 
   assign rom_ctrl_if.checker_fsm_state = dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q;
 
+  // Bind a rom_ctrl_compare_if into the compare module (allowing DV to easily get hold of internal
+  // values and parameters)
+  bind dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare rom_ctrl_compare_if u_compare_if ();
+
   // Instantitate the memory backdoor util instance.
   `define ROM_CTRL_MEM_HIER \
     tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
@@ -97,6 +101,10 @@ module tb;
         m_rom_ctrl_bkdr_util);
     uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", rom_ctrl_if);
+    uvm_config_db#(virtual rom_ctrl_compare_if)::set(
+        null, "*.env", "rom_ctrl_compare_vif",
+        dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_compare_if);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

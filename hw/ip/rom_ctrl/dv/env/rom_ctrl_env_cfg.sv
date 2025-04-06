@@ -15,6 +15,8 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;
 
+  // An interface bound into the rom_ctrl_compare module
+  virtual rom_ctrl_compare_if compare_vif;
 
   // A handle to the scoreboard, used to flag expected errors.
   rom_ctrl_scoreboard scoreboard;
