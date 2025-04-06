@@ -2309,6 +2309,8 @@ module top_earlgrey #(
       .lc_check_byp_en_i(lc_ctrl_pkg::Off),
       .strap_en_i(1'b0),
       .strap_en_override_i(1'b0),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
       .sba_tl_h_o(main_tl_rv_dm__sba_req),
       .sba_tl_h_i(main_tl_rv_dm__sba_rsp),
       .regs_tl_d_i(rv_dm_regs_tl_d_req),
