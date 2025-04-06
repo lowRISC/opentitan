@@ -67,6 +67,17 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // happened. Check it does so and generates a fatal error.
   extern local task corrupt_compare_state();
 
+  // Corrupt the mubi4 signal that selects between the FSM and bus access. This should be caught and
+  // trigger a fatal alert. Testing the mux select slightly further, also try to corrupt its
+  // sel_bus_qq signal (which is a registered version of the first signal, used to check for
+  // "roll-back" attacks).
+  extern local task corrupt_mux_select_signals();
+
+  // The mux that chooses between the checker and the bus is supposed to be "one way" and will
+  // generate a fatal alert if it switches back again. Wait for the mux to switch to the bus, then
+  // force it back to the checker and check that an alert comes out.
+  extern local task corrupt_select_from_bus_to_checker();
+
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
@@ -91,30 +102,10 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
 
       CompareCtrConsistencyDone: corrupt_compare_state();
 
-      // The mux that arbitrates between the checker and the bus is multi-bit encoded.
-      // An invalid value generates a fatal alert with the sel_invalid signal in the rom_ctrl_mux
-      // module. To test this rom_select_bus_o is forced with any value other than MuBi4True and
-      // MuBi4False.
-      MuxMubi: begin
-        pick_err_inj_point();
-        cfg.fsm_vif.force_rom_select_bus_o(get_invalid_mubi4());
-        wait_for_fatal_alert(.check_fsm_state(1'b0));
-        dut_init();
-        pick_err_inj_point(1'b1);
-        cfg.rom_ctrl_vif.override_sel_bus_qq(get_invalid_mubi4());
-        wait_for_fatal_alert(.check_fsm_state(1'b0));
-      end
-      // The mux that arbitrates between the checker and the bus gives access to the checker at
-      // the start of time and then switches to the bus, never going back. If a glitch does cause
-      // it to switch back, a fatal alert is generated with the sel_reverted or sel_q_reverted
-      // signals in the rom_ctrl_mux module. To test this rom_select_bus_o is forced to
-      // MuBi4False after rom check is completed.
-      MuxConsistency: begin
-        wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
-        wait_with_bound(10);
-        cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
-        wait_for_fatal_alert(.check_fsm_state(1'b0));
-      end
+      MuxMubi: corrupt_mux_select_signals();
+
+      MuxConsistency: corrupt_select_from_bus_to_checker();
+
       // Inject errors into bus_rom_rom_index (which is how an attacker would get a different
       // memory word) and then check that the data that gets read doesn't match the data stored
       // at the glitched address.
@@ -393,4 +384,22 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_compare_state();
 
   // This "early completion" should be spotted. Check that it is.
   wait_for_fatal_alert();
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_mux_select_signals();
+  pick_err_inj_point();
+  cfg.fsm_vif.force_rom_select_bus_o(get_invalid_mubi4());
+  wait_for_fatal_alert(.check_fsm_state(1'b0));
+  dut_init();
+
+  pick_err_inj_point(1'b1);
+  cfg.rom_ctrl_vif.override_sel_bus_qq(get_invalid_mubi4());
+  wait_for_fatal_alert(.check_fsm_state(1'b0));
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_select_from_bus_to_checker();
+  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+  wait_with_bound(10);
+  cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
+  wait_for_fatal_alert(.check_fsm_state(1'b0));
 endtask
