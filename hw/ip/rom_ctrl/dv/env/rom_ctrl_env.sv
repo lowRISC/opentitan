@@ -31,6 +31,10 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
   if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_vif from uvm_config_db")
 
+  if (!uvm_config_db#(virtual rom_ctrl_fsm_if)::get(this, "",
+                                                        "rom_ctrl_fsm_vif", cfg.fsm_vif))
+    `uvm_fatal(`gfn, "failed to get rom_ctrl_fsm_vif from uvm_config_db")
+
   if (!uvm_config_db#(virtual rom_ctrl_compare_if)::get(this, "",
                                                         "rom_ctrl_compare_vif", cfg.compare_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
