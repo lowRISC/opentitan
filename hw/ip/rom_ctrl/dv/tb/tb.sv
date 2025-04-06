@@ -66,8 +66,6 @@ module tb;
     .kmac_data_o          (kmac_data_out)
   );
 
-  assign rom_ctrl_if.checker_fsm_state = dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q;
-
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
   bind dut.gen_fsm_scramble_enabled.u_checker_fsm rom_ctrl_fsm_if u_fsm_if ();

@@ -28,14 +28,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task wait_with_bound(int max_clks);
   extern task force_sig(string path, int value);
 
-  // Snoop to get the current state of the checker FSM
-  extern local function rom_ctrl_pkg::fsm_state_e get_checker_fsm_state();
-
-  // Wait until the FSM state is a value in the queue. When that happens, write that state to
-  // state_seen.
-  extern local task wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
-                                              output rom_ctrl_pkg::fsm_state_e state_seen);
-
   extern task pick_err_inj_point(bit force_early = 1'b0);
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
 
@@ -106,8 +98,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
       // MuBi4False.
       MuxMubi: begin
         pick_err_inj_point();
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o",
-                  get_invalid_mubi4());
+        cfg.fsm_vif.force_rom_select_bus_o(get_invalid_mubi4());
         wait_for_fatal_alert(.check_fsm_state(1'b0));
         dut_init();
         pick_err_inj_point(1'b1);
@@ -122,7 +113,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
       MuxConsistency: begin
         wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
         wait_with_bound(10);
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o", MuBi4False);
+        cfg.fsm_vif.force_rom_select_bus_o(MuBi4False);
         wait_for_fatal_alert(.check_fsm_state(1'b0));
       end
       // Inject errors into bus_rom_rom_index (which is how an attacker would get a different
@@ -213,28 +204,6 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::force_sig(string path, int value);
   `DV_CHECK(uvm_hdl_release(path));
 endtask: force_sig
 
-function rom_ctrl_pkg::fsm_state_e rom_ctrl_corrupt_sig_fatal_chk_vseq::get_checker_fsm_state();
-  string path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
-  bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] raw_state;
-
-  `DV_CHECK(uvm_hdl_read(path, raw_state))
-
-  return rom_ctrl_pkg::fsm_state_e'(raw_state);
-endfunction
-
-task
-  rom_ctrl_corrupt_sig_fatal_chk_vseq::
-    wait_for_fsm_state_inside(rom_ctrl_pkg::fsm_state_e        states_to_visit[$],
-                              output rom_ctrl_pkg::fsm_state_e state_seen);
-  string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
-
-  // Step through the middles of cycles until the FSM state is in the list of states to visit.
-  do begin
-    @(negedge cfg.clk_rst_vif.clk);
-    state_seen = get_checker_fsm_state();
-  end while (!(state_seen inside {states_to_visit}));
-endtask
-
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
   bit inject_after_done;
@@ -302,7 +271,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
     // If states_to_visit is empty, we have finished our work! Drop out.
     if (!states_to_visit.size()) break;
 
-    wait_for_fsm_state_inside(states_to_visit, cur_state);
+    cfg.fsm_vif.wait_for_fsm_state_inside(states_to_visit);
+    cur_state = cfg.fsm_vif.get_fsm_state();
 
     // Pick an invalid FSM state in the compare module to trigger an alert.
     cfg.compare_vif.splat_fsm_state();
@@ -326,7 +296,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
-  bit [12:0] invalid_addr;
+  // Pick the index of some ROM word other than the top one
+  int unsigned addr = $urandom_range(0, RomSizeWords - 1);
 
   // Wait until rom_ctrl says that it has finished computing the ROM checksum.
   wait (mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done));
@@ -335,22 +306,16 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
   // finishes)
   wait_with_bound(1000);
 
-  // Pick the index of some ROM word other than the top one
-  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, (invalid_addr < (RomSizeWords-1)););
-
-  // Set the silly value for a cycle. This should be picked up by the counter suddenly deciding it's
-  // not done and the code in rom_ctrl_fsm noticing the change.
-  force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_counter.addr_q", invalid_addr);
+  // Set the silly address value for a cycle. This should be picked up by the counter suddenly
+  // deciding it's not done and the code in rom_ctrl_fsm noticing the change.
+  cfg.fsm_vif.force_counter_addr(addr);
 
   // Wait for a fatal alert to come out, to make sure that the dut notices the corruption
   wait_for_fatal_alert();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
-  string to_force[3] = {"tb.dut.kmac_data_i.done",
-                        "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.checker_done",
-                        "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_done"};
-  foreach (to_force[i]) begin
+  for (int unsigned i = 0; i < 3; i++) begin
     // If this isn't the first iteration, the previous iteration will have left things in an invalid
     // state. Reset to tidy up.
     if (i > 0) dut_init();
@@ -359,7 +324,12 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
     wait_with_bound(100);
 
     // Force the relevant "done" signal
-    force_sig(to_force[i], 1);
+    case (i)
+      0: force_sig("tb.dut.kmac_data_i.done", 1);
+      1: cfg.fsm_vif.force_checker_done();
+      2: cfg.fsm_vif.force_counter_done();
+      default: `uvm_fatal(`gfn, "bad index!")
+    endcase
 
     // This should cause the dut to notice the bad control flow and raise an alert. Wait for that to
     // happen.
@@ -368,7 +338,6 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
 endtask
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::run_compare_early();
-  string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
   virtual alert_esc_if alert_vif = cfg.m_alert_agent_cfgs["fatal"].vif;
 
   // Wait a short time (to avoid always starting at exactly the start)
@@ -389,10 +358,10 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::run_compare_early();
   // Forcing this signal is (obviously) only going to work if we are still early enough. Snoop
   // quickly on the FSM state and check that it is ReadingLow (meaning we're pretty certain that if
   // we start it now, the checker will finish its job before the FSM is ready for it).
-  `DV_CHECK(get_checker_fsm_state() == rom_ctrl_pkg::ReadingLow)
+  `DV_CHECK(cfg.fsm_vif.get_fsm_state() == rom_ctrl_pkg::ReadingLow)
 
   // Start an early check
-  force_sig(start_chk_path, 1'b1);
+  cfg.fsm_vif.force_checker_start();
 
   wait_for_fatal_alert();
 endtask
