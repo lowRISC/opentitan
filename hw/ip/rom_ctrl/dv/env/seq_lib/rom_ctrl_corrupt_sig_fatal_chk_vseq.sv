@@ -154,6 +154,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
         void'(tl_access_rsp.is_d_chan_intg_ok(.en_rsp_intg_chk(1),
                                               .en_data_intg_chk(1),
                                               .throw_error(1)));
+
+        $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
         fork
           begin
             cfg.en_scb_tl_err_chk = 0;
@@ -171,13 +173,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
             cfg.scoreboard.disable_rom_acc_chk = 0;
           end
           begin
-            string rom_idx_path = "tb.dut.bus_rom_rom_index";
-
-            wait (cfg.m_tl_agent_cfgs["rom_ctrl_prim_reg_block"].vif.h2d.a_valid);
-            $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
-            `DV_CHECK(uvm_hdl_force(rom_idx_path, corr_bus_rom_rom_index_val));
-            wait (!cfg.m_tl_agent_cfgs["rom_ctrl_prim_reg_block"].vif.h2d.a_valid);
-            `DV_CHECK(uvm_hdl_release(rom_idx_path));
+            cfg.rom_ctrl_vif.override_bus_rom_index(corr_bus_rom_rom_index_val);
           end
         join
       end

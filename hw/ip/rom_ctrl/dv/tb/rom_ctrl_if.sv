@@ -17,4 +17,15 @@ interface rom_ctrl_if ();
     input pwrmgr_data;
     input keymgr_data;
   endclocking
+
+  // Use the given value to override the next request that comes out of u_tl_adapter_rom. This means
+  // that operation will end up asking for the given word instead of the one it expected. The
+  // override lasts until the A channel valid signal drops again.
+  task static override_bus_rom_index(int unsigned index);
+    wait(dut.rom_tl_i.a_valid);
+    force dut.bus_rom_rom_index = index;
+    wait(!dut.rom_tl_i.a_valid);
+    release dut.bus_rom_rom_index;
+  endtask
+
 endinterface
