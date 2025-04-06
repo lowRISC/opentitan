@@ -17,7 +17,6 @@ filesets:
     files:
       - rom_ctrl_prim_ral_pkg.sv
       - rom_ctrl_env_pkg.sv
-      - rom_ctrl_if.sv
       - rom_ctrl_env_cfg.sv: {is_include_file: true}
       - rom_ctrl_env_cov.sv: {is_include_file: true}
       - rom_ctrl_virtual_sequencer.sv: {is_include_file: true}
