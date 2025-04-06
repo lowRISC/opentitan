@@ -47,6 +47,12 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // address to some value other than the ROM's top address.
   extern local task test_counter_consistency();
 
+  // The main checker FSM steps on internal 'done' signals, coming from its address counter, the
+  // KMAC response and its comparison counter. If any of these are asserted at times we don't
+  // expect, the FSM jumps to an invalid state. This triggers an alert and will not set the external
+  // 'done' signal for pwrmgr to continue boot.
+  extern local task test_checker_ctrl_flow_consistency();
+
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
@@ -63,23 +69,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
 
       CheckerCtrConsistency: test_counter_consistency();
 
-      // The main checker FSM steps on internal 'done' signals, coming from its address counter,
-      // the KMAC response and its comparison counter. If any of these are asserted at times we
-      // don't expect, the FSM jumps to an invalid state. This triggers an alert and will not set
-      // the external 'done' signal for pwrmgr to continue boot.
-      CheckerCtrlFlowConsistency: begin
-        wait_with_bound(100);
-        force_sig("tb.dut.kmac_data_i.done", 1);
-        wait_for_fatal_alert();
-        dut_init();
-        wait_with_bound(100);
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.checker_done", 1);
-        wait_for_fatal_alert();
-        dut_init();
-        wait_with_bound(100);
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_done", 1);
-        wait_for_fatal_alert();
-      end
+      CheckerCtrlFlowConsistency: test_checker_ctrl_flow_consistency();
+
       // The main checker FSM steps on internal 'done' signals, coming from its address counter,
       // the KMAC response and its comparison counter. If any of these are asserted at times
       // we don't expect, the FSM jumps to an invalid state. This triggers an alert and will not
@@ -383,4 +374,25 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_counter_consistency();
 
   // Wait for a fatal alert to come out, to make sure that the dut notices the corruption
   wait_for_fatal_alert();
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
+  string to_force[3] = {"tb.dut.kmac_data_i.done",
+                        "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.checker_done",
+                        "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_done"};
+  foreach (to_force[i]) begin
+    // If this isn't the first iteration, the previous iteration will have left things in an invalid
+    // state. Reset to tidy up.
+    if (i > 0) dut_init();
+
+    // Wait a short time (so that we don't corrupt the signal straight after reset)
+    wait_with_bound(100);
+
+    // Force the relevant "done" signal
+    force_sig(to_force[i], 1);
+
+    // This should cause the dut to notice the bad control flow and raise an alert. Wait for that to
+    // happen.
+    wait_for_fatal_alert();
+  end
 endtask
