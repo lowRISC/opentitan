@@ -26,7 +26,6 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
 
   extern task body();
   extern task wait_with_bound(int max_clks);
-  extern task force_sig(string path, int value);
 
   extern task pick_err_inj_point(bit force_early = 1'b0);
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
@@ -193,13 +192,6 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::wait_with_bound(int max_clks);
     @(negedge cfg.clk_rst_vif.clk);
 endtask: wait_with_bound
 
-task rom_ctrl_corrupt_sig_fatal_chk_vseq::force_sig(string path, int value);
-  `DV_CHECK(uvm_hdl_force(path, value));
-  `uvm_info(`gfn, $sformatf("Setting path: %s to value=0x%0x",path,value), UVM_DEBUG)
-  @(negedge cfg.clk_rst_vif.clk);
-  `DV_CHECK(uvm_hdl_release(path));
-endtask: force_sig
-
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
   bit inject_after_done;
@@ -321,7 +313,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_checker_ctrl_flow_consistency();
 
     // Force the relevant "done" signal
     case (i)
-      0: force_sig("tb.dut.kmac_data_i.done", 1);
+      0: cfg.rom_ctrl_vif.force_kmac_data_done();
       1: cfg.fsm_vif.force_checker_done();
       2: cfg.fsm_vif.force_counter_done();
       default: `uvm_fatal(`gfn, "bad index!")
