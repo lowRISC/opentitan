@@ -28,14 +28,11 @@ module tb;
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
-  rom_ctrl_if rom_ctrl_if(.clk_i(clk), .rst_ni(rst_n));
 
   `DV_ALERT_IF_CONNECT()
 
   assign kmac_app_if.kmac_data_req = kmac_data_out;
   assign kmac_data_in              = kmac_app_if.kmac_data_rsp;
-  assign rom_ctrl_if.pwrmgr_data   = pwrmgr_data;
-  assign rom_ctrl_if.keymgr_data   = keymgr_data;
 
 
   // dut
@@ -65,6 +62,9 @@ module tb;
     .kmac_data_i          (kmac_data_in),
     .kmac_data_o          (kmac_data_out)
   );
+
+  // Bind rom_ctrl_if into the rom_ctrl module
+  bind dut rom_ctrl_if rom_ctrl_if ();
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
@@ -102,7 +102,7 @@ module tb;
     uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env", "rom_ctrl_bkdr_util",
         m_rom_ctrl_bkdr_util);
     uvm_config_db#(virtual kmac_app_intf)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
-    uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", rom_ctrl_if);
+    uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif", dut.rom_ctrl_if);
     uvm_config_db#(virtual rom_ctrl_fsm_if)::set(
         null, "*.env", "rom_ctrl_fsm_vif",
         dut.gen_fsm_scramble_enabled.u_checker_fsm.u_fsm_if);
