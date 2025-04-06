@@ -65,6 +65,17 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // locking up the FSM and raising an alert.
   extern local task run_compare_early();
 
+  // Force a counter inside the hash comparison module to a nonzero value before the comparison
+  // starts. An attacker doing so could avoid checking some of the words in the digests. Check that
+  // the comparison module spots the problem and generates a fatal error.
+  extern local task corrupt_compare_counter_early();
+
+  // Force the state_q signal in the hash comparison module to be "Done" before the counter gets to
+  // LastAddr. An attacker doing so could avoid checking some of the words in the digests (by
+  // skipping one or more at the end). The comparison module is supposed to spot when this has
+  // happened. Check it does so and generates a fatal error.
+  extern local task corrupt_compare_state();
+
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
 
 task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
@@ -85,40 +96,10 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
 
       CompareCtrlFlowConsistency: run_compare_early();
 
-      // The hash comparison module has an internal count. If this glitches to a nonzero value
-      // before the comparison starts (state=Waiting) or to a value other than the last index
-      // after the comparison ends (state=Done) then a fatal alert is generated.
-      // Each of these cases are covered in cases "CompareCtrConsistencyWaiting" and
-      // "CompareCtrConsistencyDone"
-      CompareCtrConsistencyWaiting: begin
-        bit [2:0] invalid_addr;
-        bit [4:0] fsm_state_q;
-        string    path;
-        wait_with_bound(2000);
-        path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q";
-        `DV_CHECK(uvm_hdl_read(path,fsm_state_q));
-        if(fsm_state_q != 5'b00100) begin
-          `uvm_fatal(`gfn, {"Case:'CompareCtrConsistencyWaiting' hit when 'rom_ctrl_compare' ",
-                            "state!=Done hence sequence-case exits"})
-        end
-        // State == Waiting -> It's ok to poke the addr_q to be non-zero
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, invalid_addr > 0;);
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q",
-                  invalid_addr);
-        wait_for_fatal_alert();
-        dut_init();
-      end
-      CompareCtrConsistencyDone: begin
-        bit [2:0] invalid_addr;
+      CompareCtrConsistencyWaiting: corrupt_compare_counter_early();
 
-        wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
-        // After cfg.rom_ctrl_vif.pwrmgr_data.done = True we're in Done state
-        wait_with_bound(10);
-        // LastAddr has been set to 7
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, invalid_addr < 7;);
-        force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q", invalid_addr);
-        wait_for_fatal_alert();
-      end
+      CompareCtrConsistencyDone: corrupt_compare_state();
+
       // The mux that arbitrates between the checker and the bus is multi-bit encoded.
       // An invalid value generates a fatal alert with the sel_invalid signal in the rom_ctrl_mux
       // module. To test this rom_select_bus_o is forced with any value other than MuBi4True and
@@ -323,9 +304,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
 
     wait_for_fsm_state_inside(states_to_visit, cur_state);
 
-    // This is a sparsely encoded FSM where all-zero is always an invalid state. So we can pick that
-    // value to trigger an alert.
-    force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_d", '0);
+    // Pick an invalid FSM state in the compare module to trigger an alert.
+    cfg.compare_vif.splat_fsm_state();
     wait_for_fatal_alert();
 
     in_bad_state = 1'b1;
@@ -414,5 +394,46 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::run_compare_early();
   // Start an early check
   force_sig(start_chk_path, 1'b1);
 
+  wait_for_fatal_alert();
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_compare_counter_early();
+  bit [2:0] aw, addr;
+
+  // Wait a short time (to avoid always starting at exactly the start)
+  wait_with_bound(100);
+
+  // Check that the compare module is still waiting to be told to start. Note that this needs a
+  // "magic value" (because the indices of the sparse FSM are internal to the design). If it changes
+  // in the future, this check will fail and we can pull the enum declaration to rom_ctrl_pkg.
+  `DV_CHECK(cfg.compare_vif.is_waiting())
+
+  // Now poke the address to some nonzero value
+  aw = cfg.compare_vif.get_AW();
+  `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr, addr > 0; (addr >> aw) == 0;)
+  cfg.compare_vif.force_addr_q(addr);
+
+  // This should be noticed!
+  wait_for_fatal_alert();
+endtask
+
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::corrupt_compare_state();
+  // Randomly pick an early moment to force the comparison module to be "done" (when it's just about
+  // to check a word before the last one).
+  //
+  // The "-2" is because the RTL doesn't spot an attack that claims "done" on the last word
+  // (claiming it a cycle early), because the check ends up running when we are claiming "done" and
+  // the counter points at the last word. The security risk of this is low though: a putative
+  // attacker would have to find a collision for all the other words of the SHA3 hash.
+  int unsigned injection_point = $urandom_range(0, cfg.compare_vif.get_last_addr() - 2);
+
+  // Wait until the comparison module is about has got to that point, stepping on negedges to be in
+  // the "middle of the cycle".
+  cfg.compare_vif.wait_addr_q(injection_point);
+
+  // Force the compare FSM's state to 'Done'.
+  cfg.compare_vif.set_fsm_done();
+
+  // This "early completion" should be spotted. Check that it is.
   wait_for_fatal_alert();
 endtask
