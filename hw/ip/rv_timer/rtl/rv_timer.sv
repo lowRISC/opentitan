@@ -8,7 +8,10 @@
 
 module rv_timer import rv_timer_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             EnableRacl                = 1'b0,
+  parameter bit                             RaclErrorRsp              = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
   input clk_i,
   input rst_ni,
@@ -18,6 +21,10 @@ module rv_timer import rv_timer_reg_pkg::*;
 
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   output logic intr_timer_expired_hart0_timer0_o
 );
@@ -114,7 +121,11 @@ module rv_timer import rv_timer_reg_pkg::*;
 
   // Register module
   logic [NumAlerts-1:0] alert_test, alerts;
-  rv_timer_reg_top u_reg (
+  rv_timer_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg (
     .clk_i,
     .rst_ni,
 
@@ -123,6 +134,9 @@ module rv_timer import rv_timer_reg_pkg::*;
 
     .reg2hw,
     .hw2reg,
+
+    .racl_policies_i,
+    .racl_error_o,
 
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o (alerts[0])
@@ -156,6 +170,7 @@ module rv_timer import rv_timer_reg_pkg::*;
   `ASSERT_KNOWN(TlODValidKnown, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN_IF(RaclErrorOKnown_A, racl_error_o, racl_error_o.valid)
   `ASSERT_KNOWN(IntrTimerExpiredHart0Timer0Known, intr_timer_expired_hart0_timer0_o)
 
   // Alert assertions for reg_we onehot check

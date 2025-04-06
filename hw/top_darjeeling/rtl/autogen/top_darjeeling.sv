@@ -1165,6 +1165,8 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[4:4] ),
 
       // Inter-module signals
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
       .tl_i(rv_timer_tl_req),
       .tl_o(rv_timer_tl_rsp),
 
