@@ -102,7 +102,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
         wait_for_fatal_alert(.check_fsm_state(1'b0));
         dut_init();
         pick_err_inj_point(1'b1);
-        force_sig("tb.dut.u_mux.sel_bus_qq", get_invalid_mubi4());
+        cfg.rom_ctrl_vif.override_sel_bus_qq(get_invalid_mubi4());
         wait_for_fatal_alert(.check_fsm_state(1'b0));
       end
       // The mux that arbitrates between the checker and the bus gives access to the checker at

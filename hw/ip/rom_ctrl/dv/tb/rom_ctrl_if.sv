@@ -28,4 +28,12 @@ interface rom_ctrl_if ();
     release dut.bus_rom_rom_index;
   endtask
 
+  // Override the sel_bus_qq index that is used in the mux (between bus accesses and the FSM),
+  // returning on the next negedge. (This will be one cycle if we start before the posedge)
+  task static override_sel_bus_qq(prim_mubi_pkg::mubi4_t value);
+    force dut.u_mux.sel_bus_qq = value;
+    @(negedge dut.clk_i);
+    release dut.u_mux.sel_bus_qq;
+  endtask
+
 endinterface
