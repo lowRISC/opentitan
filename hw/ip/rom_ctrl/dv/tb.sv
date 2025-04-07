@@ -37,11 +37,6 @@ module tb;
   assign rom_ctrl_if.pwrmgr_data   = pwrmgr_data;
   assign rom_ctrl_if.keymgr_data   = keymgr_data;
 
-  // The exact number of word address bits.
-  // Will be set to 15 for ROM0 and 16 for ROM1.
-`ifndef ROM_BYTE_ADDR_WIDTH
-  `define ROM_BYTE_ADDR_WIDTH 32
-`endif
 
   // dut
   rom_ctrl #(
