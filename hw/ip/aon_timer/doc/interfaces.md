@@ -23,10 +23,10 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name     | Type   | Description                                                |
-|:-------------------|:-------|:-----------------------------------------------------------|
-| wkup_timer_expired | Event  | Raised if the wakeup timer has hit the specified threshold |
-| wdog_timer_bark    | Event  | Raised if the watchdog timer has hit the bark threshold    |
+| Interrupt Name     | Type   | Description                                                 |
+|:-------------------|:-------|:------------------------------------------------------------|
+| wkup_timer_expired | Event  | Raised if the wakeup timer has hit the specified threshold. |
+| wdog_timer_bark    | Event  | Raised if the watchdog timer has hit the bark threshold.    |
 
 ## Security Alerts
 

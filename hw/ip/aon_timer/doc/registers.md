@@ -39,7 +39,7 @@ Alert Test Register
 
 ## WKUP_CTRL
 Wakeup Timer Control register.
-Each write to the register resets the internal prescaler count
+Each write to the register resets the internal prescaler count.
 - Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
@@ -68,9 +68,9 @@ Wakeup Timer Threshold Register (bits 63 - 32)
 {"reg": [{"name": "threshold_hi", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                            |
-|:------:|:------:|:-------:|:-------------|:-----------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | threshold_hi | The count at which a wakeup interrupt should be generated, top 32 bits |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                             |
+|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | threshold_hi | The count at which a wakeup interrupt should be generated, top 32 bits. |
 
 ## WKUP_THOLD_LO
 Wakeup Timer Threshold Register (bits 31 - 0)
@@ -84,9 +84,9 @@ Wakeup Timer Threshold Register (bits 31 - 0)
 {"reg": [{"name": "threshold_lo", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                               |
-|:------:|:------:|:-------:|:-------------|:--------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | threshold_lo | The count at which a wakeup interrupt should be generated, bottom 32 bits |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                |
+|:------:|:------:|:-------:|:-------------|:---------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | threshold_lo | The count at which a wakeup interrupt should be generated, bottom 32 bits. |
 
 ## WKUP_COUNT_HI
 Wakeup Timer Count Register (bits 63 - 32)
@@ -100,9 +100,9 @@ Wakeup Timer Count Register (bits 63 - 32)
 {"reg": [{"name": "count_hi", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                   |
-|:------:|:------:|:-------:|:---------|:----------------------------------------------|
-|  31:0  |   rw   |   0x0   | count_hi | The current wakeup counter value, top 32 bits |
+|  Bits  |  Type  |  Reset  | Name     | Description                                    |
+|:------:|:------:|:-------:|:---------|:-----------------------------------------------|
+|  31:0  |   rw   |   0x0   | count_hi | The current wakeup counter value, top 32 bits. |
 
 ## WKUP_COUNT_LO
 Wakeup Timer Count Register (bits 31 - 0)
@@ -116,9 +116,9 @@ Wakeup Timer Count Register (bits 31 - 0)
 {"reg": [{"name": "count_lo", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                      |
-|:------:|:------:|:-------:|:---------|:-------------------------------------------------|
-|  31:0  |   rw   |   0x0   | count_lo | The current wakeup counter value, bottom 32 bits |
+|  Bits  |  Type  |  Reset  | Name     | Description                                       |
+|:------:|:------:|:-------:|:---------|:--------------------------------------------------|
+|  31:0  |   rw   |   0x0   | count_lo | The current wakeup counter value, bottom 32 bits. |
 
 ## WDOG_REGWEN
 Watchdog Timer Write Enable Register
@@ -132,10 +132,10 @@ Watchdog Timer Write Enable Register
 {"reg": [{"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                  |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                     |
-|   0    |  rw0c  |   0x1   | regwen | Once cleared, the watchdog configuration will be locked until the next reset |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                   |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                      |
+|   0    |  rw0c  |   0x1   | regwen | Once cleared, the watchdog configuration will be locked until the next reset. |
 
 ## WDOG_CTRL
 Watchdog Timer Control register
@@ -150,11 +150,11 @@ Watchdog Timer Control register
 {"reg": [{"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pause_in_sleep", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                   |
-|:------:|:------:|:-------:|:---------------|:--------------------------------------------------------------|
-|  31:2  |        |         |                | Reserved                                                      |
-|   1    |   rw   |   0x0   | pause_in_sleep | When set to 1, the watchdog timer will not count during sleep |
-|   0    |   rw   |   0x0   | enable         | When set to 1, the watchdog timer will count                  |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                    |
+|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------|
+|  31:2  |        |         |                | Reserved                                                       |
+|   1    |   rw   |   0x0   | pause_in_sleep | When set to 1, the watchdog timer will not count during sleep. |
+|   0    |   rw   |   0x0   | enable         | When set to 1, the watchdog timer will count.                  |
 
 ## WDOG_BARK_THOLD
 Watchdog Timer Bark Threshold Register
@@ -169,9 +169,9 @@ Watchdog Timer Bark Threshold Register
 {"reg": [{"name": "threshold", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                      |
-|:------:|:------:|:-------:|:----------|:-----------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | threshold | The count at which a watchdog bark interrupt should be generated |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                       |
+|:------:|:------:|:-------:|:----------|:------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | threshold | The count at which a watchdog bark interrupt should be generated. |
 
 ## WDOG_BITE_THOLD
 Watchdog Timer Bite Threshold Register
@@ -186,9 +186,9 @@ Watchdog Timer Bite Threshold Register
 {"reg": [{"name": "threshold", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                  |
-|:------:|:------:|:-------:|:----------|:-------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | threshold | The count at which a watchdog bite reset should be generated |
+|  Bits  |  Type  |  Reset  | Name      | Description                                                   |
+|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | threshold | The count at which a watchdog bite reset should be generated. |
 
 ## WDOG_COUNT
 Watchdog Timer Count Register
@@ -202,9 +202,9 @@ Watchdog Timer Count Register
 {"reg": [{"name": "count", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------|
-|  31:0  |   rw   |   0x0   | count  | The current watchdog counter value |
+|  Bits  |  Type  |  Reset  | Name   | Description                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------|
+|  31:0  |   rw   |   0x0   | count  | The current watchdog counter value. |
 
 ## INTR_STATE
 Interrupt State Register
@@ -218,11 +218,11 @@ Interrupt State Register
 {"reg": [{"name": "wkup_timer_expired", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "wdog_timer_bark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                |
-|:------:|:------:|:-------:|:-------------------|:-----------------------------------------------------------|
-|  31:2  |        |         |                    | Reserved                                                   |
-|   1    |  rw1c  |   0x0   | wdog_timer_bark    | Raised if the watchdog timer has hit the bark threshold    |
-|   0    |  rw1c  |   0x0   | wkup_timer_expired | Raised if the wakeup timer has hit the specified threshold |
+|  Bits  |  Type  |  Reset  | Name               | Description                                                 |
+|:------:|:------:|:-------:|:-------------------|:------------------------------------------------------------|
+|  31:2  |        |         |                    | Reserved                                                    |
+|   1    |  rw1c  |   0x0   | wdog_timer_bark    | Raised if the watchdog timer has hit the bark threshold.    |
+|   0    |  rw1c  |   0x0   | wkup_timer_expired | Raised if the wakeup timer has hit the specified threshold. |
 
 ## INTR_TEST
 Interrupt Test Register
@@ -236,11 +236,11 @@ Interrupt Test Register
 {"reg": [{"name": "wkup_timer_expired", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "wdog_timer_bark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                   |
-|:------:|:------:|:-------:|:-------------------|:----------------------------------------------|
-|  31:2  |        |         |                    | Reserved                                      |
-|   1    |   wo   |    x    | wdog_timer_bark    | Write 1 to force wdog_timer_bark interrupt    |
-|   0    |   wo   |    x    | wkup_timer_expired | Write 1 to force wkup_timer_expired interrupt |
+|  Bits  |  Type  |  Reset  | Name               | Description                                    |
+|:------:|:------:|:-------:|:-------------------|:-----------------------------------------------|
+|  31:2  |        |         |                    | Reserved                                       |
+|   1    |   wo   |    x    | wdog_timer_bark    | Write 1 to force wdog_timer_bark interrupt.    |
+|   0    |   wo   |    x    | wkup_timer_expired | Write 1 to force wkup_timer_expired interrupt. |
 
 ## WKUP_CAUSE
 Wakeup request status
@@ -254,10 +254,10 @@ Wakeup request status
 {"reg": [{"name": "cause", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                  |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------|
-|  31:1  |        |         |        | Reserved                                     |
-|   0    |  rw0c  |   0x0   | cause  | AON timer requested wakeup, write 0 to clear |
+|  Bits  |  Type  |  Reset  | Name   | Description                                   |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------|
+|  31:1  |        |         |        | Reserved                                      |
+|   0    |  rw0c  |   0x0   | cause  | AON timer requested wakeup, write 0 to clear. |
 
 
 <!-- END CMDGEN -->
