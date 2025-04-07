@@ -5787,15 +5787,6 @@
           expose: "true"
           name_top: SramCtrlRetAonEccCorrection
         }
-        {
-          name: RaclPolicySelRangesRamNum
-          desc: Number of Racl Policy Selection Ranges for the Ram interface
-          type: int
-          default: 1
-          local: "false"
-          expose: "true"
-          name_top: SramCtrlRetAonRaclPolicySelRangesRamNum
-        }
       ]
       inter_signal_list:
       [
@@ -5913,27 +5904,6 @@
           type: uni
           act: req
           width: 1
-          inst_name: sram_ctrl_ret_aon
-          index: -1
-        }
-        {
-          name: racl_policy_sel_ranges_ram
-          desc: Incoming array of RACL policy ranges.
-          struct: racl_range_t
-          package: top_racl_pkg
-          type: uni
-          act: rcv
-          width:
-          {
-            name: RaclPolicySelRangesRamNum
-            desc: Number of Racl Policy Selection Ranges for the Ram interface
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
-            name_top: SramCtrlRetAonRaclPolicySelRangesRamNum
-          }
           inst_name: sram_ctrl_ret_aon
           index: -1
         }
@@ -8778,15 +8748,6 @@
           expose: "true"
           name_top: SramCtrlMainEccCorrection
         }
-        {
-          name: RaclPolicySelRangesRamNum
-          desc: Number of Racl Policy Selection Ranges for the Ram interface
-          type: int
-          default: 1
-          local: "false"
-          expose: "true"
-          name_top: SramCtrlMainRaclPolicySelRangesRamNum
-        }
       ]
       inter_signal_list:
       [
@@ -8906,27 +8867,6 @@
           type: uni
           act: req
           width: 1
-          inst_name: sram_ctrl_main
-          index: -1
-        }
-        {
-          name: racl_policy_sel_ranges_ram
-          desc: Incoming array of RACL policy ranges.
-          struct: racl_range_t
-          package: top_racl_pkg
-          type: uni
-          act: rcv
-          width:
-          {
-            name: RaclPolicySelRangesRamNum
-            desc: Number of Racl Policy Selection Ranges for the Ram interface
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
-            name_top: SramCtrlMainRaclPolicySelRangesRamNum
-          }
           inst_name: sram_ctrl_main
           index: -1
         }
@@ -21570,27 +21510,6 @@
         index: -1
       }
       {
-        name: racl_policy_sel_ranges_ram
-        desc: Incoming array of RACL policy ranges.
-        struct: racl_range_t
-        package: top_racl_pkg
-        type: uni
-        act: rcv
-        width:
-        {
-          name: RaclPolicySelRangesRamNum
-          desc: Number of Racl Policy Selection Ranges for the Ram interface
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
-          name_top: SramCtrlRetAonRaclPolicySelRangesRamNum
-        }
-        inst_name: sram_ctrl_ret_aon
-        index: -1
-      }
-      {
         name: sram_rerror
         desc: SRAM read error indicating correctable and uncorrectable ECC errors.
         struct: sram_error_t
@@ -23136,27 +23055,6 @@
         type: uni
         act: req
         width: 1
-        inst_name: sram_ctrl_main
-        index: -1
-      }
-      {
-        name: racl_policy_sel_ranges_ram
-        desc: Incoming array of RACL policy ranges.
-        struct: racl_range_t
-        package: top_racl_pkg
-        type: uni
-        act: rcv
-        width:
-        {
-          name: RaclPolicySelRangesRamNum
-          desc: Number of Racl Policy Selection Ranges for the Ram interface
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
-          name_top: SramCtrlMainRaclPolicySelRangesRamNum
-        }
         inst_name: sram_ctrl_main
         index: -1
       }
