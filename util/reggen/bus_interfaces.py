@@ -19,15 +19,20 @@ class BusInterfaces:
                  device_async: Dict[Optional[str], str],
                  device_hier_paths: Dict[Optional[str], str],
                  racl_support: Dict[Optional[str], bool],
-                 static_racl_support: Dict[Optional[str], bool]):
+                 static_racl_support: Dict[Optional[str], bool],
+                 racl_range_support: Dict[Optional[str], bool]):
         assert has_unnamed_device or named_devices
         assert len(named_hosts) == len(set(named_hosts))
         assert len(named_devices) == len(set(named_devices))
         # Ensure that for all bus interfaces static and dynamic RACL support are not set at the
         #  same time
-        assert racl_support.keys() == static_racl_support.keys()
+        assert racl_support.keys() == static_racl_support.keys() == racl_range_support.keys()
         for if_name, if_racl_support in racl_support.items():
             assert not (if_racl_support and static_racl_support[if_name])
+        # Ensure that static or dynamic racl support exists when racl_range_support is enabled
+        for if_name, if_racl_range_support in racl_range_support.items():
+            if if_racl_range_support:
+                assert static_racl_support[if_name] or racl_support[if_name]
 
         self.has_unnamed_host = has_unnamed_host
         self.named_hosts = named_hosts
@@ -38,6 +43,7 @@ class BusInterfaces:
         self.device_hier_paths = device_hier_paths
         self.racl_support = racl_support
         self.static_racl_support = static_racl_support
+        self.racl_range_support = racl_range_support
 
     @staticmethod
     def from_raw(raw: object, where: str) -> 'BusInterfaces':
@@ -51,12 +57,13 @@ class BusInterfaces:
         device_hier_paths = {}
         racl_support_map = {}
         static_racl_support_map = {}
+        racl_range_support_map = {}
 
         for idx, raw_entry in enumerate(check_list(raw, where)):
             entry_what = 'entry {} of {}'.format(idx + 1, where)
             ed = check_keys(raw_entry, entry_what, ['protocol', 'direction'], [
                 'name', 'async', 'hier_path', 'racl_support',
-                'static_racl_support'
+                'static_racl_support', 'racl_range_support'
             ])
 
             protocol = check_str(ed['protocol'],
@@ -86,6 +93,9 @@ class BusInterfaces:
             static_racl_support = check_optional_bool(
                 ed.get('static_racl_support'),
                 'static_racl_support field of ' + entry_what)
+            racl_range_support = check_optional_bool(
+                ed.get('racl_range_support'),
+                'racl_range_support field of ' + entry_what)
 
             if direction == 'host':
                 if name is None:
@@ -132,6 +142,7 @@ class BusInterfaces:
 
                 racl_support_map[name] = bool(racl_support)
                 static_racl_support_map[name] = bool(static_racl_support)
+                racl_range_support_map[name] = bool(racl_range_support)
 
         if not (has_unnamed_device or named_devices):
             raise ValueError('No device interface at ' + where)
@@ -139,7 +150,7 @@ class BusInterfaces:
         return BusInterfaces(has_unnamed_host, named_hosts, host_async,
                              has_unnamed_device, named_devices, device_async,
                              device_hier_paths, racl_support_map,
-                             static_racl_support_map)
+                             static_racl_support_map, racl_range_support_map)
 
     def has_host(self) -> bool:
         return bool(self.has_unnamed_host or self.named_hosts)

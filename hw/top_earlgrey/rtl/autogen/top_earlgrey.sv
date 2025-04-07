@@ -67,7 +67,6 @@ module top_earlgrey #(
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   parameter bit SramCtrlRetAonEccCorrection = 0,
-  parameter int SramCtrlRetAonRaclPolicySelRangesRamNum = 1,
   // parameters for flash_ctrl
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
@@ -115,7 +114,6 @@ module top_earlgrey #(
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
-  parameter int SramCtrlMainRaclPolicySelRangesRamNum = 1,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -2175,12 +2173,12 @@ module top_earlgrey #(
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
-    .EccCorrection(SramCtrlRetAonEccCorrection),
-    .RaclPolicySelRangesRamNum(SramCtrlRetAonRaclPolicySelRangesRamNum)
+    .EccCorrection(SramCtrlRetAonEccCorrection)
   ) u_sram_ctrl_ret_aon (
       // [34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
       .alert_rx_i  ( alert_rx[34:34] ),
+      .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
@@ -2192,7 +2190,6 @@ module top_earlgrey #(
       .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
-      .racl_policy_sel_ranges_ram_i({SramCtrlRetAonRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
       .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
       .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
@@ -2667,12 +2664,12 @@ module top_earlgrey #(
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
-    .EccCorrection(SramCtrlMainEccCorrection),
-    .RaclPolicySelRangesRamNum(SramCtrlMainRaclPolicySelRangesRamNum)
+    .EccCorrection(SramCtrlMainEccCorrection)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),
       .alert_rx_i  ( alert_rx[59:59] ),
+      .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2684,7 +2681,6 @@ module top_earlgrey #(
       .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
-      .racl_policy_sel_ranges_ram_i({SramCtrlMainRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
       .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_main_regs_tl_req),
       .regs_tl_o(sram_ctrl_main_regs_tl_rsp),

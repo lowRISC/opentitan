@@ -116,6 +116,7 @@ def main():
         policy_names=policy_names,
         racl_group=racl_group,
         module_name=ip_block.name,
+        ip_block=ip_block,
         if_name=args.if_name
     ).rstrip())
 
