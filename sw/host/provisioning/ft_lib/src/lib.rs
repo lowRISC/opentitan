@@ -187,7 +187,7 @@ fn send_rma_unlock_token_hash(
     )?;
     ujson_payloads.dut_in.insert(
         "FT_PERSO_RMA_TOKEN_HASH".to_string(),
-        rma_token_hash.send_with_crc(spi_console)?,
+        rma_token_hash.send(spi_console)?,
     );
     Ok(())
 }
@@ -543,7 +543,6 @@ pub fn run_ft_personalize(
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
     response.stats.log_elapsed_time("first-bootstrap-done", t0);
-
     let t0 = Instant::now();
     init.bootstrap.load(transport, &second_bootstrap)?;
     response.stats.log_elapsed_time("second-bootstrap", t0);
