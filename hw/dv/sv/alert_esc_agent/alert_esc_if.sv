@@ -188,6 +188,15 @@ interface alert_esc_if(input clk, input rst_n);
     end while (cycle_cnt > 1 || rst_n != 1'b1);
   endtask : wait_esc_ping
 
+  // Return true if the current state is PingSt
+  //
+  // This rather trivial function is needed because we want to use the interface through a virtual
+  // interface handle, so cannot refer to PingSt or state_q because they are both defined in terms
+  // of an enum defined inside the interface.
+  function automatic logic in_ping_st();
+    return state_q == PingSt;
+  endfunction
+
   logic alert_sva_active;
   always_comb alert_sva_active = is_alert && rst_n;
 

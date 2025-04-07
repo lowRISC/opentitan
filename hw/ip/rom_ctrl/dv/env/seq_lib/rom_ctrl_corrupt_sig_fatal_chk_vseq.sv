@@ -108,7 +108,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
         // If there's a ping on-flight wait until it's finished. Otherwise, the alert due to the
         // fault injection may be hard to predict since it will come after the ping, but
         // dependant on the exact ping timing
-        if (alert_vif.state_q == alert_vif.PingSt) begin
+        if (alert_vif.in_ping_st()) begin
           // There's 2-cycles sampling delay in the monitor, so if the VIF has already seen the ping
           // Wait for it. Otherwise there may be scenarios where the `active_ping` is not yet set
           // in the monitor due to the 2-cycle delay. Which causes issues predicting the value in
