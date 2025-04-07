@@ -332,12 +332,10 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
     lc_token_hash_t token_hash;
-    // Wait for host the host generated RMA unlock token hash to arrive over the
-    // console.
+    // Wait for the host to send the RMA unlock token hash over the console.
     LOG_INFO("Waiting For RMA Unlock Token Hash ...");
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-    CHECK_STATUS_OK(
-        UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
+    TRY(ujson_deserialize_lc_token_hash_t(uj, &token_hash));
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
