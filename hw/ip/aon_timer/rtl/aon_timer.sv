@@ -285,6 +285,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(IntrWkupKnown_A, intr_wkup_timer_expired_o)
   `ASSERT_KNOWN(IntrWdogKnown_A, intr_wdog_timer_bark_o)
+  `ASSERT_KNOWN(NmiWdogKnown_A, nmi_wdog_timer_bark_o)
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o.valid)
   // clk_aon_i domain
   `ASSERT_KNOWN(WkupReqKnown_A, wkup_req_o, clk_aon_i, !rst_aon_ni)
