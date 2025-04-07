@@ -60,7 +60,7 @@ class adc_ctrl_env_var_filters_cfg extends adc_ctrl_env_cfg;
   constraint filters_values_c {
     solve max_val, min_val, apply_max_v before filter_cfg;
     foreach (filter_cfg[channel]) {
-      foreach (filter_cfg[channel][filter]) {
+      foreach (filter_cfg[channel, filter]) {
         // Set valid values
         filter_cfg[channel][filter].min_v inside {[0 : MAX_VALUE]};
         filter_cfg[channel][filter].max_v inside {[0 : MAX_VALUE]};
@@ -106,7 +106,7 @@ class adc_ctrl_env_var_filters_cfg extends adc_ctrl_env_cfg;
   }
   constraint filters_control_c {
     foreach (filter_cfg[channel]) {
-      foreach (filter_cfg[channel][filter]) {
+      foreach (filter_cfg[channel, filter]) {
         if (mirror_controls[filter]) {
           filter_cfg[channel][filter].cond == filter_cfg[0][filter].cond;
           filter_cfg[channel][filter].en == filter_cfg[0][filter].en;
