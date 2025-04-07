@@ -30,6 +30,12 @@ package rom_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal"};
   parameter uint   NUM_ALERTS = 1;
 
+  // The exact number of word address bits.
+  // Will be set to 15 for ROM0 and 16 for ROM1.
+  `ifndef ROM_BYTE_ADDR_WIDTH
+   `define ROM_BYTE_ADDR_WIDTH 32
+  `endif
+
   // The top bytes in memory hold the digest
   // KMAC's max digest size is larger than what is required, so declare the size here.
   parameter uint DIGEST_SIZE    = 256;
