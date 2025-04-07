@@ -90,8 +90,8 @@ module aon_timer import aon_timer_reg_pkg::*;
   assign hw2reg.wkup_count_hi.de = aon_wkup_count_reg_wr;
   assign hw2reg.wkup_count_lo.d  = aon_wkup_count_wr_data[31:0];
   assign hw2reg.wkup_count_hi.d  = aon_wkup_count_wr_data[63:32];
-  assign hw2reg.wdog_count.de = aon_wdog_count_reg_wr;
-  assign hw2reg.wdog_count.d  = aon_wdog_count_wr_data;
+  assign hw2reg.wdog_count.de    = aon_wdog_count_reg_wr;
+  assign hw2reg.wdog_count.d     = aon_wdog_count_wr_data;
 
   // Register instantiations
   aon_timer_reg_top #(
@@ -191,7 +191,7 @@ module aon_timer import aon_timer_reg_pkg::*;
 
   prim_flop #(
     .Width      (2),
-    .ResetValue (2'b 00)
+    .ResetValue (2'b00)
   ) u_aon_intr_flop (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),
@@ -201,8 +201,8 @@ module aon_timer import aon_timer_reg_pkg::*;
 
   prim_edge_detector #(
     .Width      (2),
-    .ResetValue (2'b 00),
-    .EnSync     (1'b 1)
+    .ResetValue (2'b00),
+    .EnSync     (1'b1)
   ) u_intr_sync (
     .clk_i,
     .rst_ni,
@@ -240,6 +240,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   ) u_intr_hw (
     .clk_i,
     .rst_ni,
+
     .event_intr_i           (intr_set),
     .reg2hw_intr_enable_q_i (2'b11),
     .reg2hw_intr_test_q_i   (intr_test_q),
