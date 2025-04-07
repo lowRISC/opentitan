@@ -22,7 +22,7 @@ package adc_ctrl_env_pkg;
   // parameters
   // alerts
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[] = '{0: "fatal_fault"};
   // Number of ADC channels
   parameter int unsigned ADC_CTRL_CHANNELS = ast_pkg::AdcChannels;
   // ADC data width
