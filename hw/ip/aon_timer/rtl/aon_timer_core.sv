@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// The logical core of the AON (always on) timer IP block.
 
 module aon_timer_core import aon_timer_reg_pkg::*; (
   input  logic                      clk_aon_i,
