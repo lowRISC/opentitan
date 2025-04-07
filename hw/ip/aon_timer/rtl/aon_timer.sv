@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// AON timer top module which instantiates the registers, the aon_core module
+// and connects up all the inputs and outputs.
 
 `include "prim_assert.sv"
 
