@@ -33,66 +33,66 @@
   ],
   interrupt_list: [
     { name: "wkup_timer_expired",
-      desc: "Raised if the wakeup timer has hit the specified threshold"
+      desc: "Raised if the wakeup timer has hit the specified threshold.",
     },
     { name: "wdog_timer_bark",
-      desc: "Raised if the watchdog timer has hit the bark threshold"
+      desc: "Raised if the watchdog timer has hit the bark threshold.",
     },
   ],
   alert_list: [
     { name: "fatal_fault",
       desc: '''
       This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
-      '''
+      ''',
     }
   ],
   wakeup_list: [
     { name: "wkup_req",
-      desc: "Raised if the wakeup or watchdog timer has hit the specified threshold"
+      desc: "Raised if the wakeup or watchdog timer has hit the specified threshold.",
     },
   ],
   reset_request_list: [
     { name: "aon_timer_rst_req",
-      desc: "watchdog reset request"
+      desc: "Watchdog reset request.",
     },
   ],
   inter_signal_list: [
-    // wakeup and reset request signals
+    // Wakeup and reset request signals.
     { struct:  "logic",
       type:    "uni",
       name:    "nmi_wdog_timer_bark",
       act:     "req",
       package: "",
-      default: "1'b0"
+      default: "1'b0",
     },
     { struct:  "logic",
       type:    "uni",
       name:    "wkup_req",
       act:     "req",
       package: "",
-      default: "1'b0"
+      default: "1'b0",
     },
     { struct:  "logic",
       type:    "uni",
       name:    "aon_timer_rst_req",
       act:     "req",
       package: "",
-      default: "1'b0"
+      default: "1'b0",
     },
-    // Broadcast from LC
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_escalate_en"
-      act:     "rcv"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
+    // Broadcast from lifecycle controller (LC).
+    { struct:  "lc_tx",
+      type:    "uni",
+      name:    "lc_escalate_en",
+      act:     "rcv",
+      default: "lc_ctrl_pkg::Off",
+      package: "lc_ctrl_pkg",
     },
     { name:    "sleep_mode",
       type:    "uni",
       act:     "rcv",
       package: "",
       struct:  "logic",
-      width:   "1"
+      width:   "1",
     },
     { struct:  "racl_policy_vec",
       type:    "uni",
@@ -102,64 +102,64 @@
       desc:    '''
         Incoming RACL policy vector from a racl_ctrl instance.
         The policy selection vector (parameter) selects the policy for each register.
-      '''
+      ''',
     }
     { struct:  "racl_error_log",
       type:    "uni",
       name:    "racl_error",
       act:     "req",
-      width:   "1"
+      width:   "1",
       package: "top_racl_pkg",
       desc:    '''
         RACL error log information of this module.
-      '''
+      ''',
     }
   ],
   features: [
     { name: "AON_TIMER.WAKEUP.WAKEUP_CONFIG",
       desc: '''
             The AON_TIMER wake-up period can be configured.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WAKEUP.WAKEUP_REQUEST",
       desc: '''
             The AON_TIMER can wake-up the core from sleep mode.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WAKEUP.INTERRUPT",
       desc: '''
             The AON_TIMER block triggers interrupts when the wakeup threshold is reached.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WATCHDOG.BARK",
       desc: '''
             The AON_TIMER watchdog barks if not petted in the programed time. A bark triggers an interrup and a wakeup.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WATCHDOG.BITE",
       desc: '''
             The AON_TIMER watchdog bites if not petted in the programmed time. A bite triggers a reset.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WATCHDOG.PAUSE",
       desc: '''
             Configure the watchdog to pause during sleep mode, resuming after wake-up.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WATCHDOG.DISABLE_BY_LC_CTRL",
       desc: '''
             The watchdog is disabled when the life cycle controller escalates.
-            '''
+            ''',
     },
     { name: "AON_TIMER.WATCHDOG.INTERRUPT",
       desc: '''
             An interrupt is triggered when the watchdog bark threshold is reached.
-            '''
+            ''',
     },
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",
-      desc: "End-to-end bus integrity scheme."
+      desc: "End-to-end bus integrity scheme.",
     }
   ]
   no_auto_intr_regs: "true",
@@ -168,8 +168,8 @@
     { name: "WKUP_CTRL",
       desc: '''
             Wakeup Timer Control register.
-            Each write to the register resets the internal prescaler count
-            '''
+            Each write to the register resets the internal prescaler count.
+            ''',
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_aon_i",
@@ -193,7 +193,7 @@
       fields: [
         { bits: "31:0",
           name: "threshold_hi",
-          desc: "The count at which a wakeup interrupt should be generated, top 32 bits",
+          desc: "The count at which a wakeup interrupt should be generated, top 32 bits.",
         }
       ],
     },
@@ -205,7 +205,7 @@
       fields: [
         { bits: "31:0",
           name: "threshold_lo",
-          desc: "The count at which a wakeup interrupt should be generated, bottom 32 bits",
+          desc: "The count at which a wakeup interrupt should be generated, bottom 32 bits.",
         }
       ],
     },
@@ -217,7 +217,7 @@
       fields: [
         { bits: "31:0",
           name: "count_hi",
-          desc: "The current wakeup counter value, top 32 bits",
+          desc: "The current wakeup counter value, top 32 bits.",
         }
       ],
       tags: [// this could be updated by HW
@@ -231,7 +231,7 @@
       fields: [
         { bits: "31:0",
           name: "count_lo",
-          desc: "The current wakeup counter value, bottom 32 bits",
+          desc: "The current wakeup counter value, bottom 32 bits.",
         }
       ],
       tags: [// this could be updated by HW
@@ -244,7 +244,7 @@
       fields: [
         { bits: "0",
           name: "regwen",
-          desc: "Once cleared, the watchdog configuration will be locked until the next reset",
+          desc: "Once cleared, the watchdog configuration will be locked until the next reset.",
           resval: 1
         }
       ]
@@ -258,11 +258,11 @@
       fields: [
         { bits: "0",
           name: "enable",
-          desc: "When set to 1, the watchdog timer will count",
+          desc: "When set to 1, the watchdog timer will count.",
         },
         { bits: "1",
           name: "pause_in_sleep",
-          desc: "When set to 1, the watchdog timer will not count during sleep",
+          desc: "When set to 1, the watchdog timer will not count during sleep.",
         }
       ],
     },
@@ -275,7 +275,7 @@
       fields: [
         { bits: "31:0",
           name: "threshold",
-          desc: "The count at which a watchdog bark interrupt should be generated",
+          desc: "The count at which a watchdog bark interrupt should be generated.",
         }
       ],
     },
@@ -288,7 +288,7 @@
       fields: [
         { bits: "31:0",
           name: "threshold",
-          desc: "The count at which a watchdog bite reset should be generated",
+          desc: "The count at which a watchdog bite reset should be generated.",
         }
       ],
     },
@@ -300,7 +300,7 @@
       fields: [
         { bits: "31:0",
           name: "count",
-          desc: "The current watchdog counter value",
+          desc: "The current watchdog counter value.",
         }
       ],
       tags: [// this could be updated by HW
@@ -313,11 +313,11 @@
       fields: [
         { bits: "0",
           name: "wkup_timer_expired",
-          desc: "Raised if the wakeup timer has hit the specified threshold",
+          desc: "Raised if the wakeup timer has hit the specified threshold.",
         }
         { bits: "1",
           name: "wdog_timer_bark",
-          desc: "Raised if the watchdog timer has hit the bark threshold",
+          desc: "Raised if the watchdog timer has hit the bark threshold.",
         }
       ]
       tags: [// interrupt could be updated by HW
@@ -332,11 +332,11 @@
       fields: [
         { bits: "0",
           name: "wkup_timer_expired",
-          desc: "Write 1 to force wkup_timer_expired interrupt",
+          desc: "Write 1 to force wkup_timer_expired interrupt.",
         }
         { bits: "1",
           name: "wdog_timer_bark",
-          desc: "Write 1 to force wdog_timer_bark interrupt",
+          desc: "Write 1 to force wdog_timer_bark interrupt.",
         }
       ]
     },
@@ -348,7 +348,7 @@
       fields: [
         { bits: "0",
           name: "cause",
-          desc: "AON timer requested wakeup, write 0 to clear",
+          desc: "AON timer requested wakeup, write 0 to clear.",
         }
       ]
       tags: [// this could be updated by HW

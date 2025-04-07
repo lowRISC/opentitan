@@ -82,7 +82,7 @@ Device reset reason.
 ### RESET_INFO . HW_REQ
 Indicates when a device has reset due to a hardware requested reset.
 The bit mapping is as follows:
-b3: aon_timer_aon: watchdog reset request
+b3: aon_timer_aon: Watchdog reset request.
 b4: soc_proxy: External reset request
 b5: pwrmgr_aon: main power glitch reset request
 b6: alert_handler: escalation reset request

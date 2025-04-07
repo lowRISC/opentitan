@@ -554,7 +554,7 @@
         name: aon_timer_rst_req
         width: "1"
         module: aon_timer_aon
-        desc: watchdog reset request
+        desc: Watchdog reset request.
       }
     ]
   }
