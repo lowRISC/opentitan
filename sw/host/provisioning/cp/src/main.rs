@@ -42,7 +42,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
 
     let provisioning_data = ManufCpProvisioningData {
         device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,

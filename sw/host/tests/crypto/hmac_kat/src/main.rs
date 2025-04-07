@@ -126,7 +126,7 @@ fn run_hmac_testcase(
 
 fn test_hmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;

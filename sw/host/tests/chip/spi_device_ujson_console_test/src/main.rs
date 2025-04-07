@@ -109,7 +109,7 @@ fn main() -> Result<()> {
 
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     execute_test!(test_perso_blob_strcut, &opts, &spi_console_device);
