@@ -201,15 +201,17 @@ def parse_racl_mapping(
         raise SystemExit('RACL Mapping is missing the field: windows')
 
     # translate star mappings:
-    if list(mapping.get('registers', {}).keys()) == ["*"]:
+    if "*" in mapping.get('registers', {}):
         policy_name = mapping['registers'].pop("*")
         for reg in reg_block.flat_regs:
-            mapping['registers'][reg.name] = policy_name
+            if reg.name not in mapping['registers']:
+                mapping['registers'][reg.name] = policy_name
 
-    if list(mapping.get('windows', {}).keys()) == ["*"]:
+    if "*" in mapping.get('windows', {}):
         policy_name = mapping['windows'].pop("*")
         for window in reg_block.windows:
-            mapping['windows'][window.name] = policy_name
+            if window.name not in mapping['windows']:
+                mapping['windows'][window.name] = policy_name
 
     # Assign all registers to a given policy
     for reg in reg_block.flat_regs:
