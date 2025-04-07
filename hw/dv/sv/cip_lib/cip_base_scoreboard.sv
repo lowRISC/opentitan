@@ -342,7 +342,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //   This input allows alert to trigger anytime between 0 to `max_delay` clock cycles. However,
   //   please do not use this variable if there is any ongoing alert handshake, because if using
   //   max_delay, we cannot accurately predict if two alerts are merged or not.
-  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 0);
+  virtual function void set_exp_alert(string alert_name, bit is_fatal = 0, int max_delay = 4);
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
