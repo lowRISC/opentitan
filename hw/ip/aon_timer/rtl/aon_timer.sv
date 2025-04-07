@@ -12,6 +12,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   parameter bit                             RaclErrorRsp              = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
+  // Clock and reset signals
   input  logic                clk_i,
   input  logic                clk_aon_i,
   input  logic                rst_ni,
@@ -42,7 +43,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   // async domain
   input  logic                sleep_mode_i
 );
-
+  // Local parameters for wakeup and watchdog
   localparam int AON_WKUP = 0;
   localparam int AON_WDOG = 1;
 
@@ -92,7 +93,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   assign hw2reg.wdog_count.de = aon_wdog_count_reg_wr;
   assign hw2reg.wdog_count.d  = aon_wdog_count_wr_data;
 
-  // registers instantiation
+  // Register instantiations
   aon_timer_reg_top #(
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
@@ -174,12 +175,12 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Wakeup Signals //
   ////////////////////
 
-  // Wakeup request is set by HW and cleared by SW
-  // The wakeup cause is always captured and only sent out when the system has entered sleep mode
+  // Wakeup request is set by HW and cleared by SW.
+  // The wakeup cause is always captured and only sent out when the system has entered sleep mode.
   assign hw2reg.wkup_cause.de = aon_wkup_intr_set | aon_wdog_intr_set;
   assign hw2reg.wkup_cause.d  = 1'b1;
 
-  // cause register resides in AON domain.
+  // Cause register resides in AON domain.
   assign wkup_req_o = reg2hw.wkup_cause.q;
 
   ////////////////////////
@@ -214,9 +215,10 @@ module aon_timer import aon_timer_reg_pkg::*;
   // Registers to interrupt
   assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe;
 
-  // The fields of a register all have the same value for their qe signals, so we just pick one of
-  // them. This assertion checks that we don't miss writes if the register top changes and the
-  // unused_extra_qe signal avoids a lint error (because the lint tool doesn't expand the assertion)
+  // The fields of a register all have the same value for their "qe" signals, so we just pick one
+  // of them. This assertion checks that we don't miss writes if the register top changes and the
+  // "unused_extra_qe" signal avoids a lint error (because the lint tool doesn't expand the
+  // assertion).
   `ASSERT(IntrTestFieldsQeMatch_A,
           reg2hw.intr_test.wkup_timer_expired.qe == reg2hw.intr_test.wdog_timer_bark.qe)
   logic unused_extra_qe;
@@ -252,14 +254,14 @@ module aon_timer import aon_timer_reg_pkg::*;
   assign intr_wkup_timer_expired_o = intr_out[AON_WKUP];
   assign intr_wdog_timer_bark_o = intr_out[AON_WDOG];
 
-  // The interrupt line can be routed as nmi as well.
+  // The interrupt line can also be routed as NMI (non-maskable interrupt).
   assign nmi_wdog_timer_bark_o = intr_wdog_timer_bark_o;
 
   ///////////////////
   // Reset Request //
   ///////////////////
 
-  // Once set, the reset request remains asserted until the next aon reset
+  // Once set, the reset request remains asserted until the next AON reset.
   assign aon_rst_req_d = aon_rst_req_set | aon_rst_req_q;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
