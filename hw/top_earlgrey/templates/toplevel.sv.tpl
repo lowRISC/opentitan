@@ -507,7 +507,7 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
 %>\
   % if m["param_list"] or block.alerts:
   ${m["type"]} #(
-<%include file="/toplevel_racl.tpl" args="m=m,top=top"/>\
+<%include file="/toplevel_racl_parameters.tpl" args="module=m,top=top,block=block"/>\
   % if block.alerts:
 <%
 w = len(block.alerts)
@@ -580,6 +580,7 @@ slice = f"{lo+w-1}:{lo}"
       .alert_rx_i  ( alert_rx[${slice}] ),
       % endif
     % endif
+<%include file="/toplevel_racl_signals.tpl" args="module=m,top=top,block=block"/>\
     ## TODO: Inter-module Connection
     % if m.get('inter_signal_list'):
 

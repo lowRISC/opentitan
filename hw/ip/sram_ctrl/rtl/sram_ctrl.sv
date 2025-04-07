@@ -32,7 +32,7 @@ module sram_ctrl
   parameter bit                         EnableRacl       = 1'b0,
   parameter bit                         RaclErrorRsp     = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}},
-  parameter int unsigned                RaclPolicySelRangesRamNum = 1,
+  parameter int unsigned                RaclPolicySelNumRangesRam = 1,
   // Random netlist constants
   parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -57,7 +57,7 @@ module sram_ctrl
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t                     racl_policies_i,
   output top_racl_pkg::racl_error_log_t                      racl_error_o,
-  input  top_racl_pkg::racl_range_t [RaclPolicySelRangesRamNum-1:0] racl_policy_sel_ranges_ram_i,
+  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRangesRam-1:0] racl_policy_sel_ranges_ram_i,
   // Life-cycle escalation input (scraps the scrambling keys)
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                                lc_escalate_en_i,
@@ -536,7 +536,7 @@ module sram_ctrl
     .EnableReadback  (1), // SEC_CM: MEM.READBACK
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
-    .RaclPolicySelNumRanges(RaclPolicySelRangesRamNum)
+    .RaclPolicySelNumRanges(RaclPolicySelNumRangesRam)
   ) u_tlul_adapter_sram_racl (
     .clk_i,
     .rst_ni,
