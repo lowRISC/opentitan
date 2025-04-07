@@ -5,9 +5,11 @@
 use anyhow::Result;
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
+use std::rc::Rc;
 use std::time::Duration;
 
 use crate::io::console::ConsoleDevice;
+use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
 use crate::spiflash::flash::SpiFlash;
 
@@ -17,6 +19,7 @@ pub struct SpiConsoleDevice<'a> {
     console_next_frame_number: Cell<u32>,
     rx_buf: RefCell<VecDeque<u8>>,
     next_read_address: Cell<u32>,
+    device_tx_ready: Option<&'a Rc<dyn GpioPin>>,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
@@ -28,7 +31,7 @@ impl<'a> SpiConsoleDevice<'a> {
     const SPI_TX_LAST_CHUNK_MAGIC_ADDRESS: u32 = 0x100;
     const SPI_BOOT_MAGIC_PATTERN: u32 = 0xcafeb002;
 
-    pub fn new(spi: &'a dyn Target) -> Result<Self> {
+    pub fn new(spi: &'a dyn Target, device_tx_ready: Option<&'a Rc<dyn GpioPin>>) -> Result<Self> {
         let flash = SpiFlash {
             ..Default::default()
         };
@@ -38,6 +41,7 @@ impl<'a> SpiConsoleDevice<'a> {
             rx_buf: RefCell::new(VecDeque::new()),
             console_next_frame_number: Cell::new(0),
             next_read_address: Cell::new(0),
+            device_tx_ready,
         })
     }
 
