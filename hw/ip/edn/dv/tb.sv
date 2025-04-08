@@ -30,7 +30,8 @@ module tb;
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_if[MAX_NUM_ENDPOINTS](.clk(clk), .rst_n(rst_n));
   edn_if edn_if(.clk(clk), .rst_n(rst_n));
-  edn_assert_if edn_assert_if(.clk(clk), .rst_n(rst_n));
+
+  bind dut.u_edn_core edn_assert_if edn_assert_if ();
 
   `DV_ALERT_IF_CONNECT()
   assign edn_disable_o = edn_if.edn_disable_o;
@@ -78,7 +79,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual csrng_if)::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     uvm_config_db#(virtual edn_cov_if)::set(null, "*.env", "edn_cov_if", dut.u_edn_cov_if);
-    uvm_config_db#(virtual edn_assert_if)::set(null, "*.env", "edn_assert_vif", edn_assert_if);
+    uvm_config_db#(virtual edn_assert_if)::set(null, "*.env", "edn_assert_vif",
+                                               dut.u_edn_core.edn_assert_if);
     uvm_config_db#(virtual edn_if)::set(null, "*.env", "edn_vif", edn_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
