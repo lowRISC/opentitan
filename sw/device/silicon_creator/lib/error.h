@@ -88,6 +88,7 @@ enum module_ {
 #define DEFINE_ERRORS(X) \
   X(kErrorOk,                         0x739), \
   X(kErrorWriteBootdataThenReboot,    0x2ea), \
+  X(kErrorNoData,                     0x4d7), \
   X(kErrorUnknown,                    0xffffffff), \
   \
   X(kErrorSigverifyBadRsaSignature,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
