@@ -652,7 +652,7 @@
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_A",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
@@ -748,7 +748,7 @@
                       bits: "CLASS_DW-1:0",
                       name: "CLASS_LA",
                       resval: 0
-                      desc: "Classification ",
+                      desc: "Classification",
                       enum: [
                               { value: "0", name: "ClassA", desc: "" },
                               { value: "1", name: "ClassB", desc: "" },
