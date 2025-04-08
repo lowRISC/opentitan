@@ -611,16 +611,19 @@ void spi_device_init(uint8_t log2_density, const void *sfdp_table,
                    reg);
 }
 
-rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
-  uint32_t reg = 0;
-  bool cmd_pending = false;
-  while (!cmd_pending) {
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking) {
+  uint32_t reg;
+  bool cmd_pending;
+  do {
     // Note: Using INTR_STATE.UPLOAD_CMDFIFO_NOT_EMPTY because
     // UPLOAD_STATUS.CMDFIFO_NOTEMPTY is set before the SPI transaction ends.
     reg = abs_mmio_read32(spi_device_reg_base() +
                           SPI_DEVICE_INTR_STATE_REG_OFFSET);
     cmd_pending = bitfield_bit32_read(
         reg, SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT);
+  } while (!cmd_pending && blocking);
+  if (!cmd_pending) {
+    return kErrorNoData;
   }
   abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_INTR_STATE_REG_OFFSET,
                    UINT32_MAX);

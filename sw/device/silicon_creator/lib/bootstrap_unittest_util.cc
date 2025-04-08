@@ -40,7 +40,7 @@ void BootstrapTest::ExpectBootstrapRequestCheck(bool requested) {
 }
 
 void BootstrapTest::ExpectSpiCmd(spi_device_cmd_t cmd) {
-  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+  EXPECT_CALL(spi_device_, CmdGet(NotNull(), true))
       .WillOnce(DoAll(SetArgPointee<0>(cmd), Return(kErrorOk)));
 }
 
