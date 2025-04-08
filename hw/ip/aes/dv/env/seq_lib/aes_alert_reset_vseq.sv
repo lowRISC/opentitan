@@ -20,6 +20,11 @@ class aes_alert_reset_vseq extends aes_base_vseq;
   rand alert_test_t alert_test_value;
   constraint alert_test_value_c { $countones(alert_test_value) > 1; }
 
+  virtual task pre_start();
+    super.pre_start();
+    expect_fatal_alerts = 1;
+  endtask
+
   task body();
 
     `uvm_info(`gfn, $sformatf("\n\n\t ----| STARTING AES MAIN SEQUENCE |----\n %s",
