@@ -69,6 +69,11 @@ enum {
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
 };
 
+// Parameter to check the ECDSA and SPX signatures with.
+enum {
+  kSigverifySignExec = 0xa26a38f7,
+};
+
 // Declaration for the ROM_EXT manifest start address, populated by the linker
 extern char _rom_ext_start_address[];
 // Declaration for the chip_info structure stored in ROM.
@@ -211,7 +216,8 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
-                                  const boot_data_t *boot_data) {
+                                  const boot_data_t *boot_data,
+                                  uint32_t *flash_exec) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
 
   uint32_t key_id =
@@ -264,12 +270,11 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
                 "Unexpected BL0 digest size.");
   memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
-  uint32_t flash_exec = 0;
   return owner_verify(
       key_alg, &keyring.key[verify_key]->data, &manifest->ecdsa_signature,
       &ext_spx_signature->signature, &usage_constraints_from_hw,
       sizeof(usage_constraints_from_hw), NULL, 0, digest_region.start,
-      digest_region.length, &act_digest, &flash_exec);
+      digest_region.length, &act_digest, flash_exec);
 }
 
 /**
@@ -295,7 +300,8 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
-                                const manifest_t *manifest) {
+                                const manifest_t *manifest,
+                                uint32_t *flash_exec) {
   // Determine which owner block the key came from and measure that block.
   hmac_digest_t owner_measurement;
   const owner_application_key_t *key = keyring.key[verify_key];
@@ -413,6 +419,9 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // to know if it's allowed to used the CSRNG and OTP is locked down.
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+
+  HARDENED_CHECK_EQ(*flash_exec, kSigverifySignExec);
+
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();
@@ -493,12 +502,13 @@ static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
     // value of the new minimum_security_version.  This prevents a malicious
     // MinBl0SecVer request from making the chip un-bootable.
     const manifest_t *manifest = rom_ext_boot_policy_manifest_a_get();
-    rom_error_t error = rom_ext_verify(manifest, boot_data);
+    uint32_t flash_exec = 0;
+    rom_error_t error = rom_ext_verify(manifest, boot_data, &flash_exec);
     if (error == kErrorOk && manifest->security_version > max_sec_ver) {
       max_sec_ver = manifest->security_version;
     }
     manifest = rom_ext_boot_policy_manifest_b_get();
-    error = rom_ext_verify(manifest, boot_data);
+    error = rom_ext_verify(manifest, boot_data, &flash_exec);
     if (error == kErrorOk && manifest->security_version > max_sec_ver) {
       max_sec_ver = manifest->security_version;
     }
@@ -576,11 +586,13 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    error = rom_ext_verify(manifests.ordered[i], boot_data);
+    uint32_t flash_exec = 0;
+    error = rom_ext_verify(manifests.ordered[i], boot_data, &flash_exec);
     slot[i] = error;
     if (error != kErrorOk) {
       continue;
     }
+    HARDENED_CHECK_EQ(flash_exec, kSigverifySignExec);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
@@ -592,7 +604,8 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifests.ordered[i]));
+    RETURN_IF_ERROR(
+        rom_ext_boot(boot_data, boot_log, manifests.ordered[i], &flash_exec));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;

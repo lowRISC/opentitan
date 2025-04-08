@@ -21,7 +21,8 @@ static rom_error_t owner_spx_verify(
     uint32_t key_alg, const sigverify_spx_key_t *key,
     const sigverify_spx_signature_t *signature, const void *msg_prefix_1,
     size_t msg_prefix_1_len, const void *msg_prefix_2, size_t msg_prefix_2_len,
-    const void *msg, size_t msg_len, hmac_digest_t digest) {
+    const void *msg, size_t msg_len, hmac_digest_t digest,
+    uint32_t *flash_exec) {
   if (signature == NULL) {
     return kErrorSigverifySpxNotFound;
   }
@@ -85,6 +86,7 @@ static rom_error_t owner_spx_verify(
   }
   uint32_t result = 0;
   uint32_t diff = 0;
+  *flash_exec = kErrorOk ^ kSigverifySpxSuccess;
   for (--i; launder32(i) < kSigverifySpxRootNumWords; --i) {
     uint32_t val = expected_root.data[i] ^ actual_root.data[i];
     diff |= val ^ shares[i];
@@ -92,6 +94,9 @@ static rom_error_t owner_spx_verify(
     diff |= ~(diff >> 31) + 1;  // Set all 1s if MSB is set, no change o/w.
     result ^= val;
     result |= diff;
+
+    *flash_exec ^= val;
+    *flash_exec |= diff;
   }
   HARDENED_CHECK_EQ(i, SIZE_MAX);
   if (result != kErrorOk) {
@@ -108,6 +113,7 @@ rom_error_t owner_verify(uint32_t key_alg, const owner_keydata_t *key,
                          const void *msg, size_t msg_len,
                          const hmac_digest_t *digest, uint32_t *flash_exec) {
   uint32_t ec_flash_exec = 0;
+  uint32_t spx_flash_exec = 0;
   uint32_t category = key_alg & kOwnershipKeyAlgCategoryMask;
   rom_error_t ecdsa = kErrorOwnershipInvalidAlgorithm;
   rom_error_t spx = kErrorOwnershipInvalidAlgorithm;
@@ -130,10 +136,11 @@ rom_error_t owner_verify(uint32_t key_alg, const owner_keydata_t *key,
         category == kOwnershipKeyAlgCategoryHybrid ? &key->hybrid.spx
                                                    : &key->spx,
         spx_sig, msg_prefix_1, msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len,
-        msg, msg_len, *digest);
+        msg, msg_len, *digest, &spx_flash_exec);
   } else {
     HARDENED_CHECK_EQ(category, kOwnershipKeyAlgCategoryEcdsa);
     spx = kErrorOk;
+    spx_flash_exec = kSigverifySpxSuccess;
   }
 
   // ECDSA should be finished.  Poll for completeion and get the result.
@@ -143,11 +150,12 @@ rom_error_t owner_verify(uint32_t key_alg, const owner_keydata_t *key,
   } else {
     HARDENED_CHECK_EQ(category, kOwnershipKeyAlgCategorySpx);
     ecdsa = kErrorOk;
+    ec_flash_exec = kSigverifyEcdsaSuccess;
   }
   HARDENED_RETURN_IF_ERROR(spx);
   HARDENED_RETURN_IF_ERROR(ecdsa);
   if (flash_exec) {
-    *flash_exec = ec_flash_exec;
+    *flash_exec = ec_flash_exec ^ spx_flash_exec;
   }
   // Both values should be kErrorOk.  Mix them and return the result.
   return (rom_error_t)((spx + ecdsa) >> 1);
