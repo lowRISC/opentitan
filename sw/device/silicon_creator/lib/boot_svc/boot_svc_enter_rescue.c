@@ -6,7 +6,9 @@
 
 #include "sw/device/silicon_creator/lib/error.h"
 
-void boot_svc_enter_rescue_req_init(boot_svc_enter_rescue_req_t *msg) {
+void boot_svc_enter_rescue_req_init(uint32_t skip_once,
+                                    boot_svc_enter_rescue_req_t *msg) {
+  msg->skip_once = skip_once;
   boot_svc_header_finalize(kBootSvcEnterRescueReqType,
                            sizeof(boot_svc_enter_rescue_req_t), &msg->header);
 }

@@ -24,7 +24,8 @@ TEST_F(BootSvcEnterRescueTest, ReqInit) {
   EXPECT_CALL(boot_svc_header_,
               Finalize(kBootSvcEnterRescueReqType, sizeof(msg), &msg.header));
 
-  boot_svc_enter_rescue_req_init(&msg);
+  boot_svc_enter_rescue_req_init(kHardenedBoolFalse, &msg);
+  EXPECT_EQ(msg.skip_once, kHardenedBoolFalse);
 }
 
 TEST_F(BootSvcEnterRescueTest, ResInit) {
