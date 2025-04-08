@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
+load("@//rules:repo.bzl", "http_archive_or_local")
+load("@//rules:bare_repo.bzl", "bare_repository")
 load("@//rules:rust.bzl", "crate_build")
 load("@python3//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
