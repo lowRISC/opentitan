@@ -237,9 +237,12 @@ module kmac_msgfifo
 
   assign process_o = msgfifo_flush_done;
 
+  err_t error;
+  assign err_o = error;
+
   // Error assign
   always_comb begin : error_logic
-    err_o = '{
+    error = '{
       valid: 1'b 0,
       code: kmac_pkg::ErrNone,
       info: '0
@@ -247,14 +250,14 @@ module kmac_msgfifo
 
     // Priority case -> if .. else if
     if (packer_err) begin
-      err_o = '{
+      error = '{
         // If EnProtection is 0, packer_err is tied to 0
         valid: 1'b 1,
         code:  kmac_pkg::ErrPackerIntegrity,
         info:  kmac_pkg::ErrInfoW'(flush_st)
       };
     end else if (fifo_err) begin
-      err_o = '{
+      error = '{
         valid: 1'b 1,
         code:  kmac_pkg::ErrMsgFifoIntegrity,
         info:  kmac_pkg::ErrInfoW'(flush_st)
