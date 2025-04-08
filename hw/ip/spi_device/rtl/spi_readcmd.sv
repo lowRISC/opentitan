@@ -201,11 +201,6 @@ module spi_readcmd
     cmd_info_i.busy
     };
 
-  `ASSERT(ValidCmdConfig_A,
-          main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled)
-          && cmd_info_i.payload_dir == PayloadOut
-          && cmd_info_i.valid)
-
   /////////////////
   // Definitions //
   /////////////////
@@ -265,6 +260,11 @@ module spi_readcmd
     MainError
   } main_st_e;
   main_st_e main_st, main_st_d;
+
+  `ASSERT(ValidCmdConfig_A,
+          main_st == MainAddress |-> (cmd_info_i.addr_mode != AddrDisabled &&
+                                      cmd_info_i.payload_dir == PayloadOut &&
+                                      cmd_info_i.valid))
 
   /////////////
   // Signals //
