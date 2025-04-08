@@ -5,6 +5,6 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 
-pub fn ft_ext(endorsed_cert_concat: ArrayVec<u8, 4096>) -> Result<ArrayVec<u8, 4096>> {
+pub fn ft_ext(endorsed_cert_concat: ArrayVec<u8, 5120>) -> Result<ArrayVec<u8, 5120>> {
     Ok(endorsed_cert_concat)
 }

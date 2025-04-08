@@ -290,7 +290,7 @@ fn get_cert(data: &[u8]) -> Result<CertHeader<'_>> {
 fn push_endorsed_cert(
     cert: &Vec<u8>,
     ref_cert: &CertHeader,
-    output: &mut ArrayVec<u8, 4096>,
+    output: &mut ArrayVec<u8, 5120>,
 ) -> Result<()> {
     // Need to wrap the new cert in CertHeader
     let total_size = std::mem::size_of::<ObjHeaderType>()
@@ -367,7 +367,7 @@ fn provision_certificates(
     let mut dice_cert_chain_cwt: Vec<EndorsedCert> = Vec::new();
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
-    let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
+    let mut endorsed_cert_concat = ArrayVec::<u8, 5120>::new();
     let mut device_was_hmac: Vec<u8> = Vec::new();
     let mut device_id: Vec<u8> = Vec::new();
     let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(wafer_auth_secret.as_slice())?;
