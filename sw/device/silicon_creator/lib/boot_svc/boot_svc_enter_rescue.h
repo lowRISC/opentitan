@@ -30,10 +30,16 @@ typedef struct boot_svc_enter_rescue_req {
    * Boot services message header.
    */
   boot_svc_header_t header;
+  /**
+   * Command rescue to ignore the rescue trigger one time.
+   */
+  uint32_t skip_once;
 } boot_svc_enter_rescue_req_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_svc_enter_rescue_req_t, header, 0);
-OT_ASSERT_SIZE(boot_svc_enter_rescue_req_t, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_enter_rescue_req_t, skip_once,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 0);
+OT_ASSERT_SIZE(boot_svc_enter_rescue_req_t, CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
 
 /**
  * An Enter Rescue response.
@@ -57,9 +63,11 @@ OT_ASSERT_SIZE(boot_svc_enter_rescue_res_t, 48);
 /**
  * Initialize an enter rescue request.
  *
+ * @param skip_once Ignore the rescue trigger on the next boot.
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_enter_rescue_req_init(boot_svc_enter_rescue_req_t *msg);
+void boot_svc_enter_rescue_req_init(uint32_t skip_once,
+                                    boot_svc_enter_rescue_req_t *msg);
 
 /**
  * Initialize an enter rescue response.
