@@ -197,7 +197,7 @@ TEST_F(CmdGetTest, PayloadOverflow) {
                      std::numeric_limits<uint32_t>::max());
 
   spi_device_cmd_t cmd;
-  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorSpiDevicePayloadOverflow);
+  EXPECT_EQ(spi_device_cmd_get(&cmd, true), kErrorSpiDevicePayloadOverflow);
 }
 
 TEST_P(CmdGetTest, CmdGet) {
@@ -234,7 +234,7 @@ TEST_P(CmdGetTest, CmdGet) {
   }
 
   spi_device_cmd_t cmd;
-  EXPECT_EQ(spi_device_cmd_get(&cmd), kErrorOk);
+  EXPECT_EQ(spi_device_cmd_get(&cmd, true), kErrorOk);
   EXPECT_EQ(cmd.opcode, GetParam().opcode);
   EXPECT_EQ(cmd.address, GetParam().address);
   EXPECT_EQ(cmd.payload_byte_count, GetParam().payload.size());

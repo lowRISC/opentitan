@@ -16,8 +16,8 @@ void spi_device_init_bootstrap(void) {
   MockSpiDevice::Instance().InitBootstrap();
 }
 
-rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
-  return MockSpiDevice::Instance().CmdGet(cmd);
+rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd, bool blocking) {
+  return MockSpiDevice::Instance().CmdGet(cmd, blocking);
 }
 
 void spi_device_flash_status_clear(void) {

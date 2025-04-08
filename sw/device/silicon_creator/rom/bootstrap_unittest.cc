@@ -66,7 +66,7 @@ TEST_F(BootstrapTest, RequestedEnabled) {
 TEST_F(BootstrapTest, PayloadOverflowErase) {
   ExpectBootstrapRequestCheck(true);
   EXPECT_CALL(spi_device_, InitBootstrap());
-  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+  EXPECT_CALL(spi_device_, CmdGet(NotNull(), true))
       .WillOnce(Return(kErrorSpiDevicePayloadOverflow));
 
   EXPECT_EQ(bootstrap(), kErrorSpiDevicePayloadOverflow);
@@ -83,7 +83,7 @@ TEST_F(BootstrapTest, PayloadOverflowProgram) {
   ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
   // Program
-  EXPECT_CALL(spi_device_, CmdGet(NotNull()))
+  EXPECT_CALL(spi_device_, CmdGet(NotNull(), true))
       .WillOnce(Return(kErrorSpiDevicePayloadOverflow));
 
   EXPECT_EQ(bootstrap(), kErrorSpiDevicePayloadOverflow);
