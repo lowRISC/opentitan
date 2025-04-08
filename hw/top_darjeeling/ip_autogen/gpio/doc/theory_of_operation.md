@@ -81,6 +81,7 @@ The `strap_en_i` signal transition from low to high is expected only once after 
 Sampling occurs exclusively at this time, and any subsequent changes to the GPIO input configuration will not be captured.
 This mechanism samples all 32 bits of the GPIO input data, regardless of the GPIO output enable status, providing a reliable snapshot of the input values for firmware access.
 
+![GPIO Block Diagram](../doc/gpio_strap.svg)
 
 ### Interrupts
 
