@@ -15,7 +15,8 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static status_t initialize(retention_sram_t *retram, boot_svc_retram_t *state) {
   boot_svc_msg_t msg = {0};
-  boot_svc_enter_rescue_req_init(&msg.enter_rescue_req);
+  boot_svc_enter_rescue_req_init(/*skip_once=*/kHardenedBoolFalse,
+                                 &msg.enter_rescue_req);
   retram->creator.boot_svc_msg = msg;
   state->state = kBootSvcTestStateEnterRescue;
   rstmgr_reset();
