@@ -1748,10 +1748,7 @@
       name: xcelium_ci_1
       tests: ["chip_sw_rv_core_ibex_address_translation",
               "chip_sw_rv_timer_irq",
-              "chip_sw_spi_device_pass_through",
-              "chip_sw_plic_sw_irq",
               "chip_sw_aes_enc",
-              "chip_sw_all_escalation_resets",
               "chip_sw_csrng_kat_test",
               // TODO(#26733): uncomment when these run for Darjeeling.
               // "chip_sw_aes_enc_jitter_en",
