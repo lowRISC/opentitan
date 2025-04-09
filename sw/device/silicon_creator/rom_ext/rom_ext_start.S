@@ -43,7 +43,7 @@
   .type _rom_ext_interrupt_vector, @function
 _rom_ext_interrupt_vector:
   // Entry 0: exception handler.
-  j rom_ext_exception_handler
+  j flash_exception_handler
 
   // Entries 1-30: interrupt handlers.
   .rept 30
