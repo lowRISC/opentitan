@@ -146,6 +146,11 @@ cc_library(
     ],
 )
 
+filegroup(
+    name = "flash_exc_handler",
+    srcs = ["flash_exc_handler.S"],
+)
+
 cc_library(
     name = "epmp_defs",
     hdrs = [
