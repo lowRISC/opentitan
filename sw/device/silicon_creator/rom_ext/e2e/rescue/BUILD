@@ -54,7 +54,7 @@ _CONFIGS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_usbdfu",
         "params": "-p usb-dfu -t strap -v 3",
         "setup": "",
-        "tags": ["broken"],
+        "tags": [],
     },
     "spidfu": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
