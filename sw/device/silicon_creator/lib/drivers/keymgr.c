@@ -328,7 +328,10 @@ void sc_keymgr_disable(void) {
       sc_keymgr_base() + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
 
   abs_mmio_write32(sc_keymgr_base() + KEYMGR_START_REG_OFFSET, 1);
-  abs_mmio_write32(sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
+  // According to the documentation for the SIDELOAD_CLEAR register, an invalid
+  // destination will enable continuous clearing of all destinations.
+  abs_mmio_write32(sc_keymgr_base() + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET,
+                   UINT32_MAX);
 }
 
 extern rom_error_t sc_keymgr_generate_key_otbn(

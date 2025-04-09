@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
+#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
@@ -630,6 +631,22 @@ static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
                                  kHardenedBoolTrue);
 }
 
+static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
+  // Forbid SRAM execution.
+  rom_ext_sram_exec(kOwnerSramExecModeDisabledLocked);
+  // Set the keymgr to disabled and clear all sideloaded keys.
+  sc_keymgr_disable();
+  // Lock out OTP.
+  otp_creator_sw_cfg_lockdown();
+  // Lock the ePMP so it cannot be changed.
+  epmp_set_lock_bits();
+  epmp_clear_rlb();
+  // Disable access to creator-level INFO pages.
+  flash_ctrl_creator_info_pages_lockdown();
+  // Set the OWNER_CONFIG pages for rescue mode (page0=ro, page1=rw).
+  ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
+}
+
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
@@ -706,8 +723,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log->bl0_min_sec_ver = boot_data->min_security_version_bl0;
   boot_log_digest_update(boot_log);
 
+  // Now that boot services is finished, the ownership sealing key is no longer
+  // needed.
+  HARDENED_RETURN_IF_ERROR(ownership_seal_clear());
+
   if (rescue_detect_entry(owner_config.rescue) == kHardenedBoolTrue) {
-    ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
+    rom_ext_rescue_lockdown(boot_data);
     error = rescue_protocol(boot_data, owner_config.rescue);
   } else {
     ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolFalse);
