@@ -2322,6 +2322,81 @@
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
           { bits: "0"
+            name: "PARTITION_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in any partition.
+                  If set to 1, SW should check the !!PARTITION_STATUS register to determine the failing partition.
+                  '''
+          }
+          { bits: "1"
+            name: "DAI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the DAI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "2"
+            name: "LCI_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in the LCI.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "3"
+            name: "TIMEOUT_ERROR"
+            desc: '''
+                  Set to 1 if an integrity or consistency check times out.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "4"
+            name: "LFSR_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the LFSR timer FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "5"
+            name: "SCRAMBLING_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "6"
+            name: "KEY_DERIV_FSM_ERROR"
+            desc: '''
+                  Set to 1 if the key derivation FSM has reached an invalid state.
+                  This raises an fatal_check_error alert and is an unrecoverable error condition.
+                  '''
+          }
+          { bits: "7"
+            name: "BUS_INTEG_ERROR"
+            desc: '''
+                  This bit is set to 1 if a fatal bus integrity fault is detected.
+                  This error triggers a fatal_bus_integ_error alert.
+                  '''
+          }
+          { bits: "8"
+            name: "DAI_IDLE"
+            desc: "Set to 1 if the DAI is idle and ready to accept commands."
+          }
+          { bits: "9"
+            name: "CHECK_PENDING"
+            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
+          }
+        ]
+      }
+      { name: "PARTITION_STATUS_0",
+        desc: "OTP partition status register 0.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext:    "true",
+        resval:   0,
+        tags: [ // OTP internal HW can modify status register
+                "excl:CsrAllTests:CsrExclCheck"],
+        fields: [
+          { bits: "0"
             name: "VENDOR_TEST_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
@@ -2474,63 +2549,6 @@
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
-          }
-          { bits: "22"
-            name: "DAI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the DAI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "23"
-            name: "LCI_ERROR"
-            desc: '''
-                  Set to 1 if an error occurred in the LCI.
-                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
-                  '''
-          }
-          { bits: "24"
-            name: "TIMEOUT_ERROR"
-            desc: '''
-                  Set to 1 if an integrity or consistency check times out.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "25"
-            name: "LFSR_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the LFSR timer FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "26"
-            name: "SCRAMBLING_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the scrambling datapath FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "27"
-            name: "KEY_DERIV_FSM_ERROR"
-            desc: '''
-                  Set to 1 if the key derivation FSM has reached an invalid state.
-                  This raises an fatal_check_error alert and is an unrecoverable error condition.
-                  '''
-          }
-          { bits: "28"
-            name: "BUS_INTEG_ERROR"
-            desc: '''
-                  This bit is set to 1 if a fatal bus integrity fault is detected.
-                  This error triggers a fatal_bus_integ_error alert.
-                  '''
-          }
-          { bits: "29"
-            name: "DAI_IDLE"
-            desc: "Set to 1 if the DAI is idle and ready to accept commands."
-          }
-          { bits: "30"
-            name: "CHECK_PENDING"
-            desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
           }
         ]
       }
