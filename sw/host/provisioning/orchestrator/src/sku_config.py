@@ -13,7 +13,7 @@ from ca_config import CaConfig
 from util import resolve_runfile
 
 _PRODUCT_IDS_HJSON = "sw/host/provisioning/orchestrator/data/products.hjson"
-_PACKAGE_IDS_HJSON = "sw/host/provisioning/orchestrator/data/packages/earlgrey_a1.hjson"
+_PACKAGE_IDS_HJSON = "sw/host/provisioning/orchestrator/data/packages/earlgrey_a2.hjson"
 
 
 @dataclass

@@ -41,7 +41,7 @@ class TestDeviceId(unittest.TestCase):
                 format_hex(expected_field, width=4)))
 
     def test_product_id_field(self):
-        expected_field = 0x0002
+        expected_field = 0x0003
         actual_field = (self.device_id.to_int() >> 16) & 0xffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
