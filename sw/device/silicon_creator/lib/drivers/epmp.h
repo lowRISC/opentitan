@@ -49,6 +49,11 @@ void epmp_clear(uint8_t entry);
 void epmp_clear_lock_bits(void);
 
 /**
+ * Set the lock bit in all ePMP entries.
+ */
+void epmp_set_lock_bits(void);
+
+/**
  * Encode a start/end address pair to NAPOT address.
  *
  * The region start must have an alignment consistent with the region size.  The
