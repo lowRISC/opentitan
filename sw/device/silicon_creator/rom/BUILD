@@ -91,10 +91,13 @@ ld_library(
 cc_library(
     name = "rom_isrs",
     srcs = [
-        "rom_isrs.S",
         "rom_isrs.c",
+        "//sw/device/silicon_creator/lib:flash_exc_handler",
     ],
     hdrs = ["rom_isrs.h"],
+    defines = [
+        "INTERRUPT_HANDLER=rom_interrupt_handler",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:flash_ctrl_c_regs",

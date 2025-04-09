@@ -82,6 +82,27 @@ cc_test(
     ],
 )
 
+cc_library(
+    name = "rom_ext_isrs",
+    srcs = [
+        "rom_ext_isrs.c",
+        "//sw/device/silicon_creator/lib:flash_exc_handler",
+    ],
+    hdrs = ["rom_ext_isrs.h"],
+    defines = [
+        "INTERRUPT_HANDLER=rom_ext_interrupt_handler",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
 ld_library(
     name = "ld_common",
     includes = ["rom_ext_common.ld"],
@@ -131,6 +152,7 @@ ld_library(
         deps = [
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
+            ":rom_ext_isrs",
             ":rom_ext_manifest",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:sram_ctrl_c_regs",

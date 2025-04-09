@@ -81,6 +81,9 @@ extern char _rom_ext_immutable_size[];
 // Life cycle state of the chip.
 lifecycle_state_t lc_state;
 
+// A ram copy of the OTP word controlling how to handle flash ECC errors.
+uint32_t flash_ecc_exc_handler_en;
+
 // Owner configuration details parsed from the onwer info pages.
 owner_config_t owner_config;
 
@@ -89,31 +92,6 @@ owner_application_keyring_t keyring;
 
 // Verifying key index
 size_t verify_key;
-
-OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_irq_error(void) {
-  uint32_t mcause;
-  CSR_READ(CSR_REG_MCAUSE, &mcause);
-
-  // TODO(opentitan#22947): Remove this debug print prior to a formal release.
-  uint32_t mepc, mtval;
-  CSR_READ(CSR_REG_MEPC, &mepc);
-  CSR_READ(CSR_REG_MTVAL, &mtval);
-  dbg_printf("MCAUSE=%x MEPC=%x MTVAL=%x\r\n", mcause, mepc, mtval);
-
-  // Shuffle the mcause bits into the uppermost byte of the word and report
-  // the cause as kErrorRomExtInterrupt.
-  // Based on the ibex verilog, it appears that the most significant bit
-  // indicates whether the cause is an exception (0) or external interrupt (1),
-  // and the 5 least significant bits indicate which exception/interrupt.
-  //
-  // Preserve the MSB and shift the 7 LSBs into the upper byte.
-  // (we preserve 7 instead of 5 because the verilog hardcodes the unused bits
-  // as zero and those would be the next bits used should the number of
-  // interrupt causes increase).
-  mcause = (mcause & 0x80000000) | ((mcause & 0x7f) << 24);
-  return kErrorRomExtInterrupt + mcause;
-}
 
 OT_WARN_UNUSED_RESULT
 static uint32_t rom_ext_current_slot(void) {
@@ -156,6 +134,8 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
   lc_state = lifecycle_state_get();
+  flash_ecc_exc_handler_en = otp_read32(
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
   pinmux_init();
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
@@ -728,17 +708,3 @@ void rom_ext_main(void) {
   }
   shutdown_finalize(error);
 }
-
-OT_USED
-void rom_ext_interrupt_handler(void) { shutdown_finalize(rom_ext_irq_error()); }
-
-// We only need a single handler for all ROM_EXT interrupts, but we want to
-// keep distinct symbols to make writing tests easier.  In the ROM_EXT,
-// alias all interrupt handler symbols to the single handler.
-OT_USED
-OT_ALIAS("rom_ext_interrupt_handler")
-void rom_ext_exception_handler(void);
-
-OT_USED
-OT_ALIAS("rom_ext_interrupt_handler")
-void rom_ext_nmi_handler(void);
