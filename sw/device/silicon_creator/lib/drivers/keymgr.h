@@ -328,7 +328,7 @@ rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *attest_binding,
                                     uint32_t max_key_version);
 
 /**
- * Disable the keymgr controller.
+ * Disables the keymgr and clears all sideload slots.
  */
 void sc_keymgr_disable(void);
 

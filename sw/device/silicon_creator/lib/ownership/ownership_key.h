@@ -69,6 +69,13 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
 rom_error_t ownership_seal_init(void);
 
 /**
+ * Clear the sideloaded key in the KMAC block.
+ *
+ * @return Success or error code.
+ */
+rom_error_t ownership_seal_clear(void);
+
+/**
  * Generate a seal for an ownership page.
  *
  * @param page Owner page for which to generate the sealing value.
