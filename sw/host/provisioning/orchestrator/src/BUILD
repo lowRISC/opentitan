@@ -13,6 +13,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     imports = ["."],
     deps = [
@@ -55,6 +56,7 @@ py_library(
     data = [
         "//sw/host/provisioning/orchestrator/data:products.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
+        "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
     deps = [
         ":ca_config",
