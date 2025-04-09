@@ -225,6 +225,7 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     extra_bazel_features = [
         "minsize",
@@ -249,6 +250,7 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     extra_bazel_features = [
         "minsize",
@@ -267,6 +269,34 @@ opentitan_binary(
     ],
 )
 
+# This binary is a test-only ROM_EXT that has ownership initialized in
+# the "NewVersion" update mode.  Initializing in this mode makes the
+# test flows for the "NewVersion" style of ownership updates easier.
+opentitan_binary(
+    name = "rom_ext_hybrid_owner_update_newversion",
+    testonly = True,
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+    ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
+    ],
+    linker_script = ":ld_slot_a",
+    manifest = ":manifest",
+    deps = [
+        ":rom_ext_dice_x509",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner_hybrid_update_mode_newversion",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
+        "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+    ],
+)
+
 # This binary is a test-only ROM_EXT that has rescue configured
 # for USB-DFU.
 opentitan_binary(
@@ -275,6 +305,7 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     extra_bazel_features = [
         "minsize",
@@ -300,6 +331,7 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     extra_bazel_features = [
         "minsize",

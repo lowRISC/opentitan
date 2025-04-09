@@ -271,6 +271,27 @@ cc_library(
 )
 
 cc_library(
+    name = "test_owner_hybrid_update_mode_newversion",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    defines = [
+        "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+        "TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH=1",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/rescue",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "test_owner_usbdfu",
     testonly = True,
     srcs = ["test_owner.c"],
