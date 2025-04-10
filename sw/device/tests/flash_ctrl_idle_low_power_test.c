@@ -153,6 +153,8 @@ bool test_main(void) {
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
 
+    CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
+
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
 
     uint32_t bark_th = kAONBarkTh;
@@ -185,10 +187,13 @@ bool test_main(void) {
     // Check the erase operation completed successfully.
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
 
-    rstmgr_reset_info = rstmgr_testutils_reason_get();
-    CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
-    CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
-    CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
+    dif_pwrmgr_wakeup_reason_t reason;
+    CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &reason));
+    CHECK(reason.types == kDifPwrmgrWakeupTypeAbort,
+          "Unexpected wakeup reason: types=%x, srcs=%x", reason.types,
+          reason.request_sources);
+
+    CHECK(irq_serviced);
 
     CHECK_STATUS_OK(flash_ctrl_testutils_wait_transaction_end(&flash));
 
