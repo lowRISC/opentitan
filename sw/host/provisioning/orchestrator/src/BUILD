@@ -24,8 +24,8 @@ py_library(
 )
 
 py_binary(
-    name = "ft_devid_gen",
-    srcs = ["ft_devid_gen.py"],
+    name = "devid_header_gen",
+    srcs = ["devid_header_gen.py"],
     data = ["//sw/device/silicon_creator/manuf/keys:ca_data_all"],
     imports = ["."],
     deps = [

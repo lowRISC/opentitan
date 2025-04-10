@@ -7,4 +7,4 @@
 /**
  * FT (SKU specific portion of) device ID.
  */
-const uint32_t kFtDeviceId[4] = {${ft_device_id}};
+const uint32_t kFtDeviceId[4] = {${device_id}};

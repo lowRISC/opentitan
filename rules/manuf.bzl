@@ -4,28 +4,37 @@
 
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
-def _ft_device_id_gen_impl(ctx):
+def _device_id_header_gen_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
     # Output files before/after autoformatting.
     pre_formatted_c = ctx.actions.declare_file("{}.pre.c".format(ctx.attr.name))
     formatted_c = ctx.actions.declare_file("{}.c".format(ctx.attr.name))
 
-    # Generate FT device ID C file from a template.
+    # Generate CP or FT device ID C file from a template.
+    args = [
+        "--mode={}".format(ctx.attr.mode),
+        "--sku-config={}".format(ctx.file.sku_config.path),
+        "--output={}".format(pre_formatted_c.path),
+        "--template={}".format(ctx.file.template.path),
+    ]
+    if ctx.attr.mode == "ft":
+        if hasattr(ctx.attr, "ast_cfg_version"):
+            args.append(
+                "--ast-cfg-version={}".format(ctx.attr.ast_cfg_version),
+            )
+        else:
+            fail("Error: ast_cfg_version attribute must be provided when mode is \"ft\".")
+
     ctx.actions.run(
         outputs = [pre_formatted_c],
         inputs = [
             ctx.file.sku_config,
             ctx.file.template,
         ],
-        arguments = [
-            "--ast-cfg-version={}".format(ctx.attr.ast_cfg_version),
-            "--sku-config={}".format(ctx.file.sku_config.path),
-            "--output={}".format(pre_formatted_c.path),
-            "--template={}".format(ctx.file.template.path),
-        ],
-        executable = tc.tools.gen_ft_devid,
-        mnemonic = "GenFtDeviceId",
+        arguments = args,
+        executable = tc.tools.gen_devid,
+        mnemonic = "GenDeviceId",
     )
 
     # Run clang-format on header file.
@@ -47,8 +56,8 @@ def _ft_device_id_gen_impl(ctx):
         ),
     ]
 
-ft_device_id_gen = rule(
-    implementation = _ft_device_id_gen_impl,
+device_id_header_gen = rule(
+    implementation = _device_id_header_gen_impl,
     attrs = {
         # TODO(timothytrippel): remove this and fold into SKU config HJSON.
         "ast_cfg_version": attr.int(
@@ -69,13 +78,19 @@ ft_device_id_gen = rule(
             executable = True,
             doc = "The clang-format executable",
         ),
+        "mode": attr.string(
+            mandatory = True,
+            values = ["cp", "ft"],
+            doc = "The device ID portion to generate (cp or ft).",
+        ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def ft_device_id(name, headers, ast_cfg_version, sku_config, template):
-    ft_device_id_gen(
+def device_id_header(name, mode, headers, sku_config, template, ast_cfg_version = 0):
+    device_id_header_gen(
         name = name,
+        mode = mode,
         ast_cfg_version = ast_cfg_version,
         sku_config = sku_config,
         template = template,
