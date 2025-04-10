@@ -15,7 +15,7 @@ Committers should:
 If you meet the above criteria and are interested in becoming a committer, then approach a TC member to see if they would be willing to propose you.
 TC members may also reach out to you to ask if you would be interested in becoming a committer.
 
-Under certain exceptional circumstances, the Steering Committee may vote to revoke a committer's status.
+Under certain exceptional circumstances, the Governing Board may vote to revoke a committer's status.
 This may happen in cases such as a committer failing to act as a good citizen within the project and the issue cannot be resolved through discussion.
 It may also be a natural function of "pruning the tree" as an individual's involvement in the project changes over time.
 
