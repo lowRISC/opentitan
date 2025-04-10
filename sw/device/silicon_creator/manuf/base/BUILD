@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@//rules:manuf.bzl", "ft_device_id")
+load("@//rules:manuf.bzl", "device_id_header")
+load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "@provisioning_exts//:cfg.bzl",
     "EXT_SIGNED_PERSO_BINS",
@@ -149,10 +150,11 @@ opentitan_test(
 )
 
 [
-    ft_device_id(
+    device_id_header(
         name = "ft_device_id_{}".format(sku),
         ast_cfg_version = 0,
         headers = ["ft_device_id.h"],
+        mode = "ft",
         sku_config = config["orchestrator_cfg"],
         template = ":ft_device_id.c.tpl",
     )
