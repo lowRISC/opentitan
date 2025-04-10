@@ -683,6 +683,10 @@ static void init_expected_cause(void) {
     kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
   }
 
+  dt_alert_id_t alert_id = dt_otp_ctrl_alert_to_alert_id(
+      kOtpCtrlDt, kDtOtpCtrlAlertFatalBusIntegError);
+  kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
+
   dt_alert_id_t ibex_alert_id = dt_rv_core_ibex_alert_to_alert_id(
       kDtRvCoreIbex, kDtRvCoreIbexAlertRecovSwErr);
   dt_alert_id_t uart_alert_id =
@@ -697,18 +701,6 @@ static void init_expected_cause(void) {
   kExpectedInfo[kRound3].alert_info.alert_cause[spi_alert_id] = 1;
 }
 
-// Modify kExpectedInfo for runs without rom_ext, so non-owner stages. The
-// difference is that without rom_ext we expect an otp alert in round 2.
-static void init_expected_info_for_non_rom_ext(void) {
-  if (kBootStage != kBootStageOwner) {
-    dt_alert_id_t alert_id = dt_otp_ctrl_alert_to_alert_id(
-        kDtOtpCtrl, kDtOtpCtrlAlertFatalBusIntegError);
-    kExpectedInfo[kRound2].alert_info.class_accum_cnt[1] = 1;
-    kExpectedInfo[kRound2].alert_info.class_esc_state[1] = kCstatePhase1;
-    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
-  }
-}
-
 bool test_main(void) {
   uint32_t event_idx = 0;
 
@@ -718,7 +710,6 @@ bool test_main(void) {
 
   // set expected values
   init_expected_cause();
-  init_expected_info_for_non_rom_ext();
 
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
   CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
