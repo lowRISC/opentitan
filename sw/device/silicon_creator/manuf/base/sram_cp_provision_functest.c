@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
@@ -128,7 +129,7 @@ bool test_main(void) {
     uint32_t year = (test_data.lot_name >> 24) & 0xf;
     uint32_t week = (test_data.lot_name >> 16) & 0xff;
     uint32_t lot_number = test_data.lot_name & 0xfff;
-    CHECK(cp_device_id[0] == 0x00024001u);
+    CHECK(cp_device_id[0] == kCpDeviceId[0]);
     CHECK(cp_device_id[1] == ((test_data.wafer_number << 24) |
                               (lot_number << 12) | (week << 4) | year));
     CHECK(cp_device_id[2] ==
