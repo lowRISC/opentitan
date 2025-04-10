@@ -687,6 +687,9 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdUart2FatalFault] = 1;
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopEarlgreyAlertIdUart3FatalFault] = 1;
+  kExpectedInfo[kRound2]
+      .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] = 1;
+
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
   kExpectedInfo[kRound3]
@@ -695,18 +698,6 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
-}
-
-// Modify kExpectedInfo for runs without rom_ext, so non-owner stages. The
-// difference is that without rom_ext we expect an otp alert in round 2.
-static void init_expected_info_for_non_rom_ext(void) {
-  if (kBootStage != kBootStageOwner) {
-    kExpectedInfo[kRound2].alert_info.class_accum_cnt[1] = 1;
-    kExpectedInfo[kRound2].alert_info.class_esc_state[1] = kCstatePhase1;
-    kExpectedInfo[kRound2]
-        .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] =
-        1;
-  }
 }
 
 bool test_main(void) {
@@ -718,7 +709,6 @@ bool test_main(void) {
 
   // set expected values
   init_expected_cause();
-  init_expected_info_for_non_rom_ext();
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
