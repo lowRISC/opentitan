@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Script for generating OpenTitan FT device IDs for embedding in FT FW."""
+"""Script for generating OpenTitan device IDs for embedding in CP/FT FW."""
 
 import argparse
 import sys
@@ -22,7 +22,13 @@ def main(args_in):
     # Parse cmd line args.
     parser = argparse.ArgumentParser(
         prog=__doc__,
-        description="""This tool ...""",
+        description="""This tool generates device ID header files.""",
+    )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["cp", "ft"],
+        help="AST configuration version to be written to OTP.",
     )
     parser.add_argument(
         "--sku-config",
@@ -44,32 +50,41 @@ def main(args_in):
     )
     parser.add_argument(
         "--ast-cfg-version",
-        required=True,
         type=int,
         help="AST configuration version to be written to OTP.",
     )
     args = parser.parse_args(args_in)
 
+    # Check usage.
+    ast_cfg_version = 0
+    if args.mode == "ft":
+        assert args.ast_cfg_version is not None, (
+            "--ast-cfg-version must be set when mode is FT")
+        ast_cfg_version = args.ast_cfg_version
+
     # Load and validate a SKU configuration file.
     sku_config_args = {}
     with open(args.sku_config, "r") as fp:
         sku_config_args = hjson.load(fp)
-    sku_config = SkuConfig(ast_cfg_version=args.ast_cfg_version,
-                           **sku_config_args)
+    sku_config = SkuConfig(ast_cfg_version=ast_cfg_version, **sku_config_args)
 
-    # Generate FT (SKU specific) portion of device ID.
+    # Generate CP/FT portion of device ID.
     din = DeviceIdentificationNumber.blind_asm()
-    device_id_int = DeviceId(sku_config, din).to_int() >> 128
-    ft_devid_list = []
+    if args.mode == "cp":
+        device_id_int = DeviceId(sku_config, din).to_int()
+    else:
+        device_id_int = DeviceId(sku_config, din).to_int() >> 128
+    devid_list = []
     for _ in range(4):
-        ft_devid_list.append(util.format_hex(device_id_int & _MAX_UINT32, 8))
+        devid_list.append(util.format_hex(device_id_int & _MAX_UINT32, 8))
         device_id_int >>= 32
-    ft_devid_str = ','.join(ft_devid_list)
+    devid_str = ','.join(devid_list)
 
     # Fill template.
     template = Template(Path(args.template).read_text())
-    Path(args.output).write_text(template.render(ft_device_id=ft_devid_str))
-    print("Computer FT device ID array:", ft_devid_str)
+    Path(args.output).write_text(template.render(device_id=devid_str))
+    print("Computed {} device ID array: {}".format(args.mode.upper(),
+                                                   devid_str))
 
 
 if __name__ == "__main__":
