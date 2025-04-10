@@ -19,7 +19,8 @@ pub struct SpiConsoleDevice<'a> {
     console_next_frame_number: Cell<u32>,
     rx_buf: RefCell<VecDeque<u8>>,
     next_read_address: Cell<u32>,
-    device_tx_ready: Option<&'a Rc<dyn GpioPin>>,
+    device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
+    device_tx_ready: Cell<bool>,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
@@ -31,7 +32,10 @@ impl<'a> SpiConsoleDevice<'a> {
     const SPI_TX_LAST_CHUNK_MAGIC_ADDRESS: u32 = 0x100;
     const SPI_BOOT_MAGIC_PATTERN: u32 = 0xcafeb002;
 
-    pub fn new(spi: &'a dyn Target, device_tx_ready: Option<&'a Rc<dyn GpioPin>>) -> Result<Self> {
+    pub fn new(
+        spi: &'a dyn Target,
+        device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
+    ) -> Result<Self> {
         let flash = SpiFlash {
             ..Default::default()
         };
@@ -41,7 +45,8 @@ impl<'a> SpiConsoleDevice<'a> {
             rx_buf: RefCell::new(VecDeque::new()),
             console_next_frame_number: Cell::new(0),
             next_read_address: Cell::new(0),
-            device_tx_ready,
+            device_tx_ready_pin,
+            device_tx_ready: Cell::new(false),
         })
     }
 
@@ -72,7 +77,9 @@ impl<'a> SpiConsoleDevice<'a> {
             || frame_number != self.console_next_frame_number.get()
             || data_len_bytes > SpiConsoleDevice::SPI_MAX_DATA_LENGTH
         {
-            self.check_device_boot_up(&header)?;
+            if self.get_tx_ready_pin()?.is_none() {
+                self.check_device_boot_up(&header)?;
+            }
             // This frame is junk, so we do not read the data
             return Ok(0);
         }
@@ -118,9 +125,21 @@ impl<'a> SpiConsoleDevice<'a> {
 
 impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
     fn console_read(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
-        // Attempt to refill the internal data queue if it is empty.
-        if self.rx_buf.borrow().is_empty() && self.read_from_spi()? == 0 {
-            return Ok(0);
+        if self.rx_buf.borrow().is_empty() {
+            if let Some(ready_pin) = self.get_tx_ready_pin()? {
+                if !self.device_tx_ready.get() && ready_pin.read()? {
+                    self.device_tx_ready.set(true);
+                    if self.read_from_spi()? == 0 {
+                        // If we are gated by the TX-ready pin, only perform the SPI console read if
+                        // the ready pin is high.
+                        return Ok(0);
+                    }
+                } else if self.device_tx_ready.get() && !ready_pin.read()? {
+                    self.device_tx_ready.set(false);
+                }
+            } else if self.read_from_spi()? == 0 {
+                return Ok(0);
+            }
         }
 
         // Copy from the internal data queue to the output buffer.
@@ -154,5 +173,9 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
         }
 
         Ok(())
+    }
+
+    fn get_tx_ready_pin(&self) -> Result<Option<&'a Rc<dyn GpioPin>>> {
+        Ok(self.device_tx_ready_pin)
     }
 }
