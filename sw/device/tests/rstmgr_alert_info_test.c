@@ -331,6 +331,7 @@ static void set_extra_alert(volatile uint32_t *set) {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
+  OT_DISCARD(exc_info);
   dif_rv_plic_irq_id_t plic_irq;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq));
 
