@@ -44,6 +44,16 @@ cc_library(
     deps = ["//sw/device/lib/dif:flash_ctrl"],
 )
 
+device_id_header(
+    name = "cp_device_id",
+    headers = ["cp_device_id.h"],
+    mode = "cp",
+    # All SKUs have the same CP device ID for a given product version so we just
+    # use the emulation SKU configuration here.
+    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+    template = ":cp_device_id.c.tpl",
+)
+
 opentitan_binary(
     name = "sram_cp_provision",
     testonly = True,
@@ -56,6 +66,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":cp_device_id_library",
         ":flash_info_permissions",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
