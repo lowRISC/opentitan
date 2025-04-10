@@ -1136,9 +1136,14 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         .size = 0x1,
         .properties = region_properties};
 
-    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
-                                                  kDifToggleEnabled));
+    dif_result_t res_prop =
+        dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region);
+
+    dif_result_t res_en =
+        dif_flash_ctrl_set_data_region_enablement(&flash, 2, kDifToggleEnabled);
+    if (res_prop == kDifLocked || res_en == kDifLocked) {
+      LOG_INFO("Flash region locked.");
+    }
 
     flash_init = true;
   }
@@ -1238,8 +1243,8 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
         .base = FLASH_PAGES_PER_BANK,
         .size = 0x1,
         .properties = region_properties};
-    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 2,
                                                   kDifToggleEnabled));
 
     flash_init = true;
