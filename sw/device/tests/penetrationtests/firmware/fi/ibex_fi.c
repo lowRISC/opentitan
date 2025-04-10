@@ -1895,8 +1895,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
     sram_ret_init = true;
   }
 
-  int max_words =
-      (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
+  int max_words = sizeof(retention_sram_owner_t) / sizeof(uint32_t);
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
