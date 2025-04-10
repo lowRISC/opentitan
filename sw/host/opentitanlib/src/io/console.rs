@@ -10,6 +10,7 @@ use thiserror::Error;
 
 use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
 use crate::impl_serializable_error;
+use crate::io::gpio::GpioPin;
 
 /// Errors related to the console interface.
 #[derive(Error, Debug, Serialize, Deserialize)]
@@ -34,6 +35,11 @@ pub trait ConsoleDevice {
 
     fn set_break(&self, _enable: bool) -> Result<()> {
         Err(ConsoleError::GenericError("break unsupported".into()).into())
+    }
+
+    /// Query if TX-ready pin non-polling mode is supported.
+    fn get_tx_ready_pin(&self) -> Result<Option<&Rc<dyn GpioPin>>> {
+        Ok(None)
     }
 
     /// Query if nonblocking mio mode is supported.

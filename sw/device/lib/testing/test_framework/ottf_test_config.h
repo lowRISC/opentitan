@@ -31,6 +31,25 @@ typedef struct ottf_console {
   bool test_may_clobber;
 } ottf_console_t;
 
+typedef struct ottf_console_tx_indicator {
+  /**
+   * Indicates if the TX indicator GPIO is to be used in conjunction with the
+   * SPI console.
+   */
+  bool enable;
+  /**
+   * Indicates the GPIO to use to signal to the host that the SPI console buffer
+   * is not empty.
+   */
+  uint32_t spi_console_tx_ready_gpio;
+  /**
+   * Indicates the MIO to connect to the GPIO pin above. to signal to the host
+   * that the SPI console buffer is not empty. A value of UINT32_MAX indicates
+   * this feature is unused.
+   */
+  uint32_t spi_console_tx_ready_mio;
+} ottf_console_tx_indicator_t;
+
 /**
  * Configuration variables for an on-device test.
  *
@@ -64,6 +83,13 @@ typedef struct ottf_test_config {
    * communication peripherals may be supported.
    */
   ottf_console_t console;
+
+  /**
+   * The TX indicator GPIO to use in conjunction with the SPI console, if a
+   * polling mechanism is not desireable to use such as in manufacturing ATE
+   * environments.
+   */
+  ottf_console_tx_indicator_t console_tx_indicator;
 
   /**
    * Indicates that this test will utilize the UART to receive commands from
