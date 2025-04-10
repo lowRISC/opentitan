@@ -21,6 +21,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/manuf/base/cp_device_id.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
@@ -109,10 +110,12 @@ static status_t flash_info_page_0_read_and_validate(
 
   // Encode CP device ID.
   // HW origin portion of CP device.
-  // "0x00024001" encodes:
+  // "0x00034001" encodes:
   //   - a SiliconCreator ID of "0x4001" for "Nuvoton", and
-  //   - a Product ID of "0x0002" for Earlgrey A1 silicon.
-  console_out->cp_device_id[0] = 0x00024001u;
+  //   - a Product ID of "0x0003" for Earlgrey A2 silicon.
+  console_out->cp_device_id[0] = kCpDeviceId[0];
+  TRY_CHECK(kCpDeviceId[0] == 0x00034001u,
+            "Expected to find Earlgrey A2 hardware origin in CP device ID.");
   // Device Identification Number portion of CP device ID.
   uint32_t year = (lot_name >> 24) & 0xf;
   uint32_t week = (lot_name >> 16) & 0xff;
