@@ -2,18 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("//rules:linker.bzl", "ld_library")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
-load("//rules:linker.bzl", "ld_library")
-load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -339,6 +338,8 @@ dual_cc_library(
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
             "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/dif:gpio",
+            "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/runtime:ibex",
             "//sw/device/lib/runtime:irq",
             "//sw/device/lib/testing:spi_device_testutils",

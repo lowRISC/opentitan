@@ -12,8 +12,10 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/hart.h"
 
 #include "spi_device_regs.h"  // Generated.
 
@@ -63,6 +65,14 @@ static buffer_sink_t base_stdout = {
     // .data section and triggers the assertion in rom.ld.
     .sink = NULL,
 };
+
+// The GPIO TX indicator pin that can be used with the SPI console.
+static dif_gpio_t *spi_console_gpio = NULL;
+static dif_gpio_pin_t spi_console_tx_ready_gpio = UINT32_MAX;
+// The amount of time to pause between GPIO toggles to enable the host to detect
+// the GPIO indicator rising edges. This was empircally determined using the
+// CW310 FPGA and HyperDebug host.
+static const uint32_t kGpioToggleDelayMicros = 100000;
 
 void base_set_stdout(buffer_sink_t out) {
   if (out.sink == NULL) {
@@ -161,17 +171,36 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
       return 0;
     }
 
-    // Adjust the last read address. The host continuously reads from the read
-    // buffer, unaware of whether a new frame has arrived. This could result in
-    // the reported last_read_address being the header size ahead of the actual
-    // address of the last valid frame if all the frames in the read buffer has
-    // been consumed by the host. While it's harmless to adjust the last read
-    // address even if the reported value is correct, doing so might temporarily
-    // underestimate the available buffer size by the size of a header.
+    // If we are not using the GPIO TX-ready indicator pin (which is the
+    // default) the host SPI console is constantly polling the spi_device to see
+    // if data is available to be read out. In this case, we need to adjust the
+    // last read address.
+    //
+    // Specifically, the when the host is continuously reading from the read
+    // buffer, it is unaware of whether it is going to find a valid new frame
+    // (marked by a magic number in the frame header), an frame header all
+    // zeros, or garbage, since it is operating in polling mode. This could
+    // result in the reported last_read_address being one header size ahead of
+    // the actual address of the last valid frame if all the frames in the read
+    // buffer has been consumed by the host. While it's harmless to use the
+    // last read address even if the reported value is a frame header ahead,
+    // doing so might temporarily underestimate the available buffer size by the
+    // size of a frame header (or 12 bytes to be specific).
+    //
+    // However, if we are using the GPIO TX-ready indicator pin, the host will
+    // only ever attempt to read out data if it was signaled to do so by the
+    // device. In which case the last read address is always correct.
     uint32_t adjusted_last_read_address =
-        (kSpiDeviceReadBufferSizeBytes + last_read_address -
-         kSpiDeviceFrameHeaderSizeBytes) %
-        kSpiDeviceReadBufferSizeBytes;
+        kSpiDeviceReadBufferSizeBytes + last_read_address;
+    if (spi_console_gpio == NULL) {
+      adjusted_last_read_address =
+          (adjusted_last_read_address - kSpiDeviceFrameHeaderSizeBytes) %
+          kSpiDeviceReadBufferSizeBytes;
+    } else {
+      adjusted_last_read_address %= kSpiDeviceReadBufferSizeBytes;
+    }
+    // Frames are always word aligned, so ensure the last read address is word
+    // aligned too.
     uint32_t next_read_address = ((adjusted_last_read_address + 1) & ~3u) %
                                  kSpiDeviceReadBufferSizeBytes;
 
@@ -236,6 +265,17 @@ static size_t base_dev_spi_device(void *data, const char *buf, size_t len) {
     if (spi_device_send_frame(data, buf + write_data_len, payload_len) ==
         payload_len) {
       write_data_len += payload_len;
+
+      // Toggle the GPIO TX-ready indicator pin to signal to the host to clock
+      // out data from the spi_device egress buffer.
+      if (spi_console_gpio != NULL) {
+        OT_DISCARD(
+            dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, true));
+        busy_spin_micros(kGpioToggleDelayMicros);
+        OT_DISCARD(
+            dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, false));
+        busy_spin_micros(kGpioToggleDelayMicros);
+      }
     }
   }
 
@@ -255,6 +295,12 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
 }
 
 sink_func_ptr get_uart_sink(void) { return &base_dev_uart; }
+
+void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
+                                           dif_gpio_pin_t tx_indicator_pin) {
+  spi_console_gpio = gpio;
+  spi_console_tx_ready_gpio = tx_indicator_pin;
+}
 
 void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device) {
   // Reset the frame counter.

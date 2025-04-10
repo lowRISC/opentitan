@@ -9,6 +9,8 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -49,6 +51,8 @@ enum {
 };
 
 // Potential DIF handles for OTTF console communication.
+static dif_gpio_t gpio;
+static dif_pinmux_t pinmux;
 static dif_spi_device_handle_t ottf_console_spi_device;
 static dif_uart_t ottf_console_uart;
 
@@ -173,6 +177,7 @@ void ottf_console_configure_uart(uintptr_t base_addr) {
 }
 
 void ottf_console_configure_spi_device(uintptr_t base_addr) {
+  // Configure spi_device SPI flash emulation.
   CHECK_DIF_OK(dif_spi_device_init_handle(mmio_region_from_addr(base_addr),
                                           &ottf_console_spi_device));
   CHECK_DIF_OK(dif_spi_device_configure(
@@ -253,7 +258,28 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
     CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
         &ottf_console_spi_device, slot, kDifToggleEnabled, write_commands[i]));
   }
-  spi_device_wait_for_sync(&ottf_console_spi_device);
+
+  // Setup TX GPIO if requested.
+  if (kOttfTestConfig.console_tx_indicator.enable) {
+    CHECK_DIF_OK(dif_gpio_init(
+        mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+    CHECK_DIF_OK(dif_pinmux_init(
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+    CHECK_DIF_OK(dif_pinmux_output_select(
+        &pinmux, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio,
+        kTopEarlgreyPinmuxOutselGpioGpio0 +
+            kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio));
+    CHECK_DIF_OK(dif_gpio_write(
+        &gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
+        false));
+    CHECK_DIF_OK(dif_gpio_output_set_enabled(
+        &gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
+        true));
+    base_spi_device_set_gpio_tx_indicator(
+        &gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio);
+  } else {
+    spi_device_wait_for_sync(&ottf_console_spi_device);
+  }
   base_spi_device_stdout(&ottf_console_spi_device);
 }
 
