@@ -92,8 +92,10 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
     ],
 )
 
