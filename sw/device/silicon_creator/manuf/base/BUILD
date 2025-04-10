@@ -105,6 +105,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
+        ":cp_device_id_library",
         ":flash_info_permissions",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
