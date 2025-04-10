@@ -7,9 +7,11 @@
 {
   si_creator_ids: {
     nuvoton: "0x4001"
+    none: "0xFFFF"
   },
   product_ids: {
     earlgrey_a1: "0x0002",
     earlgrey_a2: "0x0003",
+    none: "0xFFFF"
   },
 }
