@@ -221,7 +221,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
 
     // Transition from RAW to TEST_UNLOCKED0.
     unlock_raw(

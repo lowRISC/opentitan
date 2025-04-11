@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
@@ -295,6 +296,18 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
  * @param out the sink to use for "default" printing.
  */
 void base_set_stdout(buffer_sink_t out);
+
+/**
+ * Configures SPI device GPIO TX indicator pin for `base_print.h` to use.
+ *
+ * Note that this function will save `gpio` in a global variable, so the
+ * pointer must have static storage duration.
+ *
+ * @param gpio The GPIO handle to use for the SPI console TX indicator pin.
+ * @param tx_indicator_pin The GPIO pin to use for the SPI console TX indicator.
+ */
+void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
+                                           dif_gpio_pin_t tx_indicator_pin);
 
 /**
  * Configures SPI device stdout for `base_print.h` to use.
