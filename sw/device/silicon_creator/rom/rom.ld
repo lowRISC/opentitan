@@ -110,9 +110,9 @@ SECTIONS {
    *
    * This is placed next to the ".shutdown" section.
    */
-  .rom_isrs : ALIGN(4) {
-    *(.rom_isrs)
-    *(.rom_isrs.*)
+  .isrs : ALIGN(4) {
+    *(.isrs)
+    *(.isrs.*)
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);

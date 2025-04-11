@@ -2,6 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+/**
+ * This is the flash exception handler used by the ROM and ROM_EXT to deal with
+ * ECC errors reported by the flash controller.
+ *
+ * This file is built separately for the ROM and ROM_EXT by the `rom{,_ext}_isrs`
+ * rule in each of their respective subdirs.  Each of those rules builds this
+ * file with the INTERRUPT_HANDLER preprocessor symbol defined to be the
+ * name of the general interrupt handler for the respective target.
+ */
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/hardened_asm.h"
@@ -16,7 +25,7 @@
 
 // NOTE: The "ax" flag below is necessary to ensure that this section
 // is allocated executable space in ROM by the linker.
-.section .rom_isrs, "ax"
+.section .isrs, "ax"
 
 // -----------------------------------------------------------------------------
 
@@ -24,10 +33,10 @@
    * Exception handler.
    */
   .balign 4
-  .global rom_exception_handler
-  .type rom_exception_handler, @function
+  .global flash_exception_handler
+  .type flash_exception_handler, @function
   .extern flash_ecc_exc_handler_en
-rom_exception_handler:
+flash_exception_handler:
   // Save all registers to the exception frame.  The ROM locates its initial
   // stack_end at `ram_end - 128` and the stack grows downwards from there.
   // Save `sp` into `mscratch` and use the 128 bytes reserved at the top of
@@ -222,9 +231,6 @@ rom_exception_handler:
   // Note: we _also_ do not restore SP - we'll restart the stack at
   // `ram_end - 128`.  This allows us to report exceptions after jumping
   // to the next stage if the next stage has trashed its SP register.
-  j rom_interrupt_handler
-
-  // Normally, we'd put an `unimp` sled here, however, we know by inspecting
-  // the disassembly of the linked ROM binary that the very next instruction
-  // is the beginning of `rom_interrupt_handler`.
-  .size rom_exception_handler, .-rom_exception_handler
+  j INTERRUPT_HANDLER
+  unimp
+  .size flash_exception_handler, .-flash_exception_handler

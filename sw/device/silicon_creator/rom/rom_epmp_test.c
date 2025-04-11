@@ -125,6 +125,12 @@ void rom_exception_handler(void) {
   wait_for_interrupt();
 }
 
+// The ROM jumps to the flash_exception_handler first to deal with ECC errors.
+// We don't use the flash exception handler in this test, so we alias the
+// symbol to rom_exception_handler to allow the test program to link.
+OT_ALIAS("rom_exception_handler")
+void flash_exception_handler(void);
+
 /**
  * Attempt to execute the code at `pc` by calling it like a function.
  *

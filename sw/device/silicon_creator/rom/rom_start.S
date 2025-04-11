@@ -93,7 +93,7 @@ _rom_interrupt_vector_asm:
   .type _rom_interrupt_vector_c, @function
 _rom_interrupt_vector_c:
   // Entry 0: exception handler.
-  j rom_exception_handler
+  j flash_exception_handler
 
   // Entries 1-30: interrupt handlers.
   .rept 30
