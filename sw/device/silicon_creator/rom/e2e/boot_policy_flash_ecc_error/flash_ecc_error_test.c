@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
@@ -51,7 +52,8 @@ typedef enum rom_ext_slot {
 /**
  * Manifest offsets to corrupt.
  *
- * These fields are unique as they are read via pointer dereferces in the ROM.
+ * These fields are unique as they are read via pointer dereferces in the
+ * ROM[_EXT].
  * See `sw/device/silicon_creator/lib/manifest.h`.
  */
 enum {
@@ -70,7 +72,7 @@ enum {
 };
 
 /**
- * ROM_EXT code offsets to corrupt.
+ * ROM_EXT/Application code offsets to corrupt.
  *
  * These are assigned non-word aligned values so thay can be differentiated from
  * the hardcoded manifest offsets above.
@@ -95,9 +97,9 @@ enum {
   kRomExtSlotAManifestIdAddr = kRomExtSlotAFirstAddr + kManifestIdOffest,
   kRomExtSlotBManifestIdAddr = kRomExtSlotBFirstAddr + kManifestIdOffest,
 
-  // Flash banks for each half of flash.
-  kFlashBank0DataRegion = 0,
-  kFlashBank1DataRegion = 1,
+  // We use flash configuration region 2 because when this test runs under the
+  // ROM_EXT, the ROM_EXT will use regions 0 & 1 for itself.
+  kFlashConfigRegion = 2,
 };
 
 OT_ASSERT_MEMBER_OFFSET_AS_ENUM(manifest_t, security_version,
@@ -136,7 +138,7 @@ typedef struct corruption_word {
 /**
  * Offsets of the manifest fields and code words we corrupt in this test.
  *
- * The fields of the manifest we corrupt are based on the order in which ROM
+ * The fields of the manifest we corrupt are based on the order in which
  * manifest fields are currently checked during boot process:
  *   1.  security_version
  *   2.  identifier
@@ -152,10 +154,11 @@ typedef struct corruption_word {
  *   12. usage_constraints->selector_bits,
  *   13. ecdsa signature
  *
- * We corrupt the flash ECC of each field / code word to test the ROM either:
- *   a. proceeds immediately to try to boot the next slot, or
- *   b. triggers a signature verification failure that will then cause the ROM
- *      to try to boot the next slot.
+ * We corrupt the flash ECC of each field / code word to test the ROM[_EXT]
+ * either:
+ *     a. proceeds immediately to try to boot the next slot, or
+ *     b. triggers a signature verification failure that will then cause the
+ *        ROM[_EXT] to try to boot the next slot.
  */
 static const corruption_word_t kWords2Corrupt[] = {
     // Manifest corruption offsets.
@@ -214,26 +217,25 @@ static uint32_t compute_flash_page_index(rom_ext_slot_t rom_ext_slot,
                                          uint32_t byte_offset_in_bank) {
   uint32_t page_idx = rom_ext_slot == kRomExtSlotA ? kRomExtSlotAFirstPageIndex
                                                    : kRomExtSlotBFirstPageIndex;
+
   page_idx += byte_offset_in_bank / FLASH_CTRL_PARAM_BYTES_PER_PAGE;
   return page_idx;
 }
 
 /**
- * Corrupts a word of the currently running ROM_EXT at the provided offset
+ * Corrupts a word of the currently running program at the provided offset
  * address of the given slot to trigger an ECC integrity errory (load access
  * fault) on the next boot.
  */
 static status_t corrupt_rom_ext_word(rom_ext_slot_t slot,
                                      uint32_t offset_to_corrupt) {
   uint32_t page_idx = compute_flash_page_index(slot, offset_to_corrupt);
-  uint32_t flash_data_bank =
-      slot == kRomExtSlotA ? kFlashBank0DataRegion : kFlashBank1DataRegion;
   uint32_t first_flash_addr_in_slot =
       slot == kRomExtSlotA ? kRomExtSlotAFirstAddr : kRomExtSlotBFirstAddr;
 
   // Setup full access (read, erase, program) to first flash page in the slot.
   TRY(flash_ctrl_testutils_data_region_setup_properties(
-      &flash_ctrl, page_idx, flash_data_bank,
+      &flash_ctrl, page_idx, kFlashConfigRegion,
       /*region_size=*/1, kFlashFullAccessScrambledEcc, NULL));
 
   // Read the flash word we are about to corrupt, via the flash_ctrl interface,
@@ -243,7 +245,8 @@ static status_t corrupt_rom_ext_word(rom_ext_slot_t slot,
       &flash_ctrl, first_flash_addr_in_slot + offset_to_corrupt,
       /*partition_id=*/0, &word_to_corrupt, kDifFlashCtrlPartitionTypeData,
       /*word_count=*/1, /*delay_micros=*/0));
-  LOG_INFO("Uncorrupted Flash Word: 0x%08x", word_to_corrupt);
+  LOG_INFO("Uncorrupted Flash Word: 0x%08x at %08x", word_to_corrupt,
+           first_flash_addr_in_slot + offset_to_corrupt);
 
   // Overwrite the target flash word inverted value (without first erasing the
   // page) to corrupt its ECC (since flash writes can only transition 1 bits to
@@ -303,9 +306,18 @@ bool test_main(void) {
       break;
   }
 
+  if (kBootStage == kBootStageOwner) {
+    // If we're running at the owner stage, we want to compute a location
+    // inside the owner code, which starts after the ROM_EXT.
+    // The ROM_EXT is 64K.
+    addr_of_corruption += 0x10000;
+  }
+
   // Corrupt the ECC of a targeted flash word by performing a double write.
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-  if (boot_log->rom_ext_slot == kBootSlotA) {
+  uint32_t slot = kBootStage == kBootStageRomExt ? boot_log->rom_ext_slot
+                                                 : boot_log->bl0_slot;
+  if (slot == kBootSlotA) {
     LOG_INFO("Slot A self corrupting (%s) ...", corruption_desc);
     CHECK_STATUS_OK(corrupt_rom_ext_word(kRomExtSlotA, addr_of_corruption));
   } else {
@@ -314,7 +326,11 @@ bool test_main(void) {
   }
 
   // Issue a reset.
-  LOG_INFO("Resetting chip to trigger load access fault in the ROM ...");
+  if (kBootStage == kBootStageOwner) {
+    LOG_INFO("Resetting chip to trigger load access fault in the ROM_EXT ...");
+  } else {
+    LOG_INFO("Resetting chip to trigger load access fault in the ROM ...");
+  }
   sw_reset();
 
   return true;
