@@ -609,7 +609,7 @@ module otp_ctrl
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
     // Assign these to the status register. Note that the upper most 2 bits of part_errors_reduced
-    // contain the DAI/LCI error. They are treated as normal erorrs and not part of the dedicated
+    // contain the DAI/LCI error. They are treated as normal errors and not part of the dedicated
     // partition status register.
     hw2reg.status.partition_error.d      = |part_errors_reduced[$bits(part_errors_reduced)-3:0];
     hw2reg.status.dai_error.d            = part_errors_reduced[DaiIdx];
