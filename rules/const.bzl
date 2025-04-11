@@ -87,6 +87,12 @@ CONST = struct(
             LOAD_ACCESS = 0x05495202,
             STORE_ACCESS = 0x07495202,
         ),
+        ROM_EXT_INTR = struct(
+            INSTRUCTION_ACCESS = 0x01524902,
+            ILLEGAL_INSTRUCTION = 0x02524902,
+            LOAD_ACCESS = 0x05524902,
+            STORE_ACCESS = 0x07524902,
+        ),
         SIGVERIFY = struct(
             BAD_RSA_SIGNATURE = 0x01535603,
             BAD_RSA_KEY = 0x04535603,
