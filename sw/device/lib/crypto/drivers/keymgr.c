@@ -150,7 +150,7 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   HARDENED_TRY(keymgr_wait_until_done());
 
   // Collect output.
-  // TODO: for SCA hardening, randomize the order of these reads.
+  // TODO(#26941): for SCA hardening, randomize the order of these reads.
   for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
     key->share0[i] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +

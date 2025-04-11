@@ -675,7 +675,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    kMultiBitBool4True);
 
-  // TODO: Add FI checks.
+  // TODO(#26940): Add FI checks.
   return OTCRYPTO_OK;
 }
 
@@ -784,7 +784,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   VERIFY_FIPS_THRESH(EXTHT_HI, config->extht_hi_threshold);
   VERIFY_FIPS_THRESH(EXTHT_LO, config->extht_lo_threshold);
 
-  // TODO: more FI checks on comparisons here.
+  // TODO(#26940): more FI checks on comparisons here.
   return OTCRYPTO_OK;
 }
 

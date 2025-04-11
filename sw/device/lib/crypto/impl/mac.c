@@ -318,7 +318,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
   if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
-    // TODO: Harden SHA2 implementations.
+    // TODO(#26940,#26941): Harden SHA2 implementations.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
 
