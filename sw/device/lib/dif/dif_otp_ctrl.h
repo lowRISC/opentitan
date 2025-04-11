@@ -218,6 +218,26 @@ typedef enum dif_otp_ctrl_partition {
    * controller only exposes a decoded version of this state.
    */
   kDifOtpCtrlPartitionLifeCycle,
+
+  /**
+   * This is not a partition; rather, it represents the total number of
+   * partitions.
+   */
+  kDifOtpCtrlNumberOfPartitions,
+
+  /**
+   * The following two are not partitions; rather they represent error codes
+   * that have a corresponding entry in dif_otp_ctrl_status_t.causes.
+   */
+  kDifOtpCtrlPartitionDaiError = kDifOtpCtrlNumberOfPartitions,
+  kDifOtpCtrlPartitionLciError,
+
+  /**
+   * This is not a partition; rather, it represents the total number of entries
+   * in dif_otp_ctrl_status_t.causes.
+   */
+  kDifOtpCtrlNumberOfCauses,
+
 } dif_otp_ctrl_partition_t;
 
 /**
@@ -261,119 +281,12 @@ typedef struct dif_otp_ctrl_config {
  * A hardware-level status code.
  */
 typedef enum dif_otp_ctrl_status_code {
-  // NOTE: This enum's API *requires* that all "error"-like codes (that is,
-  // those which have associated cause registers) be a prefix of the enum
-  // values.
-  //
-  // Note furthermore that these enum variants are intended as bit indices, so
+  // Note that these enum variants are intended as bit indices, so
   // their values should not be randomized.
   /**
-   * Indicates an error occurred in the `VendorTest` partition.
+   * Indicates that at least one partition raised an error.
    */
-  kDifOtpCtrlStatusCodeVendorTestError = 0,
-  /**
-   * Indicates an error occurred in the `CreatorSwCfg` partition.
-   */
-  kDifOtpCtrlStatusCodeCreatorSwCfgError,
-  /**
-   * Indicates an error occurred in the `OwnerSwCfg` partition.
-   */
-  kDifOtpCtrlStatusCodeOwnerSwCfgError,
-#if defined(OPENTITAN_IS_EARLGREY)
-  /**
-   * Indicates an error occurred in the `RotCreatorAuthCodesign` partition.
-   */
-  kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError,
-  /**
-   * Indicates an error occurred in the `RotCreatorAuthState` partition.
-   */
-  kDifOtpCtrlStatusCodeRotCreatorAuthStateError,
-#elif defined(OPENTITAN_IS_DARJEELING)
-  /**
-   * Indicates an error occurred in the `OwnershipSlotState` partition.
-   */
-  kDifOtpCtrlStatusCodeOwnershipSlotStateError,
-  /**
-   * Indicates an error occurred in the `RotCreatorAuth` partition.
-   */
-  kDifOtpCtrlStatusCodeRotCreatorAuthError,
-  /**
-   * Indicates an error occurred in the `RotOwnerAuthSlot0` partition.
-   */
-  kDifOtpCtrlStatusCodeRotOwnerAuthSlot0Error,
-  /**
-   * Indicates an error occurred in the `RotOwnerAuthSlot1` partition.
-   */
-  kDifOtpCtrlStatusCodeRotOwnerAuthSlot1Error,
-  /**
-   * Indicates an error occurred in the `PlatIntegAuthSlot0` partition.
-   */
-  kDifOtpCtrlStatusCodePlatIntegAuthSlot0Error,
-  /**
-   * Indicates an error occurred in the `PlatIntegAuthSlot1` partition.
-   */
-  kDifOtpCtrlStatusCodePlatIntegAuthSlot1Error,
-  /**
-   * Indicates an error occurred in the `PlatOwnerAuthSlot0` partition.
-   */
-  kDifOtpCtrlStatusCodePlatOwnerAuthSlot0Error,
-  /**
-   * Indicates an error occurred in the `PlatOwnerAuthSlot1` partition.
-   */
-  kDifOtpCtrlStatusCodePlatOwnerAuthSlot1Error,
-  /**
-   * Indicates an error occurred in the `PlatOwnerAuthSlot2` partition.
-   */
-  kDifOtpCtrlStatusCodePlatOwnerAuthSlot2Error,
-  /**
-   * Indicates an error occurred in the `PlatOwnerAuthSlot3` partition.
-   */
-  kDifOtpCtrlStatusCodePlatOwnerAuthSlot3Error,
-  /**
-   * Indicates an error occurred in the `ExtNvm` partition.
-   */
-  kDifOtpCtrlStatusCodeExtNvmError,
-  /**
-   * Indicates an error occurred in the `RomPatch` partition.
-   */
-  kDifOtpCtrlStatusCodeRomPatchError,
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
-  /**
-   * Indicates an error occurred in the `HwCfg0` partition.
-   */
-  kDifOtpCtrlStatusCodeHwCfg0Error,
-  /**
-   * Indicates an error occurred in the `HwCfg1` partition.
-   */
-  kDifOtpCtrlStatusCodeHwCfg1Error,
-  /**
-   * Indicates an error occurred in the `Secret0` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret0Error,
-  /**
-   * Indicates an error occurred in the `Secret1` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret1Error,
-  /**
-   * Indicates an error occurred in the `Secret2` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret2Error,
-#if defined(OPENTITAN_IS_DARJEELING)
-  /**
-   * Indicates an error occurred in the `Secret3` partition.
-   */
-  kDifOtpCtrlStatusCodeSecret3Error,
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
-  /**
-   * Indicates an error occurred in the `LifeCycle` partition.
-   */
-  kDifOtpCtrlStatusCodeLifeCycleError,
+  kDifOtpCtrlStatusCodePartitionError = 0,
   /**
    * Indicates an error occurred in the direct access interface.
    */
@@ -382,13 +295,6 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the lifecycle interface.
    */
   kDifOtpCtrlStatusCodeLciError,
-  /**
-   * This is not a status code; rather, it represents the last error code which
-   * has a corresponding "cause" register.
-   *
-   * See `dif_otp_ctrl_status_t` for information on how to use this.
-   */
-  kDifOtpCtrlStatusCodeHasCauseLast = kDifOtpCtrlStatusCodeLciError,
   /**
    * Indicates that an integrity or consistency check has timed out.
    *
@@ -499,16 +405,15 @@ typedef struct dif_otp_ctrl_status {
    * error-free by writing
    *
    *   bool is_ok = status.codes == (1 << kDifOtpStatusCodeDaiIdle);
+   *
+   * Note this mapes to the "status" hw register.
    */
   uint32_t codes;
   /**
-   * A list of root causes for each error status code.
-   *
-   * If the error status code `error` is present in `codes`, and
-   * `error <= kDifOtpCtrlStatusCodeHasCauseLast`, then `causes[error]`
-   * will contain its root cause.
+   * A list of root causes for each partition as well as for DAI and LCI.
+   * dif_otp_ctrl_partition_t can be used for indexing.
    */
-  dif_otp_ctrl_error_t causes[kDifOtpCtrlStatusCodeHasCauseLast + 1];
+  dif_otp_ctrl_error_t causes[kDifOtpCtrlNumberOfCauses];
 } dif_otp_ctrl_status_t;
 
 /**

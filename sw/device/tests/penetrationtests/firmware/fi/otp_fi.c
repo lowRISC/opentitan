@@ -145,7 +145,7 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlStatusCodeHasCauseLast + 1);
+         kDifOtpCtrlNumberOfCauses);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -270,7 +270,7 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlStatusCodeHasCauseLast + 1);
+         kDifOtpCtrlNumberOfCauses);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -325,7 +325,7 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlStatusCodeHasCauseLast + 1);
+         kDifOtpCtrlNumberOfCauses);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -380,7 +380,7 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
-         kDifOtpCtrlStatusCodeHasCauseLast + 1);
+         kDifOtpCtrlNumberOfCauses);
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
