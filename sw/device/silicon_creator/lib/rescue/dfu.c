@@ -27,7 +27,7 @@ static const rescue_mode_properties_t mode_by_altsetting[] = {
     {kRescueModeBootLog, false, true},
     {kRescueModeBootSvcRsp, true, true},
     {kRescueModeOwnerPage0, true, true},
-    //{ kRescueModeOwnerPage1, false, true },
+    {kRescueModeOwnerPage1, true, true},
 };
 
 static rom_error_t validate_mode(uint32_t setting, rescue_state_t *state) {
