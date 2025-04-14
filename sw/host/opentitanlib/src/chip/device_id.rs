@@ -7,7 +7,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
-#[derive(Debug, Default, Annotate)]
+#[derive(Debug, Default, Annotate, PartialEq, Eq)]
 pub struct DeviceId {
     #[annotate(format=hex)]
     pub creator: u16,

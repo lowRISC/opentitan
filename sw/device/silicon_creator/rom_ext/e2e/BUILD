@@ -14,6 +14,10 @@ load(
     "otp_json",
     "otp_partition",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
+    "DEVICE_ID",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,7 +38,7 @@ otp_json(
         otp_partition(
             name = "HW_CFG0",
             items = {
-                "DEVICE_ID": "0000000011111111222222223333333344444444555555556666666600010001",
+                "DEVICE_ID": DEVICE_ID,
             },
             lock = True,
         ),
