@@ -51,8 +51,8 @@ module ${module_instance_name}
 % if racl_support:
   parameter bit                             EnableRacl             = 1'b0,
   parameter bit                             RaclErrorRsp           = EnableRacl,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegs] = 
-    '{${module_instance_name}_reg_pkg::NumRegs{0}},
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${module_instance_name}_reg_pkg::NumRegsCfg] = 
+    '{${module_instance_name}_reg_pkg::NumRegsCfg{0}},
 % endif
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0
 ) (
