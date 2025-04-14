@@ -42,8 +42,7 @@ static otcrypto_status_t seed_material_construct(
   }
 
   // Copy seed data.
-  // TODO(#17711) Change to `hardened_memcpy`.
-  memcpy(seed_material->data, value.data, value.len);
+  hardened_memcpy(seed_material->data, (uint32_t *) value.data, value.len / sizeof(uint32_t));
 
   return OTCRYPTO_OK;
 }

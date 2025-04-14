@@ -211,9 +211,9 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_CHECK_LT(index, num_full_blocks);
     // No need to worry about padding, just copy the data into the output
     // block.
-    // TODO(#17711) Change to `hardened_memcpy`.
-    memcpy(block->data, &input.data[index * kAesBlockNumBytes],
-           kAesBlockNumBytes);
+    hardened_memcpy(block->data,
+                    (uint32_t *)&input.data[index * kAesBlockNumBytes],
+                    kAesBlockNumWords);
     return OTCRYPTO_OK;
   }
   HARDENED_CHECK_GE(index, num_full_blocks);
@@ -352,9 +352,9 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
   for (i = block_offset; launder32(i) < input_nblocks; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
     TRY(aes_update(&block_out, &block_in));
-    // TODO(#17711) Change to `hardened_memcpy`.
-    memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
-           block_out.data, kAesBlockNumBytes);
+    hardened_memcpy(
+        (uint32_t *)&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
+        block_out.data, kAesBlockNumWords);
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, input_nblocks);
@@ -363,9 +363,9 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
   // input).
   for (i = block_offset; launder32(i) > 0; --i) {
     HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
-    // TODO(#17711) Change to `hardened_memcpy`.
-    memcpy(&cipher_output.data[(input_nblocks - i) * kAesBlockNumBytes],
-           block_out.data, kAesBlockNumBytes);
+    hardened_memcpy((uint32_t *)&cipher_output
+                        .data[(input_nblocks - i) * kAesBlockNumBytes],
+                    block_out.data, kAesBlockNumWords);
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, 0);
