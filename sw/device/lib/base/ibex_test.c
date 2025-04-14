@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#include "sw/device/lib/crypto/drivers/ibex.h"
+#include "sw/device/lib/base/ibex.h"
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
