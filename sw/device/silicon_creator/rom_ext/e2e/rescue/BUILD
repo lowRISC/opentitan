@@ -321,3 +321,89 @@ opentitan_test(
         """,
     ),
 )
+
+[
+    opentitan_test(
+        name = "rescue_get_boot_log_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            setup = config["setup"],
+            tags = config["tags"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                {setup}
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                --exec="rescue {params} get-boot-log"
+                no-op
+            """,
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
+
+[
+    opentitan_test(
+        name = "rescue_get_device_id_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            setup = config["setup"],
+            tags = config["tags"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                {setup}
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                --exec="rescue {params} get-device-id"
+                no-op
+            """,
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
+
+[
+    opentitan_test(
+        name = "rescue_get_owner_config_page_{}_{}".format(page, protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            page = page,
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            setup = config["setup"],
+            tags = config["tags"],
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                {setup}
+                --exec="bootstrap --clear-uart=true {rom_ext}"
+                --exec="rescue {params} get-owner-config --page={page}"
+                no-op
+            """,
+        ),
+    )
+    for page in [
+        "0",
+        "1",
+    ]
+    for protocol, config in _CONFIGS.items()
+]
