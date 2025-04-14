@@ -245,6 +245,7 @@ manifest(d = {
         testonly = True,
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = [
+            "//hw/top_earlgrey:fpga_cw340",
             "//hw/top_earlgrey:fpga_cw310",
         ],
         extra_bazel_features = [
