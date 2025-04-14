@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -35,6 +36,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic0;
+static dif_flash_ctrl_device_info_t flash_info;
 static dif_flash_ctrl_state_t flash_state;
 static dif_flash_ctrl_t flash_ctrl;
 
@@ -49,17 +51,18 @@ static flash_ctrl_isr_ctx_t flash_ctx = {
     .is_only_irq = false,
 };
 
+static uint32_t flash_bank_0_data_region;
+static uint32_t flash_bank_1_data_region;
+static uint32_t flash_bank_1_data_region_scr;
+static uint32_t flash_bank_1_page_index;
+static uint32_t flash_bank_1_page_index_scr;
+
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
   kFlashInfoPageIdOwnerSecret = 2,
   kFlashInfoPageIdIsoPart = 3,
   kFlashInfoBank = 0,
   kRegionBaseBank0Page0Index = 0,
-  kRegionBaseBank1Page0Index = 256,
-  kRegionBaseBank1Page255Index = 511,
-  kFlashBank0DataRegion = 0,
-  kFlashBank1DataRegion = 1,
-  kFlashBank1DataRegionSCR = 2,
   kPartitionId = 0,
   kRegionSize = 1,
   kInfoSize = 16,
@@ -264,7 +267,7 @@ static void do_bank0_data_partition_test(void) {
       .rd_en = kMultiBitBool4True};
 
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
-      &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
+      &flash_state, kRegionBaseBank0Page0Index, flash_bank_0_data_region,
       kRegionSize, region_properties, &address));
   CHECK_DIF_OK(dif_flash_ctrl_set_read_fifo_watermark(&flash_state, 8));
 
@@ -290,7 +293,7 @@ static void do_bank0_data_partition_test(void) {
 
 /**
  * Tests the interrupts for erase, write and read of
- * the lowest and highest page of bank 1 data partition.
+ * the lowest and highest (usable) page of bank 1 data partition.
  * Confirms that the written data is read back correctly.
  * The whole bank is then erased and the interrupt is checked
  * followed by confirmation that the previously written data
@@ -304,18 +307,18 @@ static void do_bank1_data_partition_test(void) {
   // Loop for low and high page erase, write and read.
   for (int i = 0; i < 2; ++i) {
     uint32_t page_index =
-        (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
+        (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_scr;
     const uint32_t *test_data = (i == 0) ? kRandomData4 : kRandomData5;
 
     if (i == 0) {
       // Set region1 for non-scrambled ecc enabled.
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-          &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+          &flash_state, page_index, flash_bank_1_data_region, kRegionSize,
           &address));
     } else {
       // Set region2 for scrambled ecc enabled.
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_scrambled_setup(
-          &flash_state, page_index, kFlashBank1DataRegionSCR, kRegionSize,
+          &flash_state, page_index, flash_bank_1_data_region_scr, kRegionSize,
           &address));
     }
     clear_irq_variables();
@@ -370,7 +373,7 @@ static void do_bank1_data_partition_test(void) {
   expected_irqs[kDifFlashCtrlIrqOpDone] = true;
 
   CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-      &flash_state, kRegionBaseBank1Page0Index, kFlashBank1DataRegion,
+      &flash_state, flash_bank_1_page_index, flash_bank_1_data_region,
       kRegionSize, &address));
   dif_flash_ctrl_transaction_t transaction = {
       .byte_address = address,
@@ -386,10 +389,10 @@ static void do_bank1_data_partition_test(void) {
   // Loop for low and high page read back after bank erase.
   for (int i = 0; i < 2; ++i) {
     uint32_t page_index =
-        (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
+        (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_scr;
 
     CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-        &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+        &flash_state, page_index, flash_bank_1_data_region, kRegionSize,
         &address));
 
     uint32_t readback_data[kDataSize];
@@ -418,6 +421,26 @@ static void do_bank1_data_partition_test(void) {
 }
 
 bool test_main(void) {
+  flash_info = dif_flash_ctrl_get_device_info();
+
+  // Determine the region index and page index to use for tests.
+  // Test data page used for flash bank 1 should be the lowest and highest
+  // usable page.
+  if (kBootStage != kBootStageOwner) {
+    flash_bank_0_data_region = 0;
+    flash_bank_1_page_index = flash_info.data_pages;
+  } else {
+    // If we boot up in owner stage, the first 2 regions will be used by
+    // ROM_EXT.
+    flash_bank_0_data_region = 2;
+    // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
+    // these pages.
+    flash_bank_1_page_index = flash_info.data_pages + 0x20;
+  }
+  flash_bank_1_data_region = flash_bank_0_data_region + 1;
+  flash_bank_1_data_region_scr = flash_bank_0_data_region + 2;
+  flash_bank_1_page_index_scr = flash_info.data_pages * 2 - 1;
+
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic0));
 
@@ -432,7 +455,7 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  if (kDeviceType != kDeviceSilicon) {
+  if (kBootStage != kBootStageOwner) {
     do_info_partition_test(kFlashInfoPageIdCreatorSecret, kRandomData1);
     do_info_partition_test(kFlashInfoPageIdOwnerSecret, kRandomData2);
     do_info_partition_test(kFlashInfoPageIdIsoPart, kRandomData3);

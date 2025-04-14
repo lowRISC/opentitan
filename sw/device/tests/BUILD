@@ -1781,16 +1781,15 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
     ),
+    # Run also as ROM_EXT stage as test coverage is reduced in silicon owner stage.
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+    ],
     deps = [
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
