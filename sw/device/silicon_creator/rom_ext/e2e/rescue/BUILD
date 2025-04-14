@@ -14,6 +14,10 @@ load(
     "opentitan_binary",
     "opentitan_test",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
+    "DEVICE_ID",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -303,6 +307,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -374,6 +379,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -409,6 +415,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,
@@ -439,6 +446,7 @@ opentitan_test(
         name = "rescue_enter_on_fail_{}".format(name),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -464,4 +472,50 @@ opentitan_test(
         ),
     )
     for name, config in _CONFIGS.items()
+]
+
+[
+    opentitan_test(
+        name = "rescue_get_boot_log_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            test_cmd = """
+            --clear-bitstream
+            --bootstrap={rom_ext}
+            rescue {params} --action=get-boot-log
+            """,
+            test_harness = "//sw/host/tests/rescue:rescue_test",
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
+
+[
+    opentitan_test(
+        name = "rescue_get_device_id_{}".format(protocol),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            device_id = DEVICE_ID,
+            params = config["params"],
+            rom_ext = config["rom_ext"],
+            test_cmd = """
+            --clear-bitstream
+            --bootstrap={rom_ext}
+            --device-id={device_id}
+            rescue {params} --action=get-device-id
+            """,
+            test_harness = "//sw/host/tests/rescue:rescue_test",
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
 ]
