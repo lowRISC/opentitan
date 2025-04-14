@@ -42,8 +42,6 @@ This document outlines the basic structure of the RFC process, with the expectat
 
 RFCs should be created at least for any major new piece of code (e.g. IP block), or cross-cutting changes that need careful consideration.
 Generally speaking, an RFC should be created when there is demand for one (especially when that request comes from a Committer).
-Although it is a power that is not expected to be deployed regularly, RFCs may be unilaterally approved/rejected by the Project Director.
-Even in these cases, they would likely still follow the normal review and feedback process.
 
 ## Potential future RFC process refinements
 
