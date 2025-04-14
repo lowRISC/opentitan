@@ -131,6 +131,17 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_count").as_camel_case()}
   } alert_id_e;
 % endif # has_alert_handler
+% if len(top["outgoing_interrupt"]) > 0:
+
+%   for interrupt_group, interrupts in top["outgoing_interrupt"].items():
+<%
+  num_interrupts = sum(interrupt["width"] for interrupt in interrupts)
+%>\
+  // Number of ${interrupt_group} outgoing interrupts
+  parameter int unsigned NOutgoingInterrupts${interrupt_group.capitalize()} = ${num_interrupts};
+%   endfor
+
+% endif
 % if has_pinmux:
 
   // Enumeration of IO power domains.
@@ -216,16 +227,6 @@ package top_${top["name"]}${addr_space_suffix}_pkg;
     ${lib.Name.from_snake_case("peripheral_count").as_camel_case()}
   } peripheral_e;
 
-  % if len(top["outgoing_interrupt"]) > 0:
-  %   for interrupt_group, interrupts in top["outgoing_interrupt"].items():
-<%
-  num_interrupts = sum(interrupt["width"] for interrupt in interrupts)
-%>\
-  // Number of ${interrupt_group} outgoing interrupts
-  parameter int unsigned NOutgoingInterrupts${interrupt_group.capitalize()} = ${num_interrupts};
-  %   endfor
-
-  % endif
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.
 
