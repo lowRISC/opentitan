@@ -117,6 +117,7 @@ impl Rescue for SpiDfu {
             RescueMode::BootSvcRsp => RescueMode::BootSvcRsp,
             RescueMode::OwnerBlock => RescueMode::GetOwnerPage0,
             RescueMode::GetOwnerPage0 => RescueMode::GetOwnerPage0,
+            RescueMode::GetOwnerPage1 => RescueMode::GetOwnerPage1,
             _ => bail!(RescueError::BadMode(format!(
                 "mode {mode:?} not supported by DFU"
             ))),
