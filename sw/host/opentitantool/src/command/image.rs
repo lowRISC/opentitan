@@ -283,6 +283,9 @@ impl CommandDispatch for ManifestUpdateCommand {
             .map(|e| e.id())
             .chain(vec![
                 ManifestExtId::spx_key.into(),
+                ManifestExtId::secver_write.into(),
+                ManifestExtId::isfb.into(),
+                ManifestExtId::isfb_erase.into(),
                 ManifestExtId::image_type.into(),
             ])
             .collect::<HashSet<u32>>();
