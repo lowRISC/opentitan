@@ -80,7 +80,7 @@ sh_test(
     ],
     env = {
         "PYTHON": "$(location @python3//:python3)",
-        "PACKAGE": "npcr11",
+        "PACKAGE": "npcr12",
     },
     tags = [
         "changes_otp",

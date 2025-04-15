@@ -13,7 +13,6 @@ use anyhow::{Result, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
-use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
 use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
@@ -33,7 +32,9 @@ use ot_hal::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::UjsonPayloads;
-use ujson_lib::provisioning_data::{LcTokenHash, ManufCertgenInputs, PersoBlob, SerdesSha256Hash};
+use ujson_lib::provisioning_data::{
+    LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
+};
 use util_lib::hash_lc_token;
 
 pub mod response;
@@ -77,11 +78,15 @@ pub fn test_unlock(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn run_sram_ft_individualize(
     transport: &TransportWrapper,
     jtag_params: &JtagParams,
     sram_program: &SramProgramParams,
+    ft_individualize_data_in: &ManufFtIndividualizeData,
+    spi_console: &SpiConsoleDevice,
     timeout: Duration,
+    ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
@@ -93,12 +98,9 @@ pub fn run_sram_ft_individualize(
     jtag.reset(/*run=*/ false)?;
 
     // Load and execute the SRAM program that contains the provisioning code.
-    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::JumpAndWait(timeout))?;
+    let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
     match result {
-        ExecutionResult::ExecutionDone(sp_val) => match sp_val {
-            SRAM_MAGIC_SP_EXECUTION_DONE => log::info!("SRAM program completed."),
-            _ => panic!("SRAM program load/execution failed: sp = {:?}.", sp_val),
-        },
+        ExecutionResult::Executing => log::info!("SRAM program loaded and is executing."),
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
@@ -107,6 +109,22 @@ pub fn run_sram_ft_individualize(
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+
+    // Wait for SRAM program to complete execution.
+    let _ = UartConsole::wait_for(
+        spi_console,
+        r"Waiting for FT SRAM provisioning data ...",
+        timeout,
+    )?;
+
+    // Inject provisioning data into the device.
+    ujson_payloads.dut_in.insert(
+        "FT_INDIVIDUALIZE_DATA_IN".to_string(),
+        ft_individualize_data_in.send(spi_console)?,
+    );
+
+    // Wait for provisioning operations to complete.
+    let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
 
     Ok(())
 }
