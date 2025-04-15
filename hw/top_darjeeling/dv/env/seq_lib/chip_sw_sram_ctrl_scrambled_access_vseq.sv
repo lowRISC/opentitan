@@ -20,10 +20,16 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   localparam uint BACKDOOR_RET_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / 8);
   localparam uint BACKDOOR_MAIN_OFFSET = (top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8);
 
+  // Note that for Darjeeling the _REQ_INDEX values differ from those of Earl Grey; within the
+  // OTP controller KDI the `req` and `rsp` signals of the SRAM Ctrl are aggregated with the
+  // those of other blocks.
+  //
+  // The `sram_otp_key_o` are, however, still separate so the _INDEX fields used for `key` and `ack`
+  // match those of Earl Grey.
   localparam string MAIN_INDEX = "0";
-  localparam string MAIN_REQ_INDEX = "3";
+  localparam string MAIN_REQ_INDEX = "1";
   localparam string RET_INDEX = "1";
-  localparam string RET_REQ_INDEX = "4";
+  localparam string RET_REQ_INDEX = "2";
 
   localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_darjeeling.u_sram_ctrl_ret_aon";
   localparam string SRAM_CTRL_MAIN_HDL_PATH = "tb.dut.top_darjeeling.u_sram_ctrl_main";
@@ -59,6 +65,15 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
   bit [  sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_ret_key;
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_main_nonce;
   bit [  sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_main_key;
+
+  typedef enum byte {
+    PhaseSetup                   = 0,
+    kTestPhaseMainSramScramble   = 1,
+    kTestPhaseMainSramCheck      = 2,
+    kTestPhaseRetSramScramble    = 3,
+    kTestPhaseRetSramCheck       = 4,
+    PhaseDone                    = 5
+  } test_phases_e;
 
   virtual task check_hdl_paths();
     int retval;
@@ -111,7 +126,10 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         retval = uvm_hdl_read(RET_KEY_PATH, sram_ret_key);
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", RET_KEY_PATH))
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling interval should be shorter than the OTP clock period, which is
+      // four times the main clock period. For Darjeeling this may be 250MHz, so sample at twice
+      // that frequency.
+      #2ns;
     end
   endtask
 
@@ -130,7 +148,10 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         retval = uvm_hdl_read(MAIN_KEY_PATH, sram_main_key);
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", MAIN_KEY_PATH))
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling interval should be shorter than the OTP clock period, which is
+      // four times the main clock period. For Darjeeling this may be 250MHz, so sample at twice
+      // that frequency.
+      #2ns;
     end
   endtask
 
@@ -138,6 +159,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     int retval;
     bit scr_key_valid;
     int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
+    // `backdoor` comes after `pattern` which is `BACKDOOR_DATA_WORDS` long.
+    offset += BACKDOOR_DATA_WORDS * 4;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_RET_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
@@ -157,7 +180,9 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         end
         break;
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling interval should be shorter than the Retn SRAM Ctrl clock period which may
+      // be 62.5MHz for Darjeeling.
+      #8ns;
     end
   endtask
 
@@ -165,6 +190,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     int retval;
     bit scr_key_valid;
     int offset = addr - top_darjeeling_pkg::TOP_DARJEELING_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
+    // `backdoor` comes after `pattern` which is `BACKDOOR_DATA_WORDS` long.
+    offset += BACKDOOR_DATA_WORDS * 4;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
@@ -184,7 +211,9 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         end
         break;
       end
-      cfg.clk_rst_vif.wait_clks(1);
+      // The sampling interval should be shorter than the Main SRAM Ctrl clock period which may
+      // be as high as 1GHz for Darjeeling.
+      #0.5ns;
     end
   endtask
 
@@ -201,9 +230,11 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask: cpu_init
 
-  virtual task sync_with_sw();
+  virtual task sync_with_sw(input test_phases_e phase);
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+
+     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endtask:sync_with_sw
 
   virtual task body();
@@ -220,25 +251,31 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
 
     sw_symbol_backdoor_overwrite("kBackdoorExpectedBytes", backdoor_data);
 
-    sync_with_sw();
+    `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
+    sync_with_sw(kTestPhaseMainSramScramble);
 
     `uvm_info(`gfn, $sformatf("Testing main sram addr: %x", main_sram_offset), UVM_LOW);
     fork
       get_main_keys();
-      main_backdoor_write(main_sram_offset);
     join_none
 
-    sync_with_sw();
+    main_backdoor_write(main_sram_offset);
+    sync_with_sw(kTestPhaseMainSramCheck);
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_format == "RET_SRAM addr: %0h MAIN_SRAM addr: %0h");
     ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
     main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
+    sync_with_sw(kTestPhaseRetSramScramble);
 
     `uvm_info(`gfn, $sformatf("Testing ret sram addr: %x", ret_sram_offset), UVM_LOW);
     fork
       get_ret_keys();
-      ret_backdoor_write(ret_sram_offset);
     join_none
+
+    ret_backdoor_write(ret_sram_offset);
+    sync_with_sw(kTestPhaseRetSramCheck);
 
   endtask
 
