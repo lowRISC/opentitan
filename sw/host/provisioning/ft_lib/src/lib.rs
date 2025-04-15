@@ -18,6 +18,7 @@ use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::console::ConsoleError;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
@@ -84,10 +85,17 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     sram_program: &SramProgramParams,
     ft_individualize_data_in: &ManufFtIndividualizeData,
-    spi_console: &SpiConsoleDevice,
+    console_spi: &String,
     timeout: Duration,
     ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
+    // Setup the SPI console with the GPIO TX indicator pin.
+    let spi = transport.spi(console_spi)?;
+    let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
+    device_console_tx_ready_pin.set_mode(PinMode::Input)?;
+    device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
+    let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset(UartRx::Clear)?;
@@ -112,7 +120,7 @@ pub fn run_sram_ft_individualize(
 
     // Wait for SRAM program to complete execution.
     let _ = UartConsole::wait_for(
-        spi_console,
+        &spi_console,
         r"Waiting for FT SRAM provisioning data ...",
         timeout,
     )?;
@@ -120,11 +128,11 @@ pub fn run_sram_ft_individualize(
     // Inject provisioning data into the device.
     ujson_payloads.dut_in.insert(
         "FT_INDIVIDUALIZE_DATA_IN".to_string(),
-        ft_individualize_data_in.send(spi_console)?,
+        ft_individualize_data_in.send(&spi_console)?,
     );
 
     // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
+    let _ = UartConsole::wait_for(&spi_console, r"FT SRAM provisioning done.", timeout)?;
 
     Ok(())
 }
