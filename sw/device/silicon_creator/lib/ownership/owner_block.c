@@ -510,6 +510,43 @@ rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info) {
   return kErrorOk;
 }
 
+rom_error_t owner_block_info_isfb_erase_enable(
+    boot_data_t *bootdata, const owner_config_t *owner_config) {
+  if (bootdata->ownership_state != kOwnershipStateLockedOwner)
+    return kErrorOk;
+  // Check whether the ISFB configuration exists.
+  if ((hardened_bool_t)owner_config->isfb == kHardenedBoolFalse)
+    return kErrorOk;
+  // Check whether the FLASH INFO configuration exists.
+  if ((hardened_bool_t)owner_config->info == kHardenedBoolFalse)
+    return kErrorOk;
+
+  const owner_flash_info_config_t *info = owner_config->info;
+  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+               sizeof(owner_info_page_t);
+
+  const owner_info_page_t *config = info->config;
+  uint32_t crypt = 0;
+  for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue &&
+        config->bank == owner_config->isfb->bank &&
+        config->page == owner_config->isfb->page) {
+      flash_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+          config->bank, config->page, &page));
+
+      uint32_t val = config->access ^ crypt;
+      flash_ctrl_perms_t perm = {
+          .read = bitfield_field32_read(val, FLASH_CONFIG_READ),
+          .write = bitfield_field32_read(val, FLASH_CONFIG_PROGRAM),
+          .erase = kMultiBitBool4True,
+      };
+      flash_ctrl_info_perms_set(&page, perm);
+    }
+  }
+  return kErrorOk;
+}
+
 rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
   rescue_detect_t detect = bitfield_field32_read(rescue->detect, RESCUE_DETECT);
   uint32_t index = bitfield_field32_read(rescue->detect, RESCUE_DETECT_INDEX);
