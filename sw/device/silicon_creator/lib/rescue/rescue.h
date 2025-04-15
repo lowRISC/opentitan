@@ -49,6 +49,8 @@ typedef enum {
   kRescueModeReboot = 0x5245424f,
   /** `WAIT` */
   kRescueModeWait = 0x57414954,
+  /** `NOOP` */
+  kRescueModeNoOp = 0x4e4f4f50,
 } rescue_mode_t;
 
 typedef enum {
@@ -67,7 +69,10 @@ typedef enum {
 } rescue_baud_t;
 
 typedef struct RescueState {
+  // Current rescue mode.
   rescue_mode_t mode;
+  // Default rescue mode.
+  rescue_mode_t default_mode;
   // Inactivity deadline.
   uint64_t inactivity_deadline;
   // Current xmodem frame.
