@@ -718,6 +718,10 @@ rom_error_t manifest_ext_get_spx_key(const manifest_t *manifest,
 rom_error_t manifest_ext_get_spx_signature(
     const manifest_t *manifest,
     const manifest_ext_spx_signature_t **spx_signature);
+rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
+                                  const manifest_ext_isfb_t **isfb);
+rom_error_t manifest_ext_get_isfb_erase(
+    const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase);
 
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
