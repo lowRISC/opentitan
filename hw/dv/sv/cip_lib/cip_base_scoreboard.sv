@@ -300,20 +300,33 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         forever begin
           wait(expected_alert[alert_name].expected == 1 && cfg.under_reset == 0);
           if (expected_alert[alert_name].is_fatal) begin
+            // Variable is unused, but declared since output arguments can't be skipped
+            bit alert_due_to_ping;
             while (cfg.under_reset == 0) begin
-              check_alert_triggered(alert_name);
+              check_alert_triggered(alert_name, alert_due_to_ping);
               wait(under_alert_handshake[alert_name] == 0 || cfg.under_reset == 1);
             end
           end else begin
-            check_alert_triggered(alert_name);
-            expected_alert[alert_name].expected = 0;
+            // If set it means the alert is just a ping response
+            bit alert_due_to_ping;
+            check_alert_triggered(alert_name, alert_due_to_ping);
+            if (!alert_due_to_ping)
+              expected_alert[alert_name].expected = 0;
+            else begin
+              // If the alert is due to ping, wait until the ping finished, then check again
+              // by finishing this iteration of the loop body and leaving the alert `expected`
+              // untouched .
+              wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+            end
           end
         end
       join_none
     end
   endtask
 
-  virtual task check_alert_triggered(string alert_name);
+  // alert_due_to_ping flag is set when the alert sender is handling a ping, so the caller knows
+  // it should not clear the `expected_alert[alert_name].expected` flag
+  local task check_alert_triggered(string alert_name, output bit alert_due_to_ping);
     int unsigned ping_count = cfg.m_alert_agent_cfgs[alert_name].ping_count;
     // If the alert happens when we are in the middle of ping handshake phases then wait until we
     // are out of ping.
@@ -326,7 +339,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
     // Ignore the alert if it's due to a ping by checking if there's been a ping since the
     // check started
-    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) return;
+    if (ping_count != cfg.m_alert_agent_cfgs[alert_name].ping_count) begin
+      alert_due_to_ping = 1;
+      return;
+    end
     // Ignore the alert if the scoreboard is disabled or if the alert is not fatal and the ignore
     // alert bit is set.
     if (!cfg.en_scb || (ignore_exp_alert && !expected_alert[alert_name].is_fatal)) return;
