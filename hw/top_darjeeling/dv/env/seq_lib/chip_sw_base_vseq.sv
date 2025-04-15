@@ -50,14 +50,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
     forever begin
       // Await the report of an internal reset request from the power manager.
       if (cfg.chip_vif.aon_clk_por_rst_if.rst_n === 1'b1) begin
-        // No need to check for requests every cycle; the power manager will wait until it observes
-        // the falling edge of the external reset request signal. The exact delay does not matter,
-        // responding with a variable latency improves testing.
-        cfg.chip_vif.aon_clk_por_rst_if.wait_clks(7);
+        // For a software reset request we need in practice to check the `light_reset_req` signal
+        // on every AON clock cycle because as soon as pwrmgr_aon detects the internal reset request
+        // it acknowledges to the rstmgr_aon, which deasserts the software reset request.
+        cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
         if (cfg.chip_vif.signal_probe_pwrmgr_light_reset_req(
               .kind(dv_utils_pkg::SignalProbeSample))) begin
           int unsigned clks = $urandom_range(24, 5);
-          `uvm_info(`gfn, $sformatf("Supply external reset request of %0d cycle(s)", clks),
+          `uvm_info(`gfn, $sformatf("Supplying external reset request of %0d cycle(s)", clks),
                     UVM_MEDIUM)
           // Apply an extended reset signal of sufficient duration to pass through the filter.
           apply_soc_reset_request(clks);
