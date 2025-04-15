@@ -15,14 +15,14 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0]           AlertAsyncOn                  = {NumAlerts{1'b1}},
-  parameter logic [31:0]                    IdcodeValue                   = 32'h 0000_0001,
-  parameter bit                             UseDmiInterface               = 1'b0,
-  parameter bit                             SecVolatileRawUnlockEn        = 0,
-  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits          = 0,
-  parameter bit                             EnableRacl                    = 1'b0,
-  parameter bit                             RaclErrorRsp                  = EnableRacl,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegsRegs] = '{NumRegsRegs{0}}
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
+  parameter logic [31:0]                    IdcodeValue                       = 32'h 0000_0001,
+  parameter bit                             UseDmiInterface                   = 1'b0,
+  parameter bit                             SecVolatileRawUnlockEn            = 0,
+  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits              = 0,
+  parameter bit                             EnableRacl                        = 1'b0,
+  parameter bit                             RaclErrorRsp                      = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}}
 ) (
   input  logic                clk_i,       // clock
   input  logic                clk_lc_i,    // only declared here so that the topgen
@@ -128,7 +128,7 @@ module rv_dm
   rv_dm_regs_reg_top #(
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
-    .RaclPolicySelVec(RaclPolicySelVec)
+    .RaclPolicySelVec(RaclPolicySelVecRegs)
   ) u_reg_regs (
     .clk_i,
     .rst_ni,
