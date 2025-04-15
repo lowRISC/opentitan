@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+#include "sw/device/silicon_creator/lib/ownership/isfb.h"
 
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -17,12 +18,9 @@ enum {
   // The maximum size of the product expressions in bytes.
   KProductExprMaxCountBytes = kProductExprMaxCount * sizeof(uint32_t),
 
-  // The number of bits in the strike mask is fixed to 128. Each bit in the
-  // strike mask corresponds to a `uint32_t` word.
-  kExpectedStrikeBitCount = 128,
-
   // The expected size of the strike region in bytes and words.
-  kExpectedStrikeRegionBytesCount = kExpectedStrikeBitCount * sizeof(uint32_t),
+  kExpectedStrikeRegionBytesCount =
+      kIsfbExpectedStrikeBitCount * sizeof(uint32_t),
   kExpectedStrikeRegionWordsCount =
       kExpectedStrikeRegionBytesCount / sizeof(uint32_t),
 };
@@ -36,7 +34,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
     return kErrorOwnershipISFBNotPresent;
   }
   const owner_isfb_config_t *isfb = owner_config->isfb;
-  if (ext->product_expr_count * 2 > isfb->product_words ||
+  if (ext->product_expr_count > isfb->product_words ||
       ext->product_expr_count > kProductExprMaxCount) {
     return kErrorOwnershipISFBProductExpCnt;
   }
@@ -50,8 +48,9 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   // There are in total 128 bits in the strike mask. Each bit corresponds to a
   // `uint32_t` word.
   uint32_t strikes[kExpectedStrikeRegionWordsCount];
-  static_assert(sizeof(ext->strike_mask) * CHAR_BIT == kExpectedStrikeBitCount,
-                "Strike mask size mismatch");
+  static_assert(
+      sizeof(ext->strike_mask) * CHAR_BIT == kIsfbExpectedStrikeBitCount,
+      "Strike mask size mismatch");
   static_assert(sizeof(strikes) == kExpectedStrikeRegionBytesCount,
                 "Data size mismatch");
 
@@ -76,7 +75,7 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   }
   // Check loop completion and count consistency.
   HARDENED_CHECK_EQ(strike_cnt_ok + strike_cnt_bad + i,
-                    kExpectedStrikeBitCount * 2);
+                    kIsfbExpectedStrikeBitCount * 2);
 
   if (launder32(strike_cnt_bad) > 0) {
     return kErrorOwnershipISFBStrikeMask;
@@ -110,14 +109,76 @@ rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
   }
 
   // Redundant checks to ensure there were no faults in any previous checks.
-  if (launder32(strike_cnt_ok) == kExpectedStrikeBitCount &&
+  if (launder32(strike_cnt_ok) == kIsfbExpectedStrikeBitCount &&
       launder32(strike_cnt_bad) == 0 &&
       launder32(pe_cnt_ok) == ext->product_expr_count &&
       launder32(p_cnt_bad) == 0) {
-    *checks_performed_count = kExpectedStrikeBitCount + ext->product_expr_count;
+    *checks_performed_count =
+        kIsfbExpectedStrikeBitCount + ext->product_expr_count;
     return kErrorOk;
   }
 
   *checks_performed_count = UINT32_MAX;
   return kErrorOwnershipISFBFailed;
+}
+
+rom_error_t isfb_info_flash_erase_policy_get(
+    owner_config_t *owner_config, uint32_t key_domain,
+    hardened_bool_t manifest_is_node_locked,
+    const manifest_ext_isfb_erase_t *ext_isfb_erase,
+    hardened_bool_t *erase_en) {
+  if ((hardened_bool_t)owner_config->isfb == kHardenedBoolFalse) {
+    return kErrorOwnershipISFBNotPresent;
+  }
+
+  uint32_t check_cnt_exp = 0;
+  uint32_t conditions = owner_config->isfb->erase_conditions;
+  hardened_bool_t policies[3] = {0};
+  static_assert(ARRAYSIZE(policies) <= sizeof(conditions) * 2,
+                "Erase conditions count mismatch");
+
+  // Only disable the expected check iff strictly set to `kMultiBitBool4False`
+  // in the owner config. Any other value will require the check to be
+  // performed.
+  for (uint32_t i = 0; i < ARRAYSIZE(policies); ++i, conditions >>= 4) {
+    if (launder32(conditions & 0xF) == kMultiBitBool4False) {
+      policies[i] = kHardenedBoolTrue;
+    } else {
+      check_cnt_exp = launder32(check_cnt_exp) + 1;
+    }
+  }
+
+  // Hardended counter used to detect any faults in the checks.
+  uint32_t check_cnt_got = 0;
+
+  // B0: Firmware must be signed with key specified by `key_domain` field.
+  if (policies[0] != kHardenedBoolTrue && key_domain &&
+      key_domain == owner_config->isfb->key_domain) {
+    policies[0] = kHardenedBoolTrue;
+    check_cnt_got = launder32(check_cnt_got) + 1;
+  }
+
+  // B1: Firmware must be node locked.
+  if (policies[1] != kHardenedBoolTrue &&
+      manifest_is_node_locked == kHardenedBoolTrue) {
+    policies[1] = kHardenedBoolTrue;
+    check_cnt_got = launder32(check_cnt_got) + 1;
+  }
+
+  // B3: `manifest_ext_isfb_erase_t` must be present and set to harden true in
+  // the firmware manifest.
+  if (policies[2] != kHardenedBoolTrue && ext_isfb_erase != NULL) {
+    policies[2] = (hardened_bool_t)ext_isfb_erase->erase_allowed;
+    check_cnt_got = launder32(check_cnt_got) + 1;
+  }
+
+  if (policies[0] == kHardenedBoolTrue && policies[1] == kHardenedBoolTrue &&
+      policies[2] == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(check_cnt_got, check_cnt_exp);
+    // The erase policy is satisfied. Update the info flash page configuration
+    // with the new erase policy.
+    *erase_en = kHardenedBoolTrue;
+  }
+
+  return kErrorOk;
 }
