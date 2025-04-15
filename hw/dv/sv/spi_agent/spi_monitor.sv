@@ -107,6 +107,8 @@ class spi_monitor extends dv_base_monitor#(
         `uvm_info(`gfn, "Triggering 'host_item.item_finished' since CSB just became inactive",
                   UVM_DEBUG)
         if (flash_opcode_received) begin
+          if (!host_item.write_command)
+            host_item.read_size = host_item.payload_q.size;
           host_analysis_port.write(host_item);
           host_item.mon_item_complete = 1;
         end
