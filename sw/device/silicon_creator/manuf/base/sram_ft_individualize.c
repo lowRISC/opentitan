@@ -165,8 +165,6 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
 
-  base_printf("FT SRAM provisioning done.");
-
   return OK_STATUS();
 }
 
