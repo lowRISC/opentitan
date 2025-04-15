@@ -170,7 +170,7 @@ opentitan_test(
 
 [
     opentitan_binary(
-        name = "sram_ft_individualize_{}".format(sku),
+        name = "sram_ft_individualize_{}{}".format(sku, variant),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
@@ -181,6 +181,7 @@ opentitan_test(
         },
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
+        local_defines = defines,
         deps = [
             ":flash_info_permissions",
             ":ft_device_id_{}_library".format(sku),
@@ -194,9 +195,12 @@ opentitan_test(
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/testing:pinmux_testutils",
+            "//sw/device/lib/testing/json:provisioning_data",
             "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_console",
             "//sw/device/lib/testing/test_framework:ottf_test_config",
             "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/lib/testing/test_framework:ujson_ottf",
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
@@ -204,6 +208,10 @@ opentitan_test(
         ],
     )
     for sku, config in EARLGREY_SKUS.items()
+    for variant, defines in {
+        "": [],
+        "_ate": ["ATE=1"],
+    }.items()
 ]
 
 filegroup(
