@@ -18,8 +18,10 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:earlgrey_ip:pinmux_pkg
       - lowrisc:prim:assert
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
+      - lowrisc:prim:multibit_sync
+      # TODO(#27347): prim_pkg is deprecated.
+      - lowrisc:prim:prim_pkg
       - lowrisc:prim:multibit_sync
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg

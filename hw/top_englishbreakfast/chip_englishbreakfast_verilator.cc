@@ -18,22 +18,18 @@ int main(int argc, char **argv) {
   std::string top_scope(
       "TOP.chip_englishbreakfast_verilator."
       "top_englishbreakfast");
-  std::string ram1p_adv_scope(
-      "u_prim_ram_1p_adv.u_mem."
-      "gen_generic.u_impl_generic");
+  std::string ram1p_adv_scope("u_prim_ram_1p_adv.u_mem");
 
   MemArea rom(top_scope +
                   ".u_rom_ctrl.gen_rom_scramble_disabled.u_rom."
-                  "u_prim_rom.gen_generic.u_impl_generic",
+                  "u_prim_rom",
               0x4000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
-  MemArea flash0(
-      top_scope +
-          ".u_flash_ctrl.u_eflash.u_flash.gen_generic.u_impl_generic."
-          "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem."
-          "gen_generic.u_impl_generic",
-      0x100000 / 8, 8);
+  MemArea flash0(top_scope +
+                     ".u_flash_ctrl.u_eflash.u_flash."
+                     "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem",
+                 0x100000 / 8, 8);
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);

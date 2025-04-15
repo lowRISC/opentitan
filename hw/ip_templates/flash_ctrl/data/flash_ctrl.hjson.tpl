@@ -54,7 +54,7 @@
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
-    { protocol: "tlul", direction: "device", name: "prim" , hier_path: "u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top"}
+    { protocol: "tlul", direction: "device", name: "prim" , hier_path: "u_eflash.u_flash.u_reg_top"}
     { protocol: "tlul", direction: "device", name: "mem" }
   ],
   available_input_list: [

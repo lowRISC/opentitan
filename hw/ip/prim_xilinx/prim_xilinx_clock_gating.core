@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:clock_gating"
 description: "prim"
+virtual:
+  - lowrisc:prim:clock_gating
+
 filesets:
   files_rtl:
     files:

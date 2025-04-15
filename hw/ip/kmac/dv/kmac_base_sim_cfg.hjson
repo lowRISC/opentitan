@@ -115,7 +115,7 @@
     {
       name: "{name}_test_vectors_sha3_224"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_sha3_variant=224"]
       run_timeout_mins: 90
@@ -124,7 +124,7 @@
     {
       name: "{name}_test_vectors_sha3_256"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_sha3_variant=256"]
       run_timeout_mins: 90
@@ -133,7 +133,7 @@
     {
       name: "{name}_test_vectors_sha3_384"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_sha3_variant=384"]
       reseed: 5
@@ -141,7 +141,7 @@
     {
       name: "{name}_test_vectors_sha3_512"
       uvm_test_seq: kmac_test_vectors_sha3_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_sha3_variant=512"]
       reseed: 5
@@ -149,7 +149,7 @@
     {
       name: "{name}_test_vectors_shake_128"
       uvm_test_seq: kmac_test_vectors_shake_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_shake_variant=128"]
       run_timeout_mins: 90
@@ -158,7 +158,7 @@
     {
       name: "{name}_test_vectors_shake_256"
       uvm_test_seq: kmac_test_vectors_shake_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0",
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0",
                  "+test_timeout_ns=5_000_000_000",
                  "+test_vectors_shake_variant=256"]
       run_timeout_mins: 90
@@ -167,13 +167,13 @@
     {
       name: "{name}_test_vectors_kmac"
       uvm_test_seq: kmac_test_vectors_kmac_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
       reseed: 5
     }
     {
       name: "{name}_test_vectors_kmac_xof"
       uvm_test_seq: kmac_test_vectors_kmac_xof_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
       reseed: 5
     }
     {
@@ -229,11 +229,11 @@
     {
       name: kmac_stress_all
       run_opts: ["+test_timeout_ns=10_000_000_000",
-                 "+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+                 "+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
     }
     {
       name: kmac_stress_all_with_rand_reset
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+      run_opts: ["+test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0"]
       reseed: 10
     }
   ]

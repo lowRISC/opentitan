@@ -119,7 +119,7 @@ ScrambledEcc32MemArea::ScrambledEcc32MemArea(const std::string &scope,
                                              bool repeat_keystream)
     : Ecc32MemArea(SVScoped::join_sv_scopes(scope,
                                             "u_prim_ram_1p_adv.gen_ram_inst[0]."
-                                            "u_mem.gen_generic.u_impl_generic"),
+                                            "u_mem"),
                    size, width_32),
       scr_scope_(scope) {
   addr_width_ = vbits(size);

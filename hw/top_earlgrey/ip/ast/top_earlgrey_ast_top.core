@@ -13,6 +13,7 @@ filesets:
       - lowrisc:earlgrey_ip:rstmgr_pkg
       - lowrisc:earlgrey_ip:pinmux_pkg
       - lowrisc:systems:top_earlgrey_ast
+      - lowrisc:prim:prim_legacy_pkg
 
 parameters:
   SYNTHESIS:

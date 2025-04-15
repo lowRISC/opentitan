@@ -1495,7 +1495,7 @@ module flash_ctrl
   `endif
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-        u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
+        u_eflash.u_flash.u_reg_top, alert_tx_o[3])
   end
 
 endmodule

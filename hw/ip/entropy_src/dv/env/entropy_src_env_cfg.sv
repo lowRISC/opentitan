@@ -281,7 +281,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
        0: path = {path, ".i_sync_n"};
        1: path = {path, ".i_sync_p"};
      endcase
-     disabled_prim_cdc_rand_delays[i] = {path, ".gen_generic.u_impl_generic.u_prim_cdc_rand_delay"};
+     disabled_prim_cdc_rand_delays[i] = {path, ".u_prim_cdc_rand_delay"};
     end
   endfunction
 

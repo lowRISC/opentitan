@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:ram_1r1w"
 description: "prim"
+virtual:
+  - lowrisc:prim:ram_1r1w
+
 filesets:
   files_rtl:
     depend:
