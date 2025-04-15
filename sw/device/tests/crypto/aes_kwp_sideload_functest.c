@@ -97,7 +97,7 @@ static status_t wrap_unwrap_random_test(void) {
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  otcrypto_const_byte_buf_t personalization = {.data = NULL, .len = 0};
+  otcrypto_const_word32_buf_t personalization = {.data = NULL, .len = 0};
   TRY(otcrypto_symmetric_keygen(personalization, &kmac_key));
 
   // Construct the sideloaded wrapping key.

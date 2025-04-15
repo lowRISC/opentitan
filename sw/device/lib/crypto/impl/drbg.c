@@ -26,12 +26,12 @@
  * @return OK or error.
  */
 static otcrypto_status_t seed_material_construct(
-    otcrypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
-  if (value.len > kEntropySeedBytes) {
+    otcrypto_const_word32_buf_t value, entropy_seed_material_t *seed_material) {
+  if (value.len > kEntropySeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  size_t nwords = ceil_div(value.len, sizeof(uint32_t));
+  size_t nwords = value.len;
   seed_material->len = nwords;
 
   // Initialize the set words to zero.
@@ -42,8 +42,7 @@ static otcrypto_status_t seed_material_construct(
   }
 
   // Copy seed data.
-  hardened_memcpy(seed_material->data, (uint32_t *)value.data,
-                  value.len / sizeof(uint32_t));
+  hardened_memcpy(seed_material->data, value.data, value.len);
 
   return OTCRYPTO_OK;
 }
@@ -62,7 +61,7 @@ static otcrypto_status_t seed_material_construct(
  */
 static otcrypto_status_t seed_material_xor(
     otcrypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
-  if (value.len > kEntropySeedBytes) {
+  if (value.len > kEntropySeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (value.len == 0) {
@@ -85,7 +84,7 @@ static otcrypto_status_t seed_material_xor(
 }
 
 otcrypto_status_t otcrypto_drbg_instantiate(
-    otcrypto_const_byte_buf_t perso_string) {
+    otcrypto_const_word32_buf_t perso_string) {
   // Check for NULL pointers or bad length.
   if (perso_string.len != 0 && perso_string.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -100,7 +99,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 }
 
 otcrypto_status_t otcrypto_drbg_reseed(
-    otcrypto_const_byte_buf_t additional_input) {
+    otcrypto_const_word32_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -114,12 +113,13 @@ otcrypto_status_t otcrypto_drbg_reseed(
 }
 
 otcrypto_status_t otcrypto_drbg_manual_instantiate(
-    otcrypto_const_byte_buf_t entropy, otcrypto_const_byte_buf_t perso_string) {
+    otcrypto_const_word32_buf_t entropy,
+    otcrypto_const_byte_buf_t perso_string) {
   // Check for NULL pointers or bad length.
   if (perso_string.len != 0 && perso_string.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy.data == NULL || entropy.len != kEntropySeedBytes) {
+  if (entropy.data == NULL || entropy.len != kEntropySeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -134,13 +134,13 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
 }
 
 otcrypto_status_t otcrypto_drbg_manual_reseed(
-    otcrypto_const_byte_buf_t entropy,
+    otcrypto_const_word32_buf_t entropy,
     otcrypto_const_byte_buf_t additional_input) {
   // Check for NULL pointers or bad length.
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy.data == NULL || entropy.len != kEntropySeedBytes) {
+  if (entropy.data == NULL || entropy.len != kEntropySeedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -167,7 +167,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @return Result status; OK or error
  */
 static otcrypto_status_t generate(hardened_bool_t fips_check,
-                                  otcrypto_const_byte_buf_t additional_input,
+                                  otcrypto_const_word32_buf_t additional_input,
                                   otcrypto_word32_buf_t drbg_output) {
   if (drbg_output.len == 0) {
     // Nothing to do.
@@ -187,14 +187,14 @@ static otcrypto_status_t generate(hardened_bool_t fips_check,
 }
 
 otcrypto_status_t otcrypto_drbg_generate(
-    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_const_word32_buf_t additional_input,
     otcrypto_word32_buf_t drbg_output) {
   return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
                   drbg_output);
 }
 
 otcrypto_status_t otcrypto_drbg_manual_generate(
-    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_const_word32_buf_t additional_input,
     otcrypto_word32_buf_t drbg_output) {
   return generate(/*fips_check=*/kHardenedBoolFalse, additional_input,
                   drbg_output);

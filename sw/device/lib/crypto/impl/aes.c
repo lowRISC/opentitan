@@ -211,6 +211,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_CHECK_LT(index, num_full_blocks);
     // No need to worry about padding, just copy the data into the output
     // block.
+    // TODO(#17711) Change to `hardened_memcpy`.
     memcpy(block->data, &input.data[index * kAesBlockNumBytes],
            kAesBlockNumBytes);
     return OTCRYPTO_OK;
