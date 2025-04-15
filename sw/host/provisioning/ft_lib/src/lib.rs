@@ -13,13 +13,14 @@ use anyhow::{Result, bail};
 use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
+use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
 use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::console::ConsoleError;
 use opentitanlib::io::gpio::{PinMode, PullMode};
-use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -85,13 +86,14 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     sram_program: &SramProgramParams,
     ft_individualize_data_in: &ManufFtIndividualizeData,
-    console_spi: &String,
+    console_spi: &str,
+    console_tx_indicator_pin: &str,
     timeout: Duration,
     ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
     // Setup the SPI console with the GPIO TX indicator pin.
     let spi = transport.spi(console_spi)?;
-    let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
+    let device_console_tx_ready_pin = &transport.gpio_pin(console_tx_indicator_pin)?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
     let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
@@ -112,12 +114,6 @@ pub fn run_sram_ft_individualize(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Switch TAP straps to LC TAP (without resetting) to aid debugging if there are OTP issues.
-    // TAP straps are continuously sampled in TEST_UNLOCKED* LC states.
-    jtag.disconnect()?;
-    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-
     // Wait for SRAM program to complete execution.
     let _ = UartConsole::wait_for(
         &spi_console,
@@ -132,7 +128,20 @@ pub fn run_sram_ft_individualize(
     );
 
     // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(&spi_console, r"FT SRAM provisioning done.", timeout)?;
+    jtag.wait_halt(timeout)?;
+    jtag.halt()?;
+    let sp = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?;
+    log::info!("after timeout, sp = {:x}", sp);
+    match sp {
+        SRAM_MAGIC_SP_EXECUTION_DONE => {}
+        _ => panic!("SRAM program load/execution failed: sp = {:?}.", sp),
+    }
+
+    // Switch TAP straps to LC TAP (without resetting) to aid debugging if there are OTP issues.
+    // TAP straps are continuously sampled in TEST_UNLOCKED* LC states.
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
 
     Ok(())
 }
