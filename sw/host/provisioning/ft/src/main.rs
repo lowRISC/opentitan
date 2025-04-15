@@ -98,6 +98,10 @@ struct Opts {
     #[arg(long, default_value = "BOOTSTRAP")]
     console_spi: String,
 
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "IOA5")]
+    console_tx_indicator_pin: String,
+
     /// Owner's firmware string indicating successful start up.
     #[arg(long)]
     owner_success_text: Option<String>,
@@ -230,6 +234,7 @@ fn main() -> Result<()> {
                 &opts.sram_program,
                 &ft_individualize_data_in,
                 &opts.console_spi,
+                &opts.console_tx_indicator_pin,
                 opts.timeout,
                 &mut ujson_payloads,
             )?;

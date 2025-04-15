@@ -200,6 +200,7 @@ opentitan_test(
             "//sw/device/lib/dif:gpio",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
+            "//sw/device/lib/runtime:print",
             "//sw/device/lib/testing:pinmux_testutils",
             "//sw/device/lib/testing/json:provisioning_data",
             "//sw/device/lib/testing/test_framework:check",
