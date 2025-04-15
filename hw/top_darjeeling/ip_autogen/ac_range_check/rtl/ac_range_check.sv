@@ -188,8 +188,9 @@ module ac_range_check
     assign w_deny_mask[NumRanges-1-i] = addr_hit[i] & write_access & ~perm_write_access;
     assign x_deny_mask[NumRanges-1-i] = addr_hit[i] & execute_access & ~perm_execute_access;
 
-    // TODO(#25456) Use log_enable_mask to mask logging
-    assign log_enable_mask[NumRanges - 1 - i] = prim_mubi_pkg::mubi4_test_true_strict(
+    // Use log_enable_mask to mask logging. Note, this mask is not reversed as we use the index
+    // that caused to the denial to read from that mask and don't use it as a comparison.
+    assign log_enable_mask[i] = prim_mubi_pkg::mubi4_test_true_strict(
       prim_mubi_pkg::mubi4_t'(reg2hw.range_attr[i].log_denied_access.q));
   end
 
@@ -256,8 +257,10 @@ module ac_range_check
   logic [DenyCountWidth-1:0] deny_cnt;
   logic deny_cnt_incr;
 
-  // Only increment the deny counter if logging is enabled
-  assign deny_cnt_incr = reg2hw.log_config.log_enable.q & range_check_fail;
+  // Only increment the deny counter if logging is globally enabled and for the particular range
+  assign deny_cnt_incr = reg2hw.log_config.log_enable.q &
+                         log_enable_mask[deny_index]    &
+                         range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
   logic log_first_deny;
