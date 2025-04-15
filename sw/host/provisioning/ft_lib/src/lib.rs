@@ -14,7 +14,10 @@ use arrayvec::ArrayVec;
 use zerocopy::IntoBytes;
 
 use bindgen::sram_program::SRAM_MAGIC_SP_EXECUTION_DONE;
-use cert_lib::{CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain};
+use cert_lib::{
+    CaConfig, CaKey, EndorsedCert, parse_and_endorse_x509_cert, validate_cert_chain,
+    validate_cwt_dice_chain,
+};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -361,6 +364,7 @@ fn provision_certificates(
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
     let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
+    let mut dice_cert_chain_cwt: Vec<EndorsedCert> = Vec::new();
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
@@ -449,24 +453,30 @@ fn provision_certificates(
         };
 
         // Collect all DICE certs to validate the chain.
-        // TODO(lowRISC/opentitan:#24281): Add CWT verifier
-        if dice_cert_names.contains(cert.cert_name)
-            && header.obj_type == ObjType::UnendorsedX509Cert
-        {
+        if dice_cert_names.contains(cert.cert_name) {
+            let (format, cert_chain) = match header.obj_type {
+                ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => {
+                    (CertFormat::X509, &mut dice_cert_chain)
+                }
+                ObjType::EndorsedCwtCert => (CertFormat::Cwt, &mut dice_cert_chain_cwt),
+                ObjType::WasTbsHmac | ObjType::DeviceId | ObjType::DevSeed => unreachable!(),
+            };
+
             let ec = EndorsedCert {
-                format: CertFormat::X509,
+                format,
                 name: cert.cert_name.to_string(),
                 bytes: cert_bytes.clone(),
                 ignore_critical: true,
             };
+
             response.certs.insert(ec.name.clone(), ec.clone());
-            dice_cert_chain.push(ec);
+            cert_chain.push(ec);
         }
 
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
-        // TODO(lowRISC/opentitan:#24281): Add CWT parser
-        if header.obj_type != ObjType::DevSeed && header.obj_type != ObjType::EndorsedCwtCert {
+        // CWT certs are parsed and validated below.
+        if header.obj_type != ObjType::EndorsedCwtCert {
             let _ = parse_certificate(&cert_bytes)?;
         }
         // Push the cert into the hasher so we can ensure the certs written to the device's flash
@@ -522,7 +532,6 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
-    // TODO(lowRISC/opentitan:#24281): Add CWT verifier
     let t0 = Instant::now();
     if !dice_cert_chain.is_empty() {
         log::info!(
@@ -533,6 +542,16 @@ fn provision_certificates(
         log::info!("Success.");
     }
     response.stats.log_elapsed_time("perso-validate-dice", t0);
+
+    let t0 = Instant::now();
+    if !dice_cert_chain_cwt.is_empty() {
+        log::info!("Validating DICE certificate chain with hwtrust ...");
+        validate_cwt_dice_chain(&dice_cert_chain_cwt)?;
+        log::info!("Success.");
+    }
+    response
+        .stats
+        .log_elapsed_time("perso-validate-dice-cwt", t0);
 
     let t0 = Instant::now();
     if !sku_specific_certs.is_empty() {
