@@ -229,7 +229,7 @@ fn main() -> Result<()> {
                 &opts.init.jtag_params,
                 &opts.sram_program,
                 &ft_individualize_data_in,
-                &spi_console_device,
+                &opts.console_spi,
                 opts.timeout,
                 &mut ujson_payloads,
             )?;

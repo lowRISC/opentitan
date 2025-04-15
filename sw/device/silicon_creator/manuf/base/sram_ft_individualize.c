@@ -11,6 +11,7 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -29,11 +30,6 @@
 #include "hw/top/ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false,
-                        .silence_console_prints = true);
-
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
@@ -47,7 +43,17 @@ static manuf_ft_individualize_data_t in_data;
 static const dif_gpio_pin_t kGpioPinTestStart = 0;
 static const dif_gpio_pin_t kGpioPinTestDone = 1;
 static const dif_gpio_pin_t kGpioPinTestError = 2;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
 static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
+
+OTTF_DEFINE_TEST_CONFIG(
+        .console.type = kOttfConsoleSpiDevice,
+        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.test_may_clobber = false, .silence_console_prints = true,
+        .console_tx_indicator.enable = true,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_gpio =
+            kGpioPinSpiConsoleTxReady);
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -72,6 +78,10 @@ static status_t configure_ate_gpio_indicators(void) {
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
       kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
   // IOA0 / GPIO2 is for error reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
@@ -141,7 +151,7 @@ static status_t provision(ujson_t *uj) {
   // Perform OTP writes.
 #ifndef ATE
   // Get host data.
-  LOG_INFO("Waiting for FT SRAM provisioning data ...");
+  base_printf("Waiting for FT SRAM provisioning data ...\r\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
@@ -157,7 +167,7 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
 
-  LOG_INFO("FT SRAM provisioning done.");
+  base_printf("FT SRAM provisioning done.\r\n");
 
   return OK_STATUS();
 }
