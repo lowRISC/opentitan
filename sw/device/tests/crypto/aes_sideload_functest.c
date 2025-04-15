@@ -84,14 +84,14 @@ static status_t run_aes(otcrypto_aes_operation_t operation,
   };
 
   // Construct the input buffer.
-  otcrypto_const_byte_buf_t input_buf = {
-      .data = (const unsigned char *)input,
+  otcrypto_const_byte_len_word32_buf_t input_buf = {
+      .data = input,
       .len = sizeof(kAesPlaintextBlock),
   };
 
   // Construct the output buffer.
-  otcrypto_byte_buf_t output_buf = {
-      .data = (unsigned char *)output,
+  otcrypto_byte_len_word32_buf_t output_buf = {
+      .data = output,
       .len = sizeof(kAesPlaintextBlock),
   };
 

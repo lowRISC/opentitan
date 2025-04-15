@@ -102,13 +102,12 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
  * @param[out] cipher_output Output data after cipher operation.
  * @return The result of the cipher operation.
  */
-otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
-                               otcrypto_word32_buf_t iv,
-                               otcrypto_aes_mode_t aes_mode,
-                               otcrypto_aes_operation_t aes_operation,
-                               otcrypto_const_byte_buf_t cipher_input,
-                               otcrypto_aes_padding_t aes_padding,
-                               otcrypto_byte_buf_t cipher_output);
+otcrypto_status_t otcrypto_aes(
+    const otcrypto_blinded_key_t *key, otcrypto_word32_buf_t iv,
+    otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
+    otcrypto_const_byte_len_word32_buf_t cipher_input,
+    otcrypto_aes_padding_t aes_padding,
+    otcrypto_byte_len_word32_buf_t cipher_output);
 
 #ifdef __cplusplus
 }  // extern "C"

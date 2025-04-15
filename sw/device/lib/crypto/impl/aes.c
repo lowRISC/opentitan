@@ -198,7 +198,7 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
-static status_t get_block(otcrypto_const_byte_buf_t input,
+static status_t get_block(otcrypto_const_byte_len_word32_buf_t input,
                           otcrypto_aes_padding_t padding, size_t index,
                           aes_block_t *block) {
   size_t num_full_blocks = input.len / kAesBlockNumBytes;
@@ -211,8 +211,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
     HARDENED_CHECK_LT(index, num_full_blocks);
     // No need to worry about padding, just copy the data into the output
     // block.
-    hardened_memcpy(block->data,
-                    (uint32_t *)&input.data[index * kAesBlockNumBytes],
+    hardened_memcpy(block->data, &input.data[index * kAesBlockNumWords],
                     kAesBlockNumWords);
     return OTCRYPTO_OK;
   }
@@ -221,7 +220,7 @@ static status_t get_block(otcrypto_const_byte_buf_t input,
   // If we get here, this block is the one with padding. It may be a partial
   // block or an empty block that will be entirely filled with padded bytes.
   size_t partial_data_len = input.len % kAesBlockNumBytes;
-  memcpy(block->data, &input.data[index * kAesBlockNumBytes], partial_data_len);
+  memcpy(block->data, &input.data[index * kAesBlockNumWords], partial_data_len);
 
   // Apply padding.
   HARDENED_TRY(aes_padding_apply(padding, partial_data_len, block));
@@ -238,13 +237,12 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
-                               otcrypto_word32_buf_t iv,
-                               otcrypto_aes_mode_t aes_mode,
-                               otcrypto_aes_operation_t aes_operation,
-                               otcrypto_const_byte_buf_t cipher_input,
-                               otcrypto_aes_padding_t aes_padding,
-                               otcrypto_byte_buf_t cipher_output) {
+otcrypto_status_t otcrypto_aes(
+    const otcrypto_blinded_key_t *key, otcrypto_word32_buf_t iv,
+    otcrypto_aes_mode_t aes_mode, otcrypto_aes_operation_t aes_operation,
+    otcrypto_const_byte_len_word32_buf_t cipher_input,
+    otcrypto_aes_padding_t aes_padding,
+    otcrypto_byte_len_word32_buf_t cipher_output) {
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || (aes_mode != kOtcryptoAesModeEcb && iv.data == NULL) ||
       cipher_input.data == NULL || cipher_output.data == NULL) {
@@ -352,9 +350,8 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
   for (i = block_offset; launder32(i) < input_nblocks; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
     TRY(aes_update(&block_out, &block_in));
-    hardened_memcpy(
-        (uint32_t *)&cipher_output.data[(i - block_offset) * kAesBlockNumBytes],
-        block_out.data, kAesBlockNumWords);
+    hardened_memcpy(&cipher_output.data[(i - block_offset) * kAesBlockNumWords],
+                    block_out.data, kAesBlockNumWords);
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, input_nblocks);
@@ -363,9 +360,9 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
   // input).
   for (i = block_offset; launder32(i) > 0; --i) {
     HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
-    hardened_memcpy((uint32_t *)&cipher_output
-                        .data[(input_nblocks - i) * kAesBlockNumBytes],
-                    block_out.data, kAesBlockNumWords);
+    hardened_memcpy(
+        &cipher_output.data[(input_nblocks - i) * kAesBlockNumWords],
+        block_out.data, kAesBlockNumWords);
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, 0);
