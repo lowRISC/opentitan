@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST", "hex")
-load("//rules:manifest.bzl", "manifest")
+load(
+    "//rules:manifest.bzl",
+    "integrator_specific_firmware_binding",
+    "manifest",
+    "product_expr",
+)
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -275,4 +280,41 @@ _KEYS = {
 test_suite(
     name = "keys",
     tests = ["key_{}".format(name) for name in _KEYS],
+)
+
+manifest(d = {
+    "name": "isfb_manifest",
+    "address_translation": hex(CONST.HARDENED_FALSE),
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+    "integrator_specific_firmware_binding": integrator_specific_firmware_binding(
+        name = "isfb",
+        product_exprs = [
+            product_expr(
+                name = "none",
+                mask = "0xFFFFFFFF",
+                value = "0xFFFFFFFF",
+            ),
+        ],
+        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    ),
+})
+
+opentitan_test(
+    name = "isfb_boot_test",
+    srcs = [":boot_test"],
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(),
+    manifest = ":isfb_manifest",
+    spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
 )
