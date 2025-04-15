@@ -230,7 +230,7 @@ typedef struct test_alert_info {
 
 // The expected info is set for rom_ext, meaning kBootStage set to
 // kBootStageOwner. It is adjusted in init_expected_info_for_non_rom_ext.
-static test_alert_info_t kExpectedInfo[kRoundTotal] = {
+static test_alert_info_t expected_info[kRoundTotal] = {
     [kRound1] =
         {
             .test_name = "Single class(ClassA)",
@@ -615,7 +615,7 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       &rstmgr, dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
 
-  LOG_INFO("Testname: %s  DUMP SIZE %d", kExpectedInfo[round].test_name,
+  LOG_INFO("Testname: %s  DUMP SIZE %d", expected_info[round].test_name,
            seg_size);
   for (int i = 0; i < seg_size; i++) {
     LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
@@ -633,20 +633,20 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     // However, alert source of this ping timeout can be choosen randomly,
     // as documented in issue #2321, so we only check local alert cause.
     LOG_INFO("loc_alert_cause: exp: %08x   obs: %08x",
-             kExpectedInfo[round].alert_info.loc_alert_cause,
+             expected_info[round].alert_info.loc_alert_cause,
              actual_info.loc_alert_cause);
-    CHECK(kExpectedInfo[round].alert_info.loc_alert_cause ==
+    CHECK(expected_info[round].alert_info.loc_alert_cause ==
           actual_info.loc_alert_cause);
   } else {
     LOG_INFO("observed alert cause:");
     print_alert_cause(actual_info);
     LOG_INFO("expected alert cause:");
-    print_alert_cause(kExpectedInfo[round].alert_info);
+    print_alert_cause(expected_info[round].alert_info);
     for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-      CHECK(kExpectedInfo[round].alert_info.alert_cause[i] ==
+      CHECK(expected_info[round].alert_info.alert_cause[i] ==
                 actual_info.alert_cause[i],
             "At alert cause %d Expected %d, got %d", i,
-            kExpectedInfo[round].alert_info.alert_cause[i],
+            expected_info[round].alert_info.alert_cause[i],
             actual_info.alert_cause[i]);
     }
   }
@@ -654,19 +654,19 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     // We cannot do an "equal" check here since some of the alerts may
     // be fatal and cause the accumulated count to continuously grow.
-    CHECK(kExpectedInfo[round].alert_info.class_accum_cnt[i] <=
+    CHECK(expected_info[round].alert_info.class_accum_cnt[i] <=
               actual_info.class_accum_cnt[i],
           "alert_info.class_accum_cnt[%d] mismatch exp:0x%x  obs:0x%x", i,
-          kExpectedInfo[round].alert_info.class_accum_cnt[i],
+          expected_info[round].alert_info.class_accum_cnt[i],
           actual_info.class_accum_cnt[i]);
   }
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     // added '<' because expected state can be minimum phase but
     // depends on simulation, sometimes it captures higher phase.
-    CHECK(kExpectedInfo[round].alert_info.class_esc_state[i] <=
+    CHECK(expected_info[round].alert_info.class_esc_state[i] <=
               actual_info.class_esc_state[i],
           "alert_info.class_esc_state[%d] mismatch exp:0x%x  obs:0x%x", i,
-          kExpectedInfo[round].alert_info.class_esc_state[i],
+          expected_info[round].alert_info.class_esc_state[i],
           actual_info.class_esc_state[i]);
   }
 }
@@ -675,18 +675,18 @@ static void init_expected_cause(void) {
   for (dt_i2c_t i2c = 0; i2c < kDtI2cCount; i2c++) {
     dt_alert_id_t alert_id =
         dt_i2c_alert_to_alert_id(i2c, kDtI2cAlertFatalFault);
-    kExpectedInfo[kRound1].alert_info.alert_cause[alert_id] = 1;
+    expected_info[kRound1].alert_info.alert_cause[alert_id] = 1;
   }
 
   for (dt_uart_t uart = 0; uart < kDtUartCount; uart++) {
     dt_alert_id_t alert_id =
         dt_uart_alert_to_alert_id(uart, kDtUartAlertFatalFault);
-    kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
+    expected_info[kRound2].alert_info.alert_cause[alert_id] = 1;
   }
 
   dt_alert_id_t alert_id = dt_otp_ctrl_alert_to_alert_id(
       kOtpCtrlDt, kDtOtpCtrlAlertFatalBusIntegError);
-  kExpectedInfo[kRound2].alert_info.alert_cause[alert_id] = 1;
+  expected_info[kRound2].alert_info.alert_cause[alert_id] = 1;
 
   dt_alert_id_t ibex_alert_id = dt_rv_core_ibex_alert_to_alert_id(
       kDtRvCoreIbex, kDtRvCoreIbexAlertRecovSwErr);
@@ -696,10 +696,10 @@ static void init_expected_cause(void) {
       dt_i2c_alert_to_alert_id((dt_i2c_t)0, kDtI2cAlertFatalFault);
   dt_alert_id_t spi_alert_id = dt_spi_host_alert_to_alert_id(
       (dt_spi_host_t)0, kDtSpiHostAlertFatalFault);
-  kExpectedInfo[kRound3].alert_info.alert_cause[ibex_alert_id] = 1;
-  kExpectedInfo[kRound3].alert_info.alert_cause[uart_alert_id] = 1;
-  kExpectedInfo[kRound3].alert_info.alert_cause[i2c_alert_id] = 1;
-  kExpectedInfo[kRound3].alert_info.alert_cause[spi_alert_id] = 1;
+  expected_info[kRound3].alert_info.alert_cause[ibex_alert_id] = 1;
+  expected_info[kRound3].alert_info.alert_cause[uart_alert_id] = 1;
+  expected_info[kRound3].alert_info.alert_cause[i2c_alert_id] = 1;
+  expected_info[kRound3].alert_info.alert_cause[spi_alert_id] = 1;
 }
 
 bool test_main(void) {
