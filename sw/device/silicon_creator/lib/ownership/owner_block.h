@@ -165,6 +165,24 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info);
  */
 rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info);
 
+/**
+ * Enable erase on the ISFB info page.
+ *
+ * Unconditionally enables erase on the ISFB info page. This function is used
+ * to enable the erase policy for the ISFB info page.
+ *
+ * The function does not enable erase on the ISFB info page if the owner config
+ * does not contain the ISFB or info page owner blocks. The settings are also
+ * ignored if the device is not in the `kOwnershipStateLockedOwner` state.
+ *
+ * @param bootdata The current boot data.
+ * @param owner_config The owner configuration.
+ *
+ * @return The result of the operation.
+ */
+rom_error_t owner_block_info_isfb_erase_enable(
+    boot_data_t *bootdata, const owner_config_t *owner_config);
+
 rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
                                    uint32_t key_id, size_t *index);
 

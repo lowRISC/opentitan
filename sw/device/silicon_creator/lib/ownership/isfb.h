@@ -15,6 +15,16 @@
 extern "C" {
 #endif
 
+enum {
+  // The number of bits in the strike mask is fixed to 128. Each bit in the
+  // strike mask corresponds to a `uint32_t` word.
+  kIsfbExpectedStrikeBitCount = 128,
+};
+
+inline uint32_t isfb_expected_count_get(const manifest_ext_isfb_t *ext) {
+  return ext->product_expr_count + kIsfbExpectedStrikeBitCount;
+}
+
 /**
  * Processes the Integrator Specific FW Binding (ISFB) boot request.
  *
@@ -43,6 +53,27 @@ extern "C" {
 rom_error_t isfb_boot_request_process(const manifest_ext_isfb_t *ext,
                                       const owner_config_t *owner_config,
                                       uint32_t *checks_performed_count);
+
+/**
+ * Gets the flash erase policy for the ISFB info page.
+ *
+ * This function checks the erase policy for the ISFB info page based on the
+ * provided owner configuration, key domain, and manifest node lock status.
+ *
+ * @param owner_config The owner configuration.
+ * @param key_domain The key domain associated with the active secure boot key.
+ * @param manifest_is_node_locked Indicates whether the manifest is node locked.
+ * @param ext_isfb_erase The ISFB erase policy extension from the manifest. May
+ * be NULL.
+ * @param[out] erase_en The erase enable flag. Set to kHardenedBoolTrue if
+ *                      erasing the ISFB info page is allowed, otherwise
+ *                      kHardenedBoolFalse.
+ * @return The result of the operation.
+ */
+rom_error_t isfb_info_flash_erase_policy_get(
+    owner_config_t *owner_config, uint32_t key_domain,
+    hardened_bool_t manifest_is_node_locked,
+    const manifest_ext_isfb_erase_t *ext_isfb_erase, hardened_bool_t *erase_en);
 
 #ifdef __cplusplus
 }
