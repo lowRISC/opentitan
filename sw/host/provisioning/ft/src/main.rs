@@ -240,7 +240,7 @@ fn main() -> Result<()> {
                 opts.init.bootstrap.options.reset_delay,
                 &opts.sram_program,
                 &ft_individualize_data_in,
-                &spi_console_device,
+                &opts.console_spi,
                 opts.timeout,
                 &mut ujson_payloads,
             )?;
