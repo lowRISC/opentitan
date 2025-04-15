@@ -114,8 +114,21 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
         if (!filter_map[opcode]) begin
           // Check that the command, address, and data sent matches on both sides.
           `DV_CHECK_EQ(device_rsp_q.size(), 1);
-          host_rsp = m_spi_host_seq.rsp;
           device_rsp = device_rsp_q.pop_front();
+          wait (p_sequencer.spi_host_sequencer_h.host_mon_item_q.size() > 0);
+          host_rsp = p_sequencer.spi_host_sequencer_h.host_mon_item_q.pop_front();
+
+          if (device_rsp.read_pipeline_mode > 0 && device_rsp.num_lanes==4) begin
+            // It means the read pipeline mode is enabled, hence the 'device_rsp' side which is
+            // connected to the passthrough will have a couple of extra cycles of data, which
+            // translates into an extra item in the queue when reading 4 lanes
+            `uvm_info(`gfn, {"[Passtrhough sampled side] Last item in queue dropped due to",
+                             $sformatf(" read_pipeline enabled - : 0x%0x",device_rsp.payload_q[$])},
+                      UVM_DEBUG)
+            void'(device_rsp.payload_q.pop_back());
+            if (device_rsp.read_size > 0)
+              device_rsp.read_size--;
+          end
           if (!host_rsp.compare(device_rsp)) begin
             `uvm_error(`gfn, $sformatf("Compare mismatch\nhost_rsp:\n%sdevice_rsp:\n%s",
                                        host_rsp.sprint(), device_rsp.sprint()))
