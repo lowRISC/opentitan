@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:flop_en"
 description: "Xilinx enable flop"
+virtual:
+  - lowrisc:prim:flop_en
+
 filesets:
   files_rtl:
     files:

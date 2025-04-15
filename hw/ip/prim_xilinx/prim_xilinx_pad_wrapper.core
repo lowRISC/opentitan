@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:pad_wrapper"
 description: "prim"
+virtual:
+  - lowrisc:prim:pad_wrapper
+
 filesets:
   files_rtl:
     depend:

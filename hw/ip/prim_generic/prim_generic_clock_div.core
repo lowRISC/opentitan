@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:clock_div"
 description: "Generic clock divide"
+virtual:
+  - lowrisc:prim:clock_div
+
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:prim_pkg
+      - lowrisc:prim:assert
       - lowrisc:prim:flop
       - lowrisc:prim:clock_inv
       - lowrisc:prim:clock_buf

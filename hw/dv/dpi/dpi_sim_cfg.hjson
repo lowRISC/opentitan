@@ -10,12 +10,12 @@
   build_modes: [
     {
       name: vcs_dpi_build_opts
-      build_opts: ["-CFLAGS -I{build_dir}/src/{dpi_common_dir}", "-lutil"]
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{dpi_common_dir}", "-lutil"]
     }
 
     {
       name: xcelium_dpi_build_opts
-      build_opts: ["-I{build_dir}/src/{dpi_common_dir}", "-lutil"]
+      build_opts: ["-I{build_dir}/fusesoc-work/src/{dpi_common_dir}", "-lutil"]
     }
   ]
 }

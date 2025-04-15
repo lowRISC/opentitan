@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:flop_en"
 description: "generic enable flop"
+virtual:
+  - lowrisc:prim:flop_en
+
 filesets:
   files_rtl:
     depend:

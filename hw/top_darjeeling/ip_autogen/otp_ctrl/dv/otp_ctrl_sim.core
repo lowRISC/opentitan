@@ -18,6 +18,8 @@ filesets:
       - lowrisc:darjeeling_dv:otp_ctrl_test
       - lowrisc:darjeeling_dv:otp_ctrl_sva
       - lowrisc:darjeeling_dv:otp_ctrl_cov
+      # TODO(#27347): prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
     files:
       - tb.sv
     file_type: systemVerilogSource

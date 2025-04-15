@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:ram_1p"
 description: "Single port RAM"
+virtual:
+  - lowrisc:prim:ram_1p
+
 filesets:
   files_rtl:
     depend:

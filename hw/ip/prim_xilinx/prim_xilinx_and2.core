@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:and2"
 description: "Xilinx 2-input and"
+virtual:
+  - lowrisc:prim:and2
+
 filesets:
   files_rtl:
     files:

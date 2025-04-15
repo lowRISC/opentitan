@@ -195,7 +195,7 @@ module tb;
         tb.otp_macro.u_prim_ram_1p_adv.gen_ram_inst[0]
 
     `define MEM_ARRAY_PATH \
-        `MEM_MODULE_PATH.u_mem.gen_generic.u_impl_generic.mem
+        `MEM_MODULE_PATH.u_mem.mem
 
     initial begin : mem_bkdr_util_gen
       mem_bkdr_util m_mem_bkdr_util;

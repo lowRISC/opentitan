@@ -40,7 +40,7 @@
 // Memory hierarchies.
 // TODO: Temporarily only reference info type0 of the info partitions in flash. In the future, this
 // needs to be upgraded to support all info types.
-`define MEM_ARRAY_SUB         gen_generic.u_impl_generic.mem
+`define MEM_ARRAY_SUB         mem
 `define ICACHE_WAY0_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[0].gen_scramble_rams
 `define ICACHE_WAY1_HIER      `CPU_CORE_HIER.gen_rams.gen_rams_inner[1].gen_scramble_rams
 `define ICACHE0_TAG_MEM_HIER  `ICACHE_WAY0_HIER.tag_bank.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

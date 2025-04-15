@@ -67,11 +67,8 @@ dependencies = [
   # Dependency of third_party/tock
   "tockloader==1.13",
 
-  # Development version with OT-specific changes
-  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
-
-  # Development version with OT-specific changes
-  "edalize@https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip",
+  # The hardware package manager and build system.
+  "fusesoc==2.4.3",
 
   # Development version of minimal ChipWhisperer toolchain with latest features
   # and bug fixes. We fix the version for improved stability and manually update

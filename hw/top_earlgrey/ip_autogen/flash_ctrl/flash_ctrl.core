@@ -19,6 +19,8 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
+      # TODO(#27347): prim_legacy_pkg is deprecated
+      - lowrisc:prim:prim_legacy_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:earlgrey_ip:flash_ctrl_top_specific_pkg
       - lowrisc:earlgrey_ip:flash_ctrl_reg

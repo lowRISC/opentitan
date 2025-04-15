@@ -40,8 +40,8 @@
 // Memory hierarchies.
 // TODO: Temporarily only reference info type0 of the info partitions in flash. In the future, this
 // needs to be upgraded to support all info types.
-`define MEM_ARRAY_SUB         gen_generic.u_impl_generic.mem
-`define EFLASH_GENERIC_HIER   `EFLASH_HIER.gen_generic.u_impl_generic
+`define MEM_ARRAY_SUB         mem
+`define EFLASH_GENERIC_HIER   `EFLASH_HIER
 `define FLASH_BANK0_HIER      `EFLASH_GENERIC_HIER.gen_prim_flash_banks[0].u_prim_flash_bank
 `define FLASH_BANK1_HIER      `EFLASH_GENERIC_HIER.gen_prim_flash_banks[1].u_prim_flash_bank
 `define FLASH0_DATA_MEM_HIER  `FLASH_BANK0_HIER.u_mem.`MEM_ARRAY_SUB
