@@ -7,6 +7,7 @@ import logging
 import os
 import re
 import shutil
+import sys
 import tempfile
 from dataclasses import dataclass
 
@@ -268,6 +269,7 @@ class OtDut():
             --elf={individ_elf} \
             --bootstrap={perso_bin} \
             --second-bootstrap={fw_bundle_bin} \
+            --ft-device-id="0x{hex(self.device_id.sku_specific)[2:].zfill(32)}" \
             --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
@@ -301,15 +303,29 @@ class OtDut():
                                                    stdout_logfile)
 
             # Check device ID from OTP matches one constructed on host.
+            #
+            # The CP portion may not match, but the FT portion should. The CP
+            # portion of the device ID is set in flash before the
+            # orchestrator.py is ever run, so the device's CP portion of the
+            # device ID should be take as the ground truth.
             device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
-            if device_id_in_otp != self.device_id:
+            if device_id_in_otp.sku_specific != self.device_id.sku_specific:
                 logging.error(
-                    "Device ID from OTP does not match expected on host. Use OTP variant?"
+                    "FT Device ID from OTP does not match expected on host."
                 )
                 logging.error(
-                    f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
+                    f"Final (device) FT DeviceId: {device_id_in_otp.sku_specific_hexstr()}")
                 logging.error(
-                    f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
+                    f"Final (host)   FT DeviceId: {self.device_id.sku_specific_hexstr()}")
+                sys.exit(-1)
+            if device_id_in_otp.base_uid != self.device_id.base_uid:
+                logging.warning(
+                    "CP Device ID from OTP does not match expected on host. Use OTP variant?"
+                )
+                logging.warning(
+                    f"Final (device) CP DeviceId: {device_id_in_otp.base_uid_hexstr()}")
+                logging.warning(
+                    f"Final (host)   CP DeviceId: {self.device_id.base_uid_hexstr()}")
                 if self.require_confirmation:
                     confirm()
                 self.device_id = device_id_in_otp

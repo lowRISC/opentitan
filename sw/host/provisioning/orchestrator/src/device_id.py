@@ -147,7 +147,7 @@ class DeviceId():
         din_as_int = self.din.to_int()
 
         # Build base unique ID (i.e., CP device ID).
-        self._base_uid = util.bytes_to_int(
+        self.base_uid = util.bytes_to_int(
             struct.pack("<IQI", self._hw_origin, din_as_int, 0))
 
         # Build SKU specific field (i.e., FT device ID).
@@ -175,7 +175,7 @@ class DeviceId():
             ))
 
         # Build full device ID.
-        self.device_id = (self.sku_specific << 128) | self._base_uid
+        self.device_id = (self.sku_specific << 128) | self.base_uid
 
     def update_din(self, other: "DeviceIdentificationNumber") -> None:
         """Updates the DIN component of the device ID with another DIN object.
@@ -188,9 +188,9 @@ class DeviceId():
         self.din = other
 
         # Build base unique ID.
-        self._base_uid = util.bytes_to_int(
+        self.base_uid = util.bytes_to_int(
             struct.pack("<IQI", self._hw_origin, self.din.to_int(), 0))
-        self.device_id = (self.sku_specific << 128) | self._base_uid
+        self.device_id = (self.sku_specific << 128) | self.base_uid
 
     @staticmethod
     def from_hexstr(hexstr: str) -> "DeviceId":
@@ -240,6 +240,10 @@ class DeviceId():
         din = DeviceIdentificationNumber.from_int((base_uid >> 32) & mask_din)
 
         return DeviceId(sku_config, din)
+
+    def base_uid_hexstr(self) -> str:
+        """Returns the Base UID portion of the device ID as a hex string."""
+        return util.format_hex(self.base_uid, width=32)
 
     def sku_specific_hexstr(self) -> str:
         """Returns the SKU specific portion of the device ID as a hex string."""
