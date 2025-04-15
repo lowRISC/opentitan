@@ -147,6 +147,10 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
       dbg_printf("ok: reboot\r\n");
       state->mode = (rescue_mode_t)mode;
       goto exitproc;
+    case kRescueModeNoOp:
+      // The No-Op mode is always allowed and does nothing.
+      state->mode = (rescue_mode_t)mode;
+      goto exitproc;
 #ifdef ROM_EXT_KLOBBER_ALLOWED
     case kRescueModeKlobber:
       ownership_erase();
@@ -210,6 +214,10 @@ exitproc:
 }
 
 rom_error_t rescue_send_handler(rescue_state_t *state) {
+  if (state->mode == kRescueModeNoOp) {
+    // The No-Op mode is always allowed and does nothing.
+    return kErrorOk;
+  }
   hardened_bool_t allow =
       owner_rescue_command_allowed(state->config, state->mode);
   if (allow != kHardenedBoolTrue) {
@@ -267,6 +275,7 @@ rom_error_t rescue_recv_handler(rescue_state_t *state) {
 
   retention_sram_t *rr = retention_sram_get();
   switch (state->mode) {
+    case kRescueModeNoOp:
     case kRescueModeBootLog:
     case kRescueModeBootSvcRsp:
     case kRescueModeOpenTitanID:
@@ -313,6 +322,8 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
   state->boot_log = boot_log;
   state->bootdata = bootdata;
   state->config = config;
+  state->default_mode = kRescueModeFirmware;
+
   if ((hardened_bool_t)config == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
     // If there is no rescue config, then the rescue region starts immediately
@@ -328,7 +339,15 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
         bitfield_field32_read(config->timeout, RESCUE_TIMEOUT_SECONDS);
     state->inactivity_deadline =
         timeout ? ibex_mcycle() + ibex_time_to_cycles(1000000 * timeout) : 0;
+
+    // If the owner has disabled the firmware rescue commands, then set the
+    // default mode to No-Op.
+    if (owner_rescue_command_allowed(config, state->default_mode) ==
+        kHardenedBoolFalse) {
+      state->default_mode = kRescueModeNoOp;
+    }
   }
+  state->mode = state->default_mode;
 }
 
 rom_error_t rescue_enter_handler(boot_svc_msg_t *msg) {
