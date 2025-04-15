@@ -48,7 +48,8 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_symmetric_keygen(
-    otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key);
+    otcrypto_const_byte_len_word32_buf_t perso_string,
+    otcrypto_blinded_key_t *key);
 
 /**
  * Creates a handle for a hardware-backed key.

@@ -103,8 +103,8 @@ status_t handle_aes_block(ujson_t *uj) {
       .len = kAesBlockWords,
   };
 
-  otcrypto_const_byte_buf_t input = {
-      .data = uj_data.input,
+  otcrypto_byte_len_word32_buf_t input = {
+      .data = (uint32_t *)uj_data.input,
       .len = (size_t)uj_data.input_len,
   };
 
@@ -137,8 +137,8 @@ status_t handle_aes_block(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  otcrypto_byte_buf_t output = {
-      .data = (unsigned char *)output_buf,
+  otcrypto_byte_len_word32_buf_t output = {
+      .data = output_buf,
       .len = sizeof(output_buf),
   };
 

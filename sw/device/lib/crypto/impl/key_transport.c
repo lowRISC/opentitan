@@ -17,7 +17,8 @@
 #define MODULE_ID MAKE_MODULE_ID('k', 't', 'r')
 
 otcrypto_status_t otcrypto_symmetric_keygen(
-    otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key) {
+    otcrypto_const_byte_len_word32_buf_t perso_string,
+    otcrypto_blinded_key_t *key) {
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -44,7 +45,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
-  otcrypto_const_byte_buf_t empty = {.data = NULL, .len = 0};
+  otcrypto_const_byte_len_word32_buf_t empty = {.data = NULL, .len = 0};
 
   // Generate each share of the key independently.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
