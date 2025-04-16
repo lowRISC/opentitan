@@ -32,6 +32,14 @@ TEST_OWNER_CONFIGS = {
         "owner_defines": ["TEST_OWNER_KEY_ALG_HYBRID_SPX_PURE=1"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "hybrid_owner_update_newversion": {
+        # Enable hybrid ECDSA/SPX+ ownership.
+        "owner_defines": [
+            "TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion",
+            "TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH=1",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "owner_update_newversion": {
         # Enable the NewVersion update mode of ownership.
         "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion"],
