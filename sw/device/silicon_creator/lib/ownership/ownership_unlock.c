@@ -40,8 +40,13 @@ static rom_error_t do_unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
 
   if (msg->ownership_unlock_req.unlock_mode == kBootSvcUnlockEndorsed) {
     hmac_digest_t digest;
-    hmac_sha256(&msg->ownership_unlock_req.next_owner_key,
-                sizeof(msg->ownership_unlock_req.next_owner_key), &digest);
+    hmac_sha256_init();
+    hmac_sha256_update(&msg->ownership_unlock_req.next_owner_key_alg,
+                       sizeof(msg->ownership_unlock_req.next_owner_key_alg));
+    hmac_sha256_update(&msg->ownership_unlock_req.next_owner_key,
+                       sizeof(msg->ownership_unlock_req.next_owner_key));
+    hmac_sha256_process();
+    hmac_sha256_final(&digest);
     memcpy(&bootdata->next_owner, &digest, sizeof(digest));
     bootdata->ownership_state = kOwnershipStateUnlockedEndorsed;
   } else if (msg->ownership_unlock_req.unlock_mode == kBootSvcUnlockAny) {
