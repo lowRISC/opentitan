@@ -135,6 +135,8 @@ pub struct OwnershipUnlockRequest {
     /// The ROM_EXT nonce.
     #[annotate(format=hex)]
     pub nonce: u64,
+    /// The algorithm of next owner's key (for unlock Endorsed mode).
+    pub next_owner_alg: OwnershipKeyAlg,
     /// The next owner's key (for unlock Endorsed mode).
     pub next_owner_key: EcdsaRawPublicKey,
     // TODO(cfrantz): Hybrid key material
@@ -470,6 +472,7 @@ impl TryFrom<&[u8]> for OwnershipUnlockRequest {
         val.din = reader.read_u64::<LittleEndian>()?;
         val.reserved.resize(Self::RESERVED_SIZE, 0);
         reader.read_exact(&mut val.reserved)?;
+        val.next_owner_alg = OwnershipKeyAlg(reader.read_u32::<LittleEndian>()?);
         val.nonce = reader.read_u64::<LittleEndian>()?;
         val.next_owner_key = EcdsaRawPublicKey::read(&mut reader).map_err(ChipDataError::Anyhow)?;
 
@@ -483,7 +486,7 @@ impl TryFrom<&[u8]> for OwnershipUnlockRequest {
 }
 impl OwnershipUnlockRequest {
     pub const SIZE: usize = 212;
-    const RESERVED_SIZE: usize = 8 * std::mem::size_of::<u32>();
+    const RESERVED_SIZE: usize = 7 * std::mem::size_of::<u32>();
     const SIGNATURE_OFFSET: usize = 148;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(u32::from(self.unlock_mode))?;
@@ -492,6 +495,7 @@ impl OwnershipUnlockRequest {
             let p = self.reserved.get(i).unwrap_or(&0x00);
             dest.write_all(std::slice::from_ref(p))?;
         }
+        dest.write_u32::<LittleEndian>(u32::from(self.next_owner_alg))?;
         dest.write_u64::<LittleEndian>(self.nonce)?;
         self.next_owner_key.write(dest)?;
 
