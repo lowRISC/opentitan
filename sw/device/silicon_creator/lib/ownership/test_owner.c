@@ -71,6 +71,8 @@
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
 #endif
 
+// The following preprocessor symbols are only relevant when
+// WITH_RESCUE_PROTOCOL is defined.
 #ifndef WITH_RESCUE_GPIO_PARAM
 #define WITH_RESCUE_GPIO_PARAM 0
 #endif
@@ -82,6 +84,15 @@
 #endif
 #ifndef WITH_RESCUE_TRIGGER
 #define WITH_RESCUE_TRIGGER 1 /* default to UartBreak */
+#endif
+#ifndef WITH_RESCUE_COMMAND_ALLOW
+#define WITH_RESCUE_COMMAND_ALLOW                                            \
+  kRescueModeBootLog, kRescueModeBootSvcRsp, kRescueModeBootSvcReq,          \
+      kRescueModeOwnerBlock, kRescueModeOwnerPage0, kRescueModeOwnerPage1,   \
+      kRescueModeOpenTitanID, kRescueModeFirmware, kRescueModeFirmwareSlotB, \
+      kBootSvcEmptyReqType, kBootSvcNextBl0SlotReqType,                      \
+      kBootSvcMinBl0SecVerReqType, kBootSvcOwnershipActivateReqType,         \
+      kBootSvcOwnershipUnlockReqType,
 #endif
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
@@ -231,22 +242,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
       .start = 32,
       .size = 224,
   };
-  const uint32_t commands[] = {
-      kRescueModeBootLog,
-      kRescueModeBootSvcRsp,
-      kRescueModeBootSvcReq,
-      kRescueModeOwnerBlock,
-      kRescueModeOwnerPage0,
-      kRescueModeOwnerPage1,
-      kRescueModeOpenTitanID,
-      kRescueModeFirmware,
-      kRescueModeFirmwareSlotB,
-      kBootSvcEmptyReqType,
-      kBootSvcNextBl0SlotReqType,
-      kBootSvcMinBl0SecVerReqType,
-      kBootSvcOwnershipActivateReqType,
-      kBootSvcOwnershipUnlockReqType,
-  };
+  const uint32_t commands[] = {WITH_RESCUE_COMMAND_ALLOW};
   memcpy(&rescue->command_allow, commands, sizeof(commands));
   rescue->header.length += sizeof(commands);
   end = (uintptr_t)rescue + rescue->header.length;
