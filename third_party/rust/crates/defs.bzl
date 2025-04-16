@@ -300,6 +300,7 @@ _NORMAL_DEPENDENCIES = {
             "anyhow": "@crate_index__anyhow-1.0.75//:anyhow",
             "arrayvec": "@crate_index__arrayvec-0.7.4//:arrayvec",
             "asn1": "@crate_index__asn1-0.15.5//:asn1",
+            "base64": "@crate_index__base64-0.21.5//:base64",
             "base64ct": "@crate_index__base64ct-1.6.0//:base64ct",
             "bitflags": "@crate_index__bitflags-2.4.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
