@@ -87,7 +87,7 @@ alias(
 
 alias(
     name = "chrono",
-    actual = "@crate_index__chrono-0.4.31//:chrono",
+    actual = "@crate_index__chrono-0.4.40//:chrono",
     tags = ["manual"],
 )
 

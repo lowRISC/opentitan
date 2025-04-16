@@ -28,7 +28,7 @@ base64ct = "1.6.0"
 bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-chrono = "0.4"
+chrono = "0.4.40"
 ciborium = "0.2.0"
 const-oid = { version = "0.9.6", features=["std"] }
 clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
