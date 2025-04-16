@@ -418,7 +418,6 @@ function void alert_receiver_driver::clear_item_queues();
         req = r_alert_rsp_q.pop_front();
         `downcast(rsp, req.clone());
         rsp.set_id_info(req);
-        `uvm_info("RM_ME", "Calling put_response for alerts#0", UVM_DEBUG)
         seq_item_port.put_response(rsp);
       end
 
@@ -427,7 +426,6 @@ function void alert_receiver_driver::clear_item_queues();
         req = r_alert_ping_send_q.pop_front();
         `downcast(rsp, req.clone());
         rsp.set_id_info(req);
-        `uvm_info("RM_ME", "Calling put_response for ping#0", UVM_DEBUG)
         seq_item_port.put_response(rsp);
       end
     end // fork begin
