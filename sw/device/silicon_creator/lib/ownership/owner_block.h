@@ -63,6 +63,13 @@ typedef struct owner_application_keyring {
 } owner_application_keyring_t;
 
 /**
+ * Determine if the owner keys are equal between owner page 0 and 1.
+ *
+ * @return kHardenedBoolTrue if the owner key are the same between both pages.
+ */
+hardened_bool_t owner_block_owner_key_equal(void);
+
+/**
  * Determine if the ownership update mode is one of the "newversion" modes.
  *
  * @return kHardenedBoolTrue if it is a newversion mode.
