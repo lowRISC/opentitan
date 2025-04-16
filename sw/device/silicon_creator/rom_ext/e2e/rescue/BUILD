@@ -328,6 +328,74 @@ opentitan_test(
     ],
 )
 
+# Check that xmodem rescue is functional when the `RESQ` mode is disabled.
+opentitan_test(
+    name = "xmodem_restricted_commands",
+    srcs = [
+        "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        exit_failure = "ok: ",
+        exit_success = "error: mode not allowed",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_xmodem_restricted_commands",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            # Trigger rescue and make sure we can get the device ID.
+            --exec="rescue get-device-id --reboot=false"
+            # Try the `RESQ` mode and make sure we get an error message.
+            --exec="console --non-interactive --send='RESQ\r' --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+# Check that DFU rescue is functional when the `RESQ` mode is disabled.
+# TODO: Add a test to try to perform a firmware rescue and ensure that it fails.
+opentitan_test(
+    name = "spidfu_restricted_commands",
+    srcs = [
+        "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
+    ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        params = "-p spi-dfu -t gpio -v +Ioa2",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu_restricted_commands",
+        setup = "--exec=\"gpio set --mode OpenDrain Ioa2\"",
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            {setup}
+            --exec="bootstrap --clear-uart=true {firmware}"
+            # Trigger rescue and make sure we can get the device ID.
+            --exec="rescue {params} get-device-id --reboot=false"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 [
     opentitan_test(
         name = "rescue_enter_on_fail_{}".format(name),
