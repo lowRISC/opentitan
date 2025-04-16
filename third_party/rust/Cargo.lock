@@ -297,6 +297,7 @@ dependencies = [
  "anyhow",
  "arrayvec",
  "asn1",
+ "base64 0.21.5",
  "base64ct",
  "bitflags 2.4.0",
  "bitvec",
