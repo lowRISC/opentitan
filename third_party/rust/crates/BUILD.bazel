@@ -86,6 +86,12 @@ alias(
 )
 
 alias(
+    name = "ciborium",
+    actual = "@crate_index__ciborium-0.2.2//:ciborium",
+    tags = ["manual"],
+)
+
+alias(
     name = "clap",
     actual = "@crate_index__clap-4.4.7//:clap",
     tags = ["manual"],
