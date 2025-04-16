@@ -305,7 +305,7 @@ _NORMAL_DEPENDENCIES = {
             "bitflags": "@crate_index__bitflags-2.4.0//:bitflags",
             "bitvec": "@crate_index__bitvec-1.0.1//:bitvec",
             "byteorder": "@crate_index__byteorder-1.5.0//:byteorder",
-            "chrono": "@crate_index__chrono-0.4.31//:chrono",
+            "chrono": "@crate_index__chrono-0.4.40//:chrono",
             "ciborium": "@crate_index__ciborium-0.2.2//:ciborium",
             "clap": "@crate_index__clap-4.4.7//:clap",
             "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
@@ -908,12 +908,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__chrono-0.4.31",
-        sha256 = "7f2c685bad3eb3d45a01354cedb7d5faa66194d1d58ba6e267a8de788f79db38",
+        name = "crate_index__chrono-0.4.40",
+        sha256 = "1a7964611d71df112cb1730f2ee67324fcf4d0fc6606acbbe9bfe06df124637c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/chrono/0.4.31/download"],
-        strip_prefix = "chrono-0.4.31",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.chrono-0.4.31.bazel"),
+        urls = ["https://static.crates.io/crates/chrono/0.4.40/download"],
+        strip_prefix = "chrono-0.4.40",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.chrono-0.4.40.bazel"),
     )
 
     maybe(
@@ -4153,6 +4153,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/windows-core/0.51.1/download"],
         strip_prefix = "windows-core-0.51.1",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows-core-0.51.1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__windows-link-0.1.1",
+        sha256 = "76840935b766e1b0a05c0066835fb9ec80071d4c09a16f6bd5f7e655e3c14c38",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/windows-link/0.1.1/download"],
+        strip_prefix = "windows-link-0.1.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows-link-0.1.1.bazel"),
     )
 
     maybe(
