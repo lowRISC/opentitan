@@ -1,0 +1,13 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "hwtrust",
+  target_dir: "hwtrust",
+
+  upstream: {
+    url: "https://android.googlesource.com/platform/tools/security/",
+    rev: "da7738aaf3ece666272adab6b3091f72ce027e9c",
+    only_subdir: "remote_provisioning/hwtrust",
+  },
+}
