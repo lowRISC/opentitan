@@ -25,6 +25,7 @@ filesets:
       - lowrisc:prim_generic:ram_1r1w
       - lowrisc:prim_generic:ram_2p
       - lowrisc:prim_generic:rom
+      - lowrisc:prim_generic:usb_diff_rx
       - lowrisc:prim_xilinx:xnor2
       - lowrisc:prim_xilinx:xor2
 # Note that flash is a macro that depend on IPs, so they are not
