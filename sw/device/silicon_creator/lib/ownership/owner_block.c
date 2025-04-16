@@ -43,6 +43,18 @@ enum {
   kProtectSlots = 8,
 };
 
+hardened_bool_t owner_block_owner_key_equal(void) {
+  hardened_bool_t result =
+      hardened_memeq(owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
+                     ARRAYSIZE(owner_page[0].owner_key.raw));
+  result ^= owner_page[0].ownership_key_alg;
+  result ^= owner_page[1].ownership_key_alg;
+  if (launder32(result) != kHardenedBoolTrue) {
+    return kHardenedBoolFalse;
+  }
+  return result;
+}
+
 hardened_bool_t owner_block_newversion_mode(void) {
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       (owner_page[0].update_mode == kOwnershipUpdateModeNewVersion ||
@@ -66,15 +78,15 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
       case kOwnershipStateUnlockedSelf:
         // In UnlockedSelf, the owner key must be the same.  If not,
         // skip parsing of Owner Page 1.
-        if (hardened_memeq(
-                owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
-                ARRAYSIZE(owner_page[0].owner_key.raw)) == kHardenedBoolTrue) {
+        if (owner_block_owner_key_equal() == kHardenedBoolTrue) {
           return kHardenedBoolTrue;
         }
         break;
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the owner key must match the key endorsed by the
         // next_owner field in bootdata.  If not, skip parsing owner page 1.
+        //
+        // FIXME: Mix in the key algorithm identifier.
         hmac_sha256(owner_page[1].owner_key.raw,
                     sizeof(owner_page[1].owner_key.raw), &digest);
         if (hardened_memeq(bootdata->next_owner, digest.digest,
