@@ -44,15 +44,15 @@ enum {
 };
 
 hardened_bool_t owner_block_owner_key_equal(void) {
-  hardened_bool_t result =
-      hardened_memeq(owner_page[0].owner_key.raw, owner_page[1].owner_key.raw,
-                     ARRAYSIZE(owner_page[0].owner_key.raw));
-  result ^= owner_page[0].ownership_key_alg;
-  result ^= owner_page[1].ownership_key_alg;
-  if (launder32(result) != kHardenedBoolTrue) {
+  if (launder32(owner_page[0].ownership_key_alg) !=
+      launder32(owner_page[1].ownership_key_alg)) {
     return kHardenedBoolFalse;
   }
-  return result;
+  HARDENED_CHECK_EQ(owner_page[0].ownership_key_alg,
+                    owner_page[1].ownership_key_alg);
+  return hardened_memeq(owner_page[0].owner_key.raw,
+                        owner_page[1].owner_key.raw,
+                        ARRAYSIZE(owner_page[0].owner_key.raw));
 }
 
 hardened_bool_t owner_block_newversion_mode(void) {
