@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -115,6 +116,21 @@ static status_t check_digest_len(otcrypto_hash_digest_t digest) {
   // Should be unreachable.
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
+}
+
+/**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface.
+ *
+ * @param[out] ctx Initialized context object.
+ */
+static otcrypto_status_t hash_context_wipe(otcrypto_hash_context_t *const ctx) {
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  hardened_memshred(ctx->data, kOtcryptoHashCtxStructWords);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
@@ -277,7 +293,8 @@ otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
   hmac_ctx_t hmac_ctx;
   hmac_ctx_restore(ctx, &hmac_ctx);
   HARDENED_TRY(hmac_final(&hmac_ctx, digest.data, digest.len));
-  // TODO(#23191): Clear `ctx`.
+  // Clear `ctx`.
+  HARDENED_TRY(hash_context_wipe(ctx));
   hmac_ctx_save(ctx, &hmac_ctx);
   return OTCRYPTO_OK;
 }
