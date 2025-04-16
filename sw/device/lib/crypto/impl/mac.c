@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -168,6 +169,24 @@ static status_t hmac_key_process(const otcrypto_blinded_key_t *key,
       memset(key_end_ptr - num_zero_bytes, 0, num_zero_bytes);
     }
   }
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface.
+ *
+ * @param[out] ctx Initialized context object.
+ */
+static otcrypto_status_t hmac_context_wipe(otcrypto_hmac_context_t *const ctx) {
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  for (int i = 0; i < kOtcryptoHashCtxStructWords; ++i) {
+    ctx->data[i] = ibex_rnd_uint32();
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -365,7 +384,8 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   hmac_ctx_t hmac_ctx;
   hmac_ctx_restore(ctx, &hmac_ctx);
   HARDENED_TRY(hmac_final(&hmac_ctx, tag.data, tag.len));
-  // TODO(#23191): Clear `ctx`.
+  // Clear `ctx`.
+  HARDENED_TRY(hmac_context_wipe(ctx));
   hmac_ctx_save(ctx, &hmac_ctx);
   return OTCRYPTO_OK;
 }
