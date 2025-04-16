@@ -23,6 +23,7 @@ TEST_F(BootSvcOwnershipUnlockTest, ReqInit) {
   boot_svc_ownership_unlock_req_t msg{};
   constexpr uint32_t unlock_mode = kBootSvcUnlockAny;
   constexpr nonce_t nonce = {0x55555555, 0xAAAAAAAA};
+  constexpr uint32_t next_owner_key_alg = 0x36353250;
   constexpr owner_keydata_t next_owner_key = {
       {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}};
   constexpr owner_signature_t signature = {{100, 101, 102, 103, 104, 105, 106,
@@ -31,10 +32,11 @@ TEST_F(BootSvcOwnershipUnlockTest, ReqInit) {
   EXPECT_CALL(boot_svc_header_, Finalize(kBootSvcOwnershipUnlockReqType,
                                          sizeof(msg), &msg.header));
 
-  boot_svc_ownership_unlock_req_init(unlock_mode, nonce, &next_owner_key,
-                                     &signature, &msg);
+  boot_svc_ownership_unlock_req_init(unlock_mode, next_owner_key_alg, nonce,
+                                     &next_owner_key, &signature, &msg);
 
   EXPECT_EQ(msg.unlock_mode, unlock_mode);
+  EXPECT_EQ(msg.next_owner_key_alg, next_owner_key_alg);
   EXPECT_EQ(msg.nonce.value[0], nonce.value[0]);
   EXPECT_EQ(msg.nonce.value[1], nonce.value[1]);
   EXPECT_EQ(
