@@ -22,7 +22,7 @@ base64 = "0.21.0"
 base64ct = "1.6.0"
 bitflags = { version = "2.1", features = ["serde"] }
 byteorder = "1.4.3"
-chrono = "0.4"
+chrono = "0.4.40"
 ciborium = "0.2.0"
 # Note: this is only used to enable `std` feature of `const-oid`, which
 # is a dependency of RustCrypto crates. The version cannot be upgraded because
