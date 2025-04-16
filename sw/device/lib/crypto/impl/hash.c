@@ -7,6 +7,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -277,7 +278,8 @@ otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
   hmac_ctx_t hmac_ctx;
   hmac_ctx_restore(ctx, &hmac_ctx);
   HARDENED_TRY(hmac_final(&hmac_ctx, digest.data, digest.len));
-  // TODO(#23191): Clear `ctx`.
+  // Clear `ctx`.
+  hardened_memshred(ctx->data, kOtcryptoHashCtxStructWords);
   hmac_ctx_save(ctx, &hmac_ctx);
   return OTCRYPTO_OK;
 }
