@@ -26,6 +26,8 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
+    #[arg(long, default_value_t = OwnershipKeyAlg::EcdsaP256, help = "Current Owner key algorithm")]
+    next_key_alg: OwnershipKeyAlg,
     #[arg(long, help = "Next Owner private key (ECDSA P256)")]
     next_owner_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner public key (ECDSA P256)")]
@@ -36,6 +38,16 @@ struct Opts {
     next_unlock_key: Option<PathBuf>,
     #[arg(long, help = "Next Owner's application public key (ECDSA P256)")]
     next_application_key: PathBuf,
+
+    #[arg(long, help = "Next Owner private key (SPX)")]
+    next_owner_key_spx: Option<PathBuf>,
+    #[arg(long, help = "Next Owner public key (SPX)")]
+    next_owner_key_spx_pub: Option<PathBuf>,
+    #[arg(long, help = "Next Owner activate private key (SPX)")]
+    next_activate_key_spx: Option<PathBuf>,
+    #[arg(long, help = "Next Owner unlock private key (SPX)")]
+    next_unlock_key_spx: Option<PathBuf>,
+
     #[arg(
         long,
         default_value_t = transfer_lib::TEST_OWNER_CONFIG_VERSION,
@@ -70,17 +82,26 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("###### Get Device Info ######");
     rescue.enter(transport, EntryMode::Reset)?;
-    let devid = rescue.get_device_id()?;
+    let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
 
     log::info!("###### Upload Owner Block ######");
     transfer_lib::create_owner(
         transport,
         &rescue,
-        /*nonce=*/ 0,
-        OwnershipKeyAlg::EcdsaP256,
-        HybridPair::load(opts.next_owner_key.as_deref(), None)?,
-        HybridPair::load(opts.next_activate_key.as_deref(), None)?,
-        HybridPair::load(opts.next_unlock_key.as_deref(), None)?,
+        data.rom_ext_nonce,
+        opts.next_key_alg,
+        HybridPair::load(
+            opts.next_owner_key.as_deref(),
+            opts.next_owner_key_spx.as_deref(),
+        )?,
+        HybridPair::load(
+            opts.next_activate_key.as_deref(),
+            opts.next_activate_key_spx.as_deref(),
+        )?,
+        HybridPair::load(
+            opts.next_unlock_key.as_deref(),
+            opts.next_unlock_key_spx.as_deref(),
+        )?,
         &opts.next_application_key,
         opts.config_kind,
         /*customize=*/
