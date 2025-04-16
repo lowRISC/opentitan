@@ -53,7 +53,13 @@ typedef struct boot_svc_ownership_unlock_req {
   /**
    * Reserved for future use.
    */
-  uint32_t reserved[8];
+  uint32_t reserved[7];
+  /**
+   * Algorithm identifier of the next owner (for endorsed mode).
+   *
+   * It should be one of the `ownership_key_alg_t` enum.
+   */
+  uint32_t next_owner_key_alg;
   /**
    * The current ownership nonce.
    */
@@ -76,6 +82,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, din,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 4);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, reserved,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 12);
+OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, next_owner_key_alg,
+                        CHIP_BOOT_SVC_MSG_HEADER_SIZE + 40);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, nonce,
                         CHIP_BOOT_SVC_MSG_HEADER_SIZE + 44);
 OT_ASSERT_MEMBER_OFFSET(boot_svc_ownership_unlock_req_t, next_owner_key,
@@ -108,7 +116,9 @@ OT_ASSERT_SIZE(boot_svc_ownership_unlock_res_t, 48);
  *
  * @param[out] msg Output buffer for the message.
  */
-void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode, nonce_t nonce,
+void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode,
+                                        uint32_t next_owner_key_alg,
+                                        nonce_t nonce,
                                         const owner_keydata_t *next_owner_key,
                                         const owner_signature_t *signature,
                                         boot_svc_ownership_unlock_req_t *msg);
