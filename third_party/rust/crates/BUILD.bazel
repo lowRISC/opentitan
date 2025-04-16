@@ -110,6 +110,12 @@ alias(
 )
 
 alias(
+    name = "coset",
+    actual = "@crate_index__coset-0.3.8//:coset",
+    tags = ["manual"],
+)
+
+alias(
     name = "crc",
     actual = "@crate_index__crc-3.0.1//:crc",
     tags = ["manual"],
