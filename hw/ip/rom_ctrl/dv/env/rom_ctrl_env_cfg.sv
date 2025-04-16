@@ -15,10 +15,6 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;
 
-  // Default is 10ms (see default_spinwait_timeout_ns in csr_utils_pkg.sv)
-  // We have to increase this here since the ROM check may actually take longer than that,
-  // which sometimes causes blocked TL accesses to time out.
-  uint tl_access_timeout_ns = 40_000_000; // 40ms
 
   // A handle to the scoreboard, used to flag expected errors.
   rom_ctrl_scoreboard scoreboard;
@@ -75,6 +71,12 @@ function void rom_ctrl_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
 
   // Tell the CIP base code what bit gets set if we see a TL fault.
   tl_intg_alert_fields[ral.fatal_alert_cause.integrity_error] = 1;
+
+  // Default is 10ms (see default_spinwait_timeout_ns in csr_utils_pkg.sv, assigned in
+  // cip_base_env_cfg)
+  // We have to increase this here since the ROM check may actually take longer than that,
+  // which sometimes causes blocked TL accesses to time out.
+  tl_access_timeout_ns = 40_000_000; // 40ms
 endfunction
 
 // Override the default implementation in dv_base_env_cfg.
