@@ -85,10 +85,13 @@ hardened_bool_t owner_block_page1_valid_for_transfer(boot_data_t *bootdata) {
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the owner key must match the key endorsed by the
         // next_owner field in bootdata.  If not, skip parsing owner page 1.
-        //
-        // FIXME: Mix in the key algorithm identifier.
-        hmac_sha256(owner_page[1].owner_key.raw,
-                    sizeof(owner_page[1].owner_key.raw), &digest);
+        hmac_sha256_init();
+        hmac_sha256_update(&owner_page[1].ownership_key_alg,
+                           sizeof(owner_page[1].ownership_key_alg));
+        hmac_sha256_update(owner_page[1].owner_key.raw,
+                           sizeof(owner_page[1].owner_key.raw));
+        hmac_sha256_process();
+        hmac_sha256_final(&digest);
         if (hardened_memeq(bootdata->next_owner, digest.digest,
                            ARRAYSIZE(digest.digest)) == kHardenedBoolTrue) {
           return kHardenedBoolTrue;
