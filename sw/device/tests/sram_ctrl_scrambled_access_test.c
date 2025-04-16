@@ -170,7 +170,7 @@ static noreturn void main_sram_scramble(void) {
       "  andi t0, t0, %[kSramCtrlKeyScrDone]                         \n"
       "  beqz t0, .L_scrambling_busy_loop                            \n"
 
-      // Restore the tests frames addresses after the scrambling .
+      // Restore the tests frames addresses after the scrambling.
       "sw a2, 0(%[mainFrame])                                        \n"
       "sw a3, 0(%[retFrame])                                         \n"
 
@@ -320,7 +320,7 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
 
   if (kDeviceType == kDeviceSimDV) {
     // Reading before comparing just to make sure it will always read all the
-    // words and the right amount of ECC errors will be generated.
+    // words and the right number of ECC errors will be generated.
     LOG_INFO("Checking backdoor  0x%x", mem_frame->backdoor);
     uint32_t kBackdoorExpectedWords[kTestBufferSizeWords];
     memcpy(kBackdoorExpectedWords, kBackdoorExpectedBytes,
