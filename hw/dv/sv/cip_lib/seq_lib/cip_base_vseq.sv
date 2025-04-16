@@ -669,6 +669,20 @@ class cip_base_vseq #(
     end
   endtask
 
+  // Blocks if there's a ping in-flight
+  task wait_until_ping_is_finished(alert_esc_agent_cfg alert_agent_cfg);
+
+    if (alert_agent_cfg.vif.in_ping_st()) begin
+      // There's a 2-cycles sampling delay in the monitor, so if the VIF has already seen the ping.
+      // Wait for it. Otherwise there may be scenarios where the `active_ping` is not yet set
+      // in the monitor due to the 2-cycle delay. Which causes issues predicting the value in
+      // `fatal_alert_cause`
+      wait (alert_agent_cfg.active_ping == 1);
+    end
+    wait (alert_agent_cfg.active_ping == 0);
+  endtask // wait_until_ping_is_finished
+
+
   // if alerts are triggered continuously, there are 6 cycles gap between 2 alerts. 2-3 cycles for
   // clock domain crossing, 2 for pauses, 1 for idle state.
   // So use 7 cycle for default max_wait_cycle.
