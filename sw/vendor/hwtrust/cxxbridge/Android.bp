@@ -1,0 +1,49 @@
+package {
+    default_visibility: ["//visibility:private"],
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+genrule {
+    name: "libhwtrust_cxx_bridge_header",
+    tools: ["cxxbridge"],
+    cmd: "$(location cxxbridge) $(in) --header > $(out)",
+    srcs: ["lib.rs"],
+    out: ["hwtrust/lib.rs.h"],
+}
+
+genrule {
+    name: "libhwtrust_cxx_bridge_code",
+    tools: ["cxxbridge"],
+    cmd: "$(location cxxbridge) $(in) >> $(out)",
+    srcs: ["lib.rs"],
+    out: ["hwtrust/lib.rs.cpp"],
+}
+
+rust_ffi_static {
+    name: "libhwtrust_cxx_bridge",
+    crate_name: "hwtrust_cxx_bridge",
+    host_supported: true,
+    vendor_available: true,
+    srcs: ["lib.rs"],
+    rustlibs: [
+        "libcoset",
+        "libcxx",
+        "libhwtrust",
+    ]
+}
+
+cc_library {
+    name: "libhwtrust_cxx",
+    visibility: ["//hardware/interfaces/security/keymint/support"],
+    host_supported: true,
+    vendor_available: true,
+    srcs: ["hwtrust.cpp"],
+    export_include_dirs: ["include"],
+    generated_sources: ["libhwtrust_cxx_bridge_code"],
+    generated_headers: ["libhwtrust_cxx_bridge_header"],
+    whole_static_libs: ["libhwtrust_cxx_bridge"],
+    shared_libs: [
+        "libbase",
+        "libcrypto",
+    ],
+}

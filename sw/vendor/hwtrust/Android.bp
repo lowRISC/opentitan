@@ -1,0 +1,102 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
+rust_defaults {
+    name: "libhwtrust_defaults",
+    host_supported: true,
+    srcs: ["src/lib.rs"],
+    rustlibs: [
+        "libanyhow",
+        "libbase64_rust",
+        "libchrono",
+        "libciborium",
+        "libclap",
+        "libcoset",
+        "libhex",
+        "libitertools",
+        "libserde_json",
+        "libthiserror",
+    ],
+    target: {
+        host: {
+            rlibs: ["libopenssl_static"],
+            // dylib is disabled due to compile failure in libhwtrust. See b/373621186 for details.
+            dylib: {
+                enabled: false,
+            },
+        },
+        android: {
+            rustlibs: ["libopenssl"],
+        },
+    },
+}
+
+rust_library {
+    name: "libhwtrust",
+    defaults: ["libhwtrust_defaults"],
+    crate_name: "hwtrust",
+    product_available: true,
+    vendor_available: true,
+    apex_available: [
+        "//apex_available:platform",
+        "com.android.compos",
+        "com.android.virt",
+    ],
+    min_sdk_version: "35",
+}
+
+rust_test {
+    name: "libhwtrust_tests",
+    defaults: ["libhwtrust_defaults"],
+    data: [":testdata"],
+    rustlibs: [
+        "libhwtrust",
+    ],
+}
+
+rust_defaults {
+    name: "hwtrust_defaults",
+    host_supported: true,
+    srcs: ["src/main.rs"],
+    rustlibs: [
+        "libanyhow",
+        "libclap",
+        "libhwtrust",
+    ],
+}
+
+rust_binary {
+    name: "hwtrust",
+    defaults: ["hwtrust_defaults"],
+    target: {
+        host: {
+            compile_multilib: "first",
+            dist: {
+                dir: "rkp/host",
+                targets: ["dist_files"],
+            },
+            static_executable: true,
+        },
+    },
+}
+
+rust_test {
+    name: "hwtrust_tests",
+    defaults: ["hwtrust_defaults"],
+}
+
+rust_test {
+    name: "hwtrust_cli_tests",
+    host_supported: true,
+    srcs: ["tests/hwtrust_cli.rs"],
+    data: [":testdata"],
+    data_bins: ["hwtrust"],
+    data_libs: ["libcrypto"],
+    compile_multilib: "first",
+}
+
+filegroup {
+    name: "testdata",
+    srcs: ["testdata/**/*"],
+}
