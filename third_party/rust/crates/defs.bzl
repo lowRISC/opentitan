@@ -309,6 +309,7 @@ _NORMAL_DEPENDENCIES = {
             "clap": "@crate_index__clap-4.4.7//:clap",
             "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
             "const-oid": "@crate_index__const-oid-0.9.6//:const_oid",
+            "coset": "@crate_index__coset-0.3.8//:coset",
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.8.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.2.0//:cryptoki_sys",
@@ -1062,6 +1063,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/core-foundation-sys/0.8.7/download"],
         strip_prefix = "core-foundation-sys-0.8.7",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.core-foundation-sys-0.8.7.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__coset-0.3.8",
+        sha256 = "f4c8cc80f631f8307b887faca24dcc3abc427cd0367f6eb6188f6e8f5b7ad8fb",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/coset/0.3.8/download"],
+        strip_prefix = "coset-0.3.8",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.coset-0.3.8.bazel"),
     )
 
     maybe(

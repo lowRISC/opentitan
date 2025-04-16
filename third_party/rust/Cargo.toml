@@ -31,6 +31,7 @@ chrono = "0.4"
 ciborium = "0.2.0"
 const-oid = { version = "0.9.6", features=["std"] }
 clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
+coset = { version = "0.3.5", features = ["std"] }
 crc = "3.0"
 der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
