@@ -6,6 +6,32 @@
 //
 <%
 from topgen.lib import Name
+
+def expand_literal(width, value, max_width=2**16):
+  """Split a constant vector larger than `max_width` into
+     a concatenation of vectors no larger than `max_width`
+     each.
+
+     For example, the vector 73536'h1234 becomes
+     73536'({8000'h0, 65536'h1234}).
+  """
+  if width <= max_width:
+    return "{}'h{:0X}".format(width, value)
+
+  expanded_value = []
+  sub_value_mask = (2**max_width) - 1
+  fmtstr = "{}'h{:0X}"
+  # Add `max_width`-wide chunks of `value`
+  cur_width = width
+  while cur_width > max_width:
+    sub_value = value & sub_value_mask
+    expanded_value.insert(0, fmtstr.format(max_width, sub_value))
+    cur_width -= max_width
+    value >>= max_width
+  # Add remaining MSBs of `value`
+  expanded_value.insert(0, fmtstr.format(cur_width, value))
+  return "{}'({{{}}})".format(width, ", ".join(expanded_value))
+
 %>\
 package otp_ctrl_part_pkg;
 
@@ -225,9 +251,9 @@ package otp_ctrl_part_pkg;
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
       % if offset != item['offset'] + item['size']:
-      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
+      ${expand_literal((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
       % endif
-      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
+      ${expand_literal(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
     % endfor
   % endfor
 

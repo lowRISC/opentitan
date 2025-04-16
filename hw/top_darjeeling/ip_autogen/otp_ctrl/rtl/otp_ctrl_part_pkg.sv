@@ -566,7 +566,7 @@ package otp_ctrl_part_pkg;
     78784'({
       64'hC469C593E5DC0DA8,
       5184'h0, // unallocated space
-      73536'h0
+      73536'({8000'h0, 65536'h0})
     }),
     8192'({
       8192'h0
