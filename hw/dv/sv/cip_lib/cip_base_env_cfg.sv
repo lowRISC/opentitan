@@ -58,6 +58,9 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   rst_shadowed_vif    rst_shadowed_vif;
   virtual clk_rst_if  edn_clk_rst_vif;
 
+  // Default tl_access timeout - override in child classes where necessary
+  uint tl_access_timeout_ns = default_spinwait_timeout_ns;
+
   // If the data intg is passthru for the memory and the data intg value in mem is incorrect, it
   // won't trigger d_error in this mem block and the check is done in the processor
   // User can set this flag to disable the check for d_user.data_intg
