@@ -132,14 +132,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+   * Peripheral base address for otp_macro in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR = 32'h40138000;
+  parameter int unsigned TOP_EARLGREY_OTP_MACRO_BASE_ADDR = 32'h40138000;
 
   /**
-   * Peripheral size in bytes for prim device on otp_ctrl in top earlgrey.
+   * Peripheral size in bytes for otp_macro in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_EARLGREY_OTP_MACRO_SIZE_BYTES = 32'h20;
 
   /**
    * Peripheral base address for regs device on lc_ctrl in top earlgrey.
@@ -829,7 +829,7 @@ package top_earlgrey_pkg;
     MioOutPwmAonPwm3 = 65,
     MioOutPwmAonPwm4 = 66,
     MioOutPwmAonPwm5 = 67,
-    MioOutOtpCtrlTest0 = 68,
+    MioOutOtpMacroTest0 = 68,
     MioOutSysrstCtrlAonBatDisable = 69,
     MioOutSysrstCtrlAonKey0Out = 70,
     MioOutSysrstCtrlAonKey1Out = 71,
@@ -970,6 +970,7 @@ package top_earlgrey_pkg;
     PeripheralLcCtrl,
     PeripheralOtbn,
     PeripheralOtpCtrl,
+    PeripheralOtpMacro,
     PeripheralPattgen,
     PeripheralPinmuxAon,
     PeripheralPwmAon,

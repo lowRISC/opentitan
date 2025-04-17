@@ -10,6 +10,8 @@ filesets:
       # Place the autogen packages first to avoid conflicts
       - lowrisc:darjeeling_constants:top_racl_pkg
       - lowrisc:darjeeling_ip:alert_handler_reg
+      - lowrisc:darjeeling_ip:otp_ctrl_macro_pkg
+      - lowrisc:darjeeling_ip:otp_ctrl_top_specific_pkg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:rv_dm
@@ -27,6 +29,7 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
+      - lowrisc:ip:otp_macro
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe

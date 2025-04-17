@@ -26,6 +26,7 @@ load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/mbx:defs.bzl", "MBX")
 load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_darjeeling/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
+load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/top_darjeeling/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_darjeeling/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
 load("//hw/top_darjeeling/ip_autogen/racl_ctrl:defs.bzl", "RACL_CTRL")
@@ -66,6 +67,7 @@ DARJEELING = opentitan_top(
         MBX,
         OTBN,
         OTP_CTRL,
+        OTP_MACRO,
         PINMUX,
         PWRMGR,
         RACL_CTRL,

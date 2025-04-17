@@ -54,7 +54,7 @@ parameters:
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
     default: ""
     paramtype: vlogparam
-  OtpCtrlMemInitFile:
+  OtpMacroMemInitFile:
     datatype: str
     description: OTP initialization file in vmem hex format
     default: ""
@@ -86,7 +86,7 @@ targets:
     toplevel: chip_earlgrey_cw340
     parameters:
       - BootRomInitFile
-      - OtpCtrlMemInitFile
+      - OtpMacroMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx_ultrascale
       - AST_BYPASS_CLK=true
     tools:

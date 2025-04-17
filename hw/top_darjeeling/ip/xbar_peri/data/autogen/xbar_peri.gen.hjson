@@ -45,7 +45,7 @@
       clkmgr_aon
       pinmux_aon
       otp_ctrl.core
-      otp_ctrl.prim
+      otp_macro
       lc_ctrl.regs
       alert_handler
       ast
@@ -302,12 +302,12 @@
       req_fifo_pass: true
     }
     {
-      name: otp_ctrl.prim
+      name: otp_macro
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
       pipeline: false
-      inst_type: otp_ctrl
+      inst_type: otp_macro
       addr_range:
       [
         {
@@ -623,7 +623,7 @@
       index: -1
     }
     {
-      name: tl_otp_ctrl__prim
+      name: tl_otp_macro
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -631,7 +631,7 @@
       inst_name: peri
       width: 1
       default: ""
-      top_signame: otp_ctrl_prim_tl
+      top_signame: otp_macro_tl
       index: -1
     }
     {

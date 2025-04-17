@@ -26,6 +26,7 @@ load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
 load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_earlgrey/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
+load("//hw/ip/otp_macro:defs.bzl", "OTP_MACRO")
 load("//hw/ip/pattgen:defs.bzl", "PATTGEN")
 load("//hw/top_earlgrey/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_earlgrey/ip_autogen/pwm:defs.bzl", "PWM")
@@ -68,6 +69,7 @@ EARLGREY = opentitan_top(
         LC_CTRL,
         OTBN,
         OTP_CTRL,
+        OTP_MACRO,
         PATTGEN,
         PINMUX,
         PWM,

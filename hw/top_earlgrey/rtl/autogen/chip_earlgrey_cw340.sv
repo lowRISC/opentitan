@@ -17,7 +17,7 @@ module chip_earlgrey_cw340 #(
   parameter BootRomInitFile = "test_rom_fpga_cw340.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_cw340.vmem"
+  parameter OtpMacroMemInitFile = "otp_img_fpga_cw340.vmem"
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
@@ -733,8 +733,8 @@ module chip_earlgrey_cw340 #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -952,8 +952,8 @@ module chip_earlgrey_cw340 #(
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -1056,7 +1056,7 @@ module chip_earlgrey_cw340 #(
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b0),
     .SecOtbnSkipUrndReseedAtStart(1'b0),
-    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
     .UsbdevRcvrWakeTimeUs(10000),
@@ -1107,8 +1107,8 @@ module chip_earlgrey_cw340 #(
     .ast_tl_rsp_i                 ( ast_base_bus               ),
     .adc_req_o                    ( adc_req                    ),
     .adc_rsp_i                    ( adc_rsp                    ),
-    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                    ( otp_obs                    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),

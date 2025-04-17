@@ -8,7 +8,9 @@ description: "OTP_CTRL DV sim target"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:darjeeling_ip:otp_ctrl_macro_pkg
       - lowrisc:darjeeling_ip:otp_ctrl
+      - lowrisc:ip:otp_macro
 
   files_dv:
     depend:

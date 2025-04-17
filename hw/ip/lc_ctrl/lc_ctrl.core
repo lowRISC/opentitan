@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:otp_macro_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:rv_dm
     files:

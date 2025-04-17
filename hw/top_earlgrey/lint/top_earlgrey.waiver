@@ -41,7 +41,7 @@ waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is con
       -comment "Scan reset is a legal asynchronous reset"
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
 
 ## xbar

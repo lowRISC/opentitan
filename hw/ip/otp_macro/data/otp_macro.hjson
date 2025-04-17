@@ -1,0 +1,507 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "otp_macro",
+  human_name:         "OTP Macro Wrapper",
+  one_line_desc:      "OTP macro simulation model and CSR block",
+  one_paragraph_desc: '''
+  OTP macro has one-time programmable fuses that configure this top.
+  It is tightly coupled to the OTP controller, but placed at the top for
+  ease of integration. It contains a CSR block for testing and macro specific
+  functionality.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "44",
+  design_spec:        "../doc",
+#  dv_doc:             "../doc/dv",
+#  hw_checklist:       "../doc/checklist",
+#  sw_checklist:       "/sw/device/lib/dif/dif_pwm",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S2",
+      notes:              "Use OTP to perform block level verification.",
+    }
+  ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+  ]
+  available_output_list: [
+    { name: "test",
+      width: 8,
+      desc: "Test-related GPIOs. Only active in DFT-enabled life cycle states."
+    }
+  ],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  scan: "true", // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
+  scan_en: "true",    // Enable `scan_en_i` port
+
+  available_output_list: [
+    { name: "test",
+      width: 8,
+      desc: "Test-related GPIOs. Only active in DFT-enabled life cycle states."
+    }
+  ],
+
+  regwidth: "32",
+  param_list: [
+    { name: "Width",
+      desc: "Size of storage words in bits",
+      type: "int",
+      default: "16",
+      local: "false",
+    },
+    { name: "Depth",
+      desc: "Number of words",
+      type: "int",
+      default: "1024",
+      local: "false",
+    },
+    { name: "SizeWidth",
+      desc: "Number of words transferred per access",
+      type: "int",
+      default: "2",
+      local: "false",
+    },
+    {
+      name: "MemInitFile",
+      desc: "",
+      type: "",
+      default: '""',
+      expose: "true",
+      local: "false",
+    },
+    {
+      name: "VendorTestOffset",
+      desc: "",
+      type: "int",
+      default: "8",
+      local: "false",
+    },
+    {
+      name: "VendorTestSize",
+      desc: "",
+      type: "int",
+      default: "8",
+      local: "false",
+    },
+  ],
+  alert_list: [],
+  features: []
+    countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+  ]
+  inter_signal_list: [
+    // AST observability control
+    { struct: "ast_obs_ctrl",
+      type: "uni",
+      name: "obs_ctrl",
+      act: "rcv",
+      package: "ast_pkg"
+      desc:    "AST observability control signals."
+    }
+    // otp macro observe bus
+    { struct: "logic",
+      type: "uni",
+      name: "otp_obs",
+      act: "req",
+      width: "8",
+      package: ""
+      desc:    "AST observability bus."
+    }
+    // Power sequencing signals to AST
+    { struct:  "pwr_seq"
+      type:    "uni"
+      name:    "pwr_seq"
+      act:     "req"
+      default: "'0"
+      package: "otp_macro_pkg"
+      desc:    "Power sequencing signals to AST (VDD domain)."
+    }
+    // Power sequencing signals from AST
+    { struct:  "pwr_seq"
+      type:    "uni"
+      name:    "pwr_seq_h"
+      act:     "rcv"
+      default: "'0"
+      package: "otp_macro_pkg"
+      desc:    "Power sequencing signals coming from AST (VCC domain)."
+    }
+    // OTP dedicated power connection from AST
+    { struct:  ""
+      type:    "io"
+      name:    "ext_voltage_h"
+      act:     "none"
+      default: "'0"
+      package: "",
+    }
+
+    // LC_CTRL test enable input
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Test enable qualifier coming from life cycle controller.
+               This signals enables the TL-UL access port.
+               '''
+    }
+    // Macro specific test signals to/from LC TAP
+    { struct:  "otp_test"
+      type:    "req_rsp"
+      name:    "test"
+      act:     "rsp"
+      default: "'0"
+      package: "otp_macro_pkg"
+      desc:    "Vendor test control signals from/to the life cycle TAP."
+    }
+    // OTP_CTRL Interface
+    { struct:  "otp_ctrl_macro"
+      type:    "req_rsp"
+      name:    "otp"
+      act:     "rsp"
+      default: "'0"
+      package: "otp_ctrl_macro_pkg"
+      desc:    "Data interface for the OTP macro."
+    }
+    // DFT CFG and RSP signals
+    { struct:  "otp_cfg"
+      type:    "uni"
+      name:    "cfg"
+      act:     "rcv"
+      default: "'0"
+      package: "otp_macro_pkg"
+    },
+    { struct:  "otp_cfg_rsp"
+      type:    "uni"
+      name:    "cfg_rsp"
+      act:     "req"
+      default: "'0"
+      package: "otp_macro_pkg"
+    },
+  ],
+
+  countermeasures: [
+    { name: "LC_CTRL.INTERSIG.MUBI",
+      desc: "The life cycle control signals are multibit encoded."
+    }
+    { name: "TEST.BUS.LC_GATED",
+      desc: "Prevent access to test signals and the OTP backdoor interface in non-test lifecycle states."
+    }
+    { name: "TEST_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
+    { name: "MACRO.MEM.INTEGRITY",
+      desc: '''
+            The OTP macro employs a vendor-specific integrity scheme at the granularity of the native 16bit OTP words.
+            The scheme is able to at least detect single bit errors.
+            '''
+    }
+    { name: "MACRO.MEM.CM",
+      desc: "The OTP macro may contain additional vendor-specific countermeasures."
+    }
+  ]
+
+  registers: [
+    { name: "CSR0",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+        { bits: "0",
+          name: "field0",
+          desc: "",
+          resval: "0x0",
+        }
+        { bits: "1",
+          name: "field1",
+          desc: "",
+          resval: "0x0",
+        }
+        { bits: "2",
+          name: "field2",
+          desc: "",
+          resval: "0x0",
+        }
+        { bits: "13:4",
+          name: "field3",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "26:16",
+          name: "field4",
+          desc: ""
+          resval: "0x0",
+        }
+      ]
+    },
+    { name: "CSR1",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+        { bits: "6:0",
+          name: "field0",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "7:7",
+          name: "field1",
+          desc: "",
+          resval: "0x0",
+        }
+        { bits: "14:8",
+          name: "field2",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "15:15",
+          name: "field3",
+          desc: "",
+          resval: "0x0",
+        }
+        { bits: "31:16",
+          name: "field4",
+          desc: "",
+          resval: "0x0",
+        }
+      ]
+    },
+    { name: "CSR2",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+        { bits: "0",
+          name: "field0",
+          desc: "",
+          resval: "0x0",
+        }
+      ]
+    },
+    { name: "CSR3",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+       { bits: "2:0",
+          name: "field0",
+          desc: ""
+          swaccess: "rw1c",
+          resval: "0x0",
+       }
+       { bits: "13:4",
+          name: "field1",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0x0",
+       }
+       { bits: "16",
+          name: "field2",
+          desc: "",
+          swaccess: "rw1c",
+          resval: "0x0",
+       }
+       { bits: "17",
+          name: "field3",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "18",
+          name: "field4",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "19",
+          name: "field5",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "20",
+          name: "field6",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "21",
+          name: "field7",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "22",
+          name: "field8",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+      ]
+    },
+    { name: "CSR4",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+        { bits: "9:0",
+          name: "field0",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "12",
+          name: "field1",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "13",
+          name: "field2",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "14",
+          name: "field3",
+          desc: ""
+          resval: "0x0",
+        }
+      ]
+    },
+    { name: "CSR5",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+       { bits: "5:0",
+          name: "field0",
+          desc: ""
+          swaccess: "rw",
+          resval: "0x0",
+       }
+       { bits: "7:6",
+          name: "field1",
+          desc: ""
+          swaccess: "rw",
+          resval: "0x0",
+       }
+       { bits: "8",
+          name: "field2",
+          desc: "",
+          swaccess: "ro",
+          resval: "0x0",
+       }
+       { bits: "11:9",
+         name: "field3",
+         desc: ""
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "12",
+         name: "field4",
+         desc: ""
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "13",
+         name: "field5",
+         desc: ""
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "31:16",
+          name: "field6",
+          desc: ""
+          swaccess: "rw",
+          resval: "0x0",
+       }
+      ]
+    },
+    { name: "CSR6",
+      desc: ""
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+        { bits: "9:0",
+          name: "field0",
+          desc: ""
+          resval: "0x0",
+        }
+        { bits: "11",
+          name: "field1",
+          desc: "",
+          swaccess: "rw",
+          resval: "0x0",
+        }
+        { bits: "12",
+          name: "field2",
+          desc: "",
+          swaccess: "rw",
+          resval: "0x0",
+        }
+        { bits: "31:16",
+          name: "field3",
+          desc: ""
+          resval: "0x0",
+        }
+      ]
+    },
+    { name: "CSR7",
+      desc: "",
+      swaccess: "ro",
+      hwaccess: "hrw",
+      hwext:    "false",
+      hwqe:     "false",
+      fields: [
+       { bits: "5:0",
+         name: "field0",
+         desc: ""
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "10:8",
+         name: "field1",
+         desc: "",
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "14",
+         name: "field2",
+         desc: "",
+         swaccess: "ro",
+         resval: "0x0",
+       }
+       { bits: "15",
+         name: "field3",
+         desc: "",
+         swaccess: "ro",
+         resval: "0x0",
+       }
+     ]
+    },
+  ]
+}

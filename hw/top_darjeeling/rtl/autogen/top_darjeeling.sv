@@ -26,7 +26,8 @@ module top_darjeeling #(
   parameter int I2c0InputDelayCycles = 0,
   // parameters for rv_timer
   // parameters for otp_ctrl
-  parameter OtpCtrlMemInitFile = "",
+  // parameters for otp_macro
+  parameter OtpMacroMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter bit LcCtrlUseDmiInterface = 1,
@@ -265,12 +266,12 @@ module top_darjeeling #(
   input  tlul_pkg::tl_d2h_t       ast_tl_rsp_i,
   output pwrmgr_pkg::pwr_ast_req_t       pwrmgr_ast_req_o,
   input  pwrmgr_pkg::pwr_ast_rsp_t       pwrmgr_ast_rsp_i,
-  output otp_ctrl_pkg::otp_ast_req_t       otp_ctrl_otp_ast_pwr_seq_o,
-  input  otp_ctrl_pkg::otp_ast_rsp_t       otp_ctrl_otp_ast_pwr_seq_h_i,
+  output otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_o,
+  input  otp_macro_pkg::pwr_seq_t       otp_macro_pwr_seq_h_i,
   inout         otp_ext_voltage_h_io,
   output logic [7:0] otp_obs_o,
-  input  prim_otp_cfg_pkg::otp_cfg_t       otp_cfg_i,
-  output prim_otp_cfg_pkg::otp_cfg_rsp_t       otp_cfg_rsp_o,
+  input  otp_macro_pkg::otp_cfg_t       otp_cfg_i,
+  output otp_macro_pkg::otp_cfg_rsp_t       otp_cfg_rsp_o,
   input  logic [1:0] por_n_i,
   input  logic [31:0] fpga_info_i,
   input  tlul_pkg::tl_h2d_t       ctn_misc_tl_h2d_i,
@@ -363,8 +364,9 @@ module top_darjeeling #(
   logic        cio_i2c0_scl_en_d2p;
   // rv_timer
   // otp_ctrl
-  logic [7:0]  cio_otp_ctrl_test_d2p;
-  logic [7:0]  cio_otp_ctrl_test_en_d2p;
+  // otp_macro
+  logic [7:0]  cio_otp_macro_test_d2p;
+  logic [7:0]  cio_otp_macro_test_en_d2p;
   // lc_ctrl
   // alert_handler
   // spi_host0
@@ -568,8 +570,8 @@ module top_darjeeling #(
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
-  otp_ctrl_pkg::lc_otp_vendor_test_req_t       lc_ctrl_lc_otp_vendor_test_req;
-  otp_ctrl_pkg::lc_otp_vendor_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
+  otp_macro_pkg::otp_test_req_t       lc_ctrl_lc_otp_vendor_test_req;
+  otp_macro_pkg::otp_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_raw_test_rma;
@@ -584,6 +586,8 @@ module top_darjeeling #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_creator_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_owner_seed_sw_rw_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
+  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t       otp_ctrl_otp_macro_req;
+  otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t       otp_ctrl_otp_macro_rsp;
   logic       rv_plic_msip;
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
@@ -717,8 +721,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       pinmux_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       otp_ctrl_prim_tl_req;
-  tlul_pkg::tl_d2h_t       otp_ctrl_prim_tl_rsp;
+  tlul_pkg::tl_h2d_t       otp_macro_tl_req;
+  tlul_pkg::tl_d2h_t       otp_macro_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_regs_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
@@ -1175,15 +1179,10 @@ module top_darjeeling #(
   );
   otp_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[9:5]),
-    .MemInitFile(OtpCtrlMemInitFile),
     .RndCnstLfsrSeed(RndCnstOtpCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstOtpCtrlLfsrPerm),
     .RndCnstScrmblKeyInit(RndCnstOtpCtrlScrmblKeyInit)
   ) u_otp_ctrl (
-
-      // Output
-      .cio_test_o    (cio_otp_ctrl_test_d2p),
-      .cio_test_en_o (cio_otp_ctrl_test_en_d2p),
 
       // Interrupt
       .intr_otp_operation_done_o (intr_otp_ctrl_otp_operation_done),
@@ -1197,15 +1196,10 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[9:5] ),
 
       // Inter-module signals
-      .otp_ext_voltage_h_io(otp_ext_voltage_h_io),
-      .otp_ast_pwr_seq_o(otp_ctrl_otp_ast_pwr_seq_o),
-      .otp_ast_pwr_seq_h_i(otp_ctrl_otp_ast_pwr_seq_h_i),
       .edn_o(edn0_edn_req[1]),
       .edn_i(edn0_edn_rsp[1]),
       .pwr_otp_i(pwrmgr_aon_pwr_otp_req),
       .pwr_otp_o(pwrmgr_aon_pwr_otp_rsp),
-      .lc_otp_vendor_test_i(lc_ctrl_lc_otp_vendor_test_req),
-      .lc_otp_vendor_test_o(lc_ctrl_lc_otp_vendor_test_rsp),
       .lc_otp_program_i(lc_ctrl_lc_otp_program_req),
       .lc_otp_program_o(lc_ctrl_lc_otp_program_rsp),
       .otp_lc_data_o(otp_ctrl_otp_lc_data),
@@ -1213,7 +1207,6 @@ module top_darjeeling #(
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
-      .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
       .otp_keymgr_key_o(otp_ctrl_otp_keymgr_key),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -1221,23 +1214,52 @@ module top_darjeeling #(
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_req),
       .otbn_otp_key_o(otp_ctrl_otbn_otp_key_rsp),
       .otp_broadcast_o(otp_ctrl_otp_broadcast),
-      .obs_ctrl_i(ast_obs_ctrl),
-      .otp_obs_o(otp_obs_o),
-      .cfg_i(otp_cfg_i),
-      .cfg_rsp_o(otp_cfg_rsp_o),
+      .otp_macro_o(otp_ctrl_otp_macro_req),
+      .otp_macro_i(otp_ctrl_otp_macro_rsp),
       .core_tl_i(otp_ctrl_core_tl_req),
       .core_tl_o(otp_ctrl_core_tl_rsp),
-      .prim_tl_i(otp_ctrl_prim_tl_req),
-      .prim_tl_o(otp_ctrl_prim_tl_rsp),
-      .scanmode_i,
-      .scan_rst_ni,
-      .scan_en_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
       .clk_edn_i (clkmgr_aon_clocks.clk_main_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
       .rst_edn_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
+  otp_macro #(
+    .Width(otp_ctrl_macro_pkg::OtpWidth),
+    .Depth(otp_ctrl_macro_pkg::OtpDepth),
+    .SizeWidth(otp_ctrl_macro_pkg::OtpSizeWidth),
+    .MemInitFile(OtpMacroMemInitFile),
+    .VendorTestOffset(otp_ctrl_reg_pkg::VendorTestOffset),
+    .VendorTestSize(otp_ctrl_reg_pkg::VendorTestSize)
+  ) u_otp_macro (
+
+      // Output
+      .cio_test_o    (cio_otp_macro_test_d2p),
+      .cio_test_en_o (cio_otp_macro_test_en_d2p),
+
+      // Inter-module signals
+      .obs_ctrl_i(ast_obs_ctrl),
+      .otp_obs_o(otp_obs_o),
+      .pwr_seq_o(otp_macro_pwr_seq_o),
+      .pwr_seq_h_i(otp_macro_pwr_seq_h_i),
+      .ext_voltage_h_io(otp_ext_voltage_h_io),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .test_i(lc_ctrl_lc_otp_vendor_test_req),
+      .test_o(lc_ctrl_lc_otp_vendor_test_rsp),
+      .otp_i(otp_ctrl_otp_macro_req),
+      .otp_o(otp_ctrl_otp_macro_rsp),
+      .cfg_i(otp_cfg_i),
+      .cfg_rsp_o(otp_cfg_rsp_o),
+      .tl_i(otp_macro_tl_req),
+      .tl_o(otp_macro_tl_rsp),
+      .scanmode_i,
+      .scan_rst_ni,
+      .scan_en_i,
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
   lc_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[12:10]),
@@ -3109,9 +3131,9 @@ module top_darjeeling #(
     .tl_otp_ctrl__core_o(otp_ctrl_core_tl_req),
     .tl_otp_ctrl__core_i(otp_ctrl_core_tl_rsp),
 
-    // port: tl_otp_ctrl__prim
-    .tl_otp_ctrl__prim_o(otp_ctrl_prim_tl_req),
-    .tl_otp_ctrl__prim_i(otp_ctrl_prim_tl_rsp),
+    // port: tl_otp_macro
+    .tl_otp_macro_o(otp_macro_tl_req),
+    .tl_otp_macro_i(otp_macro_tl_rsp),
 
     // port: tl_lc_ctrl__regs
     .tl_lc_ctrl__regs_o(lc_ctrl_regs_tl_req),
@@ -3241,14 +3263,14 @@ module top_darjeeling #(
   assign mio_d2p[MioOutSocProxySocGpo13] = cio_soc_proxy_soc_gpo_d2p[13];
   assign mio_d2p[MioOutSocProxySocGpo14] = cio_soc_proxy_soc_gpo_d2p[14];
   assign mio_d2p[MioOutSocProxySocGpo15] = cio_soc_proxy_soc_gpo_d2p[15];
-  assign mio_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_d2p[0];
+  assign mio_d2p[MioOutOtpMacroTest0] = cio_otp_macro_test_d2p[0];
 
   // All muxed output enables
   assign mio_en_d2p[MioOutSocProxySocGpo12] = cio_soc_proxy_soc_gpo_en_d2p[12];
   assign mio_en_d2p[MioOutSocProxySocGpo13] = cio_soc_proxy_soc_gpo_en_d2p[13];
   assign mio_en_d2p[MioOutSocProxySocGpo14] = cio_soc_proxy_soc_gpo_en_d2p[14];
   assign mio_en_d2p[MioOutSocProxySocGpo15] = cio_soc_proxy_soc_gpo_en_d2p[15];
-  assign mio_en_d2p[MioOutOtpCtrlTest0] = cio_otp_ctrl_test_en_d2p[0];
+  assign mio_en_d2p[MioOutOtpMacroTest0] = cio_otp_macro_test_en_d2p[0];
 
   // All dedicated inputs
   logic [72:0] unused_dio_p2d;

@@ -47,9 +47,7 @@ int main(int argc, char **argv) {
   flash0.Write(/*word_offset=*/0, all_ones);
   flash1.Write(/*word_offset=*/0, all_ones);
 
-  MemArea otp(top_scope + ".u_otp_ctrl.u_otp.gen_generic.u_impl_generic." +
-                  ram1p_adv_scope,
-              0x4000 / 4, 4);
+  MemArea otp(top_scope + ".u_otp_macro." + ram1p_adv_scope, 0x4000 / 4, 4);
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);

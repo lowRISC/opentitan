@@ -33,6 +33,7 @@ IPS ?= aes           \
        lc_ctrl       \
        mbx           \
        otbn          \
+       otp_macro     \
        pattgen       \
        pwm           \
        rom_ctrl      \

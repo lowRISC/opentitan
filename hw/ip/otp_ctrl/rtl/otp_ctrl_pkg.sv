@@ -11,20 +11,11 @@ package otp_ctrl_pkg;
   // General Parameters //
   ////////////////////////
 
-  // Number of vendor-specific test CSR bits coming from and going to
-  // the life cycle TAP registers.
-  parameter int OtpTestCtrlWidth   = 32;
-  parameter int OtpTestStatusWidth = 32;
-  parameter int OtpTestVectWidth   = 8;
-
   parameter int DeviceIdWidth = 256;
   typedef logic [DeviceIdWidth-1:0] otp_device_id_t;
 
   parameter int ManufStateWidth = 256;
   typedef logic [ManufStateWidth-1:0] otp_manuf_state_t;
-
-  // OTP-macro specific
-  parameter int OtpPwrSeqWidth   = 2;
 
   /////////////////////////////////
   // Typedefs for OTP Scrambling //
@@ -89,14 +80,6 @@ package otp_ctrl_pkg;
     logic err;
     logic ack;
   } lc_otp_program_rsp_t;
-
-  typedef struct packed {
-    logic [OtpTestCtrlWidth-1:0] ctrl;
-  } lc_otp_vendor_test_req_t;
-
-  typedef struct packed {
-    logic [OtpTestStatusWidth-1:0] status;
-  } lc_otp_vendor_test_rsp_t;
 
   ////////////////////////////////
   // Typedefs for Key Broadcast //
@@ -210,17 +193,5 @@ package otp_ctrl_pkg;
   typedef struct packed {
     logic idle;
   } otp_pwr_state_t;
-
-  ///////////////////
-  // AST Interface //
-  ///////////////////
-
-  typedef struct packed {
-    logic [OtpPwrSeqWidth-1:0] pwr_seq;
-  } otp_ast_req_t;
-
-  typedef struct packed {
-    logic [OtpPwrSeqWidth-1:0] pwr_seq_h;
-  } otp_ast_rsp_t;
 
 endpackage : otp_ctrl_pkg

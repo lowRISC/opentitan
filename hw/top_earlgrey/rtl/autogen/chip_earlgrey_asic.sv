@@ -787,8 +787,8 @@ module chip_earlgrey_asic #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -989,8 +989,8 @@ module chip_earlgrey_asic #(
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( flash_power_down_h ),
     .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -1188,8 +1188,8 @@ module chip_earlgrey_asic #(
     .ast_edn_req_i                ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                ( ast_edn_edn_rsp            ),
     .obs_ctrl_i                   ( obs_ctrl                   ),
-    .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o          ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i        ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                    ( otp_obs                    ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),

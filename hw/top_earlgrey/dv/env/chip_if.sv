@@ -58,6 +58,7 @@ interface chip_if;
 `define KEYMGR_HIER         `TOP_HIER.u_keymgr
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define OTBN_HIER           `TOP_HIER.u_otbn
 `define PATTGEN_HIER        `TOP_HIER.u_pattgen
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
@@ -1241,7 +1242,7 @@ interface chip_if;
       dummy_signal_probe_otp_vendor_test_ctrl)
 `else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_CTRL_HIER.lc_otp_vendor_test_i)
+      `OTP_MACRO_HIER.test_i)
 `endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
@@ -1409,6 +1410,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.u_spi_host1.u_spi_core.u_fsm.stat
 `undef KEYMGR_HIER
 `undef LC_CTRL_HIER
 `undef OTP_CTRL_HIER
+`undef OTP_MACRO_HIER
 `undef OTBN_HIER
 `undef PATTGEN_HIER
 `undef PINMUX_HIER
