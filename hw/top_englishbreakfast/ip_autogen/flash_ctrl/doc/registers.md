@@ -99,7 +99,7 @@ It is implemented this way because the access window supports transaction back-p
 | flash_ctrl.[`BANK1_INFO2_PAGE_CFG_1`](#bank1_info2_page_cfg) | 0x160    |        4 | Memory property configuration for info partition in bank1,    |
 | flash_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override)   | 0x164    |        4 | HW interface info configuration rule overrides                |
 | flash_ctrl.[`BANK_CFG_REGWEN`](#bank_cfg_regwen)             | 0x168    |        4 | Bank configuration registers configuration enable.            |
-| flash_ctrl.[`MP_BANK_CFG_SHADOWED`](#MP_BANK_CFG_SHADOWED)   | 0x16c    |        4 | Memory properties bank configuration                          |
+| flash_ctrl.[`MP_BANK_CFG_SHADOWED`](#mp_bank_cfg_shadowed)   | 0x16c    |        4 | Memory properties bank configuration                          |
 | flash_ctrl.[`OP_STATUS`](#op_status)                         | 0x170    |        4 | Flash Operation Status                                        |
 | flash_ctrl.[`STATUS`](#status)                               | 0x174    |        4 | Flash Controller Status                                       |
 | flash_ctrl.[`DEBUG_STATE`](#debug_state)                     | 0x178    |        4 | Current flash fsm state                                       |
@@ -107,7 +107,7 @@ It is implemented this way because the access window supports transaction back-p
 | flash_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)           | 0x180    |        4 | This register tabulates standard fault status of the flash.   |
 | flash_ctrl.[`FAULT_STATUS`](#fault_status)                   | 0x184    |        4 | This register tabulates customized fault status of the flash. |
 | flash_ctrl.[`ERR_ADDR`](#err_addr)                           | 0x188    |        4 | Synchronous error address                                     |
-| flash_ctrl.[`ECC_SINGLE_ERR_CNT`](#ECC_SINGLE_ERR_CNT)       | 0x18c    |        4 | Count of single bit ECC errors                                |
+| flash_ctrl.[`ECC_SINGLE_ERR_CNT`](#ecc_single_err_cnt)       | 0x18c    |        4 | Count of single bit ECC errors                                |
 | flash_ctrl.[`ECC_SINGLE_ERR_ADDR_0`](#ecc_single_err_addr)   | 0x190    |        4 | Latest address of ECC single err                              |
 | flash_ctrl.[`ECC_SINGLE_ERR_ADDR_1`](#ecc_single_err_addr)   | 0x194    |        4 | Latest address of ECC single err                              |
 | flash_ctrl.[`PHY_ALERT_CFG`](#phy_alert_cfg)                 | 0x198    |        4 | Phy alert configuration                                       |

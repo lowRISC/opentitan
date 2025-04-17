@@ -208,7 +208,7 @@
 | pinmux.[`DIO_PAD_ATTR_70`](#dio_pad_attr)                      | 0x320    |        4 | Dedicated pad attributes.                                           |
 | pinmux.[`DIO_PAD_ATTR_71`](#dio_pad_attr)                      | 0x324    |        4 | Dedicated pad attributes.                                           |
 | pinmux.[`DIO_PAD_ATTR_72`](#dio_pad_attr)                      | 0x328    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`MIO_PAD_SLEEP_STATUS`](#MIO_PAD_SLEEP_STATUS)         | 0x32c    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`MIO_PAD_SLEEP_STATUS`](#mio_pad_sleep_status)         | 0x32c    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_0`](#mio_pad_sleep_regwen)       | 0x330    |        4 | Register write enable for MIO sleep value configuration.            |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_1`](#mio_pad_sleep_regwen)       | 0x334    |        4 | Register write enable for MIO sleep value configuration.            |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_2`](#mio_pad_sleep_regwen)       | 0x338    |        4 | Register write enable for MIO sleep value configuration.            |
@@ -245,9 +245,9 @@
 | pinmux.[`MIO_PAD_SLEEP_MODE_9`](#mio_pad_sleep_mode)           | 0x3b4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
 | pinmux.[`MIO_PAD_SLEEP_MODE_10`](#mio_pad_sleep_mode)          | 0x3b8    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
 | pinmux.[`MIO_PAD_SLEEP_MODE_11`](#mio_pad_sleep_mode)          | 0x3bc    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`DIO_PAD_SLEEP_STATUS_0`](#DIO_PAD_SLEEP_STATUS_0)     | 0x3c0    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`DIO_PAD_SLEEP_STATUS_1`](#DIO_PAD_SLEEP_STATUS_1)     | 0x3c4    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`DIO_PAD_SLEEP_STATUS_2`](#DIO_PAD_SLEEP_STATUS_2)     | 0x3c8    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`DIO_PAD_SLEEP_STATUS_0`](#dio_pad_sleep_status_0)     | 0x3c0    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`DIO_PAD_SLEEP_STATUS_1`](#dio_pad_sleep_status_1)     | 0x3c4    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`DIO_PAD_SLEEP_STATUS_2`](#dio_pad_sleep_status_2)     | 0x3c8    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_0`](#dio_pad_sleep_regwen)       | 0x3cc    |        4 | Register write enable for DIO sleep value configuration.            |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_1`](#dio_pad_sleep_regwen)       | 0x3d0    |        4 | Register write enable for DIO sleep value configuration.            |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_2`](#dio_pad_sleep_regwen)       | 0x3d4    |        4 | Register write enable for DIO sleep value configuration.            |
@@ -507,7 +507,7 @@
 | pinmux.[`WKUP_DETECTOR_PADSEL_5`](#wkup_detector_padsel)       | 0x7cc    |        4 | Pad selects for pad wakeup condition detectors.                     |
 | pinmux.[`WKUP_DETECTOR_PADSEL_6`](#wkup_detector_padsel)       | 0x7d0    |        4 | Pad selects for pad wakeup condition detectors.                     |
 | pinmux.[`WKUP_DETECTOR_PADSEL_7`](#wkup_detector_padsel)       | 0x7d4    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_CAUSE`](#WKUP_CAUSE)                             | 0x7d8    |        4 | Cause registers for wakeup detectors.                               |
+| pinmux.[`WKUP_CAUSE`](#wkup_cause)                             | 0x7d8    |        4 | Cause registers for wakeup detectors.                               |
 
 ## ALERT_TEST
 Alert Test Register

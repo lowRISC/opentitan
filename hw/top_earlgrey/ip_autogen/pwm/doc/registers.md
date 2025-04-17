@@ -8,8 +8,8 @@
 | pwm.[`ALERT_TEST`](#alert_test)     | 0x0      |        4 | Alert Test Register                             |
 | pwm.[`REGWEN`](#regwen)             | 0x4      |        4 | Register write enable for all control registers |
 | pwm.[`CFG`](#cfg)                   | 0x8      |        4 | Configuration register                          |
-| pwm.[`PWM_EN`](#PWM_EN)             | 0xc      |        4 | Enable PWM operation for each channel           |
-| pwm.[`INVERT`](#INVERT)             | 0x10     |        4 | Invert the PWM output for each channel          |
+| pwm.[`PWM_EN`](#pwm_en)             | 0xc      |        4 | Enable PWM operation for each channel           |
+| pwm.[`INVERT`](#invert)             | 0x10     |        4 | Invert the PWM output for each channel          |
 | pwm.[`PWM_PARAM_0`](#pwm_param)     | 0x14     |        4 | Basic PWM Channel Parameters                    |
 | pwm.[`PWM_PARAM_1`](#pwm_param)     | 0x18     |        4 | Basic PWM Channel Parameters                    |
 | pwm.[`PWM_PARAM_2`](#pwm_param)     | 0x1c     |        4 | Basic PWM Channel Parameters                    |

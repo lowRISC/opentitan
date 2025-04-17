@@ -340,8 +340,8 @@
 | pinmux.[`DIO_PAD_ATTR_13`](#dio_pad_attr)                       | 0x530    |        4 | Dedicated pad attributes.                                           |
 | pinmux.[`DIO_PAD_ATTR_14`](#dio_pad_attr)                       | 0x534    |        4 | Dedicated pad attributes.                                           |
 | pinmux.[`DIO_PAD_ATTR_15`](#dio_pad_attr)                       | 0x538    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`MIO_PAD_SLEEP_STATUS_0`](#MIO_PAD_SLEEP_STATUS_0)      | 0x53c    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`MIO_PAD_SLEEP_STATUS_1`](#MIO_PAD_SLEEP_STATUS_1)      | 0x540    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`MIO_PAD_SLEEP_STATUS_0`](#mio_pad_sleep_status_0)      | 0x53c    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`MIO_PAD_SLEEP_STATUS_1`](#mio_pad_sleep_status_1)      | 0x540    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_0`](#mio_pad_sleep_regwen)        | 0x544    |        4 | Register write enable for MIO sleep value configuration.            |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_1`](#mio_pad_sleep_regwen)        | 0x548    |        4 | Register write enable for MIO sleep value configuration.            |
 | pinmux.[`MIO_PAD_SLEEP_REGWEN_2`](#mio_pad_sleep_regwen)        | 0x54c    |        4 | Register write enable for MIO sleep value configuration.            |
@@ -483,7 +483,7 @@
 | pinmux.[`MIO_PAD_SLEEP_MODE_44`](#mio_pad_sleep_mode)           | 0x76c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
 | pinmux.[`MIO_PAD_SLEEP_MODE_45`](#mio_pad_sleep_mode)           | 0x770    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
 | pinmux.[`MIO_PAD_SLEEP_MODE_46`](#mio_pad_sleep_mode)           | 0x774    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`DIO_PAD_SLEEP_STATUS`](#DIO_PAD_SLEEP_STATUS)          | 0x778    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status)          | 0x778    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_0`](#dio_pad_sleep_regwen)        | 0x77c    |        4 | Register write enable for DIO sleep value configuration.            |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_1`](#dio_pad_sleep_regwen)        | 0x780    |        4 | Register write enable for DIO sleep value configuration.            |
 | pinmux.[`DIO_PAD_SLEEP_REGWEN_2`](#dio_pad_sleep_regwen)        | 0x784    |        4 | Register write enable for DIO sleep value configuration.            |
@@ -572,7 +572,7 @@
 | pinmux.[`WKUP_DETECTOR_PADSEL_5`](#wkup_detector_padsel)        | 0x8d0    |        4 | Pad selects for pad wakeup condition detectors.                     |
 | pinmux.[`WKUP_DETECTOR_PADSEL_6`](#wkup_detector_padsel)        | 0x8d4    |        4 | Pad selects for pad wakeup condition detectors.                     |
 | pinmux.[`WKUP_DETECTOR_PADSEL_7`](#wkup_detector_padsel)        | 0x8d8    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_CAUSE`](#WKUP_CAUSE)                              | 0x8dc    |        4 | Cause registers for wakeup detectors.                               |
+| pinmux.[`WKUP_CAUSE`](#wkup_cause)                              | 0x8dc    |        4 | Cause registers for wakeup detectors.                               |
 
 ## ALERT_TEST
 Alert Test Register

@@ -13,11 +13,11 @@
 | pwrmgr.[`CONTROL`](#control)                             | 0x14     |        4 | Control register                                                                |
 | pwrmgr.[`CFG_CDC_SYNC`](#cfg_cdc_sync)                   | 0x18     |        4 | The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the |
 | pwrmgr.[`WAKEUP_EN_REGWEN`](#wakeup_en_regwen)           | 0x1c     |        4 | Configuration enable for wakeup_en register                                     |
-| pwrmgr.[`WAKEUP_EN`](#WAKEUP_EN)                         | 0x20     |        4 | Bit mask for enabled wakeups                                                    |
-| pwrmgr.[`WAKE_STATUS`](#WAKE_STATUS)                     | 0x24     |        4 | A read only register of all current wake requests post enable mask              |
+| pwrmgr.[`WAKEUP_EN`](#wakeup_en)                         | 0x20     |        4 | Bit mask for enabled wakeups                                                    |
+| pwrmgr.[`WAKE_STATUS`](#wake_status)                     | 0x24     |        4 | A read only register of all current wake requests post enable mask              |
 | pwrmgr.[`RESET_EN_REGWEN`](#reset_en_regwen)             | 0x28     |        4 | Configuration enable for reset_en register                                      |
-| pwrmgr.[`RESET_EN`](#RESET_EN)                           | 0x2c     |        4 | Bit mask for enabled reset requests                                             |
-| pwrmgr.[`RESET_STATUS`](#RESET_STATUS)                   | 0x30     |        4 | A read only register of all current reset requests post enable mask             |
+| pwrmgr.[`RESET_EN`](#reset_en)                           | 0x2c     |        4 | Bit mask for enabled reset requests                                             |
+| pwrmgr.[`RESET_STATUS`](#reset_status)                   | 0x30     |        4 | A read only register of all current reset requests post enable mask             |
 | pwrmgr.[`ESCALATE_RESET_STATUS`](#escalate_reset_status) | 0x34     |        4 | A read only register of escalation reset request                                |
 | pwrmgr.[`WAKE_INFO_CAPTURE_DIS`](#wake_info_capture_dis) | 0x38     |        4 | Indicates which functions caused the chip to wakeup                             |
 | pwrmgr.[`WAKE_INFO`](#wake_info)                         | 0x3c     |        4 | Indicates which functions caused the chip to wakeup.                            |
