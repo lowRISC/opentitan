@@ -7,8 +7,10 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -64,16 +66,28 @@ static status_t aes_write_key(aes_key_t key) {
   // Handle key shares in two separate loops to avoid dealing with
   // corresponding parts too close together, which could risk power
   // side-channel leakage in the ALU.
-  // TODO: randomize iteration order.
-  size_t i = 0;
-  for (; i < key.key_len; ++i) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
+  // Start from a random index less than `key.key_len`.
+  random_order_t order;
+  random_order_init(&order, key.key_len);
+  size_t iter_cnt = 0;
+  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
+    abs_mmio_write32(share0 + order.state * sizeof(uint32_t),
+                     key.key_shares[0][order.state]);
+    random_order_advance(&order);
+    HARDENED_CHECK_LT(order.state, key.key_len);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
-  for (i = 0; i < key.key_len; ++i) {
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
+  HARDENED_CHECK_EQ(iter_cnt, key.key_len);
+
+  // Start from a random index less than `key.key_len`.
+  random_order_init(&order, key.key_len);
+  iter_cnt = 0;
+  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
+    abs_mmio_write32(share1 + order.state * sizeof(uint32_t),
+                     key.key_shares[1][order.state]);
+    random_order_advance(&order);
+    HARDENED_CHECK_LT(order.state, key.key_len);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
+  HARDENED_CHECK_EQ(iter_cnt, key.key_len);
 
   // NOTE: all eight share registers must be written; in the case we don't have
   // enough key data, we fill it with zeroes.
