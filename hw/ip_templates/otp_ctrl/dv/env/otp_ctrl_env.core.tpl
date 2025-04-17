@@ -13,6 +13,8 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:crypto_dpi_present
       - lowrisc:dv:lc_ctrl_dv_utils
+      - lowrisc:ip:otp_macro_pkg
+      - lowrisc:dv:otp_macro_env
     files:
       - otp_scrambler_pkg.sv
       - otp_ctrl_env_pkg.sv

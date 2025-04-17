@@ -1151,12 +1151,12 @@ module chip_darjeeling_asic #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   // OTP DFT configuration
-  prim_otp_cfg_pkg::otp_cfg_t otp_cfg;
-  assign otp_cfg = prim_otp_cfg_pkg::OTP_CFG_DEFAULT;
+  otp_macro_pkg::otp_cfg_t otp_cfg;
+  assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -1339,8 +1339,8 @@ module chip_darjeeling_asic #(
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( ),
     .flash_power_ready_h_o ( ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -1675,8 +1675,8 @@ module chip_darjeeling_asic #(
     .ast_tl_req_o                      ( base_ast_bus               ),
     .ast_tl_rsp_i                      ( ast_base_bus               ),
     .obs_ctrl_i                        ( obs_ctrl                   ),
-    .otp_ctrl_otp_ast_pwr_seq_o        ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i      ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o               ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                         ( otp_obs                    ),
     .otp_cfg_i                         ( otp_cfg                    ),
     .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),

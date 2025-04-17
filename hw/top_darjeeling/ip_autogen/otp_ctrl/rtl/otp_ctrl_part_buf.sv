@@ -11,6 +11,11 @@ module otp_ctrl_part_buf
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_macro_pkg::OtpAddrShift;
+  import otp_ctrl_macro_pkg::OtpAddrWidth;
+  import otp_ctrl_macro_pkg::OtpIfWidth;
+  import otp_ctrl_macro_pkg::OtpSizeWidth;
+  import otp_ctrl_macro_pkg::OtpWidth;
   import otp_ctrl_top_specific_pkg::*;
 #(
   // Partition information.
@@ -54,14 +59,14 @@ module otp_ctrl_part_buf
   output logic [Info.size*8-1:0]      data_o,
   // OTP interface
   output logic                        otp_req_o,
-  output prim_otp_pkg::cmd_e          otp_cmd_o,
+  output otp_ctrl_macro_pkg::cmd_e          otp_cmd_o,
   output logic [OtpSizeWidth-1:0]     otp_size_o,
   output logic [OtpIfWidth-1:0]       otp_wdata_o,
   output logic [OtpAddrWidth-1:0]     otp_addr_o,
   input                               otp_gnt_i,
   input                               otp_rvalid_i,
   input  [ScrmblBlockWidth-1:0]       otp_rdata_i,
-  input  prim_otp_pkg::err_e          otp_err_i,
+  input  otp_ctrl_macro_pkg::err_e          otp_err_i,
   // Scrambling mutex request
   output logic                        scrmbl_mtx_req_o,
   input                               scrmbl_mtx_gnt_i,
@@ -190,10 +195,10 @@ module otp_ctrl_part_buf
   // point and does not report any integrity errors if integrity is disabled.
   otp_err_e otp_err;
   if (Info.integrity) begin : gen_integrity
-    assign otp_cmd_o = prim_otp_pkg::Read;
+    assign otp_cmd_o = otp_ctrl_macro_pkg::Read;
     assign otp_err = otp_err_e'(otp_err_i);
   end else begin : gen_no_integrity
-    assign otp_cmd_o = prim_otp_pkg::ReadRaw;
+    assign otp_cmd_o = otp_ctrl_macro_pkg::ReadRaw;
     always_comb begin
       if (otp_err_e'(otp_err_i) inside {MacroEccCorrError, MacroEccUncorrError}) begin
         otp_err = NoError;

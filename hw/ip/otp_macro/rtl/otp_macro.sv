@@ -2,74 +2,62 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_generic_otp
-  import prim_otp_pkg::*;
+module otp_macro
+  import otp_ctrl_macro_pkg::*;
+  import otp_macro_reg_pkg::*;
+  import otp_macro_pkg::*;
 #(
   // Native OTP word size. This determines the size_i granule.
-  parameter  int Width         = 16,
-  parameter  int Depth         = 1024,
+  parameter  int    Width            = 16,
+  parameter  int    Depth            = 1024,
   // This determines the maximum number of native words that
-  // can be transferred accross the interface in one cycle.
-  parameter  int SizeWidth     = 2,
-  // Width of the power sequencing signal.
-  parameter  int PwrSeqWidth   = 2,
-  // Width of vendor-specific test control signal
-  parameter  int TestCtrlWidth   = 32,
-  parameter  int TestStatusWidth = 32,
-  parameter  int TestVectWidth   = 8,
+  // can be transferred across the interface in one cycle.
+  parameter  int    SizeWidth        = 2,
   // Derived parameters
-  localparam int AddrWidth     = prim_util_pkg::vbits(Depth),
-  localparam int IfWidth       = 2**SizeWidth*Width,
+  localparam int    AddrWidth        = prim_util_pkg::vbits(Depth),
   // VMEM file to initialize the memory with
-  parameter      MemInitFile   = "",
+  parameter         MemInitFile   = "",
   // Vendor test partition offset and size (both in bytes)
-  parameter  int VendorTestOffset = 0,
-  parameter  int VendorTestSize   = 0,
-  // Type definitions of the config in response ports
-  parameter type CfgType_t        = prim_otp_cfg_pkg::otp_cfg_t,
-  parameter type CfgRspType_t     = prim_otp_cfg_pkg::otp_cfg_rsp_t
+  parameter  int    VendorTestOffset = 0,
+  parameter  int    VendorTestSize   = 0
 ) (
-  input                                  clk_i,
-  input                                  rst_ni,
-  // Observability
-  input ast_pkg::ast_obs_ctrl_t          obs_ctrl_i,
-  output logic [7:0]                     otp_obs_o,
-  // Macro-specific power sequencing signals to/from AST
-  output logic [PwrSeqWidth-1:0]          pwr_seq_o,
-  input        [PwrSeqWidth-1:0]          pwr_seq_h_i,
-  // External programming voltage
-  inout wire                              ext_voltage_io,
-  // Test interfaces
-  input        [TestCtrlWidth-1:0]        test_ctrl_i,
-  output logic [TestStatusWidth-1:0]      test_status_o,
-  output logic [TestVectWidth-1:0]        test_vect_o,
-  input  tlul_pkg::tl_h2d_t               test_tl_i,
-  output tlul_pkg::tl_d2h_t               test_tl_o,
-  // Other DFT signals
-  input prim_mubi_pkg::mubi4_t            scanmode_i,  // Scan Mode input
-  input                                   scan_en_i,   // Scan Shift
-  input                                   scan_rst_ni, // Scan Reset
-  // Alert indication (to be connected to alert sender in the instantiating IP)
-  output logic                            fatal_alert_o,
-  output logic                            recov_alert_o,
-  // Ready valid handshake for read/write command
-  output logic                            ready_o,
-  input                                   valid_i,
-  // #(Native words)-1, e.g. size == 0 for 1 native word.
-  input [SizeWidth-1:0]                   size_i,
-  // See prim_otp_pkg for the command encoding.
-  input  cmd_e                            cmd_i,
-  input [AddrWidth-1:0]                   addr_i,
-  input [IfWidth-1:0]                     wdata_i,
-  // Response channel
-  output logic                            valid_o,
-  output logic [IfWidth-1:0]              rdata_o,
-  output err_e                            err_o,
-  // DFT config and response port
-  input  CfgType_t                        cfg_i,
-  output CfgRspType_t                     cfg_rsp_o
-);
+  input                          clk_i,
+  input                          rst_ni,
+  // Bus interface
+  input                          tlul_pkg::tl_h2d_t tl_i,
+  output                         tlul_pkg::tl_d2h_t tl_o,
 
+  // Lifecycle broadcast inputs
+  // SEC_CM: LC_CTRL.INTERSIG.MUBI
+  input                          lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+
+  input                          ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
+  output logic [7:0]             otp_obs_o,
+  // Macro-specific power sequencing signals to/from AST
+  output pwr_seq_t               pwr_seq_o,
+  input  pwr_seq_t               pwr_seq_h_i,
+  // External programming voltage
+  inout wire                     ext_voltage_h_io,
+  // Test interfaces
+  input                          otp_test_req_t test_i,
+  output                         otp_test_rsp_t test_o,
+  output                         otp_test_vect_t cio_test_o,
+  output                         otp_test_vect_t cio_test_en_o,
+  // Other DFT signals
+  input                          prim_mubi_pkg::mubi4_t scanmode_i,
+  input                          scan_en_i,
+  input                          scan_rst_ni,
+
+  // Incoming request from OTP_CTRL
+  input                          otp_ctrl_macro_req_t otp_i,
+  output                         otp_ctrl_macro_rsp_t otp_o,
+
+  // DFT config and response port
+  input                          otp_cfg_t cfg_i,
+  output                         otp_cfg_rsp_t cfg_rsp_o
+);
+  // SEC_CM: MACRO.MEM.INTEGRITY
+  // SEC_CM: MACRO.MEM.CM
   import prim_mubi_pkg::MuBi4False;
 
   // This is only restricted by the supported ECC poly further
@@ -78,7 +66,7 @@ module prim_generic_otp
   `ASSERT_INIT(SecDecWidth_A, Width == 16)
 
   // Not supported in open-source emulation model.
-  logic [PwrSeqWidth-1:0] unused_pwr_seq_h;
+  pwr_seq_t unused_pwr_seq_h;
   assign unused_pwr_seq_h = pwr_seq_h_i;
   assign pwr_seq_o = '0;
 
@@ -87,35 +75,81 @@ module prim_generic_otp
   assign otp_obs_o = '0;
 
   wire unused_ext_voltage;
-  assign unused_ext_voltage = ext_voltage_io;
+  assign unused_ext_voltage = ext_voltage_h_io;
+
   logic unused_test_ctrl_i;
-  assign unused_test_ctrl_i = ^test_ctrl_i;
+  assign unused_test_ctrl_i = ^test_i.ctrl;
 
   logic unused_scan;
   assign unused_scan = ^{scanmode_i, scan_en_i, scan_rst_ni};
 
-  logic intg_err, fsm_err;
-  assign fatal_alert_o = intg_err || fsm_err;
-  assign recov_alert_o = 1'b0;
+  logic lc_fsm_err, intg_err, fsm_err;
+  assign otp_o.fatal_lc_fsm_err = lc_fsm_err;
+  assign otp_o.fatal_alert = intg_err || fsm_err;
+  assign otp_o.recov_alert = 1'b0;
 
-  assign test_vect_o = '0;
-  assign test_status_o = '0;
+  otp_test_vect_t test_vect;
+  assign test_vect = '0;
+  assign test_o.status = '0;
 
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
-  assign cfg_rsp_o = '0;
+  assign cfg_rsp_o  = '0;
+
+  ///////////////////////////////////////
+  // Life Cycle Signal Synchronization //
+  ///////////////////////////////////////
+
+  lc_ctrl_pkg::lc_tx_t [2:0] lc_dft_en;
+
+  prim_lc_sync #(
+    .NumCopies(3)
+  ) u_prim_lc_sync_dft_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_dft_en_i),
+    .lc_en_o(lc_dft_en)
+  );
+
+  // Test-related GPIOs.
+  // SEC_CM: TEST.BUS.LC_GATED
+  assign cio_test_o    = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[1])) ?
+                         test_vect            : '0;
+  assign cio_test_en_o = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[2])) ?
+                         {OtpTestVectWidth{1'b1}} : '0;
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
   ////////////////////////////////////
+  tlul_pkg::tl_h2d_t           tl_h2d_gated;
+  tlul_pkg::tl_d2h_t           tl_d2h_gated;
 
-  otp_ctrl_reg_pkg::otp_ctrl_prim_reg2hw_t reg2hw;
-  otp_ctrl_reg_pkg::otp_ctrl_prim_hw2reg_t hw2reg;
-  otp_ctrl_prim_reg_top u_reg_top (
+  // Life cycle qualification of TL-UL test interface.
+  // SEC_CM: TEST.BUS.LC_GATED
+  // SEC_CM: TEST_TL_LC_GATE.FSM.SPARSE
+  tlul_lc_gate #(
+    .NumGatesPerDirection(2)
+  ) u_tlul_lc_gate (
     .clk_i,
     .rst_ni,
-    .tl_i      (test_tl_i ),
-    .tl_o      (test_tl_o ),
+    .tl_h2d_i(tl_i),
+    .tl_d2h_o(tl_o),
+    .tl_h2d_o(tl_h2d_gated),
+    .tl_d2h_i(tl_d2h_gated),
+    .lc_en_i (lc_dft_en[0]),
+    .flush_req_i('0),
+    .flush_ack_o(),
+    .resp_pending_o(),
+    .err_o   (lc_fsm_err)
+  );
+
+  otp_macro_reg_pkg::otp_macro_reg2hw_t reg2hw;
+  otp_macro_reg_pkg::otp_macro_hw2reg_t hw2reg;
+  otp_macro_reg_top u_reg_top (
+    .clk_i,
+    .rst_ni,
+    .tl_i      (tl_h2d_gated ),
+    .tl_o      (tl_d2h_gated ),
     .reg2hw    (reg2hw    ),
     .hw2reg    (hw2reg    ),
     .intg_err_o(intg_err  )
@@ -171,42 +205,42 @@ module prim_generic_otp
   logic integrity_en_d, integrity_en_q;
   logic req, wren, rvalid;
   logic [1:0] rerror;
-  logic [AddrWidth-1:0] addr_q;
+  otp_macro_addr_t addr_q;
   logic [SizeWidth-1:0] size_q;
   logic [SizeWidth-1:0] cnt_d, cnt_q;
   logic cnt_clr, cnt_en;
   logic read_ecc_on, write_ecc_on;
   logic wdata_inconsistent;
 
+  // Response to otp_ctrl
+  assign otp_o.rvalid = valid_q;
+  assign otp_o.err   = err_q;
 
   assign cnt_d = (cnt_clr) ? '0           :
                  (cnt_en)  ? cnt_q + 1'b1 : cnt_q;
 
-  assign valid_o = valid_q;
-  assign err_o   = err_q;
-
   always_comb begin : p_fsm
     // Default
-    state_d = state_q;
-    ready_o = 1'b0;
-    valid_d = 1'b0;
-    err_d   = err_q;
-    req     = 1'b0;
-    wren    = 1'b0;
-    cnt_clr = 1'b0;
-    cnt_en  = 1'b0;
-    read_ecc_on = 1'b1;
-    write_ecc_on = 1'b1;
-    fsm_err = 1'b0;
+    state_d        = state_q;
+    otp_o.ready    = 1'b0;
+    valid_d        = 1'b0;
+    err_d          = err_q;
+    req            = 1'b0;
+    wren           = 1'b0;
+    cnt_clr        = 1'b0;
+    cnt_en         = 1'b0;
+    read_ecc_on    = 1'b1;
+    write_ecc_on   = 1'b1;
+    fsm_err        = 1'b0;
     integrity_en_d = integrity_en_q;
 
     unique case (state_q)
       // Wait here until we receive an initialization command.
       ResetSt: begin
         err_d = NoError;
-        ready_o = 1'b1;
-        if (valid_i) begin
-          if (cmd_i == Init) begin
+        otp_o.ready = 1'b1;
+        if (otp_i.valid) begin
+          if (otp_i.cmd == Init) begin
             state_d = InitSt;
           end
         end
@@ -219,12 +253,12 @@ module prim_generic_otp
       end
       // In the idle state, we basically wait for read or write commands.
       IdleSt: begin
-        ready_o = 1'b1;
+        otp_o.ready = 1'b1;
         err_d = NoError;
-        if (valid_i) begin
+        if (otp_i.valid) begin
           cnt_clr = 1'b1;
           err_d = NoError;
-          unique case (cmd_i)
+          unique case (otp_i.cmd)
             Read:  begin
               state_d = ReadSt;
               integrity_en_d = 1'b1;
@@ -242,7 +276,7 @@ module prim_generic_otp
               integrity_en_d = 1'b0;
             end
             default: ;
-          endcase // cmd_i
+          endcase // otp_i.cmd
         end
       end
       // Issue a read command to the macro.
@@ -335,7 +369,7 @@ module prim_generic_otp
   // Emulate using ECC protected Block RAM //
   ///////////////////////////////////////////
 
-  logic [AddrWidth-1:0] addr;
+  otp_macro_addr_t addr;
   assign addr = addr_q + AddrWidth'(cnt_q);
 
   logic [Width-1:0] rdata_corr;
@@ -372,7 +406,7 @@ module prim_generic_otp
     for (int k = 0; k < 2**SizeWidth; k++) begin
       rdata_reshaped[k] = rdata_q[k][Width-1:0];
     end
-    rdata_o = rdata_reshaped;
+    otp_o.rdata = rdata_reshaped;
   end
 
   prim_ram_1p_adv #(
@@ -421,10 +455,10 @@ module prim_generic_otp
       err_q   <= err_d;
       cnt_q   <= cnt_d;
       integrity_en_q <= integrity_en_d;
-      if (ready_o && valid_i) begin
-        addr_q  <= addr_i;
-        wdata_q <= wdata_i;
-        size_q  <= size_i;
+      if (otp_o.ready && otp_i.valid) begin
+        addr_q  <= otp_i.addr;
+        wdata_q <= otp_i.wdata;
+        size_q  <= otp_i.size;
       end
       if (rvalid) begin
         rdata_q[cnt_q] <= rdata_d;
@@ -437,9 +471,42 @@ module prim_generic_otp
   ////////////////
 
   // Check that the otp_ctrl FSMs only issue legal commands to the wrapper.
-  `ASSERT(CheckCommands0_A, state_q == ResetSt && valid_i && ready_o |-> cmd_i == Init)
-  `ASSERT(CheckCommands1_A, state_q != ResetSt && valid_i && ready_o
-      |-> cmd_i inside {Read, ReadRaw, Write, WriteRaw})
+  `ASSERT(CheckCommands0_A, state_q == ResetSt && otp_i.valid && otp_o.ready |-> otp_i.cmd == Init)
+  `ASSERT(CheckCommands1_A, state_q != ResetSt && otp_i.valid && otp_o.ready
+      |-> otp_i.cmd inside {Read, ReadRaw, Write, WriteRaw})
+
+  // Check all parameters are as expected.
+  `ASSERT_INIT(WidthMatches_A, Width == otp_ctrl_macro_pkg::OtpWidth)
+  `ASSERT_INIT(DepthMatches_A, Depth == otp_ctrl_macro_pkg::OtpDepth)
+  `ASSERT_INIT(SizeWidthMatches_A, SizeWidth == otp_ctrl_macro_pkg::OtpSizeWidth)
+  `ASSERT_INIT(VendorTestOffsetMatches_A, VendorTestOffset == otp_ctrl_reg_pkg::VendorTestOffset)
+  `ASSERT_INIT(VendorTestSizeMatches_A, VendorTestSize == otp_ctrl_reg_pkg::VendorTestSize)
+
+  `ASSERT_KNOWN(OtpAstPwrSeqKnown_A, pwr_seq_o)
+  `ASSERT_KNOWN(OtpMacroTlOutKnown_A, tl_o)
+
+  // Assertions for countermeasures inside otp_macro are done in three parts
+  // - Assert invalid conditions propagate to otp_o.fatal_alert
+  // - Check that otp_o.fatal_alert is connected to u_otp_ctrl.otp_macro_i as a connectivity check
+  // - Check that u_otp_ctrl.otp_macro_i is connected to u_otp_ctrl.alert_tx_o[3]
+//  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A, u_state_regs, otp_o.fatal_alert)
+  `ASSERT_ERROR_TRIGGER_ERR(PrimFsmCheck_A, u_state_regs, otp_o.fatal_alert, 0,
+      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
+  `ASSUME_FPV(PrimFsmCheck_ATriggerAfterAlertInit_S,
+              $stable(rst_ni) == 0 |-> u_state_regs.unused_err_o == 0 [*10])
+
+  `ASSERT_ERROR_TRIGGER_ERR(TlLcGateFsm_A, u_tlul_lc_gate.u_state_regs, otp_o.fatal_lc_fsm_err, 0,
+      `_SEC_CM_ALERT_MAX_CYC, unused_err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
+  `ASSUME_FPV(TlLcGateFsm_ATriggerAfterAlertInit_S,
+              $stable(rst_ni) == 0 |-> u_tlul_lc_gate.u_state_regs.unused_err_o == 0 [*10])
 
 
-endmodule : prim_generic_otp
+//  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
+//      u_reg_top, otp_o.fatal_alert)
+  `ASSERT_ERROR_TRIGGER_ERR(PrimRegWeOnehotCheck_A,
+      u_reg_top.u_prim_reg_we_check.u_prim_onehot_check, otp_o.fatal_alert, 0,
+      `_SEC_CM_ALERT_MAX_CYC, err_o, `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
+  `ASSUME_FPV(PrimRegWeOneHotCheck_ATriggerAfterAlertInit_S,
+              $stable(rst_ni) == 0 |-> u_state_regs.err_o == 0 [*10])
+
+endmodule : otp_macro

@@ -6,20 +6,20 @@
 
 `include "prim_assert.sv"
 
-module otp_ctrl_prim_reg_top (
+module otp_macro_reg_top (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
-  output otp_ctrl_reg_pkg::otp_ctrl_prim_reg2hw_t reg2hw, // Write
-  input  otp_ctrl_reg_pkg::otp_ctrl_prim_hw2reg_t hw2reg, // Read
+  output otp_macro_reg_pkg::otp_macro_reg2hw_t reg2hw, // Write
+  input  otp_macro_reg_pkg::otp_macro_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
   output logic intg_err_o
 );
 
-  import otp_ctrl_reg_pkg::* ;
+  import otp_macro_reg_pkg::* ;
 
   localparam int AW = 5;
   localparam int DW = 32;
@@ -1265,14 +1265,14 @@ module otp_ctrl_prim_reg_top (
 
   logic [7:0] addr_hit;
   always_comb begin
-    addr_hit[0] = (reg_addr == OTP_CTRL_CSR0_OFFSET);
-    addr_hit[1] = (reg_addr == OTP_CTRL_CSR1_OFFSET);
-    addr_hit[2] = (reg_addr == OTP_CTRL_CSR2_OFFSET);
-    addr_hit[3] = (reg_addr == OTP_CTRL_CSR3_OFFSET);
-    addr_hit[4] = (reg_addr == OTP_CTRL_CSR4_OFFSET);
-    addr_hit[5] = (reg_addr == OTP_CTRL_CSR5_OFFSET);
-    addr_hit[6] = (reg_addr == OTP_CTRL_CSR6_OFFSET);
-    addr_hit[7] = (reg_addr == OTP_CTRL_CSR7_OFFSET);
+    addr_hit[0] = (reg_addr == OTP_MACRO_CSR0_OFFSET);
+    addr_hit[1] = (reg_addr == OTP_MACRO_CSR1_OFFSET);
+    addr_hit[2] = (reg_addr == OTP_MACRO_CSR2_OFFSET);
+    addr_hit[3] = (reg_addr == OTP_MACRO_CSR3_OFFSET);
+    addr_hit[4] = (reg_addr == OTP_MACRO_CSR4_OFFSET);
+    addr_hit[5] = (reg_addr == OTP_MACRO_CSR5_OFFSET);
+    addr_hit[6] = (reg_addr == OTP_MACRO_CSR6_OFFSET);
+    addr_hit[7] = (reg_addr == OTP_MACRO_CSR7_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1280,14 +1280,14 @@ module otp_ctrl_prim_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(OTP_CTRL_PRIM_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(OTP_CTRL_PRIM_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(OTP_CTRL_PRIM_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(OTP_CTRL_PRIM_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(OTP_CTRL_PRIM_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(OTP_CTRL_PRIM_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(OTP_CTRL_PRIM_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(OTP_CTRL_PRIM_PERMIT[7] & ~reg_be)))));
+              ((addr_hit[0] & (|(OTP_MACRO_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(OTP_MACRO_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(OTP_MACRO_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(OTP_MACRO_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(OTP_MACRO_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(OTP_MACRO_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(OTP_MACRO_PERMIT[6] & ~reg_be))) |
+               (addr_hit[7] & (|(OTP_MACRO_PERMIT[7] & ~reg_be)))));
   end
 
   // Generate write-enables

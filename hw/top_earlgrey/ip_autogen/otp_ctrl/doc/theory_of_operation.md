@@ -88,7 +88,7 @@ Calculation of the integrity digest depends on whether the partition requires pe
 ### Vendor Test Partition
 
 The vendor test partition is intended to be used for OTP programming smoke checks during the manufacturing flow.
-The silicon creator may implement these checks inside the proprietary version of the `prim_otp` wrapper.
+The silicon creator may implement these checks inside the proprietary version of the `otp_macro` wrapper.
 This partition behaves like any other SW partition, with the exception that ECC uncorrectable errors will not lead to fatal errors / alerts as they do in all other partitions.
 This is due to the nature of the OTP programming smoke checks, which may leave certain OTP words in a state inconsistent with the ECC polynomial employed upon OTP readout.
 
@@ -466,10 +466,10 @@ Signal                  | Direction        | Type                        | Descr
 `rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
 `err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
 
-The `write raw` and `read raw` command instructs the `prim_otp` wrapper to store / read the data in raw format without generating nor checking integrity information.
+The `write raw` and `read raw` command instructs the `otp_macro` wrapper to store / read the data in raw format without generating nor checking integrity information.
 That means that the wrapper must return the raw, uncorrected data and no integrity errors.
 
-The `prim_otp` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in [OTP error handling](#error-handling).
+The `otp_macro` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in [OTP error handling](#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
@@ -507,8 +507,8 @@ Note that the open source OTP controller allows up to two outstanding OTP comman
 
 #### Generic Simulation and FPGA Emulation Model
 
-For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`prim_generic_otp`).
-This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP IP is available for a specific technology.
-The OTP storage in `prim_generic_otp` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
+For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`otp_macro`).
+This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP macro is available for a specific technology.
+The OTP storage in `otp_macro` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
 While this storage element is volatile, the primitive is constructed such that the contents are not wiped upon a system-wide reset.
 I.e., only a power-cycle wipes the RAM primitive, thereby enabling limited emulation of the OTP function and life cycle transitions also on an FPGA device.

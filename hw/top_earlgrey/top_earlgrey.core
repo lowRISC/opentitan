@@ -10,6 +10,8 @@ filesets:
       # Place the autogen packages first to avoid conflicts
       - lowrisc:earlgrey_constants:top_racl_pkg
       - lowrisc:earlgrey_ip:alert_handler_reg
+      - lowrisc:earlgrey_ip:otp_ctrl_macro_pkg
+      - lowrisc:earlgrey_ip:otp_ctrl_top_specific_pkg
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:rv_dm
@@ -26,6 +28,7 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
+      - lowrisc:ip:otp_macro
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:flash
       - lowrisc:ip:sram_ctrl

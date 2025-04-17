@@ -11,8 +11,8 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |:-------------------------:|:--------:|:----------:|:-----------:|:-------------:|:-------------:|:--------------------------------------------------------------------|
 |        VENDOR_TEST        |    no    |     no     |     no      | yes (Digest)  |   yes (CSR)   | Vendor test partition.                                              |
 |                           |          |            |             |               |               | This is reserved for manufacturing smoke checks. The OTP wrapper    |
-|                           |          |            |             |               |               | control logic inside prim_otp is allowed to read/write to this      |
-|                           |          |            |             |               |               | region. ECC uncorrectable errors seen on the functional prim_otp    |
+|                           |          |            |             |               |               | control logic inside otp_macro is allowed to read/write to this     |
+|                           |          |            |             |               |               | region. ECC uncorrectable errors seen on the functional otp_macro   |
 |                           |          |            |             |               |               | interface will not lead to an alert for this partition.             |
 |                           |          |            |             |               |               | Instead, such errors will be reported as correctable ECC errors.    |
 |      CREATOR_SW_CFG       |    no    |     no     |     yes     | yes (Digest)  |   yes (CSR)   | Software configuration partition.                                   |

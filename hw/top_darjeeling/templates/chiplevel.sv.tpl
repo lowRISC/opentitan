@@ -65,7 +65,7 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
+  parameter OtpMacroMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 ) (
 % else:
 module chip_${top["name"]}_${target["name"]} #(
@@ -468,12 +468,12 @@ module chip_${top["name"]}_${target["name"]} #(
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
   // otp power sequence
-  otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
-  otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+  otp_macro_pkg::otp_ast_req_t otp_macro_pwr_seq;
+  otp_macro_pkg::otp_ast_rsp_t otp_macro_pwr_seq_h;
 
   // OTP DFT configuration
-  prim_otp_cfg_pkg::otp_cfg_t otp_cfg;
-  assign otp_cfg = prim_otp_cfg_pkg::OTP_CFG_DEFAULT;
+  otp_macro_pkg::otp_cfg_t otp_cfg;
+  assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -715,8 +715,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // pdm control (flash)/otp
     .flash_power_down_h_o  ( ),
     .flash_power_ready_h_o ( ),
-    .otp_power_seq_i       ( otp_ctrl_otp_ast_pwr_seq ),
-    .otp_power_seq_h_o     ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_power_seq_i       ( otp_macro_pwr_seq ),
+    .otp_power_seq_h_o     ( otp_macro_pwr_seq_h ),
     // system source clock
     .clk_src_sys_en_i      ( base_ast_pwr.core_clk_en ),
     // need to add function in clkmgr
@@ -1055,8 +1055,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_tl_req_o                      ( base_ast_bus               ),
     .ast_tl_rsp_i                      ( ast_base_bus               ),
     .obs_ctrl_i                        ( obs_ctrl                   ),
-    .otp_ctrl_otp_ast_pwr_seq_o        ( otp_ctrl_otp_ast_pwr_seq   ),
-    .otp_ctrl_otp_ast_pwr_seq_h_i      ( otp_ctrl_otp_ast_pwr_seq_h ),
+    .otp_macro_pwr_seq_o               ( otp_macro_pwr_seq          ),
+    .otp_macro_pwr_seq_h_i             ( otp_macro_pwr_seq_h        ),
     .otp_obs_o                         ( otp_obs                    ),
     .otp_cfg_i                         ( otp_cfg                    ),
     .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
@@ -1286,7 +1286,7 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .SecOtbnMuteUrnd(1'b1),
     .SecOtbnSkipUrndReseedAtStart(1'b1),
-    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
     .SramCtrlRetAonInstrExec(0),
   % if lib.num_rom_ctrl(top["module"]) > 1:
@@ -1324,7 +1324,7 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .CsrngSBoxImpl(aes_pkg::SBoxImplLut),
     .OtbnRegFile(otbn_pkg::RegFileFPGA),
     .OtbnStub(1'b1),
-    .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
+    .OtpMacroMemInitFile(OtpMacroMemInitFile),
     .RvCoreIbexPipeLine(1),
 % endif
     .RomCtrl0BootRomInitFile(BootRomInitFile),

@@ -47,7 +47,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
-        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
+        "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
@@ -88,7 +88,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
-        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
+        "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
@@ -129,7 +129,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
-        "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
+        "--OtpMacroMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],

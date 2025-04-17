@@ -11,60 +11,53 @@ module otp_ctrl
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_macro_pkg::OtpAddrWidth;
+  import otp_ctrl_macro_pkg::OtpDepth;
+  import otp_ctrl_macro_pkg::OtpErrWidth;
+  import otp_ctrl_macro_pkg::OtpIfWidth;
+  import otp_ctrl_macro_pkg::OtpSizeWidth;
+  import otp_ctrl_macro_pkg::OtpWidth;
   import otp_ctrl_top_specific_pkg::*;
+  import otp_macro_pkg::OtpTestVectWidth;
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
-  parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault,
-  // Hexfile file to initialize the OTP macro.
-  // Note that the hexdump needs to account for ECC.
-  parameter MemInitFile = ""
+  parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
 ) (
   // OTP clock
-  input                                              clk_i,
-  input                                              rst_ni,
+  input                               clk_i,
+  input                               rst_ni,
   // EDN clock and interface
-  logic                                              clk_edn_i,
-  logic                                              rst_edn_ni,
-  output edn_pkg::edn_req_t                          edn_o,
-  input  edn_pkg::edn_rsp_t                          edn_i,
+  logic                               clk_edn_i,
+  logic                               rst_edn_ni,
+  output                              edn_pkg::edn_req_t edn_o,
+  input                               edn_pkg::edn_rsp_t edn_i,
   // Bus Interface
-  input  tlul_pkg::tl_h2d_t                          core_tl_i,
-  output tlul_pkg::tl_d2h_t                          core_tl_o,
-  input  tlul_pkg::tl_h2d_t                          prim_tl_i,
-  output tlul_pkg::tl_d2h_t                          prim_tl_o,
+  input                               tlul_pkg::tl_h2d_t core_tl_i,
+  output                              tlul_pkg::tl_d2h_t core_tl_o,
   // Interrupt Requests
-  output logic                                       intr_otp_operation_done_o,
-  output logic                                       intr_otp_error_o,
+  output logic                        intr_otp_operation_done_o,
+  output logic                        intr_otp_error_o,
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]  alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]  alert_tx_o,
-  // Observability to AST
-  input ast_pkg::ast_obs_ctrl_t                      obs_ctrl_i,
-  output logic [7:0]                                 otp_obs_o,
-  // Macro-specific power sequencing signals to/from AST.
-  output otp_ast_req_t                               otp_ast_pwr_seq_o,
-  input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
+  input                               prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output                              prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
   // Power manager interface (inputs are synced to OTP clock domain)
-  input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
-  output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
-  // Macro-specific test registers going to lifecycle TAP
-  input  lc_otp_vendor_test_req_t                    lc_otp_vendor_test_i,
-  output lc_otp_vendor_test_rsp_t                    lc_otp_vendor_test_o,
+  input                               pwrmgr_pkg::pwr_otp_req_t pwr_otp_i,
+  output                              pwrmgr_pkg::pwr_otp_rsp_t pwr_otp_o,
   // Lifecycle transition command interface
-  input  lc_otp_program_req_t                        lc_otp_program_i,
-  output lc_otp_program_rsp_t                        lc_otp_program_o,
+  input                               lc_otp_program_req_t lc_otp_program_i,
+  output                              lc_otp_program_rsp_t lc_otp_program_o,
   // Lifecycle broadcast inputs
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
-  input  lc_ctrl_pkg::lc_tx_t                        lc_creator_seed_sw_rw_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_owner_seed_sw_rw_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
-  input  lc_ctrl_pkg::lc_tx_t                        lc_check_byp_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_creator_seed_sw_rw_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  input                               lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   // OTP broadcast outputs
   // SEC_CM: TOKEN_VALID.CTRL.MUBI
   output otp_lc_data_t                               otp_lc_data_o,
@@ -76,20 +69,13 @@ module otp_ctrl
   output sram_otp_key_rsp_t [NumSramKeyReqSlots-1:0] sram_otp_key_o,
   input  otbn_otp_key_req_t                          otbn_otp_key_i,
   output otbn_otp_key_rsp_t                          otbn_otp_key_o,
+
+  // Interface to OTP_MACRO
+  output otp_ctrl_macro_pkg::otp_ctrl_macro_req_t    otp_macro_o,
+  input  otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t    otp_macro_i,
+
   // Hardware config bits
-  output otp_broadcast_t                             otp_broadcast_o,
-  // External voltage for OTP
-  inout wire                                         otp_ext_voltage_h_io,
-  // Scan
-  input                                              scan_en_i,
-  input                                              scan_rst_ni,
-  input prim_mubi_pkg::mubi4_t                       scanmode_i,
-  // Test-related GPIO output
-  output logic [OtpTestVectWidth-1:0]                cio_test_o,
-  output logic [OtpTestVectWidth-1:0]                cio_test_en_o,
-  // DFT config and response port
-  input  prim_otp_cfg_pkg::otp_cfg_t                 cfg_i,
-  output  prim_otp_cfg_pkg::otp_cfg_rsp_t            cfg_rsp_o
+  output otp_broadcast_t                             otp_broadcast_o
 );
 
   import prim_mubi_pkg::*;
@@ -103,14 +89,14 @@ module otp_ctrl
   `ASSERT_INIT(OtpIfWidth_A, OtpIfWidth == ScrmblBlockWidth)
 
   // These error codes need to be identical.
-  `ASSERT_INIT(ErrorCodeWidth_A, OtpErrWidth == prim_otp_pkg::ErrWidth)
-  `ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(prim_otp_pkg::NoError))
-  `ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(prim_otp_pkg::MacroError))
-  `ASSERT_INIT(OtpErrorCode2_A,  int'(MacroEccCorrError) == int'(prim_otp_pkg::MacroEccCorrError))
+  `ASSERT_INIT(OtpErrorCode0_A,  int'(NoError) == int'(otp_ctrl_macro_pkg::NoError))
+  `ASSERT_INIT(OtpErrorCode1_A,  int'(MacroError) == int'(otp_ctrl_macro_pkg::MacroError))
+  `ASSERT_INIT(OtpErrorCode2_A,
+      int'(MacroEccCorrError) == int'(otp_ctrl_macro_pkg::MacroEccCorrError))
   `ASSERT_INIT(OtpErrorCode3_A,
-               int'(MacroEccUncorrError) == int'(prim_otp_pkg::MacroEccUncorrError))
+               int'(MacroEccUncorrError) == int'(otp_ctrl_macro_pkg::MacroEccUncorrError))
   `ASSERT_INIT(OtpErrorCode4_A,
-               int'(MacroWriteBlankError) == int'(prim_otp_pkg::MacroWriteBlankError))
+               int'(MacroWriteBlankError) == int'(otp_ctrl_macro_pkg::MacroWriteBlankError))
 
   /////////////
   // Regfile //
@@ -118,6 +104,7 @@ module otp_ctrl
 
   // We have one CSR node, one functional TL-UL window and a gate module for that window
   logic [2:0] intg_error;
+  assign intg_error[2] = otp_macro_i.fatal_lc_fsm_err;
 
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
@@ -145,7 +132,6 @@ module otp_ctrl
 
   lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en,
                              lc_seed_hw_rd_en, lc_check_byp_en;
-  lc_ctrl_pkg::lc_tx_t [2:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
   // Single wire for gating assertions in arbitration and CDC primitives.
@@ -185,15 +171,6 @@ module otp_ctrl
     .rst_ni,
     .lc_en_i(lc_seed_hw_rd_en_i),
     .lc_en_o({lc_seed_hw_rd_en})
-  );
-
-  prim_lc_sync #(
-    .NumCopies(3)
-  ) u_prim_lc_sync_dft_en (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_dft_en_i),
-    .lc_en_o(lc_dft_en)
   );
 
   prim_lc_sync #(
@@ -734,7 +711,7 @@ end
   ///////////////////////////////
 
   typedef struct packed {
-    prim_otp_pkg::cmd_e          cmd;
+    otp_ctrl_macro_pkg::cmd_e          cmd;
     logic [OtpSizeWidth-1:0]     size; // Number of native words to write.
     logic [OtpIfWidth-1:0]       wdata;
     logic [OtpAddrWidth-1:0]     addr; // Halfword address.
@@ -771,90 +748,24 @@ end
   assign otp_prim_valid     = otp_arb_valid & otp_rsp_fifo_ready;
   assign otp_rsp_fifo_valid = otp_prim_ready & otp_prim_valid;
 
-  prim_otp_pkg::err_e          part_otp_err;
+  otp_ctrl_macro_pkg::err_e    part_otp_err;
   logic [OtpIfWidth-1:0]       part_otp_rdata;
   logic                        otp_rvalid;
-  tlul_pkg::tl_h2d_t           prim_tl_h2d_gated;
-  tlul_pkg::tl_d2h_t           prim_tl_d2h_gated;
 
-  // Life cycle qualification of TL-UL test interface.
-  // SEC_CM: TEST.BUS.LC_GATED
-  // SEC_CM: TEST_TL_LC_GATE.FSM.SPARSE
-  tlul_lc_gate #(
-    .NumGatesPerDirection(2)
-  ) u_tlul_lc_gate (
-    .clk_i,
-    .rst_ni,
-    .tl_h2d_i(prim_tl_i),
-    .tl_d2h_o(prim_tl_o),
-    .tl_h2d_o(prim_tl_h2d_gated),
-    .tl_d2h_i(prim_tl_d2h_gated),
-    .lc_en_i (lc_dft_en[0]),
-    .flush_req_i('0),
-    .flush_ack_o(),
-    .resp_pending_o(),
-    .err_o   (intg_error[2])
-  );
+  assign otp_macro_o = '{
+    valid: otp_prim_valid,
+    cmd: otp_arb_bundle.cmd,
+    size: otp_arb_bundle.size,
+    addr: otp_arb_bundle.addr,
+    wdata: otp_arb_bundle.wdata
+  };
 
-  // Test-related GPIOs.
-  // SEC_CM: TEST.BUS.LC_GATED
-  logic [OtpTestVectWidth-1:0] otp_test_vect;
-  assign cio_test_o    = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[1])) ?
-                         otp_test_vect            : '0;
-  assign cio_test_en_o = (lc_ctrl_pkg::lc_tx_test_true_strict(lc_dft_en[2])) ?
-                         {OtpTestVectWidth{1'b1}} : '0;
-
-  // SEC_CM: MACRO.MEM.CM, MACRO.MEM.INTEGRITY
-  prim_otp #(
-    .Width            ( OtpWidth                        ),
-    .Depth            ( OtpDepth                        ),
-    .SizeWidth        ( OtpSizeWidth                    ),
-    .PwrSeqWidth      ( OtpPwrSeqWidth                  ),
-    .TestCtrlWidth    ( OtpTestCtrlWidth                ),
-    .TestStatusWidth  ( OtpTestStatusWidth              ),
-    .TestVectWidth    ( OtpTestVectWidth                ),
-    .MemInitFile      ( MemInitFile                     ),
-    .VendorTestOffset ( VendorTestOffset                ),
-    .VendorTestSize   ( VendorTestSize                  ),
-    .CfgType_t        ( prim_otp_cfg_pkg::otp_cfg_t     ),
-    .CfgRspType_t     ( prim_otp_cfg_pkg::otp_cfg_rsp_t )
-  ) u_otp (
-    .clk_i,
-    .rst_ni,
-    // Observability controls to/from AST
-    .obs_ctrl_i,
-    .otp_obs_o,
-    // Power sequencing signals to/from AST
-    .pwr_seq_o        ( otp_ast_pwr_seq_o.pwr_seq     ),
-    .pwr_seq_h_i      ( otp_ast_pwr_seq_h_i.pwr_seq_h ),
-    .ext_voltage_io   ( otp_ext_voltage_h_io          ),
-    // Test interface
-    .test_ctrl_i      ( lc_otp_vendor_test_i.ctrl     ),
-    .test_status_o    ( lc_otp_vendor_test_o.status   ),
-    .test_vect_o      ( otp_test_vect                 ),
-    .test_tl_i        ( prim_tl_h2d_gated             ),
-    .test_tl_o        ( prim_tl_d2h_gated             ),
-    // Other DFT signals
-    .scan_en_i,
-    .scan_rst_ni,
-    .scanmode_i,
-    // Alerts
-    .fatal_alert_o    ( fatal_prim_otp_alert ),
-    .recov_alert_o    ( recov_prim_otp_alert ),
-    // Read / Write command interface
-    .ready_o          ( otp_prim_ready       ),
-    .valid_i          ( otp_prim_valid       ),
-    .cmd_i            ( otp_arb_bundle.cmd   ),
-    .size_i           ( otp_arb_bundle.size  ),
-    .addr_i           ( otp_arb_bundle.addr  ),
-    .wdata_i          ( otp_arb_bundle.wdata ),
-    // Read data out
-    .valid_o          ( otp_rvalid           ),
-    .rdata_o          ( part_otp_rdata       ),
-    .err_o            ( part_otp_err         ),
-    .cfg_i,
-    .cfg_rsp_o
-  );
+  assign otp_prim_ready = otp_macro_i.ready;
+  assign otp_rvalid = otp_macro_i.rvalid;
+  assign part_otp_rdata = otp_macro_i.rdata;
+  assign part_otp_err = otp_macro_i.err;
+  assign fatal_prim_otp_alert = otp_macro_i.fatal_alert;
+  assign recov_prim_otp_alert = otp_macro_i.recov_alert;
 
   logic otp_fifo_valid;
   logic [vbits(NumAgents)-1:0] otp_part_idx;
@@ -1521,9 +1432,7 @@ end
   `ASSERT_INIT(LcStateSize_A,         lc_ctrl_state_pkg::LcStateWidth == LcStateSize * 8)
   `ASSERT_INIT(LcTransitionCntSize_A, lc_ctrl_state_pkg::LcCountWidth == LcTransitionCntSize * 8)
 
-  `ASSERT_KNOWN(OtpAstPwrSeqKnown_A,         otp_ast_pwr_seq_o)
   `ASSERT_KNOWN(CoreTlOutKnown_A,            core_tl_o)
-  `ASSERT_KNOWN(PrimTlOutKnown_A,            prim_tl_o)
   `ASSERT_KNOWN(IntrOtpOperationDoneKnown_A, intr_otp_operation_done_o)
   `ASSERT_KNOWN(IntrOtpErrorKnown_A,         intr_otp_error_o)
   `ASSERT_KNOWN(AlertTxKnown_A,              alert_tx_o)
@@ -1563,8 +1472,6 @@ end
       u_otp_ctrl_lci.u_prim_count, alert_tx_o[1])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
       u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
-      u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
 
   // Alert assertions for double LFSR.
   `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
@@ -1573,14 +1480,19 @@ end
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[2])
 
+  // IMPORTANT TODO:
+  //   Add checks that the incoming fatal conditions from prim_otp trigger alerts.
+
   // Assertions for countermeasures inside prim_otp
-  `ifndef PRIM_DEFAULT_IMPL
-    `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-  `endif
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
-        u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
-    `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-        u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
-  end
+  // `ifndef PRIM_DEFAULT_IMPL
+  //   `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
+  // `endif
+  // if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+  //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
+  //       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
+  //   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
+  //       u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
+  //   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
+  //       u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
+  // end
 endmodule : otp_ctrl

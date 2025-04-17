@@ -69,7 +69,7 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv mbx.sv} -regexp {'mbx' is u
       -comment {This is acceptable, since these are used in different hierarchies.}
 
 # intentionally unused
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_macro_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
 
 waive -rules {LINE_LENGTH} -location {top_darjeeling.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \

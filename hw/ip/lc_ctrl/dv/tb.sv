@@ -39,8 +39,8 @@ module tb;
   wire clk, rst_n;
   wire [LcPwrIfWidth-1:0] pwr_lc;
 
-  wire [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
-  wire [OtpTestStatusWidth-1:0] otp_vendor_test_status;
+  wire [CsrOtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
+  wire [CsrOtpTestStatusWidth-1:0] otp_vendor_test_status;
   assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
   assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
 

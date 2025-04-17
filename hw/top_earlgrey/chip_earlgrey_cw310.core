@@ -57,7 +57,7 @@ parameters:
     description: Scrambled boot ROM initialization file in 40 bit vmem hex format
     default: "../../../../../build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw310.scr.39.vmem"
     paramtype: vlogparam
-  OtpCtrlMemInitFile:
+  OtpMacroMemInitFile:
     datatype: str
     description: OTP initialization file in vmem hex format
     default: "../../../../../build-bin/sw/device/otp_img/otp_img_fpga_cw310.vmem"
@@ -89,7 +89,7 @@ targets:
     toplevel: chip_earlgrey_cw310
     parameters:
       - BootRomInitFile
-      - OtpCtrlMemInitFile
+      - OtpMacroMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
       - AST_BYPASS_CLK=true
     tools:

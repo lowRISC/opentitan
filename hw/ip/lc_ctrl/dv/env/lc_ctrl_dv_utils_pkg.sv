@@ -9,6 +9,7 @@ package lc_ctrl_dv_utils_pkg;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
   import lc_ctrl_pkg::*;
+  import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
 

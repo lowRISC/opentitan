@@ -66,7 +66,8 @@ KNOWN_CIP_IDS = {
     40: 'ascon',
     41: 'ac_range_check',
     42: 'soc_dbg_ctrl',
-    43: 'racl_ctrl'
+    43: 'racl_ctrl',
+    44: 'prim_otp',
 }
 
 REQUIRED_ALIAS_FIELDS = {
@@ -335,7 +336,7 @@ class IpBlock:
                      existing_param.param_type != 'int' or
                      existing_param.value != str(len(alerts)))):
                     raise ValueError('Conflicting definition of NumAlerts '
-                                     'parameter.')
+                                     f'parameter in {what}.')
             else:
                 params.add(
                     LocalParam(name='NumAlerts',
@@ -351,7 +352,7 @@ class IpBlock:
         inter_signals = [
             InterSignal.from_raw(
                 params,
-                'entry {} of the inter_signal_list field'.format(idx + 1),
+                f'entry {idx + 1} of the inter_signal_list field in {what}',
                 entry) for idx, entry in enumerate(r_inter_signals)
         ]
 
