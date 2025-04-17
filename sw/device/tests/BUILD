@@ -3498,6 +3498,12 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
@@ -3522,6 +3528,12 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
+    ),
+    silicon = silicon_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
