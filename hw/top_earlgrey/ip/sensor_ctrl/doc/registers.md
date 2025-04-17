@@ -10,7 +10,7 @@
 | sensor_ctrl.[`INTR_TEST`](#intr_test)                             | 0x8      |        4 | Interrupt Test Register                                                 |
 | sensor_ctrl.[`ALERT_TEST`](#alert_test)                           | 0xc      |        4 | Alert Test Register                                                     |
 | sensor_ctrl.[`CFG_REGWEN`](#cfg_regwen)                           | 0x10     |        4 | Controls the configurability of !!FATAL_ALERT_EN register.              |
-| sensor_ctrl.[`ALERT_TRIG`](#ALERT_TRIG)                           | 0x14     |        4 | Alert trigger test                                                      |
+| sensor_ctrl.[`ALERT_TRIG`](#alert_trig)                           | 0x14     |        4 | Alert trigger test                                                      |
 | sensor_ctrl.[`ALERT_EN_0`](#alert_en)                             | 0x18     |        4 | Each multibit value enables a corresponding alert.                      |
 | sensor_ctrl.[`ALERT_EN_1`](#alert_en)                             | 0x1c     |        4 | Each multibit value enables a corresponding alert.                      |
 | sensor_ctrl.[`ALERT_EN_2`](#alert_en)                             | 0x20     |        4 | Each multibit value enables a corresponding alert.                      |
@@ -22,9 +22,9 @@
 | sensor_ctrl.[`ALERT_EN_8`](#alert_en)                             | 0x38     |        4 | Each multibit value enables a corresponding alert.                      |
 | sensor_ctrl.[`ALERT_EN_9`](#alert_en)                             | 0x3c     |        4 | Each multibit value enables a corresponding alert.                      |
 | sensor_ctrl.[`ALERT_EN_10`](#alert_en)                            | 0x40     |        4 | Each multibit value enables a corresponding alert.                      |
-| sensor_ctrl.[`FATAL_ALERT_EN`](#FATAL_ALERT_EN)                   | 0x44     |        4 | Each bit marks a corresponding alert as fatal or recoverable.           |
-| sensor_ctrl.[`RECOV_ALERT`](#RECOV_ALERT)                         | 0x48     |        4 | Each bit represents a recoverable alert that has been triggered by AST. |
-| sensor_ctrl.[`FATAL_ALERT`](#FATAL_ALERT)                         | 0x4c     |        4 | Each bit represents a fatal alert that has been triggered by AST.       |
+| sensor_ctrl.[`FATAL_ALERT_EN`](#fatal_alert_en)                   | 0x44     |        4 | Each bit marks a corresponding alert as fatal or recoverable.           |
+| sensor_ctrl.[`RECOV_ALERT`](#recov_alert)                         | 0x48     |        4 | Each bit represents a recoverable alert that has been triggered by AST. |
+| sensor_ctrl.[`FATAL_ALERT`](#fatal_alert)                         | 0x4c     |        4 | Each bit represents a fatal alert that has been triggered by AST.       |
 | sensor_ctrl.[`STATUS`](#status)                                   | 0x50     |        4 | Status readback for ast                                                 |
 | sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_0`](#manual_pad_attr_regwen) | 0x54     |        4 | Register write enable for attributes of manual pads                     |
 | sensor_ctrl.[`MANUAL_PAD_ATTR_REGWEN_1`](#manual_pad_attr_regwen) | 0x58     |        4 | Register write enable for attributes of manual pads                     |

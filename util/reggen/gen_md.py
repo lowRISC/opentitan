@@ -89,7 +89,7 @@ def gen_md_register_summary(output: TextIO,
                 # so the anchor should link to a section with the individual register name(s).
                 # Otherwise, there is one section for the whole multiregister,
                 # so the anchor should link to a section with the multiregister name.
-                anchor = reg.name if is_compact else entry.name.lower()
+                anchor = reg.name.lower() if is_compact else entry.name.lower()
                 add_row(reg.name, anchor, reg.offset, bytew, reg.desc)
         elif isinstance(entry, Window):
             length = bytew * entry.items

@@ -24,14 +24,14 @@
 | spi_device.[`UPLOAD_STATUS2`](#upload_status2)           | 0x40     |        4 | Upload module status 2 register.                |
 | spi_device.[`UPLOAD_CMDFIFO`](#upload_cmdfifo)           | 0x44     |        4 | Command Fifo Read Port.                         |
 | spi_device.[`UPLOAD_ADDRFIFO`](#upload_addrfifo)         | 0x48     |        4 | Address Fifo Read Port.                         |
-| spi_device.[`CMD_FILTER_0`](#CMD_FILTER_0)               | 0x4c     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_1`](#CMD_FILTER_1)               | 0x50     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_2`](#CMD_FILTER_2)               | 0x54     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_3`](#CMD_FILTER_3)               | 0x58     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_4`](#CMD_FILTER_4)               | 0x5c     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_5`](#CMD_FILTER_5)               | 0x60     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_6`](#CMD_FILTER_6)               | 0x64     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_7`](#CMD_FILTER_7)               | 0x68     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_0`](#cmd_filter_0)               | 0x4c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_1`](#cmd_filter_1)               | 0x50     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_2`](#cmd_filter_2)               | 0x54     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_3`](#cmd_filter_3)               | 0x58     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_4`](#cmd_filter_4)               | 0x5c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_5`](#cmd_filter_5)               | 0x60     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_6`](#cmd_filter_6)               | 0x64     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_7`](#cmd_filter_7)               | 0x68     |        4 | Command Filter                                  |
 | spi_device.[`ADDR_SWAP_MASK`](#addr_swap_mask)           | 0x6c     |        4 | Address Swap Mask register.                     |
 | spi_device.[`ADDR_SWAP_DATA`](#addr_swap_data)           | 0x70     |        4 | The address value for the address swap feature. |
 | spi_device.[`PAYLOAD_SWAP_MASK`](#payload_swap_mask)     | 0x74     |        4 | Write Data Swap in the passthrough mode.        |
@@ -67,8 +67,8 @@
 | spi_device.[`TPM_CAP`](#tpm_cap)                         | 0x800    |        4 | TPM HWIP Capability register.                   |
 | spi_device.[`TPM_CFG`](#tpm_cfg)                         | 0x804    |        4 | TPM Configuration register.                     |
 | spi_device.[`TPM_STATUS`](#tpm_status)                   | 0x808    |        4 | TPM submodule state register.                   |
-| spi_device.[`TPM_ACCESS_0`](#TPM_ACCESS_0)               | 0x80c    |        4 | TPM_ACCESS_x register.                          |
-| spi_device.[`TPM_ACCESS_1`](#TPM_ACCESS_1)               | 0x810    |        4 | TPM_ACCESS_x register.                          |
+| spi_device.[`TPM_ACCESS_0`](#tpm_access_0)               | 0x80c    |        4 | TPM_ACCESS_x register.                          |
+| spi_device.[`TPM_ACCESS_1`](#tpm_access_1)               | 0x810    |        4 | TPM_ACCESS_x register.                          |
 | spi_device.[`TPM_STS`](#tpm_sts)                         | 0x814    |        4 | TPM_STS_x register.                             |
 | spi_device.[`TPM_INTF_CAPABILITY`](#tpm_intf_capability) | 0x818    |        4 | TPM_INTF_CAPABILITY                             |
 | spi_device.[`TPM_INT_ENABLE`](#tpm_int_enable)           | 0x81c    |        4 | TPM_INT_ENABLE                                  |
