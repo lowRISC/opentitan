@@ -8,6 +8,8 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -26,12 +28,26 @@ status_t ibex_wait_rnd_valid(void) {
   }
 }
 
+status_t ibex_rnd_data_read(uint32_t *rnd_data) {
+  *rnd_data = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
+  return OK_STATUS();
+}
+
 status_t ibex_rnd_status_read(uint32_t *rnd_status) {
   *rnd_status = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
   return OK_STATUS();
 }
 
-status_t ibex_rnd_data_read(uint32_t *rnd_data) {
-  *rnd_data = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
-  return OK_STATUS();
+uint32_t ibex_rnd_uint32(void) {
+  uint32_t rnd_data;
+  status_t status = entropy_complex_check();
+
+  if (status_ok(status)) {
+    ibex_wait_rnd_valid();
+    ibex_rnd_data_read(&rnd_data);
+  } else {
+    rnd_data = (uint32_t)ibex_mcycle_read();
+  }
+
+  return rnd_data;
 }

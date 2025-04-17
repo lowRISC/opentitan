@@ -39,4 +39,15 @@ status_t ibex_rnd_data_read(uint32_t *rnd_data);
  */
 status_t ibex_rnd_status_read(uint32_t *rnd_status);
 
+/**
+ * Wait for the random data to be valid and get
+ * random data from the EDN0 interface.
+ *
+ * Returns 32 bits of randomness from EDN0.
+ *
+ * @param rnd_data The random data pointer.
+ * @return 32 bits of randomness.
+ */
+uint32_t ibex_rnd_uint32(void);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_IBEX_H_

@@ -122,6 +122,8 @@ cc_library(
         ":status",
         "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/runtime:ibex",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -306,6 +308,7 @@ cc_library(
     hdrs = ["hardened_memory.h"],
     deps = [
         ":hardened",
+        ":ibex",
         ":macros",
         ":memory",
         ":random_order",

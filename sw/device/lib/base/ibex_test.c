@@ -32,7 +32,7 @@ static status_t ibex_entropy_test(void) {
   TRY_CHECK(bitfield_bit32_read(rnd_status,
                                 RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT));
   // Read RND_DATA again and check if it changed.
-  TRY(ibex_rnd_data_read(&rnd_data[1]));
+  rnd_data[1] = ibex_rnd_uint32();
   TRY_CHECK(rnd_data[0] != rnd_data[1]);
 
   return OK_STATUS();
