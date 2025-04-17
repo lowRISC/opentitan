@@ -13,6 +13,11 @@ bazel_skylib_repos()
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
+# Google/Bazel dependencies.  This needs to be after Python initialization
+# so that our preferred python configuration takes precedence.
+load("//third_party/google:repos.bzl", "google_repos")
+google_repos()
+
 # Python Toolchain + PIP Dependencies
 load("//third_party/python:repos.bzl", "python_repos")
 python_repos()
@@ -22,11 +27,6 @@ load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
 load("//third_party/python:requirements.bzl", install_ot_python_deps="install_deps")
 install_ot_python_deps(local_wheels_repo_target = "@ot_python_wheels//:sanitized_requirements.txt")
-
-# Google/Bazel dependencies.  This needs to be after Python initialization
-# so that our preferred python configuration takes precedence.
-load("//third_party/google:repos.bzl", "google_repos")
-google_repos()
 load("//third_party/google:deps.bzl", "google_deps")
 google_deps()
 
