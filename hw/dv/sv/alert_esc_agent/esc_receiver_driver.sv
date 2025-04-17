@@ -10,9 +10,18 @@ class esc_receiver_driver extends alert_esc_base_driver;
   `uvm_component_utils(esc_receiver_driver)
 
 
+  // Set by esc_ping_detector if it sees a single-cycle pulse on esc_p/esc_n. If set, the receiver
+  // will drive a 1010 pattern on resp_p/resp_n for a while in drive_esc_resp (stopping if it
+  // receives a genuine escalation).
   bit is_ping;
+
   extern function new (string name="", uvm_component parent=null);
+
+  // This task runs forever and maintains dv_base_driver::under_reset.
+  //
+  // Overridden from dv_base_driver.
   extern virtual task reset_signals();
+
   extern virtual task drive_req();
   extern virtual task esc_ping_detector();
   // This task will response to escalator sender's esc_p and esc_n signal,
@@ -40,6 +49,7 @@ class esc_receiver_driver extends alert_esc_base_driver;
   extern virtual function bit get_esc();
   extern virtual task wait_esc_complete();
   extern virtual task wait_esc();
+  // Set the values driven through resp_p / resp_n to 0/1 and clear the is_ping flag
   extern virtual task do_reset();
 
 endclass : esc_receiver_driver
@@ -54,7 +64,6 @@ task esc_receiver_driver::reset_signals();
     @(negedge cfg.vif.rst_n);
     under_reset = 1;
     do_reset();
-    is_ping = 0;
     @(posedge cfg.vif.rst_n);
     under_reset = 0;
   end
@@ -217,4 +226,5 @@ endtask : wait_esc
 task esc_receiver_driver::do_reset();
   cfg.vif.esc_rx_int.resp_p <= 1'b0;
   cfg.vif.esc_rx_int.resp_n <= 1'b1;
+  is_ping = 0;
 endtask : do_reset
