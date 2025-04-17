@@ -26,12 +26,19 @@ status_t ibex_wait_rnd_valid(void) {
   }
 }
 
+status_t ibex_rnd_data_read(uint32_t *rnd_data) {
+  *rnd_data = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
+  return OK_STATUS();
+}
+
 status_t ibex_rnd_status_read(uint32_t *rnd_status) {
   *rnd_status = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
   return OK_STATUS();
 }
 
-status_t ibex_rnd_data_read(uint32_t *rnd_data) {
-  *rnd_data = abs_mmio_read32(kBase + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
-  return OK_STATUS();
+uint32_t ibex_rnd_uint32(void) {
+  uint32_t rnd_data;
+  ibex_wait_rnd_valid();
+  ibex_rnd_data_read(&rnd_data);
+  return rnd_data;
 }
