@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -150,17 +151,39 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   HARDENED_TRY(keymgr_wait_until_done());
 
   // Collect output.
-  // TODO: for SCA hardening, randomize the order of these reads.
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
+  enum { kStep = 1 };
+  // Start from a random index less than `kKeymgrOutputShareNumWords`.
+  size_t i =
+      ((uint64_t)ibex_rnd_uint32() * (uint64_t)kKeymgrOutputShareNumWords) >>
+      32;
+  size_t iter_cnt = 0;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
     key->share0[i] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
+    i += kStep;
+    if (launder32(i) >= kKeymgrOutputShareNumWords) {
+      i -= kKeymgrOutputShareNumWords;
+    }
+    HARDENED_CHECK_LT(i, kKeymgrOutputShareNumWords);
   }
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
+  HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
+
+  // Start from a random index less than `kKeymgrOutputShareNumWords`.
+  i = ((uint64_t)ibex_rnd_uint32() * (uint64_t)kKeymgrOutputShareNumWords) >>
+      32;
+  iter_cnt = 0;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
     key->share1[i] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
+    i += kStep;
+    if (launder32(i) >= kKeymgrOutputShareNumWords) {
+      i -= kKeymgrOutputShareNumWords;
+    }
+    HARDENED_CHECK_LT(i, kKeymgrOutputShareNumWords);
   }
+  HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
 
   return OTCRYPTO_OK;
 }
