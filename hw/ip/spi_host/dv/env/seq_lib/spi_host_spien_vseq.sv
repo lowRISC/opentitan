@@ -20,14 +20,16 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
 
   virtual task body();
     spi_host_status_t status;
-
+    csr_spinwait_ctrl_object spinwait_ctrl_obj;
+    bit rd_rx_fifo_finished;
+    spinwait_ctrl_obj = csr_spinwait_ctrl_object::type_id::create("spinwait_ctrl_obj");
     fork start_agent_reactive_seqs(); join_none
     wait_ready_for_command();
 
     fork
       begin
-        read_rx_fifo();
         // Read RXFIFO until STATUS.ACTIVE == 0
+        read_rx_fifo();
       end
       begin
         start_spi_host_trans(.num_transactions(3), .wait_ready(1));
@@ -43,8 +45,15 @@ class spi_host_spien_vseq extends spi_host_tx_rx_vseq;
 
         // Deassert CONTROL.SPIEN for a random length of time
         csr_wr(.ptr(ral.control.spien), .value(1'b0));
+        spinwait_ctrl_obj.stop = 1;
+        start_stop_spinwait_ev.trigger(spinwait_ctrl_obj);
+        `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to Control.spien=0", UVM_DEBUG)
+
         cfg.clk_rst_vif.wait_clks($urandom_range(0, 20000));
         csr_wr(.ptr(ral.control.spien), .value(1'b1));
+        spinwait_ctrl_obj.stop = 0;
+        start_stop_spinwait_ev.trigger(spinwait_ctrl_obj);
+        `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to Control.spien=1", UVM_DEBUG)
 
         // Break when STATUS.ACTIVE == 0
         csr_rd(.ptr(ral.status), .value(status), .backdoor(1));

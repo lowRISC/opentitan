@@ -1,0 +1,32 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  variant: faster_prescaler
+
+  // Import the base spi_device sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/spi_host/dv/base_sim_cfg.hjson"]
+
+  // Enable the appropriate build mode for all tests
+  build_opts: ["+define+FAST_PRESCALER=1"]
+
+  run_opts: [// Enable cdc instrumentation.
+             "+cdc_instrumentation_enabled=1"]
+
+  // List of test specifications.
+  tests: [
+    {
+      name: spi_host_upper_range_clkdiv
+      uvm_test_seq: spi_host_upper_range_clkdiv_vseq
+      reseed: 10 // Reduced reseed since this test may take ages
+    }
+  ]
+
+  // List of regressions.
+  regressions: [
+    {
+      name: smoke
+      tests: ["spi_host_upper_range_clkdiv"]
+    }
+  ]
+}

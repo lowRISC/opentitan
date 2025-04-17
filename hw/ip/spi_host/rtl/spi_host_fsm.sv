@@ -187,7 +187,11 @@ module spi_host_fsm
                       new_command           ? clkdiv :
                       is_idle               ? clk_cntr_q :
                       (clk_cntr_q == 16'h0) ? clkdiv :
+`ifdef FAST_PRESCALER
+                      clk_cntr_q - 16;
+`else
                       clk_cntr_q - 1;
+`endif
 
   assign tx_stall_o = wr_en_internal & ~sr_wr_ready_i;
   assign rx_stall_o = rd_en_internal & ~sr_rd_ready_i;

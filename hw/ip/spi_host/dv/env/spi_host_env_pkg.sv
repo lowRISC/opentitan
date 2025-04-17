@@ -160,6 +160,14 @@ package spi_host_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
+  class csr_spinwait_ctrl_object extends uvm_object;
+    `uvm_object_utils(csr_spinwait_ctrl_object)
+    bit            stop;
+    function new(string name = "csr_spinwait_ctrl_object");
+      super.new(name);
+    endfunction
+  endclass
+
   // functions
 
   // Convenience function to detect mask validity for TXFIFO. Actual allowed masks are taken
