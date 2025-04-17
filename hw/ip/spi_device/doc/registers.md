@@ -349,9 +349,9 @@ bit [7:0] is for Status register, bit [15:8] is for Status-2 register,
 and bit [23:16] is for Status-3 register. It is SW responsibility to
 maintain this register value up to date.
 
-The HW latches the value when SPI Flash transaction begins. Any updates
-during the transaction will be updated after the transaction is
-completed.
+When software writes a value here, it is delivered to a staging async FIFO, where it waits for the SPI side to commit it.
+Any updates require at least 8 SPI clocks before they commit on the SPI side, which is the source-of-truth.
+After committing on the SPI side, the CSRs will eventually update with the latest value.
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffff`
@@ -394,15 +394,21 @@ SW-maintained fields. HW just reads and returns to the host system.
 - [23]\: HOLD /RST
 
 ### FLASH_STATUS . wel
-WEL signal is cleared when CSb is high. SW should read
-back the register to confirm the value is cleared.
+The Write Enable Latch signal.
+SW should read back the register to confirm the value is cleared.
 
 Bit 1 (WEL) is a SW modifiable and HW modifiable field.
 HW updates the WEL field when `WRDI` or `WREN` command is received.
 
 ### FLASH_STATUS . busy
-BUSY signal is cleared when CSb is high. SW should read
-back the register to confirm the value is cleared.
+The BUSY signal. SW should read back the register to confirm the value is cleared.
+
+Bit 0 (BUSY) is a SW modifiable and HW modifiable field.
+HW updates the BUSY field for matching uploaded commands in the CMD_INFO table, when the `upload` and `busy` bits are set in the table entry.
+
+Note that the observable state of the BUSY bit updates every 8 SPI clocks.
+This enables continuous polling of the BUSY bit.
+However, the passthrough gate (for passthrough mode) only updates when CSB is de-asserted, not on SPI clocks.
 
 ## JEDEC_CC
 JEDEC Continuation Code configuration register.

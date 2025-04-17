@@ -726,32 +726,39 @@
         and bit [23:16] is for Status-3 register. It is SW responsibility to
         maintain this register value up to date.
 
-        The HW latches the value when SPI Flash transaction begins. Any updates
-        during the transaction will be updated after the transaction is
-        completed.
-        '''
+        When software writes a value here, it is delivered to a staging async FIFO, where it waits for the SPI side to commit it.
+        Any updates require at least 8 SPI clocks before they commit on the SPI side, which is the source-of-truth.
+        After committing on the SPI side, the CSRs will eventually update with the latest value.
+      '''
       swaccess: "rw"
       hwaccess: "hrw"
       hwext: true
       hwqe: true
       tags: [
         // SW is not able to read back the STATUS register right after write.
-        // The read back value is the committed value, which needs at least a SPI transaction.
+        // The read back value is the committed value, and pending values need at least 8 SPI clocks to commit.
         // So excluded from CSR automation test.
         "excl:CsrNonInitTests:CsrExclWrite"
       ]
       fields: [
         { bits: "0"
           name: "busy"
-          desc: '''BUSY signal is cleared when CSb is high. SW should read
-            back the register to confirm the value is cleared.'''
+          desc: '''The BUSY signal. SW should read back the register to confirm the value is cleared.
+
+            Bit 0 (BUSY) is a SW modifiable and HW modifiable field.
+            HW updates the BUSY field for matching uploaded commands in the CMD_INFO table, when the `upload` and `busy` bits are set in the table entry.
+
+            Note that the observable state of the BUSY bit updates every 8 SPI clocks.
+            This enables continuous polling of the BUSY bit.
+            However, the passthrough gate (for passthrough mode) only updates when CSB is de-asserted, not on SPI clocks.
+          '''
           swaccess: "rw0c"
           hwaccess: "hrw"
         } // f: busy
         { bits: "1"
           name: "wel"
-          desc: '''WEL signal is cleared when CSb is high. SW should read
-            back the register to confirm the value is cleared.
+          desc: '''The Write Enable Latch signal.
+            SW should read back the register to confirm the value is cleared.
 
             Bit 1 (WEL) is a SW modifiable and HW modifiable field.
             HW updates the WEL field when `WRDI` or `WREN` command is received.
