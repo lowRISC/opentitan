@@ -62,7 +62,7 @@ with_unknown! {
         SocProxySocGpo13 = 4,
         SocProxySocGpo14 = 5,
         SocProxySocGpo15 = 6,
-        OtpCtrlTest0 = 7,
+        OtpMacroTest0 = 7,
         End = 8,
     }
 

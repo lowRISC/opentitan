@@ -279,12 +279,12 @@
       package: "lc_ctrl_pkg",
     },
     // Macro-specific test signals to/from LC TAP/DMI
-    { struct:  "lc_otp_vendor_test"
+    { struct:  "otp_test"
       type:    "req_rsp"
       name:    "lc_otp_vendor_test"
       act:     "req"
       default: "'0"
-      package: "otp_ctrl_pkg"
+      package: "otp_macro_pkg"
     }
     // life cycle state broadcast from OTP
     { struct:  "otp_lc_data"
@@ -302,7 +302,7 @@
       default: "'0"
       package: "otp_ctrl_pkg"
     }
-    // life cycle token hashing command to OTP
+    // life cycle token hashing command to KMAC
     { struct:  "app"
       type:    "req_rsp"
       name:    "kmac_data"
