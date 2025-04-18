@@ -76,13 +76,6 @@ uint32_t
 #define CONDBRANCHBLT "blt x5, x6, endfitestfaultyblt\n"
 #define CONDBRANCHBLTU "bltu x5, x6, endfitestfaultybltu\n"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
-#define NOP1000 \
-  NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100
-
 // Init x5 = 0 macro.
 #define INITX5 "addi x5, x0, 0"
 
@@ -194,6 +187,21 @@ static inline void init_temp_regs(uint32_t value) {
   asm volatile("li x29, %0" : : "i"(value));
   asm volatile("li x30, %0" : : "i"(value));
   asm volatile("li x31, %0" : : "i"(value));
+}
+
+static inline void init_reg_ref_values(void) {
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  asm volatile("li x6, %0" : : "i"(ref_values[1]));
+  asm volatile("li x7, %0" : : "i"(ref_values[2]));
+  asm volatile("li x12, %0" : : "i"(ref_values[3]));
+  asm volatile("li x13, %0" : : "i"(ref_values[4]));
+  asm volatile("li x14, %0" : : "i"(ref_values[5]));
+  asm volatile("li x15, %0" : : "i"(ref_values[6]));
+  asm volatile("li x16, %0" : : "i"(ref_values[7]));
+  asm volatile("li x17, %0" : : "i"(ref_values[8]));
+  asm volatile("li x28, %0" : : "i"(ref_values[9]));
+  asm volatile("li x29, %0" : : "i"(ref_values[10]));
+  asm volatile("li x30, %0" : : "i"(ref_values[11]));
 }
 
 // Read back values from all registers x1...x31 into buffer.
@@ -521,11 +529,11 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBEQ);
   asm volatile(CONDBRANCHBEQ);
   asm volatile(CONDBRANCHBEQ);
@@ -556,6 +564,7 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   asm volatile(CONDBRANCHBEQ);
   asm volatile(CONDBRANCHBEQ);
   asm volatile(CONDBRANCHBEQ);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestbeq");
@@ -566,7 +575,7 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbeq:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -598,11 +607,11 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBGE);
   asm volatile(CONDBRANCHBGE);
   asm volatile(CONDBRANCHBGE);
@@ -633,6 +642,7 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   asm volatile(CONDBRANCHBGE);
   asm volatile(CONDBRANCHBGE);
   asm volatile(CONDBRANCHBGE);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestbge");
@@ -643,7 +653,7 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbge:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -675,11 +685,11 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xef");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBGEU);
   asm volatile(CONDBRANCHBGEU);
   asm volatile(CONDBRANCHBGEU);
@@ -710,6 +720,7 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   asm volatile(CONDBRANCHBGEU);
   asm volatile(CONDBRANCHBGEU);
   asm volatile(CONDBRANCHBGEU);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestbgeu");
@@ -720,7 +731,7 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbgeu:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -752,11 +763,11 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xef");
   asm volatile("addi x6, x0, 0xaf");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBLT);
   asm volatile(CONDBRANCHBLT);
   asm volatile(CONDBRANCHBLT);
@@ -787,6 +798,7 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   asm volatile(CONDBRANCHBLT);
   asm volatile(CONDBRANCHBLT);
   asm volatile(CONDBRANCHBLT);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestblt");
@@ -797,7 +809,7 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestblt:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -829,11 +841,11 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xef");
   asm volatile("addi x6, x0, 0xaf");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBLTU);
   asm volatile(CONDBRANCHBLTU);
   asm volatile(CONDBRANCHBLTU);
@@ -864,6 +876,7 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   asm volatile(CONDBRANCHBLTU);
   asm volatile(CONDBRANCHBLTU);
   asm volatile(CONDBRANCHBLTU);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestbltu");
@@ -874,7 +887,7 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbltu:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -906,11 +919,11 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   uint32_t result1 = 0;
   uint32_t result2 = 0;
 
-  // FI code target.
-  pentest_set_trigger_high();
   asm volatile("addi x5, x0, 0xaf");
   asm volatile("addi x6, x0, 0xaf");
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(CONDBRANCHBNE);
   asm volatile(CONDBRANCHBNE);
   asm volatile(CONDBRANCHBNE);
@@ -941,6 +954,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   asm volatile(CONDBRANCHBNE);
   asm volatile(CONDBRANCHBNE);
   asm volatile(CONDBRANCHBNE);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("beq x0, x0, endfitestbne");
@@ -951,7 +965,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   asm volatile("mv %0, x5" : "=r"(result1));
   asm volatile("mv %0, x6" : "=r"(result2));
   asm volatile("endfitestbne:\n");
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1122,8 +1136,8 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         .size = 0x1,
         .properties = region_properties};
 
-    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 2,
                                                   kDifToggleEnabled));
 
     flash_init = true;
@@ -1224,8 +1238,8 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
         .base = FLASH_PAGES_PER_BANK,
         .size = 0x1,
         .properties = region_properties};
-    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 2,
                                                   kDifToggleEnabled));
 
     flash_init = true;
@@ -1594,40 +1608,39 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t res_values[7];
-  // Initialize temporary registers with reference values.
-  asm volatile("li x5, %0" : : "i"(ref_values[0]));
-  asm volatile("li x6, %0" : : "i"(ref_values[1]));
-  asm volatile("li x7, %0" : : "i"(ref_values[2]));
-  asm volatile("li x28, %0" : : "i"(ref_values[3]));
-  asm volatile("li x29, %0" : : "i"(ref_values[4]));
-  asm volatile("li x30, %0" : : "i"(ref_values[5]));
-  asm volatile("li x31, %0" : : "i"(ref_values[6]));
+  uint32_t res_values[12];
+  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
+  init_reg_ref_values();
 
   // FI code target.
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP1000);
-  pentest_set_trigger_low();
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  PENTEST_ASM_TRIGGER_LOW;
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
   asm volatile("mv %0, x6" : "=r"(res_values[1]));
   asm volatile("mv %0, x7" : "=r"(res_values[2]));
-  asm volatile("mv %0, x28" : "=r"(res_values[3]));
-  asm volatile("mv %0, x29" : "=r"(res_values[4]));
-  asm volatile("mv %0, x30" : "=r"(res_values[5]));
-  asm volatile("mv %0, x31" : "=r"(res_values[6]));
+  asm volatile("mv %0, x12" : "=r"(res_values[3]));
+  asm volatile("mv %0, x13" : "=r"(res_values[4]));
+  asm volatile("mv %0, x14" : "=r"(res_values[5]));
+  asm volatile("mv %0, x15" : "=r"(res_values[6]));
+  asm volatile("mv %0, x16" : "=r"(res_values[7]));
+  asm volatile("mv %0, x17" : "=r"(res_values[8]));
+  asm volatile("mv %0, x28" : "=r"(res_values[9]));
+  asm volatile("mv %0, x29" : "=r"(res_values[10]));
+  asm volatile("mv %0, x30" : "=r"(res_values[11]));
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Check if one or multiple registers values are faulty.
   uint32_t res = 0;
-  for (int it = 0; it < 7; it++) {
+  for (int it = 0; it < 12; it++) {
     if (res_values[it] != ref_values[it]) {
       res |= 1;
-      LOG_ERROR("reg %d exp=%u got=%u", it, ref_values[it], res_values[it]);
     }
   }
 
@@ -1652,67 +1665,102 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t res_values[6];
-  // Initialize temporary registers with reference values.
-  asm volatile("li x5, %0" : : "i"(ref_values[0]));
-  asm volatile("li x6, %0" : : "i"(ref_values[1]));
-  asm volatile("li x7, %0" : : "i"(ref_values[2]));
-  asm volatile("li x28, %0" : : "i"(ref_values[3]));
-  asm volatile("li x29, %0" : : "i"(ref_values[4]));
-  asm volatile("li x30, %0" : : "i"(ref_values[5]));
+  uint32_t res_values[14];
+  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
+  init_reg_ref_values();
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
   asm volatile("or x7, x7, x7");
+  asm volatile("or x12, x12, x12");
+  asm volatile("or x13, x13, x13");
+  asm volatile("or x14, x14, x14");
+  asm volatile("or x15, x15, x15");
+  asm volatile("or x16, x16, x16");
+  asm volatile("or x17, x17, x17");
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
   asm volatile("or x7, x7, x7");
+  asm volatile("or x12, x12, x12");
+  asm volatile("or x13, x13, x13");
+  asm volatile("or x14, x14, x14");
+  asm volatile("or x15, x15, x15");
+  asm volatile("or x16, x16, x16");
+  asm volatile("or x17, x17, x17");
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
   asm volatile("or x7, x7, x7");
+  asm volatile("or x12, x12, x12");
+  asm volatile("or x13, x13, x13");
+  asm volatile("or x14, x14, x14");
+  asm volatile("or x15, x15, x15");
+  asm volatile("or x16, x16, x16");
+  asm volatile("or x17, x17, x17");
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
   asm volatile("or x7, x7, x7");
+  asm volatile("or x12, x12, x12");
+  asm volatile("or x13, x13, x13");
+  asm volatile("or x14, x14, x14");
+  asm volatile("or x15, x15, x15");
+  asm volatile("or x16, x16, x16");
+  asm volatile("or x17, x17, x17");
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
   asm volatile("or x7, x7, x7");
+  asm volatile("or x12, x12, x12");
+  asm volatile("or x13, x13, x13");
+  asm volatile("or x14, x14, x14");
+  asm volatile("or x15, x15, x15");
+  asm volatile("or x16, x16, x16");
+  asm volatile("or x17, x17, x17");
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
-  pentest_set_trigger_low();
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  PENTEST_ASM_TRIGGER_LOW
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
   asm volatile("mv %0, x6" : "=r"(res_values[1]));
   asm volatile("mv %0, x7" : "=r"(res_values[2]));
-  asm volatile("mv %0, x28" : "=r"(res_values[3]));
-  asm volatile("mv %0, x29" : "=r"(res_values[4]));
-  asm volatile("mv %0, x30" : "=r"(res_values[5]));
+  asm volatile("mv %0, x12" : "=r"(res_values[3]));
+  asm volatile("mv %0, x13" : "=r"(res_values[4]));
+  asm volatile("mv %0, x14" : "=r"(res_values[5]));
+  asm volatile("mv %0, x15" : "=r"(res_values[6]));
+  asm volatile("mv %0, x16" : "=r"(res_values[7]));
+  asm volatile("mv %0, x17" : "=r"(res_values[8]));
+  asm volatile("mv %0, x28" : "=r"(res_values[9]));
+  asm volatile("mv %0, x29" : "=r"(res_values[10]));
+  asm volatile("mv %0, x30" : "=r"(res_values[11]));
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Check if one or multiple registers values are faulty.
   ibex_fi_faulty_addresses_data_t uj_output;
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
   memset(uj_output.data, 0, sizeof(uj_output.data));
-  for (uint32_t it = 0; it < 6; it++) {
+  for (uint32_t it = 0; it < 12; it++) {
     if (res_values[it] != ref_values[it]) {
       uj_output.addresses[it] = 1;  // 1 indicates an error in the register at
                                     // position it
@@ -1742,17 +1790,18 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
-  pentest_set_trigger_high();
   asm volatile(INITX5);
   asm volatile(INITX6);
   asm volatile(NOP100);
+  PENTEST_ASM_TRIGGER_HIGH
   for (int loop_cnt = 0; loop_cnt < 10000; loop_cnt++) {
     asm volatile(ADDI1);
     asm volatile(SUBI1);
   }
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(loop_counter1));
   asm volatile("mv %0, x6" : "=r"(loop_counter2));
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1846,8 +1895,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
     sram_ret_init = true;
   }
 
-  int max_words =
-      (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
+  int max_words = sizeof(retention_sram_owner_t) / sizeof(uint32_t);
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
@@ -2302,13 +2350,12 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // FI code target.
   uint32_t result = 0;
-  pentest_set_trigger_high();
   // Init x5 register we are using for the increment.
   asm volatile(INITX5);
-  // Delay the trigger.
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   // Attack target.
   asm volatile("jal ra, increment_counter");
   asm volatile("jal ra, increment_counter");
@@ -2340,8 +2387,9 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   asm volatile("jal ra, increment_counter");
   asm volatile("jal ra, increment_counter");
   asm volatile("jal ra, increment_counter");
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(result));
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2370,13 +2418,12 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // FI code target.
   uint32_t result = 0;
-  pentest_set_trigger_high();
   // Init x5 register we are using for the increment.
   asm volatile(INITX5);
-  // Delay the trigger.
-  asm volatile(NOP10);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   // Attack target.
   asm volatile("jal ra, not_increment_counter");
   asm volatile("jal ra, not_increment_counter");
@@ -2408,9 +2455,10 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   asm volatile("jal ra, not_increment_counter");
   asm volatile("jal ra, not_increment_counter");
   asm volatile("jal ra, not_increment_counter");
+  PENTEST_ASM_TRIGGER_LOW
   read_all_regs(registers);
   asm volatile("mv %0, x5" : "=r"(result));
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2479,11 +2527,11 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // FI code target.
   uint32_t loop_counter = 0;
-  pentest_set_trigger_high();
   asm volatile(INITX5);
-  asm volatile(NOP100);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
@@ -2494,8 +2542,9 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
+  PENTEST_ASM_TRIGGER_LOW
   asm volatile("mv %0, x5" : "=r"(loop_counter));
-  pentest_set_trigger_low();
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2524,11 +2573,10 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
 
   uint32_t addresses[8] = {0};
   uint32_t data[8] = {0};
+  asm volatile(INIT_TMPREGS);
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(INIT_TMPREGS);
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(ADDI_CHAIN);
   asm volatile(ADDI_CHAIN);
   asm volatile(ADDI_CHAIN);
@@ -2539,13 +2587,14 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   asm volatile(ADDI_CHAIN);
   asm volatile(ADDI_CHAIN);
   asm volatile(ADDI_CHAIN);
+  PENTEST_ASM_TRIGGER_LOW
+
   asm volatile("mv %0, x5" : "=r"(data[0]));
   asm volatile("mv %0, x6" : "=r"(data[1]));
   asm volatile("mv %0, x7" : "=r"(data[2]));
   asm volatile("mv %0, x28" : "=r"(data[3]));
   asm volatile("mv %0, x29" : "=r"(data[4]));
   asm volatile("mv %0, x30" : "=r"(data[5]));
-  pentest_set_trigger_low();
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2558,6 +2607,9 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
 
   // Send data, alerts & ERR_STATUS to host.
   ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
   memcpy(uj_output.addresses, addresses, sizeof(addresses));
   memcpy(uj_output.data, data, sizeof(data));
   uj_output.err_status = codes;

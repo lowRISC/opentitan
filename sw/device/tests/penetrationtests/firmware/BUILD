@@ -19,6 +19,7 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rom_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
@@ -34,6 +35,7 @@ FIRMWARE_DEPS_FI = [
 
 FIRMWARE_DEPS_FI_OTBN = [
     "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
@@ -57,6 +59,7 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:sha3_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
