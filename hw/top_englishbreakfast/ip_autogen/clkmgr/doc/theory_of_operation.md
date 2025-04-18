@@ -197,7 +197,6 @@ There are two occasions where this is required:
 -  Life cycle transition from `RAW` / `TEST_LOCKED*` to `TEST_UNLOCKED*` [states](../../../../ip/lc_ctrl/README.md#clk_byp_req).
 -  Software request for external clocks during normal functional mode.
 
-
 #### Life Cycle Requested External Clock
 
 The life cycle controller only requests the io clock input to be switched.
