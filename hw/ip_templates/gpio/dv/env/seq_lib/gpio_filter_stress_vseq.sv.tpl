@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// class : ${module_instance_name}_filter_stress_vseq
+// class : gpio_filter_stress_vseq
 // This gpio random test sequence performs random no. of iteration such that
 // each iteration will the following operations:
 // (  i) programs random set of interrupt registers with random values
@@ -19,9 +19,9 @@
 //       stable for FILTER_CYCLES or longer). Every time after driving
 //       non-noise data, registers DATA_IN and INTR_STATE are read back and
 //       their read data are compared against predicted values.
-class ${module_instance_name}_filter_stress_vseq extends ${module_instance_name}_intr_with_filter_rand_intr_event_vseq;
+class gpio_filter_stress_vseq extends gpio_intr_with_filter_rand_intr_event_vseq;
 
-  `uvm_object_utils(${module_instance_name}_filter_stress_vseq)
+  `uvm_object_utils(gpio_filter_stress_vseq)
   `uvm_object_new
 
   task body();
