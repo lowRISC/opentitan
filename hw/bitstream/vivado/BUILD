@@ -12,12 +12,12 @@ load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 package(default_visibility = ["//visibility:public"])
 
 # The readmem directives in the fusesoc-ized build tree will be in the subdir
-# ${build_root}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
+# ${build_root}/${core}/${target}-${tool}/src/lowrisc_prim_util_memload_0/rtl/prim_util_memload.svh,
 # and ${build_root} will be a subdirectory called `build.fpga_cw310` inside of
 # bazel-out/k8-{configname}/bin/hw/bitstream/vivado.
 # Therefore, the relative path between prim_util_memload.svh and the project-root
 # relative $(location ...) resolved labels is up 10 subdirectories.
-_PREFIX = "../../../../../../../../../.."
+_PREFIX = "../../../../../../../../../../.."
 
 _CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 
@@ -30,6 +30,8 @@ _CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW310_TESTROM)
 _CW340_TESTROM_PATH = _CW310_TESTROM_PATH
 
 _OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _OTP_RMA)
+
+_FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
 # Note: all of the targets are tagged with "manual" to prevent them from being
 # matched by bazel wildcards like "//...".  In order to build the bitstream,
@@ -50,9 +52,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310"],
     tags = ["manual"],
@@ -91,9 +93,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
     tags = ["manual"],
@@ -132,9 +134,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],

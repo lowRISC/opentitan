@@ -456,4 +456,4 @@ module prim_generic_flash_bank #(
   logic unused_he;
   assign unused_he = he_i;
 
-endmodule // prim_generic_flash
+endmodule // prim_generic_flash_bank

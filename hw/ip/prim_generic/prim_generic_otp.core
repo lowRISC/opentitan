@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:otp"
 description: "Technology-independent One-Time Programmable (OTP) memory emulation"
+virtual:
+  - lowrisc:prim:otp
+
 filesets:
   files_rtl:
     depend:
@@ -17,7 +20,7 @@ filesets:
       - lowrisc:prim_generic:otp_cfg_pkg
       - lowrisc:virtual_ip:otp_ctrl_prim_reg_top
     files:
-      - rtl/prim_generic_otp.sv
+      - rtl/prim_otp.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
