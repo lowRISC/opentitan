@@ -146,9 +146,6 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   }
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
-  // Conditionally patch AST and check that it is in the expected state.
-  HARDENED_RETURN_IF_ERROR(ast_patch(lc_state));
-
   // Check that the retention RAM is initialized.
   // TODO(lowrisc#22387): Check if return-if-error here is a potential
   // boot-loop.
