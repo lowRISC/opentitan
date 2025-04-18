@@ -303,13 +303,15 @@ module ${module_instance_name}
   assign hw2reg.log_status.denied_no_match.de = log_first_deny | clear_log;
   assign hw2reg.log_status.denied_no_match.d = log_first_deny ? ~(|addr_hit) : 1'b0;
 
-  // TODO(#25454): RACL status gets implemented once RACL is in
+  // Log if denied range lacks a valid READ RACL hit
   assign hw2reg.log_status.denied_racl_read.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.denied_racl_read.d  = '0;
+  assign hw2reg.log_status.denied_racl_read.d  =
+    log_first_deny ? ((read_access | execute_access) & ~racl_read_hit[deny_index]) : '0;
 
-  // TODO(#25454): RACL status gets implemented once RACL is in
+  // Log if denied range lacks a valid WRITE RACL hit
   assign hw2reg.log_status.denied_racl_write.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.denied_racl_write.d  = '0;
+  assign hw2reg.log_status.denied_racl_write.d  =
+    log_first_deny ? (write_access & ~racl_write_hit[deny_index]) : '0;
 
   assign hw2reg.log_status.denied_source_role.de = log_first_deny | clear_log;
   assign hw2reg.log_status.denied_source_role.d  = log_first_deny ? racl_role : '0;
