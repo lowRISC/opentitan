@@ -21,6 +21,7 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
 
       // configure the timers and harts based on rand fields
       cfg_all_timers();
+      if (cfg.under_reset) return;
 
       fork
         begin
@@ -34,8 +35,9 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
                   int    intr_pin_idx = a_i * NUM_TIMERS + a_j;
                   uint64 mtime_diff   = compare_val[a_i][a_j] - timer_val[a_i];
                   int    num_clks     = ((mtime_diff / step[a_i]) + 1) * (prescale[a_i] +1) + 1;
-                  cfg.clk_rst_vif.wait_clks(num_clks);
-                  `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
+                  cfg.clk_rst_vif.wait_clks_or_rst(num_clks);
+                  if (cfg.under_reset == 0)
+                    `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
                 end
               join_none
             end
@@ -49,10 +51,11 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
           // Read will trigger check in scoreboard
           forever begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-            #(delay * 1ns);
+            `DV_SPINWAIT_EXIT(#(delay * 1ns);, wait (cfg.under_reset);, ,)
             for (int i = 0; i < NUM_HARTS; i++) begin
               read_intr_status_reg(.hart(i), .status_val(read_data));
               read_timer_val_reg(.hart(i), .mtime_val(read_data));
+              if (cfg.under_reset) break;
             end
             if (stop_reading == 1) break;
           end
@@ -60,6 +63,7 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
           for (int i = 0; i < NUM_HARTS; i++) begin
             read_intr_status_reg(.hart(i), .status_val(read_data));
             read_timer_val_reg(.hart(i), .mtime_val(read_data));
+            if (cfg.under_reset) break;
           end
         end
       join
