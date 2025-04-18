@@ -78,6 +78,10 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
   MockFlashCtrl::Instance().InfoCfgSet(info_page, cfg);
 }
 
+void flash_ctrl_info_cfg_lock(const flash_ctrl_info_page_t *info_page) {
+  MockFlashCtrl::Instance().InfoCfgLock(info_page);
+}
+
 void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     uint32_t page_offset, uint32_t num_pages,
                                     flash_ctrl_perms_t perms,

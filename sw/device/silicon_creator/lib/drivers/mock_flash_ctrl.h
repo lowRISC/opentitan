@@ -43,6 +43,7 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
                flash_ctrl_cfg_t cfg, hardened_bool_t));
   MOCK_METHOD(void, InfoCfgSet,
               (const flash_ctrl_info_page_t *, flash_ctrl_cfg_t));
+  MOCK_METHOD(void, InfoCfgLock, (const flash_ctrl_info_page_t *));
   MOCK_METHOD(void, BankErasePermsSet, (hardened_bool_t));
   MOCK_METHOD(void, ExecSet, (uint32_t));
   MOCK_METHOD(void, CreatorInfoPagesLockdown, ());
@@ -69,6 +70,17 @@ MATCHER_P3(FlashCfg, scrambling, ecc, he, "") {
   return arg.scrambling == static_cast<uint8_t>(scrambling) &&
          arg.ecc == static_cast<uint8_t>(ecc) &&
          arg.he == static_cast<uint8_t>(he);
+}
+
+MATCHER_P(FlashInfoPage, page, "") {
+  return ::testing::Value(
+      arg,
+      ::testing::AllOf(
+          ::testing::Field(&flash_ctrl_info_page_t::base_addr, page.base_addr),
+          ::testing::Field(&flash_ctrl_info_page_t::cfg_wen_offset,
+                           page.cfg_wen_offset),
+          ::testing::Field(&flash_ctrl_info_page_t::cfg_offset,
+                           page.cfg_offset)));
 }
 
 }  // namespace rom_test
