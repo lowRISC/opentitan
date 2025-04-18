@@ -10,7 +10,7 @@ class chip_base_vseq #(
   .COV_T              (chip_env_cov),
   .VIRTUAL_SEQUENCER_T(chip_virtual_sequencer)
 );
-  `uvm_object_utils(chip_base_vseq)
+  `uvm_object_param_utils(chip_base_vseq#(RAL_T))
 
   jtag_dmi_reg_block jtag_dmi_ral;
 
