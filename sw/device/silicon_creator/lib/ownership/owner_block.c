@@ -475,6 +475,29 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
   return kErrorOk;
 }
 
+rom_error_t owner_block_info_lockdown(const owner_flash_info_config_t *info) {
+  if ((hardened_bool_t)info == kHardenedBoolFalse)
+    return kErrorOk;
+  size_t len = (info->header.length - sizeof(owner_flash_info_config_t)) /
+               sizeof(owner_info_page_t);
+  const owner_info_page_t *config = info->config;
+  uint32_t crypt = 0;
+  for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    if (is_owner_page(config->bank, config->page) == kHardenedBoolTrue) {
+      flash_ctrl_info_page_t page;
+      HARDENED_RETURN_IF_ERROR(flash_ctrl_info_type0_params_build(
+          config->bank, config->page, &page));
+      uint32_t val = config->access ^ crypt;
+      if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
+          kMultiBitBool4False) {
+        flash_ctrl_info_cfg_lock(&page);
+        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgLock);
+      }
+    }
+  }
+  return kErrorOk;
+}
+
 rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue) {
   rescue_detect_t detect = bitfield_field32_read(rescue->detect, RESCUE_DETECT);
   uint32_t index = bitfield_field32_read(rescue->detect, RESCUE_DETECT_INDEX);
