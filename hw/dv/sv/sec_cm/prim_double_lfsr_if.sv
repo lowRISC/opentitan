@@ -24,6 +24,7 @@ interface prim_double_lfsr_if #(
   string signal_for_restore = $sformatf("%s.lfsr_state[1]", path);
 
   class prim_double_lfsr_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
+    `uvm_object_utils(prim_double_lfsr_if_proxy)
     `uvm_object_new
 
     logic [Width-1:0] orig_value;

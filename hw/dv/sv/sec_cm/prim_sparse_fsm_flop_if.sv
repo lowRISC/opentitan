@@ -32,6 +32,7 @@ interface prim_sparse_fsm_flop_if #(
 
   class prim_sparse_fsm_flop_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
     `uvm_object_new
+    `uvm_object_utils(prim_sparse_fsm_flop_if_proxy)
 
     logic [Width-1:0] orig_value;
 

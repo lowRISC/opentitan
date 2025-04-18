@@ -5,6 +5,7 @@
 // Specialization of the `mem_bkdr_util` class for SRAM's encrypted read/write operations.
 
 class sram_ctrl_bkdr_util extends mem_bkdr_util;
+  `uvm_object_utils(sram_ctrl_bkdr_util)
 
   // Initialize the class instance.
   // `extra_bits_per_subword` is the width of any additional metadata that is not captured in the
