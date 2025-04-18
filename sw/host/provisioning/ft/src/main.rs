@@ -85,7 +85,7 @@ struct Opts {
     second_bootstrap: PathBuf,
 
     /// Console receive timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "20s")]
     timeout: Duration,
 
     /// Name of the SPI interface to connect to the OTTF console.
