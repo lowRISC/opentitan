@@ -112,7 +112,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     timer_intr_en_fld.set(enable);
     csr_update(.csr(intr_en_rg));
     // also check intr output, if disabled
-    if (!enable) begin
+    if (!enable && !cfg.under_reset) begin
       `DV_CHECK_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
     end
   endtask
@@ -153,7 +153,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
       wr_value = $urandom();
       set_compare_val(hart, timer, wr_value);
       // wait one clk cycle then check intr, to ensure get the sticky interrupt value
-      cfg.clk_rst_vif.wait_clks(1);
+      cfg.clk_rst_vif.wait_clks_or_rst(1);
     end
     csr_rd(.ptr(intr_state_rg), .value(status));
   endtask
@@ -164,24 +164,18 @@ class rv_timer_base_vseq extends cip_base_vseq #(
                                    input uint spinwait_delay_ns = 0,
                                    input uint timeout_ns        = 10_000_000); // 10ms
     bit [TL_DW-1:0] read_data;
-    bit reset_asserted;
     uvm_reg intr_state_rg;
     intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
     fork
       begin : isolation_fork
         fork
-          begin
-            wait(cfg.clk_rst_vif.rst_n == 0);
-            reset_asserted = 1'b1;
-          end
-        join_none
-        fork
           while (1) begin
             csr_rd(.ptr(intr_state_rg), .value(read_data));
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-            if ((read_data == exp_data) | (reset_asserted == 1)) break;
+            if ((read_data == exp_data)) break;
           end
+          wait (cfg.under_reset);
           begin
             `DV_WAIT_TIMEOUT(timeout_ns, "intr_state_spinwait",
                              $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
@@ -223,7 +217,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     bit stop_reading;
     fork
       begin
-        cfg.clk_rst_vif.wait_clks(clks);
+        cfg.clk_rst_vif.wait_clks_or_rst(clks);
         stop_reading = 1'b1;
       end
       begin
@@ -231,6 +225,8 @@ class rv_timer_base_vseq extends cip_base_vseq #(
           // read will trigger check in scoreboard
           uint rd_data;
           read_intr_status_reg(.hart(hart), .status_val(rd_data));
+          if (cfg.under_reset) break;
+
           fork
             begin : isolation_fork
               fork
@@ -238,6 +234,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
                   delay = $urandom_range(1, 10000);
                   #(delay * 1ns);
                 end
+                wait(cfg.under_reset);
                 wait(stop_reading == 1);
               join_any
               disable fork;
