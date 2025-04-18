@@ -25,13 +25,19 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
 
   // Get the rom_bkdr interface
   if (!uvm_config_db#(rom_ctrl_bkdr_util)::get(this, "", "rom_ctrl_bkdr_util",
-                                               cfg.rom_ctrl_bkdr_util_h)) begin
+                                               cfg.rom_ctrl_bkdr_util_h))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_bkdr_util from uvm_config_db")
-  end
-  // Get the rom_ctrl interface
-  if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif)) begin
+
+  if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif))
     `uvm_fatal(`gfn, "failed to get rom_ctrl_vif from uvm_config_db")
-  end
+
+  if (!uvm_config_db#(virtual rom_ctrl_fsm_if)::get(this, "",
+                                                        "rom_ctrl_fsm_vif", cfg.fsm_vif))
+    `uvm_fatal(`gfn, "failed to get rom_ctrl_fsm_vif from uvm_config_db")
+
+  if (!uvm_config_db#(virtual rom_ctrl_compare_if)::get(this, "",
+                                                        "rom_ctrl_compare_vif", cfg.compare_vif))
+    `uvm_fatal(`gfn, "failed to get rom_ctrl_compare_vif from uvm_config_db")
 
   // Build the KMAC agent
   m_kmac_agent = kmac_app_agent::type_id::create("m_kmac_agent", this);

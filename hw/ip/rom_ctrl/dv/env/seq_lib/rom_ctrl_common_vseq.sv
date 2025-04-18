@@ -21,7 +21,6 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
   extern function bit is_ptr_in_adapters_fifo(string path, output bit in_req_fifo);
   extern virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
   extern virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
-  extern virtual task wait_while_reading_low();
   extern virtual task dut_init(string reset_kind = "HARD");
   extern virtual task run_passthru_mem_tl_intg_err_vseq(int num_times = 1);
 
@@ -155,24 +154,16 @@ task rom_ctrl_common_vseq::check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
       csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
     end
     default :
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.checker_fsm_state, rom_ctrl_pkg::Invalid)
+      `DV_CHECK_EQ(cfg.fsm_vif.get_fsm_state(), rom_ctrl_pkg::Invalid)
   endcase
 endtask : check_sec_cm_fi_resp
-
-// Wait while the dut's checker FSM is in the "ReadingLow" state. This waits the bulk of the time
-// after reset and will finish when the dut is almost ready to start handling TL transactions.
-task rom_ctrl_common_vseq::wait_while_reading_low();
-  while (cfg.rom_ctrl_vif.checker_fsm_state == rom_ctrl_pkg::ReadingLow) begin
-    #1000ns;
-  end
-endtask
 
 // A slightly tweaked version of the base dut_init which obeys pause_after_dut_init
 task rom_ctrl_common_vseq::dut_init(string reset_kind = "HARD");
   super.dut_init(reset_kind);
 
   if (pause_after_dut_init) begin
-    wait_while_reading_low();
+    cfg.fsm_vif.wait_while_reading_low();
   end
 
   // If do_apply_reset is true then super.dut_init just applied a reset and the rom_ctrl sram
@@ -190,7 +181,7 @@ endtask
 // errors in parallel. To make it work for rom_ctrl, we need to wait a bit for the DUT to be ready
 // for TL accesses.
 task rom_ctrl_common_vseq::run_passthru_mem_tl_intg_err_vseq(int num_times = 1);
-  wait_while_reading_low();
+  cfg.fsm_vif.wait_while_reading_low();
   pause_after_dut_init = 1'b1;
 
   // Waiting like this takes quite a while, so running with a large value of num_times will cause
