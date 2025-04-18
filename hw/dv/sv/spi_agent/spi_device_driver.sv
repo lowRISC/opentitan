@@ -13,8 +13,8 @@
 // the driver is to begin driving the response. The driver sends the contents
 // of spi_item.payload_q sequentially, timed with the SPI host's clock output.
 // Note that spi_device_driver does NOT observe the command, address, or dummy
-// cycles, and it assumes those phases have already passed. For this mode,
-// spi_device_driver is anticipated to be used in conjunction with the
+// cycles+read_pipeline delay, and it assumes those phases have already passed.
+// For this mode, spi_device_driver is anticipated to be used in conjunction with the
 // spi_monitor's req_analysis_port, which writes a spi_item into the
 // spi_sequencer's connected req_analysis_fifo at the moment those phases have
 // completed.
@@ -51,7 +51,7 @@ class spi_device_driver extends spi_driver;
       // The response should read the payload actually consumed, not start with
       // it filled out.
       rsp.payload_q = '{};
-
+      `uvm_info(`gfn, $sformatf("Received item - %s",req.sprint), UVM_DEBUG)
       wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork
         begin: iso_fork
@@ -152,6 +152,7 @@ class spi_device_driver extends spi_driver;
   endtask : send_tpm_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
+    `uvm_info(`gfn, $sformatf("%m: spi_mode = %p, sio_bits = 0x%0x", mode, sio_bits), UVM_DEBUG)
     case (mode)
       Standard: cfg.vif.sio_out[1]   <= sio_bits[0];
       Dual:     cfg.vif.sio_out[1:0] <= sio_bits[1:0];
