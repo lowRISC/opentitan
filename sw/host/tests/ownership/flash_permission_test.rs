@@ -130,12 +130,21 @@ fn flash_info_check(info: &[FlashRegion<'_>], unlocked: bool) -> Result<()> {
         FlashRegion("info", 1, 0, 1, "uu-uu-uu-uu-uu-uu", "LK"), // boot data 1
         FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK"), // owner config 0
         if unlocked {
+            // Owner Config 1 is a creator-level INFO page and is left
+            // writeable when the device is in an unlocked state.
             FlashRegion("info", 1, 0, 3, "RD-WR-ER-SC-EC-xx", "LK") // owner config 1
         } else {
             FlashRegion("info", 1, 0, 3, "RD-xx-xx-SC-EC-xx", "LK") // owner config 1
         },
         FlashRegion("info", 1, 0, 4, "uu-uu-uu-uu-uu-uu", "LK"), // creator reserved
-        FlashRegion("info", 1, 0, 5, "RD-WR-ER-xx-xx-HE", "UN"), // owner reserved
+        // Like DATA pages, owner-level INFO pages are left unlocked
+        // when the device is in an unlocked state and, if so configured,
+        // are locked when in the LockedOwner state.
+        if unlocked {
+            FlashRegion("info", 1, 0, 5, "RD-WR-ER-xx-xx-HE", "UN") // owner reserved
+        } else {
+            FlashRegion("info", 1, 0, 5, "RD-WR-ER-xx-xx-HE", "LK") // owner reserved
+        },
         FlashRegion("info", 1, 0, 6, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
         FlashRegion("info", 1, 0, 7, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
         FlashRegion("info", 1, 0, 8, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved

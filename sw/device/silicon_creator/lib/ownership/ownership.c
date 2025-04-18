@@ -283,6 +283,7 @@ rom_error_t ownership_flash_lockdown(boot_data_t *bootdata, boot_log_t *bootlog,
     HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(
         config->flash, kBootSlotB,
         /*owner_lockdown=*/bootlog->bl0_slot, &mp_index));
+    HARDENED_RETURN_IF_ERROR(owner_block_info_lockdown(config->info));
   } else {
     HARDENED_CHECK_NE(bootdata->ownership_state, kOwnershipStateLockedOwner);
   }
