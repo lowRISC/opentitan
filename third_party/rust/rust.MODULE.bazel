@@ -135,9 +135,15 @@ crate.from_cargo(
 )
 crate.annotation(
     crate = "mdbook",
+    deps = [
+        "@mdbook_index//:ignore",
+    ],
     gen_binaries = ["mdbook"],
     patch_args = ["-p1"],
-    patches = ["@//third_party/mdbook/patches:mdbook-landing-page-links.patch"],
+    patches = [
+        "@//third_party/mdbook/patches:mdbook-landing-page-links.patch",
+        "@//third_party/mdbook/patches:mdbook-mdignore.patch",
+    ],
     repositories = ["mdbook_index"],
 )
 use_repo(crate, "mdbook_index")

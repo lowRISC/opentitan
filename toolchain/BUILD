@@ -12,6 +12,8 @@ load("@rules_cc//cc/toolchains:toolchain.bzl", "cc_toolchain")
 load("@rules_cc//cc/toolchains:tool_map.bzl", "cc_tool_map")
 load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 
+package(default_visibility = ["//visibility:public"])
+
 platform(
     name = "opentitan_platform",
     constraint_values = [

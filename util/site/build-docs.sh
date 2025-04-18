@@ -24,13 +24,8 @@ public_domain="${2}"
 public_port="${3}"
 
 case "$command" in
-  "build"|"build-staging")
+  "build"|"build-staging"|"build-local"|"serve"|"serve-proxy")
     book_out="${build_dir}/book"
-    ;;
-  "build-local"|"serve"|"serve-proxy")
-    # Build book at the root when serving docs by themselves since we won't have
-    # a landing page.
-    book_out="${build_dir}"
     ;;
   "help"|*)
     echo "USAGE: $0 <command> [public_domain] [public_port]"
@@ -87,12 +82,6 @@ getURLs () {
 }
 getURLs
 
-# Build up doxygen command
-doxygen_env="env"
-doxygen_env+=" SRCTREE_TOP=${proj_root}"
-doxygen_env+=" DOXYGEN_OUT=${build_dir}/gen"
-doxygen_args="${proj_root}/util/doxygen/Doxyfile"
-
 # Register the pre-processors
 # Each book should only be passed the preprocessors it specifies inside the book.toml
 # ./book.toml
@@ -122,10 +111,13 @@ buildSite () {
     mkdir -p "${build_dir}/gen/doxy"
 
     echo "Building doxygen..."
-    pushd "${this_dir}" >/dev/null
     # shellcheck disable=SC2086
-    ${doxygen_env} doxygen ${doxygen_args}
-    popd >/dev/null
+    ./bazelisk.sh build --verbose_failures //doc:doxygen
+    while read -r line; do
+      cp -rf "$line" "${build_dir}/gen/"
+    done < <(./bazelisk.sh cquery --output=files //doc:doxygen)
+    # The files from bazel-out aren't writable. This ensures those that were copied are.
+    chmod +w -R "${build_dir}/gen/"
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
@@ -154,14 +146,6 @@ buildSite () {
     mkdir -p "${build_dir}/reports"
     python3 "${proj_root}/util/site/fetch_block_stats.py" "${build_dir}/reports/earlgrey-stats.json"
 
-    # CLEANUP
-    # Remove (larger) files from the ${build_dir} that do not need to be deployed
-    # -------
-    # Remove some unneeded files/directories that mdbook copies to the output dir
-    # TODO handle this with a .ignore file or other mechanism
-    for f in .git .github build-site; do
-        rm -rf "${book_out:?}/${f:?}"
-    done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
     # -------
 }
