@@ -26,6 +26,7 @@
 
 /* Exposed only for testing or SCA purposes. */
 .globl mod_inv
+.globl proj_double
 
 .text
 
@@ -1057,40 +1058,116 @@ fetch_proj_randomize:
  * returns R = (x_r, y_r, z_r) <= 2*P = 2*(x_p, y_p, z_p)
  *         with R, P being valid P-256 curve points
  *
- * This routines doubles a given P-256 curve point in projective coordinate.
- * Internally this routine makes use of the point addition routine and
- * adds the point to itself.
+ * This routines doubles a given P-256 curve point in projective coordinates.
+ * The implementation is based on the following entry in the Explicit Formulas
+ * Database:
+ * http://hyperelliptic.org/EFD/g1p/auto-shortw-projective-3.html#doubling-dbl-2007-bl-2
+ *
+ * Algorithm (copied from EFD):
+ *    w = 3*(X1-Z1)*(X1+Z1)
+ *    s = 2*Y1*Z1
+ *    ss = s^2
+ *    sss = s*ss
+ *    R = Y1*s
+ *    RR = R^2
+ *    B = 2*X1*R
+ *    h = w^2-2*B
+ *    X3 = h*s
+ *    Y3 = w*(B-h)-2*RR
+ *    Z3 = sss
+ *
+ * This routine relies on the assumption that the domain parameter a of the
+ * elliptic curve is -3. It computes the result in 7 multiplies and 3 squares
+ * instead of 14 multiplies.
+ *
  * This routine runs in constant time.
  *
  * @param[in]  w8: x_p, x-coordinate of input point
  * @param[in]  w9: y_p, y-coordinate of input point
  * @param[in]  w10: z_p, z-coordinate of input point
- * @param[in]  w27: b, curve domain parameter
  * @param[in]  w28: r256, constant, 2^256 mod p = 2^256 - p
  * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  w31: all-zero.
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
- * @param[out]  w11: x_r, x-coordinate of resulting point
- * @param[out]  w12: y_r, y-coordinate of resulting point
- * @param[out]  w13: z_r, z-coordinate of resulting point
+ * @param[out]  w8: x_r, x-coordinate of resulting point
+ * @param[out]  w9: y_r, y-coordinate of resulting point
+ * @param[out]  w10: z_r, z-coordinate of resulting point
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: w11 to w25
+ * clobbered registers: w14 to w25
  * clobbered flag groups: FG0
  */
 proj_double:
+  /* w14 <= 3 * (w8 - w10) * (w8 + w10) = 3 * (X1 - Z1) * (X1 + Z1) = w */
+  bn.subm   w24, w8, w10
+  bn.addm   w25, w8, w10
+  jal       x1, mul_modp
+  bn.addm   w14, w19, w19
+  bn.addm   w14, w14, w19
 
-  /* Q = (x_q, y_q, z_q) = (w11, w12, w13) <= P = (x_p, y_p, z_p)
-     = (w8, w9, w10) */
-  bn.mov    w11, w8
-  bn.mov    w12, w9
-  bn.mov    w13, w10
+  /* w15 <= 2 * w9 * w10 = 2 * Y1 * Z1 = s */
+  bn.mov    w24, w9
+  bn.mov    w25, w10
+  jal       x1, mul_modp
+  bn.addm   w15, w19, w19
 
-  /* Tail-call to addition.
-     R = (x_r, y_r, z_r) = (w11, w12, w13) = P+Q
-       = (w8, w9, w10) + (w11, w12, w13) = (x_p, y_p, z_p) + (x_q, y_q, z_q) */
-  jal       x0, proj_add
+  /* w16 <= w9 * w15 = Y1 * s = R */
+  bn.mov    w24, w9
+  bn.mov    w25, w15
+  jal       x1, mul_modp
+  bn.mov    w16, w19
+
+  /* w17 <= 2 * w8 * w16 = 2 * X1 * R = B */
+  bn.mov    w24, w8
+  bn.mov    w25, w16
+  jal       x1, mul_modp
+  bn.addm   w17, w19, w19
+
+  /* w18 <= w14^2 - 2*w17 = w^2 - 2*B = h */
+  bn.mov    w24, w14
+  bn.mov    w25, w14
+  jal       x1, mul_modp
+  bn.subm   w18, w19, w17
+  bn.subm   w18, w18, w17
+
+  /* w8 <= w18 * w15 = h * s = X1 */
+  bn.mov    w24, w18
+  bn.mov    w25, w15
+  jal       x1, mul_modp
+  bn.mov    w8, w19
+
+  /* w10 <= w15 * w15 * w15 = s * s * s = sss  = Z1 */
+  bn.mov    w24, w15
+  bn.mov    w25, w15
+  jal       x1, mul_modp
+  bn.mov    w24, w19
+  bn.mov    w25, w15
+  jal       x1, mul_modp
+  bn.mov    w10, w19
+
+  /* w15 <= w14 * (w17 - w18) = w*(B-h) */
+  bn.mov    w24, w14
+  bn.subm   w25, w17, w18
+  jal       x1, mul_modp
+  bn.mov    w15, w19
+
+  /* w15 <= w15 - 2 * (w16 * w16) = w*(B-h) - 2*R^2 = Y1 */
+  bn.mov    w24, w16
+  bn.mov    w25, w16
+  jal       x1, mul_modp
+  bn.subm   w15, w15, w19
+  bn.subm   w15, w15, w19
+
+  /* The proj_double routine returns (0, 0, 0) when called on the point at
+     infinity (any point where Y is nonzero and both X=0 and Z=0). Detect this
+     case and select a 1 for Y if all coordinates are 0. */
+  bn.addi   w16, w31, 1
+  bn.or     w14, w8, w10
+  bn.or     w14, w14, w15
+  bn.sel    w9, w16, w15, Z
+
+  ret
 
 
 /**
@@ -1167,9 +1244,9 @@ scalar_mult_int:
      loop when the bit at the current index is 1 for both shares of the scalar.
      2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
-  bn.mov    w4, w11
-  bn.mov    w5, w12
-  bn.mov    w6, w13
+  bn.mov    w4, w8
+  bn.mov    w5, w9
+  bn.mov    w6, w10
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1190,7 +1267,7 @@ scalar_mult_int:
   loopi     320, 34
 
     /* double point Q
-       Q = (w11, w12, w13) <= 2*(w8, w9, w10) = 2*Q */
+       Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
     jal       x1, proj_double
 
     /* re-fetch and randomize P again
@@ -1210,17 +1287,17 @@ scalar_mult_int:
        hamming distance from the destination's previous value to its new value
        will be 0 in one of the cases and potentially reveal M.
 
-       P = (w8, w9, w10)
+       P = (w11, w12, w13)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
-    bn.sel    w8, w14, w4, M
-    bn.sel    w9, w15, w5, M
-    bn.sel    w10, w16, w6, M
+    bn.sel    w11, w14, w4, M
+    bn.sel    w12, w15, w5, M
+    bn.sel    w13, w16, w6, M
 
     /* save doubling result to survive follow-up subroutine call
        Q = (w7, w26, w30) <= (w11, w12, w13) */
-    bn.mov    w7, w11
-    bn.mov    w26, w12
-    bn.mov    w30, w13
+    bn.mov    w7, w8
+    bn.mov    w26, w9
+    bn.mov    w30, w10
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1280,6 +1357,7 @@ scalar_mult_int:
      FG0.Z <= if (w10 == 0) then 1 else 0 */
   bn.cmp    w10, w31
   jal       x0, trigger_fault_if_fg0_z
+
 
 /**
  * P-256 scalar multiplication with base point G
