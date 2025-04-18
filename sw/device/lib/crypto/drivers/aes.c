@@ -64,7 +64,7 @@ static status_t aes_write_key(aes_key_t key) {
   // Handle key shares in two separate loops to avoid dealing with
   // corresponding parts too close together, which could risk power
   // side-channel leakage in the ALU.
-  // TODO: randomize iteration order.
+  // TODO(#26941): randomize iteration order.
   size_t i = 0;
   for (; i < key.key_len; ++i) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);

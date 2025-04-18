@@ -213,7 +213,7 @@ status_t rsa_3072_verify_finalize(const rsa_3072_int_t *message,
   HARDENED_TRY(
       read_rsa_3072_int_from_otbn(kOtbnVarRsaOutBuf, &recoveredMessage));
 
-  // TODO: harden this memory comparison
+  // TODO(#26940): harden this memory comparison
   // Check if recovered message matches expectation
   *result = kHardenedBoolTrue;
   for (int i = 0; i < kRsa3072NumWords; i++) {

@@ -122,7 +122,7 @@ static status_t otbn_assert_idle(void) {
  */
 static void otbn_write(uint32_t dest_addr, const uint32_t *src,
                        size_t num_words) {
-  // TODO: replace 0 with a random index like the silicon_creator driver
+  // TODO(#26941): replace 0 with a random index like the silicon_creator driver
   // (requires an interface to Ibex's RND valid bit and data register).
   size_t i = ((uint64_t)0 * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };

@@ -743,7 +743,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   }
   HARDENED_CHECK_EQ(decode_failure, 0);
 
-  // TODO: re-check the padding as an FI hardening measure?
+  // TODO(#26940): re-check the padding as an FI hardening measure?
 
   // If we get here, then the encoded message has a proper format and it is
   // safe to copy the message into the output buffer.
