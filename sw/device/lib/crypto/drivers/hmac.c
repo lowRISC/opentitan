@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -129,8 +130,10 @@ static void hmac_hwip_clear(void) {
   cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_SHA_EN_BIT, false);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
 
-  // TODO(#23191): Use a random value from EDN to wipe.
-  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET, UINT32_MAX);
+  // Wait until random data in ibex is ready and wipe the internal HMAC HWIP
+  // state.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_WIPE_SECRET_REG_OFFSET,
+                   ibex_rnd_uint32());
 }
 
 /**
@@ -269,6 +272,18 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
 }
 
 /**
+ * Wipe given buffer using random data coming from the EDN interface in IBEX.
+ *
+ * @param buf The incoming buffer to be wiped with random data.
+ * @param buf_len The length of `buf` in words.
+ */
+static void wipe_buffer(uint32_t *buf, uint32_t buf_len) {
+  for (int i = 0; i < buf_len; ++i) {
+    buf[i] = ibex_rnd_uint32();
+  }
+}
+
+/**
  * For given `hmac_mode`, derive the matching CFG value and block/digest
  * lengths.
  *
@@ -338,12 +353,45 @@ static status_t cfg_derive(hmac_mode_t hmac_mode, uint32_t *cfg_reg,
   return OTCRYPTO_OK;
 }
 
+/**
+ * Wipes the ctx struct by replacing sensitive data with randomness from the
+ * Ibex EDN interface. Non-sensitive variables are zeroized.
+ *
+ * @param[out] ctx Initialized context object for SHA2/HMAC-SHA2 operations.
+ * @return Result of the operation.
+ */
+static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Randomize sensitive data.
+  wipe_buffer(ctx->key, kHmacMaxBlockWords);
+  wipe_buffer(ctx->H, kHmacMaxDigestWords);
+  wipe_buffer((uint32_t *)(ctx->partial_block),
+              kHmacMaxBlockBytes / sizeof(uint32_t));
+
+  // Zero the remaining ctx fields.
+  ctx->cfg_reg = 0;
+  ctx->key_wordlen = 0;
+  ctx->msg_block_bytelen = 0;
+  ctx->digest_wordlen = 0;
+  ctx->lower = 0;
+  ctx->upper = 0;
+  ctx->hw_started = 0;
+  ctx->partial_block_len = 0;
+
+  return OTCRYPTO_OK;
+}
+
 status_t hmac_init(hmac_ctx_t *ctx, const hmac_mode_t hmac_mode,
                    const uint32_t *key, size_t key_wordlen) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
-  // TODO(#23191) Zeroise or randomly populate ctx struct during init.
+
+  // Randomly populate ctx struct during init.
+  HARDENED_TRY(hmac_context_wipe(ctx));
 
   HARDENED_TRY(cfg_derive(hmac_mode, &ctx->cfg_reg, &ctx->msg_block_bytelen,
                           &ctx->digest_wordlen));
@@ -463,7 +511,9 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
   // Clean up HMAC HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
 
-  // TODO(#23191): Destroy sensitive values in the ctx object.
+  // Destroy sensitive values in the ctx object.
+  HARDENED_TRY(hmac_context_wipe(ctx));
+
   return OTCRYPTO_OK;
 }
 
@@ -531,6 +581,5 @@ status_t hmac(const hmac_mode_t hmac_mode, const uint32_t *key,
   // Clean up HMAC HWIP so it can be reused by other driver calls.
   hmac_hwip_clear();
 
-  // TODO(#23191): Destroy sensitive values in the ctx object.
   return OTCRYPTO_OK;
 }

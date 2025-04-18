@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
@@ -122,9 +123,8 @@ static status_t otbn_assert_idle(void) {
  */
 static void otbn_write(uint32_t dest_addr, const uint32_t *src,
                        size_t num_words) {
-  // TODO: replace 0 with a random index like the silicon_creator driver
-  // (requires an interface to Ibex's RND valid bit and data register).
-  size_t i = ((uint64_t)0 * (uint64_t)num_words) >> 32;
+  // Start from a random index less than `num_words`.
+  size_t i = ((uint64_t)ibex_rnd_uint32() * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };
   size_t iter_cnt = 0;
   for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
