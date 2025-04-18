@@ -2,6 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Opt-out of bzlmod for now and continue to use `WORKSPACE`.
+common --noenable_bzlmod
+
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
 build --cxxopt='-std=gnu++14'
@@ -14,6 +17,7 @@ build --strip='never'
 # Override default enablement of flags from @crt//common to control C compiler
 # warnings.
 build --features=-pedantic_warnings
+build --host_features=-pedantic_warnings
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.

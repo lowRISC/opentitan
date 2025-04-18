@@ -20,8 +20,7 @@ index 612ca2cf..44d6aba8 100644
      # support rctx.getenv(name, default): When building incrementally, any change to the value of
      # the variable named by name will cause this repository to be re-fetched.
      if "getenv" in dir(rctx):
--        getenv = rctx.getenv
-+        getenv = rctx.getenvot_python_wheels
+         getenv = rctx.getenv
      else:
          getenv = rctx.os.environ.get
  
