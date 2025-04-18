@@ -218,6 +218,10 @@ pub struct RawUnlock {
     #[arg(long)]
     pub token: String,
 
+    /// Whether to use the external clock for the transition.
+    #[arg(long, default_value = "false")]
+    pub use_external_clk: bool,
+
     /// Reset duration when switching the LC TAP straps.
     #[arg(long, value_parser = parse_duration, default_value = "100ms")]
     pub reset_delay: Duration,
@@ -252,7 +256,7 @@ impl CommandDispatch for RawUnlock {
             jtag,
             DifLcCtrlState::TestUnlocked0,
             Some(token.into_register_values()),
-            /*use_external_clk=*/ true,
+            self.use_external_clk,
             self.reset_delay,
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
@@ -277,6 +281,10 @@ pub struct Transition {
     /// The target life cycle state
     #[arg(value_enum, value_parser = DifLcCtrlState::parse_lc_state_str, default_value = "test_unlocked0")]
     pub target_lc_state: DifLcCtrlState,
+
+    /// Whether to use the external clock for the transition.
+    #[arg(long, default_value = "false")]
+    pub use_external_clk: bool,
 
     /// The token needed for this transition as a hexstring.
     #[arg(long, default_value = "0x00000000000000000000000000000000")]
@@ -324,7 +332,7 @@ impl CommandDispatch for Transition {
             jtag,
             self.target_lc_state,
             Some(token.into_register_values()),
-            /*use_external_clk=*/ true,
+            self.use_external_clk,
             self.reset_delay,
             /*reset_tap_straps=*/ Some(JtagTap::LcTap),
         )?;
