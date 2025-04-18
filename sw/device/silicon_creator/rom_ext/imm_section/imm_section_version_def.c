@@ -33,6 +33,18 @@ const imm_section_version_t imm_section_version = {
     .magic = kImmVersionMagic,
     .major = IMM_SECTION_MAJOR_VERSION,
     .minor = IMM_SECTION_MINOR_VERSION,
-    .build_status = SCM_INDICATOR,
+    // We cannot record clean/modified status because this affects build
+    // reproducibility during ROM_EXT signing.
+    //
+    // During a signing ceremony:
+    // - First we generate pre-signing artifacts, typically in a clean codebase.
+    // - Next, we take hashes of the pre-signing artifacts offline and sign them
+    //   with our signing infrastructure.
+    // - Finally, we bring the offline signatures back to the codebase and land
+    //   them in an appropriate `signatures` subdirectory.  This modifies the
+    //   codebase, which then causes a change in the build_status value, which
+    //   causes bazel to rebuild pre-signing artifacts, which invalidates the
+    //   signatures.
+    .build_status = SCM_INDICATOR_clean,
     .commit_hash = OT_CAT(0x0, BAZEL_BUILD_SCM_REVISION_SHORT),
 };
