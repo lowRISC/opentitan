@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
@@ -38,10 +39,6 @@ enum {
   kFlashDataBank0 = 0,
   kFlashDataBank1 = 1,
   kRegionBaseBank0Page0Index = 0,
-  kRegionBaseBank1Page0Index = 256,
-  kRegionBaseBank1Page255Index = 511,
-  kFlashBank0DataRegion = 0,
-  kFlashBank1DataRegion = 1,
   kPartitionId = 0,
   kRegionSize = 1,
   kDataSize = 16,
@@ -49,8 +46,14 @@ enum {
   kNumLoops = 10,
 };
 
+static dif_flash_ctrl_device_info_t flash_info;
 static dif_flash_ctrl_state_t flash_state;
 static uint32_t test_data[kDataSize];
+
+static uint32_t flash_bank_0_data_region;
+static uint32_t flash_bank_1_data_region;
+static uint32_t flash_bank_1_page_index;
+static uint32_t flash_bank_1_page_index_last;
 
 /**
  * Check data read from host interface against known data.
@@ -120,7 +123,7 @@ static void do_data_partition_test(uint32_t bank_number) {
         .rd_en = kMultiBitBool4True};
 
     CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
-        &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
+        &flash_state, kRegionBaseBank0Page0Index, flash_bank_0_data_region,
         kRegionSize, region_properties, &address));
 
     uint32_t readback_data[kDataSize];
@@ -132,13 +135,13 @@ static void do_data_partition_test(uint32_t bank_number) {
   } else if (bank_number == 1) {
     for (int i = 0; i < 2; ++i) {
       uint32_t page_index =
-          (i == 0) ? kRegionBaseBank1Page0Index : kRegionBaseBank1Page255Index;
+          (i == 0) ? flash_bank_1_page_index : flash_bank_1_page_index_last;
       for (int j = 0; j < kDataSize; ++j) {
         test_data[i] = rand_testutils_gen32();
       }
       uint32_t address = 0;
       CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
-          &flash_state, page_index, kFlashBank1DataRegion, kRegionSize,
+          &flash_state, page_index, flash_bank_1_data_region, kRegionSize,
           &address));
       CHECK_STATUS_OK(flash_ctrl_testutils_erase_page(
           &flash_state, address, kPartitionId, kDifFlashCtrlPartitionTypeData));
@@ -159,6 +162,25 @@ static void do_data_partition_test(uint32_t bank_number) {
 }
 
 bool test_main(void) {
+  flash_info = dif_flash_ctrl_get_device_info();
+
+  // Determine the region index and page index to use for tests.
+  // Test data page used for flash bank 1 should be the lowest and highest
+  // usable page.
+  if (kBootStage != kBootStageOwner) {
+    flash_bank_0_data_region = 0;
+    flash_bank_1_page_index = flash_info.data_pages;
+  } else {
+    // If we boot up in owner stage, the first 2 regions will be used by
+    // ROM_EXT.
+    flash_bank_0_data_region = 2;
+    // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
+    // these pages.
+    flash_bank_1_page_index = flash_info.data_pages + 0x20;
+  }
+  flash_bank_1_data_region = flash_bank_0_data_region + 1;
+  flash_bank_1_page_index_last = flash_info.data_pages * 2 - 1;
+
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
@@ -170,7 +192,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   for (int i = 0; i < kNumLoops; ++i) {
-    if (kDeviceType != kDeviceSilicon) {
+    if (kBootStage != kBootStageOwner) {
       do_info_partition_test(kFlashInfoPageIdCreatorSecret);
       do_info_partition_test(kFlashInfoPageIdOwnerSecret);
       do_info_partition_test(kFlashInfoPageIdIsoPart);
