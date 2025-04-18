@@ -48,6 +48,12 @@
       "mode": "Alternate",
       "pull_mode": "PullUp",
       "alias_of": "IOA7"
+    },
+    {
+      "name": "IOA2",
+      "mode": "OpenDrain",
+      "level": false,
+      "pull_mode": "PullDown"
     }
   ],
   "strappings": [
