@@ -24,7 +24,7 @@ module aes
                                                     // FORCE_MASKS bit in Auxiliary Control
                                                     // Register. Useful for SCA only.
   parameter bit          SecSkipPRNGReseeding  = 0, // The current SCA setup doesn't provide enough
-                                                    // resources to implement the infrastucture
+                                                    // resources to implement the infrastructure
                                                     // required for PRNG reseeding (CSRNG, EDN).
                                                     // To enable SCA resistance evaluations, we
                                                     // need to skip reseeding requests.
