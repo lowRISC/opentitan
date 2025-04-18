@@ -141,6 +141,44 @@ typedef struct otcrypto_const_word32_buf {
 } otcrypto_const_word32_buf_t;
 
 /**
+ * Struct to hold a fixed-length word aligned byte array.
+ *
+ * Note: the caller must (1) allocate sufficient space and (2) set the `len`
+ * field and `data` pointer when `otcrypto_word32_buf_t` is used for output.
+ *
+ * The `len` field stands for the length of the `data` buffer in bytes. The
+ * length in bytes is needed for operations like determining the correct
+ * padding. The buffer needs to be word aligned which is why the pointer is of
+ * type `uint32_t`.
+ */
+typedef struct otcrypto_byte_len_word32_buf {
+  // Pointer to the data.
+  uint32_t *data;
+  // Length of the data in bytes.
+  size_t len;
+} otcrypto_byte_len_word32_buf_t;
+
+/**
+ * Struct to hold a constant fixed-length word aligned byte array.
+ *
+ * The const annotations prevent any changes to the word buffer. It is
+ * necessary to have this structure separate from `otcrypto_byte_len_word32_buf`
+ * because data pointed to by a struct does not inherit `const`, so `const
+ * otcrypto_byte_len_word32_buf_t` would still allow data to change.
+ *
+ * The `len` field stands for the length of the `data` buffer in bytes. The
+ * length in bytes is needed for operations like determining the correct
+ * padding. The buffer needs to be word aligned which is why the pointer is of
+ * type `uint32_t`.
+ */
+typedef struct otcrypto_const_byte_len_word32_buf {
+  // Pointer to the data.
+  const uint32_t *const data;
+  // Length of the data in bytes.
+  const size_t len;
+} otcrypto_const_byte_len_word32_buf_t;
+
+/**
  * Enum to denote the key type of the handled key.
  *
  * Values are hardened.

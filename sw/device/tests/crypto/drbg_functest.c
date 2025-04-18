@@ -26,19 +26,24 @@ static const uint32_t kExpOutput[16] = {
     0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
     0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
 };
-static const otcrypto_const_byte_buf_t kEmptyBuffer = {
+static const otcrypto_const_byte_len_word32_buf_t kEmptyBuffer = {
+    .data = NULL,
+    .len = 0,
+};
+static const otcrypto_const_byte_buf_t kEmptyByteBuffer = {
     .data = NULL,
     .len = 0,
 };
 
 static status_t kat_test(void) {
-  otcrypto_const_byte_buf_t entropy = {
-      .data = (const unsigned char *)kTestSeed,
+  otcrypto_const_byte_len_word32_buf_t entropy = {
+      .data = kTestSeed,
       .len = sizeof(kTestSeed),
   };
 
   // Instantiate DRBG.
-  TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
+  TRY(otcrypto_drbg_manual_instantiate(entropy,
+                                       /*perso_string=*/kEmptyByteBuffer));
 
   uint32_t actual_output_words[ARRAYSIZE(kExpOutput)];
   otcrypto_word32_buf_t actual_output = {

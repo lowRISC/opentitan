@@ -25,10 +25,10 @@ static const randomness_quality_significance_t kSignificance =
     kRandomnessQualitySignificanceOnePercent;
 
 // Personalization data for testing.
-static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
-static const otcrypto_const_byte_buf_t kPersonalization = {
+static const uint32_t kPersonalizationData[2] = {0xf3f2f1f0, 0x000000f4};
+static const otcrypto_const_byte_len_word32_buf_t kPersonalization = {
     .data = kPersonalizationData,
-    .len = sizeof(kPersonalizationData),
+    .len = 5,
 };
 
 // Represents a 192-bit AES-CBC key.
