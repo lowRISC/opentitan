@@ -386,6 +386,35 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
       h_buffer);
 }
 
+/**
+ * Locate the start of the message in DB = lhash || 0x00..0x00 || 0x01 || M
+ * by searching for the 0x01 byte in constant time.
+ *
+ * @param db_bytes DB bytes.
+ * @param db_bytelen DB byte length.
+ * @param digest_bytelen Message length in bytes.
+ * @param[out] message_start_idx Index in DB where the message starts.
+ * @param[out] decode_failure Indicator bit for decode failure.
+ */
+static void rsa_padding_locate_msg_start(unsigned char *db_bytes,
+                                         size_t db_bytelen,
+                                         size_t digest_bytelen,
+                                         uint32_t *message_start_idx,
+                                         ct_bool32_t *decode_failure) {
+  for (size_t i = digest_bytelen; i < db_bytelen; i++) {
+    uint32_t byte = 0;
+    memcpy(&byte, db_bytes + i, 1);
+    ct_bool32_t is_one = ct_seq32(byte, 0x01);
+    ct_bool32_t is_before_message = ct_seqz32(*message_start_idx);
+    ct_bool32_t is_message_start = is_one & is_before_message;
+    *message_start_idx = ct_cmov32(is_message_start, i + 1, *message_start_idx);
+    ct_bool32_t is_zero = ct_seqz32(byte);
+    ct_bool32_t padding_failure = is_before_message & (~is_zero) & (~is_one);
+    *decode_failure |= padding_failure;
+  }
+  HARDENED_CHECK_LE(*message_start_idx, db_bytelen);
+}
+
 status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 size_t encoded_message_len,
@@ -705,18 +734,8 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   unsigned char *db_bytes = (unsigned char *)db;
   uint32_t message_start_idx = 0;
   ct_bool32_t decode_failure = 0;
-  for (size_t i = digest_bytelen; i < db_bytelen; i++) {
-    uint32_t byte = 0;
-    memcpy(&byte, db_bytes + i, 1);
-    ct_bool32_t is_one = ct_seq32(byte, 0x01);
-    ct_bool32_t is_before_message = ct_seqz32(message_start_idx);
-    ct_bool32_t is_message_start = is_one & is_before_message;
-    message_start_idx = ct_cmov32(is_message_start, i + 1, message_start_idx);
-    ct_bool32_t is_zero = ct_seqz32(byte);
-    ct_bool32_t padding_failure = is_before_message & (~is_zero) & (~is_one);
-    decode_failure |= padding_failure;
-  }
-  HARDENED_CHECK_LE(message_start_idx, db_bytelen);
+  rsa_padding_locate_msg_start(db_bytes, db_bytelen, digest_bytelen,
+                               &message_start_idx, &decode_failure);
 
   // If we never found a message start index, we should fail. However, don't
   // fail yet to avoid leaking timing information.
@@ -736,14 +755,16 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   ct_bool32_t leading_byte_nonzero = ~ct_seqz32(leading_byte);
   decode_failure |= leading_byte_nonzero;
 
+  // Re-check the padding as an FI hardening measure.
+  rsa_padding_locate_msg_start(db_bytes, db_bytelen, digest_bytelen,
+                               &message_start_idx, &decode_failure);
+
   // Now, decode_failure is all-zero if the decode succeeded and all-one if the
   // decode failed.
   if (launder32(decode_failure) != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(decode_failure, 0);
-
-  // TODO: re-check the padding as an FI hardening measure?
 
   // If we get here, then the encoded message has a proper format and it is
   // safe to copy the message into the output buffer.
