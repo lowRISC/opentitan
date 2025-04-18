@@ -52,6 +52,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(active_fld, null)
     active_fld.set(enable);
     csr_update(.csr(ctrl_rg));
+    if (cfg.under_reset) return;
   endtask
 
   // cfg rv_timer prescaler and count step
@@ -65,6 +66,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     hart_cfg_rg.get_field_by_name("prescale").set(prescale);
     hart_cfg_rg.get_field_by_name("step").set(step);
     csr_update(.csr(hart_cfg_rg));
+    if (cfg.under_reset) return;
   endtask
 
   // set timer value for a particular HART
@@ -79,7 +81,9 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     timer_val_l_rg.set(val[31:0]);
     timer_val_u_rg.set(val[63:32]);
     csr_update(.csr(timer_val_l_rg));
+    if (cfg.under_reset) return;
     csr_update(.csr(timer_val_u_rg));
+    if (cfg.under_reset) return;
   endtask
 
   // set timer value for a particular timer
@@ -95,7 +99,9 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     compare_val_l_rg.set(val[31:0]);
     compare_val_u_rg.set(val[63:32]);
     csr_update(.csr(compare_val_l_rg));
+    if (cfg.under_reset) return;
     csr_update(.csr(compare_val_u_rg));
+    if (cfg.under_reset) return;
   endtask
 
   // configure interrupt
@@ -111,6 +117,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(timer_intr_en_fld, null)
     timer_intr_en_fld.set(enable);
     csr_update(.csr(intr_en_rg));
+    if (cfg.under_reset) return;
     // also check intr output, if disabled
     if (!enable) begin
       `DV_CHECK_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
@@ -149,13 +156,16 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     if ($urandom_range(0, 1)) begin
       wr_value = 1 << timer;
       csr_wr(.ptr(intr_state_rg), .value(wr_value));
+      if (cfg.under_reset) return;
     end else begin
       wr_value = $urandom();
       set_compare_val(hart, timer, wr_value);
+      if (cfg.under_reset) return;
       // wait one clk cycle then check intr, to ensure get the sticky interrupt value
-      cfg.clk_rst_vif.wait_clks(1);
+      cfg.clk_rst_vif.wait_clks_or_rst(1);
     end
     csr_rd(.ptr(intr_state_rg), .value(status));
+    if (cfg.under_reset) return;
   endtask
 
   // poll a intr_status continuously until it reads the expected value.
@@ -164,24 +174,18 @@ class rv_timer_base_vseq extends cip_base_vseq #(
                                    input uint spinwait_delay_ns = 0,
                                    input uint timeout_ns        = 10_000_000); // 10ms
     bit [TL_DW-1:0] read_data;
-    bit reset_asserted;
     uvm_reg intr_state_rg;
     intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
     fork
       begin : isolation_fork
         fork
-          begin
-            wait(cfg.clk_rst_vif.rst_n == 0);
-            reset_asserted = 1'b1;
-          end
-        join_none
-        fork
           while (1) begin
             csr_rd(.ptr(intr_state_rg), .value(read_data));
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
-            if ((read_data == exp_data) | (reset_asserted == 1)) break;
+            if ((read_data == exp_data)) break;
           end
+          wait (cfg.under_reset);
           begin
             `DV_WAIT_TIMEOUT(timeout_ns, "intr_state_spinwait",
                              $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
@@ -200,6 +204,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
     `DV_CHECK_NE_FATAL(intr_state_rg, null)
     csr_rd(.ptr(intr_state_rg), .value(status_val));
+    if (cfg.under_reset) return;
   endtask : read_intr_status_reg
 
   // task to read timer value reg for given Hart
@@ -213,8 +218,10 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     `DV_CHECK_NE_FATAL(timer_val_l_rg, null)
     `DV_CHECK_NE_FATAL(timer_val_u_rg, null)
     csr_rd(.ptr(timer_val_u_rg), .value(read_data));
+    if (cfg.under_reset) return;
     mtime_val[63:32] = read_data;
     csr_rd(.ptr(timer_val_l_rg), .value(read_data));
+    if (cfg.under_reset) return;
     mtime_val[31:0] = read_data;
   endtask : read_timer_val_reg
 
@@ -223,7 +230,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     bit stop_reading;
     fork
       begin
-        cfg.clk_rst_vif.wait_clks(clks);
+        cfg.clk_rst_vif.wait_clks_or_rst(clks);
         stop_reading = 1'b1;
       end
       begin
@@ -231,6 +238,8 @@ class rv_timer_base_vseq extends cip_base_vseq #(
           // read will trigger check in scoreboard
           uint rd_data;
           read_intr_status_reg(.hart(hart), .status_val(rd_data));
+          if (cfg.under_reset) break;
+
           fork
             begin : isolation_fork
               fork
@@ -238,6 +247,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
                   delay = $urandom_range(1, 10000);
                   #(delay * 1ns);
                 end
+                wait(cfg.under_reset);
                 wait(stop_reading == 1);
               join_any
               disable fork;
