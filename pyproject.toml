@@ -79,9 +79,8 @@ dependencies = [
   "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
 ]
 
-[tool.setuptools]
-# This is actually not a python project, we just use pyproject.toml to manage dependencies.
-py-modules = []
+[tool.setuptools.packages.find]
+where = ["util"]
 
 [tool.ruff]
 target-version = "py310"
