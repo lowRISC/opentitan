@@ -48,11 +48,16 @@
     },
     {
       "name": "IOA2",
-      "alias_of": "CN9_29"
+      "alias_of": "CN9_29",
+      // There is an external pulldown connected to disable VBUS_SENSE_BUFFER
+      // by default.
+      "external": "PullDown"
     },
     {
       "name": "IOA3",
-      "alias_of": "CN7_18"
+      "alias_of": "CN7_18",
+      // There is an external pulldown connected.
+      "external": "PullDown"
     },
     {
       "name": "IOA4",
@@ -156,11 +161,15 @@
     },
     {
       "name": "IOC7",
-      "alias_of": "CN10_18"
+      "alias_of": "CN10_18",
+      // There is an external pulldown connected so that VBUS_SENSE is low
+      // unless VBUS_SENSE_BUFFER is enabled.
+      "external": "PullDown"
     },
     {
       "name": "IOC8",
-      "alias_of": "CN8_16"
+      "alias_of": "CN8_16",
+      "external": "Gnd"
     },
     {
       "name": "IOC9",
@@ -470,6 +479,15 @@
       "alias_of": "UART3"
     }
   ],
+  "peripherals": [
+    {
+      // When A2 or VBUS_SENSE_EN is set, this buffer will connect
+      // USB_VBUSE_SENSE to C7.
+      "name": "VBUS_SENSE_BUFFER",
+      "pins": ["IOC7"],
+      "enable_pin": "IOA2"
+    },
+  ]
   "strappings": [
     {
       "name": "PRERESET_DFT_DISABLE",
