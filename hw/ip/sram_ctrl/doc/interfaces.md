@@ -27,20 +27,19 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                  | Package::Struct                 | Type    | Act   | Width                     | Description                                                                                                                          |
-|:---------------------------|:--------------------------------|:--------|:------|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| sram_otp_key               | otp_ctrl_pkg::sram_otp_key      | req_rsp | req   | 1                         |                                                                                                                                      |
-| cfg                        | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   | NumRamInst                |                                                                                                                                      |
-| cfg_rsp                    | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   | NumRamInst                |                                                                                                                                      |
-| lc_escalate_en             | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1                         |                                                                                                                                      |
-| lc_hw_debug_en             | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1                         |                                                                                                                                      |
-| otp_en_sram_ifetch         | prim_mubi_pkg::mubi8            | uni     | rcv   | 1                         |                                                                                                                                      |
-| racl_policies              | top_racl_pkg::racl_policy_vec   | uni     | rcv   | 1                         | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error                 | top_racl_pkg::racl_error_log    | uni     | req   | 1                         | RACL error log information of this module.                                                                                           |
-| racl_policy_sel_ranges_ram | top_racl_pkg::racl_range_t      | uni     | rcv   | RaclPolicySelRangesRamNum | Incoming array of RACL policy ranges.                                                                                                |
-| sram_rerror                | sram_ctrl_pkg::sram_error_t     | uni     | req   | 1                         | SRAM read error indicating correctable and uncorrectable ECC errors.                                                                 |
-| regs_tl                    | tlul_pkg::tl                    | req_rsp | rsp   | 1                         |                                                                                                                                      |
-| ram_tl                     | tlul_pkg::tl                    | req_rsp | rsp   | 1                         |                                                                                                                                      |
+| Port Name          | Package::Struct                 | Type    | Act   | Width      | Description                                                                                                                          |
+|:-------------------|:--------------------------------|:--------|:------|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| sram_otp_key       | otp_ctrl_pkg::sram_otp_key      | req_rsp | req   | 1          |                                                                                                                                      |
+| cfg                | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   | NumRamInst |                                                                                                                                      |
+| cfg_rsp            | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   | NumRamInst |                                                                                                                                      |
+| lc_escalate_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |                                                                                                                                      |
+| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |                                                                                                                                      |
+| otp_en_sram_ifetch | prim_mubi_pkg::mubi8            | uni     | rcv   | 1          |                                                                                                                                      |
+| racl_policies      | top_racl_pkg::racl_policy_vec   | uni     | rcv   | 1          | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error         | top_racl_pkg::racl_error_log    | uni     | req   | 1          | RACL error log information of this module.                                                                                           |
+| sram_rerror        | sram_ctrl_pkg::sram_error_t     | uni     | req   | 1          | SRAM read error indicating correctable and uncorrectable ECC errors.                                                                 |
+| regs_tl            | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
+| ram_tl             | tlul_pkg::tl                    | req_rsp | rsp   | 1          |                                                                                                                                      |
 
 ## Security Alerts
 

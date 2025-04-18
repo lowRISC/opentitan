@@ -29,7 +29,7 @@
 
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "regs", racl_support: true }
-    { protocol: "tlul", direction: "device", name: "ram" , racl_support: true }
+    { protocol: "tlul", direction: "device", name: "ram" , racl_support: true, racl_range_support: true }
   ],
 
   ///////////////////////////
@@ -120,13 +120,6 @@
       local:     "false",
       expose:    "true",
       default:   "0"
-    },
-    { name:      "RaclPolicySelRangesRamNum",
-      desc:      "Number of Racl Policy Selection Ranges for the Ram interface",
-      type:      "int",
-      local:     "false",
-      expose:    "true",
-      default:   "1"
     },
   ]
 
@@ -244,16 +237,6 @@
         RACL error log information of this module.
       '''
     },
-    { struct:  "racl_range_t",
-      type:    "uni",
-      name:    "racl_policy_sel_ranges_ram",
-      act:     "rcv",
-      width:   "RaclPolicySelRangesRamNum"
-      package: "top_racl_pkg",
-      desc:    '''
-        Incoming array of RACL policy ranges.
-      '''
-    }
     { struct:  "sram_error_t",
       package: "sram_ctrl_pkg",
       width:   "1"

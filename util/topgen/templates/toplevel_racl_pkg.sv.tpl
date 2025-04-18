@@ -38,6 +38,7 @@ package top_${topcfg["name"]}_racl_pkg;
         "policy_names"     : policy_names,
         "racl_group"       : racl_group,
         "module_name"      : m['name'],
+        "ip_block"         : name_to_block[m['type']],
         "if_name"          : if_name
       }
 %>\
