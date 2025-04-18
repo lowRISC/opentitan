@@ -41,6 +41,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
 
       // disable timers
       csr_wr(.ptr(ral.ctrl[0]), .value(ral.ctrl[0].get_reset()));
+      if (cfg.under_reset) return;
 
       for (int hart = 0; hart < NUM_HARTS; hart++) begin
         for (int timer = 0; timer < NUM_TIMERS; timer++) begin
@@ -69,7 +70,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
               num_clks = $urandom_range((num_clks / 10), (num_clks / 2));
             end
             status_read_for_clks(.hart(hart), .clks(num_clks));
-
+            if (cfg.under_reset) return;
             // update timer cfg (step/prescale)
             if (!upd_cfg_in_end & $urandom_range(0, 1)) begin
               // update either step or prescale
@@ -123,10 +124,14 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
             end
             // Read timer val reg to get latest value of timer for calc of num_clks
             read_timer_val_reg(.hart(hart), .mtime_val(timer_val[hart]));
+
+            // Return here to avoid iterating in the loop if in reset
+            if (cfg.under_reset) return;
           end
 
           // check for no intr asserted
           read_intr_status_reg(.hart(hart), .status_val(read_data));
+          if (cfg.under_reset) return;
           `DV_CHECK_EQ(read_data, 0)
 
           // random read till for clks = (num_clks - (prescale[hart] + 4))
@@ -138,15 +143,18 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
 
           // wait for (prescale[*] + 5) to let timer expire as per new cfg,
           // one clock extra to avoid race condition btw scoreboard predict and seq reg read
-          cfg.clk_rst_vif.wait_clks(prescale[hart] + 5);
+          cfg.clk_rst_vif.wait_clks_or_rst(prescale[hart] + 5);
 
           `uvm_info(`gfn, $sformatf("Timer expired last read"), UVM_LOW)
           read_intr_status_reg(.hart(hart), .status_val(read_data));
+          if (cfg.under_reset) return;
+
           `DV_CHECK_EQ_FATAL(read_data, (1 << timer))
 
           // clear intr status randomly while timer is still enable and check for sticky interrupt
-          if ($urandom_range(0, 1)) clear_intr_state(.hart(hart), .timer(timer));
-
+          if ($urandom_range(0, 1)) begin
+            clear_intr_state(.hart(hart), .timer(timer));
+          end
           // disable timers and clear interrupt
           cfg_timer(.hart(hart), .timer(timer), .enable(1'b0));
           clear_intr_state(.hart(hart), .timer(timer));
