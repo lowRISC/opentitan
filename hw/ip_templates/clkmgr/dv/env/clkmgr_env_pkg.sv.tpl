@@ -56,7 +56,7 @@ package clkmgr_env_pkg;
 
   // alerts
   parameter uint NUM_ALERTS = 2;
-  parameter string LIST_OF_ALERTS[] = {"recov_fault", "fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_fault", "fatal_fault"};
 
   // types
 

@@ -22,7 +22,7 @@ package pwm_env_pkg;
 
   // The DUT has a single alert signal.
   parameter uint NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   // Constants.
   parameter bit [31:0] MAX_32 = 32'hFFFF_FFFF;

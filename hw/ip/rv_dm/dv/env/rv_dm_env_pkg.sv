@@ -34,7 +34,7 @@ package rv_dm_env_pkg;
 
   // See hw/ip/rm_dm/data/rv_dm.hjson for alert names.
   parameter uint NUM_ALERTS = rv_dm_reg_pkg::NumAlerts;
-  parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   // package sources
   `include "rv_dm_env_cfg.sv"
