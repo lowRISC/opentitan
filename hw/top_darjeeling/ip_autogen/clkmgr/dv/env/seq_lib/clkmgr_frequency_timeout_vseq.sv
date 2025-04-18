@@ -88,7 +88,6 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
           expected_recov_timeout_err[clk_mesr_timeout] = 1;
-        end
         disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b0));
       end
       wait_before_read_recov_err_code();
