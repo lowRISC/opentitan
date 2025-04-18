@@ -13,7 +13,6 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
-load("@crt//rules:transition.bzl", "platform_target")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -194,6 +193,7 @@ obj_transform = rv_rule(
         "format": attr.string(default = "binary"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
@@ -374,6 +374,7 @@ elf_to_disassembly = rv_rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
 )
@@ -651,6 +652,7 @@ assemble_flash_image = rv_rule(
         "output": attr.string(),
         "binaries": attr.label_keyed_string_dict(allow_empty = False),
     },
+    fragments = ["cpp"],
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
@@ -701,14 +703,6 @@ def opentitan_binary(
         linkopts = linkopts,
         testonly = testonly,
         **kwargs
-    )
-    elf_transition_binary_name = "{}_elf_transition".format(name)
-    targets.append(":" + elf_transition_binary_name)
-    platform_target(
-        name = elf_transition_binary_name,
-        platform = platform,
-        target = native_binary_name,
-        testonly = testonly,
     )
 
     bin_name = "{}_{}".format(name, "bin")
