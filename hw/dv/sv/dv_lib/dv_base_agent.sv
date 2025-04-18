@@ -64,4 +64,16 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     end
   endfunction
 
+  virtual task run_phase(uvm_phase phase);
+    wait(cfg.in_reset);
+    forever begin
+      wait(!cfg.in_reset);
+      fork begin
+        wait(cfg.in_reset);
+        if (sequencer != null) begin
+          sequencer.handle_reset(phase);
+        end
+      end join
+    end
+  endtask: run_phase
 endclass
