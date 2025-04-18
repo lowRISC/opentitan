@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// class : ${module_instance_name}_full_random_vseq
+// class : gpio_full_random_vseq
 // This gpio random test sequence performs random no. of iteration such that
 // each iteration will do either of the following operations:
 //   (i) drives random gpio input data values such that none of the gpios become
 //       unknown value
 //  (ii) writes any of gpio registers
 // (iii) reads any of gpio registers
-class ${module_instance_name}_full_random_vseq extends ${module_instance_name}_random_long_reg_writes_reg_reads_vseq;
+class gpio_full_random_vseq extends gpio_random_long_reg_writes_reg_reads_vseq;
 
   // predicted value of DATA_OUT rtl implementation register
   bit [NUM_GPIOS-1:0] data_out;
@@ -18,7 +18,7 @@ class ${module_instance_name}_full_random_vseq extends ${module_instance_name}_r
   // Previous value of gpio pins
   bit [NUM_GPIOS-1:0] prev_gpio_val;
 
-  `uvm_object_utils(${module_instance_name}_full_random_vseq)
+  `uvm_object_utils(gpio_full_random_vseq)
   `uvm_object_new
 
   task body();
@@ -300,4 +300,4 @@ class ${module_instance_name}_full_random_vseq extends ${module_instance_name}_r
     cfg.clk_rst_vif.wait_clks(FILTER_CYCLES + 1);
   endtask : wait_for_filter_cyles
 
-endclass : ${module_instance_name}_full_random_vseq
+endclass : gpio_full_random_vseq
