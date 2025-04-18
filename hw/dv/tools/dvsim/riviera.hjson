@@ -70,6 +70,13 @@
       run_opts: []
     }
     {
+      name: riviera_gui_debug      
+      // TODO need to add options to setup Riviera gui debug environment and features (similary like in PR #24156 for Xelium)
+      is_sim_mode: 1
+      build_opts: []
+      run_opts: []
+    }
+    {
       name: riviera_waves
       is_sim_mode: 1
     }
