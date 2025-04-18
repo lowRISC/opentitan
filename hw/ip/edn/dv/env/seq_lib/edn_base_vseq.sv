@@ -56,11 +56,6 @@ class edn_base_vseq extends cip_base_vseq #(
 
     additional_data = 0;
 
-    if (cfg.use_invalid_mubi) begin
-      // Turn off DUT assertions so that the corresponding alert can fire
-      cfg.edn_assert_vif.assert_off_alert();
-    end
-
     if (cfg.boot_req_mode == MuBi4True) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_FATAL(glen)
