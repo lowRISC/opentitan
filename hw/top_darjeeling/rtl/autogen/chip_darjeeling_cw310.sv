@@ -1014,11 +1014,12 @@ module chip_darjeeling_cw310 #(
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
   prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
   prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
+
+  assign io_clk_byp_req    = prim_mubi_pkg::MuBi4False;
+  assign all_clk_byp_req   = prim_mubi_pkg::MuBi4False;
+  assign hi_speed_sel      = prim_mubi_pkg::MuBi4False;
 
   // DFT connections
   logic scan_en;
@@ -1213,7 +1214,7 @@ module chip_darjeeling_cw310 #(
     .clk_src_io_en_i       ( base_ast_pwr.io_clk_en ),
     .clk_src_io_o          ( ast_base_clks.clk_io ),
     .clk_src_io_val_o      ( ast_base_pwr.io_clk_val ),
-    .clk_src_io_48m_o      ( div_step_down_req ),
+    .clk_src_io_48m_o      ( ),
     // usb source clock
     .usb_ref_pulse_i       ( '0 ),
     .usb_ref_val_i         ( '0 ),
@@ -1246,9 +1247,9 @@ module chip_darjeeling_cw310 #(
     .ast2padmux_o          (            ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
+    .all_clk_byp_ack_o     ( ),
     .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
+    .io_clk_byp_ack_o      ( ),
     .flash_bist_en_o       ( ),
     // Memory configuration connections
     .dpram_rmf_o           ( ast_ram_2p_fcfg ),
