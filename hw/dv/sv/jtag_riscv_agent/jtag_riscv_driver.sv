@@ -6,7 +6,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
   protected bit do_hard_reset;
 
-  `uvm_object_utils(jtag_riscv_driver)
+  `uvm_component_utils(jtag_riscv_driver)
 
   `uvm_object_new
 
