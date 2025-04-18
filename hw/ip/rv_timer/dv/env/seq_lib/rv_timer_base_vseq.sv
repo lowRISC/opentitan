@@ -117,23 +117,6 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // check if interrupt fired
-  virtual task check_interrupt(int hart = 0, int timer = 0, bit exp_intr_state, bit exp_intr_pin);
-    uvm_reg       intr_state_rg;
-    uvm_reg_field timer_intr_state_fld;
-    int           intr_pin_idx = hart * NUM_TIMERS + timer;
-    `DV_CHECK_LT_FATAL(hart, NUM_HARTS)
-    `DV_CHECK_LT_FATAL(timer, NUM_TIMERS)
-    intr_state_rg = ral.get_reg_by_name($sformatf("intr_state%0d", hart));
-    `DV_CHECK_NE_FATAL(intr_state_rg, null)
-    timer_intr_state_fld = intr_state_rg.get_field_by_name($sformatf("is_%0d", timer));
-    `DV_CHECK_NE_FATAL(timer_intr_state_fld, null)
-    void'(timer_intr_state_fld.predict(.value(exp_intr_state), .kind(UVM_PREDICT_DIRECT)));
-    csr_rd_check(.ptr(intr_state_rg), .compare_vs_ral(1));
-    // also check intr output
-    `DV_CHECK_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), exp_intr_pin)
-  endtask
-
   // task to write 1 to clear and read the interrupt status register
   virtual task clear_intr_state(int hart = 0, int timer = 0);
     uvm_reg         intr_state_rg;
