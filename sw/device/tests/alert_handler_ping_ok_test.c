@@ -27,6 +27,15 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_rv_timer_t kRvTimerDt = 0;
+static_assert(kDtRvTimerCount >= 1, "this test expects at least one rv_timer");
+static const dt_alert_handler_t kAlertHandlerDt = 0;
+static_assert(kDtAlertHandlerCount == 1, "this test expects an alert_handler");
+static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
+static_assert(kDtRvCoreIbexCount == 1, "this test expects exactly one Ibex");
+
 typedef struct counters {
   uint32_t alert_raised;
   uint32_t wdog_barked;
@@ -210,18 +219,13 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
 void ottf_external_isr(uint32_t *exc_info) { ext_irq_fired = true; }
 
 void init_peripherals(void) {
-  mmio_region_t addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(addr, &alert_handler));
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kAlertHandlerDt, &alert_handler));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(addr, &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
-  CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_init_from_dt(kRvTimerDt, &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 }
 

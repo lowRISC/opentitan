@@ -21,7 +21,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -31,13 +30,24 @@ static dif_spi_device_handle_t spid;
 static dif_pwrmgr_t pwrmgr;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t plic;
-static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
-                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
-static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
-    .pwrmgr = &pwrmgr,
-    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-    .expected_irq = kDifPwrmgrIrqWakeup,
-    .is_only_irq = true};
+
+enum {
+  kPlicTarget = 0,
+};
+
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_gpio_t kGpioDt = 0;
+static_assert(kDtGpioCount == 1, "this test expects a gpio");
+static const dt_spi_device_t kSpiDeviceDt = 0;
+static_assert(kDtSpiDeviceCount >= 1,
+              "this test expects at least one spi_device");
 
 static status_t enter_low_power(void) {
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg =
@@ -49,14 +59,18 @@ static status_t enter_low_power(void) {
     CHECK_DIF_OK(dif_gpio_read(&gpio, 0, &sleep));
   } while (!sleep);
 
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
+
   irq_global_ctrl(false);
   LOG_INFO("SYNC: Sleeping");
-  TRY(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
+  TRY(pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                        pwrmgr_domain_cfg));
   wait_for_interrupt();
 
-  TRY_CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)));
+  TRY_CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources)));
   TRY(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 
   TRY(dif_pinmux_wakeup_cause_clear(&pinmux));
@@ -106,30 +120,23 @@ static status_t configure_spi_flash_mode(void) {
 }
 
 bool test_main(void) {
-  mmio_region_t addr;
-  addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
-  CHECK_DIF_OK(dif_spi_device_init_handle(addr, &spid));
+  CHECK_DIF_OK(dif_spi_device_init_handle_from_dt(kSpiDeviceDt, &spid));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(addr, &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_aon_timer_init(addr, &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
-  addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
-  CHECK_DIF_OK(dif_gpio_init(addr, &gpio));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x1));
 
   // Enable all the AON interrupts used to wake up the core.
-  rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
-                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  dif_rv_plic_irq_id_t plic_id =
+      dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup);
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, plic_id, plic_id);
   CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
   irq_global_ctrl(true);
@@ -228,14 +235,13 @@ bool test_main(void) {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
-
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
-
-  // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_pwrmgr_instance_id(kPwrmgrDt) &&
+      irq_id == dt_pwrmgr_irq_to_plic_id(kPwrmgrDt, kDtPwrmgrIrqWakeup)) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr, kDtPwrmgrIrqWakeup));
+    return true;
+  } else {
+    return false;
+  }
 }

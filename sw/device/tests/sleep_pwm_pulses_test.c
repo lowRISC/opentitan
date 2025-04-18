@@ -39,6 +39,17 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_pinmux_t kPinmuxDt = 0;
+static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_pwm_t kPwmDt = 0;
+static_assert(kDtPwmCount == 1, "this test expects a pwm");
+
 static const dif_pinmux_index_t kPinmuxOutsel[PWM_PARAM_N_OUTPUTS] = {
     kTopEarlgreyPinmuxOutselPwmAonPwm0, kTopEarlgreyPinmuxOutselPwmAonPwm1,
     kTopEarlgreyPinmuxOutselPwmAonPwm2, kTopEarlgreyPinmuxOutselPwmAonPwm3,
@@ -120,16 +131,18 @@ bool test_main(void) {
   }
 
   // Initialize pwrmgr
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerWakeupWkupReq, &wakeup_sources));
 
   // Initialize rstmgr since this will check some registers.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   dif_aon_timer_t aon_timer;
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
 
@@ -139,8 +152,7 @@ bool test_main(void) {
     dif_pwm_t pwm;
     dif_pinmux_t pinmux;
     // Initialize pwm
-    CHECK_DIF_OK(dif_pwm_init(
-        mmio_region_from_addr(TOP_EARLGREY_PWM_AON_BASE_ADDR), &pwm));
+    CHECK_DIF_OK(dif_pwm_init_from_dt(kPwmDt, &pwm));
 
     // Update pwm.CFG
     CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
@@ -155,8 +167,7 @@ bool test_main(void) {
     // IOB10..12 and IOC10..12
     // LOG_INFO is used to indicate pwmout is available to
     // SV pwm_monitor
-    CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+    CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
     LOG_INFO("pinmux_init begin");
     for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
@@ -178,15 +189,15 @@ bool test_main(void) {
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
     // Deep sleep.
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceFive, 0));
+    CHECK_STATUS_OK(
+        pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");
     wait_for_interrupt();
 
   } else if (UNWRAP(pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true) {
+                 &pwrmgr, wakeup_sources)) == true) {
     LOG_INFO("Wakeup reset");
 
     CHECK(UNWRAP(rstmgr_testutils_is_reset_info(

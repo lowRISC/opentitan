@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_adc_ctrl.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -18,29 +19,34 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#include "sw/device/lib/testing/autogen/isr_testutils.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
 static dif_aon_timer_t aon;
 static dif_rv_core_ibex_t rv_core_ibex;
 
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic,
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
+enum {
+  kPlicTarget = 0,
 };
 
-static aon_timer_isr_ctx_t aon_timer_ctx = {
-    .aon_timer = &aon,
-    .plic_aon_timer_start_irq_id =
-        kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-    .is_only_irq = false,
-};
+static const dt_adc_ctrl_t kAdcCtrlDt = 0;
+static_assert(kDtAdcCtrlCount == 1, "this test expects a adc_ctrl");
+static const dt_rstmgr_t kRstmgrDt = 0;
+static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static const dt_aon_timer_t kAonTimerDt = 0;
+static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
+static const dt_rv_plic_t kRvPlicDt = 0;
+static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
+static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
+static_assert(kDtRvCoreIbexCount == 1,
+              "this test expects exactly one rv_core_ibex");
+static const dt_flash_ctrl_t kFlashCtrlDt = 0;
+static_assert(kDtFlashCtrlCount >= 1,
+              "this test expects at least one flash_ctrl");
 
-static top_earlgrey_plic_peripheral_t peripheral_serviced;
-static dif_aon_timer_irq_t irq_serviced;
+static volatile bool irq_serviced = false;
 
 enum {
   kFlashDataRegion = 0,
@@ -55,9 +61,18 @@ enum {
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
-  isr_testutils_aon_timer_isr(plic_ctx, aon_timer_ctx, &peripheral_serviced,
-                              &irq_serviced);
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid == dt_aon_timer_instance_id(kAonTimerDt) &&
+      irq_id == dt_aon_timer_irq_to_plic_id(kAonTimerDt,
+                                            kDtAonTimerIrqWdogTimerBark)) {
+    CHECK_DIF_OK(
+        dif_aon_timer_irq_acknowledge(&aon, kDtAonTimerIrqWdogTimerBark));
+    irq_serviced = true;
+    return true;
+  } else {
+    return false;
+  }
 }
 
 /**
@@ -83,14 +98,13 @@ void ottf_external_nmi_handler(void) {
 
 static void enable_irqs(void) {
   // Enable the AON bark interrupt.
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
-      kDifRvPlicMaxPriority));
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+  dif_rv_plic_irq_id_t plic_id =
+      dt_aon_timer_irq_to_plic_id(kAonTimerDt, kDtAonTimerIrqWdogTimerBark);
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, plic_id, kPlicTarget,
+                                           kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_set_priority(&plic, plic_id, kDifRvPlicMaxPriority));
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kPlicTarget, 0x0));
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
@@ -101,25 +115,27 @@ bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
 
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash, kFlashCtrlDt));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &rv_core_ibex));
   enable_irqs();
 
+  dif_pwrmgr_request_sources_t wakeup_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_adc_ctrl_instance_id(kAdcCtrlDt),
+      kDtAdcCtrlWakeupWkupReq, &wakeup_sources));
+
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+
   CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
@@ -148,10 +164,10 @@ bool test_main(void) {
     CHECK_ARRAYS_EQ(data, readback_data, kNumWords);
 
     // Setting up low power hint and starting watchdog timer followed by
-    // a flash operation (page erase) and WFI. This will create a bite
+    // a flash operation (page erase) and WFI. This will create a bark
     // interrupt at some time following the start of the flash operation.
-    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-        &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
+    CHECK_STATUS_OK(
+        pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources, 0));
 
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
 
@@ -187,8 +203,7 @@ bool test_main(void) {
 
     rstmgr_reset_info = rstmgr_testutils_reason_get();
     CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
-    CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAonTimerAon);
-    CHECK(irq_serviced == kDifAonTimerIrqWdogTimerBark);
+    CHECK(irq_serviced);
 
     CHECK_STATUS_OK(flash_ctrl_testutils_wait_transaction_end(&flash));
 

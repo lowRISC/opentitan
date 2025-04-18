@@ -27,6 +27,12 @@
 #include "kmac_regs.h"
 #include "otbn_regs.h"
 
+static const dt_pwrmgr_t kPwrmgrDt = 0;
+static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
+static_assert(kDtAonTimerCount >= 1,
+              "this test expects at least one aon_timer");
+static const dt_aon_timer_t kAonTimerDt = 0;
+
 /**
  * Test an access to a transactional unit that has been disabled causes
  * a hang access, resulting in a watchdog reset. Check the crash dump
@@ -161,12 +167,10 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
 
   // Initialize aon timer.
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kAonTimerDt, &aon_timer));
 
   // Initialize aes.
   CHECK_DIF_OK(
@@ -200,9 +204,12 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
 
   if (UNWRAP(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor))) {
     // Enable watchdog bite reset.
-    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                                kDifPwrmgrResetRequestSourceTwo,
-                                                kDifToggleEnabled));
+    dif_pwrmgr_request_sources_t reset_sources;
+    CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+        &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+        kDtAonTimerResetReqAonTimer, &reset_sources));
+    CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+        &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
     CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
 
     test_hintable_clocks_off(&clkmgr, clock);

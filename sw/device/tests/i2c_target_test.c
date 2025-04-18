@@ -50,6 +50,7 @@ static dif_pwrmgr_t pwrmgr;
 static dif_rv_plic_t plic;
 static dif_i2c_t i2c;
 
+static dif_pwrmgr_request_sources_t wakeup_sources;
 static uint8_t i2c_instance_under_test = 0;
 static uint32_t i2c_clock_stretching_delay_micros = 0;
 
@@ -238,8 +239,8 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
     pwrmgr_domain_cfg |= kDifPwrmgrDomainOptionMainPowerInLowPower;
   }
 
-  TRY(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg));
+  TRY(pwrmgr_testutils_enable_low_power(&pwrmgr, wakeup_sources,
+                                        pwrmgr_domain_cfg));
 
   LOG_INFO("Going to sleep.");
   wait_for_interrupt();
@@ -258,8 +259,7 @@ static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
 }
 
 static status_t wakeup_check(ujson_t *uj, dif_i2c_t *i2c) {
-  if (TRY(pwrmgr_testutils_is_wakeup_reason(
-          &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) == true) {
+  if (TRY(pwrmgr_testutils_is_wakeup_reason(&pwrmgr, wakeup_sources)) == true) {
     LOG_ERROR("Woke from deep sleep; resuming test.");
     TRY(dif_pinmux_wakeup_detector_disable(&pinmux, 0));
     // If we get here, the test harness is expecting to receive a
@@ -318,6 +318,10 @@ static status_t test_init(void) {
   TRY(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
 
   TRY(dif_pwrmgr_init_from_dt(kPwrmgrDt, &pwrmgr));
+
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, dt_pinmux_instance_id(kPinmuxDt),
+      kDtPinmuxWakeupPinWkupReq, &wakeup_sources));
 
   TRY(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   TRY(dif_rv_plic_reset(&plic));

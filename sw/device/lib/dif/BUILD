@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_require_top")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -55,7 +57,9 @@ DIFS = {
     "pattgen": {},
     "pinmux": {},
     "pwm": {},
-    "pwrmgr": {},
+    "pwrmgr": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "rom_ctrl": {},
     "rstmgr": {},
     "rv_core_ibex": {},
@@ -103,6 +107,7 @@ DIFS = {
             "dif_{}_unittest.cc".format(ip),
             "//sw/device/lib/dif/autogen:{}_unittest".format(ip),
         ],
+        target_compatible_with = cfg.get("ut_target_compatible_with", []),
         deps = [
             ":{}".format(ip),
             ":test_base",
