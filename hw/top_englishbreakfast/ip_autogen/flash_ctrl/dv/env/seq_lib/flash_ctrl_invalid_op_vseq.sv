@@ -48,7 +48,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     // With scramble enabled, odd size of word access (or address) will cause
     // ecc errors.
     flash_op.addr[2:0] == 3'h0;
-    flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
@@ -64,15 +64,16 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
   }
 
   // Memory protection regions settings.
-  flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
 
   // Information partitions memory protection pages settings.
   rand flash_bank_mp_info_page_cfg_t
-         mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
+         mp_info_pages[flash_ctrl_top_specific_pkg::NumBanks]
+                      [flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint mp_info_pages_c {
     foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
       foreach (mp_info_pages[i][j][k]) {
         mp_info_pages[i][j][k].en == MuBi4True;
         mp_info_pages[i][j][k].read_en == MuBi4True;
@@ -97,7 +98,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
   mubi4_t default_region_ecc_en;
 
   // Bank erasability.
-  bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {

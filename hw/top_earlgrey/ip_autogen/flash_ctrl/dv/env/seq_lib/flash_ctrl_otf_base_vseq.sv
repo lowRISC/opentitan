@@ -109,17 +109,24 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo;
       } else {
-        rand_op.partition == FlashPartInfo -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
     if (cfg.seq_cfg.op_readonly_on_info1_partition) {
       if (cfg.seq_cfg.avoid_ro_partitions) {
         rand_op.partition != FlashPartInfo1;
       } else {
-        rand_op.partition == FlashPartInfo1 -> rand_op.op == flash_ctrl_pkg::FlashOpRead;
+        rand_op.partition == FlashPartInfo1 ->
+          rand_op.op == flash_ctrl_top_specific_pkg::FlashOpRead;
       }
     }
-    rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
+    rand_op.partition dist {
+      FlashPartData := 6,
+      FlashPartInfo := 1,
+      FlashPartInfo1 := 1,
+      FlashPartInfo2 := 1
+    };
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
     rand_op.addr[1:0] == 'h0;
     cfg.seq_cfg.addr_flash_word_aligned -> rand_op.addr[2] == 1'b0;
@@ -183,8 +190,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     if (cfg.en_all_info_acc) allow_spec_info_acc = 3'h7;
 
     // overwrite secret_partition cfg with hw_cfg0
-    rand_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
-    rand_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
+    rand_info[0][0][1] = conv2env_mp_info(flash_ctrl_top_specific_pkg::CfgAllowRead);
+    rand_info[0][0][2] = conv2env_mp_info(flash_ctrl_top_specific_pkg::CfgAllowRead);
   endfunction : post_randomize
 
   virtual task pre_start();
@@ -570,7 +577,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     data_q_t flash_read_data;
     flash_otf_item exp_item;
     bit poll_fifo_status = ~in_err;
-    bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
+    bit [flash_ctrl_top_specific_pkg::BusAddrByteW-1:0] start_addr, end_addr;
     int page;
     bit overflow = 0;
     uvm_reg_data_t reg_data;
@@ -1389,8 +1396,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (ecc_mode != OTFCfgRand) cfg.mp_info[i][j][k].ecc_en = ecc_en;
 
       // overwrite secret_partition cfg with hw_cfg0
-      cfg.mp_info[0][0][1] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
-      cfg.mp_info[0][0][2] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
+      cfg.mp_info[0][0][1] = conv2env_mp_info(flash_ctrl_top_specific_pkg::CfgAllowRead);
+      cfg.mp_info[0][0][2] = conv2env_mp_info(flash_ctrl_top_specific_pkg::CfgAllowRead);
 
       flash_ctrl_mp_info_page_cfg(i, j, k, cfg.mp_info[i][j][k]);
       `uvm_info("otf_info_cfg", $sformatf("bank:type:page:[%0d][%0d][%0d] = %p",

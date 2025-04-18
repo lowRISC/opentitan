@@ -20,7 +20,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
-      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
       - lowrisc:ip:jtag_pkg

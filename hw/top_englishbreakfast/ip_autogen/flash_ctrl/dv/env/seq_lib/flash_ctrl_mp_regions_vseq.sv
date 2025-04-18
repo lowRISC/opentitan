@@ -33,11 +33,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   int     exp_alert_cnt = 0;
 
   // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
+  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_top_specific_pkg::MpRegions];
   // Information partitions memory protection pages settings.
   rand
   flash_bank_mp_info_page_cfg_t
-  mp_info_pages[NumBanks][flash_ctrl_pkg::InfoTypes][$];
+  mp_info_pages[NumBanks][flash_ctrl_top_specific_pkg::InfoTypes][$];
 
   constraint solv_order_c {
     solve mp_regions, mp_info_pages before flash_op;
@@ -57,11 +57,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     flash_op.otf_addr == flash_op.addr[OTFHostId-1:0];
     // Bank erase is supported only for data & 1st info partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
-    flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
+    flash_op.erase_type == flash_ctrl_top_specific_pkg::FlashErasePage;
 
     flash_op.erase_type dist {
-      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
+      flash_ctrl_top_specific_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
+      flash_ctrl_top_specific_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
 
     flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
@@ -110,7 +110,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     }
 
     foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
+      mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
 
       foreach (mp_info_pages[i][j][k]) {
        mp_info_pages[i][j][k].en dist {
@@ -139,7 +139,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   mubi4_t default_region_ecc_en;
 
   // Bank erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
+  rand bit [flash_ctrl_top_specific_pkg::NumBanks-1:0] bank_erase_en;
 
   constraint default_region_he_en_c {
     default_region_he_en dist {
@@ -328,7 +328,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     poll_fifo_status           = 1;
 
-    flash_op.erase_type = flash_ctrl_pkg::FlashEraseBank;
+    flash_op.erase_type = flash_ctrl_top_specific_pkg::FlashEraseBank;
     flash_op.num_words  = 16;
     info_sel = flash_op.partition >> 1;
     bank = flash_op.addr[19];

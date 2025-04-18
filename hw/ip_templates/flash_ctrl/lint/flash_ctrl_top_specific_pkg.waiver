@@ -4,5 +4,5 @@
 #
 
 
-waive -rules UNSIZED_BIT_CONTEXT -location {flash_ctrl_pkg.sv} -regexp {Unsized bit literal "'1" encountered within a parameter declaration} \
+waive -rules UNSIZED_BIT_CONTEXT -location {flash_ctrl_top_specific_pkg.sv} -regexp {Unsized bit literal "'1" encountered within a parameter declaration} \
       -comment "This instance of an unsized parameter literal is difficult to circumvent, as the width of the assigned field is not readily available in this package."

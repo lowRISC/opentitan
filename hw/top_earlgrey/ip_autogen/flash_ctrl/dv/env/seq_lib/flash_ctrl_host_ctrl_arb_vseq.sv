@@ -123,7 +123,7 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_fetch_code_vseq;
     if (op_cnt <= apply_rma) begin
       // Initialise Flash Content
       cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitInvalidate);
-      if (flash_op.op == flash_ctrl_pkg::FlashOpProgram) begin
+      if (flash_op.op == flash_ctrl_top_specific_pkg::FlashOpProgram) begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
       end else begin
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));

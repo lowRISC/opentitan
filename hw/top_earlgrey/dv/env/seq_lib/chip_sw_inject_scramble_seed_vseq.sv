@@ -8,8 +8,9 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   localparam uint ISO_PART_SIZE = 8 * flash_phy_pkg::DataWidth/8;
-  localparam uint ISO_PART_ADDR = flash_ctrl_pkg::IsolatedInfoPage *
-                                  (flash_ctrl_pkg::WordsPerPage * (flash_ctrl_pkg::DataWidth / 8));
+  localparam uint ISO_PART_ADDR = flash_ctrl_top_specific_pkg::IsolatedInfoPage *
+                                  (flash_ctrl_top_specific_pkg::WordsPerPage *
+                                  (flash_ctrl_top_specific_pkg::DataWidth / 8));
   rand bit [7:0] iso_part_data [ISO_PART_SIZE];
 
   virtual task dut_init(string reset_kind = "HARD");

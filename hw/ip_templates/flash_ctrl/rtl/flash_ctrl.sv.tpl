@@ -10,7 +10,7 @@
 `include "prim_fifo_assert.svh"
 
 module flash_ctrl
-  import flash_ctrl_pkg::*;  import flash_ctrl_reg_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;  import flash_ctrl_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
   parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
@@ -1273,8 +1273,8 @@ module flash_ctrl
   logic flash_host_req_rdy;
   logic flash_host_req_done;
   logic flash_host_rderr;
-  logic [flash_ctrl_pkg::BusFullWidth-1:0] flash_host_rdata;
-  logic [flash_ctrl_pkg::BusAddrW-1:0] flash_host_addr;
+  logic [BusFullWidth-1:0] flash_host_rdata;
+  logic [BusAddrW-1:0] flash_host_addr;
 
   lc_ctrl_pkg::lc_tx_t host_enable;
 

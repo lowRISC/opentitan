@@ -5,7 +5,7 @@
 // Faux Flash Erase Control
 //
 
-module flash_ctrl_erase import flash_ctrl_pkg::*; (
+module flash_ctrl_erase import flash_ctrl_top_specific_pkg::*; (
   // Software Interface
   input                       op_start_i,
   input flash_erase_e         op_type_i,
