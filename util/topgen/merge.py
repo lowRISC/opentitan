@@ -296,7 +296,6 @@ def xbar_addhost(top, xbar, host):
             ("inst_type", ""),
             ("stub", False),
             # The default matches RTL default
-            # pipeline_byp is don't care if pipeline is false
             ("pipeline", True),
             ("req_fifo_pass", True),
             ("rsp_fifo_pass", True)
@@ -327,7 +326,7 @@ def xbar_addhost(top, xbar, host):
 
 
 def process_pipeline_var(node):
-    """Add device nodes pipeline / pipeline_byp information
+    """Add device nodes pipeline information
 
     - Supply a default of true / true if not defined by xbar
     """
