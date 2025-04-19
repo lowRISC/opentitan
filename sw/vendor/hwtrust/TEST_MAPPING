@@ -1,0 +1,31 @@
+{
+  "presubmit": [
+    {
+      "name": "VtsHalRemotelyProvisionedComponentTargetTest"
+    },
+    {
+      "name": "ComposHostTestCases"
+    },
+    {
+      "name": "libdiced_sample_inputs.integration_test"
+    },
+    {
+      "name": "libdiced_sample_inputs_nostd.integration_test"
+    }
+  ],
+  "postsubmit": [
+    {
+      "name": "libclient_vm_csr.test"
+    }
+  ],
+  "avf-presubmit": [
+    {
+      "name": "rialto_test"
+    }
+  ],
+  "avf-postsubmit": [
+    {
+      "name": "VtsHalRemotelyProvisionedComponentTargetTest"
+    }
+  ]
+}

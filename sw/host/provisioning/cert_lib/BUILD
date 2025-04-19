@@ -13,6 +13,7 @@ rust_library(
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
+        "//sw/vendor:hwtrust",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:base64ct",

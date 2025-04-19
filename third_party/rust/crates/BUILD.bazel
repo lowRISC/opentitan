@@ -56,6 +56,12 @@ alias(
 )
 
 alias(
+    name = "base64",
+    actual = "@crate_index__base64-0.21.5//:base64",
+    tags = ["manual"],
+)
+
+alias(
     name = "base64ct",
     actual = "@crate_index__base64ct-1.6.0//:base64ct",
     tags = ["manual"],
@@ -81,7 +87,13 @@ alias(
 
 alias(
     name = "chrono",
-    actual = "@crate_index__chrono-0.4.31//:chrono",
+    actual = "@crate_index__chrono-0.4.40//:chrono",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ciborium",
+    actual = "@crate_index__ciborium-0.2.2//:ciborium",
     tags = ["manual"],
 )
 
@@ -100,6 +112,12 @@ alias(
 alias(
     name = "const-oid",
     actual = "@crate_index__const-oid-0.9.6//:const_oid",
+    tags = ["manual"],
+)
+
+alias(
+    name = "coset",
+    actual = "@crate_index__coset-0.3.8//:coset",
     tags = ["manual"],
 )
 

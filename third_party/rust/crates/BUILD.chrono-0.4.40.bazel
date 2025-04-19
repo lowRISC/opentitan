@@ -29,17 +29,19 @@ rust_library(
         ],
     ),
     crate_features = [
+        "alloc",
         "android-tzdata",
         "clock",
         "default",
         "iana-time-zone",
         "js-sys",
+        "now",
         "oldtime",
         "std",
         "wasm-bindgen",
         "wasmbind",
         "winapi",
-        "windows-targets",
+        "windows-link",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
@@ -85,7 +87,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.4.31",
+    version = "0.4.40",
     deps = [
         "@crate_index__num-traits-0.2.17//:num_traits",
         "@crate_index__serde-1.0.189//:serde",
@@ -107,7 +109,7 @@ rust_library(
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-link-0.1.1//:windows_link",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)
@@ -130,7 +132,7 @@ rust_library(
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-link-0.1.1//:windows_link",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)
@@ -162,7 +164,7 @@ rust_library(
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__windows-targets-0.48.5//:windows_targets",  # cfg(windows)
+            "@crate_index__windows-link-0.1.1//:windows_link",  # cfg(windows)
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
             "@crate_index__iana-time-zone-0.1.58//:iana_time_zone",  # cfg(unix)

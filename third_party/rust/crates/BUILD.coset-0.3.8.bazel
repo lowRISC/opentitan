@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT OR Apache-2.0
+#     "TODO",  # Apache-2.0
 # ])
 
 rust_library(
-    name = "base64",
+    name = "coset",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,7 +29,6 @@ rust_library(
         ],
     ),
     crate_features = [
-        "alloc",
         "default",
         "std",
     ],
@@ -38,7 +37,7 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=base64",
+        "crate-name=coset",
         "manual",
         "noclippy",
         "norustfmt",
@@ -77,5 +76,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.21.5",
+    version = "0.3.8",
+    deps = [
+        "@crate_index__ciborium-0.2.2//:ciborium",
+        "@crate_index__ciborium-io-0.2.2//:ciborium_io",
+    ],
 )

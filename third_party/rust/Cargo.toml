@@ -23,13 +23,16 @@ aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
 asn1 = "0.15.5"
+base64 = "0.21.0"
 base64ct = "1.6.0"
 bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
-chrono = "0.4"
+chrono = "0.4.40"
+ciborium = "0.2.0"
 const-oid = { version = "0.9.6", features=["std"] }
 clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
+coset = { version = "0.3.5", features = ["std"] }
 crc = "3.0"
 der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
