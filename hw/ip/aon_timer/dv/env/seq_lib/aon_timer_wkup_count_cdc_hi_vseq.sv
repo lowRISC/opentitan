@@ -10,7 +10,7 @@
 class aon_timer_wkup_count_cdc_hi_vseq extends aon_timer_smoke_vseq;
     `uvm_object_utils(aon_timer_wkup_count_cdc_hi_vseq)
 
-  localparam WKUP_HALF_REG_LP = WKUP_WIDTH/2;
+  localparam int unsigned WKUP_HALF_REG_LP = WKUP_WIDTH/2;
   rand int unsigned delay;
 
   extern constraint wkup_count_upper_32_bits_c;
