@@ -32,7 +32,7 @@ class flash_ctrl_full_mem_access_vseq extends flash_ctrl_base_vseq;
   constraint mp_info_pages_c {
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
-      foreach (mp_info_pages[i][j][k]) {
+      foreach (mp_info_pages[i, j, k]) {
         mp_info_pages[i][j][k].en == MuBi4True;
         mp_info_pages[i][j][k].read_en == MuBi4True;
         mp_info_pages[i][j][k].program_en == MuBi4True;
