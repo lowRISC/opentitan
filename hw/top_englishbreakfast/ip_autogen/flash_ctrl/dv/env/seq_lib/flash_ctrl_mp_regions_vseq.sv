@@ -112,7 +112,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
 
-      foreach (mp_info_pages[i][j][k]) {
+      foreach (mp_info_pages[i, j, k]) {
        mp_info_pages[i][j][k].en dist {
                                MuBi4True := 4,
                                MuBi4False := 1
