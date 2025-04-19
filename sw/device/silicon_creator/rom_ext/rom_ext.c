@@ -645,6 +645,12 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   flash_ctrl_creator_info_pages_lockdown();
   // Set the OWNER_CONFIG pages for rescue mode (page0=ro, page1=rw).
   ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
+  // Lock access to owner-level INFO pages.  During normal boot, this
+  // is performed by `ownership_flash_lockdown`, but we can't call that
+  // function when entering rescue because rescue needs the flash DATA
+  // segments to be writable.  Rescue has no need to access the INFO
+  // pages, so we want to lock them for safety.
+  owner_block_info_lockdown(owner_config.info);
 }
 
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
