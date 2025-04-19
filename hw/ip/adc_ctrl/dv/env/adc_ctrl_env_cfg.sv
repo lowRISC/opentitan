@@ -117,7 +117,7 @@ class adc_ctrl_env_cfg extends cip_base_env_cfg #(
     // Default filter configuration
     // This is the one assumed for normal use
     foreach (filter_cfg[channel]) {
-      foreach (filter_cfg[channel][filter]) {
+      foreach (filter_cfg[channel, filter]) {
         soft filter_cfg[channel][filter] == FILTER_CFG_DEFAULTS[filter];
       }
     }

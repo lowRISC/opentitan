@@ -314,7 +314,7 @@ interface sw_logger_if #(
   function automatic string get_str_at_addr(string sw, addr_data_t addr);
     if (sw_rodata[sw].exists(addr)) return sw_rodata[sw][addr];
     // The string could start midway from an existing addr entry.
-    foreach (sw_rodata[sw][str_addr]) begin
+    foreach (sw_rodata[sw, str_addr]) begin
       addr_data_t limit = sw_rodata[sw][str_addr].len() - 1;
       if (addr inside {[str_addr : str_addr + limit]}) begin
         return sw_rodata[sw][str_addr].substr(addr - str_addr, limit);
