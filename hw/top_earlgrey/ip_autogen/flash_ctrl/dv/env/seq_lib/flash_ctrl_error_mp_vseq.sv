@@ -151,7 +151,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
 
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
-      foreach (mp_info_pages[i][j][k]) {
+      foreach (mp_info_pages[i, j, k]) {
         mp_info_pages[i][j][k].scramble_en == MuBi4False;
         mp_info_pages[i][j][k].ecc_en      == MuBi4False;
         mp_info_pages[i][j][k].he_en dist {
