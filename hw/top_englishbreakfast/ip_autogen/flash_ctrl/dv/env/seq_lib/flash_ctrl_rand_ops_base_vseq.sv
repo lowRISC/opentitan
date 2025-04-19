@@ -179,7 +179,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
 
       mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
 
-      foreach (mp_info_pages[i][j][k]) {
+      foreach (mp_info_pages[i, j, k]) {
 
         mp_info_pages[i][j][k].en dist {
           MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_en_pc[i][j]),
