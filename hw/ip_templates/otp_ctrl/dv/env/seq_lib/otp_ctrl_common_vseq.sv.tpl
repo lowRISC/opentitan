@@ -130,8 +130,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
 
   // In tl_intg_err test, override this task to set is_prim_otp flag.
   virtual task run_tl_intg_err_vseq_sub(string ral_name);
-    if (ral_name == "otp_ctrl_prim_reg_block") is_prim_otp = 1;
-    else                                       is_prim_otp = 0;
+    if (ral_name == "otp_ctrl_core_reg_block") is_prim_otp = 0;
+    else                                       is_prim_otp = 1;
     super.run_tl_intg_err_vseq_sub(ral_name);
   endtask
 
@@ -140,7 +140,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     string prim_otp_alert_name = "fatal_prim_otp_alert";
     string integ_err_alert_name = "fatal_bus_integ_error";
 
-    // Alerts coming from the `prim_otp` module will only bypass OTP_CTRL, it won't affect the
+    // Alerts coming from the `otp_macro` module will only bypass OTP_CTRL, it won't affect the
     // OTP_CTRL and will fire its own alerts.
     if (is_prim_otp) begin
       check_sec_cm_alert(if_proxy.sec_cm_type.name, prim_otp_alert_name);

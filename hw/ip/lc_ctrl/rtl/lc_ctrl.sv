@@ -69,8 +69,8 @@ module lc_ctrl
   output logic                                       strap_en_override_o,
   // Strap override - this is only used when
   // Macro-specific test registers going to lifecycle TAP/DMI
-  output otp_ctrl_pkg::lc_otp_vendor_test_req_t      lc_otp_vendor_test_o,
-  input  otp_ctrl_pkg::lc_otp_vendor_test_rsp_t      lc_otp_vendor_test_i,
+  output otp_macro_pkg::otp_test_req_t               lc_otp_vendor_test_o,
+  input  otp_macro_pkg::otp_test_rsp_t               lc_otp_vendor_test_i,
   // Life cycle transition command interface.
   // No sync required since LC and OTP are in the same clock domain.
   output otp_ctrl_pkg::lc_otp_program_req_t          lc_otp_program_o,
@@ -134,7 +134,7 @@ module lc_ctrl
   `ASSERT_INIT(DecLcCountWidthCheck_A, CsrLcCountWidth == DecLcCountWidth)
   `ASSERT_INIT(DecLcIdStateWidthCheck_A, CsrLcIdStateWidth == ExtDecLcIdStateWidth)
   `ASSERT_INIT(NumTokenWordsCheck_A, NumTokenWords == LcTokenWidth/32)
-  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_ctrl_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
+  `ASSERT_INIT(OtpTestCtrlWidth_A, otp_macro_pkg::OtpTestCtrlWidth == CsrOtpTestCtrlWidth)
 
   /////////////
   // Regfile //

@@ -139,22 +139,22 @@ extern "C" {
 #define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x8000u
 
 /**
- * Peripheral base address for prim device on otp_ctrl in top darjeeling.
+ * Peripheral base address for otp_macro in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR 0x30140000u
+#define TOP_DARJEELING_OTP_MACRO_BASE_ADDR 0x30140000u
 
 /**
- * Peripheral size for prim device on otp_ctrl in top darjeeling.
+ * Peripheral size for otp_macro in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR and
- * `TOP_DARJEELING_OTP_CTRL_PRIM_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_OTP_MACRO_BASE_ADDR and
+ * `TOP_DARJEELING_OTP_MACRO_BASE_ADDR + TOP_DARJEELING_OTP_MACRO_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTP_CTRL_PRIM_SIZE_BYTES 0x20u
+#define TOP_DARJEELING_OTP_MACRO_SIZE_BYTES 0x20u
 
 /**
  * Peripheral base address for regs device on lc_ctrl in top darjeeling.
@@ -1508,7 +1508,7 @@ typedef enum top_darjeeling_pinmux_outsel {
   kTopDarjeelingPinmuxOutselSocProxySocGpo13 = 4, /**< Peripheral Output 1 */
   kTopDarjeelingPinmuxOutselSocProxySocGpo14 = 5, /**< Peripheral Output 2 */
   kTopDarjeelingPinmuxOutselSocProxySocGpo15 = 6, /**< Peripheral Output 3 */
-  kTopDarjeelingPinmuxOutselOtpCtrlTest0 = 7, /**< Peripheral Output 4 */
+  kTopDarjeelingPinmuxOutselOtpMacroTest0 = 7, /**< Peripheral Output 4 */
   kTopDarjeelingPinmuxOutselLast = 7, /**< \internal Last valid outsel value */
 } top_darjeeling_pinmux_outsel_t;
 

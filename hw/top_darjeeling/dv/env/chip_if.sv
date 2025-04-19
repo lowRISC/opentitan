@@ -54,8 +54,9 @@ interface chip_if;
 `define KMAC_HIER           `TOP_HIER.u_kmac
 `define KEYMGR_DPE_HIER     `TOP_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
-`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
 `define OTBN_HIER           `TOP_HIER.u_otbn
+`define OTP_CTRL_HIER       `TOP_HIER.u_otp_ctrl
+`define OTP_MACRO_HIER      `TOP_HIER.u_otp_macro
 `define PINMUX_HIER         `TOP_HIER.u_pinmux_aon
 `define PWRMGR_HIER         `TOP_HIER.u_pwrmgr_aon
 `define ROM_CTRL0_HIER      `TOP_HIER.u_rom_ctrl0
@@ -891,7 +892,7 @@ interface chip_if;
       dummy_signal_probe_otp_vendor_test_ctrl)
 `else
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_vendor_test_ctrl,
-      `OTP_CTRL_HIER.lc_otp_vendor_test_i)
+      `OTP_MACRO_HIER.test_i)
 `endif
   /*
    * Signal probe functions for sampling the FSM states of the IPs
@@ -1050,8 +1051,9 @@ interface chip_if;
 `undef KMAC_HIER
 `undef KEYMGR_DPE_HIER
 `undef LC_CTRL_HIER
-`undef OTP_CTRL_HIER
 `undef OTBN_HIER
+`undef OTP_CTRL_HIER
+`undef OTP_MACRO_HIER
 `undef PINMUX_HIER
 `undef PWRMGR_HIER
 `undef ROM_CTRL0_HIER

@@ -249,7 +249,7 @@ with_unknown! {
         PwmAonPwm3 = 68,
         PwmAonPwm4 = 69,
         PwmAonPwm5 = 70,
-        OtpCtrlTest0 = 71,
+        OtpMacroTest0 = 71,
         SysrstCtrlAonBatDisable = 72,
         SysrstCtrlAonKey0Out = 73,
         SysrstCtrlAonKey1Out = 74,

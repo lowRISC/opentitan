@@ -12,6 +12,8 @@ package otp_ctrl_top_specific_pkg;
   import prim_util_pkg::vbits;
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
+  import otp_ctrl_macro_pkg::OtpWidth;
+  import otp_ctrl_macro_pkg::OtpErrWidth;
 
   ////////////////////////
   // General Parameters //
@@ -45,20 +47,7 @@ package otp_ctrl_top_specific_pkg;
     DaiDigest = 3'b100
   } dai_cmd_e;
 
-  //////////////////////////////////////
-  // Typedefs for OTP Macro Interface //
-  //////////////////////////////////////
-
-  // OTP-macro specific
-  parameter int OtpWidth         = 16;
-  parameter int OtpAddrWidth     = OtpByteAddrWidth - $clog2(OtpWidth/8);
-  parameter int OtpDepth         = 2**OtpAddrWidth;
-  parameter int OtpSizeWidth     = 2; // Allows to transfer up to 4 native OTP words at once.
-  parameter int OtpErrWidth      = 3;
-  parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
-  // Number of Byte address bits to cut off in order to get the native OTP word address.
-  parameter int OtpAddrShift     = OtpByteAddrWidth - OtpAddrWidth;
-
+  // Typedef for extended OTP Error. This extends the OTP macro errors.
   typedef enum logic [OtpErrWidth-1:0] {
     NoError              = 3'h0,
     MacroError           = 3'h1,

@@ -247,22 +247,22 @@ extern "C" {
 #define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x1000u
 
 /**
- * Peripheral base address for prim device on otp_ctrl in top earlgrey.
+ * Peripheral base address for otp_macro in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR 0x40138000u
+#define TOP_EARLGREY_OTP_MACRO_BASE_ADDR 0x40138000u
 
 /**
- * Peripheral size for prim device on otp_ctrl in top earlgrey.
+ * Peripheral size for otp_macro in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR and
- * `TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_OTP_MACRO_BASE_ADDR and
+ * `TOP_EARLGREY_OTP_MACRO_BASE_ADDR + TOP_EARLGREY_OTP_MACRO_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES 0x20u
+#define TOP_EARLGREY_OTP_MACRO_SIZE_BYTES 0x20u
 
 /**
  * Peripheral base address for regs device on lc_ctrl in top earlgrey.
@@ -1659,7 +1659,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselPwmAonPwm3 = 68, /**< Peripheral Output 65 */
   kTopEarlgreyPinmuxOutselPwmAonPwm4 = 69, /**< Peripheral Output 66 */
   kTopEarlgreyPinmuxOutselPwmAonPwm5 = 70, /**< Peripheral Output 67 */
-  kTopEarlgreyPinmuxOutselOtpCtrlTest0 = 71, /**< Peripheral Output 68 */
+  kTopEarlgreyPinmuxOutselOtpMacroTest0 = 71, /**< Peripheral Output 68 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonBatDisable = 72, /**< Peripheral Output 69 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey0Out = 73, /**< Peripheral Output 70 */
   kTopEarlgreyPinmuxOutselSysrstCtrlAonKey1Out = 74, /**< Peripheral Output 71 */

@@ -74,7 +74,7 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
     logic [TL_DW-1:0] vendor_test_ctrl =
                       cfg.chip_vif.signal_probe_otp_vendor_test_ctrl(SignalProbeSample);
 
-    // In open source prim_otp module, the vendor_test_status output is tied to 0.
+    // In open source otp_macro module, the vendor_test_status output is tied to 0.
     // For closed source module, cfg.otp_test_stastatus needs to be updated
     // by cfg::update_otp_test_status() before checking.
     cfg.update_otp_test_status();
