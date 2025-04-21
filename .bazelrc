@@ -17,7 +17,6 @@ build --strip='never'
 # Override default enablement of flags from @crt//common to control C compiler
 # warnings.
 build --features=-pedantic_warnings
-build --host_features=-pedantic_warnings
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.
