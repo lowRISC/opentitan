@@ -20,10 +20,9 @@ cd "$(dirname "$0")"
 : "${BINDIR:=.bin}"
 : "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
 
-# Bazelisk (not Bazel) release. Keep this in sync with `util/container/Dockerfile`.
 readonly release="v1.24.1"
 declare -A hashes=(
-    # sha256sums for v1.24.1.  Update this if you update the release.
+    # sha256sums for v1.11.0.  Update this if you update the release.
     [linux-amd64]="0aee09c71828b0012750cb9b689ce3575da8e230f265bf8d6dcd454eee6ea842"
 )
 
