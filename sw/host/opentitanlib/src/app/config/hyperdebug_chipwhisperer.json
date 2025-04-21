@@ -30,6 +30,8 @@
     },
     {
       "name": "IOA2",
+      "mode": "PushPull",
+      "level": false,
       "alias_of": "CN9_29"
     },
     {
@@ -223,12 +225,6 @@
     {
       "name": "CC2",
       "alias_of": "CN7_10"
-    },
-    {
-      "name": "IOA2",
-      "mode": "OpenDrain",
-      "level": false,
-      "pull_mode": "PullDown"
     }
   ],
   "spi": [

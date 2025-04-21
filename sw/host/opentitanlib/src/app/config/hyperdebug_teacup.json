@@ -48,6 +48,8 @@
     },
     {
       "name": "IOA2",
+      "mode": "PushPull",
+      "level": false,
       "alias_of": "CN9_29"
     },
     {
