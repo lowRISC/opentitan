@@ -17,6 +17,7 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
   `uvm_component_new
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     fork
       reset_signals();
       get_and_drive();
@@ -25,12 +26,12 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
 
   // reset signals
   virtual task reset_signals();
-    `uvm_fatal(`gfn, "this is implemented as pure virtual task - please extend")
+    // Empty - to be populated in child class
   endtask
 
   // drive trans received from sequencer
   virtual task get_and_drive();
-    `uvm_fatal(`gfn, "this is implemented as pure virtual task - please extend")
+    // Empty - to be populated in child class
   endtask
 
 endclass
