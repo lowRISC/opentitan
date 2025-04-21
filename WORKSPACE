@@ -153,6 +153,10 @@ bitstreams_repo(name = "bitstreams")
 load("//third_party/open-dice:repos.bzl", "open_dice_repos")
 open_dice_repos()
 
+# hwtrust
+load("//third_party/hwtrust:repos.bzl", "hwtrust_repos")
+hwtrust_repos()
+
 load("//third_party/qemu:repos.bzl", "qemu_opentitan_repos")
 qemu_opentitan_repos()
 
