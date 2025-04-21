@@ -52,14 +52,14 @@ pub fn test_unlock(
 
     // Check that LC state is currently `TEST_LOCKED0`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, DifLcCtrlState::TestLocked0.redundant_encoding());
+    assert_eq!(state, DifLcCtrlState::TestLocked3.redundant_encoding());
 
     // ROM execution is not yet enabled in OTP so we can safely reconnect to the LC TAP after
     // the transition without risking the chip resetting.
     trigger_lc_transition(
         transport,
         jtag,
-        DifLcCtrlState::TestUnlocked1,
+        DifLcCtrlState::TestUnlocked4,
         Some(test_unlock_token.clone().into_inner().unwrap()),
         /*use_external_clk=*/
         false, // AST will be calibrated by now, so no need for ext_clk.
@@ -69,9 +69,9 @@ pub fn test_unlock(
 
     jtag = jtag_params.create(transport)?.connect(JtagTap::LcTap)?;
 
-    // Check that LC state has transitioned to `TestUnlocked1`.
+    // Check that LC state has transitioned to `TestUnlocked4`.
     let state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
-    assert_eq!(state, DifLcCtrlState::TestUnlocked1.redundant_encoding());
+    assert_eq!(state, DifLcCtrlState::TestUnlocked4.redundant_encoding());
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
