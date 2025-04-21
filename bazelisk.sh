@@ -113,14 +113,6 @@ function main() {
     local file="${BAZEL_BIN:-${bindir}/bazelisk}"
     local lockfile="${bindir}/bazelisk.lock"
 
-    # If the user has Bazel in their PATH, check its version.
-    # Fallback to bazelisk if it doesn't match.
-    if [ -x "$BAZEL_BIN" ]; then
-        if [ "$("$BAZEL_BIN" --version)" != "bazel $(cat .bazelversion)" ]; then
-            file="${bindir}/bazelisk"
-        fi
-    fi
-
     # Are we using bazel from the user's PATH or using bazelisk?
     if expr match "${file}" ".*bazelisk$" >/dev/null; then
         if ! up_to_date "$file"; then
