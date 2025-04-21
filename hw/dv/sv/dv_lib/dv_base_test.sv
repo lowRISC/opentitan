@@ -70,6 +70,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   endfunction : end_of_elaboration_phase
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     void'($value$plusargs("drain_time_ns=%0d", drain_time_ns));
     phase.phase_done.set_drain_time(this, (drain_time_ns * 1ns));
     void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
