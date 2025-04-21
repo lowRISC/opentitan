@@ -64,6 +64,7 @@ class tl_monitor extends dv_base_monitor#(
   endtask
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     fork
       monitor_reset();
       ad_channels_thread();
@@ -251,6 +252,7 @@ class tl_monitor extends dv_base_monitor#(
   endtask
 
   virtual function void report_phase(uvm_phase phase);
+    super.report_phase(phase);
     if (pending_a_req.size() > 0) begin
       `uvm_error(get_full_name(), $sformatf(
                  "%0d items left at the end of sim", pending_a_req.size()))
