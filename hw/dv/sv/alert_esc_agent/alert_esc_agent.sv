@@ -104,6 +104,7 @@ function void alert_esc_agent::connect_phase(uvm_phase phase);
 endfunction : connect_phase
 
 task alert_esc_agent::run_phase(uvm_phase phase);
+  super.run_phase(phase);
   if (cfg.is_alert && cfg.is_active && cfg.start_default_rsp_seq) begin
     // For host mode, run alert ping auto-response sequence.
     if (cfg.if_mode == dv_utils_pkg::Host) begin
