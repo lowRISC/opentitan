@@ -20,10 +20,10 @@ cd "$(dirname "$0")"
 : "${BINDIR:=.bin}"
 : "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
 
-readonly release="v1.24.1"
+readonly release="v1.11.0"
 declare -A hashes=(
     # sha256sums for v1.11.0.  Update this if you update the release.
-    [linux-amd64]="0aee09c71828b0012750cb9b689ce3575da8e230f265bf8d6dcd454eee6ea842"
+    [linux-amd64]="231ec5ca8115e94c75a1f4fbada1a062b48822ca04f21f26e4cb1cd8973cd458"
 )
 
 declare -A architectures=(
