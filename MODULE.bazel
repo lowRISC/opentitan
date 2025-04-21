@@ -345,6 +345,9 @@ use_repo(hyperdebug, "hyperdebug_firmware")
 lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl", "lowrisc_rv32imcb_toolchain")
 use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
 
+hwtrust = use_extension("//third_party/hwtrust:extensions.bzl", "hwtrust")
+use_repo(hwtrust, "hwtrust")
+
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
 use_repo(qemu, "qemu_opentitan", "qemu_opentitan_src")
 
