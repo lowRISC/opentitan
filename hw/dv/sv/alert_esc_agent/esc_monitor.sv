@@ -41,6 +41,7 @@ function esc_monitor::new (string name="", uvm_component parent=null);
 endfunction : new
 
 task esc_monitor::run_phase(uvm_phase phase);
+  super.run_phase(phase);
   fork
     esc_thread();
     reset_thread();
