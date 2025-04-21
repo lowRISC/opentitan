@@ -33,7 +33,7 @@ use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjTyp
 use ujson_lib::provisioning_data::{
     LcTokenHash, ManufCertgenInputs, ManufFtIndividualizeData, PersoBlob, SerdesSha256Hash,
 };
-use ujson_lib::UjsonPayloads;
+use ujson_lib::{UjsonPayloads, UjsonString};
 use util_lib::hash_lc_token;
 
 pub mod response;
@@ -120,10 +120,14 @@ pub fn run_sram_ft_individualize(
     )?;
 
     // Inject provisioning data into the device.
-    ujson_payloads.dut_in.insert(
-        "FT_INDIVIDUALIZE_DATA_IN".to_string(),
-        ft_individualize_data_in.send(spi_console)?,
-    );
+    let uj_str = UjsonString {
+        string: ft_individualize_data_in.send(spi_console)?,
+        dynamic_data_offsets: vec![0; 1],
+        dynamic_data_lengths: vec![0; 1],
+    };
+    ujson_payloads
+        .dut_in
+        .insert("FT_INDIVIDUALIZE_DATA_IN".to_string(), uj_str);
 
     // Wait for provisioning operations to complete.
     let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
@@ -203,10 +207,14 @@ fn send_rma_unlock_token_hash(
         r"Waiting For RMA Unlock Token Hash ...",
         timeout,
     )?;
-    ujson_payloads.dut_in.insert(
-        "FT_PERSO_RMA_TOKEN_HASH".to_string(),
-        rma_token_hash.send(spi_console)?,
-    );
+    let uj_str = UjsonString {
+        string: rma_token_hash.send(spi_console)?,
+        dynamic_data_offsets: vec![0; 1],
+        dynamic_data_lengths: vec![0; 1],
+    };
+    ujson_payloads
+        .dut_in
+        .insert("FT_PERSO_RMA_TOKEN_HASH".to_string(), uj_str);
     Ok(())
 }
 
@@ -326,10 +334,14 @@ fn provision_certificates(
     response.stats.log_elapsed_time("perso-wait-ready", t0);
 
     let t0 = Instant::now();
-    ujson_payloads.dut_in.insert(
-        "FT_PERSO_CERTGEN_INPUTS".to_string(),
-        perso_certgen_inputs.send(spi_console)?,
-    );
+    let uj_str = UjsonString {
+        string: perso_certgen_inputs.send(spi_console)?,
+        dynamic_data_offsets: vec![0; 2],
+        dynamic_data_lengths: vec![0; 2],
+    };
+    ujson_payloads
+        .dut_in
+        .insert("FT_PERSO_CERTGEN_INPUTS".to_string(), uj_str);
     response.stats.log_elapsed_time("perso-certgen-inputs", t0);
 
     // Wait until the device exports the TBS certificates.
@@ -482,10 +494,14 @@ fn provision_certificates(
     };
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Importing endorsed certificates ...", timeout)?;
-    ujson_payloads.dut_in.insert(
-        "FT_PERSO_DATA_IN".to_string(),
-        manuf_perso_data_back.send(spi_console)?,
-    );
+    let uj_str = UjsonString {
+        string: manuf_perso_data_back.send(spi_console)?,
+        dynamic_data_offsets: vec![0; 3],
+        dynamic_data_lengths: vec![0; 3],
+    };
+    ujson_payloads
+        .dut_in
+        .insert("FT_PERSO_DATA_IN".to_string(), uj_str);
     let _ = UartConsole::wait_for(spi_console, r"Finished importing certificates.", timeout)?;
     response.stats.log_elapsed_time("perso-import-certs", t0);
 
