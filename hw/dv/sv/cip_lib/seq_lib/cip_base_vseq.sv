@@ -688,6 +688,10 @@ class cip_base_vseq #(
   // clock domain crossing, 2 for pauses, 1 for idle state.
   // So use 7 cycle for default max_wait_cycle.
   virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 7, bit wait_complete = 0);
+
+    // wait until ping finishes before the dv_spinwait in case
+    // m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking() is true due to a ping
+    wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
     `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking()) begin
                         cfg.clk_rst_vif.wait_clks(1);
                         wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
