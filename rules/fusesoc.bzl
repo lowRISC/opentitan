@@ -41,13 +41,7 @@ def _fusesoc_build_impl(ctx):
     args.add(cfg_file.path, format = "--config=%s")
 
     for group, files in ctx.attr.output_groups.items():
-        deps = []
-        for file in files:
-            path = "{}/{}".format(build_dir, file)
-            if file.endswith("/"):
-                deps.append(ctx.actions.declare_directory(path))
-            else:
-                deps.append(ctx.actions.declare_file(path))
+        deps = [ctx.actions.declare_file("{}/{}".format(build_dir, f)) for f in files]
         outputs.extend(deps)
         groups[group] = depset(deps)
 
@@ -112,14 +106,7 @@ fusesoc_build = rule(
         "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
-            doc = """
-                Mappings from output group names to lists of paths contained in
-                that group.
-
-                Paths to directories must have a trailing `/`. It is not
-                possible to output both a directory and a file from within that
-                directory.
-            """,
+            doc = "Mapping of group name to lists of files in that named group",
         ),
         "verilator_options": attr.label(),
         "make_options": attr.label(),
