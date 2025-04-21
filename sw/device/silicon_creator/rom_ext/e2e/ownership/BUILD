@@ -432,7 +432,6 @@ _FLASH_PERMISSION_TESTS = {
             binaries = {
                 ":flash_regions": "flash_regions",
             },
-            changes_otp = True,
             owner_slot = param["owner_slot"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
             rom_ext_offset = param["rom_ext_offset"],
