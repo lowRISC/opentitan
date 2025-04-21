@@ -17,6 +17,7 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
   `uvm_component_new
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     fork
       reset_signals();
       get_and_drive();
