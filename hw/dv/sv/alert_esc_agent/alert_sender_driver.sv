@@ -11,7 +11,7 @@ class alert_sender_driver extends alert_esc_base_driver;
   `uvm_component_utils(alert_sender_driver)
 
   // To guard alert ping response and real alert triggers won't trigger at the same time
-  semaphore alert_atomic = new(1);
+  local semaphore alert_atomic = new(1);
 
   extern function new (string name="", uvm_component parent=null);
   extern virtual task reset_signals();
@@ -57,8 +57,7 @@ task alert_sender_driver::reset_signals();
     under_reset = 1;
     do_reset();
     @(posedge cfg.vif.rst_n);
-    void'(alert_atomic.try_get(1));
-    alert_atomic.put(1);
+    alert_atomic = new(1);
   end
 endtask
 
