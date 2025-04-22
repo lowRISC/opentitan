@@ -239,6 +239,24 @@ LC_MISSION_STATES = get_lc_items(
     CONST.LCV.PROD_END,
 )
 
+# Individualized configuration for DV and FPGA testing. Available in all mission
+# mode LC states. This configuration has flash scrambling enabled.
+[
+    otp_image(
+        name = "otp_img_{}_manuf_individualized".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+            ":alert_digest_cfg",
+            ":otp_json_creator_sw_cfg",
+            ":otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
+        ] + OTP_SIGVERIFY_REAL_KEYS,
+    )
+    for lc_state, _ in LC_MISSION_STATES
+]
+
 # Personalized configuration for FPGA testing. Available on `LC_MISSION_STATES`
 # life cycle states.
 # See sw/device/tests/doc/sival/devguide.md for more details.
