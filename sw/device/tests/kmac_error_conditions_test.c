@@ -692,22 +692,22 @@ status_t test_err_sw_pushed_msg_fifo(void) {
 bool test_main(void) {
   // The first three tests don't run on CW310 (see lowRISC/opentitan#15530).
   if (kDeviceType != kDeviceFpgaCw310) {
-    test_err_wait_timer_expired();
-    test_err_incorrect_entropy_mode();
-    test_err_sw_hashing_without_entropy_ready();
+    CHECK_STATUS_OK(test_err_wait_timer_expired());
+    CHECK_STATUS_OK(test_err_incorrect_entropy_mode());
+    CHECK_STATUS_OK(test_err_sw_hashing_without_entropy_ready());
   }
 
-  test_err_incorrect_fnc_name();
-  test_err_key_not_valid();
-  test_err_shadow_reg_update();
-  test_err_sw_cmd_sequence();
-  test_err_unexpected_mode_strength();
+  CHECK_STATUS_OK(test_err_incorrect_fnc_name());
+  CHECK_STATUS_OK(test_err_key_not_valid());
+  CHECK_STATUS_OK(test_err_shadow_reg_update());
+  CHECK_STATUS_OK(test_err_sw_cmd_sequence());
+  CHECK_STATUS_OK(test_err_unexpected_mode_strength());
 
   // Setup the key manager as the last two tests use the key manager KMAC app
   // interface.
-  setup_keymgr();
-  test_err_sw_issued_cmd_in_app();
-  test_err_sw_pushed_msg_fifo();
+  CHECK_STATUS_OK(setup_keymgr());
+  CHECK_STATUS_OK(test_err_sw_issued_cmd_in_app());
+  CHECK_STATUS_OK(test_err_sw_pushed_msg_fifo());
 
   return true;
 }
