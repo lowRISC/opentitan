@@ -74,11 +74,10 @@ class csrng_cmds_vseq extends csrng_base_vseq;
   endfunction
 
   function void print_cmds_all_apps();
-    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
-      foreach (cs_item_q[i, j]) begin
-        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j,
-            cs_item_q[i][j].convert2string()), UVM_DEBUG)
-      end
+    foreach (cs_item_q[i, j]) begin
+      `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s",
+                                i, j, cs_item_q[i][j].convert2string()),
+                UVM_DEBUG)
     end
   endfunction
 

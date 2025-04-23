@@ -93,40 +93,35 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint mp_info_pages_c {
-
-    foreach (mp_info_pages[i]) {
-      if (cfg.seq_cfg.op_readonly_on_info_partition) {
-        foreach (mp_info_pages[i][0][k]) {
-          mp_info_pages[i][0][k].program_en == MuBi4False;
-          mp_info_pages[i][0][k].erase_en == MuBi4False;
-        }
+    foreach (mp_info_pages[i, j, k]) {
+      if (j == 0 && cfg.seq_cfg.op_readonly_on_info_partition) {
+        mp_info_pages[i][j][k].program_en == MuBi4False;
+        mp_info_pages[i][j][k].erase_en == MuBi4False;
       }
-      if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-        foreach (mp_info_pages[i][1][k]) {
-          mp_info_pages[i][1][k].program_en == MuBi4False;
-          mp_info_pages[i][1][k].erase_en == MuBi4False;
-        }
+      if (j == 1 && cfg.seq_cfg.op_readonly_on_info1_partition) {
+        mp_info_pages[i][j][k].program_en == MuBi4False;
+        mp_info_pages[i][j][k].erase_en == MuBi4False;
       }
     }
 
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
+    }
 
-      foreach (mp_info_pages[i, j, k]) {
-       mp_info_pages[i][j][k].en dist {
-                               MuBi4True := 4,
-                               MuBi4False := 1
-                               };
+    foreach (mp_info_pages[i, j, k]) {
+     mp_info_pages[i][j][k].en dist {
+                             MuBi4True := 4,
+                             MuBi4False := 1
+                             };
 
-        mp_info_pages[i][j][k].scramble_en == MuBi4False;
+      mp_info_pages[i][j][k].scramble_en == MuBi4False;
 
-        mp_info_pages[i][j][k].ecc_en == MuBi4False;
+      mp_info_pages[i][j][k].ecc_en == MuBi4False;
 
-        mp_info_pages[i][j][k].he_en dist {
-          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          MuBi4True  :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
-        };
-      }
+      mp_info_pages[i][j][k].he_en dist {
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
+        MuBi4True  :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
+      };
     }
   }
 
