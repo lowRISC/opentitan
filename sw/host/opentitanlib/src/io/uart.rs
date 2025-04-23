@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::io::{self, Read};
+use std::os::fd::BorrowedFd;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -120,6 +121,10 @@ pub trait Uart {
     /// Get the same single `NonblockingHelp` object as from top level `Transport.nonblocking_help()`.
     fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
         Ok(Rc::new(NoNonblockingHelp))
+    }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
 
