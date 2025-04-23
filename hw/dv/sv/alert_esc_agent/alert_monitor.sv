@@ -225,7 +225,7 @@ task alert_monitor::ping_thread();
       // discussion on Issue #2321.
       if (req.ping_timeout && req.alert_handshake_sta == AlertReceived) begin
         @(cfg.vif.monitor_cb);
-        if (cfg.vif.alert_rx_final.ack_p == 1'b1) begin
+        if (cfg.vif.monitor_cb.alert_rx_final.ack_p == 1'b1) begin
           `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
           alert_esc_port.write(req);
         end
