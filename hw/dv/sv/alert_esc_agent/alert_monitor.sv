@@ -195,7 +195,7 @@ task alert_monitor::ping_thread();
             req.ping_timeout = 1'b1;
           end
           begin : wait_ping_handshake
-            while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+            wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
             req.alert_handshake_sta = AlertReceived;
             wait_ack();
             req.alert_handshake_sta = AlertAckReceived;
