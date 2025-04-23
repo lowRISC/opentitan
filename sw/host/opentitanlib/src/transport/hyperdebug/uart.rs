@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::os::fd::BorrowedFd;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -161,5 +162,9 @@ impl Uart for HyperdebugUart {
 
     fn nonblocking_help(&self) -> Result<Rc<dyn NonblockingHelp>> {
         self.serial_port.nonblocking_help()
+    }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd> {
+        self.serial_port.borrow_fd()
     }
 }

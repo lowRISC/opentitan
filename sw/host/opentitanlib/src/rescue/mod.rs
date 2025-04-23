@@ -64,9 +64,9 @@ pub struct RescueParams {
     #[arg(short, long, default_value = "")]
     pub value: String,
     #[command(flatten)]
-    spi: SpiParams,
+    pub spi: SpiParams,
     #[command(flatten)]
-    uart: UartParams,
+    pub uart: UartParams,
     #[arg(long)]
     pub usb_serial: Option<String>,
 }
