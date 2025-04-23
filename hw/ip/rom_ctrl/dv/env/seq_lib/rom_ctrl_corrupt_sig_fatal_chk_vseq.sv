@@ -199,7 +199,7 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::test_fsm_invalid_transitions();
     in_bad_state = 1'b1;
 
     // Since we've jumped from cur_state, delete it from the queue
-    for (int unsigned i = 0; i < states_to_visit.size(); i++) begin
+    foreach (states_to_visit[i]) begin
       if (states_to_visit[i] == cur_state) begin
         states_to_visit.delete(i);
         break;
