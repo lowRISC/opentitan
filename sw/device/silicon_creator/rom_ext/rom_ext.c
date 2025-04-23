@@ -767,7 +767,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
     if (error == kErrorRescueInactivity &&
         boot_attempted == kHardenedBoolFalse) {
       rescue_skip_next_boot();
-      rstmgr_reset();
+      rstmgr_reboot();
     }
   }
 
