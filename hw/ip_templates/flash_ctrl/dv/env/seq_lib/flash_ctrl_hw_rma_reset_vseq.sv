@@ -61,8 +61,9 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
                        cfg.seq_cfg.state_wait_timeout_ns)
           // Give more cycles for long stages
           // to trigger reset in the middle of the state.
-          if (reset_state_index inside {StRmaRdVerify, StRmaErase}) cfg.clk_rst_vif.wait_clks(10);
-
+          if (reset_state_index inside {DVStRmaRdVerify, DVStRmaErase}) begin
+            cfg.clk_rst_vif.wait_clks(10);
+          end
           if (flash_dis) begin
             `uvm_info("Test", "set disable_flash", UVM_MEDIUM)
             cfg.scb_h.do_alert_check = 0;
