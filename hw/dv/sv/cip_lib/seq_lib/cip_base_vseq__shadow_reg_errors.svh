@@ -323,19 +323,21 @@ virtual task shadow_reg_wr(dv_base_reg    csr,
       string alert_name = csr.get_update_err_alert_name();
       // This logic gates alert_handler testbench because it does not have outgoing alert.
       if (cfg.m_alert_agent_cfgs.exists(alert_name)) begin
-        fork
-          begin
-            `DV_SPINWAIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert()) begin
-                           cfg.clk_rst_vif.wait_clks(1);
-                         end
-                         cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
-                         $sformatf("%0s update_err alert timeout", csr.get_name()))
-          end
-          begin
-            wait (exp_update_err_alert == 0);
-          end
-        join_any
-        disable fork;
+        fork begin : isolation_fork
+          fork
+            begin
+              `DV_SPINWAIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert()) begin
+                             cfg.clk_rst_vif.wait_clks(1);
+                           end
+                           cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
+                           $sformatf("%0s update_err alert timeout", csr.get_name()))
+            end
+            begin
+              wait (exp_update_err_alert == 0);
+            end
+          join_any
+          disable fork;
+        end join
       end
     end
   join
