@@ -187,6 +187,13 @@ impl Uart for SerialPortUart {
         }
         Ok(())
     }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
+        let port = self.port.borrow();
+        // SAFETY: `fd` is owned by `port` and is valid.
+        let fd = unsafe { BorrowedFd::borrow_raw(port.as_raw_fd()) };
+        Ok(fd)
+    }
 }
 
 /// Invoke Linux `flock()` on the given serial port, lock will be released when the file
