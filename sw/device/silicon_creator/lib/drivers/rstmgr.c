@@ -160,3 +160,8 @@ void rstmgr_reset(void) {
   }
 #endif
 }
+
+void rstmgr_reboot(void) {
+  rstmgr_reason_clear(1 << kRstmgrReasonPowerOn);
+  rstmgr_reset();
+}
