@@ -4,6 +4,7 @@
 
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
+use std::os::fd::BorrowedFd;
 use std::task::{Context, Poll, Waker, ready};
 use std::time::Duration;
 
@@ -161,5 +162,9 @@ impl<T: Uart> Uart for SoftwareFlowControl<T> {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         self.inner.set_break(enable)
+    }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
+        self.inner.borrow_fd()
     }
 }

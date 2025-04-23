@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::io::{self, Read};
+use std::os::fd::BorrowedFd;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -106,6 +107,10 @@ pub trait Uart: ConsoleDevice {
     fn set_break(&self, _enable: bool) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
 }
 
 impl<T: Uart + ?Sized> Uart for &T {
@@ -181,6 +186,10 @@ impl<T: Uart + ?Sized> Uart for Rc<T> {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         T::set_break(self, enable)
+    }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
+        Err(TransportError::UnsupportedOperation.into())
     }
 }
 

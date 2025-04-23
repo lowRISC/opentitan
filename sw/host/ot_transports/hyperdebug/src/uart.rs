@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::os::fd::BorrowedFd;
 use std::rc::Rc;
 
 use anyhow::{Context, Result};
@@ -188,5 +189,9 @@ impl Uart for HyperdebugUart {
             )
             .context("Setting break condition")?;
         Ok(())
+    }
+
+    fn borrow_fd(&self) -> Result<BorrowedFd<'_>> {
+        self.serial_port.borrow_fd()
     }
 }
