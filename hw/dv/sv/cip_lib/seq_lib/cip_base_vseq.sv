@@ -547,62 +547,79 @@ class cip_base_vseq #(
     end
   endtask
 
-  virtual task check_no_fatal_alerts();
-    // Max alert_handshake shake cycles:
+  // Watch the interface for the alert called alert_name and check that either it doesn't fire or
+  // that it is currently firing, but gets cleared and doesn't re-assert itself.
+  //
+  // This task is safe to kill (on reset).
+  local task check_not_fatal_alert(string alert_name, alert_esc_agent_cfg alert_cfg);
+    // The maximum number of cycles that an alert handshake should take.
     // - 20 cycles includes ack response and ack stable time.
     // - 10 is the max difference between alert clock and dut clock.
     int max_alert_handshake_cycles = 20 * 10;
 
-    // Please only use `bypass_alert_ready_to_end_check` in top-level test.
-    // Because in top-level issuing an reset takes a large amount of simulation time.
-    // For IP level test, please set `exp_fatal_alert` in post_start() instead.
-    bit bypass_alert_ready_to_end_check;
-    void'($value$plusargs("bypass_alert_ready_to_end_check=%0b",
-          bypass_alert_ready_to_end_check));
-    if (cfg.list_of_alerts.size() > 0 && !bypass_alert_ready_to_end_check) begin
-      int check_cycles = $urandom_range(max_alert_handshake_cycles,
-                                        max_alert_handshake_cycles * 3);
+    // The amount of time to watch to check a new alert doesn't appear. This is chosen to be at
+    // least the length of a single handshake.
+    int check_cycles = $urandom_range(max_alert_handshake_cycles, max_alert_handshake_cycles * 3);
 
-      fork begin : isolation_fork
-        fork
-          wait(!cfg.clk_rst_vif.rst_n);
-          begin
-            foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
-              automatic string local_alert_name = alert_name;
-              automatic alert_esc_agent_cfg local_alert_agent_cfg =
-                cfg.m_alert_agent_cfgs[alert_name];
-              automatic int unsigned ping_count = local_alert_agent_cfg.ping_count;
-              fork
-                begin
-                  // This task waits for recoverable alerts handshake to complete, or fatal alert
-                  // being triggered once by `alert_test` register.
-                  cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
-                  `DV_SPINWAIT(local_alert_agent_cfg.vif.wait_ack_complete();)
+    // Take a snapshot of the number of pings that has been seen for the alert in question. If we
+    // see a ping while we're waiting, we want to stop immediately since we won't be able to
+    // decipher the resulting alert.
+    int unsigned ping_count = alert_cfg.ping_count;
 
-                  repeat(check_cycles) begin
-                    cfg.clk_rst_vif.wait_clks(1);
-                    // The alert agent sends a periodic Ping sequence. If there's been a ping since
-                    // this check was started, there may be an alert, in which the check is skipped.
-                    if (ping_count == local_alert_agent_cfg.ping_count) begin
-                      `DV_CHECK_EQ(0, local_alert_agent_cfg.vif.get_alert(),
-                                   $sformatf("Alert %0s fired unexpectedly!", alert_name))
-                    end
-                    else begin
-                      `uvm_info(`gfn, {"Not checking alerts: There's been",
-                                       " a periodic ping since this check",
-                                       " was started which caused an alert"},
-                                       UVM_DEBUG)
-                    end
-                  end
-                end
-              join_none
-            end
-            wait fork;
-          end
-        join_any
-        disable fork;
-      end join
+    // The alert may have been triggered already. Assuming it is not fatal, wait long enough
+    // for any such alert to be acknowledged and cleared. This would normally be a known
+    // number of cycles, but asynchronous alerts make it a bit trickier. Look at the interface
+    // itself and wait for any ack to complete.
+    cfg.clk_rst_vif.wait_clks(max_alert_handshake_cycles);
+    `DV_SPINWAIT(alert_cfg.vif.wait_ack_complete();)
+
+    // Now wait for a while to make sure that the alert is not triggered.
+    fork begin : isolation_fork
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks(check_cycles);
+        end
+        wait(alert_cfg.vif.alert_tx_final.alert_p && !alert_cfg.vif.alert_tx_final.alert_n);
+      join_any
+      disable fork;
+    end join
+
+    // If there's alert visible through alert_tx_final, we must have stopped early. This must mean
+    // that an unexpected alert was generated.
+    if (alert_cfg.vif.alert_tx_final.alert_p && !alert_cfg.vif.alert_tx_final.alert_n) begin
+      // If ping_count has changed, the alert was probably due to the ping and we should
+      // ignore it (but print a debug message). If ping_count is unchanged, the alert fired
+      // when we didn't expect it to.
+      if (alert_cfg.ping_count == ping_count)
+        `uvm_error("Alert %0s fired unexpectedly.", alert_name)
+      else
+        `uvm_info(`gfn,
+                  $sformatf("Unexpected alert %0s, but this may have a ping response.",
+                            alert_name),
+                  UVM_DEBUG)
     end
+  endtask
+
+  // Watch the interface for each alert and check that it does not fire as a fatal alert (using
+  // check_not_fatal_alert)
+  //
+  // If a reset is asserted, this task completes immediately.
+  virtual task check_no_fatal_alerts();
+    fork begin : isolation_fork
+      fork
+        wait(cfg.under_reset);
+
+        fork begin : isolation_fork
+          foreach(cfg.m_alert_agent_cfgs[alert_name]) begin
+            fork
+              check_not_fatal_alert(alert_name, cfg.m_alert_agent_cfgs[alert_name]);
+            join_none
+          end
+          wait fork;
+        end join
+      join_any
+      disable fork;
+    end join
   endtask
 
   virtual task run_alert_test_vseq(int num_times = 1);
