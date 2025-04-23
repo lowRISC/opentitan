@@ -48,6 +48,11 @@ impl<'a> SpiConsoleDevice<'a> {
         })
     }
 
+    pub fn reset_frame_counter(&self) {
+        self.console_next_frame_number.set(0);
+        self.next_read_address.set(0);
+    }
+
     fn check_device_boot_up(&self, buf: &[u8]) -> Result<usize> {
         for i in (0..buf.len()).step_by(4) {
             let pattern: u32 = u32::from_le_bytes(buf[i..i + 4].try_into().unwrap());
@@ -57,8 +62,7 @@ impl<'a> SpiConsoleDevice<'a> {
         }
         // Set busy bit and wait for the device to clear the boot magic.
         self.flash.program(self.spi, 0, buf)?;
-        self.console_next_frame_number.set(0);
-        self.next_read_address.set(0);
+        self.reset_frame_counter();
         Ok(0)
     }
 
