@@ -97,6 +97,7 @@ pub fn run_sram_ft_individualize(
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
     let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+    spi_console.reset_frame_counter();
 
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
