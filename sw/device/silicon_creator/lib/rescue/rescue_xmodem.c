@@ -156,7 +156,7 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
   rescue_state_init(&rescue_state, bootdata, boot_log, config);
   rom_error_t result = protocol(&rescue_state);
   if (result == kErrorRescueReboot) {
-    rstmgr_reset();
+    rstmgr_reboot();
   }
   return result;
 }
