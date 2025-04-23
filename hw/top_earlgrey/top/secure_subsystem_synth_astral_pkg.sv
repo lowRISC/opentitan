@@ -18,7 +18,7 @@ package secure_subsystem_synth_astral_pkg;
   localparam SynthAxiDataWidth    = 64;
 
   localparam SynthAxiAddrWidthRemap    = 64;
-  localparam SynthAxiOutIdWidthRemap   = 4;
+  localparam SynthAxiOutIdWidthRemap   = 5;
   localparam SynthAxiUserWidthRemap    = 1;
   localparam SynthAxiDataWidthRemap    = 64;
 
@@ -26,6 +26,11 @@ package secure_subsystem_synth_astral_pkg;
   localparam SynthOtAxiOutIdWidth = 6;
   localparam SynthOtAxiUserWidth  = 1;
   localparam SynthOtAxiDataWidth  = 64;
+
+  localparam Synth32OtAxiAddrWidth  = 64;
+  localparam Synth32OtAxiOutIdWidth = 6;
+  localparam Synth32OtAxiUserWidth  = 1;
+  localparam Synth32OtAxiDataWidth  = 32;
 
 
   localparam SynthClsAxiIdWidth = 4;
@@ -48,9 +53,16 @@ package secure_subsystem_synth_astral_pkg;
   typedef logic [SynthOtAxiUserWidth-1:0]   synth_ot_axi_user_t;
   typedef logic [SynthOtAxiOutIdWidth-1:0]  synth_ot_axi_out_id_t;
 
+  typedef logic [Synth32OtAxiAddrWidth-1:0]   synth_32_ot_axi_addr_t;
+  typedef logic [Synth32OtAxiDataWidth-1:0]   synth_32_ot_axi_data_t;
+  typedef logic [Synth32OtAxiDataWidth/8-1:0] synth_32_ot_axi_strb_t;
+  typedef logic [Synth32OtAxiUserWidth-1:0]   synth_32_ot_axi_user_t;
+  typedef logic [Synth32OtAxiOutIdWidth-1:0]  synth_32_ot_axi_out_id_t;
+
   `AXI_TYPEDEF_ALL(synth_axi_out, synth_axi_addr_t, synth_axi_out_id_t, synth_axi_data_t, synth_axi_strb_t, synth_axi_user_t)
   `AXI_TYPEDEF_ALL(synth_axi_remap_out, synth_axi_addr_remap_t, synth_axi_out_id_remap_t, synth_axi_data_remap_t, synth_axi_strb_remap_t, synth_axi_user_remap_t)
   `AXI_TYPEDEF_ALL(synth_ot_axi_out, synth_ot_axi_addr_t, synth_ot_axi_out_id_t, synth_ot_axi_data_t, synth_ot_axi_strb_t, synth_ot_axi_user_t)
+  `AXI_TYPEDEF_ALL(synth_32_ot_axi_out, synth_32_ot_axi_addr_t, synth_32_ot_axi_out_id_t, synth_32_ot_axi_data_t, synth_32_ot_axi_strb_t, synth_32_ot_axi_user_t)
 
   localparam SynthLogDepth = 3;
   localparam SynthCdcSyncStages = 2;

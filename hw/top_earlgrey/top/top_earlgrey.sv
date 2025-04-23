@@ -16,7 +16,8 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-module top_earlgrey #(
+module top_earlgrey import secure_subsystem_synth_astral_pkg::*;
+#(
   parameter int unsigned AxiAddrWidth = 64,
   parameter int unsigned AxiDataWidth = 64,
   parameter int unsigned AxiIdWidth = 8,
@@ -838,6 +839,9 @@ module top_earlgrey #(
 
   axi_req_t axi_req_tcdm;
   axi_rsp_t axi_rsp_tcdm;
+
+  synth_32_ot_axi_out_req_t  axi_req_tcdm_32, axi_req_tcdm_cut;
+  synth_32_ot_axi_out_resp_t axi_rsp_tcdm_32, axi_rsp_tcdm_cut;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -2159,9 +2163,52 @@ module top_earlgrey #(
       .r_valid_o ( tcdm_mst_r_valid ),
       .r_rdata_o ( tcdm_mst_r_rdata )
   );
+  axi_dw_converter #(
+      .AxiMaxReads         ( 8                            ),
+      .AxiSlvPortDataWidth ( SynthOtAxiDataWidth          ),
+      .AxiMstPortDataWidth ( Synth32OtAxiDataWidth        ),
+      .AxiAddrWidth        ( SynthOtAxiAddrWidth          ),
+      .AxiIdWidth          ( SynthOtAxiOutIdWidth         ),
+      .aw_chan_t           ( synth_ot_axi_out_aw_chan_t   ),
+      .mst_w_chan_t        ( synth_32_ot_axi_out_w_chan_t ),
+      .slv_w_chan_t        ( axi_w_chan_t    ),
+      .b_chan_t            ( synth_ot_axi_out_b_chan_t    ),
+      .ar_chan_t           ( synth_ot_axi_out_ar_chan_t   ),
+      .mst_r_chan_t        ( synth_32_ot_axi_out_r_chan_t ),
+      .slv_r_chan_t        ( axi_r_chan_t    ),
+      .axi_mst_req_t       ( synth_32_ot_axi_out_req_t    ),
+      .axi_mst_resp_t      ( synth_32_ot_axi_out_resp_t   ),
+      .axi_slv_req_t       ( axi_req_t                    ),
+      .axi_slv_resp_t      ( axi_rsp_t                   )
+  )  i_axi_dw_converter_crypto_mem (
+      .clk_i (clkmgr_aon_clocks.clk_main_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      // slave port
+      .slv_req_i  ( axi_req_tcdm ),
+      .slv_resp_o ( axi_rsp_tcdm ),
+      // master port
+      .mst_req_o  ( axi_req_tcdm_32 ),
+      .mst_resp_i ( axi_rsp_tcdm_32 )
+  );
+  axi_cut #(
+      .aw_chan_t  ( synth_32_ot_axi_out_aw_chan_t ),
+      .w_chan_t   ( synth_32_ot_axi_out_w_chan_t  ),
+      .ar_chan_t  ( synth_32_ot_axi_out_ar_chan_t ),
+      .r_chan_t   ( synth_32_ot_axi_out_r_chan_t  ),
+      .b_chan_t   ( synth_32_ot_axi_out_b_chan_t  ),
+      .axi_req_t  ( synth_32_ot_axi_out_req_t     ),
+      .axi_resp_t ( synth_32_ot_axi_out_resp_t    )
+  ) i_axi_cut_idma (
+      .clk_i (clkmgr_aon_clocks.clk_main_secure),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+      .slv_req_i  ( axi_req_tcdm_32  ),
+      .slv_resp_o ( axi_rsp_tcdm_32  ),
+      .mst_req_o  ( axi_req_tcdm_cut ),
+      .mst_resp_i ( axi_rsp_tcdm_cut )
+  );
   axi_to_mem #(
-      .axi_req_t(axi_req_t),
-      .axi_resp_t(axi_rsp_t),
+      .axi_req_t(synth_32_ot_axi_out_req_t),
+      .axi_resp_t(synth_32_ot_axi_out_resp_t),
       .AddrWidth(15),
       .DataWidth(32),
       .IdWidth(AxiIdWidth),
@@ -2173,8 +2220,8 @@ module top_earlgrey #(
       .clk_i        ( clkmgr_aon_clocks.clk_main_infra ),
       .rst_ni       ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
       .busy_o       (                     ),
-      .axi_req_i    ( axi_req_tcdm        ),
-      .axi_resp_o   ( axi_rsp_tcdm        ),
+      .axi_req_i    ( axi_req_tcdm_cut    ),
+      .axi_resp_o   ( axi_rsp_tcdm_cut    ),
       .mem_req_o    ( tcdm_mst_req[1]     ),
       .mem_gnt_i    ( tcdm_mst_gnt[1]     ),
       .mem_addr_o   ( tcdm_mst_add[1]     ),
