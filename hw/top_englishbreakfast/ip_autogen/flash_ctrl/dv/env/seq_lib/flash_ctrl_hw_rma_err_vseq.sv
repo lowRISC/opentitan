@@ -4,8 +4,6 @@
 
 // flash_ctrl_hw_rma Test
 
-import lc_ctrl_pkg::*;
-
 class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
   `uvm_object_utils(flash_ctrl_hw_rma_err_vseq)
 
