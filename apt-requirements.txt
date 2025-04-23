@@ -16,6 +16,7 @@ build-essential
 clang-format
 cmake
 curl
+dfu-util
 doxygen
 flex
 g++
