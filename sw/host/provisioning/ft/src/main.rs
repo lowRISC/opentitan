@@ -27,7 +27,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
-use ujson_lib::UjsonPayloads;
+use ujson_lib::{UjsonPayloads, UjsonString};
 use util_lib::{
     encrypt_token, hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec, load_rsa_public_key,
     random_token,
@@ -112,7 +112,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let mut ujson_payloads = UjsonPayloads {
-        dut_in: IndexMap::<String, String>::new(),
+        dut_in: IndexMap::<String, UjsonString>::new(),
     };
     let mut response = PersonalizeResponse::default();
 
@@ -320,10 +320,14 @@ fn main() -> Result<()> {
         println!();
         println!("UJSON Payloads:");
         for (name, payload) in ujson_payloads.dut_in.into_iter() {
-            print!("{:}: ", name);
-            for byte in payload.clone().into_bytes() {
+            let ujson_bytes = payload.string.clone().into_bytes();
+            print!("{:} ({} bytes): ", name, ujson_bytes.len());
+            for byte in ujson_bytes {
                 print!("{:02x}", byte);
             }
+            println!();
+            println!("Offsets: {:?}", payload.dynamic_data_offsets);
+            println!("Lengths: {:?}", payload.dynamic_data_lengths);
             println!();
         }
         println!();
