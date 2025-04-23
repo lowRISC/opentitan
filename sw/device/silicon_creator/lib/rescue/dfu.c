@@ -318,7 +318,7 @@ void dfu_protocol_handler(void *_ctx, uint8_t ep, usb_transfer_flags_t flags,
   if (flags & kUsbTransferFlagsReset) {
     // A USB reset after we've been enumerated means software reset.
     if (ctx->ep0.device_address && ctx->ep0.configuration) {
-      rstmgr_reset();
+      rstmgr_reboot();
     }
   }
 
