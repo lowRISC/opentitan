@@ -157,7 +157,7 @@ rom_error_t rescue_protocol(boot_data_t *bootdata, boot_log_t *boot_log,
   uart_enable_receiver();
   rom_error_t result = protocol(&rescue_state);
   if (result == kErrorRescueReboot) {
-    rstmgr_reset();
+    rstmgr_reboot();
   }
   return result;
 }

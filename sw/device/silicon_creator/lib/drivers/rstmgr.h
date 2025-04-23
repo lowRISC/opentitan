@@ -116,6 +116,18 @@ noreturn
     rstmgr_reset(void);
 
 /**
+ * Reboot the chip.
+ *
+ * This function clears the power-on-reset reason and then resets the chip.
+ */
+#ifdef OT_PLATFORM_RV32
+// Omit `noreturn` to be able to test this function in off-target tests.
+noreturn
+#endif
+    void
+    rstmgr_reboot(void);
+
+/**
  * Verifies that info collection is initialized properly.
  *
  * In order not to interfere with the operation of other software on the chip,
