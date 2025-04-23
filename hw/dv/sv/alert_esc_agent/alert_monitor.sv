@@ -152,7 +152,7 @@ task alert_monitor::wait_alert_init_done();
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
         wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
-        @(posedge cfg.vif.clk);
+        @(cfg.vif.monitor_cb);
         `uvm_info($sformatf("%m"), "Alert init done!", UVM_HIGH)
         cfg.alert_init_done = 1;
         under_reset = 0;
