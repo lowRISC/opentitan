@@ -21,8 +21,6 @@
 // #Random Order : Creator(page), Owner(page), Isolation(page),
 //                 Data0(random page), Data1(random page)
 
-import lc_ctrl_pkg::*;
-
 class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_hw_rma_vseq)
 

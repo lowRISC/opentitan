@@ -834,7 +834,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction
 
   // Task for clean scb memory
-  virtual function reset_scb_mem();
+  virtual function void reset_scb_mem();
     scb_flash_data.delete();
     scb_flash_info.delete();
     scb_flash_info1.delete();
@@ -842,9 +842,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction : reset_scb_mem
 
   // Task for set scb memory
-  virtual function set_scb_mem(int bkd_num_words, flash_dv_part_e bkd_partition,
-                               addr_t write_bkd_addr,flash_scb_wr_e val_type,
-                               data_b_t custom_val = {});
+  virtual function void set_scb_mem(int bkd_num_words, flash_dv_part_e bkd_partition,
+                                    addr_t write_bkd_addr,flash_scb_wr_e val_type,
+                                    data_b_t custom_val = {});
     addr_t wr_bkd_addr;
     data_t wr_value;
 
@@ -1172,7 +1172,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   function flash_dv_part_e get_part(flash_part_e part,
                                     logic [InfoTypesWidth-1:0] mem_info_sel);
-    if (part == FlashPartData) begin
+    if (part == flash_ctrl_top_specific_pkg::FlashPartData) begin
       return FlashPartData;
     end else begin
       case (mem_info_sel)

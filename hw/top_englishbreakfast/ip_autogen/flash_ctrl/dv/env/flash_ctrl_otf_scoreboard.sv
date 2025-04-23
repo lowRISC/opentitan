@@ -430,7 +430,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
                 rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
                 @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
                 if (cfg.seq_cfg.use_vendor_flash == 0) begin
-                  if (rcv.mem_part == FlashPartData) begin
+                  if (rcv.mem_part == flash_ctrl_top_specific_pkg::FlashPartData) begin
                     `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
                   end else begin
                     case (rcv.mem_info_sel)
@@ -498,7 +498,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
           `DV_CHECK_EQ(rcv.mem_wdata, {flash_phy_pkg::FullDataWidth{1'b1}},,, name)
 
 
-          if (rcv.mem_part == FlashPartData) begin
+          if (rcv.mem_part == flash_ctrl_top_specific_pkg::FlashPartData) begin
             data_mem[bank].delete(rcv.mem_addr);
           end else begin
             info_mem[bank][rcv.mem_info_sel].delete(rcv.mem_addr);
@@ -519,7 +519,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
       end
 
       // Data will be corrupted if some bits to be written cannot be flipped to 1.
-      if (rcv.mem_part == FlashPartData) begin
+      if (rcv.mem_part == flash_ctrl_top_specific_pkg::FlashPartData) begin
         if (data_mem[bank].exists(rcv.mem_addr)) begin
           rd_data = data_mem[bank][rcv.mem_addr];
           if ((exp.req.prog_full_data & rd_data) != exp.req.prog_full_data) begin
