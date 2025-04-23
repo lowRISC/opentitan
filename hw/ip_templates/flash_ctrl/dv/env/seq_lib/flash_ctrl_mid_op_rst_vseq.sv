@@ -65,18 +65,18 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
   constraint mp_info_pages_c {
     foreach (mp_info_pages[i, j]) {
       mp_info_pages[i][j].size() == flash_ctrl_top_specific_pkg::InfoTypeSize[j];
-      foreach (mp_info_pages[i][j][k]) {
-        mp_info_pages[i][j][k].en == MuBi4True;
-        mp_info_pages[i][j][k].read_en == MuBi4True;
-        mp_info_pages[i][j][k].program_en == MuBi4True;
-        mp_info_pages[i][j][k].erase_en == MuBi4True;
-        mp_info_pages[i][j][k].scramble_en == MuBi4False;
-        mp_info_pages[i][j][k].ecc_en == MuBi4False;
-        mp_info_pages[i][j][k].he_en dist {
-          MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-          MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
-        };
-      }
+    }
+    foreach (mp_info_pages[i, j, k]) {
+      mp_info_pages[i][j][k].en == MuBi4True;
+      mp_info_pages[i][j][k].read_en == MuBi4True;
+      mp_info_pages[i][j][k].program_en == MuBi4True;
+      mp_info_pages[i][j][k].erase_en == MuBi4True;
+      mp_info_pages[i][j][k].scramble_en == MuBi4False;
+      mp_info_pages[i][j][k].ecc_en == MuBi4False;
+      mp_info_pages[i][j][k].he_en dist {
+        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
+        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
+      };
     }
   }
 

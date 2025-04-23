@@ -70,13 +70,13 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   constraint rand_info_c {
     foreach (rand_info[i, j]) {
       rand_info[i][j].size() == InfoTypeSize[j];
-      foreach (rand_info[i, j, k]) {
-        if (all_entry_en) rand_info[i][j][k].en == MuBi4True;
-        rand_info[i][j][k].en dist { MuBi4True := 4, MuBi4False :=1};
-        if (cfg.en_always_read) rand_info[i][j][k].read_en == MuBi4True;
-        rand_info[i][j][k].scramble_en dist { MuBi4True := 4, MuBi4False :=1};
-        rand_info[i][j][k].ecc_en dist { MuBi4True := 4, MuBi4False :=1};
-      }
+    }
+    foreach (rand_info[i, j, k]) {
+      if (all_entry_en) rand_info[i][j][k].en == MuBi4True;
+      rand_info[i][j][k].en dist { MuBi4True := 4, MuBi4False :=1};
+      if (cfg.en_always_read) rand_info[i][j][k].read_en == MuBi4True;
+      rand_info[i][j][k].scramble_en dist { MuBi4True := 4, MuBi4False :=1};
+      rand_info[i][j][k].ecc_en dist { MuBi4True := 4, MuBi4False :=1};
     }
   }
   constraint ctrl_data_num_c {
