@@ -315,7 +315,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.sw_rst_ctrl_n[entry]), .value(sw_rst_ctrl_n[entry]));
     // And check that the reset outputs match the actual ctrl_n settings.
     // Allow for domain crossing delay.
-    cfg.io_div2_clk_rst_vif.wait_clks(3);
+    cfg.io_clk_rst_vif.wait_clks(3);
     exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
               "regwen=%b, ctrl_n=%b, expected=%b", sw_rst_regwen, sw_rst_ctrl_n, exp_ctrl_n),
@@ -505,10 +505,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   // setup basic rstmgr features
   virtual task rstmgr_init();
-    // Must set clk_rst_vif frequency to IO_DIV4_FREQ_MHZ since they are gated
+    // Must set clk_rst_vif frequency to IO_FREQ_MHZ since they are gated
     // versions of each other and have no clock domain crossings.
     // Notice they may still end up out of phase due to the way they get started.
-    cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
+    cfg.clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
     cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
     cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);

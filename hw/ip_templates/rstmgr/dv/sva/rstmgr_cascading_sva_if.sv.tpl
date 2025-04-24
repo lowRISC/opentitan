@@ -2,17 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-<% 
-sorted_clks = sorted(list(clk_freqs.keys())) 
+<%
+sorted_clks = sorted(list(clk_freqs.keys()))
 has_sys_io = any("sys_io" in d.get('name') for d in output_rsts) if output_rsts else False
 
-def preferred_domain():
-    if "io_div4" in sorted_clks:
-        return "io_div4"
-    elif "io" in sorted_clks:
-        return "io"
-    else:
-        assert 0, "No preferred clock available"
+if "io_div4" in sorted_clks:
+    preferred_domain = "io_div4"
+elif "io" in sorted_clks:
+    preferred_domain = "io"
+else:
+    assert 0, "No preferred clock available"
+
+preferred_por_n = f"rst_por_{preferred_domain}_n"
+preferred_rst_n = f"rst_sys_{preferred_domain}_n"
+preferred_clk_i = f"clk_{preferred_domain}_i"
 %>\
 // This has assertions that check the reset outputs of rstmgr cascade properly.
 // This means higher level resets always cause the lower level ones to assert.
@@ -137,10 +140,10 @@ interface rstmgr_cascading_sva_if (
 
   // The AON reset triggers the various POR reset for the different clock domains through
   // synchronizers.
-  // The current system doesn't have any consumers of domain 1 por_${preferred_domain()}, and thus only domain 0
-  // cascading is checked here.
+  // Only domain 0 cascading is checked here, because the current system doesn't have any consumers
+  // of ${preferred_por_n}.
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv4, effective_aon_rst_n[0],
-                    resets_o.rst_por_${preferred_domain()}_n[0], SyncCycles, clk_${preferred_domain()}_i)
+                    resets_o.${preferred_por_n}[0], SyncCycles, ${preferred_clk_i})
 
   // The internal reset is triggered by one of synchronized por.
   logic [rstmgr_pkg::PowerDomains-1:0] por_rst_n;
@@ -164,9 +167,9 @@ interface rstmgr_cascading_sva_if (
 
 % if has_sys_io:
     // Controlled by rst_sys_src_n.
-    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_${preferred_domain()}_chk
-      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_${preferred_domain()}_n[pd],
-                        SysCycles, clk_${preferred_domain()}_i)
+    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_${preferred_domain}_chk
+      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.${preferred_rst_n}[pd],
+                        SysCycles, ${preferred_clk_i})
     end
 % endif
   end
