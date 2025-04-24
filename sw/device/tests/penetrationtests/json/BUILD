@@ -137,10 +137,7 @@ cc_library(
     name = "pentest_lib_commands",
     srcs = ["pentest_lib_commands.c"],
     hdrs = ["pentest_lib_commands.h"],
-    deps = [
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/ujson",
-    ],
+    deps = ["//sw/device/lib/ujson"],
 )
 
 cc_library(
