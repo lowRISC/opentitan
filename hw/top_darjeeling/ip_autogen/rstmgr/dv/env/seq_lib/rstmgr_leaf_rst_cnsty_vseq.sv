@@ -68,7 +68,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
-          cfg.io_div4_clk_rst_vif.wait_clks(10);
+          cfg.io_clk_rst_vif.wait_clks(10);
 
           // Send HwReq.
           // Enable alert_info and cpu_info capture.

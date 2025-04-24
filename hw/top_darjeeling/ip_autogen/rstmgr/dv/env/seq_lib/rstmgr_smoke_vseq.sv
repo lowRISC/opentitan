@@ -15,7 +15,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   constraint sw_rst_some_reset_c {sw_rst_regwen & ~sw_rst_ctrl_n != '0;}
 
   local task wait_between_resets();
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
+    cfg.io_clk_rst_vif.wait_clks(10);
   endtask
 
   task body();
