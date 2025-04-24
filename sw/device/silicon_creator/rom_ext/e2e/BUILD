@@ -3,8 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:const.bzl",
+    "CONST",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
+    "otp_hex",
     "otp_image",
     "otp_json",
     "otp_partition",
@@ -41,5 +46,26 @@ otp_image(
     src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
+    ],
+)
+
+otp_json(
+    name = "otp_json_reset_reason",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN": otp_hex(CONST.HARDENED_TRUE),
+            },
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_img_secret2_locked_preserve_reset_rma",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_secret2_locked",
+        ":otp_json_reset_reason",
     ],
 )
