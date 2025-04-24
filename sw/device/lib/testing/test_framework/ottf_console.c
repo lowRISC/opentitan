@@ -104,10 +104,19 @@ static status_t spi_device_getc(void *io) {
   return OK_STATUS(info.data[index++]);
 }
 
-static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
-  const uint8_t kBootMagicPattern[4] = {0x02, 0xb0, 0xfe, 0xca};
+static void spi_device_clear_flash_buffer(dif_spi_device_handle_t *spi_device) {
   const uint8_t kEmptyPattern[4] = {0};
+  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
+    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
+        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
+        i * ARRAYSIZE(kEmptyPattern), ARRAYSIZE(kEmptyPattern), kEmptyPattern));
+  }
+  CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
+}
 
+static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
+  // Write the boot synchronization data to the flash buffer.
+  const uint8_t kBootMagicPattern[4] = {0x02, 0xb0, 0xfe, 0xca};
   for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
     CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
         spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
@@ -115,15 +124,12 @@ static void spi_device_wait_for_sync(dif_spi_device_handle_t *spi_device) {
         kBootMagicPattern));
   }
 
+  // Wait for host to read out the boot synchronization data.
   upload_info_t info = {0};
   CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
-  // Clear the boot magic in the read buffer.
-  for (size_t i = 0; i < SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH; i++) {
-    CHECK_DIF_OK(dif_spi_device_write_flash_buffer(
-        spi_device, kDifSpiDeviceFlashBufferTypeEFlash,
-        i * ARRAYSIZE(kEmptyPattern), ARRAYSIZE(kEmptyPattern), kEmptyPattern));
-  }
-  CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
+
+  // Clear the boot magic data in the flash buffer that the host echoed back.
+  spi_device_clear_flash_buffer(spi_device);
 }
 
 void ottf_console_init(void) {
@@ -276,6 +282,7 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
         true));
     base_spi_device_set_gpio_tx_indicator(
         &gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio);
+    spi_device_clear_flash_buffer(&ottf_console_spi_device);
   } else {
     spi_device_wait_for_sync(&ottf_console_spi_device);
   }
