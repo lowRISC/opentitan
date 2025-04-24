@@ -48,7 +48,8 @@ extern "C" {
     value(_, OtpDataRead) \
     value(_, OtpReadLock) \
     value(_, OtpWriteLock)
-UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define IBEXFI_TEST_RESULT(field, string) \
     field(result, uint32_t) \
