@@ -73,7 +73,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = {NUM_TRANS{MuBi4True}};
     scanmode = MuBi4False;
-    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
     io_ip_clk_en = 1'b1;
     main_ip_clk_en = 1'b1;
     start_ip_clocks();
@@ -103,7 +103,7 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
-    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b1);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b1);
 

@@ -85,7 +85,11 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "In clkmgr_if initialize_on_start", UVM_MEDIUM)
     idle = {NUM_TRANS{MuBi4True}};
     scanmode = MuBi4False;
+  % if len(derived_clks) > 0:
     cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode), .lc_debug_en(Off));
+  % else:
+    cfg.clkmgr_vif.init(.idle(idle), .scanmode(scanmode));
+  % endif
 % for clk_name in non_aon_src_names:
     ${clk_name}_ip_clk_en = 1'b1;
 % endfor
@@ -120,7 +124,11 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
+  % if len(derived_clks) > 0:
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
+  % else:
+    cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode));
+  % endif
 % for src in sorted(src_clks.values(), key=lambda v: v['name']):
   % if not src['aon']:
     cfg.clkmgr_vif.update_${src['name']}_ip_clk_en(1'b1);
