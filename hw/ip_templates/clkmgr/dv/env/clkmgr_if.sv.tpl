@@ -77,7 +77,11 @@ interface clkmgr_if (
     clk_enables_csr = '{
 % for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
 <% sep = "" if loop.last else "," %>\
+    % if len(typed_clocks['sw_clks']) == 1:
+      ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.q${sep}
+    % else:
       ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+    % endif
 % endfor
     };
 
@@ -178,6 +182,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     io_clk_byp_ack = value;
   endfunction
 
+% endif
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
@@ -188,7 +193,6 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     endcase
   endfunction
 
-% endif
   task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
     % if len(derived_clks) > 0:
                       lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,

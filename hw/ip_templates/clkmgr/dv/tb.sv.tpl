@@ -83,7 +83,11 @@ module tb;
     .clk_enables({
 % for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
 <% sep = "})," if loop.last else "," %>\
+  % if len(typed_clocks['sw_clks']) == 1:
+        reg2hw.clk_enables.q${sep}
+  % else:
         reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+  % endif
 % endfor
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,

@@ -48,7 +48,7 @@ interface clkmgr_if (
   clk_enables_t clk_enables_csr;
   always_comb
     clk_enables_csr = '{
-      io_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_peri_en.q
+      io_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.q
     };
 
   clk_hints_t clk_hints_csr;
@@ -117,6 +117,15 @@ interface clkmgr_if (
 
   function automatic void update_scanmode(prim_mubi_pkg::mubi4_t value);
     scanmode_i = value;
+  endfunction
+
+  function automatic void force_high_starting_count(clk_mesr_e clk);
+    `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
+    case (clk)
+      ClkMesrIo: `CLKMGR_HIER.u_io_meas.u_meas.cnt = '1;
+      ClkMesrMain: `CLKMGR_HIER.u_main_meas.u_meas.cnt = '1;
+      default: ;
+    endcase
   endfunction
 
   task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,

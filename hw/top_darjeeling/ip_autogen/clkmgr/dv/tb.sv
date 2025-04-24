@@ -75,7 +75,7 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
-        reg2hw.clk_enables.clk_io_peri_en.q}),
+        reg2hw.clk_enables.q}),
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,
         reg2hw.clk_hints.clk_main_kmac_hint.q,
