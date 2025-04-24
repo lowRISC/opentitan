@@ -34,6 +34,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
@@ -797,8 +798,12 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 
   // Handle any pending boot_svc commands.
   uint32_t reset_reasons = retention_sram_get()->creator.reset_reasons;
-  uint32_t skip_boot_svc = reset_reasons & (1 << kRstmgrReasonLowPowerExit);
-  if (skip_boot_svc == 0) {
+  hardened_bool_t waking_from_low_power =
+      reset_reasons & (1 << kRstmgrReasonLowPowerExit) ? kHardenedBoolTrue
+                                                       : kHardenedBoolFalse;
+
+  // We don't want to execute boot_svc requests if this is a low-power wakeup.
+  if (waking_from_low_power != kHardenedBoolTrue) {
     error = handle_boot_svc(boot_data, boot_log);
     if (error == kErrorWriteBootdataThenReboot) {
       // Boot services reports errors by writing a status code into the reply
@@ -821,7 +826,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // needed.
   HARDENED_RETURN_IF_ERROR(ownership_seal_clear());
 
-  hardened_bool_t want_rescue = rescue_detect_entry(owner_config.rescue);
+  // We don't want to enter rescue mode if this is a low-power wakeup.
+  hardened_bool_t want_rescue = waking_from_low_power != kHardenedBoolTrue
+                                    ? rescue_detect_entry(owner_config.rescue)
+                                    : kHardenedBoolFalse;
   hardened_bool_t boot_attempted = kHardenedBoolFalse;
 
   if (want_rescue == kHardenedBoolFalse) {
@@ -839,6 +847,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
       dbg_printf("BFV:%x\r\n", error);
     }
 
+    // Disable the watchdog timer when entering rescue mode.
+    watchdog_disable();
     error = rescue_protocol(boot_data, boot_log, owner_config.rescue);
 
     // If rescue timed out and we didn't attempt to boot, request skipping

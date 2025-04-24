@@ -340,6 +340,15 @@ opentitan_test(
 )
 
 opentitan_test(
+    # This test ensures that the ROM_EXT clears power-on-reset before rebooting
+    # so that the ROM wont re-scrable RET-RAM and destroy the 'skip_once' request.
+    #
+    # This test also ensures that the ROM_EXT disables the watchdog when entering
+    # rescue mode, as the normal watchdog timeout would cause the chip to reset
+    # after one second of idling in rescue.
+    #
+    # If the ROM_EXT were to fail to clear power-on-reset or to disable the
+    # watchdog, this device would boot-loop and this test would fail.
     name = "rescue_inactivity_timeout_preserved_reset_reason",
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
@@ -350,10 +359,9 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        # We configure OTP to preserve the reset reason.  This tests that the
-        # ROM_EXT clears power-on-reset before rebooting so that the ROM wont
-        # re-scramble ret-ram and destroy the 'skip_once' request.
-        otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_preserve_reset_rma",
+        # We configure OTP to preserve the reset reason and set the watchdog timeout
+        # to one second.
+        otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_preserve_reset_prod",
         # We use the spidfu rom_ext because we can trigger with a GPIO and we
         # want to simulate the trigger being jammed.
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spidfu",
