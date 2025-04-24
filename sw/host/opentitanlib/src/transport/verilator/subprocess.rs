@@ -19,6 +19,8 @@ pub struct Options {
     pub rom_image: String,
     /// The flash images stored in internal flash memory, one file per bank.
     pub flash_images: Vec<String>,
+    /// The CTN RAM image (optional).
+    pub ctn_ram_image: String,
     /// The OTP settings.
     pub otp_image: String,
     /// Any extra arguments to verilator.
@@ -52,6 +54,9 @@ impl Subprocess {
                 };
                 args.push(format!("--meminit=flash{},{}", slot, image_file));
             }
+        }
+        if !options.ctn_ram_image.is_empty() {
+            args.push(format!("--meminit=ctn_ram,{}", options.ctn_ram_image));
         }
         if !options.otp_image.is_empty() {
             args.push(format!("--meminit=otp,{}", options.otp_image));
@@ -128,6 +133,7 @@ mod test {
             executable: "/bin/echo".to_owned(),
             rom_image: "".to_owned(),
             flash_images: vec!["/dev/null:1".to_owned()],
+            ctn_ram_image: "".to_owned(),
             otp_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
             timeout: Duration::from_secs(5),
