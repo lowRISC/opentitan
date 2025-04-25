@@ -4604,6 +4604,34 @@
           expose: "true"
           name_top: RvCoreIbexTlulHostUserRsvdBits
         }
+        {
+          name: CsrMvendorId
+          desc:
+            '''
+            mvendorid: encoding of manufacturer/provider
+            0 indicates this field is not implemented.
+            Ibex implementors may wish to set their own JEDEC ID here.
+            '''
+          type: logic [31:0]
+          default: "'0"
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexCsrMvendorId
+        }
+        {
+          name: CsrMimpId
+          desc:
+            '''
+            mimpid: encoding of processor implementation version
+            0 indicates this field is not implemented.
+            Ibex implementors may wish to indicate an RTL/netlist version here using their own unique encoding (e.g. 32 bits of the git hash of the implemented commit).
+            '''
+          type: logic [31:0]
+          default: "'0"
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexCsrMimpId
+        }
       ]
       inter_signal_list:
       [

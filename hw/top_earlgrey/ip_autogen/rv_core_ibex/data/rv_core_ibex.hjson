@@ -493,6 +493,28 @@
       local:   "false"
       expose:  "true"
     },
+    { name:  "CsrMvendorId"
+      type:  "logic [31:0]"
+      desc: '''
+        mvendorid: encoding of manufacturer/provider
+        0 indicates this field is not implemented.
+        Ibex implementors may wish to set their own JEDEC ID here.
+      '''
+      default: "'0"
+      local:   "false"
+      expose:  "true"
+    },
+    { name:  "CsrMimpId"
+      type:  "logic [31:0]"
+      desc: '''
+        mimpid: encoding of processor implementation version
+        0 indicates this field is not implemented.
+        Ibex implementors may wish to indicate an RTL/netlist version here using their own unique encoding (e.g. 32 bits of the git hash of the implemented commit).
+      '''
+      default: "'0"
+      local:   "false"
+      expose:  "true"
+    }
   ],
   features: [
     {
