@@ -10,6 +10,7 @@ from math import ceil, log2
 from pathlib import Path
 from typing import Dict, List
 
+from basegen.typing import ConfigT
 from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int
 import hjson
 from tabulate import tabulate
@@ -462,14 +463,15 @@ class OtpMemMap():
             exit(1)
         return otp_mmap
 
-    def create_partitions_table(self) -> str:
+    @classmethod
+    def otp_create_partitions_table(cls, partitions: ConfigT) -> str:
         header = [
             "Partition", "Secret", "Buffered", "Integrity", "WR Lockable",
             "RD Lockable", "Description"
         ]
         table = [header]
         colalign = ("center", ) * len(header[:-1]) + ("left", )
-        for part in self.config["partitions"]:
+        for part in partitions:
             is_secret = "yes" if check_bool(part["secret"]) else "no"
             is_buffered = "yes" if part["variant"] in [
                 "Buffered", "LifeCycle"
@@ -495,7 +497,11 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_mmap_table(self) -> str:
+    def create_partitions_table(self) -> str:
+        return OtpMemMap.otp_create_partitions_table(self.config["partitions"])
+
+    @classmethod
+    def otp_create_mmap_table(cls, partitions: ConfigT) -> str:
         header = [
             "Index", "Partition", "Size [B]", "Access Granule", "Item",
             "Byte Address", "Size [B]"
@@ -503,7 +509,7 @@ class OtpMemMap():
         table = [header]
         colalign = ("center", ) * len(header)
 
-        for k, part in enumerate(self.config["partitions"]):
+        for k, part in enumerate(partitions):
             for j, item in enumerate(part["items"]):
                 granule = "64bit" if check_bool(part["secret"]) else "32bit"
 
@@ -531,14 +537,18 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_description_table(self) -> str:
+    def create_mmap_table(self) -> str:
+        return OtpMemMap.otp_create_mmap_table(self.config["partitions"])
+
+    @classmethod
+    def otp_create_description_table(cls, partitions: ConfigT) -> str:
         header = ["Partition", "Item", "Size [B]", "Description"]
         table = [header]
         # Everything column center aligned, except the descriptions.
         colalign = ["center"] * len(header)
         colalign[-1] = "left"
 
-        for k, part in enumerate(self.config["partitions"]):
+        for k, part in enumerate(partitions):
             for j, item in enumerate(part["items"]):
                 if part["secret"] or part["name"] in {
                         "VENDOR_TEST", "LIFE_CYCLE"
@@ -565,12 +575,16 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_digests_table(self) -> str:
+    def create_description_table(self) -> str:
+        return OtpMemMap.otp_create_description_table(self.config["partitions"])
+
+    @classmethod
+    def otp_create_digests_table(cls, partitions: ConfigT) -> str:
         header = ["Digest Name", " Affected Partition", "Calculated by HW"]
         table = [header]
         colalign = ("center", ) * len(header)
 
-        for part in self.config["partitions"]:
+        for part in partitions:
             if check_bool(part["hw_digest"]) or check_bool(part["sw_digest"]):
                 is_hw_digest = "yes" if check_bool(part["hw_digest"]) else "no"
                 for item in part["items"]:
@@ -588,6 +602,9 @@ class OtpMemMap():
                         headers="firstrow",
                         tablefmt="pipe",
                         colalign=colalign)
+
+    def create_digests_table(self) -> str:
+        return OtpMemMap.otp_create_digests_table(self.config["partitions"])
 
     def get_part(self, part_name) -> str:
         ''' Get partition by name, return None if it does not exist'''
