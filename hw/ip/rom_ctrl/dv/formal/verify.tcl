@@ -69,3 +69,58 @@ cover -disable "tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1"
 task -create FreeWe
 stopat -task FreeWe "dut.u_reg_regs.u_prim_reg_we_check.oh_i"
 move_to_task FreeWe "${prim_onehot_check_path}.gen_enable_check.gen_not_strict.EnableCheck_A"
+
+# There are several prim_count instances in the dut. All of these detect fault injection by
+# generating an error, which causes an alert, if the two counters don't sum to the right total. For
+# FPV testing, we have to use stopat to allow the fault injection, copy the property to the task and
+# disable the version that doesn't have the stopat.
+#
+# The prim_count instances that lie in u_tl_adapter_rom all have their clr_i and decr_en_i signals
+# wired to zero. For these instances, disable the cover property for the assertions that talk about
+# them handling the signals being nonzero.
+task -create PrimCount
+stopat -task PrimCount "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr.cnt_q"
+
+move_to_task PrimCount "tb.dut.gen_asserts_with_scrambling.FpvSecCmCompareAddrCtrCheck_A"
+
+# Waive coverage for the ClrFwd_A assertion in every instantiation of prim_count. This assertion is
+# supposed to check that the clr_i signal works, but the instantiation in tlul_adapter_sram wires
+# clr_i to zero. Also add an assertion that checks this really is dead zero.
+#
+# The decr_en_i signal is also wired to zero. Again, we add an assertion to check this is true and
+# then waive precondition coverage for things that need a decrement request.
+#
+# Similarly, we have to waive coverage for the UpCntIncrStable_A assertion. This assertion is
+# supposed to be checking that the count saturates at its maximum value (instead of wrapping). But
+# it's actually impossible to get into a situation where we're trying to increment past one request
+# or response. This is because the ROM always responds in exactly one cycle so there's no way to
+# increment a second time. The same is true for the down count.
+#
+# Finally, we have to waive coverage for the UpCntIncrStable_A and DnCntIncrStable_A assertions for
+# these prim_count counters. In each case, these are impossible to hit because we have a 2 entry
+# FIFO and the ROM always replies in exactly one cycle.
+
+foreach fifo_pr { { u_reqfifo ReqFifo } { u_sramreqfifo SramReqFifo } { u_rspfifo RspFifo } } {
+    set fifo_inst_name [lindex $fifo_pr 0]
+    set fifo_prop_name [lindex $fifo_pr 1]
+
+    set fifo_path "dut.u_tl_adapter_rom.${fifo_inst_name}"
+
+    foreach ptr_pr { { u_wptr Wptr } { u_rptr Rptr } } {
+        set ptr_inst_name [lindex $ptr_pr 0]
+        set ptr_prop_name [lindex $ptr_pr 1]
+
+        set ptr_path "${fifo_path}.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.${ptr_inst_name}"
+
+        stopat -task PrimCount "${ptr_path}.cnt_q"
+        move_to_task PrimCount "tb.dut.FpvSecCm${fifo_prop_name}${ptr_prop_name}Check_A"
+
+        assert -name "CannotSaturateUp_${fifo_prop_name}_${ptr_inst_name}_A" \
+            "${ptr_path}.incr_en_i && !${ptr_path}.set_i -> !&${ptr_path}.cnt_o"
+        cover -disable "tb.${ptr_path}.g_check_incr.UpCntIncrStable_A:precondition1"
+
+        assert -name "CannotSaturateDn_${fifo_prop_name}_${ptr_inst_name}_A" \
+            "${ptr_path}.incr_en_i && !${ptr_path}.set_i -> |${ptr_path}.cnt_q\[1\]"
+        cover -disable "tb.${ptr_path}.g_check_incr.DnCntIncrStable_A:precondition1"
+    }
+}
