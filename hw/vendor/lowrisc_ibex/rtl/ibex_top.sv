@@ -43,7 +43,16 @@ module ibex_top import ibex_pkg::*; #(
   parameter int unsigned            DmExceptionAddr              = 32'h1A110808,
   // Default seed and nonce for scrambling
   parameter logic [SCRAMBLE_KEY_W-1:0]   RndCnstIbexKey          = RndCnstIbexKeyDefault,
-  parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce        = RndCnstIbexNonceDefault
+  parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce        = RndCnstIbexNonceDefault,
+  // mvendorid: encoding of manufacturer/provider
+  // 0 indicates this field is not implemented. Ibex implementors may wish to set their
+  // own JEDEC ID here.
+  parameter logic [31:0]            CsrMvendorId                 = 32'b0,
+  // mimpid: encoding of processor implementation version
+  // 0 indicates this field is not implemented. Ibex implementors may wish to indicate an
+  // RTL/netlist version here using their own unique encoding (e.g. 32 bits of the git hash of the
+  // implemented commit).
+  parameter logic [31:0]            CsrMimpId                    = 32'b0
 ) (
   // Clock and Reset
   input  logic                                                         clk_i,
@@ -323,7 +332,9 @@ module ibex_top import ibex_pkg::*; #(
     .DmBaseAddr       (DmBaseAddr),
     .DmAddrMask       (DmAddrMask),
     .DmHaltAddr       (DmHaltAddr),
-    .DmExceptionAddr  (DmExceptionAddr)
+    .DmExceptionAddr  (DmExceptionAddr),
+    .CsrMvendorId     (CsrMvendorId),
+    .CsrMimpId        (CsrMimpId)
   ) u_ibex_core (
     .clk_i(clk),
     .rst_ni,

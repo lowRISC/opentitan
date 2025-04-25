@@ -26,7 +26,11 @@ module ibex_cs_registers #(
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg     = ibex_pkg::PmpMseccfgRst,
   parameter bit                     RV32E             = 0,
   parameter ibex_pkg::rv32m_e RV32M                   = ibex_pkg::RV32MFast,
-  parameter ibex_pkg::rv32b_e RV32B                   = ibex_pkg::RV32BNone
+  parameter ibex_pkg::rv32b_e RV32B                   = ibex_pkg::RV32BNone,
+  // mvendorid: encoding of manufacturer/provider
+  parameter logic [31:0]            CsrMvendorId      = 32'b0,
+  // mimpid: encoding of processor implementation version
+  parameter logic [31:0]            CsrMimpId         = 32'b0
 ) (
   // Clock and Reset
   input  logic                 clk_i,
@@ -332,11 +336,11 @@ module ibex_cs_registers #(
 
     unique case (csr_addr_i)
       // mvendorid: encoding of manufacturer/provider
-      CSR_MVENDORID: csr_rdata_int = CSR_MVENDORID_VALUE;
+      CSR_MVENDORID: csr_rdata_int = CsrMvendorId;
       // marchid: encoding of base microarchitecture
       CSR_MARCHID: csr_rdata_int = CSR_MARCHID_VALUE;
       // mimpid: encoding of processor implementation version
-      CSR_MIMPID: csr_rdata_int = CSR_MIMPID_VALUE;
+      CSR_MIMPID: csr_rdata_int = CsrMimpId;
       // mhartid: unique hardware thread id
       CSR_MHARTID: csr_rdata_int = hart_id_i;
       // mconfigptr: pointer to configuration data structre

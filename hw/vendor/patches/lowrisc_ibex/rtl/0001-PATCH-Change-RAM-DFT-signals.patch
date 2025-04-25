@@ -24,7 +24,7 @@ index a90fee0e..085e80ee 100644
 --- a/ibex_top.sv
 +++ b/ibex_top.sv
 @@ -46,105 +46,110 @@ module ibex_top import ibex_pkg::*; #(
-   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonce        = RndCnstIbexNonceDefault
+   parameter logic [31:0]            CsrMimpId                    = 32'b0
  ) (
    // Clock and Reset
 -  input  logic                         clk_i,
