@@ -15,7 +15,10 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::ownership::{GlobalFlags, KeyMaterial, OwnerBlock, OwnershipKeyAlg, TlvHeader};
+use opentitanlib::ownership::{
+    DetachedSignature, DetachedSignatureCommand, GlobalFlags, KeyMaterial, OwnerBlock,
+    OwnershipKeyAlg, TlvHeader,
+};
 
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 enum Format {
@@ -301,6 +304,42 @@ impl CommandDispatch for OwnershipDigestCommand {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct OwnershipDetachedSignatureCommand {
+    #[arg(short, long)]
+    command: DetachedSignatureCommand,
+    #[arg(long)]
+    key_alg: OwnershipKeyAlg,
+    #[arg(short, long)]
+    nonce: u64,
+    #[arg(long)]
+    ecdsa_sig: Option<PathBuf>,
+    #[arg(long)]
+    spx_sig: Option<PathBuf>,
+    /// Filename for an output detached signature bin file.
+    output: PathBuf,
+}
+
+impl CommandDispatch for OwnershipDetachedSignatureCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let detatch_sig = DetachedSignature::from_raw_signatures(
+            self.command.into(),
+            self.key_alg,
+            self.nonce,
+            self.ecdsa_sig.as_deref(),
+            self.spx_sig.as_deref(),
+        )?;
+
+        let mut file = File::create(&self.output)?;
+        detatch_sig.write(&mut file)?;
+        Ok(None)
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum OwnershipCommand {
     Config(OwnershipConfigCommand),
@@ -308,4 +347,5 @@ pub enum OwnershipCommand {
     Unlock(OwnershipUnlockCommand),
     Verify(OwnershipVerifyCommand),
     Digest(OwnershipDigestCommand),
+    DetachedSignature(OwnershipDetachedSignatureCommand),
 }
