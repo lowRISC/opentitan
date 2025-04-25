@@ -1161,10 +1161,6 @@
       name: otp_ctrl
       type: otp_ctrl
       template_type: otp_ctrl
-      ipgen_param:
-      {
-        enable_flash_key: false
-      }
       clock_srcs:
       {
         clk_i: io_div4

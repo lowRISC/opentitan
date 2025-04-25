@@ -715,14 +715,33 @@ def generate_flash(top: ConfigT, module: ConfigT, out_path: Path) -> None:
 def _get_otp_ctrl_params(top: ConfigT,
                          out_path: Path,
                          seed: int = None) -> ParamsT:
+
+    def has_flash_keys(parts, path) -> bool:
+        """Determines if the SECRET1 partition has flash key seeds.
+
+        This assumes the flash keys are in the secret1 partition, and are
+        named "flash*key_seed" (case doesn't matter). If in some future
+        otp mmap the location of these keys changes we can revisit this
+        detection.
+        """
+        for p in parts:
+            if p["name"].lower() == "secret1":
+                secret1_partition = p
+                break
+        else:
+            raise ValueError(f"SECRET1 partition not found in {path}")
+        flash_keys = [i for i in secret1_partition["items"]
+                      if i["name"].lower().startswith("flash")
+                      and i["name"].lower().endswith("key_seed")]
+        return len(flash_keys) > 0
+
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
-    module = lib.find_module(top['module'], 'otp_ctrl')
+    otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, seed).config
+    enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
     return {
-        "otp_mmap": OtpMemMap.from_mmap_path(otp_mmap_path, seed).config,
-        # TODO(#26553): Remove the following code once topgen automatically
-        # incorporates template parameters.
-        "enable_flash_key": module.get("ipgen_param", {}).get("enable_flash_key", True),
+        "otp_mmap": otp_mmap,
+        "enable_flash_key": enable_flash_keys,
     }
 
 
