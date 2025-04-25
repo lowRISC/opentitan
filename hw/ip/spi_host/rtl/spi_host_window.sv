@@ -119,7 +119,7 @@ module spi_host_window
     .write_pending_i(1'b0),
     .racl_policies_i  (racl_policies_i),
     .racl_error_o     (racl_error_tx_o),
-    .racl_policy_sel_ranges(RaclPolicySelRangesTXDATA)
+    .racl_policy_sel_ranges_i(RaclPolicySelRangesTXDATA)
   );
 
 endmodule : spi_host_window

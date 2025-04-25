@@ -564,7 +564,7 @@ module sram_ctrl
     // RACL interface
     .racl_policies_i            (racl_policies_i),
     .racl_error_o               (racl_error[1]),
-    .racl_policy_sel_ranges     (racl_policy_sel_ranges_ram_i)
+    .racl_policy_sel_ranges_i   (racl_policy_sel_ranges_ram_i)
   );
 
   logic key_valid;

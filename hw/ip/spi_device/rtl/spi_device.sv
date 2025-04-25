@@ -1734,7 +1734,7 @@ module spi_device
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
     .racl_error_o               (racl_error[1]),
-    .racl_policy_sel_ranges     (RaclPolicySelRangesEgressbuffer)
+    .racl_policy_sel_ranges_i   (RaclPolicySelRangesEgressbuffer)
   );
 
   tlul_adapter_sram_racl #(
@@ -1772,7 +1772,7 @@ module spi_device
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
     .racl_error_o               (racl_error[2]),
-    .racl_policy_sel_ranges     (RaclPolicySelRangesIngressbuffer)
+    .racl_policy_sel_ranges_i   (RaclPolicySelRangesIngressbuffer)
   );
   assign sys_sram_l2m[SysSramFwEgress].wstrb =
     sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]);

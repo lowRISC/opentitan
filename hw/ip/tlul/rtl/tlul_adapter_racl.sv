@@ -29,7 +29,7 @@ module tlul_adapter_racl
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t                         racl_policies_i,
   output top_racl_pkg::racl_error_log_t                          racl_error_o,
-  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRanges-1:0] racl_policy_sel_ranges
+  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRanges-1:0] racl_policy_sel_ranges_i
 );
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -53,7 +53,7 @@ module tlul_adapter_racl
       top_racl_pkg::racl_range_t range;
       top_racl_pkg::racl_policy_t policy;
       logic range_match;
-      assign range = racl_policy_sel_ranges[r];
+      assign range = racl_policy_sel_ranges_i[r];
       assign policy = racl_policies_i[range.policy_sel];
       // Check if the address is within range
       assign range_match = range.enable
@@ -99,7 +99,7 @@ module tlul_adapter_racl
 
     // Some signals are not read when RACL is disabled
     logic unused_signals;
-    assign unused_signals = ^racl_policy_sel_ranges;
+    assign unused_signals = ^racl_policy_sel_ranges_i;
   end
 
   // Not all RACL policies are used, even if RACL is enabled

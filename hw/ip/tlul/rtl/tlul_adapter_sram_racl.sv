@@ -77,25 +77,25 @@ module tlul_adapter_sram_racl
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
   output top_racl_pkg::racl_error_log_t  racl_error_o,
-  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRanges-1:0] racl_policy_sel_ranges
+  input  top_racl_pkg::racl_range_t [RaclPolicySelNumRanges-1:0] racl_policy_sel_ranges_i
 );
   tl_h2d_t tl_h2d_filtered;
   tl_d2h_t tl_d2h_filtered;
 
   tlul_adapter_racl #(
-    .EnableRacl             ( EnableRacl             ),
-    .RaclErrorRsp           ( RaclErrorRsp           ),
-    .RaclPolicySelNumRanges ( RaclPolicySelNumRanges )
+    .EnableRacl               ( EnableRacl             ),
+    .RaclErrorRsp             ( RaclErrorRsp           ),
+    .RaclPolicySelNumRanges   ( RaclPolicySelNumRanges )
   ) tlul_adapter_racl(
-    .clk_i                  ( clk_i                  ),
-    .rst_ni                 ( rst_ni                 ),
-    .tl_h2d_i               ( tl_i                   ),
-    .tl_d2h_o               ( tl_o                   ),
-    .tl_filtered_h2d_o      ( tl_h2d_filtered        ),
-    .tl_filtered_d2h_i      ( tl_d2h_filtered        ),
-    .racl_policies_i        ( racl_policies_i        ),
-    .racl_error_o           ( racl_error_o           ),
-    .racl_policy_sel_ranges ( racl_policy_sel_ranges )
+    .clk_i                    ( clk_i                    ),
+    .rst_ni                   ( rst_ni                   ),
+    .tl_h2d_i                 ( tl_i                     ),
+    .tl_d2h_o                 ( tl_o                     ),
+    .tl_filtered_h2d_o        ( tl_h2d_filtered          ),
+    .tl_filtered_d2h_i        ( tl_d2h_filtered          ),
+    .racl_policies_i          ( racl_policies_i          ),
+    .racl_error_o             ( racl_error_o             ),
+    .racl_policy_sel_ranges_i ( racl_policy_sel_ranges_i )
   );
 
   tlul_adapter_sram #(
