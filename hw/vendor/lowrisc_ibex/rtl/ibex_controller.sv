@@ -175,7 +175,7 @@ module ibex_controller #(
     // print warning in case of decoding errors
     if ((ctrl_fsm_cs == DECODE) && instr_valid_i && !instr_fetch_err_i && illegal_insn_d) begin
       $display("%t: Illegal instruction (hart %0x) at PC 0x%h: 0x%h", $time, u_ibex_core.hart_id_i,
-               pc_id_i, id_stage_i.instr_rdata_i);
+               pc_id_i, instr_is_compressed_i ? {16'b0, instr_compressed_i} : instr_i );
     end
   end
   // synopsys translate_on

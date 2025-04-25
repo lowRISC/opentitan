@@ -606,7 +606,7 @@ CSR Address: ``0xF11``
 
 Reset Value: ``0x0000_0000``
 
-Use the ``CSR_MVENDORID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
+Use the top-level parameter ``CsrMvendorId`` in :file:`rtl/ibex_top.sv` to change the fixed value.
 Details of what the ID represents can be found in the RISC-V Privileged Specification.
 
 Machine Architecture ID (marchid)
@@ -628,7 +628,7 @@ CSR Address: ``0xF13``
 
 Reset Value: ``0x0000_0000``
 
-Use the ``CSR_MIMPID_VALUE`` parameter in :file:`rtl/ibex_pkg.sv` to change the fixed value.
+Use the top-level parameter ``CsrMimpId`` in :file:`rtl/ibex_top.sv` to change the fixed value.
 Details of what the ID represents can be found in the RISC-V Privileged Specification.
 
 .. _csr-mhartid:

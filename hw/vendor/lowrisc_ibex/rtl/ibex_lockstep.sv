@@ -128,7 +128,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   logic [LockstepOffsetW-1:0] rst_shadow_cnt;
   logic                       rst_shadow_cnt_err;
   ibex_mubi_t                 rst_shadow_set_d, rst_shadow_set_q;
-  logic                       rst_shadow_n, rst_shadow_set_single_bit;
+  logic                       rst_shadow_n;
   ibex_mubi_t                 enable_cmp_d, enable_cmp_q;
 
   // This counter primitive starts counting to LockstepOffset after a system
@@ -161,10 +161,6 @@ module ibex_lockstep import ibex_pkg::*; #(
   // Enable lockstep comparison.
   assign enable_cmp_d = rst_shadow_set_q;
 
-  // This assignment is needed in order to avoid "Warning-IMPERFECTSCH" messages.
-  // TODO: Remove when updating Verilator #2134.
-  assign rst_shadow_set_single_bit = rst_shadow_set_q[0];
-
   // The primitives below are used to place size-only constraints in order to prevent
   // synthesis optimizations and preserve anchor points for constraining backend tools.
   prim_flop #(
@@ -190,7 +186,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_rst_shadow_n_mux2 (
-    .clk0_i(rst_shadow_set_single_bit),
+    .clk0_i(rst_shadow_set_q[0]),
     .clk1_i(scan_rst_ni),
     .sel_i (test_en_i),
     .clk_o (rst_shadow_n)

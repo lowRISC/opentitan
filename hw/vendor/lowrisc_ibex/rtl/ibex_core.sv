@@ -47,15 +47,15 @@ module ibex_core import ibex_pkg::*; #(
   parameter int unsigned            DmBaseAddr       = 32'h1A110000,
   parameter int unsigned            DmAddrMask       = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr  = 32'h1A110808
+  parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
+  // mvendorid: encoding of manufacturer/provider
+  parameter logic [31:0]            CsrMvendorId     = 32'b0,
+  // marchid: encoding of base microarchitecture
+  parameter logic [31:0]            CsrMimpId        = 32'b0
 ) (
   // Clock and Reset
   input  logic                         clk_i,
-  // Internally generated resets in ibex_lockstep cause IMPERFECTSCH warnings.
-  // TODO: Remove when upgrading Verilator #2134.
-  /* verilator lint_off IMPERFECTSCH */
   input  logic                         rst_ni,
-  /* verilator lint_on IMPERFECTSCH */
 
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
@@ -1065,7 +1065,9 @@ module ibex_core import ibex_pkg::*; #(
     .PMPRstMsecCfg    (PMPRstMsecCfg),
     .RV32E            (RV32E),
     .RV32M            (RV32M),
-    .RV32B            (RV32B)
+    .RV32B            (RV32B),
+    .CsrMvendorId     (CsrMvendorId),
+    .CsrMimpId        (CsrMimpId)
   ) cs_registers_i (
     .clk_i (clk_i),
     .rst_ni(rst_ni),

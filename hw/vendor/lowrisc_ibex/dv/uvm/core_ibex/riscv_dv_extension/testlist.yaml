@@ -278,6 +278,20 @@
     compare_final_value_only: 1
     verbose: 1
 
+# TODO(#2233): Implement the following test (also note the priorities in the issue).
+#- test: riscv_debug_mode_pmp_test
+#  description: >
+#    When debug mode is enabled, any access to the Debug Module address space should be allowed.
+#    This holds regardless of PMP settings. Thus, this test performs a series of random accesses
+#    (reads, writes, and instruction fetch) in debug mode with a random PMP configuration, and it
+#    checks that all accesses to the Debug Module address space get allowed and that all accesses
+#    outside the Debug Module address space get allowed if and only if the PMP configuration permits
+#    them.
+#    When debug mode is not enabled, accesses to the Debug Module address space are governed by the
+#    PMP configuration. Verifying PMP is the focus of other tests. This test verifies a simple case:
+#    when debug mode is disabled and the PMP does not allow accesses to the Debug Module address
+#    space, a random access to that address space fails.
+
 - test: riscv_dret_test
   description: >
     Dret instructions will be inserted into generated code, ibex should treat these
