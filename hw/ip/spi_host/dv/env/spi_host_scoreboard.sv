@@ -110,6 +110,9 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
       wait (spi_ctrl_reg.sw_rst === 0);
       @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+
+      if (cfg.force_spi_fsm_vif.fast_mode == 1)
+        continue;
       // Using quarter period for greater granularity
       num_quarter_cycles = (curr_spi_configopts.csnidle + 1) * 2;
       quarter_period = spi_clk_half_period / 2;
@@ -141,6 +144,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(negedge cfg.m_spi_agent_cfg.vif.csb[0]);
       `uvm_info(`gfn, "CSB went low", UVM_DEBUG)
+      if (cfg.force_spi_fsm_vif.fast_mode == 1)
+        continue;
       fork : iso_fork
         begin
           fork
@@ -345,12 +350,15 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
 
       // store CSAAT so we now if we are starting a new transaction
       csaat = exp_segment.command_reg.csaat;
-      fork
-        begin
-          check_csaat(.csaat(csaat));
-        end
-      join_none
 
+      // Disable checks due to the internal counter being increased more quickly
+      if (cfg.force_spi_fsm_vif.fast_mode == 0) begin
+        fork
+          begin
+            check_csaat(.csaat(csaat));
+          end
+        join_none
+      end
       // update number of ok segments
       checked_tx_seg_cnt += 1;
       `uvm_info(`gfn, $sformatf("\n successfully compared write transaction of %d ",
