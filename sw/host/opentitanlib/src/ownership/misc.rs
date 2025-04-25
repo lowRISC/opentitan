@@ -38,6 +38,12 @@ with_unknown! {
         HybridSpxPure = u32::from_le_bytes(*b"H+Pu"),
         HybridSpxPrehash = u32::from_le_bytes(*b"H+S2"),
     }
+    pub enum DetachedSignatureCommand: u32 [default = Self::Unknown] {
+        Unknown = 0,
+        Owner = u32::from_le_bytes(*b"OWNR"),
+        Unlock = u32::from_le_bytes(*b"UNLK"),
+        Activate = u32::from_le_bytes(*b"ACTV"),
+    }
 }
 
 impl OwnershipKeyAlg {
