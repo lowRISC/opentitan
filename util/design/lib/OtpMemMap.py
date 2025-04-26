@@ -299,9 +299,8 @@ def _validate_mmap(config: Dict) -> Dict:
 
         part['offset'] = offset
         if check_int(part['offset']) % SCRAMBLE_BLOCK_WIDTH:
-            raise RuntimeError(
-                f"Partition {part['name']} offset must be "
-                f"{SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
+            raise RuntimeError(f"Partition {part['name']} offset must be "
+                               f"{SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
         log.info("Partition {} at offset {} size {}".format(
             part["name"], part["offset"], part["size"]))
@@ -464,7 +463,7 @@ class OtpMemMap():
         return otp_mmap
 
     @classmethod
-    def otp_create_partitions_table(cls, partitions: ConfigT) -> str:
+    def create_partitions_table(cls, partitions: ConfigT) -> str:
         header = [
             "Partition", "Secret", "Buffered", "Integrity", "WR Lockable",
             "RD Lockable", "Description"
@@ -497,11 +496,8 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_partitions_table(self) -> str:
-        return OtpMemMap.otp_create_partitions_table(self.config["partitions"])
-
     @classmethod
-    def otp_create_mmap_table(cls, partitions: ConfigT) -> str:
+    def create_mmap_table(cls, partitions: ConfigT) -> str:
         header = [
             "Index", "Partition", "Size [B]", "Access Granule", "Item",
             "Byte Address", "Size [B]"
@@ -537,11 +533,8 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_mmap_table(self) -> str:
-        return OtpMemMap.otp_create_mmap_table(self.config["partitions"])
-
     @classmethod
-    def otp_create_description_table(cls, partitions: ConfigT) -> str:
+    def create_description_table(cls, partitions: ConfigT) -> str:
         header = ["Partition", "Item", "Size [B]", "Description"]
         table = [header]
         # Everything column center aligned, except the descriptions.
@@ -575,11 +568,8 @@ class OtpMemMap():
                         tablefmt="pipe",
                         colalign=colalign)
 
-    def create_description_table(self) -> str:
-        return OtpMemMap.otp_create_description_table(self.config["partitions"])
-
     @classmethod
-    def otp_create_digests_table(cls, partitions: ConfigT) -> str:
+    def create_digests_table(cls, partitions: ConfigT) -> str:
         header = ["Digest Name", " Affected Partition", "Calculated by HW"]
         table = [header]
         colalign = ("center", ) * len(header)
@@ -602,9 +592,6 @@ class OtpMemMap():
                         headers="firstrow",
                         tablefmt="pipe",
                         colalign=colalign)
-
-    def create_digests_table(self) -> str:
-        return OtpMemMap.otp_create_digests_table(self.config["partitions"])
 
     def get_part(self, part_name) -> str:
         ''' Get partition by name, return None if it does not exist'''

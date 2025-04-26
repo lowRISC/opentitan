@@ -11,11 +11,10 @@ import sys
 from pathlib import Path
 from typing import Dict
 
-from mako import exceptions
-from mako.template import Template
-
 from lib.common import wrapped_docstring
 from lib.OtpMemMap import OtpMemMap
+from mako import exceptions
+from mako.template import Template
 
 # This makes topgen libraries available to template files.
 sys.path.append(Path(__file__).parents[1])
@@ -75,9 +74,10 @@ def check_in_repo_top():
         exit(1)
 
 
-def render_template(template: str, target_path: Path, params: Dict[str, object]):
+def render_template(template_path: Path, target_path: Path,
+                    params: Dict[str, object]):
     try:
-        tpl = Template(filename=str(template))
+        tpl = Template(filename=str(template_path))
     except OSError as e:
         log.error(f"Error creating template: {e}")
         exit(1)
@@ -125,32 +125,42 @@ def main():
 
     otp_mmap = OtpMemMap.from_mmap_path(
         MMAP_DEFINITION_FILE.replace('earlgrey', args.topname), args.seed)
-
+    partitions = otp_mmap.config["partitions"]
     output_path = (Path("hw") / f"top_{args.topname}" / "ip_autogen" /
                    "otp_ctrl")
-    with open(output_path / PARTITIONS_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+    with open(output_path / PARTITIONS_TABLE_FILE, 'wb',
+              buffering=2097152) as outfile:
         outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
-        outfile.write(otp_mmap.create_partitions_table().encode('utf-8'))
+        outfile.write(
+            OtpMemMap.create_partitions_table(partitions).encode('utf-8'))
         outfile.write('\n'.encode('utf-8'))
 
-    with open(output_path / DIGESTS_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+    with open(output_path / DIGESTS_TABLE_FILE, 'wb',
+              buffering=2097152) as outfile:
         outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
-        outfile.write(otp_mmap.create_digests_table().encode('utf-8'))
+        outfile.write(
+            OtpMemMap.create_digests_table(partitions).encode('utf-8'))
         outfile.write('\n'.encode('utf-8'))
 
-    with open(output_path / MMAP_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+    with open(output_path / MMAP_TABLE_FILE, 'wb',
+              buffering=2097152) as outfile:
         outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
-        outfile.write(otp_mmap.create_mmap_table().encode('utf-8'))
+        outfile.write(OtpMemMap.create_mmap_table(partitions).encode('utf-8'))
         outfile.write('\n'.encode('utf-8'))
 
-    with open(output_path / DESC_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+    with open(output_path / DESC_TABLE_FILE, 'wb',
+              buffering=2097152) as outfile:
         outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
-        outfile.write(otp_mmap.create_description_table().encode('utf-8'))
+        outfile.write(
+            OtpMemMap.create_description_table(partitions).encode('utf-8'))
         outfile.write('\n'.encode('utf-8'))
 
     # render all templates
-    params = {"otp_mmap": otp_mmap.config, "gen_comment": TPL_GEN_COMMENT,
-              "topname": args.topname}
+    params = {
+        "otp_mmap": otp_mmap.config,
+        "gen_comment": TPL_GEN_COMMENT,
+        "topname": args.topname
+    }
     for template in COV_TEMPLATES:
         target_path = _target_from_template_path(output_path, template)
         render_template(template, target_path, params)
@@ -161,9 +171,10 @@ def main():
     # Comment it out for now.
     # TODO(lowrisc/opentitan#25743): Enable this once multi-top deals with top-
     # specific difs.
-#    for template in DIF_TEMPLATES:
-#        target_path = Path.cwd() / "sw" / "device" / "lib" / "dif" / template.stem
-#        render_template(template, target_path, params)
+    # for template in DIF_TEMPLATES:
+    #     target_path = (Path.cwd() / "sw" / "device" / "lib" / "dif" /
+    #                    template.stem)
+    #     render_template(template, target_path, params)
     for template in ENV_TEMPLATES:
         target_path = _target_from_template_path(output_path, template)
         render_template(template, target_path, params)
