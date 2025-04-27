@@ -154,3 +154,18 @@ assert -name "CannotSaturateDn_compare_count_A" \
 cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
 cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
 
+# There are quite a few properties about rom_ctrl that only make sense in the "running phase", when
+# the entire ROM has been read and we are allowing bus accesses. Precondition cover properties for
+# these are awkward because a trace would need to read the whole of the ROM! Cheat and make a task
+# where the checker counter can be given a different value, which allows us to skip that phase of
+# the startup.
+task -create GlitchyCounter
+stopat -task GlitchyCounter "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_counter.addr_q"
+cover -name GlitchyCounter::rjs \
+    "dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_done"
+
+# The StabilityChkkeymgr_A assertion checks that we don't change the value we present to pwrmgr once
+# we have sent a value to keymgr. Because this only happens after reading the whole ROM, we prove it
+# in the GlitchyCounter task.
+task -edit GlitchyCounter -copy "tb.dut.StabilityChkkeymgr_A*"
+assert -disable "tb.dut.StabilityChkkeymgr_A"
