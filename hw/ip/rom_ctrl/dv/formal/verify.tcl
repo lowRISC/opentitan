@@ -152,3 +152,59 @@ assert -name "CannotSaturateDn_compare_count_A" \
     "${compare_count_path}.incr_en_i -> |${compare_count_path}.cnt_q\[1\]"
 cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
 cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
+
+# There are quite a few properties about rom_ctrl that only make sense in the "running phase", when
+# the entire ROM has been read and we are allowing bus accesses. Precondition cover properties for
+# these are awkward because a trace would need to read the whole of the ROM! Cheat and make a task
+# where the checker counter can be given a different value, which allows us to skip that phase of
+# the startup.
+task -create GlitchyCounter
+stopat -task GlitchyCounter "${fsm_path}.u_counter.addr_q"
+
+# These three assertions check for stability once a "done" signal has been asserted. Prove them with
+# a glitchy counter, which allows Jasper to find cover traces quickly.
+move_to_task GlitchyCounter "tb.dut.StabilityChkkeymgr_A"
+move_to_task GlitchyCounter "tb.dut.PwrmgrDataChk_A"
+move_to_task GlitchyCounter "tb.dut.KeymgrValidChk_A"
+
+# Like the properties moved above, these assertions (from inside the checker FSM) are all about
+# things that can only happen after the ROM has been read.
+#
+# The prim_count assertions are about a counter inside the thing that compares the expected and
+# computed digests, and the expected digest is the last thing that gets read.
+move_to_task GlitchyCounter tb.${fsm_path}.CounterLntImpliesKmacRomVldO_A
+move_to_task GlitchyCounter tb.${fsm_path}.u_compare.u_prim_count_addr.g_check_incr.IncrUpCnt_A
+move_to_task GlitchyCounter tb.${fsm_path}.u_compare.u_prim_count_addr.g_check_incr.IncrDnCnt_A
+move_to_task GlitchyCounter tb.${fsm_path}.u_compare.u_prim_count_addr.ChangeBackward_A
+
+# There are quite a lot of assertions in u_tl_adapter_rom that talk about situations where there is
+# a ROM request being handled from TileLink. They are true, but the first response is after the
+# entirety of ROM has been read. Strengthen the properties (and speed up their proofs) by allowing a
+# glitchy FSM counter for them.
+foreach rel_path {
+    "rvalidHighReqFifoEmpty"
+    "rvalidHighWhenRspFifoFull"
+    "u_rspfifo.gen_normal_fifo.OnlyRvalidWhenNotUnderRst_A"
+    "u_rspfifo.gen_normal_fifo.depthShallNotExceedParamDepth"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.ChangeBackward_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_incr.IncrDnCnt_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_incr.IncrUpCnt_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_set_fwd_a.SetFwd_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.ChangeBackward_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_incr.IncrDnCnt_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_incr.IncrUpCnt_A"
+    "u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_set_fwd_a.SetFwd_A"
+    "u_sramreqfifo.gen_normal_fifo.OnlyRvalidWhenNotUnderRst_A"
+    "u_sramreqfifo.gen_normal_fifo.depthShallNotExceedParamDepth"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.ChangeBackward_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_incr.IncrDnCnt_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_incr.IncrUpCnt_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr.g_check_set_fwd_a.SetFwd_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.ChangeBackward_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_incr.IncrDnCnt_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_incr.IncrUpCnt_A"
+    "u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr.g_check_set_fwd_a.SetFwd_A"
+} {
+    task -edit GlitchyCounter -copy "tb.dut.u_tl_adapter_rom.${rel_path}*"
+    assert -disable "tb.dut.u_tl_adapter_rom.${rel_path}"
+}
