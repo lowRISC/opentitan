@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: rom_ctrl_fpv
+
+  flow: formal
+  sub_flow: fpv
+  import_cfgs: [
+    "{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"
+  ]
+
+  dut: tb
+  fusesoc_core: lowrisc:dv:rom_ctrl_fpv
+  after_load: ["{proj_root}/hw/ip/rom_ctrl/dv/formal/verify.tcl"]
+}
