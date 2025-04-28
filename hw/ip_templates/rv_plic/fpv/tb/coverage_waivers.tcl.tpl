@@ -35,3 +35,9 @@ assert -name InterruptsLevelTriggered_A {!$rose(dut.u_gateway.le_i)}
 check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv}\
  -start_line 64 -end_line 64 -type {branch} -comment {Checker coverage is undetectable as ds is\
  unconnected}
+
+# For all the ip registers, de is true and hence wr_en is true. The branch misses the else part and
+# appeared dead.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line\
+ 58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else\
+ part}
