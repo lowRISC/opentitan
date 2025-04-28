@@ -31,6 +31,10 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
   // higher values
   uint csr_spinwait_timeout_ns = csr_utils_pkg::default_spinwait_timeout_ns;
 
+  // Used to provide a faster decrement via forcing internal RTL signals, so simulations
+  // finish more quickly.
+  virtual interface spi_host_fsm_if force_spi_fsm_vif;
+
   constraint dummy_c {
     num_dummy inside { [min_dummy_cycles:max_dummy_cycles]};
   }
