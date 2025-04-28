@@ -120,8 +120,8 @@ cc_library(
         ":abs_mmio",
         ":csr",
         ":status",
+        "//hw/top:dt",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
@@ -139,7 +139,6 @@ opentitan_test(
         ":ibex",
         ":status",
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
