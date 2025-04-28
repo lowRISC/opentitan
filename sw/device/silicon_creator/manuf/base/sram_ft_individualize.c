@@ -43,6 +43,7 @@ static const dif_gpio_pin_t kGpioPinTestError = 2;
 static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
 static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
 
+#ifndef ATE
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false,
@@ -52,6 +53,9 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                             kTopEarlgreyPinmuxMioOutIoa5,
                         .console_tx_indicator.spi_console_tx_ready_gpio =
                             kGpioPinSpiConsoleTxReady);
+#else
+OTTF_DEFINE_TEST_CONFIG();
+#endif
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -171,8 +175,11 @@ static status_t provision(ujson_t *uj) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
+  ujson_t uj;
+#ifndef ATE
   ottf_console_init();
-  ujson_t uj = ujson_ottf_console();
+  uj = ujson_ottf_console();
+#endif
 
   // Perform provisioning operations.
   CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestStart, true));
