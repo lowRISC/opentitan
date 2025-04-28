@@ -10,5 +10,6 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 ujson_t ujson_ottf_console(void) {
-  return ujson_init(ottf_console_get(), ottf_console_getc, ottf_console_putbuf);
+  return ujson_init(ottf_console_get(), ottf_console_getc, ottf_console_putbuf,
+                    ottf_console_flushbuf);
 }

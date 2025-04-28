@@ -12,6 +12,8 @@
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
 
+#include "spi_device_regs.h"  // Generated.
+
 /**
  * @file
  * @brief Libc-like printing facilities.
@@ -48,6 +50,20 @@ typedef struct buffer_sink {
   void *data;
   sink_func_ptr sink;
 } buffer_sink_t;
+
+/**
+ * SPI console buffer management constants.
+ */
+enum {
+  kSpiDeviceReadBufferSizeBytes =
+      SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t),
+  kSpiDeviceFrameHeaderSizeBytes = 12,
+  kSpiDeviceBufferPreservedSizeBytes = kSpiDeviceFrameHeaderSizeBytes,
+  kSpiDeviceMaxFramePayloadSizeBytes = kSpiDeviceReadBufferSizeBytes -
+                                       kSpiDeviceFrameHeaderSizeBytes -
+                                       kSpiDeviceBufferPreservedSizeBytes - 4,
+  kSpiDeviceFrameMagicNumber = 0xa5a5beef,
+};
 
 /**
  * Returns a function pointer to the spi device sink function.

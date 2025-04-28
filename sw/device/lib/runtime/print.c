@@ -17,8 +17,6 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 
-#include "spi_device_regs.h"  // Generated.
-
 // This is declared as an enum to force the values to be
 // compile-time constants, but the type is otherwise not
 // used for anything.
@@ -77,15 +75,6 @@ void base_set_stdout(buffer_sink_t out) {
   base_stdout = out;
 }
 
-static const size_t kSpiDeviceReadBufferSizeBytes =
-    SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t);
-static const size_t kSpiDeviceFrameHeaderSizeBytes = 12;
-static const size_t kSpiDeviceBufferPreservedSizeBytes =
-    kSpiDeviceFrameHeaderSizeBytes;
-static const size_t kSpiDeviceMaxFramePayloadSizeBytes =
-    kSpiDeviceReadBufferSizeBytes - kSpiDeviceFrameHeaderSizeBytes -
-    kSpiDeviceBufferPreservedSizeBytes - 4;
-static const uint32_t kSpiDeviceFrameMagicNumber = 0xa5a5beef;
 static uint32_t spi_device_frame_num = 0;
 
 static status_t spi_device_send_data(dif_spi_device_handle_t *spi_device,
