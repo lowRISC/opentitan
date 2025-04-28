@@ -73,6 +73,7 @@ ujson_t ujson_ottf_console(void);
     TRY(ujson_putbuf(uj_ctx_, " CRC:", 5));       \
     TRY(ujson_serialize_uint32_t(uj_ctx_, &crc)); \
     TRY(ujson_putbuf(uj_ctx_, "\n", 1));          \
+    TRY(ujson_flushbuf(uj));                      \
     OK_STATUS();                                  \
   })
 

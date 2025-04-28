@@ -19,6 +19,8 @@ typedef struct ujson {
   void *io_context;
   /** A pointer to an IO function for writing data to the output. */
   status_t (*putbuf)(void *, const char *, size_t);
+  /** A pointer to an IO function for flusing buffered data to the output. */
+  status_t (*flushbuf)(void *);
   /** A pointer to an IO function for reading data from the input. */
   status_t (*getc)(void *);
   /** An internal single character buffer for ungetting a character. */
@@ -28,13 +30,14 @@ typedef struct ujson {
 } ujson_t;
 
 // clang-format off
-#define UJSON_INIT(context_, getc_, putbuf_) \
-  {                                          \
-    .io_context = (void*)(context_),         \
-    .putbuf_ = (putbuf_),                    \
-    .getc = (getc_),                         \
-    .buffer = -1,                            \
-    .crc32 = UINT32_MAX,                     \
+#define UJSON_INIT(context_, getc_, putbuf_, flushbuf_) \
+  {                                                     \
+      .io_context = (void *)(context_),                 \
+      .putbuf_ = (putbuf_),                             \
+      .flushbuf_ = (flushbuf_),                         \
+      .getc = (getc_),                                  \
+      .buffer = -1,                                     \
+      .crc32 = UINT32_MAX,                              \
   }
 // clang-format on
 
@@ -47,7 +50,8 @@ typedef struct ujson {
  * @return An initialized ujson_t context.
  */
 ujson_t ujson_init(void *context, status_t (*getc)(void *),
-                   status_t (*putbuf)(void *, const char *, size_t));
+                   status_t (*putbuf)(void *, const char *, size_t),
+                   status_t (*flushbuf)(void *));
 
 /**
  * Gets a single character from the input.
@@ -75,6 +79,19 @@ status_t ujson_ungetc(ujson_t *uj, char ch);
  * @return OK or an error.
  */
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len);
+
+/**
+ * Flush a UJSON buffer to the output.
+ *
+ * Some console implementations e.g. the SPI console stage data in a
+ * software buffer before flushing it out to the low-level printf driver, as the
+ * driver code uses a framing protocol that is more efficient if used with bulk
+ * data transfers as opposed to being used with single character writes.
+ *
+ * @param uj A ujson IO context.
+ * @return OK or an error.
+ */
+status_t ujson_flushbuf(ujson_t *uj);
 
 /**
  * Resets the CRC32 calculation to an initial state.
