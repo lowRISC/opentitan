@@ -169,3 +169,15 @@ cover -name GlitchyCounter::rjs \
 # in the GlitchyCounter task.
 task -edit GlitchyCounter -copy "tb.dut.StabilityChkkeymgr_A*"
 assert -disable "tb.dut.StabilityChkkeymgr_A"
+
+# Once the contents of ROM have been read and the hash has been compared with the expected digest,
+# the dut will set pwrmgr_data_o.done. This acts like a sort of validity signal for
+# pwrmgr_data_o.good, but that signal is flopped through a prim_mubi4_sender in rom_ctrl_compare, so
+# will only be stable if it was stable from the previous cycle.
+assert -name "pre0_CheckerGoodStable_A" \
+    "dut.pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True ->
+     \$stable(dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.matches_q)"
+
+# Configure the phased prove command in fpv.tcl so that it proves the two layers of "pre" properties
+# first.
+set pre_phases 1
