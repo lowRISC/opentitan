@@ -206,3 +206,17 @@ move_to_task GlitchyCounter tb.CompareCountNoSaturateUp_A
 move_to_task GlitchyCounter tb.CompareCountNoSaturateDn_A
 cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
 cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
+
+# Configure the phased prove command in fpv.tcl so that it proves tasks in two helper phases
+set pre_phases 2
+task -create pre0
+task -create pre1
+
+# pre0 contains assertions that apply after the initial read of ROM has completed, so it gets the
+# same stopat as GlitchyCounter.
+stopat -task pre0 "${fsm_path}.u_counter.addr_q"
+
+move_to_task pre0 "tb.CompareDoneBeforeChecker_A"
+move_to_task pre0 "tb.WaitingIfKmacDataValid_A"
+
+move_to_task pre1 "tb.LowAddressMeansNotLastNontop_A"
