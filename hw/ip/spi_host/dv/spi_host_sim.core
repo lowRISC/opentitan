@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:spi_host_sva
     files:
       - tb.sv
+      - spi_host_fsm_if.sv
     file_type: systemVerilogSource
 
 targets:
