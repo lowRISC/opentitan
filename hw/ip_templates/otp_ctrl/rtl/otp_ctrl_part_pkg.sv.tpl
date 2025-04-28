@@ -218,20 +218,39 @@ package otp_ctrl_part_pkg;
 % endfor
   };
 
-<% offset =  int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
+<% offset = int(otp_mmap["partitions"][-1]["offset"]) + int(otp_mmap["partitions"][-1]["size"]) %>
   // OTP invalid partition default for buffered partitions.
-  parameter logic [${offset * 8 - 1}:0] PartInvDefault = ${offset * 8}'({
+  parameter logic [${offset - 1}:0][7:0] PartInvDefault = {
   % for k, part in enumerate(otp_mmap["partitions"][::-1]):
-    ${int(part["size"])*8}'({
+    { // Partition '${item["name"]}'.
     % for item in part["items"][::-1]:
-      % if offset != item['offset'] + item['size']:
-      ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
+      % if offset != item["offset"] + item["size"]:
+      { // Unallocated space.
+        {${"{}".format(offset - item["size"] - item["offset"])}{8'h00}}
+      },<% offset = item["offset"] + item["size"] %>
       % endif
-      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
+<%
+        item_data = []
+        for lsb in range(0, 8 * item["size"], 256):
+          msb = min(lsb + 256, 8 * item["size"]) - 1
+          width = msb - lsb + 1
+          value = (item["inv_default"] >> lsb) & ((1 << width) - 1)
+          item_data.append(f"{width}'h{value:0{(width + 3) // 4}X}")
+        item_data.reverse()
+        offset -= item["size"]
+%>\
+      {
+        // Item '${item["name"]}'.
+        % for word in item_data:
+        ${word}${"" if loop.last else ","}
+        % endfor
+      }${"" if loop.last else ","}
     % endfor
+    }${"{}".format("," if k < len(otp_mmap["partitions"])-1 else "")}
   % endfor
+  };
 
-  ///////////////////////////////////////////////
+  ///////////////////////////////////////////////k
   // Parameterized Assignment Helper Functions //
   ///////////////////////////////////////////////
 
@@ -325,7 +344,7 @@ package otp_ctrl_part_pkg;
           part_buf_data[${item_name_camel}Offset +: ${item_name_camel}Size];
     end else begin
       otp_keymgr_key.${item["name"].lower()} =
-          PartInvDefault[${item_name_camel}Offset*8 +: ${item_name_camel}Size*8];
+          PartInvDefault[${item_name_camel}Offset +: ${item_name_camel}Size];
     end
       % else:
         % if not item["isdigest"]:
