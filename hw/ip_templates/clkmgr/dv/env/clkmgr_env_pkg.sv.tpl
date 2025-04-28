@@ -2,15 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  from topgen.lib import Name
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
-  clk_freqs = {v['name']: v['freq'] for v in src_clks.values()}
-  clk_freqs.update({v['name']: v['freq'] for v in derived_clks.values()})
-  hint_targets = [sig['endpoint_ip'] for sig in typed_clocks['hint_clks'].values()]
+from ipgen.clkmgr_gen import get_all_srcs, get_hint_targets, get_rg_srcs
+from topgen.lib import Name
+rg_srcs = get_rg_srcs(typed_clocks)
+all_srcs = get_all_srcs(src_clks, derived_clks)
+clk_freqs = {v['name']: v['freq'] for v in all_srcs.values()}
+hint_targets = get_hint_targets(typed_clocks)
 
-  def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
+def to_camel_case(s: str):
+  return Name.from_snake_case(s).as_camel_case()
 
 %>
 package clkmgr_env_pkg;

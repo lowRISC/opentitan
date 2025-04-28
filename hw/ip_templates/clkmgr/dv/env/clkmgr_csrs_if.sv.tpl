@@ -6,8 +6,8 @@
 // to avoid any confusion.
 
 <%
-rg_srcs = list(sorted({sig['src_name'] for sig
-                      in typed_clocks['rg_clks'].values()}))
+from ipgen.clkmgr_gen import get_rg_srcs
+rg_srcs = get_rg_srcs(typed_clocks)
 
 ## The number of recoverable error bits is:
 ## 1 for shadow_update

@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
+from ipgen.clkmgr_gen import get_rg_srcs
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 /**
  * Covergoups that are dependent on run-time parameters that may be available
