@@ -26,7 +26,11 @@ class spi_host_env extends cip_base_env #(
        "spi_passthrough_vif", cfg.spi_passthrough_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get spi_passthrough_if from uvm_config_db")
     end
-  endfunction : build_phase
+
+    if (!uvm_config_db#(virtual spi_host_fsm_if)::get(this, "", "fast_prescaler_bound_if",
+                                                      cfg.force_spi_fsm_vif))
+      `uvm_fatal(`gfn, "failed to get fast_prescaler_bound_if from uvm_config_db")
+ endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
