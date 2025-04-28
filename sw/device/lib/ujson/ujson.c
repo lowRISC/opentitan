@@ -17,8 +17,9 @@
 static bool is_space(int c) { return c == ' ' || (c >= '\t' && c < '\t' + 5); }
 
 ujson_t ujson_init(void *context, status_t (*getc)(void *),
-                   status_t (*putbuf)(void *, const char *, size_t)) {
-  ujson_t u = UJSON_INIT(context, getc, putbuf);
+                   status_t (*putbuf)(void *, const char *, size_t),
+                   status_t (*flushbuf)(void *)) {
+  ujson_t u = UJSON_INIT(context, getc, putbuf, flushbuf);
   return u;
 }
 
@@ -38,6 +39,8 @@ static size_t ujson_putbuf_sink(ujson_t *uj, const char *buf, size_t len) {
   }
   return (size_t)result.value;
 }
+
+status_t ujson_flushbuf(ujson_t *uj) { return uj->flushbuf(uj->io_context); }
 
 status_t ujson_getc(ujson_t *uj) {
   int16_t buffer = uj->buffer;

@@ -66,6 +66,10 @@ static status_t (*getc)(void *);
 static volatile ottf_console_flow_control_t flow_control_state;
 static volatile uint32_t flow_control_irqs;
 
+// Staging buffer for the SPI console implementation.
+static char spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
+static size_t spi_buf_end;
+
 void *ottf_console_get(void) {
   switch (kOttfTestConfig.console.type) {
     case kOttfConsoleSpiDevice:
@@ -152,6 +156,8 @@ void ottf_console_init(void) {
       ottf_console_configure_spi_device(base_addr);
       sink = get_spi_device_sink();
       getc = spi_device_getc;
+      spi_buf_end = 0;
+      memset(spi_buf, 0, kSpiDeviceMaxFramePayloadSizeBytes);
       break;
     default:
       CHECK(false, "unsupported OTTF console interface.");
@@ -411,12 +417,65 @@ size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf) {
   return received_data_len;
 }
 
-status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
+static status_t ottf_spi_console_flushbuf(void *io) {
+  size_t written_len = 0;
+  if (spi_buf_end > 0) {
+    written_len = sink(io, spi_buf, spi_buf_end);
+    if (spi_buf_end != written_len) {
+      return DATA_LOSS((int32_t)(spi_buf_end - written_len));
+    }
+    spi_buf_end = 0;
+  }
+  return OK_STATUS((int32_t)written_len);
+}
+
+static status_t ottf_spi_console_putbuf(void *io, const char *buf, size_t len) {
+  if (len > sizeof(spi_buf)) {
+    // Flush and skip the staging buffer if the payload is already the max size.
+    TRY(ottf_spi_console_flushbuf(io));
+    size_t written_len = sink(io, buf, len);
+    if (len != written_len) {
+      return DATA_LOSS((int32_t)(len - written_len));
+    }
+  } else if ((spi_buf_end + len) <= sizeof(spi_buf)) {
+    // There is room for the data in the staging buffer, copy it over.
+    memcpy(&spi_buf[spi_buf_end], buf, len);
+    spi_buf_end += len;
+  } else {
+    // The staging buffer is almost full; flush it before staging more data.
+    TRY(ottf_spi_console_flushbuf(io));
+    memcpy(&spi_buf[spi_buf_end], buf, len);
+    spi_buf_end += len;
+  }
+  return OK_STATUS((int32_t)len);
+}
+
+static status_t ottf_uart_console_putbuf(void *io, const char *buf,
+                                         size_t len) {
   size_t written_len = sink(io, buf, len);
   if (len != written_len) {
     return DATA_LOSS((int32_t)(len - written_len));
   }
   return OK_STATUS((int32_t)len);
+}
+
+status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
+  switch (kOttfTestConfig.console.type) {
+    case kOttfConsoleSpiDevice:
+      return ottf_spi_console_putbuf(io, buf, len);
+    default:
+      return ottf_uart_console_putbuf(io, buf, len);
+  }
+}
+
+status_t ottf_console_flushbuf(void *io) {
+  switch (kOttfTestConfig.console.type) {
+    case kOttfConsoleSpiDevice:
+      return ottf_spi_console_flushbuf(io);
+    default:
+      // Only the SPI console requires flushing a staging buffer.
+      return OK_STATUS(0);
+  }
 }
 
 status_t ottf_console_getc(void *io) { return getc(io); }

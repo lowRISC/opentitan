@@ -120,6 +120,14 @@ size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf);
 status_t ottf_console_putbuf(void *io, const char *buf, size_t len);
 
 /**
+ * Flush remaining buffered data to the OTTF console.
+ *
+ * @param context An IO context
+ * @return OK or an error.
+ */
+status_t ottf_console_flushbuf(void *io);
+
+/**
  * Get a single character from the OTTF console.
  *
  * @return The next character or an error.
