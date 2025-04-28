@@ -66,6 +66,11 @@ if {$stopat ne ""} {
   stopat -env $stopat
 }
 
+# Before loading any TCL scripts in AFTER_LOAD, we initialize the pre_phases variable to zero. The
+# idea is that the AFTER_LOAD scripts can set it to something else if necessary (but there will be
+# no initial phases if the scripts do not).
+set pre_phases 0
+
 if {[info exists ::env(AFTER_LOAD)]} {
     set flist $env(AFTER_LOAD)
     foreach file $flist {
@@ -209,6 +214,21 @@ set_proofgrid_per_engine_max_local_jobs 2
 #-------------------------------------------------------------------------
 # prove all assertions & report
 #-------------------------------------------------------------------------
+
+# If there are any AFTER_LOAD scripts, they may have defined some "initial phases". These are
+# counted with a $pre_phases variable (which defaults to zero). If it is positive, we iterate
+# through that many phases from zero, proving them in turn.
+#
+# Properties that should go in phase N have names that start with "preN_", and these properties are
+# selected with a regexp.
+puts "Proving the initial ${pre_phases} pre* tasks"
+for {set phase 0} {$phase < $pre_phases} {incr phase} {
+    if {[info exists "engine_modes(${phase})"]} {
+        prove -task "pre${phase}" -orchestration off -engine_mode "$engine_modes(${phase})"
+    } else {
+        prove -task "pre${phase}"
+    }
+}
 
 get_reset_info -x_value -with_reset_pin
 
