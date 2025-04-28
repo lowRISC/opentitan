@@ -570,12 +570,11 @@ module rom_ctrl
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
   `ASSERT(PwrmgrDataChk_A,
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True |=>
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True,
+          !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
+  `ASSERT(KeymgrValidChk_A, !$fell(keymgr_data_o.valid),
           clk_i, !rst_ni || internal_alert)
 
   // It should not be possible to read from the ROM unless the check has finished, implying that
