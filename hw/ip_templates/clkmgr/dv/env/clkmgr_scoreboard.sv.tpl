@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  from itertools import chain
-  from topgen.lib import Name
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
+from itertools import chain
+from ipgen.clkmgr_gen import get_rg_srcs
+from topgen.lib import Name
+rg_srcs = get_rg_srcs(typed_clocks)
 
-  def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
+def to_camel_case(s: str):
+  return Name.from_snake_case(s).as_camel_case()
 %>\
 
 // The scoreboard checks the jitter_an_o output, and processes CSR checks.

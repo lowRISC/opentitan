@@ -21,6 +21,7 @@ from basegen.typing import ConfigT, ParamsT
 from design.lib.OtpMemMap import OtpMemMap
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
+from ipgen.clkmgr_gen import get_clkmgr_params
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -33,7 +34,7 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, secure_prng, validate_top
 from topgen.c_test import TopGenCTest
-from topgen.clocks import Clocks, ClockSignal
+from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.lib import find_module, find_modules, load_cfg
@@ -513,57 +514,10 @@ def generate_pinmux(top: ConfigT, module: ConfigT, out_path: Path) -> None:
     generate_ipgen(top, module, params, out_path)
 
 
-def _get_clkmgr_params(top: ConfigT) -> ParamsT:
-    """Gets parameters for clkmgr ipgen from top config."""
-    clocks = top["clocks"]
-    assert isinstance(clocks, Clocks)
-
-    typed_clocks = clocks.typed_clocks()
-    hint_names = typed_clocks.hint_names()
-
-    typed_clks = OrderedDict({
-        ty: {
-            nm: {
-                "src_name": sig.src.name,
-                "endpoint_ip": sig.endpoints[0][0]
-            }
-            for nm, sig in mp.items() if isinstance(sig, ClockSignal)
-        }
-        for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)
-    })
-
-    # Will connect to alert_handler
-    with_alert_handler = lib.find_module(top['module'],
-                                         'alert_handler') is not None
-
-    return {
-        "src_clks":
-        OrderedDict({name: vars(obj)
-                     for name, obj in clocks.srcs.items()}),
-        "derived_clks":
-        OrderedDict(
-            {name: vars(obj)
-             for name, obj in clocks.derived_srcs.items()}),
-        "typed_clocks":
-        OrderedDict({ty: d
-                     for ty, d in typed_clks.items() if d}),
-        "hint_names":
-        hint_names,
-        "parent_child_clks":
-        typed_clocks.parent_child_clks,
-        "exported_clks":
-        top["exported_clks"],
-        "number_of_clock_groups":
-        len(clocks.groups),
-        "with_alert_handler":
-        with_alert_handler,
-    }
-
-
 # generate clkmgr with ipgen
 def generate_clkmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
     log.info("Generating clkmgr with ipgen")
-    params = _get_clkmgr_params(top)
+    params = get_clkmgr_params(top)
     log.info("clkmgr params:")
     for k, v in params.items():
         log.info(f"{k}: {v}")
@@ -1203,7 +1157,7 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
         insert_ip_attrs(instance, _get_racl_params(topcfg))
     if "clkmgr" in ipgen_instances:
         instance = ipgen_instances["clkmgr"][0]
-        insert_ip_attrs(instance, _get_clkmgr_params(topcfg))
+        insert_ip_attrs(instance, get_clkmgr_params(topcfg))
     if "flash_ctrl" in ipgen_instances:
         instance = ipgen_instances["flash_ctrl"][0]
         insert_ip_attrs(instance, _get_flash_ctrl_params(topcfg))

@@ -2,18 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
+from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
 from topgen.lib import Name
-src_names = sorted(s['name'] for s in src_clks.values())
+all_srcs = get_all_srcs(src_clks, derived_clks)
 non_aon_src_names = sorted(
     s['name'] for s in src_clks.values() if not s['aon'])
-derived_names = sorted(s['name'] for s in derived_clks.values())
-all_src_names = sorted(src_names + derived_names)
+all_src_names = sorted(s['name'] for s in all_srcs.values())
 meas_clks = sorted(
-    [(src['name'], src['freq']) for src in src_clks.values()] +
-    [(src['name'], src['freq']) for src in derived_clks.values()],
-    key=lambda x: x[0])
-rg_srcs = list(sorted({sig['src_name'] for sig
-                       in typed_clocks['rg_clks'].values()}))
+    ((s['name'], s['freq']) for s in all_srcs.values()), key=lambda x: x[0])
+rg_srcs = get_rg_srcs(typed_clocks)
 
 def to_camel_case(s: str):
     return Name.from_snake_case(s).as_camel_case()

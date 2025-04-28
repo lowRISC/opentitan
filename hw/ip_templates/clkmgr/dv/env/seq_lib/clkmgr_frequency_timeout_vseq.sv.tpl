@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-  from collections import defaultdict
-  from topgen.lib import Name
-  rg_srcs = list(sorted({sig['src_name'] for sig
-                         in typed_clocks['rg_clks'].values()}))
-  def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
+from collections import defaultdict
+from ipgen.clkmgr_gen import get_rg_srcs
+from topgen.lib import Name
+rg_srcs = get_rg_srcs(typed_clocks)
+
+def to_camel_case(s: str):
+  return Name.from_snake_case(s).as_camel_case()
+
 %>\
 
 // The frequency timeout vseq exercises the frequency measurement counters. More details

@@ -6,13 +6,12 @@
 
 <%
 from collections import OrderedDict
+from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
 from topgen.lib import Name
 all_derived_srcs = list(sorted(set([dc['src']['name']
                                     for dc in derived_clks.values()])))
-all_srcs = src_clks.copy()
-all_srcs.update(derived_clks)
-rg_srcs = list(sorted({sig['src_name'] for sig
-                       in typed_clocks['rg_clks'].values()}))
+all_srcs = get_all_srcs(src_clks, derived_clks)
+rg_srcs = get_rg_srcs(typed_clocks)
 %>\
 
 `include "prim_assert.sv"
