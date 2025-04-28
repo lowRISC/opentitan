@@ -69,4 +69,36 @@ module tb
   `ASSERT(CompareCountNoSaturateDn_A,
           dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr.incr_en_i ->
           |dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr.cnt_q[1])
+
+  // This is a helper property for dut.StabilityChkkeymgr_A. That assertion checks that the
+  // pwrmgr_data_o.good signal is stable once keymgr_data_o.valid is true. Using SST found that this
+  // proof was hard because it was looking at states where the compare module doesn't it is finished
+  // but the surrounding checker FSM thinks that *it* has finished. Assert that this doesn't happen
+  // to prune the search space.
+  `ASSERT(CompareDoneBeforeChecker_A,
+          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True ->
+          (dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q ==
+           dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.Done))
+
+  // This is a helper property for the LastImpliesValid_A assertion in the checker FSM. That
+  // assertion says that we only tell KMAC that we have the last item in the series when we have
+  // actually got an item to send. The model checker struggles with this, and it turns out to be
+  // because when it's trying k-induction, it spends lots of time searching states where the compare
+  // module is already running.
+  //
+  // This assertion rules that out: we only send data to KMAC when the compare module is still
+  // waiting to get a response.
+  `ASSERT(WaitingIfKmacDataValid_A,
+          kmac_data_o.valid ->
+          (dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q ==
+           dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.Waiting))
+
+  // This is a helper property for the RelAddrWide_A assertion in the checker FSM. That assertion is
+  // checking that we don't discard high bits to form relative address when reading the expected
+  // digest. It turns out that k-induction proofs need a bit of help to see that we only send the
+  // "last not top" signal once we're near the end of the ROM.
+  `ASSERT(LowAddressMeansNotLastNontop_A,
+          dut.gen_fsm_scramble_enabled.u_checker_fsm.u_counter.addr_q < dut.RomSizeWords - 10 |->
+          !dut.gen_fsm_scramble_enabled.u_checker_fsm.counter_lnt)
+
 endmodule
