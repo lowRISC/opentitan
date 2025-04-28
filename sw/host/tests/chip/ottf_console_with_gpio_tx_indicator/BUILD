@@ -13,6 +13,7 @@ rust_binary(
     ],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/provisioning/ujson_lib",
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:clap",
         "//third_party/rust/crates:humantime",
