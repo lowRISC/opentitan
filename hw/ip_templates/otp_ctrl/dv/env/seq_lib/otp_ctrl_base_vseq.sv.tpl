@@ -266,8 +266,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW*2-1:0] wdata;
   % for part in unbuf_parts_with_digest:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     if (wr_digest[${part_name_camel}Idx]) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
@@ -279,8 +278,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task write_sw_rd_locks(bit [NumPartUnbuf-1:0] do_rd_lock= $urandom());
 % for part in read_locked_csr_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     if (do_rd_lock[${part_name_camel}Idx]) csr_wr(ral.${part["name"].lower()}_read_lock, 0);
 % endfor
@@ -306,8 +304,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       // Digest write locks
 % for part in write_locked_digest_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       if ((`gmv(ral.${part["name"].lower()}_digest[0]) ||
            `gmv(ral.${part["name"].lower()}_digest[1])) &&
@@ -319,8 +316,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       // CSR read locks
 % for part in read_locked_csr_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       if ((`gmv(ral.${part["name"].lower()}_read_lock) == 0) && !$urandom_range(0, 4)) begin
         forced_mubi_part_access[${part_name_camel}Idx].read_lock = 1;
@@ -331,8 +327,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       // Digest read locks
 % for part in secret_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       if ((`gmv(ral.${part["name"].lower()}_digest[0]) ||
            `gmv(ral.${part["name"].lower()}_digest[1])) &&

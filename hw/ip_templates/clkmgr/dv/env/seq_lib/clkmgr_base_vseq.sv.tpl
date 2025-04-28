@@ -11,9 +11,6 @@ all_src_names = sorted(s['name'] for s in all_srcs.values())
 meas_clks = sorted(
     ((s['name'], s['freq']) for s in all_srcs.values()), key=lambda x: x[0])
 rg_srcs = get_rg_srcs(typed_clocks)
-
-def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
 %>\
 class clkmgr_base_vseq extends cip_base_vseq #(
   .RAL_T              (clkmgr_reg_block),
@@ -113,10 +110,10 @@ class clkmgr_base_vseq extends cip_base_vseq #(
 % for src in rg_srcs:
 <% spc = " " * (len("    ") +
                 len("meas_ctrl_regs[ClkMesr") +
-                len(to_camel_case(src)) +
+                len(Name.to_camel_case(src)) +
                 len("}] = '{"))
 %>\
-    meas_ctrl_regs[ClkMesr${to_camel_case(src)}] = '{"${src}", ral.${src}_meas_ctrl_en,
+    meas_ctrl_regs[ClkMesr${Name.to_camel_case(src)}] = '{"${src}", ral.${src}_meas_ctrl_en,
 ${spc}ral.${src}_meas_ctrl_shadowed.hi,
 ${spc}ral.${src}_meas_ctrl_shadowed.lo};
 % endfor
@@ -252,7 +249,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
               UVM_MEDIUM)
     case (clk)
 % for src in rg_srcs:
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
         else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
       end
@@ -264,7 +261,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
 % for src in rg_srcs:
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
         else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
       end
@@ -284,10 +281,10 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   else:
     root_name = src
 %>\
-      ClkMesr${to_camel_case(src)}: begin
+      ClkMesr${Name.to_camel_case(src)}: begin
         if (enable) cfg.${root_name}_clk_rst_vif.start_clk();
         else cfg.${root_name}_clk_rst_vif.stop_clk();
-        control_sync_pulse_assert(.clk(ClkMesr${to_camel_case(src)}), .enable(enable));
+        control_sync_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(enable));
       end
 % endfor
       default: `uvm_fatal(`gfn, $sformatf("Unexpected clk '%0d'", clk))

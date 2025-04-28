@@ -309,6 +309,10 @@ class Name:
     def from_snake_case(input: str) -> 'Name':
         return Name(input.split("_"))
 
+    @staticmethod
+    def to_camel_case(input: str) -> str:
+        return Name.from_snake_case(input).as_camel_case()
+
     def __init__(self, parts: List[str]):
         self._parts = tuple(parts)
         for p in parts:

@@ -198,8 +198,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     },
 % for part in otp_mmap["partitions"]:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     { name: "${part_name_camel}Offset",
       desc: "Offset of the ${part["name"]} partition",
@@ -215,8 +214,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     },
   % for item in part["items"]:
 <%
-  item_name = Name.from_snake_case(item["name"])
-  item_name_camel = item_name.as_camel_case()
+  item_name_camel = Name.to_camel_case(item["name"])
 %>\
     { name: "${item_name_camel}Offset",
       desc: "Offset of ${item["name"]}",

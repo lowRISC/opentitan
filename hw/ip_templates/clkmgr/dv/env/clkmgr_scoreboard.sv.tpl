@@ -6,9 +6,6 @@ from itertools import chain
 from ipgen.clkmgr_gen import get_rg_srcs
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
-
-def to_camel_case(s: str):
-  return Name.from_snake_case(s).as_camel_case()
 %>\
 
 // The scoreboard checks the jitter_an_o output, and processes CSR checks.
@@ -139,10 +136,10 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 <%
   spc = " " * (len("            ") +
                len("cov.peri_cg_wrap[Peri") +
-	       len(to_camel_case(clk_name)) +
+	       len(Name.to_camel_case(clk_name)) +
 	       len("].sample("))
 %>\
-            cov.peri_cg_wrap[Peri${to_camel_case(clk_name)}].sample(cfg.clkmgr_vif.peri_${clk_name}_cb.clk_enable,
+            cov.peri_cg_wrap[Peri${Name.to_camel_case(clk_name)}].sample(cfg.clkmgr_vif.peri_${clk_name}_cb.clk_enable,
 ${spc}cfg.clkmgr_vif.peri_${clk_name}_cb.ip_clk_en,
 ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
           end
@@ -196,7 +193,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       forever
         @(posedge cfg.clkmgr_vif.${src}_freq_measurement.valid or
           posedge cfg.clkmgr_vif.${src}_timeout_err) begin
-          sample_freq_measurement_cov(ClkMesr${to_camel_case(src)}, cfg.clkmgr_vif.${src}_freq_measurement,
+          sample_freq_measurement_cov(ClkMesr${Name.to_camel_case(src)}, cfg.clkmgr_vif.${src}_freq_measurement,
                                       cfg.clkmgr_vif.${src}_timeout_err);
         end
 

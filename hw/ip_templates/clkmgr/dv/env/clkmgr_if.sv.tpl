@@ -6,10 +6,6 @@ from ipgen.clkmgr_gen import get_all_srcs, get_hint_targets, get_rg_srcs
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
 hint_targets = get_hint_targets(typed_clocks)
-
-def to_camel_case(s: str):
-    return Name.from_snake_case(s).as_camel_case()
-
 %>\
 //
 // clkmgr interface.
@@ -125,7 +121,7 @@ interface clkmgr_if (
 ${spc}slow: `CLKMGR_HIER.u_${src}_meas.u_meas.slow_o,
 ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
       `uvm_info("clkmgr_if", $sformatf(
-                "Sampled coverage for ClkMesr${to_camel_case(src)} as %p", ${src}_freq_measurement), UVM_HIGH)
+                "Sampled coverage for ClkMesr${Name.to_camel_case(src)} as %p", ${src}_freq_measurement), UVM_HIGH)
     end
   end
   always_comb ${src}_timeout_err = `CLKMGR_HIER.u_${src}_meas.timeout_err_o;
@@ -179,7 +175,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
 % for src in rg_srcs:
-      ClkMesr${to_camel_case(src)}: `CLKMGR_HIER.u_${src}_meas.u_meas.cnt = '1;
+      ClkMesr${Name.to_camel_case(src)}: `CLKMGR_HIER.u_${src}_meas.u_meas.cnt = '1;
 % endfor
       default: ;
     endcase

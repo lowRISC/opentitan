@@ -140,7 +140,7 @@ package otp_ctrl_part_pkg;
 
   typedef enum {
 % for part in otp_mmap["partitions"]:
-    ${Name.from_snake_case(part["name"]).as_camel_case()}Idx,
+    ${Name.to_camel_case(part["name"])}Idx,
 % endfor
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
@@ -243,8 +243,7 @@ package otp_ctrl_part_pkg;
     hw2reg = '0;
 % for k, part in enumerate(otp_mmap["partitions"]):
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   % if part["sw_digest"] or part["hw_digest"]:
     hw2reg.${part["name"].lower()}_digest = part_digest[${part_name_camel}Idx];
@@ -266,8 +265,7 @@ package otp_ctrl_part_pkg;
   % if part["read_lock"] == "CSR":
     // ${part["name"]}
     if (!reg2hw.${part["name"].lower()}_read_lock) begin
-<% part_name = Name.from_snake_case(part["name"]) %>\
-      part_access_pre[${part_name.as_camel_case()}Idx].read_lock = prim_mubi_pkg::MuBi8True;
+      part_access_pre[${Name.to_camel_case(part["name"])}Idx].read_lock = prim_mubi_pkg::MuBi8True;
     end
   % endif
 % endfor
@@ -284,8 +282,7 @@ package otp_ctrl_part_pkg;
 % for part in otp_mmap["partitions"]:
     // ${part["name"]}
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   % if part["bkout_type"]:
     valid &= part_init_done[${part_name_camel}Idx];
@@ -313,15 +310,13 @@ package otp_ctrl_part_pkg;
 % for part in otp_mmap["partitions"]:
     // ${part["name"]}
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   % if part["iskeymgr_creator"] or part["iskeymgr_owner"]:
     valid = (part_digest[${part_name_camel}Idx] != 0);
     % for item in part["items"]:
 <%
-  item_name = Name.from_snake_case(item["name"])
-  item_name_camel = item_name.as_camel_case()
+  item_name_camel = Name.to_camel_case(item["name"])
 %>\
       % if item["iskeymgr_creator"] or item["iskeymgr_owner"]:
     otp_keymgr_key.${item["name"].lower()}_valid = valid;

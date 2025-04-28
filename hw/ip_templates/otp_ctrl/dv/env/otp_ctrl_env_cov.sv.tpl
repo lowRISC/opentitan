@@ -236,8 +236,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     }
     partition: coverpoint part_idx {
 % for part in otp_mmap["partitions"]:
-<% part_name = Name.from_snake_case(part["name"]) %>\
-      bins ${part["name"].lower()} = {${part_name.as_camel_case()}Idx};
+<% part_name_camel = Name.to_camel_case(part["name"]) %>\
+      bins ${part["name"].lower()} = {${part_name_camel}Idx};
 % endfor
       bins illegal_idx    = default;
     }
@@ -338,8 +338,8 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
                                      int access_part_idx = DaiIdx);
     case (part_idx)
 % for part in otp_mmap["partitions"]:
-<% part_name = Name.from_snake_case(part["name"]) %>\
-      Otp${part_name.as_camel_case()}ErrIdx: begin
+<% part_name_camel = Name.to_camel_case(part["name"]) %>\
+      Otp${part_name_camel}ErrIdx: begin
   % if part in unbuffered_parts:
         unbuf_err_code_cg_wrap[part_idx].unbuf_err_code_cg.sample(val);
   % elif part in buffered_parts:
