@@ -21,8 +21,8 @@ check_cov -waiver -add -start_line 25 -end_line 81 -type {statement} -instance\
 
 # Since the interrupts are level triggered, we don't use scr_q register in rv_plic_gateway. So,
 # even if this logic is broken, nobody (in the assertions world) cares.
-check_cov -waiver -add -start_line 33 -end_line 33 -type {branch} -instance {dut.u_gateway}\
- -comment {Interrupts are level triggered and this assignment would not affect any assertions}
+check_cov -waiver -add -start_line 33 -end_line 33 -instance {dut.u_gateway} -comment\
+ {Interrupts are level triggered and this assignment would not affect any assertions}
 
 # To support the waivers above, this assertion is added. So, if interrupts are no longer level
 # triggered, this will fail.
