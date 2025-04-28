@@ -171,8 +171,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     @(posedge clk_i);
 % for part in unbuf_parts_with_digest:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     if (fail_idx[${part_name_camel}Idx]) begin
       force tb.dut.gen_partitions[${part_name_camel}Idx].gen_unbuffered.
@@ -186,8 +185,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     @(posedge clk_i);
 % for part in unbuf_parts_with_digest:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     if (force_sw_parts_ecc_reg[${part_name_camel}Idx]) begin
       release tb.dut.gen_partitions[${part_name_camel}Idx].gen_unbuffered.
@@ -214,8 +212,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     case (part_idx)
 % for part in buf_parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       ${part_name_camel}Idx: force `BUF_PART_OTP_CMD_PATH(${part_name_camel}Idx) = prim_otp_pkg::cmd_e'(2'b10);
 % endfor
@@ -232,8 +229,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     case (part_idx)
 % for part in buf_parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       ${part_name_camel}Idx: release `BUF_PART_OTP_CMD_PATH(${part_name_camel}Idx);
 % endfor
@@ -252,8 +248,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     @(posedge clk_i);
 % for part in parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(${part_name_camel}Idx)
 % endfor

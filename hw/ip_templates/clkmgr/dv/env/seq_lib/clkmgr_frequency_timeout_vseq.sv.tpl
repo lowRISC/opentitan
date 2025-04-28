@@ -6,10 +6,6 @@ from collections import defaultdict
 from ipgen.clkmgr_gen import get_rg_srcs
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
-
-def to_camel_case(s: str):
-  return Name.from_snake_case(s).as_camel_case()
-
 %>\
 
 // The frequency timeout vseq exercises the frequency measurement counters. More details
@@ -112,9 +108,9 @@ for p, cs in parent_child_clks.items():
     childless.append(p)
 %>\
 % for i, (p, cs) in enumerate(multi_children.items()):
-        if (clk_mesr_timeout inside {${', '.join("ClkMesr{}".format(to_camel_case(c)) for c in cs)}}) begin
+        if (clk_mesr_timeout inside {${', '.join("ClkMesr{}".format(Name.to_camel_case(c)) for c in cs)}}) begin
   % for c in cs:
-          expected_recov_timeout_err[ClkMesr${to_camel_case(c)}] = 1;
+          expected_recov_timeout_err[ClkMesr${Name.to_camel_case(c)}] = 1;
   % endfor
   % if i < len(multi_children) - 1:
         end else

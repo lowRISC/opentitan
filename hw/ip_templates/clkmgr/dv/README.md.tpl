@@ -58,7 +58,7 @@ All common types and methods defined at the package level can be found in
   typedef enum int {
 % for clk in [v for v in typed_clocks['sw_clks'].values()]:
 <% sep = "" if loop.last else "," %>\
-    Peri${Name.from_snake_case(clk['src_name']).as_camel_case()}${sep}
+    Peri${Name.to_camel_case(clk['src_name'])}${sep}
 % endfor
   } peri_e;
   typedef enum int {TransAes, TransHmac, TransKmac, TransOtbn} trans_e;

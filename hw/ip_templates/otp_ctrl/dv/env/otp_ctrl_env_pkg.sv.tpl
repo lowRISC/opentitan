@@ -82,8 +82,7 @@ package otp_ctrl_env_pkg;
   parameter int PART_BASE_ADDRS [NumPart-1] = {
 % for part in parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     ${part_name_camel}Offset${"" if loop.last else ","}
 % endfor
@@ -93,8 +92,7 @@ package otp_ctrl_env_pkg;
   parameter int PART_OTP_DIGEST_ADDRS [NumPart-1] = {
 % for part in parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
 % if part["sw_digest"] or part["hw_digest"]:
     ${part_name_camel}DigestOffset >> 2${"" if loop.last else ","}
@@ -114,8 +112,7 @@ package otp_ctrl_env_pkg;
   typedef enum bit [5:0] {
 % for part in otp_mmap["partitions"]:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
     Otp${part_name_camel}ErrIdx,
 % endfor

@@ -114,8 +114,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         otp_lc_data  = '{default:0};
 % for part in secret_parts:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
         // secret partitions have been scrambled before writing to OTP.
         // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
@@ -228,8 +227,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             exp_keymgr_data = '0;
 % for part in otp_mmap["partitions"]:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
   % if part["iskeymgr_creator"] or part["iskeymgr_owner"]:
     % for item in part["items"]:
@@ -1235,8 +1233,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     case (part_idx)
 % for part in buf_parts_without_lc:
 <%
-  part_name = Name.from_snake_case(part["name"])
-  part_name_camel = part_name.as_camel_case()
+  part_name_camel = Name.to_camel_case(part["name"])
 %>\
       ${part_name_camel}Idx: mem_q = otp_a[${part_name_camel}Offset / TL_SIZE : ${part_name_camel}DigestOffset / TL_SIZE - 1];
 % endfor

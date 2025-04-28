@@ -360,7 +360,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   typedef enum logic [${(len(rg_srcs) + 1).bit_length() - 1}:0] {
     BaseIdx,
 % for src in rg_srcs:
-    Clk${Name.from_snake_case(src).as_camel_case()}Idx,
+    Clk${Name.to_camel_case(src)}Idx,
 % endfor
     CalibRdyLastIdx
   } clkmgr_calib_idx_e;
@@ -394,7 +394,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
  # One bit margin, same bit width as in the reg top
  bit_width = int(freq / aon_freq).bit_length() + 1
  cnt = 2**bit_width
- sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
+ sel_idx = f"Clk{Name.to_camel_case(src)}Idx"
 %>
   clkmgr_meas_chk #(
     .Cnt(${cnt}),
@@ -502,8 +502,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
 
   logic [${len(typed_clocks['hint_clks'])-1}:0] idle_cnt_err;
 % for clk, sig in typed_clocks['hint_clks'].items():
-<%assert_name = Name.from_snake_case(clk)
-%>
+
   clkmgr_trans #(
 % if clk == "clk_main_kmac":
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
@@ -534,7 +533,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     .reg_cnt_err_o(idle_cnt_err[${hint_names[clk]}])
   );
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
-    ${assert_name.as_camel_case()}CountCheck_A,
+    ${Name.to_camel_case(clk)}CountCheck_A,
     u_${clk}_trans.u_idle_cnt,
     alert_tx_o[1])
 % endfor
