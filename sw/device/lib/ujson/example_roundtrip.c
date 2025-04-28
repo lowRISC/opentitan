@@ -34,7 +34,7 @@ status_t check_crc32(ujson_t *uj) {
 }
 
 status_t roundtrip(const char *name) {
-  ujson_t uj = ujson_init(NULL, stdio_getc, stdio_putbuf);
+  ujson_t uj = ujson_init(NULL, stdio_getc, stdio_putbuf, NULL);
   if (!strcmp(name, "foo")) {
     foo x = {0};
     TRY(ujson_deserialize_foo(&uj, &x));

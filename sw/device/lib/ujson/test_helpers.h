@@ -19,7 +19,8 @@ class SourceSink {
   const std::string &Sink() { return sink_; }
 
   ujson_t UJson() {
-    return ujson_init((void *)this, &SourceSink::getc, &SourceSink::putbuf);
+    return ujson_init((void *)this, &SourceSink::getc, &SourceSink::putbuf,
+                      nullptr);
   }
 
   void Reset() {
