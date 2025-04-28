@@ -62,12 +62,6 @@ waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_darjeeling_asic.sv} -r
 waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
-waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
-      -comment "This is a clock signal that is fed back into AST."
-
-waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
-      -comment "This is a clock signal that is fed back into AST."
-
 waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in[42]' reaches a multiplexer here, used as a clock 'clk_src_i'} \
       -comment "This is the SPI device clock input."
 
