@@ -220,3 +220,27 @@ cover -disable "tb.${fsm_path}.RelAddrWide_A:precondition1"
 # trace and (as with RelAddrWide_A) it's checking the behaviour of something that flows straight
 # from the counter address, so a stopat cannot work.
 cover -disable "tb.${fsm_path}.LastImpliesValid_A:precondition1"
+
+# Configure the phased prove command in fpv.tcl so that it proves a phase0 task for helper
+# properties.
+set pre_phases 2
+task -create pre0
+task -create pre1
+
+# Once the contents of ROM have been read and the hash has been compared with the expected digest,
+# the dut will set pwrmgr_data_o.done. This acts like a sort of validity signal for
+# pwrmgr_data_o.good, but that signal is flopped through a prim_mubi4_sender in rom_ctrl_compare, so
+# will only be stable if it was stable from the previous cycle.
+assert -name "pre0::CheckerGoodStable_A" \
+    "dut.pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True ->
+     \$stable(${fsm_path}.u_compare.matches_q)"
+
+# The checker FSM has the LastImpliesValid_A assertion. This says that we only tell KMAC that we
+# have the last item in the series when we have actually got an item to send. The model checker
+# struggles with this, and it turns out to be because when it's trying k-induction, it spends lots
+# of time searching states where the compare module is already running.
+#
+# This assertion rules that out: we only send data to KMAC when the compare module is still waiting
+# to get a response.
+assert -name "pre1::WaitingIfKmacDataValid" \
+    "${fsm_path}.kmac_rom_vld_o -> ${fsm_path}.u_compare.state_q == ${fsm_path}.u_compare.Waiting"
