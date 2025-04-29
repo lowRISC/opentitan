@@ -54,6 +54,9 @@ void hardened_memcpy(uint32_t *OT_RESTRICT dest,
  * Internally, this function is careful to not dereference its operands
  * directly, and instead uses dedicated load/store intrinsics.
  *
+ * The caller must also make sure that the entropy complex is in the desired
+ * state. Otherwise, Ibex might hang while waiting for randomness.
+ *
  * @param dest The destination of the set.
  * @param word_len The number of words to write.
  */

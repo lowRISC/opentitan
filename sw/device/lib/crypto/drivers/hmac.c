@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hmac_regs.h"  // Generated.
@@ -350,6 +351,8 @@ static status_t cfg_derive(hmac_mode_t hmac_mode, uint32_t *cfg_reg,
  * @return Result of the operation.
  */
 static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
+  // Check if the entropy complex is in the expected state.
+  HARDENED_TRY(entropy_complex_check());
   // Randomize sensitive data.
   hardened_memshred(ctx->key, kHmacMaxBlockWords);
   hardened_memshred(ctx->H, kHmacMaxDigestWords);

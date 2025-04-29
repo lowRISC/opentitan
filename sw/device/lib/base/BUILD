@@ -305,6 +305,7 @@ cc_library(
     hdrs = ["hardened_memory.h"],
     deps = [
         ":hardened",
+        ":ibex",
         ":macros",
         ":memory",
         ":random_order",

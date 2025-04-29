@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
@@ -457,6 +458,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
                                      ciphertext_bytes_written,
                                      ciphertext.data));
 
+  // Check if the entropy complex is in the expected state.
+  HARDENED_TRY(entropy_complex_check());
   // Clear the context and the key if needed.
   hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
@@ -497,6 +500,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
                                      plaintext_bytes_written, plaintext.data,
                                      success));
 
+  // Check if the entropy complex is in the expected state.
+  HARDENED_TRY(entropy_complex_check());
   // Clear the context and the key if needed.
   hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
   HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
