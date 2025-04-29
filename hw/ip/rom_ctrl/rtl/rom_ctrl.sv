@@ -540,10 +540,9 @@ module rom_ctrl
   if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled_asserts
 
     `ASSERT(InvalidStateTerminal_A,
-            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |=>
-            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
+            ##1 !$fell(gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid))
     `ASSERT(BusLocalEscChk_A,
-            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |->
+            gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid |=>
             !bus_rom_rvalid)
   end
 
