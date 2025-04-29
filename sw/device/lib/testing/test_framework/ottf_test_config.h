@@ -31,6 +31,15 @@ typedef struct ottf_console {
    * reconfigure it before printing the test status.
    */
   bool test_may_clobber;
+  /**
+   * Indicates if SW buffering should be turned on for `ottf_console_putbuf()`
+   * to increase the transmit performance when using a peripheral backend like
+   * SPI that has a frame overhead associated with each packet transmission.
+   *
+   * Set this option to true if you are using the SPI console device with UJSON
+   * transmissions.
+   */
+  bool putbuf_buffered;
 } ottf_console_t;
 
 typedef struct ottf_console_tx_indicator {

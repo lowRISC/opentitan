@@ -417,9 +417,9 @@ size_t ottf_console_spi_device_read(size_t buf_size, uint8_t *const buf) {
   return received_data_len;
 }
 
-static status_t ottf_spi_console_flushbuf(void *io) {
+status_t ottf_console_flushbuf(void *io) {
   size_t written_len = 0;
-  if (spi_buf_end > 0) {
+  if (kOttfTestConfig.console.putbuf_buffered && spi_buf_end > 0) {
     written_len = sink(io, spi_buf, spi_buf_end);
     if (spi_buf_end != written_len) {
       return DATA_LOSS((int32_t)(spi_buf_end - written_len));
@@ -429,10 +429,10 @@ static status_t ottf_spi_console_flushbuf(void *io) {
   return OK_STATUS((int32_t)written_len);
 }
 
-static status_t ottf_spi_console_putbuf(void *io, const char *buf, size_t len) {
+static status_t ottf_buffered_putbuf(void *io, const char *buf, size_t len) {
   if (len > sizeof(spi_buf)) {
     // Flush and skip the staging buffer if the payload is already the max size.
-    TRY(ottf_spi_console_flushbuf(io));
+    TRY(ottf_console_flushbuf(io));
     size_t written_len = sink(io, buf, len);
     if (len != written_len) {
       return DATA_LOSS((int32_t)(len - written_len));
@@ -443,14 +443,14 @@ static status_t ottf_spi_console_putbuf(void *io, const char *buf, size_t len) {
     spi_buf_end += len;
   } else {
     // The staging buffer is almost full; flush it before staging more data.
-    TRY(ottf_spi_console_flushbuf(io));
+    TRY(ottf_console_flushbuf(io));
     memcpy(&spi_buf[spi_buf_end], buf, len);
     spi_buf_end += len;
   }
   return OK_STATUS((int32_t)len);
 }
 
-static status_t ottf_uart_console_putbuf(void *io, const char *buf,
+static status_t ottf_non_buffered_putbuf(void *io, const char *buf,
                                          size_t len) {
   size_t written_len = sink(io, buf, len);
   if (len != written_len) {
@@ -460,21 +460,10 @@ static status_t ottf_uart_console_putbuf(void *io, const char *buf,
 }
 
 status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
-  switch (kOttfTestConfig.console.type) {
-    case kOttfConsoleSpiDevice:
-      return ottf_spi_console_putbuf(io, buf, len);
-    default:
-      return ottf_uart_console_putbuf(io, buf, len);
-  }
-}
-
-status_t ottf_console_flushbuf(void *io) {
-  switch (kOttfTestConfig.console.type) {
-    case kOttfConsoleSpiDevice:
-      return ottf_spi_console_flushbuf(io);
-    default:
-      // Only the SPI console requires flushing a staging buffer.
-      return OK_STATUS(0);
+  if (kOttfTestConfig.console.putbuf_buffered) {
+    return ottf_buffered_putbuf(io, buf, len);
+  } else {
+    return ottf_non_buffered_putbuf(io, buf, len);
   }
 }
 
