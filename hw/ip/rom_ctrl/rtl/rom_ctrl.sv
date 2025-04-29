@@ -524,13 +524,16 @@ module rom_ctrl
   `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
           clk_i, !rst_ni || internal_alert)
 
-  // Check that rom_tl_o.d_valid is not asserted unless pwrmgr_data_o.done is asseterd.
-  // This check ensures that all tl accesses are blocked until rom check is completed. You might
-  // think we could check for a_ready, but that doesn't work because the TL to SRAM adapter has a
-  // 1-entry cache that accepts the transaction (but doesn't reply)
-  `ASSERT(TlAccessChk_A,
-          (pwrmgr_data_o.done == prim_mubi_pkg::MuBi4False) |->
-          (!rom_tl_o.d_valid || (rom_tl_o.d_valid && rom_tl_o.d_error)))
+  // It should not be possible to read from the ROM unless the check has finished, implying that
+  // pwrmgr_data_o.done is MuBi4True.
+  //
+  // This precise statement is a bit tricky, because pwrmgr_data_o.done can revert back to
+  // MuBi4False (because of an injected error or unexpected message from KMAC) and the response fifo
+  // might supply data after that happens. To avoid this problem, we actually look at the
+  // bus_rom_rvalid signal, which is a validity bit for data coming back from the ROM that will be
+  // supplied to the TileLink interface.
+  `ASSERT(NoReadsBeforeDone_A,
+          pwrmgr_data_o.done != prim_mubi_pkg::MuBi4True -> !bus_rom_rvalid)
 
   // Check that whenever there is an alert triggered and FSM state is Invalid, there is no response
   // to read requests.
