@@ -155,8 +155,10 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   // Start from a random index less than `kKeymgrOutputShareNumWords`.
   random_order_t order;
   random_order_init(&order, kKeymgrOutputShareNumWords);
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = kKeymgrOutputShareNumWords - 1;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords &&
+         launder32(r_iter_cnt) < kKeymgrOutputShareNumWords;
+       ++iter_cnt, --r_iter_cnt) {
     key->share0[order.state] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
                         (order.state * sizeof(uint32_t)));
@@ -164,11 +166,14 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
     HARDENED_CHECK_LT(order.state, kKeymgrOutputShareNumWords);
   }
   HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   // Start from a random index less than `kKeymgrOutputShareNumWords`.
   random_order_init(&order, kKeymgrOutputShareNumWords);
-  iter_cnt = 0;
-  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
+  iter_cnt = 0, r_iter_cnt = kKeymgrOutputShareNumWords - 1;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords &&
+         launder32(r_iter_cnt) < kKeymgrOutputShareNumWords;
+       ++iter_cnt, --r_iter_cnt) {
     key->share1[order.state] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
                         (order.state * sizeof(uint32_t)));
@@ -176,6 +181,7 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
     HARDENED_CHECK_LT(order.state, kKeymgrOutputShareNumWords);
   }
   HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   return OTCRYPTO_OK;
 }

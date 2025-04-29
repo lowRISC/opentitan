@@ -127,14 +127,16 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
   // Start from a random index less than `num_words`.
   random_order_t order;
   random_order_init(&order, num_words);
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = num_words - 1;
+  for (; launder32(iter_cnt) < num_words && launder32(r_iter_cnt) < num_words;
+       ++iter_cnt, --r_iter_cnt) {
     abs_mmio_write32(dest_addr + order.state * sizeof(uint32_t),
                      src[order.state]);
     random_order_advance(&order);
     HARDENED_CHECK_LT(order.state, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 }
 
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
