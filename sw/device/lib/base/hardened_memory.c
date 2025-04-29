@@ -14,7 +14,7 @@
 void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
                      size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(&order, 2 * word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);
@@ -81,7 +81,7 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
 
 void hardened_memshred(uint32_t *dest, size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(&order, 2 * word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);
@@ -112,7 +112,7 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(&order, 2 * word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);

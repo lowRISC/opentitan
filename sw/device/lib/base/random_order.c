@@ -5,15 +5,20 @@
 #include "sw/device/lib/base/random_order.h"
 
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/ibex.h"
 
-// TODO: The current implementation is just a skeleton, and currently just
-// traverses from 0 to `min_len * 2`.
+// This implementation starts at a random index between 0 and len and
+// traverses over all possible indexes with an increment of 1.
+// When the maximum value is reached the index wraps back to 0.
 
-void random_order_init(random_order_t *ctx, size_t min_len) {
-  ctx->state = 0;
-  ctx->max = min_len * 2;
+void random_order_init(random_order_t *ctx, size_t len) {
+  ctx->state = ((uint64_t)ibex_rnd_uint32() * (uint64_t)len) >> 32;
+  ctx->max = len;
 }
 
 size_t random_order_len(const random_order_t *ctx) { return ctx->max; }
 
-size_t random_order_advance(random_order_t *ctx) { return ctx->state++; }
+size_t random_order_advance(random_order_t *ctx) {
+  ctx->state = (ctx->state + 1) % ctx->max;
+  return ctx->state;
+}

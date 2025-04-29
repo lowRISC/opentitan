@@ -299,7 +299,10 @@ cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
     hdrs = ["random_order.h"],
-    deps = [":bitfield"],
+    deps = [
+        ":bitfield",
+        "//sw/device/lib/base:ibex",
+    ],
 )
 
 cc_library(
