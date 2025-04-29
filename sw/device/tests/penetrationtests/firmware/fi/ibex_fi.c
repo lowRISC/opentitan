@@ -1143,6 +1143,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         dif_flash_ctrl_set_data_region_enablement(&flash, 2, kDifToggleEnabled);
     if (res_prop == kDifLocked || res_en == kDifLocked) {
       LOG_INFO("Flash region locked.");
+      return ABORTED();
     }
 
     flash_init = true;
@@ -1239,13 +1240,21 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
         .scramble_en = kMultiBitBool4True,
         .ecc_en = kMultiBitBool4True,
         .high_endurance_en = kMultiBitBool4False};
+
     dif_flash_ctrl_data_region_properties_t data_region = {
         .base = FLASH_PAGES_PER_BANK,
         .size = 0x1,
         .properties = region_properties};
-    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region));
-    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 2,
-                                                  kDifToggleEnabled));
+
+    dif_result_t res_prop =
+        dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region);
+
+    dif_result_t res_en =
+        dif_flash_ctrl_set_data_region_enablement(&flash, 2, kDifToggleEnabled);
+    if (res_prop == kDifLocked || res_en == kDifLocked) {
+      LOG_INFO("Flash region locked, aborting!");
+      return ABORTED();
+    }
 
     flash_init = true;
   }
