@@ -193,3 +193,16 @@ cover -disable "tb.${fsm_path}.RelAddrWide_A:precondition1"
 # trace and (as with RelAddrWide_A) it's checking the behaviour of something that flows straight
 # from the counter address, so a stopat cannot work.
 cover -disable "tb.${fsm_path}.LastImpliesValid_A:precondition1"
+
+# The logic in rom_ctrl_compare ensures that the count isn't asked to increment after it gets
+# to the end. Whether or not NumWords is a power of two, this means we'll never try to increment
+# past the maximum representable value.
+#
+# The tb has assertions (CompareCountNoSaturateUp_A / CompareCountNoSaturateDn_A) to check that we
+# don't try (which make sure the gating logic on addr_incr in rom_ctrl_compare is correct). Disable
+# the unreachable cover properties.
+set compare_count_path "${fsm_path}.u_compare.u_prim_count_addr"
+move_to_task GlitchyCounter tb.CompareCountNoSaturateUp_A
+move_to_task GlitchyCounter tb.CompareCountNoSaturateDn_A
+cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
+cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
