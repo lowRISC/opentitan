@@ -76,8 +76,9 @@ static status_t aes_write_key(aes_key_t key) {
 
   random_order_t order;
   random_order_init(&order, key.key_len);
-  size_t iter_cnt = 0;
-  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+  size_t iter_cnt = 0, r_iter_cnt = order.max - 1;
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
     size_t idx = launderw(random_order_advance(&order));
     barrierw(idx);
 
@@ -98,11 +99,14 @@ static status_t aes_write_key(aes_key_t key) {
     write_32(read_32(src), dst);
   }
   HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   // Start from a random index less than `key.key_len`.
   random_order_init(&order, key.key_len);
   iter_cnt = 0;
-  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+  r_iter_cnt = order.max - 1;
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
     size_t idx = launderw(random_order_advance(&order));
     barrierw(idx);
 
@@ -123,6 +127,7 @@ static status_t aes_write_key(aes_key_t key) {
     write_32(read_32(src), dst);
   }
   HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   // NOTE: all eight share registers must be written; in the case we don't have
   // enough key data, we fill it with zeroes.

@@ -159,10 +159,11 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
 
   random_order_t order;
   random_order_init(&order, kKeymgrOutputShareNumWords);
-  size_t iter_cnt = 0;
+  size_t iter_cnt = 0, r_iter_cnt = order.max - 1;
   // Collect output.
   // Start from a random index less than `kKeymgrOutputShareNumWords`.
-  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
     size_t idx = launderw(random_order_advance(&order));
     barrierw(idx);
 
@@ -186,11 +187,14 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
     write_32(read_32(src), dst);
   }
   HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   random_order_init(&order, kKeymgrOutputShareNumWords);
   iter_cnt = 0;
+  r_iter_cnt = order.max - 1;
   // Start from a random index less than `kKeymgrOutputShareNumWords`.
-  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
     size_t idx = launderw(random_order_advance(&order));
     barrierw(idx);
 
@@ -214,6 +218,7 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
     write_32(read_32(src), dst);
   }
   HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   return OTCRYPTO_OK;
 }
