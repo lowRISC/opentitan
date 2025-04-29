@@ -110,6 +110,28 @@ sh_test(
     toolchains = ["@rules_python//python:current_py_toolchain"],
 )
 
+sh_test(
+    name = "e2e_ate_individ_test",
+    timeout = "moderate",
+    srcs = ["e2e_ate_individ.sh"],
+    data = [
+        ":orchestrator_hyper310_zip",
+        "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "@rules_python//python:current_py_toolchain",
+    ],
+    env = {
+        "PYTHON": "$(PYTHON3)",
+        "PACKAGE": "npcr12",
+    },
+    tags = [
+        "changes_otp",
+        "exclusive",
+        "hyper310",
+        "manuf",
+    ],
+    toolchains = ["@rules_python//python:current_py_toolchain"],
+)
+
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),

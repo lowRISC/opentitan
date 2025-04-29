@@ -159,7 +159,6 @@ opentitan_test(
 [
     device_id_header(
         name = "ft_device_id_{}".format(sku),
-        ast_cfg_version = 0,
         headers = ["ft_device_id.h"],
         mode = "ft",
         sku_config = config["orchestrator_cfg"],
@@ -219,8 +218,12 @@ filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
-        ":sram_ft_individualize_{}".format(sku)
+        ":sram_ft_individualize_{}{}".format(sku, variant)
         for sku in EARLGREY_SKUS.keys()
+        for variant in [
+            "",
+            "_ate",
+        ]
     ],
 )
 

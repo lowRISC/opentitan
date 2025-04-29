@@ -19,7 +19,11 @@ class TestDeviceId(unittest.TestCase):
         # Create SKU config object.
         with open(_SIVAL_SKU_CONFIG, "r") as fp:
             sku_config_args = hjson.load(fp)
-        self.sku_config = SkuConfig(ast_cfg_version=7, **sku_config_args)
+        self.sku_config = SkuConfig(**sku_config_args)
+
+        # Override AST config version.
+        self.sku_config.ast_cfg_version = 0x7
+        self.sku_config.validate()
 
         # Create DIN object.
         self.din = DeviceIdentificationNumber(year=4,
