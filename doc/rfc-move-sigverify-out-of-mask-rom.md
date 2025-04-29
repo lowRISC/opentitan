@@ -54,14 +54,15 @@ The immutable ROM extension would not be included in the signature for the mutab
 
 ## Drawbacks
 
-The mask ROM containing sigverify has already been taped-out and tested. Changing it would reduce the utility of existing test results.
-
-Changing the name of the mutable ROM extension could cause confusion for existing project members.
+1. The mask ROM containing sigverify has already been taped-out and tested. Changing it would reduce the utility of existing test results.
+2. Changing the name of the mutable ROM extension could cause confusion for existing project members.
+3. Integrated flash is more expensive per-byte than mask ROM in terms of area/silicon cost.
 
 ## Rationale and alternatives
 
 * We could continue to rely on heavy verification of sigverify to reduce tape-out risk. Moving sigverify would give us longer to fix any issues found by verification, however.
 * We could not rename the immutable and mutable ROM extensions to prevent confusion. With the immutable ROM extension becoming required and more important, the need for terms like "imm_rom_ext" and "mut_rom_ext" would likely increase confusion instead.
+* The immutable section could be programmed to OTP rather than flash if that has a cheaper silicon cost.
 
 ## Prior art
 
@@ -70,8 +71,6 @@ Changing the name of the mutable ROM extension could cause confusion for existin
 [fmc-spec]: https://github.com/chipsalliance/caliptra-sw/tree/main/fmc
 
 ## Unresolved questions
-
-How large is sigverify in bytes, and do the savings in mask area outweigh the cost of mandatory flash space? My guess is that this move is a net positive as mask space is more valuable than flash.
 
 Does this move apply to integrated designs, and does it give the same utility?
 
