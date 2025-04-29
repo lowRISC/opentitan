@@ -40,3 +40,32 @@ assert \
        ->
      |dut.alerts"
 assert -disable "tb.dut.gen_asserts_with_scrambling.FpvSecCmCheckerFsmAlert_A"
+
+# The register top has a write-enable check (u_prim_reg_we_check) and this uses prim_onehot_check to
+# generate an error signal if the write-enable has more than one bit set. This can't happen in
+# normal operation, so the FPV test cannot see the precondition for the inner prim's Onehot0Check_A
+# assertion.
+#
+# Since there's actually only one register that is possible to write, this isn't really a security
+# feature and doesn't need testing with e.g. a stopat. Instead, assert that the value is always
+# onehot0 and disable the cover property.
+assert -name "AlwaysOneHot0_A" "\$onehot0(dut.u_reg_regs.reg_we_check)"
+set prim_onehot_check_path "tb.dut.u_reg_regs.u_prim_reg_we_check.u_prim_onehot_check"
+cover -disable "${prim_onehot_check_path}.Onehot0Check_A:precondition1"
+
+# There is also the FpvSecCmRegWeOnehotCheck_A assertion to check that a fatal alert gets generated
+# if the reg_we_check signal in rom_ctrl_regs_reg_top is not onehot0. Since we have just proved this
+# can't happen, disable the precondition cover.
+cover -disable "tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1"
+
+# The prim_one_hot_check module is instantiated with the EnableCheck parameter true. As such, it has
+# an EnableCheck_A assertion that asserts none of the write-enable bits are set if en_i is false.
+# The only way a write-enable signal can be set is through alert_test_we, which implies reg_we and
+# addr_hit[0]. That addr_hit[0] signal implies that addrmiss will be false, which implies en_i will
+# be high.
+#
+# But maybe it still makes sense to have this path to the error signal (catching some cases of fault
+# injection). Use a stopat on the input to u_prim_reg_we_check to allow this signal to vary freely.
+task -create FreeWe
+stopat -task FreeWe "dut.u_reg_regs.u_prim_reg_we_check.oh_i"
+move_to_task FreeWe "${prim_onehot_check_path}.gen_enable_check.gen_not_strict.EnableCheck_A"
