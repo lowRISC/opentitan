@@ -9,6 +9,10 @@
 class rv_timer_cfg_cov_obj extends uvm_object;
   `uvm_object_utils(rv_timer_cfg_cov_obj)
 
+  const bit [PRESCALER_WIDTH-1:0]   max_prescaler = 2**PRESCALER_WIDTH - 1;
+  const bit [STEP_WIDTH-1:0]        max_step      = 2**STEP_WIDTH - 1;
+  const bit [MTIME_WIDTH-1:0]       max_mtime     = 2**MTIME_WIDTH - 1;
+
   // Covergroup: timer_cfg_cg
   // timer config covergroup definition
   covergroup timer_cfg_cg(string name) with function sample(bit [7:0]  step,
@@ -16,16 +20,24 @@ class rv_timer_cfg_cov_obj extends uvm_object;
                                                       uint64 mtime,
                                                       uint64 mtime_cmp);
     cp_step: coverpoint step {
-      bins step_all_val[] = {[1:$]};
+      bins step_0   = {0};
+      bins step[16] = {[1:max_step-1]};
+      bins step_max = {'1};
     }
     cp_prescale: coverpoint prescale {
-      option.auto_bin_max = 256;
+      bins prescale_0   = {0};
+      bins prescale[16] = {[1:max_prescaler-1]};
+      bins prescale_max = {'1};
     }
     cp_mtime: coverpoint mtime {
-      option.auto_bin_max = 50;
+      bins mtime_0   = {0};
+      bins mtime[16] = {[1:max_mtime-1]};
+      bins mtime_max = {'1};
     }
     cp_mtime_cmp: coverpoint mtime_cmp {
-      option.auto_bin_max = 50;
+      bins mtime_cmp_0 = {0};
+      bins mtime_cmp[16] = {[1:max_mtime-1]};
+      bins mtime_cmp_max = {'1};
     }
   endgroup : timer_cfg_cg
 
