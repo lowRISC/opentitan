@@ -17,6 +17,7 @@ static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false,
+                        .console.putbuf_buffered = true,
                         .silence_console_prints = true,
                         .console_tx_indicator.enable = true,
                         .console_tx_indicator.spi_console_tx_ready_mio =
