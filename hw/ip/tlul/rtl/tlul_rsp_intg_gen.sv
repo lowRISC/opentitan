@@ -64,8 +64,8 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
 
   always_comb begin
     tl_o = tl_i;
-    tl_o.d_user.rsp_intg = rsp_intg;
-    tl_o.d_user.data_intg = data_intg;
+    if (EnableRspIntgGen) tl_o.d_user.rsp_intg = rsp_intg;
+    if (EnableDataIntgGen) tl_o.d_user.data_intg = data_intg;
   end
 
   logic unused_tl;
