@@ -19,3 +19,24 @@ proc move_to_task {task_name assert_name} {
 task -create CompareFsm
 stopat -task CompareFsm "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q"
 move_to_task CompareFsm "tb.dut.gen_asserts_with_scrambling.FpvSecCmCompareFsmAlert_A"
+
+# There is also a security check in FpvSecCmCheckerFsmAlert_A. The FSM uses PRIM_FLOP_SPARSE_FSM to
+# check that if the FSM is corrupted then an assert will be generated. The assert doesn't quite work
+# though, because it ends up asserting that a broken state_d will cause the assertion. The state_d
+# variable is actually combinationally driven to ensure that it is always a valid state. (This is
+# better than allowing the state to stay arbitrary: it guarantees that a fault will cause a the FSM
+# state to move to one a large hamming distance from the valid states).
+#
+# The cleanest approach is probably to use a stopat on state_q and define a different assertion,
+# which says an unexpected state will instantly cause the prim_alert_sender to be asked to send an
+# alert.
+task -create CheckerFsm
+stopat -task CheckerFsm "dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q"
+assert \
+    -name "CheckerFsm::BadCheckerStateCausesAlert_A" \
+    "!(dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q inside
+       {rom_ctrl_pkg::ReadingLow, rom_ctrl_pkg::ReadingHigh, rom_ctrl_pkg::RomAhead,
+        rom_ctrl_pkg::KmacAhead, rom_ctrl_pkg::Checking, rom_ctrl_pkg::Done})
+       ->
+     |dut.alerts"
+assert -disable "tb.dut.gen_asserts_with_scrambling.FpvSecCmCheckerFsmAlert_A"
