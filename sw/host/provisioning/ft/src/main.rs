@@ -39,7 +39,7 @@ pub struct ManufFtProvisioningDataInput {
     /// FT Device ID to provision.
     ///
     /// Contains the SKU-specific portion of the device ID.
-    #[arg(long)]
+    #[arg(long, default_value = "")]
     pub ft_device_id: String,
 
     /// Wafer Authentication Secret to verify from device.
@@ -150,10 +150,13 @@ fn main() -> Result<()> {
     log::info!("Encrypted rma_unlock_token = {}", response.rma_unlock_token);
 
     // Parse and prepare individualization ujson data payload.
-    let mut ft_device_id =
-        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
+    let mut ft_device_id = ArrayVec::<u32, 4>::from([0; 4]);
+    if !opts.provisioning_data.ft_device_id.is_empty() {
+        ft_device_id =
+            hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
+        ft_device_id.reverse();
+    }
     // The FT device ID is sent to the DUT in little endian order.
-    ft_device_id.reverse();
     let ft_individualize_data_in = ManufFtIndividualizeData { ft_device_id };
 
     // Parse and prepare CA key.

@@ -85,9 +85,9 @@ def main(args_in):
     )
     parser.add_argument(
         "--ast-cfg-version",
-        required=True,
         type=int,
-        help="AST configuration version to be written to OTP.",
+        help=
+        "AST configuration version to be written to OTP (overrides HJSON).",
     )
     parser.add_argument(
         "--package",
@@ -139,6 +139,12 @@ def main(args_in):
         help="If set, only run CP stage (skips FT and database write).",
     )
     parser.add_argument(
+        "--use-ate-individ-bin",
+        action="store_true",
+        # The ATE individualization binary contains no UJSON communication.
+        help="If set, use the individualization binary compiled for ATE.",
+    )
+    parser.add_argument(
         "--db-path",
         required=False,
         help=
@@ -148,14 +154,23 @@ def main(args_in):
 
     if not args.cp_only and args.db_path is None:
         parser.error("--db-path is required when --cp-only is not provided")
+    if args.use_ate_individ_bin and (args.ast_cfg_version is not None or
+                                     args.package is not None):
+        parser.error(
+            "--use-ate-individ-bin may not be used with --ast-cfg-version or --package"
+        )
 
     # Load and validate a SKU configuration file.
     sku_config_path = resolve_runfile(args.sku_config)
     sku_config_args = {}
     with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
-    sku_config = SkuConfig(ast_cfg_version=args.ast_cfg_version,
-                           **sku_config_args)
+    sku_config = SkuConfig(**sku_config_args)
+
+    # Override AST configuration version if requested.
+    if args.ast_cfg_version:
+        sku_config.ast_cfg_version = args.ast_cfg_version
+        sku_config.validate()
 
     # Override package ID if requested.
     if args.package:
@@ -169,7 +184,6 @@ def main(args_in):
     device_id = DeviceId(sku_config, din)
 
     # TODO: Setup remote and/or local DB connections.
-    # TODO: Check if the device ID is present in the DB.
 
     # Generate commit hash of current provisioning run.
     commit_hash = subprocess.run(shlex.split("git rev-parse HEAD"),
@@ -184,6 +198,7 @@ def main(args_in):
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
+                ate_mode=args.use_ate_individ_bin,
                 fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
                 log_ujson_payloads=args.log_ujson_payloads,
                 require_confirmation=not args.non_interactive)

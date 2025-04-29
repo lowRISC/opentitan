@@ -118,18 +118,24 @@ pub fn run_sram_ft_individualize(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Wait for SRAM program to complete execution.
-    let _ = UartConsole::wait_for(
-        &spi_console,
-        r"Waiting for FT SRAM provisioning data ...",
-        timeout,
-    )?;
+    if !ft_individualize_data_in
+        .ft_device_id
+        .iter()
+        .all(|&x| x == 0)
+    {
+        // Wait for SRAM program to complete execution.
+        let _ = UartConsole::wait_for(
+            &spi_console,
+            r"Waiting for FT SRAM provisioning data ...",
+            timeout,
+        )?;
 
-    // Inject provisioning data into the device.
-    ujson_payloads.dut_in.insert(
-        "FT_INDIVIDUALIZE_DATA_IN".to_string(),
-        ft_individualize_data_in.send(&spi_console)?,
-    );
+        // Inject provisioning data into the device.
+        ujson_payloads.dut_in.insert(
+            "FT_INDIVIDUALIZE_DATA_IN".to_string(),
+            ft_individualize_data_in.send(&spi_console)?,
+        );
+    }
 
     // Wait for provisioning operations to complete.
     jtag.wait_halt(timeout)?;
