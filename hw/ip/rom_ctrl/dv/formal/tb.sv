@@ -46,4 +46,11 @@ module tb
     .kmac_data_o
   );
 
+  // We don't want to spend time thinking about the security of write addresses: there's actually
+  // only one writable register (and it doesn't matter if someone forges a write to ALERT_TEST
+  // anyway). Check that no change to the design stops this from being true.
+  `ASSERT(SingleWritableReg_A,
+          dut.u_reg_regs.reg_we_check ->
+          dut.u_reg_regs.reg_addr == rom_ctrl_reg_pkg::ROM_CTRL_ALERT_TEST_OFFSET)
+
 endmodule
