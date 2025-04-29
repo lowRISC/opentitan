@@ -18,13 +18,6 @@ def _device_id_header_gen_impl(ctx):
         "--output={}".format(pre_formatted_c.path),
         "--template={}".format(ctx.file.template.path),
     ]
-    if ctx.attr.mode == "ft":
-        if hasattr(ctx.attr, "ast_cfg_version"):
-            args.append(
-                "--ast-cfg-version={}".format(ctx.attr.ast_cfg_version),
-            )
-        else:
-            fail("Error: ast_cfg_version attribute must be provided when mode is \"ft\".")
 
     ctx.actions.run(
         outputs = [pre_formatted_c],
@@ -59,10 +52,6 @@ def _device_id_header_gen_impl(ctx):
 device_id_header_gen = rule(
     implementation = _device_id_header_gen_impl,
     attrs = {
-        # TODO(timothytrippel): remove this and fold into SKU config HJSON.
-        "ast_cfg_version": attr.int(
-            doc = "AST configuration version for the SKU config.",
-        ),
         "sku_config": attr.label(
             allow_single_file = True,
             doc = "Path to the hjson SKU config file.",
@@ -74,7 +63,7 @@ device_id_header_gen = rule(
         "clang_format": attr.label(
             default = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
             allow_single_file = True,
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             doc = "The clang-format executable",
         ),
@@ -87,11 +76,10 @@ device_id_header_gen = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def device_id_header(name, mode, headers, sku_config, template, ast_cfg_version = 0):
+def device_id_header(name, mode, headers, sku_config, template):
     device_id_header_gen(
         name = name,
         mode = mode,
-        ast_cfg_version = ast_cfg_version,
         sku_config = sku_config,
         template = template,
     )
