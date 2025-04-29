@@ -233,8 +233,21 @@ impl Uart for SerialPortUart {
 
     /// Clears the UART RX buffer.
     fn clear_rx_buffer(&self) -> Result<()> {
+        // Clear the host input buffer.
         self.rxbuf.borrow_mut().clear();
         self.port.borrow_mut().clear(ClearBuffer::Input)?;
+        // There might still be data in the device buffer, try to
+        // drain that as well.
+        //
+        // NOTE This code will only have an effect on backends that
+        // use SerialPortUart and do not override clear_rx_buffer,
+        // such as the chip_whisperer backend (which uses the SAM3x
+        // for UART). On backends such as hyperdebug which have a specific
+        // mechanism to clear the device buffers, following code will not
+        // doing anything useful.
+        const TIMEOUT: Duration = Duration::from_millis(5);
+        let mut buf = [0u8; 256];
+        while self.read_timeout(&mut buf, TIMEOUT)? > 0 {}
         Ok(())
     }
 
