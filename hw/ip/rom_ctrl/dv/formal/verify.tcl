@@ -124,3 +124,29 @@ foreach fifo_pr { { u_reqfifo ReqFifo } { u_sramreqfifo SramReqFifo } { u_rspfif
         cover -disable "tb.${ptr_path}.g_check_incr.DnCntIncrStable_A:precondition1"
     }
 }
+
+# We used a stopat above to allow the cnt_q for the u_compare address prim_count to be forced. The
+# clr_i, set_i and decr_en_i signals to that module are all wired to zero, so we need to waive the
+# preconditions for some associated assertions.
+set compare_count_path "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr"
+assert -name "NoClear_compare_count_A" "!${compare_count_path}.clr_i"
+assert -name "NoSet_compare_count_A" "!${compare_count_path}.set_i"
+assert -name "NoDecr_compare_count_A" "!${compare_count_path}.decr_en_i"
+cover -disable "tb.${compare_count_path}.g_check_clr_fwd_a.*:precondition1" -regexp
+cover -disable "tb.${compare_count_path}.g_check_set_fwd_a.*:precondition1" -regexp
+cover -disable "tb.${compare_count_path}.g_check_inc_and_dec.*:precondition1" -regexp
+cover -disable "tb.${compare_count_path}.g_check_decr.*:precondition1" -regexp
+
+# The logic in rom_ctrl_compare also ensures that the count isn't asked to increment after it gets
+# to the end. Whether or not NumWords is a power of two, this means we'll never try to increment
+# past the maximum representable value.
+#
+# Add assertions to check that we don't try (which make sure the gating logic on addr_incr in
+# rom_ctrl_compare is correct) and disable the unreachable cover properties.
+assert -name "CannotSaturateUp_compare_count_A" \
+    "${compare_count_path}.incr_en_i -> !&${compare_count_path}.cnt_o"
+assert -name "CannotSaturateDn_compare_count_A" \
+    "${compare_count_path}.incr_en_i -> |${compare_count_path}.cnt_q\[1\]"
+cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
+cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
+
