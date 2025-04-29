@@ -633,37 +633,9 @@ pub fn check_slot_b_boot_up(
     let error_code_msg = r"BFV:.*\r\n";
 
     let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
-        let full_owner_anchor = if response.seeds.number != 0 {
-            let seed0 = response.seeds.seed[0].as_slice();
-            let mut values: [u32; 2] = [0u32; 2];
-
-            // Generate the expected string containing same two items the DUT
-            // code prints after starting the owners' image in the end of the
-            // perso, and mix it with the constant owner's anchor text.
-            //
-            // TODO(vbendeb): this needs to be moved to SKU specific space.
-            for (i, value) in values.iter_mut().enumerate() {
-                let index = 32 + i * 16;
-                let bytes: [u8; 4] = [
-                    seed0[index],
-                    seed0[index + 1],
-                    seed0[index + 2],
-                    seed0[index + 3],
-                ];
-                *value = u32::from_le_bytes(bytes);
-            }
-
-            format!(
-                r"Got dev seed of {:08x}\.\.{:08x}.*{}",
-                values[0], values[1], owner_anchor
-            )
-        } else {
-            (*owner_anchor).clone()
-        };
-
         format!(
             r"(?s)({}|{}|{})",
-            rom_ext_failure_msg, error_code_msg, full_owner_anchor
+            rom_ext_failure_msg, error_code_msg, owner_anchor
         )
     } else {
         format!(r"(?s)({}|{})", rom_ext_failure_msg, error_code_msg)
