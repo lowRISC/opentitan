@@ -67,4 +67,5 @@ Does this move apply to integrated designs, and does it give the same utility?
 
 ## Future work
 
-An implementation of the ROM extension that implements DICE alone without any signature verification, avoiding the need for key management.
+* Alternative sigverify configurations (e.g. using Ed25519).
+* An implementation of the immutable section that implements DICE alone without any signature verification.
