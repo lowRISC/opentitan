@@ -20,6 +20,8 @@ filesets:
       - seq_lib/rv_timer_base_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_common_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_random_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_min_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_timer_max_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_disabled_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_cfg_update_on_fly_vseq.sv: {is_include_file: true}
       - seq_lib/rv_timer_random_reset_vseq.sv: {is_include_file: true}

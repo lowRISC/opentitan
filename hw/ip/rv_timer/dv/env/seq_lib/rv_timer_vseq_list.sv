@@ -4,6 +4,8 @@
 
 `include "rv_timer_base_vseq.sv"
 `include "rv_timer_random_vseq.sv"
+`include "rv_timer_min_vseq.sv"
+`include "rv_timer_max_vseq.sv"
 `include "rv_timer_random_reset_vseq.sv"
 `include "rv_timer_disabled_vseq.sv"
 `include "rv_timer_cfg_update_on_fly_vseq.sv"
