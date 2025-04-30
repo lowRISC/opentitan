@@ -29,7 +29,8 @@ otp_json(
             name = "CREATOR_SW_CFG",
             items = {
                 "CREATOR_SW_CFG_RMA_SPIN_EN": otp_hex(CONST.HARDENED_TRUE),
-                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x2000000",
+                # If you change this value, make sure to update the code in the harness.
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "0x8000000",
             },
         ),
         otp_partition(
