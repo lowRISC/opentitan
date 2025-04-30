@@ -5,11 +5,16 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "fi_crypto",
+    srcs = ["fi_crypto.json"],
+)
+
+filegroup(
     name = "fi_ibex",
     srcs = ["fi_ibex.json"],
 )
 
 filegroup(
-    name = "fi_crypto",
-    srcs = ["fi_crypto.json"],
+    name = "fi_otbn",
+    srcs = ["fi_otbn.json"],
 )
