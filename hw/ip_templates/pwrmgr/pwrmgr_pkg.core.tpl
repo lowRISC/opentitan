@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
   % if wait_for_external_reset:
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
   % endif
     files:
