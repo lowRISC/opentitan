@@ -66,3 +66,14 @@ assert -name FSMParasiticState::AlertSenderFSMParasiticState_A\
 # unreasonable as for this particular instance, they will always be generated as zero.
 check_cov -waiver -add -start_line 67 -end_line 68 -type {statement} -instance\
  {dut.u_reg.u_reg_if.u_rsp_intg_gen} -comment {Rsp and Data Intg will always be zero}
+
+# For now, waiving this coverage is the sensible step. prim_diff_decode FSM would get stuck into
+# faulty state unless reset happens. So, even if we add a stopat on state_q, the default case would
+# ask for an assertion to cover missing checker coverage.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv}\
+ -start_line 153 -end_line 153 -type {branch} -comment {Unreachable without FI}
+
+# To support the waiver above, this assertion makes sure that state_q can never transition to a
+# parasitic state. If that is no longer the case, this assertion will fail.
+assert -name PrimDiffDecodeNoParasiticState_A\
+ {dut.gen_alert_tx[0].u_prim_alert_sender.u_decode_ping.gen_async.state_q < 3}
