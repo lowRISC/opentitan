@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_fi")
+load(":pentest.bzl", "pentest_fi", "pentest_fi_otbn")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -38,4 +38,21 @@ pentest_fi(
     test_args = CRYPTO_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_crypto:harness",
     test_vectors = CRYPTO_FI_TESTVECTOR_TARGETS,
+)
+
+OTBN_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_otbn",
+]
+
+OTBN_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-otbn-json=\"$(rootpath {})\"".format(target)
+    for target in OTBN_FI_TESTVECTOR_TARGETS
+])
+
+pentest_fi_otbn(
+    name = "fi_otbn",
+    slow_test = True,
+    test_args = OTBN_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_otbn:harness",
+    test_vectors = OTBN_FI_TESTVECTOR_TARGETS,
 )
