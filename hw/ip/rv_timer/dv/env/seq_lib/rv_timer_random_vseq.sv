@@ -18,7 +18,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
   rand uint ticks[NUM_HARTS];
   rand bit  assert_reset;
 
-  uint64 max_clks_until_expiry = 5_000_000;
+  uint64 max_clks_until_expiry = 5_000;
 
   constraint assert_reset_c {
     (assert_reset == 1'b0);
