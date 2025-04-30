@@ -33,3 +33,8 @@ filegroup(
     name = "fi_rng",
     srcs = ["fi_rng.json"],
 )
+
+filegroup(
+    name = "fi_rom",
+    srcs = ["fi_rom.json"],
+)
