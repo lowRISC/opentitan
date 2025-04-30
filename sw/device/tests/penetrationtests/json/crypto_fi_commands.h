@@ -23,7 +23,8 @@ extern "C" {
     value(_, Sha256) \
     value(_, ShadowRegAccess) \
     value(_, ShadowRegRead)
-UJSON_SERDE_ENUM(CryptoFiSubcommand, crypto_fi_subcommand_t, CRYPTOFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(CryptoFiSubcommand, crypto_fi_subcommand_t, CRYPTOFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(CryptoFiSubcommand, crypto_fi_subcommand_t, CRYPTOFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define CRYPTOFI_AES_MODE(field, string) \
     field(key_trigger, bool) \
