@@ -47,3 +47,12 @@ stopat -task FSMParasiticState "dut.gen_alert_tx\[0\].u_prim_alert_sender.state_
 # the next state as the FSM treats the unrecognized state as Idle. This assertion also covers the
 # checker coverage for the default case.
 assert -name FSMParasiticState::AlertSenderFSMParasiticState_A {!(dut.gen_alert_tx[0].u_prim_alert_sender.state_q inside  {Idle, AlertHsPhase1, AlertHsPhase2, PingHsPhase1, PingHsPhase2, Pause0, Pause1}) ->  dut.gen_alert_tx[0].u_prim_alert_sender.state_d == Idle}
+
+# For now, waiving this coverage is the sensible step. prim_diff_decode FSM would get stuck into
+# faulty state unless reset happens. So, even if we add a stopat on state_q, the default case would
+# ask for an assertion to cover missing checker coverage.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv} -start_line 153 -end_line 153 -type {branch} -comment {Unreachable without FI}
+
+# To support the waiver above, this assertion makes sure that state_q can never transition to a
+# parasitic state. If that is no longer the case, this assertion will fail.
+assert -name PrimDiffDecodeNoParasiticState_A {dut.gen_alert_tx[0].u_prim_alert_sender.u_decode_ping.gen_async.state_q < 3}
