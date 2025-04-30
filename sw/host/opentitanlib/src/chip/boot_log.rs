@@ -11,6 +11,7 @@ use std::convert::TryFrom;
 
 use super::boot_svc::BootSlot;
 use super::ChipDataError;
+use crate::chip::boolean::HardenedBool;
 use crate::with_unknown;
 
 with_unknown! {
@@ -53,9 +54,19 @@ pub struct BootLog {
     pub bl0_slot: BootSlot,
     /// The chip's ownership state.
     pub ownership_state: OwnershipState,
+    /// The number of ownership transfers performed on this chip.
+    pub ownership_transfers: u32,
+    /// Minimum security version permitted for ROM_EXT payloads.
+    pub rom_ext_min_sec_ver: u32,
+    /// Minimum security version permitted for application payloads.
+    pub bl0_min_sec_ver: u32,
+    /// The primary BL0 boot slot.
+    pub primary_bl0_slot: BootSlot,
+    /// Whether the retention RAM was initialized on this boot.
+    pub retention_ram_initialized: HardenedBool,
     /// Reserved for future use.
     #[annotate(format=hex)]
-    pub reserved: [u32; 13],
+    pub reserved: [u32; 8],
 }
 
 impl TryFrom<&[u8]> for BootLog {
@@ -79,6 +90,11 @@ impl TryFrom<&[u8]> for BootLog {
         val.rom_ext_nonce = reader.read_u64::<LittleEndian>()?;
         val.bl0_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
         val.ownership_state = OwnershipState(reader.read_u32::<LittleEndian>()?);
+        val.ownership_transfers = reader.read_u32::<LittleEndian>()?;
+        val.rom_ext_min_sec_ver = reader.read_u32::<LittleEndian>()?;
+        val.bl0_min_sec_ver = reader.read_u32::<LittleEndian>()?;
+        val.primary_bl0_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
+        val.retention_ram_initialized = HardenedBool(reader.read_u32::<LittleEndian>()?);
         reader.read_u32_into::<LittleEndian>(&mut val.reserved)?;
         Ok(val)
     }
