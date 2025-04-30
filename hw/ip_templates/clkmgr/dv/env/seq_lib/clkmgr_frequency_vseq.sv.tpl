@@ -2,6 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<%
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
+## Compute the maximum number of slow clock cycles to get clock measurements.
+all_srcs = get_all_srcs(src_clks, derived_clks)
+ref_cnts = []
+for src in get_rg_srcs(typed_clocks):
+    config = config_clk_meas(src, all_srcs)
+    ref_cnts.append(config.reference_cycles)
+max_cycles = max(ref_cnts)
+%>\
 // The frequency vseq exercises the frequency measurement counters. More details
 // in the clkmgr_testplan.hjson file.
 class clkmgr_frequency_vseq extends clkmgr_base_vseq;
@@ -10,10 +20,12 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // This is measured in aon clocks. This is cannot be too precise because of a synchronizer.
-  localparam int CyclesToGetMeasurements = 6;
+  // It takes into account cases where some clocks need multiple aon clock cycles to get
+  // a measurement.
+  localparam int CyclesToGetMeasurements = ${max_cycles + 5};
 
   // The aon cycles between measurements, to make sure the previous measurement settles.
-  localparam int CyclesBetweenMeasurements = 6;
+  localparam int CyclesBetweenMeasurements = ${max_cycles + 5};
 
   // This is measured in clkmgr clk_i clocks. It is set to cover worst case delays.
   // The clk_i frequency is randomized for IPs, but the clkmgr is hooked to io_div4, which would

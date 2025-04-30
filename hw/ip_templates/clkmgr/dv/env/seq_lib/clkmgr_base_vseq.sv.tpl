@@ -206,8 +206,8 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4False));
   endtask
 
-  local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
-                                         uvm_reg_field hi);
+  protected function int get_meas_ctrl_value(int min_threshold, int max_threshold,
+                                             uvm_reg_field lo, uvm_reg_field hi);
     int lo_mask = (1 << lo.get_n_bits()) - 1;
     int hi_mask = (1 << hi.get_n_bits()) - 1;
 
@@ -282,6 +282,8 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     root_name = src
 %>\
       ClkMesr${Name.to_camel_case(src)}: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "${root_name}"),
+                  UVM_MEDIUM)
         if (enable) cfg.${root_name}_clk_rst_vif.start_clk();
         else cfg.${root_name}_clk_rst_vif.stop_clk();
         control_sync_pulse_assert(.clk(ClkMesr${Name.to_camel_case(src)}), .enable(enable));

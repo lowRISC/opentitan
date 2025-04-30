@@ -499,8 +499,8 @@
   end
 
   clkmgr_meas_chk #(
-    .Cnt(16),
-    .RefCnt(1)
+    .Cnt(512),
+    .RefCnt(32)
   ) u_io_div4_meas (
     .clk_i,
     .rst_ni,
@@ -526,8 +526,8 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(64),
-    .RefCnt(1)
+    .Cnt(512),
+    .RefCnt(8)
   ) u_main_meas (
     .clk_i,
     .rst_ni,

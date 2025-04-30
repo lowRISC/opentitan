@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
 all_srcs = get_all_srcs(src_clks, derived_clks)
 rg_srcs = get_rg_srcs(typed_clocks)
 %>
@@ -542,7 +542,6 @@ rg_srcs = get_rg_srcs(typed_clocks)
         },
       ]
     },
-<% aon_freq = all_srcs['aon']['freq'] %>\
 % for src in rg_srcs:
     { name: "${src.upper()}_MEAS_CTRL_EN",
       desc: '''
@@ -568,10 +567,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 <%
-  freq = all_srcs[src]['freq']
-  ratio = int(freq / aon_freq)
-  # Add extra bit to width for margin
-  width = ratio.bit_length() + 1
+  width, _, ratio = config_clk_meas(src, all_srcs)
   max_msb = width - 1
   min_msb = (max_msb + 1) + width - 1
 %>

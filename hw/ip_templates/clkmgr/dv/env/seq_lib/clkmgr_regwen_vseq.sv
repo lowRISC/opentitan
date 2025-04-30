@@ -51,7 +51,10 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       uvm_reg_data_t prev_en;
       mubi4_t new_en = get_rand_mubi4_val(1, 1, 2);
       int prev_ctrl;
-      int new_ctrl = $urandom();
+      int max_threshold = ExpectedCounts[clk] + 2;
+      int min_threshold = ExpectedCounts[clk] - 2;
+      int new_ctrl = get_meas_ctrl_value(min_threshold, max_threshold,
+          meas_ctrl_regs[clk_mesr].ctrl_lo, meas_ctrl_regs[clk_mesr].ctrl_hi);
       int actual_ctrl;
       int lo_mask = ((1 << meas_ctrl_regs[clk_mesr].ctrl_lo.get_n_bits()) - 1) <<
                      meas_ctrl_regs[clk_mesr].ctrl_lo.get_lsb_pos();
@@ -66,11 +69,11 @@ class clkmgr_regwen_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(new_en));
       csr_rd_check(.ptr(meas_ctrl_regs[clk_mesr].en),
                    .compare_value(mubi4_t'(regwen_enable ? new_en : prev_en)));
+      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
       csr_rd_check(.ptr(ctrl_shadowed), .compare_value(regwen_enable ? new_ctrl : prev_ctrl),
                    .compare_mask(lo_mask | hi_mask));
       `uvm_info(`gfn, $sformatf("Check %0s regwen done", meas_ctrl_regs[clk_mesr].name),
                 UVM_MEDIUM)
-      csr_wr(.ptr(meas_ctrl_regs[clk_mesr].en), .value(MuBi4False));
     end
   endtask : check_meas_ctrl_regwen
 

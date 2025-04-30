@@ -214,8 +214,8 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(meas_ctrl_regs[which].en), .value(MuBi4False));
   endtask
 
-  local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
-                                         uvm_reg_field hi);
+  protected function int get_meas_ctrl_value(int min_threshold, int max_threshold,
+                                             uvm_reg_field lo, uvm_reg_field hi);
     int lo_mask = (1 << lo.get_n_bits()) - 1;
     int hi_mask = (1 << hi.get_n_bits()) - 1;
 
@@ -287,11 +287,15 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
     case (clk)
       ClkMesrIoDiv4: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "io"),
+                  UVM_MEDIUM)
         if (enable) cfg.io_clk_rst_vif.start_clk();
         else cfg.io_clk_rst_vif.stop_clk();
         control_sync_pulse_assert(.clk(ClkMesrIoDiv4), .enable(enable));
       end
       ClkMesrMain: begin
+        `uvm_info(`gfn, $sformatf("%sabling %s clk", enable ? "En" : "Dis", "main"),
+                  UVM_MEDIUM)
         if (enable) cfg.main_clk_rst_vif.start_clk();
         else cfg.main_clk_rst_vif.stop_clk();
         control_sync_pulse_assert(.clk(ClkMesrMain), .enable(enable));
