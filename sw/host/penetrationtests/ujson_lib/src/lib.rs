@@ -8,4 +8,5 @@ pub mod fi_lc_ctrl_commands;
 pub mod fi_otbn_commands;
 pub mod fi_otp_commands;
 pub mod fi_rng_commands;
+pub mod fi_rom_commands;
 pub mod pentest_lib_commands;

@@ -91,6 +91,23 @@ pentest_fi(
     test_vectors = RNG_FI_TESTVECTOR_TARGETS,
 )
 
+ROM_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_rom",
+]
+
+ROM_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-rom-json=\"$(rootpath {})\"".format(target)
+    for target in ROM_FI_TESTVECTOR_TARGETS
+])
+
+pentest_fi(
+    name = "fi_rom",
+    slow_test = True,
+    test_args = ROM_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_rom:harness",
+    test_vectors = ROM_FI_TESTVECTOR_TARGETS,
+)
+
 OTBN_FI_TESTVECTOR_TARGETS = [
     "//sw/host/penetrationtests/testvectors/data:fi_otbn",
 ]
