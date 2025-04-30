@@ -32,7 +32,8 @@ extern "C" {
     value(_, KeySideload)  \
     value(_, LoadIntegrity) \
     value(_, PC)
-UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define OTBNFI_LOOP_COUNTER_OUTPUT(field, string) \
     field(loop_counter, uint32_t) \
