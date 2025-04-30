@@ -22,3 +22,20 @@ pentest_fi(
     test_harness = "//sw/host/tests/penetrationtests/fi_ibex:harness",
     test_vectors = IBEX_FI_TESTVECTOR_TARGETS,
 )
+
+CRYPTO_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_crypto",
+]
+
+CRYPTO_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-crypto-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTO_FI_TESTVECTOR_TARGETS
+])
+
+pentest_fi(
+    name = "fi_crypto",
+    slow_test = True,
+    test_args = CRYPTO_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_crypto:harness",
+    test_vectors = CRYPTO_FI_TESTVECTOR_TARGETS,
+)

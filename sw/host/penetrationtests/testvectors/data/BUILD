@@ -8,3 +8,8 @@ filegroup(
     name = "fi_ibex",
     srcs = ["fi_ibex.json"],
 )
+
+filegroup(
+    name = "fi_crypto",
+    srcs = ["fi_crypto.json"],
+)
