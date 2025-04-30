@@ -29,8 +29,12 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
-/// Timeout for waiting for data over the console.
-const CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
+/// Timeout waiting for the chip to reset and perform an RMA
+/// transition.
+const RMA_TRANSITION_CONSOLE_TIMEOUT: Duration = Duration::from_secs(5);
+/// Timeout waiting for RMA spinning (must be bigger than CREATOR_SW_CFG_RMA_SPIN_CYCLES),
+/// with an extra few seconds to avoid flakiness.
+const RMA_SPIN_TIMEOUT: Duration = Duration::from_secs(6 + 4);
 
 /// CLI args for this test.
 #[derive(Debug, Parser)]
@@ -89,7 +93,7 @@ fn test_no_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Res
         Regex::new("reset_info_bitfield: 0x[0-9a-f]+\r\n").context("failed to build regex")?;
 
     let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
+        timeout: Some(RMA_SPIN_TIMEOUT),
         exit_success: Some(exit_success),
         exit_failure: Some(exit_failure),
         ..Default::default()
@@ -261,7 +265,7 @@ fn test_rma_command(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result
     let exit_failure = Regex::new("LCV:[0-9a-f]+\r\n").context("failed to build regex")?;
 
     let mut console = UartConsole {
-        timeout: Some(CONSOLE_TIMEOUT),
+        timeout: Some(RMA_TRANSITION_CONSOLE_TIMEOUT),
         exit_success: Some(exit_success),
         exit_failure: Some(exit_failure),
         ..Default::default()
