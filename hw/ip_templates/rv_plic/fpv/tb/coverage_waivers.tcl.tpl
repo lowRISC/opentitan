@@ -41,3 +41,12 @@ check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subre
 check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line\
  58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else\
  part}
+
+# Not possible to have out of list state without FI.
+check_cov -waiver -add -source_file {../src/lowrisc_prim_diff_decode_0/rtl/prim_diff_decode.sv}\
+ -start_line 153 -end_line 153 -type {branch} -comment {Unreachable without FI}
+
+# To support the waiver above, this assertion makes sure that state_q can never transition to a
+# parasitic state. If that is no longer the case, this assertion will fail.
+assert -name PrimDiffDecodeNoParasiticState_A\
+ {dut.gen_alert_tx[0].u_prim_alert_sender.u_decode_ping.gen_async.state_q < 3}
