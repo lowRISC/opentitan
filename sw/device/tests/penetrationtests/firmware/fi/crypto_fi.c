@@ -395,9 +395,6 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
-  // Get the test mode.
-  crypto_fi_kmac_mode_t uj_data;
-  TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
