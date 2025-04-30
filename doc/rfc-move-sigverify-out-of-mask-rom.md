@@ -54,7 +54,7 @@ The immutable section would not be included in the signature for the ROM extensi
 
 1. The mask ROM containing sigverify has already been taped-out and tested. Changing it would reduce the utility of existing test results.
 2. Integrated flash is more expensive per-byte than mask ROM in terms of area/silicon cost.
-   * The size of sigverify is approximately 10Kib as of Earlgrey 1.0.0.
+   * The size of sigverify is approximately 10KiB as of Earlgrey 1.0.0.
 
 ## Rationale and alternatives
 
