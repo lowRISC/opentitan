@@ -628,17 +628,17 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "3:0",
+          bits: "8:0",
           name: "HI",
           desc: "Max threshold for io_div4 measurement",
-          resval: "14"
+          resval: "138"
         },
 
         {
-          bits: "7:4",
+          bits: "17:9",
           name: "LO",
           desc: "Min threshold for io_div4 measurement",
-          resval: "0"
+          resval: "118"
         },
       ]
     },
@@ -682,17 +682,17 @@
       storage_err_alert: "fatal_fault",
       fields: [
         {
-          bits: "5:0",
+          bits: "8:0",
           name: "HI",
           desc: "Max threshold for main measurement",
-          resval: "26"
+          resval: "138"
         },
 
         {
-          bits: "11:6",
+          bits: "17:9",
           name: "LO",
           desc: "Min threshold for main measurement",
-          resval: "6"
+          resval: "118"
         },
       ]
     },

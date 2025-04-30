@@ -277,21 +277,21 @@ Configuration controls for io_div4 measurement.
 The threshold fields are made wider than required (by 1 bit) to ensure
 there is room to adjust for measurement inaccuracies.
 - Offset: `0x2c`
-- Reset default: `0xe`
-- Reset mask: `0xff`
+- Reset default: `0xec8a`
+- Reset mask: `0x3ffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HI", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HI", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                           |
 |:------:|:------:|:-------:|:-------|:--------------------------------------|
-|  31:8  |        |         |        | Reserved                              |
-|  7:4   |   rw   |   0x0   | LO     | Min threshold for io_div4 measurement |
-|  3:0   |   rw   |   0xe   | HI     | Max threshold for io_div4 measurement |
+| 31:18  |        |         |        | Reserved                              |
+|  17:9  |   rw   |  0x76   | LO     | Min threshold for io_div4 measurement |
+|  8:0   |   rw   |  0x8a   | HI     | Max threshold for io_div4 measurement |
 
 ## MAIN_MEAS_CTRL_EN
 Enable for measurement control
@@ -317,21 +317,21 @@ Configuration controls for main measurement.
 The threshold fields are made wider than required (by 1 bit) to ensure
 there is room to adjust for measurement inaccuracies.
 - Offset: `0x34`
-- Reset default: `0x19a`
-- Reset mask: `0xfff`
+- Reset default: `0xec8a`
+- Reset mask: `0x3ffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HI", "bits": 6, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HI", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                        |
 |:------:|:------:|:-------:|:-------|:-----------------------------------|
-| 31:12  |        |         |        | Reserved                           |
-|  11:6  |   rw   |   0x6   | LO     | Min threshold for main measurement |
-|  5:0   |   rw   |  0x1a   | HI     | Max threshold for main measurement |
+| 31:18  |        |         |        | Reserved                           |
+|  17:9  |   rw   |  0x76   | LO     | Min threshold for main measurement |
+|  8:0   |   rw   |  0x8a   | HI     | Max threshold for main measurement |
 
 ## RECOV_ERR_CODE
 Recoverable Error code

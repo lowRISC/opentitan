@@ -6,7 +6,7 @@
 
 <%
 from collections import OrderedDict
-from ipgen.clkmgr_gen import get_all_srcs, get_rg_srcs
+from ipgen.clkmgr_gen import config_clk_meas, get_all_srcs, get_rg_srcs
 from topgen.lib import Name
 all_derived_srcs = list(sorted(set([dc['src']['name']
                                     for dc in derived_clks.values()])))
@@ -387,18 +387,14 @@ rg_srcs = get_rg_srcs(typed_clocks)
       hw2reg.measure_ctrl_regwen.d = 1'b1;
     end
   end
-<% aon_freq = src_clks['aon']['freq'] %>\
 % for i, src in enumerate(rg_srcs):
 <%
- freq = all_srcs[src]['freq']
- # One bit margin, same bit width as in the reg top
- bit_width = int(freq / aon_freq).bit_length() + 1
- cnt = 2**bit_width
+ width, ref_cnt, _ = config_clk_meas(src, all_srcs)
  sel_idx = f"Clk{Name.to_camel_case(src)}Idx"
 %>
   clkmgr_meas_chk #(
-    .Cnt(${cnt}),
-    .RefCnt(1)
+    .Cnt(${2**width}),
+    .RefCnt(${ref_cnt})
   ) u_${src}_meas (
     .clk_i,
     .rst_ni,

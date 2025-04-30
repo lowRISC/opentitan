@@ -115,9 +115,10 @@ package clkmgr_env_pkg;
     MainClkHz
   };
 
+  // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
-    ClkInHz[ClkMesrIoDiv4] / AonClkHz - 1,
-    ClkInHz[ClkMesrMain] / AonClkHz - 1
+    (ClkInHz[ClkMesrIoDiv4] / AonClkHz) * 32 - 1,
+    (ClkInHz[ClkMesrMain] / AonClkHz) * 8 - 1
   };
 
   // functions

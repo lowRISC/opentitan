@@ -10,6 +10,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   `uvm_object_new
 
   // This is measured in aon clocks. This is cannot be too precise because of a synchronizer.
+  // It takes into account cases where some clocks need multiple aon clock cycles to get
+  // a measurement.
   localparam int CyclesToGetMeasurements = 6;
 
   // The aon cycles between measurements, to make sure the previous measurement settles.

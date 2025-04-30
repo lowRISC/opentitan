@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from ipgen.clkmgr_gen import get_all_srcs, get_hint_targets, get_rg_srcs
+from ipgen.clkmgr_gen import (config_clk_meas, get_all_srcs, get_hint_targets,
+                              get_rg_srcs)
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
 all_srcs = get_all_srcs(src_clks, derived_clks)
@@ -125,10 +126,18 @@ package clkmgr_env_pkg;
 % endfor
   };
 
+  // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
 % for src in rg_srcs:
-<% sep = "" if loop.last else "," %>\
+<%
+reference_cycles = config_clk_meas(src, all_srcs).reference_cycles
+sep = "" if loop.last else ","
+%>\
+  % if reference_cycles == 1:
     ClkInHz[ClkMesr${Name.to_camel_case(src)}] / AonClkHz - 1${sep}
+  % else:
+    (ClkInHz[ClkMesr${Name.to_camel_case(src)}] / AonClkHz) * ${reference_cycles} - 1${sep}
+  % endif
 % endfor
   };
 

@@ -126,6 +126,7 @@ package clkmgr_env_pkg;
     UsbClkHz
   };
 
+  // Take into account if multiple aon clock cycles are needed for a measurement.
   parameter int ExpectedCounts[ClkMesrSize] = {
     ClkInHz[ClkMesrIo] / AonClkHz - 1,
     ClkInHz[ClkMesrIoDiv2] / AonClkHz - 1,
