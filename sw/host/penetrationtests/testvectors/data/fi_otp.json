@@ -1,0 +1,28 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "HwCfg",
+    "expected_output": "{\"hw_cfg_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"hw_cfg_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "LifeCycle",
+    "expected_output": "{\"life_cycle_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"life_cycle_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "OwnerSwCfg",
+    "expected_output": "{\"owner_sw_cfg_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"owner_sw_cfg_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "VendorTest",
+    "expected_output": "{\"vendor_test_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"vendor_test_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  }
+]
