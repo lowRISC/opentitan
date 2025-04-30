@@ -21,7 +21,8 @@ extern "C" {
     value(_, EdnBias) \
     value(_, FWOverride) \
     value(_, EntropySrcBias)
-UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define CRYPTOFI_CSRNG_MODE(field, string) \
     field(start_trigger, bool) \
