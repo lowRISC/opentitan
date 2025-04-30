@@ -57,6 +57,23 @@ pentest_fi(
     test_vectors = LCCTRL_FI_TESTVECTOR_TARGETS,
 )
 
+OTP_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_otp",
+]
+
+OTP_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-otp-json=\"$(rootpath {})\"".format(target)
+    for target in OTP_FI_TESTVECTOR_TARGETS
+])
+
+pentest_fi(
+    name = "fi_otp",
+    slow_test = True,
+    test_args = OTP_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_otp:harness",
+    test_vectors = OTP_FI_TESTVECTOR_TARGETS,
+)
+
 OTBN_FI_TESTVECTOR_TARGETS = [
     "//sw/host/penetrationtests/testvectors/data:fi_otbn",
 ]
