@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:rom_ctrl_pkg
     files:
       - rtl/pwrmgr_reg_pkg.sv
