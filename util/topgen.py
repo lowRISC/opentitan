@@ -480,9 +480,16 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
                   pinmux["io_counts"]["dedicated"]["inputs"] +
                   pinmux["io_counts"]["dedicated"]["outputs"])
 
+    tap_strap0_idx = pinmux.get('tap_strap0_idx', -1)
+
     # Generation with zero MIO/DIO pads is currently not supported.
     assert (n_mio_pads > 0)
     assert (n_dio_pads > 0)
+
+    if tap_strap0_idx >= n_mio_pads:
+        log.error(f'tap_strap0_idx is {tap_strap0_idx}, '
+                  f'but there are only {n_mio_pads} MIO pads')
+        return
 
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_wkup_detect: %d" % num_wkup_detect)
@@ -504,6 +511,7 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
+        'tap_strap0_idx': tap_strap0_idx,
     }
 
 

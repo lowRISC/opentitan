@@ -15,6 +15,7 @@
     n_dio_periph_out: 57
     enable_usb_wakeup: false
     enable_strap_sampling: false
+    tap_strap0_idx: -1
     topname: darjeeling
     uniquified_modules: {}
   }
