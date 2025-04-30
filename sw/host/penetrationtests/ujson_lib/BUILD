@@ -13,6 +13,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "fi_crypto_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:crypto_fi_commands"],
+)
+
+ujson_rust(
     name = "fi_ibex_commands_rust",
     srcs = ["//sw/device/tests/penetrationtests/json:ibex_fi_commands"],
 )
@@ -26,17 +31,20 @@ rust_library(
     name = "pentest_commands",
     srcs = [
         "src/commands.rs",
+        "src/fi_crypto_commands.rs",
         "src/fi_ibex_commands.rs",
         "src/lib.rs",
         "src/pentest_lib_commands.rs",
     ],
     compile_data = [
         ":commands_rust",
+        ":fi_crypto_commands_rust",
         ":fi_ibex_commands_rust",
         ":pentest_lib_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
+        "fi_crypto_commands_loc": "$(execpath :fi_crypto_commands_rust)",
         "fi_ibex_commands_loc": "$(execpath :fi_ibex_commands_rust)",
         "pentest_lib_commands_loc": "$(execpath :pentest_lib_commands_rust)",
     },
