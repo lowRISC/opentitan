@@ -304,23 +304,33 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 end
                 // enabling one clock cycle of ignore period
                 ignore_period[a_i][a_j] = 1'b1;
-                `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
-                // Update exp val and predict it in read address_channel
-                intr_status_exp[a_i][a_j] = 1'b1;
-                check_interrupt_pin();
-                if (cfg.en_cov) begin
-                  int timer_idx = a_i * NUM_TIMERS + a_j;
-                  //Sample cfg coverage for each timer
-                  cov.cfg_values_cov_obj[timer_idx].timer_cfg_cg.sample(step[a_i],
-                      prescale[a_i], timer_val[a_i], compare_val[a_i][a_j]);
-                  //Sample toggle coverage for each prescale bit
-                  for (int i = 0; i < 12; i++) begin
-                    cov.rv_timer_prescale_values_cov_obj[a_i][i].sample(prescale[a_i][i]);
+
+                // If the step is set to 0, it means the counter is not incremented since the
+                // counter evaluates as: count = count + step.
+                // Also, if the count is not greater than the comparison value, skip the iteration
+                // and wait until the step and/or timecmp/mtime are re-configured
+                if ( !(step[a_i] == 0 && (compare_val[a_i][a_j] - timer_val[a_i]) > 0)) begin
+                  `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
+                  // Update exp val and predict it in read address_channel
+                  intr_status_exp[a_i][a_j] = 1'b1;
+                  $display("check_interrupt_pin#1 - intr_status_exp = %p", intr_status_exp);
+                  check_interrupt_pin();
+                  if (cfg.en_cov) begin
+                    int timer_idx = a_i * NUM_TIMERS + a_j;
+                    //Sample cfg coverage for each timer
+                    cov.cfg_values_cov_obj[timer_idx].timer_cfg_cg.sample(step[a_i],
+                                                                          prescale[a_i],
+                                                                          timer_val[a_i],
+                                                                          compare_val[a_i][a_j]);
+                    //Sample toggle coverage for each prescale bit
+                    for (int i = 0; i < 12; i++) begin
+                      cov.rv_timer_prescale_values_cov_obj[a_i][i].sample(prescale[a_i][i]);
+                    end
                   end
-                end
-                @cfg.clk_rst_vif.cb;
-                ignore_period[a_i][a_j] = 1'b0;
-              end
+                  @cfg.clk_rst_vif.cb;
+                  ignore_period[a_i][a_j] = 1'b0;
+                  end // if ( !(step[a_i] == 0 && (compare_val[a_i][a_j] - timer_val[a_i]) > 0))
+              end // if (en_timers[a_i][a_j] & !en_timers_prev[a_i][a_j])
               begin
                 wait((en_timers[a_i][a_j] == 0) | (under_reset == 1));
               end
