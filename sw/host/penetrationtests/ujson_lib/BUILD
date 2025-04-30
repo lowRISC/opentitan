@@ -33,6 +33,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "fi_otp_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:otp_fi_commands"],
+)
+
+ujson_rust(
     name = "pentest_lib_commands_rust",
     srcs = ["//sw/device/tests/penetrationtests/json:pentest_lib_commands"],
 )
@@ -45,6 +50,7 @@ rust_library(
         "src/fi_ibex_commands.rs",
         "src/fi_lc_ctrl_commands.rs",
         "src/fi_otbn_commands.rs",
+        "src/fi_otp_commands.rs",
         "src/lib.rs",
         "src/pentest_lib_commands.rs",
     ],
@@ -54,6 +60,7 @@ rust_library(
         ":fi_ibex_commands_rust",
         ":fi_lc_ctrl_commands_rust",
         ":fi_otbn_commands_rust",
+        ":fi_otp_commands_rust",
         ":pentest_lib_commands_rust",
     ],
     rustc_env = {
@@ -62,6 +69,7 @@ rust_library(
         "fi_ibex_commands_loc": "$(execpath :fi_ibex_commands_rust)",
         "fi_lc_ctrl_commands_loc": "$(execpath :fi_lc_ctrl_commands_rust)",
         "fi_otbn_commands_loc": "$(execpath :fi_otbn_commands_rust)",
+        "fi_otp_commands_loc": "$(execpath :fi_otp_commands_rust)",
         "pentest_lib_commands_loc": "$(execpath :pentest_lib_commands_rust)",
     },
     deps = [
