@@ -1620,6 +1620,8 @@
     // Enable USB wakeup and hardware strap sampling for discrete OpenTitan
     enable_usb_wakeup: true
     enable_strap_sampling: true
+
+    tap_strap0_idx: 30
   },
 
   // Implementation targets.

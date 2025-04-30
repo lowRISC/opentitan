@@ -13712,6 +13712,7 @@
     wkup_cnt_width: 8
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    tap_strap0_idx: 30
     ios:
     [
       {
