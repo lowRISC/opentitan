@@ -40,6 +40,23 @@ pentest_fi(
     test_vectors = CRYPTO_FI_TESTVECTOR_TARGETS,
 )
 
+LCCTRL_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_lc_ctrl",
+]
+
+LCCTRL_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-lc-ctrl-json=\"$(rootpath {})\"".format(target)
+    for target in LCCTRL_FI_TESTVECTOR_TARGETS
+])
+
+pentest_fi(
+    name = "fi_lc_ctrl",
+    slow_test = True,
+    test_args = LCCTRL_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_lc_ctrl:harness",
+    test_vectors = LCCTRL_FI_TESTVECTOR_TARGETS,
+)
+
 OTBN_FI_TESTVECTOR_TARGETS = [
     "//sw/host/penetrationtests/testvectors/data:fi_otbn",
 ]
