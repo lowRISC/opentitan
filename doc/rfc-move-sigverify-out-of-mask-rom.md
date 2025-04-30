@@ -50,6 +50,8 @@ The ROM extension's responsibilties are unchanged.
 
 The immutable section would not be included in the signature for the ROM extension, making them independent stages in separate portions of flash.
 
+This proposed design is modelled for Earlgrey, but should apply to other designs using embedded flash with execute-in-place. It may be possible to adapt the design for designs with external flash (for example by copying the immutable section to internal SRAM before hashing it, or embedding it in OTP fuses). This is left for a future proposal.
+
 ## Drawbacks
 
 1. The mask ROM containing sigverify has already been taped-out and tested. Changing it would reduce the utility of existing test results.
@@ -69,3 +71,4 @@ Does this move apply to integrated designs, and does it give the same utility?
 
 * Alternative sigverify configurations (e.g. using Ed25519).
 * An implementation of the immutable section that implements DICE alone without any signature verification.
+* Adapt the boot process for a design using external flash.
