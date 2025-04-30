@@ -15,6 +15,11 @@ filegroup(
 )
 
 filegroup(
+    name = "fi_lc_ctrl",
+    srcs = ["fi_lc_ctrl.json"],
+)
+
+filegroup(
     name = "fi_otbn",
     srcs = ["fi_otbn.json"],
 )
