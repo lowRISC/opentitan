@@ -28,3 +28,8 @@ filegroup(
     name = "fi_otp",
     srcs = ["fi_otp.json"],
 )
+
+filegroup(
+    name = "fi_rng",
+    srcs = ["fi_rng.json"],
+)
