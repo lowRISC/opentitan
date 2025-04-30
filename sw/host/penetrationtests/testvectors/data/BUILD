@@ -23,3 +23,8 @@ filegroup(
     name = "fi_otbn",
     srcs = ["fi_otbn.json"],
 )
+
+filegroup(
+    name = "fi_otp",
+    srcs = ["fi_otp.json"],
+)
