@@ -22,7 +22,6 @@ use ft_ext_lib::ft_ext;
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::io::console::ConsoleError;
-use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::{JtagParams, JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
@@ -89,17 +88,11 @@ pub fn run_sram_ft_individualize(
     jtag_params: &JtagParams,
     sram_program: &SramProgramParams,
     ft_individualize_data_in: &ManufFtIndividualizeData,
-    console_spi: &str,
-    console_tx_indicator_pin: &str,
+    spi_console: &SpiConsoleDevice,
     timeout: Duration,
     ujson_payloads: &mut UjsonPayloads,
 ) -> Result<()> {
-    // Setup the SPI console with the GPIO TX indicator pin.
-    let spi = transport.spi(console_spi)?;
-    let device_console_tx_ready_pin = &transport.gpio_pin(console_tx_indicator_pin)?;
-    device_console_tx_ready_pin.set_mode(PinMode::Input)?;
-    device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
-    let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+    // Reset the SPI console before loading the target firmware.
     spi_console.reset_frame_counter();
 
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
@@ -125,7 +118,7 @@ pub fn run_sram_ft_individualize(
     {
         // Wait for SRAM program to complete execution.
         let _ = UartConsole::wait_for(
-            &spi_console,
+            spi_console,
             r"Waiting for FT SRAM provisioning data ...",
             timeout,
         )?;
@@ -133,7 +126,7 @@ pub fn run_sram_ft_individualize(
         // Inject provisioning data into the device.
         ujson_payloads.dut_in.insert(
             "FT_INDIVIDUALIZE_DATA_IN".to_string(),
-            ft_individualize_data_in.send(&spi_console)?,
+            ft_individualize_data_in.send(spi_console)?,
         );
     }
 
@@ -358,7 +351,7 @@ fn provision_certificates(
     // Wait until the device exports the TBS certificates.
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Exporting TBS certificates ...", timeout)?;
-    let perso_blob = PersoBlob::recv(spi_console, timeout, true)?;
+    let perso_blob = PersoBlob::recv(spi_console, timeout, /*quite=*/ true)?;
     response.stats.log_elapsed_time("perso-tbs-export", t0);
 
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
@@ -387,7 +380,6 @@ fn provision_certificates(
 
     let t0 = Instant::now();
     for _ in 0..perso_blob.num_objs {
-        log::info!("Processing next object");
         let header = get_obj_header(&perso_blob.body[start..])?;
         let obj_header_size = std::mem::size_of::<ObjHeaderType>();
 
@@ -594,8 +586,10 @@ pub fn run_ft_personalize(
     response: &mut PersonalizeResponse,
 ) -> Result<()> {
     // Bootstrap only personalization binary into ROM_EXT slot A in flash.
+    spi_console.reset_frame_counter();
     let t0 = Instant::now();
     init.bootstrap.init(transport)?;
+    spi_console.reset_frame_counter();
     response.stats.log_elapsed_time("first-bootstrap", t0);
 
     // Bootstrap personalization + ROM_EXT + Owner FW binaries into flash, since
@@ -606,13 +600,20 @@ pub fn run_ft_personalize(
 
     let t0 = Instant::now();
     init.bootstrap.load(transport, &second_bootstrap)?;
+    spi_console.reset_frame_counter();
     response.stats.log_elapsed_time("second-bootstrap", t0);
+
+    let _ = UartConsole::wait_for(spi_console, r"Personalization Firmware Hash:", timeout)?;
 
     // Send RMA unlock token digest to device.
     let second_t0 = Instant::now();
     let t0 = second_t0;
     send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console, ujson_payloads)?;
     response.stats.log_elapsed_time("send-rma-unlock-token", t0);
+
+    // After the OTP SECRET2 partition is programmed, the chip performs a SW
+    // reset, so we need to reset the SPI console frame counter.
+    spi_console.reset_frame_counter();
 
     // Provision all device certificates.
     let t0 = Instant::now();
