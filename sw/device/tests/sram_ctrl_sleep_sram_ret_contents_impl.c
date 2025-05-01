@@ -148,9 +148,12 @@ void enter_deep_sleep(void) {
 void set_up_reset_request(void) {
   // Prepare rstmgr for a reset.
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kAonTimerDt),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 
   CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
 
