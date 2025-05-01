@@ -29,9 +29,9 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:ibex",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:random_order",
+        "//sw/device/lib/crypto/drivers:ibex",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -65,9 +65,9 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:ibex",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:random_order",
+        "//sw/device/lib/crypto/drivers:ibex",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:hart",
     ],
@@ -185,10 +185,48 @@ cc_library(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:ibex",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:ibex",
         "//sw/device/lib/crypto/impl:status",
+    ],
+)
+
+cc_library(
+    name = "ibex",
+    srcs = ["ibex.c"],
+    hdrs = ["ibex.h"],
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
+opentitan_test(
+    name = "ibex_test",
+    srcs = ["ibex_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":ibex",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
 
@@ -203,8 +241,8 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:ibex",
         "//sw/device/lib/base:random_order",
+        "//sw/device/lib/crypto/drivers:ibex",
         "//sw/device/lib/crypto/impl:status",
     ],
 )

@@ -8,8 +8,8 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hmac_regs.h"  // Generated.

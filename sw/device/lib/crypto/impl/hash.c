@@ -7,8 +7,8 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/ibex.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/status.h"
 

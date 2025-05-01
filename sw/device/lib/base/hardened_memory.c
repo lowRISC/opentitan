@@ -5,9 +5,9 @@
 #include "sw/device/lib/base/hardened_memory.h"
 
 #include "sw/device/lib/base/hardened.h"
-#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/random_order.h"
+#include "sw/device/lib/crypto/drivers/ibex.h"
 
 // NOTE: The three hardened_mem* functions have similar contents, but the parts
 // that are shared between them are commented only in `memcpy()`.

@@ -5,7 +5,7 @@
 #include "sw/device/lib/base/random_order.h"
 
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/ibex.h"
+#include "sw/device/lib/crypto/drivers/ibex.h"
 
 // This implementation starts at a random index between 0 and len and
 // traverses over all possible indexes with an increment of 1.

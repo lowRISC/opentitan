@@ -6,10 +6,10 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
-#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/hart.h"
 
