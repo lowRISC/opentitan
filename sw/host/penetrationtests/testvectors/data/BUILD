@@ -58,3 +58,8 @@ filegroup(
     name = "sca_ibex",
     srcs = ["sca_ibex.json"],
 )
+
+filegroup(
+    name = "sca_kmac",
+    srcs = ["sca_kmac.json"],
+)

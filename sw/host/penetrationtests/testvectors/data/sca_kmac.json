@@ -1,0 +1,36 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "mode": "{\"fpga_mode\": 0}",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "SeedLfsr",
+    "input": "{\"seed\": [0,1,2,3]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "SetKey",
+    "input": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"key_length\":16}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "SingleAbsorb",
+    "input": "{\"msg\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"msg_length\":16}",
+    "expected_output": "{\"batch_digest\": [164,89,198,16,196,31,134,182,180,36,173,139,40,56,128,186,89,124,163,233,119,44,198,95,38,114,184,190,10,27,80,241]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "FixedKeySet",
+    "input": "{\"key\":[15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0],\"key_length\":16}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "Batch",
+    "input": "{\"num_enc\":10}",
+    "expected_output": "{\"batch_digest\": [157,162,35,240,232,193,138,227,70,197,185,12,160,216,226,178,89,9,133,55,40,67,253,131,60,6,111,205,70,22,142,152]}"
+  }
+]
