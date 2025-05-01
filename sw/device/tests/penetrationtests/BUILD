@@ -158,3 +158,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_edn:harness",
     test_vectors = EDN_SCA_TESTVECTOR_TARGETS,
 )
+
+HMAC_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_hmac",
+]
+
+HMAC_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-hmac-json=\"$(rootpath {})\"".format(target)
+    for target in HMAC_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_hmac",
+    slow_test = True,
+    test_args = HMAC_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_hmac:harness",
+    test_vectors = HMAC_SCA_TESTVECTOR_TARGETS,
+)
