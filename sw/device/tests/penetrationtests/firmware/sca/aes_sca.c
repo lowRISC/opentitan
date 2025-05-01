@@ -410,6 +410,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
 
   // send last ciphertext
   aes_sca_ciphertext_t uj_output;
+  uj_output.ciphertext_length = kAesTextLength;
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data, kAesTextLength);
   RESP_OK(ujson_serialize_aes_sca_ciphertext_t, uj, &uj_output);
 
