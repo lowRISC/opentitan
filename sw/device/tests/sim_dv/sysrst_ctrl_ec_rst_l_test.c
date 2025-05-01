@@ -127,11 +127,15 @@ static void configure_combo_reset(void) {
                                      .allow_zero = true,
                                      .enabled = kDifToggleEnabled,
                                      .override_value = true}));
-  // Prepare rstmgr for a reset with sysrst_ctrl (source one).
+  // Prepare rstmgr for a reset with sysrst_ctrl.
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(&rstmgr));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset,
+      dt_sysrst_ctrl_instance_id(kDtSysrstCtrlAon), kDtSysrstCtrlResetReqRstReq,
+      &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   // Issue WFI and wait for reset condition.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
@@ -177,8 +181,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
