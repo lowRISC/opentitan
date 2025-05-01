@@ -24,7 +24,8 @@ extern "C" {
     value(_, Batch) \
     value(_, FixedKeySet) \
     value(_, SeedLfsr)
-UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(KmacScaSubcommand, kmac_sca_subcommand_t, KMAC_SCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define KMAC_SCA_KEY(field, string) \
     field(key, uint8_t, KMACSCA_CMD_MAX_KEY_BYTES) \

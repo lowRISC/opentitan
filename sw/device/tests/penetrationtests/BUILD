@@ -192,3 +192,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_ibex:harness",
     test_vectors = IBEX_SCA_TESTVECTOR_TARGETS,
 )
+
+KMAC_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_kmac",
+]
+
+KMAC_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-kmac-json=\"$(rootpath {})\"".format(target)
+    for target in KMAC_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_kmac",
+    slow_test = True,
+    test_args = KMAC_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_kmac:harness",
+    test_vectors = KMAC_SCA_TESTVECTOR_TARGETS,
+)
