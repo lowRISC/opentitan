@@ -1,0 +1,19 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "BusData",
+     "expected_output": "{\"rnd_data\":[0,0,0,0]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "BusDataBatch",
+    "input": "{\"num_iterations\":16}",
+    "expected_output": "{\"rnd_data\":[0,0,0,0]}"
+  }
+]
