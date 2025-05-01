@@ -43,9 +43,8 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
       pwrmgr, kDifPwrmgrReqTypeReset,
       dt_sysrst_ctrl_instance_id(kDtSysrstCtrlAon), kDtSysrstCtrlResetReqRstReq,
       &reset_sources));
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              reset_sources,
-                                              kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("Reset Request SourceOne is set");
 
   // Configure sysrst key combo
