@@ -14,7 +14,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
   rand bit upd_cfg_in_end;
 
   // Defing min clocks to have room to update timer cfg
-  uint64 min_clks_until_expiry = 10_000;
+  uint64 min_clks_until_expiry = 100;
 
   constraint ticks_c {
     solve prescale before ticks;
@@ -32,7 +32,7 @@ class rv_timer_cfg_update_on_fly_vseq extends rv_timer_random_vseq;
 
   function void pre_randomize();
     super.pre_randomize();
-    max_clks_until_expiry = 1_000_000; // Redefining max clock to avoid timeout
+    max_clks_until_expiry = 10_000; // Redefining max clock to avoid timeout
   endfunction
 
   task body();
