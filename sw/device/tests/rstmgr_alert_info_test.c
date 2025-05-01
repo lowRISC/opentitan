@@ -602,9 +602,12 @@ static void peripheral_init(void) {
   CHECK_DIF_OK(dif_uart_init_from_dt(kDtUart0, &uart));
 
   // Set pwrmgr reset_en
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(&pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      &pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 }
 
 static void collect_alert_dump_and_compare(test_round_t round) {
