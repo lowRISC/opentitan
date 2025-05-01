@@ -37,6 +37,7 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   endfunction
 
   virtual task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     fork
       collect_trans();
     join
