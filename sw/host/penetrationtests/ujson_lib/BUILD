@@ -52,6 +52,11 @@ ujson_rust(
     srcs = ["//sw/device/tests/penetrationtests/json:pentest_lib_commands"],
 )
 
+ujson_rust(
+    name = "sca_aes_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:aes_sca_commands"],
+)
+
 rust_library(
     name = "pentest_commands",
     srcs = [
@@ -65,6 +70,7 @@ rust_library(
         "src/fi_rom_commands.rs",
         "src/lib.rs",
         "src/pentest_lib_commands.rs",
+        "src/sca_aes_commands.rs",
     ],
     compile_data = [
         ":commands_rust",
@@ -76,6 +82,7 @@ rust_library(
         ":fi_rng_commands_rust",
         ":fi_rom_commands_rust",
         ":pentest_lib_commands_rust",
+        ":sca_aes_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -87,6 +94,7 @@ rust_library(
         "fi_rng_commands_loc": "$(execpath :fi_rng_commands_rust)",
         "fi_rom_commands_loc": "$(execpath :fi_rom_commands_rust)",
         "pentest_lib_commands_loc": "$(execpath :pentest_lib_commands_rust)",
+        "sca_aes_commands_loc": "$(execpath :sca_aes_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",
