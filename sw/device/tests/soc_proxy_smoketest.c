@@ -29,9 +29,12 @@ void after_por(dif_pwrmgr_t *pwrmgr) {
   LOG_INFO("Reset after POR.");
 
   // Enable external reset request in pwrmgr.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_soc_proxy_instance_id(kDtSocProxy),
+      kDtSocProxyResetReqExternal, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("External resets enabled.");
 
   // Give DV environment time for triggering external reset.
@@ -115,15 +118,10 @@ bool test_main(void) {
   dif_rv_plic_t rv_plic;
   dif_soc_proxy_t soc_proxy;
 
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_DARJEELING_RV_PLIC_BASE_ADDR), &rv_plic));
-  CHECK_DIF_OK(dif_soc_proxy_init(
-      mmio_region_from_addr(TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR),
-      &soc_proxy));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
+  CHECK_DIF_OK(dif_soc_proxy_init_from_dt(kDtSocProxy, &soc_proxy));
 
   // Behave based on reset reason.
   if (UNWRAP(
