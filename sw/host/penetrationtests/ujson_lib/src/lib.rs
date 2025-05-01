@@ -11,3 +11,4 @@ pub mod fi_rng_commands;
 pub mod fi_rom_commands;
 pub mod pentest_lib_commands;
 pub mod sca_aes_commands;
+pub mod sca_edn_commands;

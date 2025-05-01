@@ -11,7 +11,7 @@ use clap::Parser;
 use serde::Deserialize;
 
 use pentest_commands::commands::PenetrationtestCommand;
-use pentest_commands::sca_aes_commands::AesScaSubcommand;
+use pentest_commands::sca_edn_commands::EdnScaSubcommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -30,18 +30,15 @@ struct Opts {
     timeout: Duration,
 
     #[arg(long, num_args = 1..)]
-    sca_aes_json: Vec<String>,
+    sca_edn_json: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct ScaAesTestCase {
+struct ScaEdnTestCase {
     test_case_id: usize,
     command: String,
     #[serde(default)]
-    mode: String,
-    #[serde(default)]
     input: String,
-    #[serde(default)]
     expected_output: String,
 }
 
@@ -49,11 +46,13 @@ fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde
     let mut map: serde_json::Map<String, serde_json::Value> = response.as_object().unwrap().clone();
     // Device ID is different for each device.
     map.remove("device_id");
+    // Ignore rnd_data as it contains random data.
+    map.remove("rnd_data");
     map
 }
 
-fn run_sca_aes_testcase(
-    test_case: &ScaAesTestCase,
+fn run_sca_edn_testcase(
+    test_case: &ScaEdnTestCase,
     opts: &Opts,
     uart: &dyn Uart,
     fail_counter: &mut u32,
@@ -63,18 +62,12 @@ fn run_sca_aes_testcase(
         test_case.test_case_id,
         test_case.command
     );
-    PenetrationtestCommand::AesSca.send(uart)?;
+    PenetrationtestCommand::EdnSca.send(uart)?;
 
     // Send test subcommand.
-    AesScaSubcommand::from_str(test_case.command.as_str())
-        .context("unsupported AES SCA subcommand")?
+    EdnScaSubcommand::from_str(test_case.command.as_str())
+        .context("unsupported EDN SCA subcommand")?
         .send(uart)?;
-
-    // Check if we need to send a mode.
-    if !test_case.mode.is_empty() {
-        let mode: serde_json::Value = serde_json::from_str(test_case.mode.as_str()).unwrap();
-        mode.send(uart)?;
-    }
 
     // Check if we need to send an input.
     if !test_case.input.is_empty() {
@@ -82,47 +75,45 @@ fn run_sca_aes_testcase(
         input.send(uart)?;
     }
 
-    if !test_case.expected_output.is_empty() {
-        // Get test output & filter.
-        let output = serde_json::Value::recv(uart, opts.timeout, false)?;
-        let output_received = filter_response(output.clone());
+    // Get test output & filter.
+    let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+    let output_received = filter_response(output.clone());
 
-        // Filter expected output.
-        let exp_output: serde_json::Value =
-            serde_json::from_str(test_case.expected_output.as_str()).unwrap();
-        let output_expected = filter_response(exp_output.clone());
+    // Filter expected output.
+    let exp_output: serde_json::Value =
+        serde_json::from_str(test_case.expected_output.as_str()).unwrap();
+    let output_expected = filter_response(exp_output.clone());
 
-        // Check received with expected output.
-        if output_expected != output_received {
-            log::info!(
-                "FAILED {} test #{}: expected = '{}', actual = '{}'",
-                test_case.command,
-                test_case.test_case_id,
-                exp_output,
-                output
-            );
-            *fail_counter += 1;
-        }
+    // Check received with expected output.
+    if output_expected != output_received {
+        log::info!(
+            "FAILED {} test #{}: expected = '{}', actual = '{}'",
+            test_case.command,
+            test_case.test_case_id,
+            exp_output,
+            output
+        );
+        *fail_counter += 1;
     }
 
     Ok(())
 }
 
-fn test_sca_aes(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_sca_edn(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
-    let test_vector_files = &opts.sca_aes_json;
+    let test_vector_files = &opts.sca_edn_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
-        let sca_aes_tests: Vec<ScaAesTestCase> = serde_json::from_str(&raw_json)?;
-        for sca_aes_test in &sca_aes_tests {
+        let sca_edn_tests: Vec<ScaEdnTestCase> = serde_json::from_str(&raw_json)?;
+        for sca_edn_test in &sca_edn_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_sca_aes_testcase(sca_aes_test, opts, &*uart, &mut fail_counter)?;
+            run_sca_edn_testcase(sca_edn_test, opts, &*uart, &mut fail_counter)?;
         }
     }
     assert_eq!(
@@ -138,6 +129,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    execute_test!(test_sca_aes, &opts, &transport);
+    execute_test!(test_sca_edn, &opts, &transport);
     Ok(())
 }
