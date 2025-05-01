@@ -15,7 +15,8 @@ extern "C" {
     value(_, Init) \
     value(_, BusData) \
     value(_, BusDataBatch)
-UJSON_SERDE_ENUM(EdnScaSubcommand, edn_sca_subcommand_t, EDNSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(EdnScaSubcommand, edn_sca_subcommand_t, EDNSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(EdnScaSubcommand, edn_sca_subcommand_t, EDNSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define EDNSCA_RESULT(field, string) \
     field(rnd_data, uint32_t, 4)

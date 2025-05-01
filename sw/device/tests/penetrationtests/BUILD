@@ -141,3 +141,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_aes:harness",
     test_vectors = AES_SCA_TESTVECTOR_TARGETS,
 )
+
+EDN_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_edn",
+]
+
+EDN_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-edn-json=\"$(rootpath {})\"".format(target)
+    for target in EDN_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_edn",
+    slow_test = True,
+    test_args = EDN_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_edn:harness",
+    test_vectors = EDN_SCA_TESTVECTOR_TARGETS,
+)
