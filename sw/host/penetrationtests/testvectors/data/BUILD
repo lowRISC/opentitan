@@ -53,3 +53,8 @@ filegroup(
     name = "sca_hmac",
     srcs = ["sca_hmac.json"],
 )
+
+filegroup(
+    name = "sca_ibex",
+    srcs = ["sca_ibex.json"],
+)
