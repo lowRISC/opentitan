@@ -714,6 +714,23 @@ static void rom_ext_rescue_lockdown(boot_data_t *boot_data) {
   owner_block_info_lockdown(owner_config.info);
 }
 
+static rom_error_t rom_ext_advance_secver(boot_data_t *boot_data,
+                                          const manifest_t *manifest) {
+  const manifest_ext_secver_write_t *secver;
+  rom_error_t error;
+  error = manifest_ext_get_secver_write(manifest, &secver);
+  if (error == kErrorOk) {
+    if (secver->write == kHardenedBoolTrue &&
+        manifest->security_version > boot_data->min_security_version_rom_ext) {
+      // If our security version is greater than the minimum security version
+      // advance the minimum version to our version.
+      boot_data->min_security_version_rom_ext = manifest->security_version;
+      return boot_data_write(boot_data);
+    }
+  }
+  return kErrorOk;
+}
+
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
@@ -735,6 +752,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
     //   //sw/device/silicon_creator/rom_ext/imm_section/defs.bzl
     dbg_printf("info: imm_section hash unenforced\r\n");
   }
+
+  // Maybe advance the security version.
+  HARDENED_RETURN_IF_ERROR(rom_ext_advance_secver(boot_data, self));
 
   // Prepare dice chain builder for CDI_1.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
