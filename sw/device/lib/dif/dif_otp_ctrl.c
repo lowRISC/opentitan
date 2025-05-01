@@ -285,133 +285,185 @@ dif_result_t dif_otp_ctrl_reading_is_locked(const dif_otp_ctrl_t *otp,
   return kDifOk;
 }
 
+dif_result_t dif_otp_ctrl_get_err_code(const dif_otp_ctrl_t *otp,
+                                       uint32_t partition,
+                                       dif_otp_ctrl_error_t *err) {
+  if (otp == NULL || err == NULL ||
+      partition >
+          (OTP_CTRL_PARAM_NUM_PART + kDifOtpCtrlStatusCodeHasCauseLast)) {
+    return kDifBadArg;
+  }
+
+  bitfield_field32_t field;
+  field = (bitfield_field32_t){
+      .mask = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_MASK,
+      .index = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
+  };
+
+  ptrdiff_t address =
+      OTP_CTRL_ERR_CODE_0_REG_OFFSET + partition * (ptrdiff_t)sizeof(uint32_t);
+  uint32_t error_code = mmio_region_read32(otp->base_addr, address);
+
+  switch (bitfield_field32_read(error_code, field)) {
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_NO_ERROR:
+      *err = kDifOtpCtrlErrorOk;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR:
+      *err = kDifOtpCtrlErrorMacroUnspecified;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR:
+      *err = kDifOtpCtrlErrorMacroRecoverableRead;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_UNCORR_ERROR:
+      *err = kDifOtpCtrlErrorMacroUnrecoverableRead;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_WRITE_BLANK_ERROR:
+      *err = kDifOtpCtrlErrorMacroBlankCheckFailed;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_ACCESS_ERROR:
+      *err = kDifOtpCtrlErrorLockedAccess;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_CHECK_FAIL_ERROR:
+      *err = kDifOtpCtrlErrorBackgroundCheckFailed;
+      break;
+    case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_FSM_STATE_ERROR:
+      *err = kDifOtpCtrlErrorFsmBadState;
+      break;
+    default:
+      return kDifError;
+  }
+  return kDifOk;
+}
+
 dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
                                      dif_otp_ctrl_status_t *status) {
   if (otp == NULL || status == NULL) {
     return kDifBadArg;
   }
 
-  static const bitfield_bit32_index_t kIndices[] = {
-    [kDifOtpCtrlStatusCodeVendorTestError] =
-        OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
-        OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
-        OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
+  static const bitfield_bit32_index_t kPartitionIndices[] = {
+    [kDifOtpCtrlPartitionStatusCodeVendorTestError] =
+        OTP_CTRL_PARTITION_STATUS_0_VENDOR_TEST_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeCreatorSwCfgError] =
+        OTP_CTRL_PARTITION_STATUS_0_CREATOR_SW_CFG_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeOwnerSwCfgError] =
+        OTP_CTRL_PARTITION_STATUS_0_OWNER_SW_CFG_ERROR_BIT,
 #if defined(OPENTITAN_IS_EARLGREY)
-    [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
-        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
-        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRotCreatorAuthCodesignError] =
+        OTP_CTRL_PARTITION_STATUS_0_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRotCreatorAuthStateError] =
+        OTP_CTRL_PARTITION_STATUS_0_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
 #elif defined(OPENTITAN_IS_DARJEELING)
-    [kDifOtpCtrlStatusCodeOwnershipSlotStateError] =
-        OTP_CTRL_STATUS_OWNERSHIP_SLOT_STATE_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeRotCreatorAuthError] =
-        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeRotOwnerAuthSlot0Error] =
-        OTP_CTRL_STATUS_ROT_OWNER_AUTH_SLOT0_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeRotOwnerAuthSlot1Error] =
-        OTP_CTRL_STATUS_ROT_OWNER_AUTH_SLOT1_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatIntegAuthSlot0Error] =
-        OTP_CTRL_STATUS_PLAT_INTEG_AUTH_SLOT0_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatIntegAuthSlot1Error] =
-        OTP_CTRL_STATUS_PLAT_INTEG_AUTH_SLOT1_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot0Error] =
-        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT0_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot1Error] =
-        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT1_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot2Error] =
-        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT2_ERROR_BIT,
-    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot3Error] =
-        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT3_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeExtNvmError] = OTP_CTRL_STATUS_EXT_NVM_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeRomPatchError] = OTP_CTRL_STATUS_ROM_PATCH_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeOwnershipSlotStateError] =
+        OTP_CTRL_PARTITION_STATUS_0_OWNERSHIP_SLOT_STATE_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRotCreatorAuthError] =
+        OTP_CTRL_PARTITION_STATUS_0_ROT_CREATOR_AUTH_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRotOwnerAuthSlot0Error] =
+        OTP_CTRL_PARTITION_STATUS_0_ROT_OWNER_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRotOwnerAuthSlot1Error] =
+        OTP_CTRL_PARTITION_STATUS_0_ROT_OWNER_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatIntegAuthSlot0Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_INTEG_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatIntegAuthSlot1Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_INTEG_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatOwnerAuthSlot0Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_OWNER_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatOwnerAuthSlot1Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_OWNER_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatOwnerAuthSlot2Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_OWNER_AUTH_SLOT2_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodePlatOwnerAuthSlot3Error] =
+        OTP_CTRL_PARTITION_STATUS_0_PLAT_OWNER_AUTH_SLOT3_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeExtNvmError] =
+        OTP_CTRL_PARTITION_STATUS_0_EXT_NVM_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeRomPatchError] =
+        OTP_CTRL_PARTITION_STATUS_0_ROM_PATCH_ERROR_BIT,
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
-    [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeHwCfg0Error] =
+        OTP_CTRL_PARTITION_STATUS_0_HW_CFG0_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeHwCfg1Error] =
+        OTP_CTRL_PARTITION_STATUS_0_HW_CFG1_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeSecret0Error] =
+        OTP_CTRL_PARTITION_STATUS_0_SECRET0_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeSecret1Error] =
+        OTP_CTRL_PARTITION_STATUS_0_SECRET1_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeSecret2Error] =
+        OTP_CTRL_PARTITION_STATUS_0_SECRET2_ERROR_BIT,
 #if defined(OPENTITAN_IS_DARJEELING)
-    [kDifOtpCtrlStatusCodeSecret3Error] = OTP_CTRL_STATUS_SECRET3_ERROR_BIT,
+    [kDifOtpCtrlPartitionStatusCodeSecret3Error] =
+        OTP_CTRL_PARTITION_STATUS_0_SECRET3_ERROR_BIT,
 #elif defined(OPENTITAN_IS_EARLGREY)
 // Earlgrey only has 3 secret partitions.
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
-    [kDifOtpCtrlStatusCodeLifeCycleError] =
-        OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeScramblingError] =
-        OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeBusIntegError] = OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
-    [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
-    [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
+    [kDifOtpCtrlPartitionStatusCodeLifeCycleError] =
+        OTP_CTRL_PARTITION_STATUS_0_LIFE_CYCLE_ERROR_BIT,
+  };
+
+  static const bitfield_bit32_index_t kStatusIndices[] = {
+      [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeScramblingError] =
+          OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeBusIntegError] =
+          OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
+      [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
   };
 
   status->codes = 0;
   uint32_t status_code =
       mmio_region_read32(otp->base_addr, OTP_CTRL_STATUS_REG_OFFSET);
-  for (int i = 0; i < ARRAYSIZE(kIndices); ++i) {
+  if (!bitfield_bit32_read(status_code, OTP_CTRL_STATUS_PARTITION_ERROR_BIT)) {
+    // If there is any partition error, we need to read the corresponding
+    // partition status register
+    uint32_t partition_status = mmio_region_read32(
+        otp->base_addr, OTP_CTRL_PARTITION_STATUS_0_REG_OFFSET);
+
+    for (uint32_t i = 0; i < ARRAYSIZE(kPartitionIndices); ++i) {
+      // If the error is not present at all, we clear its cause bit if relevant,
+      // and bail immediately.
+      if (!bitfield_bit32_read(status_code, kPartitionIndices[i])) {
+        status->causes[i] = kDifOtpCtrlErrorOk;
+        continue;
+      }
+      status->codes =
+          bitfield_bit32_write(status->codes, (bitfield_bit32_index_t)i, true);
+
+      DIF_RETURN_IF_ERROR(
+          dif_otp_ctrl_get_err_code(otp, i, &status->causes[i]));
+    }
+  }
+
+  for (uint32_t i = kDifOtpCtrlStatusCodeHasCauseFirst;
+       i < ARRAYSIZE(kStatusIndices); ++i) {
     // If the error is not present at all, we clear its cause bit if relevant,
     // and bail immediately.
-    if (!bitfield_bit32_read(status_code, kIndices[i])) {
+    if (!bitfield_bit32_read(status_code, kStatusIndices[i])) {
       if (i <= kDifOtpCtrlStatusCodeHasCauseLast) {
-        status->causes[i] = kDifOtpCtrlErrorOk;
+        status->causes[OTP_CTRL_PARAM_NUM_PART + i -
+                       kDifOtpCtrlStatusCodeHasCauseFirst] = kDifOtpCtrlErrorOk;
       }
       continue;
     }
 
     status->codes =
-        bitfield_bit32_write(status->codes, (bitfield_bit32_index_t)i, true);
+        bitfield_bit32_write(status->codes,
+                             (bitfield_bit32_index_t)OTP_CTRL_PARAM_NUM_PART +
+                                 i - kDifOtpCtrlStatusCodeHasCauseFirst,
+                             true);
 
     if (i <= kDifOtpCtrlStatusCodeHasCauseLast) {
-      bitfield_field32_t field;
-      field = (bitfield_field32_t){
-          .mask = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_MASK,
-          .index = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
-      };
-
-      ptrdiff_t address =
-          OTP_CTRL_ERR_CODE_0_REG_OFFSET + i * (ptrdiff_t)sizeof(uint32_t);
-      uint32_t error_code = mmio_region_read32(otp->base_addr, address);
-
-      dif_otp_ctrl_error_t err;
-      switch (bitfield_field32_read(error_code, field)) {
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_NO_ERROR:
-          err = kDifOtpCtrlErrorOk;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR:
-          err = kDifOtpCtrlErrorMacroUnspecified;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR:
-          err = kDifOtpCtrlErrorMacroRecoverableRead;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_UNCORR_ERROR:
-          err = kDifOtpCtrlErrorMacroUnrecoverableRead;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_WRITE_BLANK_ERROR:
-          err = kDifOtpCtrlErrorMacroBlankCheckFailed;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_ACCESS_ERROR:
-          err = kDifOtpCtrlErrorLockedAccess;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_CHECK_FAIL_ERROR:
-          err = kDifOtpCtrlErrorBackgroundCheckFailed;
-          break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_FSM_STATE_ERROR:
-          err = kDifOtpCtrlErrorFsmBadState;
-          break;
-        default:
-          return kDifError;
-      }
-      status->causes[i] = err;
+      DIF_RETURN_IF_ERROR(dif_otp_ctrl_get_err_code(
+          otp, OTP_CTRL_PARAM_NUM_PART + i - kDifOtpCtrlStatusCodeHasCauseFirst,
+          &status->causes[OTP_CTRL_PARAM_NUM_PART + i -
+                          kDifOtpCtrlStatusCodeHasCauseFirst]));
     }
   }
 
