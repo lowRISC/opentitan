@@ -4,7 +4,6 @@
 
 #include "perso_tlv_data.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -88,7 +87,6 @@ static status_t personalize_gen_tpm_ek_certificate(
 
 status_t personalize_extension_pre_cert_endorse(
     personalize_extension_pre_endorse_t *pre_params) {
-  LOG_INFO("Running TPM perso extension ...");
   TRY(peripheral_handles_init());
   TRY(config_and_erase_tpm_certificate_flash_pages());
   TRY(personalize_gen_tpm_ek_certificate(pre_params->certgen_inputs,

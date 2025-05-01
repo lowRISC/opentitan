@@ -14,6 +14,7 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
@@ -60,11 +61,6 @@
 #include "hw/top/otp_ctrl_regs.h"    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false,
-                        .silence_console_prints = true);
-
 enum {
   /**
    * Size of the largest OTP partition to be measured.
@@ -108,6 +104,15 @@ static const dif_gpio_pin_t kGpioPinTestDone = 1;
 static const dif_gpio_pin_t kGpioPinTestError = 2;
 static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
 static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
+
+OTTF_DEFINE_TEST_CONFIG(
+        .console.type = kOttfConsoleSpiDevice,
+        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.test_may_clobber = false, .console.putbuf_buffered = true,
+        .silence_console_prints = true, .console_tx_indicator.enable = true,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_gpio =
+            kGpioPinSpiConsoleTxReady);
 
 /**
  * Keymgr binding values.
@@ -198,7 +203,7 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
 
 static void log_self_hash(void) {
   // clang-format off
-  LOG_INFO("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
+  base_printf("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x\n",
            boot_measurements.rom_ext.data[7],
            boot_measurements.rom_ext.data[6],
            boot_measurements.rom_ext.data[5],
@@ -364,17 +369,17 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     TRY(manuf_individualize_device_field_cfg(
         &otp_ctrl,
         OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
-    LOG_INFO("Bootstrap requested.");
+    base_printf("Bootstrap requested.\n");
     wait_for_interrupt();
   }
 
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
   // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
+    log_self_hash();
     lc_token_hash_t token_hash;
-    // Wait for host the host generated RMA unlock token hash to arrive over the
-    // console.
-    LOG_INFO("Waiting For RMA Unlock Token Hash ...");
+    // Wait for the host to send the RMA unlock token hash over the console.
+    base_printf("Waiting For RMA Unlock Token Hash ...\n");
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
     CHECK_STATUS_OK(
         UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
@@ -523,7 +528,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // Retrieve certificate provisioning data.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Waiting for certificate inputs ...");
+  base_printf("Waiting for certificate inputs ...\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
@@ -590,10 +595,10 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
       kDiceCertFormat, all_certs, curr_cert_size, &perso_blob_to_host));
-  LOG_INFO("Generated UDS certificate.");
 
+  // After we have cranked the keymgr to the CreatorRootKey (UDS) stage, we now
+  // can initialize and seal the ownership block.
   ownership_seal_init();
-  LOG_INFO("Initialized ownership sealing in UDS state.");
 
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
@@ -611,7 +616,6 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_0", /*needs_endorsement=*/false,
                                         kDiceCertFormat, all_certs,
                                         curr_cert_size, &perso_blob_to_host));
-  LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
@@ -630,7 +634,6 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_1", /*needs_endorsement=*/false,
                                         kDiceCertFormat, all_certs,
                                         curr_cert_size, &perso_blob_to_host));
-  LOG_INFO("Generated CDI_1 certificate.");
 
   return OK_STATUS();
 }
@@ -833,7 +836,6 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
     // Copy the certificate object to the destination buffer.
     uint8_t *dest_p = *dest;
     memcpy(dest_p, block.obj_p, block.obj_size);
-    LOG_INFO("Copied %s certificate", block.name);
 
     // Advance destination buffer pointer and reduce free space counter.
     *dest = dest_p + block.obj_size;
@@ -885,15 +887,13 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // Export the certificates to the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Exporting TBS certificates ...");
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, true));
+  base_printf("Exporting TBS certificates ...\n");
   RESP_OK(ujson_serialize_perso_blob_t, uj, &perso_blob_to_host);
-  TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleTxReady, false));
 
   // Import endorsed certificates from the provisioning appliance.
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Importing endorsed certificates ...");
+  base_printf("Importing endorsed certificates ...\n");
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_perso_blob_t(uj, &perso_blob_from_host));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
@@ -946,7 +946,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       return RESOURCE_EXHAUSTED();
 
     memcpy(next_cert, block.obj_p, block.obj_size);
-    LOG_INFO("Copied %s certificate", block.name);
     next_cert += block.obj_size;
     free_room -= block.obj_size;
   }
@@ -983,8 +982,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       TRY(write_cert_to_flash_info_page(&curr_layout, &block, next_cert,
                                         page_offset, cert_size_bytes_ru,
                                         cert_size_words));
-      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
-               block.name);
       page_offset += cert_size_bytes_ru;
       next_cert += block.obj_size;
 
@@ -995,7 +992,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Finished importing certificates.");
+  base_printf("Finished importing certificates.\n");
 
   return OK_STATUS();
 }
@@ -1136,14 +1133,12 @@ static status_t provision(ujson_t *uj) {
       .cert_flash_layout = cert_flash_layout};
   TRY(personalize_extension_post_cert_endorse(&post_endorse));
 
-  // Log the hash of all perso objects to the host and console.
+  // Check the hash of all perso objects with the host to confirm integrity of
+  // the transmission / provisioning operations.
   serdes_sha256_hash_t hash;
   hmac_sha256_process();
   hmac_sha256_final((hmac_digest_t *)&hash);
   TRY(send_final_hash(uj, &hash));
-  LOG_INFO("SHA256 hash of all perso objects: %08x%08x%08x%08x%08x%08x%08x%08x",
-           hash.data[7], hash.data[6], hash.data[5], hash.data[4], hash.data[3],
-           hash.data[2], hash.data[1], hash.data[0]);
 
   // Complete any remaining OTP programming.
   TRY(finalize_otp_partitions());
@@ -1164,8 +1159,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init());
   ujson_t uj = ujson_ottf_console();
 
-  log_self_hash();
-
   // Read the reset reason directly from the RSTMGR.
   // This is needed to clear the reset reason before the first call to
   // `personalize_otp_and_flash_secrets()`, which will reset the device.
@@ -1184,7 +1177,7 @@ bool test_main(void) {
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in
   // sw/host/provisioning/ft_lib/src/lib.rs
-  LOG_INFO("Personalization done.");
+  base_printf("Personalization done.\n");
 
   return true;
 }

@@ -22,6 +22,7 @@ use ft_lib::{
 };
 use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
@@ -125,7 +126,10 @@ fn main() -> Result<()> {
     let transport = backend::create(&opts.init.backend_opts)?;
     transport.apply_default_configuration(None)?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let device_console_tx_ready_pin = &transport.gpio_pin(&opts.console_tx_indicator_pin)?;
+    device_console_tx_ready_pin.set_mode(PinMode::Input)?;
+    device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
+    let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
     InitializeTest::print_result(
         "load_bitstream",
         opts.init.load_bitstream.init(&transport).map(|_| None),
@@ -236,8 +240,7 @@ fn main() -> Result<()> {
                 &opts.init.jtag_params,
                 &opts.sram_program,
                 &ft_individualize_data_in,
-                &opts.console_spi,
-                &opts.console_tx_indicator_pin,
+                &spi_console,
                 opts.timeout,
                 &mut ujson_payloads,
             )?;
@@ -273,7 +276,7 @@ fn main() -> Result<()> {
         ca_keys,
         &_perso_certgen_inputs,
         opts.second_bootstrap,
-        &spi_console_device,
+        &spi_console,
         &mut ujson_payloads,
         opts.timeout,
         &mut response,
