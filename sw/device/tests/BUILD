@@ -1735,7 +1735,7 @@ opentitan_test(
     kind = "rom",
     linker_script = "//sw/device/lib/testing/test_rom:linker_script",
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
