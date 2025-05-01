@@ -14,7 +14,6 @@ class tl_monitor extends dv_base_monitor#(
 
   tl_seq_item    pending_a_req[bit [SourceWidth - 1 : 0]];
   string         agent_name;
-  uvm_phase      run_phase_h;
 
   // Sequence items for transactions on the A and D channels. Sampled on the positive clock edge.
   //
@@ -54,32 +53,47 @@ class tl_monitor extends dv_base_monitor#(
     end
   endfunction : build_phase
 
-  virtual task run_phase(uvm_phase phase);
-    run_phase_h = phase;
-    wait_for_reset_done();
-    fork
-      ad_channels_thread();
-      reset_thread();
-    join_none
-  endtask : run_phase
-
-  virtual task wait_for_reset_done();
-    @(posedge cfg.vif.rst_n);
-  endtask : wait_for_reset_done
-
-  // on reset flush pending request
-  virtual task reset_thread();
+  // Watch the reset signal and maintain the cfg.reset_asserted flag
+  local task monitor_reset();
     forever begin
-      @(negedge cfg.vif.rst_n);
       cfg.reset_asserted = 1'b1;
-      // on reset asserted sample pending request is present or not
-      if (cfg.en_cov) cov.m_pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
-      @(posedge cfg.vif.rst_n);
+      wait(cfg.vif.rst_n);
       cfg.reset_asserted = 1'b0;
+      wait(!cfg.vif.rst_n);
+    end
+  endtask
+
+  virtual task run_phase(uvm_phase phase);
+    fork
+      monitor_reset();
+      ad_channels_thread();
+    join
+  endtask
+
+  local task ad_channels_thread();
+    forever begin
+      wait(!cfg.reset_asserted);
+
+      // As we come out of reset, clear the pending_a_req and cfg.a_source_pend_q associative
+      // arrays.
       pending_a_req.delete();
       cfg.a_source_pend_q.delete();
+
+      // Watch the interface for A and D channel requests, but stop immediately if we see a reset.
+      // Note that ad_channels_thread is safe to kill at any time.
+      fork begin : isolation_fork
+        fork
+          ad_channels_thread_();
+          wait(cfg.reset_asserted);
+        join_any
+        disable fork;
+      end join
+
+      // We have just entered reset. If coverage is enabled, take a note of whether there was a
+      // pending request as we did so.
+      if (cfg.en_cov) cov.m_pending_req_on_rst_cg.sample(pending_a_req.size() != 0);
     end
-  endtask : reset_thread
+  endtask
 
   // Check the A and D channels for transactions. When a transaction is seen, push it to a_chan_port
   // or d_chan_port, respectively. If cfg.synchronise_ports, also push the channel to
@@ -91,7 +105,7 @@ class tl_monitor extends dv_base_monitor#(
   // transaction will be asserted just after a clock edge and then D will be asserted some time
   // afterwards. Sampling A in the middle of the cycle and then D at the following clock ensures
   // that we see A before D (the order in which the events happened).
-  task ad_channels_thread();
+  local task ad_channels_thread_();
 
     // The most recently seen request on the A channel. Set to something non-null by successful
     // calls to check_a_channel. Cleared back to null when the item is written to a_chan_port.
