@@ -48,3 +48,8 @@ filegroup(
     name = "sca_edn",
     srcs = ["sca_edn.json"],
 )
+
+filegroup(
+    name = "sca_hmac",
+    srcs = ["sca_hmac.json"],
+)
