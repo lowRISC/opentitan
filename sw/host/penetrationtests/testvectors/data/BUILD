@@ -63,3 +63,8 @@ filegroup(
     name = "sca_kmac",
     srcs = ["sca_kmac.json"],
 )
+
+filegroup(
+    name = "sca_otbn",
+    srcs = ["sca_otbn.json"],
+)
