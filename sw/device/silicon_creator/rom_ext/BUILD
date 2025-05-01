@@ -14,12 +14,27 @@ load(
     "SLOTS",
     "TEST_OWNER_CONFIGS",
 )
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "doc_files",
     srcs = glob(["**/*.md"]),
+)
+
+string_flag(
+    name = "secver_write",
+    build_setting_default = "false",
+    values = [
+        "false",
+        "true",
+    ],
+)
+
+config_setting(
+    name = "secver_write_true",
+    flag_values = {":secver_write": "true"},
 )
 
 cc_library(
