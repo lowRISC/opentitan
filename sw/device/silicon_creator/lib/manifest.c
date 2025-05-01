@@ -33,6 +33,9 @@ extern rom_error_t manifest_ext_get_spx_key(
 extern rom_error_t manifest_ext_get_spx_signature(
     const manifest_t *manifest,
     const manifest_ext_spx_signature_t **spx_signature);
+extern rom_error_t manifest_ext_get_secver_write(
+    const manifest_t *manifest,
+    const manifest_ext_secver_write_t **secver_write);
 extern rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
                                          const manifest_ext_isfb_t **isfb);
 extern rom_error_t manifest_ext_get_isfb_erase(
