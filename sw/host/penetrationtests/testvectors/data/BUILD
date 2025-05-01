@@ -38,3 +38,8 @@ filegroup(
     name = "fi_rom",
     srcs = ["fi_rom.json"],
 )
+
+filegroup(
+    name = "sca_aes",
+    srcs = ["sca_aes.json"],
+)
