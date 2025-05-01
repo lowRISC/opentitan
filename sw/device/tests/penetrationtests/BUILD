@@ -209,3 +209,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_kmac:harness",
     test_vectors = KMAC_SCA_TESTVECTOR_TARGETS,
 )
+
+OTBN_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_otbn",
+]
+
+OTBN_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-otbn-json=\"$(rootpath {})\"".format(target)
+    for target in OTBN_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_otbn",
+    slow_test = True,
+    test_args = OTBN_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_otbn:harness",
+    test_vectors = OTBN_SCA_TESTVECTOR_TARGETS,
+)

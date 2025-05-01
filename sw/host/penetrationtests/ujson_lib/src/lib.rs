@@ -15,3 +15,4 @@ pub mod sca_edn_commands;
 pub mod sca_hmac_commands;
 pub mod sca_ibex_commands;
 pub mod sca_kmac_commands;
+pub mod sca_otbn_commands;
