@@ -175,3 +175,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_hmac:harness",
     test_vectors = HMAC_SCA_TESTVECTOR_TARGETS,
 )
+
+IBEX_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_ibex",
+]
+
+IBEX_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-ibex-json=\"$(rootpath {})\"".format(target)
+    for target in IBEX_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_ibex",
+    slow_test = True,
+    test_args = IBEX_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_ibex:harness",
+    test_vectors = IBEX_SCA_TESTVECTOR_TARGETS,
+)
