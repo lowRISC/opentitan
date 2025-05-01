@@ -13,3 +13,4 @@ pub mod pentest_lib_commands;
 pub mod sca_aes_commands;
 pub mod sca_edn_commands;
 pub mod sca_hmac_commands;
+pub mod sca_ibex_commands;

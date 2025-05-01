@@ -30,7 +30,8 @@ extern "C" {
     value(_, TLWriteBatchFvsrFixAddress) \
     value(_, TLWriteBatchRandom) \
     value(_, TLWriteBatchRandomFixAddress)
-UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define IBEXSCA_TEST_DATA(field, string) \
     field(data, uint32_t, 8)

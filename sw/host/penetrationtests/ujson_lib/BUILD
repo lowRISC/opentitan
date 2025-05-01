@@ -67,6 +67,11 @@ ujson_rust(
     srcs = ["//sw/device/tests/penetrationtests/json:hmac_sca_commands"],
 )
 
+ujson_rust(
+    name = "sca_ibex_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:ibex_sca_commands"],
+)
+
 rust_library(
     name = "pentest_commands",
     srcs = [
@@ -83,6 +88,7 @@ rust_library(
         "src/sca_aes_commands.rs",
         "src/sca_edn_commands.rs",
         "src/sca_hmac_commands.rs",
+        "src/sca_ibex_commands.rs",
     ],
     compile_data = [
         ":commands_rust",
@@ -97,6 +103,7 @@ rust_library(
         ":sca_aes_commands_rust",
         ":sca_edn_commands_rust",
         ":sca_hmac_commands_rust",
+        ":sca_ibex_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -111,6 +118,7 @@ rust_library(
         "sca_aes_commands_loc": "$(execpath :sca_aes_commands_rust)",
         "sca_edn_commands_loc": "$(execpath :sca_edn_commands_rust)",
         "sca_hmac_commands_loc": "$(execpath :sca_hmac_commands_rust)",
+        "sca_ibex_commands_loc": "$(execpath :sca_ibex_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",

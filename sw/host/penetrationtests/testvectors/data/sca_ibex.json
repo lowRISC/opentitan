@@ -1,0 +1,68 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "RFRead",
+    "input": "{\"data\":[7,6,5,4,3,2,1,0]}",
+    "expected_output": "{\"result\":0}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "RFReadBatchFvsr",
+    "input": "{\"num_iterations\":5,\"fixed_data\":2048}",
+    "expected_output": "{\"result\":2048}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "RFWrite",
+    "input": "{\"data\":[7,6,5,4,3,2,1,0]}",
+    "expected_output": "{\"result\":0}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "RFWriteBatchFvsr",
+    "input": "{\"num_iterations\":4,\"fixed_data\":2048}",
+    "expected_output": "{\"result\":2048}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "TLRead",
+    "input": "{\"data\":[255,255,255,0,0,0,0,0]}",
+    "expected_output": "{\"result\":0}"
+  },
+  {
+    "test_case_id": 7,
+    "command": "TLReadBatchFvsr",
+    "input": "{\"num_iterations\":1,\"fixed_data\":511}",
+    "expected_output": "{\"result\":511}"
+  },
+  {
+    "test_case_id": 8,
+    "command": "TLReadBatchFvsrFixAddress",
+    "input": "{\"num_iterations\":1,\"fixed_data\":11}",
+    "expected_output": "{\"result\":11}"
+  },
+  {
+    "test_case_id": 9,
+    "command": "TLWrite",
+    "input": "{\"data\":[255,255,255,0,0,0,0,0]}",
+    "expected_output": "{\"result\":0}"
+  },
+  {
+    "test_case_id": 10,
+    "command": "TLWriteBatchFvsr",
+    "input": "{\"num_iterations\":1,\"fixed_data\":511}",
+    "expected_output": "{\"result\":511}"
+  },
+  {
+    "test_case_id": 11,
+    "command": "TLWriteBatchFvsrFixAddress",
+    "input": "{\"num_iterations\":1,\"fixed_data\":11}",
+    "expected_output": "{\"result\":11}"
+  }
+]
