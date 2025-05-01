@@ -184,9 +184,12 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
   LOG_INFO("sysrst enabled");
 
   // Set sysrst as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceOne,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_sysrst_ctrl_instance_id(kSysrstCtrlDt),
+      kDtSysrstCtrlResetReqRstReq, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
   LOG_INFO("Reset Request SourceOne is set");
 
   // Configure sysrst key combo
@@ -235,9 +238,12 @@ void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(aon_timer, bark_cycles,
                                                       bite_cycles, false));
   // Set wdog as a reset source.
-  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
-                                              kDifPwrmgrResetRequestSourceTwo,
-                                              kDifToggleEnabled));
+  dif_pwrmgr_request_sources_t reset_sources;
+  CHECK_DIF_OK(dif_pwrmgr_find_request_source(
+      pwrmgr, kDifPwrmgrReqTypeReset, dt_aon_timer_instance_id(kDtAonTimerAon),
+      kDtAonTimerResetReqAonTimer, &reset_sources));
+  CHECK_DIF_OK(dif_pwrmgr_set_request_sources(
+      pwrmgr, kDifPwrmgrReqTypeReset, reset_sources, kDifToggleEnabled));
 }
 
 void trigger_escalation(void) {
