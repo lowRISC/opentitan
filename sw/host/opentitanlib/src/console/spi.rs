@@ -20,7 +20,6 @@ pub struct SpiConsoleDevice<'a> {
     rx_buf: RefCell<VecDeque<u8>>,
     next_read_address: Cell<u32>,
     device_tx_ready_pin: Option<&'a Rc<dyn GpioPin>>,
-    device_tx_ready: Cell<bool>,
 }
 
 impl<'a> SpiConsoleDevice<'a> {
@@ -46,7 +45,6 @@ impl<'a> SpiConsoleDevice<'a> {
             console_next_frame_number: Cell::new(0),
             next_read_address: Cell::new(0),
             device_tx_ready_pin,
-            device_tx_ready: Cell::new(false),
         })
     }
 
@@ -93,11 +91,19 @@ impl<'a> SpiConsoleDevice<'a> {
             % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
         self.read_data(data_address, &mut data)?;
 
-        let next_read_address: u32 = (read_address
-            + u32::try_from(SpiConsoleDevice::SPI_FRAME_HEADER_SIZE + data_len_bytes_w_pad)
-                .unwrap())
-            % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
-        self.next_read_address.set(next_read_address);
+        if self.get_tx_ready_pin()?.is_some() {
+            // When using the TX-indicator pin feature, we always write each SPI frame at the
+            // beginning of the flash buffer, and wait for the host to ready it out before writing
+            // another frame.
+            self.next_read_address.set(0);
+        } else {
+            let next_read_address: u32 = (read_address
+                + u32::try_from(SpiConsoleDevice::SPI_FRAME_HEADER_SIZE + data_len_bytes_w_pad)
+                    .unwrap())
+                % SpiConsoleDevice::SPI_FLASH_READ_BUFFER_SIZE;
+            self.next_read_address.set(next_read_address);
+        }
+
         // Copy data to the internal data queue.
         self.rx_buf.borrow_mut().extend(&data[..data_len_bytes]);
         Ok(data_len_bytes)
@@ -127,15 +133,14 @@ impl<'a> ConsoleDevice for SpiConsoleDevice<'a> {
     fn console_read(&self, buf: &mut [u8], _timeout: Duration) -> Result<usize> {
         if self.rx_buf.borrow().is_empty() {
             if let Some(ready_pin) = self.get_tx_ready_pin()? {
-                if !self.device_tx_ready.get() && ready_pin.read()? {
-                    self.device_tx_ready.set(true);
+                if ready_pin.read()? {
                     if self.read_from_spi()? == 0 {
                         // If we are gated by the TX-ready pin, only perform the SPI console read if
                         // the ready pin is high.
                         return Ok(0);
                     }
-                } else if self.device_tx_ready.get() && !ready_pin.read()? {
-                    self.device_tx_ready.set(false);
+                } else {
+                    return Ok(0);
                 }
             } else if self.read_from_spi()? == 0 {
                 return Ok(0);

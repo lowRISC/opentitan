@@ -45,14 +45,14 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     // Load the ELF binary and get the expect data.
     let elf_binary = fs::read(&opts.firmware_elf)?;
     let object = object::File::parse(&*elf_binary)?;
+    let data = test_utils::object::symbol_data(&object, "kTest4KbDataStr")?;
+    let data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
 
     for _ in 0..2 {
         // Receive simple string from the device.
         _ = UartConsole::wait_for(&spi_console_device, "ABC", opts.timeout)?;
 
         // Receive 4K of data from the device.
-        let data = test_utils::object::symbol_data(&object, "kTest4KbDataStr")?;
-        let data_str = std::str::from_utf8(&data)?.trim_matches(char::from(0));
         _ = UartConsole::wait_for(&spi_console_device, data_str, opts.timeout)?;
     }
 
