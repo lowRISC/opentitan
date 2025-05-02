@@ -161,6 +161,6 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],
-    prefix = "earlgrey/verilator",
+    prefix = "darjeeling/verilator",
     visibility = ["//visibility:public"],
 )
