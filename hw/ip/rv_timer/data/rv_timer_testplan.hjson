@@ -61,6 +61,26 @@
       tests: ["rv_timer_cfg_update_on_fly"]
     }
     {
+      name: min_value
+      desc: '''This test configures the prescaler and mtime to 0.
+            The step is randomised between 0 and 1 to allow the counter to increase sometimes.
+            The register timecmp is randomised to be set up to 5, so some seeds trigger an interrupt directly on configuration if timecmp=0.
+            While others force mtime to increase.
+            This test helps close functional coverage by hitting the minimum values for step, prescaler, mtime and mtimecmp'''
+      stage: V3
+      tests: ["rv_timer_min"]
+    }
+    {
+      name: max_value
+      desc: '''This test configures the prescaler, step and mtimecm to the maximum value.
+            The counter is randomised to be up to 5 units lower than the timecmp.
+            By doing this, some seeds trigger an interrupt directly on configuration if timecmp=mtime.
+            While others force mtime to increase.
+            This test helps close functional coverage by hitting the maximum values for step, prescaler, mtime and mtimecmp'''
+      stage: V3
+      tests: ["rv_timer_max"]
+    }
+    {
       name: stress
       desc: '''Do combinations of multiple of above scenarios to get multiple interrupts
             asserted at the same time. Scoreboard should be robust enough to deal with all
