@@ -18,7 +18,7 @@ use crate::impl_serializable_error;
 use crate::io::console::ConsoleDevice;
 use crate::transport::TransportError;
 
-#[derive(Clone, Debug, Args, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Args, Serialize, Deserialize)]
 pub struct UartParams {
     /// UART instance.
     #[arg(long, default_value = "CONSOLE")]
