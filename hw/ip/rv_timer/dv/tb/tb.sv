@@ -9,6 +9,7 @@ module tb;
   import tl_agent_pkg::*;
   import rv_timer_env_pkg::*;
   import rv_timer_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -17,6 +18,8 @@ module tb;
   wire clk, rst_n;
   wire [NUM_HARTS-1:0][NUM_TIMERS-1:0] intr_timer_expired;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0; // Not currently used
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -35,6 +38,9 @@ module tb;
 
     .alert_rx_i            (alert_rx   ),
     .alert_tx_o            (alert_tx   ),
+
+    .racl_policies_i       (racl_policies),
+    .racl_error_o          (),
 
     .intr_timer_expired_hart0_timer0_o(intr_timer_expired[0][0])
   );
