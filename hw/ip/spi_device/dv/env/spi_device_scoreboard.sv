@@ -1511,7 +1511,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   function flash_status_t fetch_flash_status_rtl_committed_value();
     uvm_hdl_data_t 	rtl_sck_status_committed_value;
     flash_status_t  fs_committed_value;
-    uvm_hdl_read("tb.dut.u_spid_status.sck_status_committed", rtl_sck_status_committed_value);
+    `DV_CHECK(uvm_hdl_read(sck_committed_status_path, rtl_sck_status_committed_value))
+
     fs_committed_value = flash_status_t'(rtl_sck_status_committed_value);
     `uvm_info(`gfn, $sformatf("RTL's flash_status committed value: 0x%0x", fs_committed_value),
               UVM_DEBUG)
@@ -2722,7 +2723,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // Check if opcode is enabled and returns index of enabled opcode
   // Checks if there are duplicate enabled opcodes - not proper config
   // HW parses commands this way
-  virtual function check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
+  virtual function void check_opcode_enable(bit [7:0] q_opcode, ref bit enable, ref bit [4:0] en_idx);
     enable = 0;
     en_idx = 24; // Larger than num of cmd_info if not enabled
     for (int i = 0; i<24; i++)  begin
