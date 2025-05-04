@@ -18,7 +18,7 @@ package secure_subsystem_synth_astral_pkg;
   localparam SynthAxiDataWidth    = 64;
 
   localparam SynthAxiAddrWidthRemap    = 64;
-  localparam SynthAxiOutIdWidthRemap   = 5;
+  localparam SynthAxiOutIdWidthRemap   = 4;
   localparam SynthAxiUserWidthRemap    = 1;
   localparam SynthAxiDataWidthRemap    = 64;
 
