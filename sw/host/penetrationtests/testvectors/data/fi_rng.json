@@ -19,7 +19,7 @@
   {
     "test_case_id": 4,
     "command": "EdnBias",
-    "expected_output": "{\"collisions\":0,\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 5,
