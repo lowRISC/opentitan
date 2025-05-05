@@ -35,6 +35,9 @@ constexpr uint32_t kRandomWord = 0xdeadbeef;
 // actually gets used.
 extern "C" uint32_t hardened_memshred_random_word() { return kRandomWord; }
 
+// Provides "randomness" for random_order.
+extern "C" uint32_t random_order_random_word() { return kRandomWord; }
+
 TEST(HardenedMemory, MemShred) {
   std::vector<uint32_t> xs = {1, 2, 3, 4, 5, 6, 7, 8};
   hardened_memshred(xs.data(), xs.size());
