@@ -16,7 +16,7 @@
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_rom_fi_init(ujson_t *uj);
+status_t handle_rom_read(ujson_t *uj);
 
 /**
  * Initializes the trigger and configures the device for the Rom FI test.
