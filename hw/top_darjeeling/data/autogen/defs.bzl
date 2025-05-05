@@ -7,7 +7,6 @@
 # util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 # -o hw/top_darjeeling
 
-load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_darjeeling/ip_autogen/ac_range_check:defs.bzl", "AC_RANGE_CHECK")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_darjeeling/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
@@ -81,11 +80,3 @@ DARJEELING_IPS = [
     SRAM_CTRL,
     UART,
 ]
-
-DARJEELING = opentitan_top(
-    name = "darjeeling",
-    hjson = "//hw/top_darjeeling/data/autogen:top_darjeeling.gen.hjson",
-    top_lib = "//hw/top_darjeeling/sw/autogen:top_darjeeling",
-    top_ld = "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
-    ips = DARJEELING_IPS,
-)

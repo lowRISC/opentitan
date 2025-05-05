@@ -7,7 +7,6 @@
 # util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 # -o hw/top_earlgrey
 
-load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/ip/adc_ctrl:defs.bzl", "ADC_CTRL")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_earlgrey/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
@@ -83,11 +82,3 @@ EARLGREY_IPS = [
     UART,
     USBDEV,
 ]
-
-EARLGREY = opentitan_top(
-    name = "earlgrey",
-    hjson = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
-    top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-    top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-    ips = EARLGREY_IPS,
-)
