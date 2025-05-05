@@ -58,6 +58,15 @@ static rom_error_t validate_mode(uint32_t setting, rescue_state_t *state) {
   const rescue_mode_properties_t *mode = &mode_by_altsetting[setting];
   rom_error_t error2 = kErrorOk;
   rom_error_t error = rescue_validate_mode(mode->mode, state);
+
+  // If the service exclusively supports either upload or download operation,
+  // report bad mode immediately if a prior error occurred.
+  if (!(mode->upload && mode->dnload)) {
+    if (error != kErrorOk) {
+      return kErrorRescueBadMode;
+    }
+  }
+
   if (error == kErrorOk && mode->upload) {
     // DFU upload means send to the host.  We stage the data that would
     // be sent to the rescue buffer.
