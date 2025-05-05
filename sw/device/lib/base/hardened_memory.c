@@ -8,12 +8,16 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/random_order.h"
 
+// TODO(#27141): This is a temporary workaround; thread function pointers for
+// the randomness source through `hardened_memcpy` and `hardened_memeq`.
+static uint32_t mock_random(void) { return 0xdeadbeef; }
+
 // NOTE: The three hardened_mem* functions have similar contents, but the parts
 // that are shared between them are commented only in `memcpy()`.
 void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
                      size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(mock_random, &order, word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);
@@ -80,7 +84,7 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
 
 void hardened_memshred(uint32_t (*rnd)(void), uint32_t *dest, size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(rnd, &order, word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);
@@ -111,7 +115,7 @@ void hardened_memshred(uint32_t (*rnd)(void), uint32_t *dest, size_t word_len) {
 hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
                                size_t word_len) {
   random_order_t order;
-  random_order_init(&order, word_len);
+  random_order_init(mock_random, &order, word_len);
 
   size_t count = 0;
   size_t expected_count = random_order_len(&order);

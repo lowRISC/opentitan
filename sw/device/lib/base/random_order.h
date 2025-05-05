@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_BASE_RANDOM_ORDER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,8 +34,22 @@ extern "C" {
  * intentionally adding decoys to the sequence.
  */
 typedef struct random_order {
+  /**
+   * Next index to return.
+   */
   size_t state;
+  /**
+   * Step size.
+   */
+  size_t step;
+  /**
+   * Maximum index to return (exclusive).
+   */
   size_t max;
+  /**
+   * Position relative to the last offset change.
+   */
+  size_t pos;
 } random_order_t;
 
 /**
@@ -44,10 +59,15 @@ typedef struct random_order {
  * This function does not take a seed as input; instead, the seed is
  * extracted, in some manner or another, from the hardware by this function.
  *
+ * The EDN must be initialized before calling this function, since it uses the
+ * Ibex RND interface and will wait until entropy is available.
+ *
+ * @param rnd Function to call for fresh randomness.
  * @param ctx The context to initialize.
  * @param min_len The minimum length this traversal order must visit.
  */
-void random_order_init(random_order_t *ctx, size_t min_len);
+void random_order_init(uint32_t (*rnd)(void), random_order_t *ctx,
+                       size_t min_len);
 
 /**
  * Returns the length of the sequence represented by `ctx`.
