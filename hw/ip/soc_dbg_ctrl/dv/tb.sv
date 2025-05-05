@@ -62,8 +62,8 @@ module tb;
     .continue_cpu_boot_o      (continue_cpu_boot      )
   );
 
+  // TODO (#27112) Should be dynamically driven/monitored
   // Manage inputs
-  // TODO should be driven dynamically by an io_agent (to be created TODO MVy)
   assign soc_dbg_state    = lc_ctrl_state_pkg::SocDbgStBlank;
   assign lc_dft_en        = lc_ctrl_pkg::Off;
   assign lc_hw_debug_en   = lc_ctrl_pkg::Off;
@@ -72,7 +72,6 @@ module tb;
   assign halt_cpu_boot    = 1'b1;
 
   // Manage outputs
-  // TODO should be monitored dynamically by an io_agent (to be created TODO MVy)
   // assign io_if.soc_dbg_policy_bus  = soc_dbg_policy_bus;
   // assign io_if.continue_cpu_boot   = continue_cpu_boot;
 
