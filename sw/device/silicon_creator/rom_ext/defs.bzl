@@ -130,3 +130,18 @@ TEST_OWNER_CONFIGS = {
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
 }
+
+TEST_OWNER_CONFIGS_FROM_OWNER_BLOCK = {
+    "xmodem_rescue_disability": {
+        "owner_lib": ["//sw/device/silicon_creator/lib/ownership/testdata/rescue_disability/xmodem:test_owner"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "usbdfu_rescue_disability": {
+        "owner_lib": ["//sw/device/silicon_creator/lib/ownership/testdata/rescue_disability/usbdfu:test_owner"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_usbdfu"],
+    },
+    "spidfu_rescue_disability": {
+        "owner_lib": ["//sw/device/silicon_creator/lib/ownership/testdata/rescue_disability/spidfu:test_owner"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
+    },
+}
