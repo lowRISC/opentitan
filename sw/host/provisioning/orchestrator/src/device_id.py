@@ -177,6 +177,33 @@ class DeviceId():
         # Build full device ID.
         self.device_id = (self.sku_specific << 128) | self.base_uid
 
+    def update_ast_cfg_version(self, other: int) -> None:
+        """Updates the AST Config Version component of the device ID.
+
+        Args:
+            other: The other AST configuration version to update with.
+        """
+        if other < 0 or other > 255:
+            raise ValueError("AST config version should be in range [0, 256).")
+        self.ast_cfg_version = other
+
+        # Rebuild SKU-specific portion of the device ID.
+        self.sku_specific = util.bytes_to_int(
+            struct.pack(
+                "<BBHBBHIHBB",
+                self.package_id,
+                self.ast_cfg_version,
+                self.otp_id,
+                self.otp_version,
+                _RESERVED_VALUE,
+                _RESERVED_VALUE,
+                self.sku_id,
+                _RESERVED_VALUE,
+                _RESERVED_VALUE,
+                self.sku_specific_version,
+            ))
+        self.device_id = (self.sku_specific << 128) | self.base_uid
+
     def update_din(self, other: "DeviceIdentificationNumber") -> None:
         """Updates the DIN component of the device ID with another DIN object.
 
