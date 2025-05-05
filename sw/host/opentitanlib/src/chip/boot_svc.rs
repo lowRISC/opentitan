@@ -273,6 +273,20 @@ impl BootSvc {
         Ok(data)
     }
 
+    pub fn empty(payload: &[u32]) -> Self {
+        BootSvc {
+            header: Header {
+                digest: [0u32; 8],
+                identifier: Header::IDENTIFIER,
+                kind: BootSvcKind::EmptyRequest,
+                length: (Header::SIZE + Empty::SIZE) as u32,
+            },
+            message: Message::Empty(Empty {
+                payload: payload.to_vec(),
+            }),
+        }
+    }
+
     pub fn min_bl0_sec_ver(ver: u32) -> Self {
         BootSvc {
             header: Header {

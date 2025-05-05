@@ -249,6 +249,16 @@ pub trait Rescue {
         DeviceId::read(&mut std::io::Cursor::new(&id))
     }
 
+    fn empty(&self, payload: &[u32]) -> Result<()> {
+        let message = BootSvc::empty(payload);
+        self.set_raw(RescueMode::BootSvcReq, &message.to_bytes()?)
+    }
+
+    fn set_min_bl0_sec_ver(&self, ver: u32) -> Result<()> {
+        let message = BootSvc::min_bl0_sec_ver(ver);
+        self.set_raw(RescueMode::BootSvcReq, &message.to_bytes()?)
+    }
+
     fn set_next_bl0_slot(&self, primary: BootSlot, next: BootSlot) -> Result<()> {
         let message = BootSvc::next_boot_bl0_slot(primary, next);
         self.set_raw(RescueMode::BootSvcReq, &message.to_bytes()?)
