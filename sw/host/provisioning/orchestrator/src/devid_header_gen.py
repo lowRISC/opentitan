@@ -28,7 +28,7 @@ def main(args_in):
         "--mode",
         type=str,
         choices=["cp", "ft"],
-        help="AST configuration version to be written to OTP.",
+        help="The device ID header to generate: CP or FT.",
     )
     parser.add_argument(
         "--sku-config",
@@ -47,12 +47,6 @@ def main(args_in):
         required=True,
         type=str,
         help="The template source file to be overwritten.",
-    )
-    parser.add_argument(
-        "--ast-cfg-version",
-        type=int,
-        help=
-        "AST configuration version to be written to OTP (overrides HJSON).",
     )
     args = parser.parse_args(args_in)
 
