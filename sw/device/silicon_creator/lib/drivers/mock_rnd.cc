@@ -13,5 +13,7 @@ rom_error_t rnd_health_config_check(lifecycle_state_t lc_state) {
 uint32_t rnd_uint32(void) { return MockRnd::Instance().Uint32(); }
 
 uint32_t hardened_memshred_random_word(void) { return rnd_uint32(); }
+
+uint32_t random_order_random_word(void) { return rnd_uint32(); }
 }
 }  // namespace rom_test
