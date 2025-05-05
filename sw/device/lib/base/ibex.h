@@ -13,30 +13,28 @@
 /**
  * Wait for random data in the RND_DATA CSR to be valid.
  *
- * Returns OTCRYPTO_OK when the random data is valid.
+ * Important: this function will hang if the entropy complex is not
+ * initialized. Callers are responsible for checking first.
  *
- * @return OTCRYPTO_OK.
+ * Returns once the random data is valid.
  */
-status_t ibex_wait_rnd_valid(void);
+void ibex_wait_rnd_valid(void);
 
 /**
  * Get random data from the EDN0 interface.
  *
- * Returns 32 bits of randomness from EDN0.
+ * Important: this function will hang if the entropy complex is not
+ * initialized. Callers are responsible for checking first.
  *
- * @param rnd_data The random data pointer.
- * @return OTCRYPTO_OK.
+ * @return 32 bits of randomness from EDN0.
  */
-status_t ibex_rnd_data_read(uint32_t *rnd_data);
+uint32_t ibex_rnd_data_read(void);
 
 /**
  * Get information on the state of the RND_DATA CSR.
  *
- * Returns the status of the randomness interface.
- *
- * @param rnd_status The status pointer.
- * @return OTCRYPTO_OK.
+ * @return the status of the randomness interface.
  */
-status_t ibex_rnd_status_read(uint32_t *rnd_status);
+uint32_t ibex_rnd_status_read(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_IBEX_H_

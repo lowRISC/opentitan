@@ -21,24 +21,22 @@ static inline uint32_t rv_core_ibex_base(void) {
   return dt_rv_core_ibex_primary_reg_block(kRvCoreIbexDt);
 }
 
-status_t ibex_wait_rnd_valid(void) {
+void ibex_wait_rnd_valid(void) {
   while (true) {
-    uint32_t reg = abs_mmio_read32(rv_core_ibex_base() +
-                                   RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
+    uint32_t reg = ibex_rnd_status_read();
     if (bitfield_bit32_read(reg, RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_BIT)) {
-      return OK_STATUS();
+      return;
     }
   }
 }
 
-status_t ibex_rnd_status_read(uint32_t *rnd_status) {
-  *rnd_status =
-      abs_mmio_read32(rv_core_ibex_base() + RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
-  return OK_STATUS();
+uint32_t ibex_rnd_status_read(void) {
+  return abs_mmio_read32(rv_core_ibex_base() +
+                         RV_CORE_IBEX_RND_STATUS_REG_OFFSET);
 }
 
-status_t ibex_rnd_data_read(uint32_t *rnd_data) {
-  *rnd_data =
-      abs_mmio_read32(rv_core_ibex_base() + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
-  return OK_STATUS();
+uint32_t ibex_rnd_data_read(void) {
+  ibex_wait_rnd_valid();
+  return abs_mmio_read32(rv_core_ibex_base() +
+                         RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
