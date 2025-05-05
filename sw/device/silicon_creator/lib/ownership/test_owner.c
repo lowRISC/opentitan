@@ -247,6 +247,36 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   rescue->header.length += sizeof(commands);
   end = (uintptr_t)rescue + rescue->header.length;
 #endif
+#ifdef WITH_ISFB
+  owner_flash_info_config_t *info = (owner_flash_info_config_t *)end;
+  info->header = (tlv_header_t){
+      .tag = kTlvTagInfoConfig,
+      .length = sizeof(owner_flash_info_config_t) + sizeof(owner_info_page_t),
+  };
+  info->config[0] = (owner_info_page_t){
+      .bank = 0,
+      .page = 5,
+      // Access: -erase, +program, +read.
+      .access = 0x066,
+      .properties = 0,
+  };
+  end = (uintptr_t)info + info->header.length;
+  owner_isfb_config_t *isfb = (owner_isfb_config_t *)end;
+  *isfb = (owner_isfb_config_t){
+      .header =
+          {
+              .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+              .length = sizeof(owner_isfb_config_t),
+          },
+      .bank = 0,
+      .page = 5,
+      // erase extension present, node-locked and specific key domain.
+      .erase_conditions = 0x666,
+      .key_domain = kOwnerAppDomainProd,
+      .product_words = 2,
+  };
+  end = (uintptr_t)isfb + isfb->header.length;
+#endif
   // Fill the remainder of the data segment with the end tag (0x5a5a5a5a).
   size_t len = (uintptr_t)(owner_page[0].data + sizeof(owner_page[0].data)) -
                (uintptr_t)end;
