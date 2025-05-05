@@ -159,9 +159,9 @@ static status_t provision(ujson_t *uj) {
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
   TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
-  TRY(manuf_individualize_device_hw_cfg(
-      &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions,
-      (const uint32_t *)in_data.ft_device_id));
+  TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
+                                        kFlashInfoPage0Permissions,
+                                        in_data.ft_device_id));
 #else
   TRY(manuf_individualize_device_hw_cfg(
       &flash_ctrl_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));

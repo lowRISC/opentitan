@@ -62,6 +62,14 @@ enum {
       kFlashInfoAstCalibrationDataSizeInBytes / sizeof(uint32_t),
 
   /**
+   * AST Calibration Version Start / Size - Bank 0, Page 0
+   *
+   * The version of the AST calibration words that are stored in flash / OTP.
+   */
+  kFlashInfoFieldAstCfgVersionStartOffset = 304,
+  kFlashInfoFieldAstCfgVersionSizeIn32BitWords = 1,
+
+  /**
    * CP Device ID Start / Size - Bank 0, Page 0
    */
   kFlashInfoFieldCpDeviceIdStartOffset = 384,
@@ -101,6 +109,7 @@ extern const flash_info_field_t kFlashInfoFieldWaferXCoord;
 extern const flash_info_field_t kFlashInfoFieldWaferYCoord;
 extern const flash_info_field_t kFlashInfoFieldProcessData;
 extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
+extern const flash_info_field_t kFlashInfoFieldAstCfgVersion;
 extern const flash_info_field_t kFlashInfoFieldCpDeviceId;
 extern const flash_info_field_t kFlashInfoFieldAstIndividPatchAddr;
 extern const flash_info_field_t kFlashInfoFieldAstIndividPatchVal;
