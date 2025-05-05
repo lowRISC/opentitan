@@ -318,3 +318,37 @@ status_t flash_ctrl_testutils_show_faults(
 
   return OK_STATUS();
 }
+
+static const char *mubi_prop(multi_bit_bool_t val, const char *name) {
+  switch (val) {
+    case kMultiBitBool4True:
+      return name;
+    case kMultiBitBool4False:
+      return "xx";
+    default:
+      return "uu";
+  }
+}
+
+void flash_ctrl_testutils_data_region_print(
+    size_t index, dif_flash_ctrl_data_region_properties_t *p, bool locked) {
+  LOG_INFO("data region n=%u st=%u sz=%u %s-%s-%s-%s-%s-%s %s", index, p->base,
+           p->size, mubi_prop(p->properties.rd_en, "RD"),
+           mubi_prop(p->properties.prog_en, "WR"),
+           mubi_prop(p->properties.erase_en, "ER"),
+           mubi_prop(p->properties.scramble_en, "SC"),
+           mubi_prop(p->properties.ecc_en, "EC"),
+           mubi_prop(p->properties.high_endurance_en, "HE"),
+           locked ? "LK" : "UN");
+}
+
+void flash_ctrl_testutils_info_region_print(
+    dif_flash_ctrl_info_region_t region, dif_flash_ctrl_region_properties_t *p,
+    bool locked) {
+  LOG_INFO("info region bank=%u part=%u page=%u %s-%s-%s-%s-%s-%s %s",
+           region.bank, region.partition_id, region.page,
+           mubi_prop(p->rd_en, "RD"), mubi_prop(p->prog_en, "WR"),
+           mubi_prop(p->erase_en, "ER"), mubi_prop(p->scramble_en, "SC"),
+           mubi_prop(p->ecc_en, "EC"), mubi_prop(p->high_endurance_en, "HE"),
+           locked ? "LK" : "UN");
+}
