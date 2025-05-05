@@ -90,11 +90,20 @@ status_t manuf_individualize_device_hw_cfg(
         flash_info_page_0_permissions,
         /*offset=*/NULL));
 
-    // Read CpDeviceId from flash info page 0.
+    // Read CpDeviceId & AST configuration version from flash info page 0.
     uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
     TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
                                     cp_device_id,
                                     kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+    uint32_t ast_cfg_version;
+    TRY(manuf_flash_info_field_read(
+        flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
+        kFlashInfoFieldAstCfgVersionSizeIn32BitWords));
+
+    // Check if AST configuration version is an 8-bit value.
+    if (ast_cfg_version > UINT8_MAX) {
+      return OUT_OF_RANGE();
+    }
 
     // Check if CP device ID from flash is empty.
     bool flash_cp_device_id_empty = true;
@@ -124,6 +133,14 @@ status_t manuf_individualize_device_hw_cfg(
     // CP and FT device IDs are the same length (128 bit words).
     memcpy(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords], ft_device_id,
            kFlashInfoFieldCpDeviceIdSizeInBytes);
+
+    // Overwrite AST configuration version field in FT device ID with the
+    // version field from flash.
+    uint32_t ft_device_id_mask = 0xFFFF00FF;
+    device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] =
+        (device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] &
+         ft_device_id_mask) |
+        (ast_cfg_version << 8);
 
     // Write the complete device ID to OTP.
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,

@@ -31,9 +31,14 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 
-// CP and FT portions of the device ID are the same size.
-static uint32_t kFtDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
-    0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
+/**
+ * CP and FT portions of the device ID are the same size.
+ *
+ * Note, the second byte of the FT device ID is set by the CP calibration step
+ * and written to flash info page 0. We set it to 0x99 for testing.
+ */
+static const uint32_t kFtDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
+    0xAAAA99AA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
 
 static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
     .ecc_en = kMultiBitBool4True,
@@ -89,6 +94,11 @@ bool test_main(void) {
         &flash_state, kFlashInfoFieldCpDeviceId, kCpDeviceId,
         kFlashInfoFieldCpDeviceIdSizeIn32BitWords,
         /*erase_page_before_write=*/true));
+    uint32_t ast_cfg_version = 0x99;
+    CHECK_STATUS_OK(manuf_flash_info_field_write(
+        &flash_state, kFlashInfoFieldAstCfgVersion, &ast_cfg_version,
+        kFlashInfoFieldAstCfgVersionSizeIn32BitWords,
+        /*erase_page_before_write=*/false));
     CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
         &flash_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
 
@@ -97,6 +107,10 @@ bool test_main(void) {
     CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
         &otp_ctrl, kDifOtpCtrlPartitionHwCfg0, 0, device_id,
         kHwCfgDeviceIdSizeIn32BitWords));
+    LOG_INFO("CP Device ID in OTP: %08x%08x%08x%08x", device_id[3],
+             device_id[2], device_id[2], device_id[0]);
+    LOG_INFO("FT Device ID in OTP: %08x%08x%08x%08x", device_id[7],
+             device_id[6], device_id[5], device_id[4]);
     CHECK_ARRAYS_EQ(device_id, kCpDeviceId,
                     kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
     CHECK_ARRAYS_EQ(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords],
