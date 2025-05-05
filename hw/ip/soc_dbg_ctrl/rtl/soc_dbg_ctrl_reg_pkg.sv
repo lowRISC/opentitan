@@ -116,10 +116,10 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [1:0] SOC_DBG_CTRL_ALERT_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
-  parameter logic [6:0] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_RESVAL = 7'h 0;
+  parameter logic [6:0] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_RESVAL = 7'h 50;
   parameter logic [6:0]
       SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED_DEBUG_POLICY_CATEGORY_RESVAL =
-      7'h 0;
+      7'h 50;
 
   // Register index for core interface
   typedef enum int {
