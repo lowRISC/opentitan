@@ -166,7 +166,7 @@
         storage_err_alert: "fatal_fault",
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "debug_policy_category"
             desc: '''
                   Debug Policy Control Setting.
@@ -197,7 +197,7 @@
         hwaccess: "hwo"
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "category"
             desc: '''
                   The debug policy determined by hardware or software.
@@ -277,7 +277,7 @@
         hwaccess: "hwo"
         fields: [
           { bits: "6:0"
-            resval: "0x0"
+            resval: "0x50"
             name: "category"
             desc: '''
                   The debug policy determined by hardware or software.

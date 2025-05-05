@@ -56,7 +56,7 @@ Once valid is set to Mubi4::True, the debug policy cannot be written anymore.
 ## DEBUG_POLICY_CATEGORY_SHADOWED
 Debug Policy category
 - Offset: `0x8`
-- Reset default: `0x0`
+- Reset default: `0x50`
 - Reset mask: `0x7f`
 
 ### Fields
@@ -68,7 +68,7 @@ Debug Policy category
 |  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                     |
 |:------:|:------:|:-------:|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:7  |        |         |                       | Reserved                                                                                                                                                        |
-|  6:0   |   rw   |   0x0   | debug_policy_category | Debug Policy Control Setting. Indicates the current debug authorization policy that is distributed to the rest of the SoC to govern debug / DFT feature unlock. |
+|  6:0   |   rw   |  0x50   | debug_policy_category | Debug Policy Control Setting. Indicates the current debug authorization policy that is distributed to the rest of the SoC to govern debug / DFT feature unlock. |
 
 ## DEBUG_POLICY_RELOCKED
 Debug Policy relocked
@@ -90,7 +90,7 @@ Debug Policy relocked
 ## TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
 - Offset: `0x10`
-- Reset default: `0x0`
+- Reset default: `0x50`
 - Reset mask: `0x7f`
 
 ### Fields
@@ -102,7 +102,7 @@ Trace register to observe the debug category that is either determined by hardwa
 |  Bits  |  Type  |  Reset  | Name     | Description                                          |
 |:------:|:------:|:-------:|:---------|:-----------------------------------------------------|
 |  31:7  |        |         |          | Reserved                                             |
-|  6:0   |   ro   |   0x0   | category | The debug policy determined by hardware or software. |
+|  6:0   |   ro   |  0x50   | category | The debug policy determined by hardware or software. |
 
 ## TRACE_DEBUG_POLICY_VALID_RELOCKED
 Trace register to observe the valid or relocked state that is either determined by hardware or software.
@@ -158,7 +158,7 @@ Debug Status Register
 ## JTAG_TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
 - Offset: `0x0`
-- Reset default: `0x0`
+- Reset default: `0x50`
 - Reset mask: `0x7f`
 
 ### Fields
@@ -170,7 +170,7 @@ Trace register to observe the debug category that is either determined by hardwa
 |  Bits  |  Type  |  Reset  | Name     | Description                                          |
 |:------:|:------:|:-------:|:---------|:-----------------------------------------------------|
 |  31:7  |        |         |          | Reserved                                             |
-|  6:0   |   ro   |   0x0   | category | The debug policy determined by hardware or software. |
+|  6:0   |   ro   |  0x50   | category | The debug policy determined by hardware or software. |
 
 ## JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
 Trace register to observe the valid or relocked state that is either determined by hardware or software.
