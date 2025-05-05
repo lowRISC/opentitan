@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
@@ -15,41 +16,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 dif_flash_ctrl_state_t flash_state;
 
-const char *mubi_prop(multi_bit_bool_t val, const char *name) {
-  switch (val) {
-    case kMultiBitBool4True:
-      return name;
-    case kMultiBitBool4False:
-      return "xx";
-    default:
-      return "uu";
-  }
-}
-
-void flash_data_region_print(size_t index,
-                             dif_flash_ctrl_data_region_properties_t *p,
-                             bool locked) {
-  LOG_INFO("data region n=%u st=%u sz=%u %s-%s-%s-%s-%s-%s %s", index, p->base,
-           p->size, mubi_prop(p->properties.rd_en, "RD"),
-           mubi_prop(p->properties.prog_en, "WR"),
-           mubi_prop(p->properties.erase_en, "ER"),
-           mubi_prop(p->properties.scramble_en, "SC"),
-           mubi_prop(p->properties.ecc_en, "EC"),
-           mubi_prop(p->properties.high_endurance_en, "HE"),
-           locked ? "LK" : "UN");
-}
-
-void flash_info_region_print(dif_flash_ctrl_info_region_t region,
-                             dif_flash_ctrl_region_properties_t *p,
-                             bool locked) {
-  LOG_INFO("info region bank=%u part=%u page=%u %s-%s-%s-%s-%s-%s %s",
-           region.bank, region.partition_id, region.page,
-           mubi_prop(p->rd_en, "RD"), mubi_prop(p->prog_en, "WR"),
-           mubi_prop(p->erase_en, "ER"), mubi_prop(p->scramble_en, "SC"),
-           mubi_prop(p->ecc_en, "EC"), mubi_prop(p->high_endurance_en, "HE"),
-           locked ? "LK" : "UN");
-}
-
 status_t flash_regions_print(boot_log_t *boot_log, dif_flash_ctrl_state_t *f) {
   TRY(boot_log_check(boot_log));
   LOG_INFO("boot_log rom_ext_slot = %C", boot_log->rom_ext_slot);
@@ -59,7 +25,7 @@ status_t flash_regions_print(boot_log_t *boot_log, dif_flash_ctrl_state_t *f) {
     bool locked;
     TRY(dif_flash_ctrl_get_data_region_properties(f, i, &p));
     TRY(dif_flash_ctrl_data_region_is_locked(f, i, &locked));
-    flash_data_region_print(i, &p, locked);
+    flash_ctrl_testutils_data_region_print(i, &p, locked);
   }
   for (uint32_t bank = 0; bank < 2; ++bank) {
     for (uint32_t page = 0; page < 10; ++page) {
@@ -72,7 +38,7 @@ status_t flash_regions_print(boot_log_t *boot_log, dif_flash_ctrl_state_t *f) {
       dif_flash_ctrl_region_properties_t p;
       TRY(dif_flash_ctrl_get_info_region_properties(f, region, &p));
       TRY(dif_flash_ctrl_info_region_is_locked(f, region, &locked));
-      flash_info_region_print(region, &p, locked);
+      flash_ctrl_testutils_info_region_print(region, &p, locked);
     }
   }
   return OK_STATUS();
