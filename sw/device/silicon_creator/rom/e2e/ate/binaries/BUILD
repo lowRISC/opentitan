@@ -2,12 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:opentitan.bzl",
-    "bin_to_vmem",
-    "scramble_flash_vmem",
-)
+load("//rules:opentitan.bzl", "scramble_flash_vmem")
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
+load("//rules/opentitan:legacy.bzl", "vmem_file")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -34,10 +31,10 @@ _DV_EXEC_ENVS = [
 ]
 
 [
-    bin_to_vmem(
+    vmem_file(
         name = "ate_gpio_toggle_test_{}_vmem64_signed".format(env),
         testonly = True,
-        bin = ":ate_gpio_toggle_test_{}.signed.bin".format(env),
+        src = ":ate_gpio_toggle_test_{}.signed.bin".format(env),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for env in _DV_EXEC_ENVS
