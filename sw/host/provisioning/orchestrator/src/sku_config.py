@@ -25,10 +25,10 @@ class SkuConfig:
     package: Optional[str]  # valid: any package that exists in package database
     target_lc_state: str  # valid: must be in ["dev", "prod", "prod_end"]
     otp: str  # valid: any 4 char string whose first char is alphabetic and last two are numeric
-    ast_cfg_version: int  # valid: any positive integer < 256 (to fit in one byte)
     perso_bin: str  # valid: any string
     token_encrypt_key: str  # valid: any file path that exists
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
+    ast_cfg_version: int = 255  # valid: any positive integer < 256 (to fit in one byte)
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
 

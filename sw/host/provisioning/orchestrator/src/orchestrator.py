@@ -84,12 +84,6 @@ def main(args_in):
         help="SKU HJSON configuration file.",
     )
     parser.add_argument(
-        "--ast-cfg-version",
-        type=int,
-        help=
-        "AST configuration version to be written to OTP (overrides HJSON).",
-    )
-    parser.add_argument(
         "--package",
         type=str,
         help="Override of package string that is in the SKU config.",
@@ -154,11 +148,8 @@ def main(args_in):
 
     if not args.cp_only and args.db_path is None:
         parser.error("--db-path is required when --cp-only is not provided")
-    if args.use_ate_individ_bin and (args.ast_cfg_version is not None or
-                                     args.package is not None):
-        parser.error(
-            "--use-ate-individ-bin may not be used with --ast-cfg-version or --package"
-        )
+    if args.use_ate_individ_bin and args.package is not None:
+        parser.error("--use-ate-individ-bin may not be used with --package")
 
     # Load and validate a SKU configuration file.
     sku_config_path = resolve_runfile(args.sku_config)
@@ -166,11 +157,6 @@ def main(args_in):
     with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
     sku_config = SkuConfig(**sku_config_args)
-
-    # Override AST configuration version if requested.
-    if args.ast_cfg_version:
-        sku_config.ast_cfg_version = args.ast_cfg_version
-        sku_config.validate()
 
     # Override package ID if requested.
     if args.package:

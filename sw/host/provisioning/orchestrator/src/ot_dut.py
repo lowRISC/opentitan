@@ -311,11 +311,18 @@ class OtDut():
 
             # Check device ID from OTP matches one constructed on host.
             #
-            # The CP portion may not match, but the FT portion should. The CP
-            # portion of the device ID is set in flash before the
-            # orchestrator.py is ever run, so the device's CP portion of the
-            # device ID should be take as the ground truth.
+            # The CP portion may not match, but the FT portion should, with the
+            # exception of the AST configuration version field as this is also
+            # set during CP. The CP portion of the device ID, and the AST
+            # configuration field of the FT device ID, are set in flash before
+            # the orchestrator.py is ever run, so the device's CP portion of the
+            # device ID should be taken as the ground truth.
             device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
+            # Replace the AST configuration version field of the host device ID
+            # to its counterpart from of the device as this field originates
+            # from flash info page 0, not from any host configuration.
+            self.device_id.update_ast_cfg_version(
+                device_id_in_otp.ast_cfg_version)
             if device_id_in_otp.sku_specific != self.device_id.sku_specific:
                 logging.error(
                     "FT Device ID from OTP does not match expected on host.")

@@ -6,7 +6,6 @@
   name: "emulation_dice_cwt",
   product: "earlgrey_a2",
   si_creator: "nuvoton",
-  ast_cfg_version: 0,
   package: "npcr10",
   target_lc_state: "prod",
   otp: "em00",
