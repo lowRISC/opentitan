@@ -256,7 +256,19 @@ cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
     hdrs = ["random_order.h"],
-    deps = [":bitfield"],
+    deps = [
+        ":bitfield",
+        ":hardened",
+    ],
+)
+
+cc_test(
+    name = "random_order_unittest",
+    srcs = ["random_order_unittest.cc"],
+    deps = [
+        ":random_order",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
