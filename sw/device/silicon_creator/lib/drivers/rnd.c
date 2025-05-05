@@ -126,3 +126,8 @@ uint32_t rnd_uint32(void) {
 // included.
 OT_WEAK
 uint32_t hardened_memshred_random_word(void) { return rnd_uint32(); }
+
+// Provides the source of randomness for `random_order` (see `random_order.h`).
+// Declare as weak in case the cryptolib driver is also included.
+OT_WEAK
+uint32_t random_order_random_word(void) { return rnd_uint32(); }

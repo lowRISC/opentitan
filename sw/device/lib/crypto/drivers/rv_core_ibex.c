@@ -35,3 +35,6 @@ uint32_t ibex_rnd32_read(void) {
 // Provides the source of randomness for `hardened_memshred` (see
 // `hardened_memory.h`).
 uint32_t hardened_memshred_random_word(void) { return ibex_rnd32_read(); }
+
+// Provides the source of randomness for `random_order` (see `random_order.h`).
+uint32_t random_order_random_word(void) { return ibex_rnd32_read(); }
