@@ -2,10 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST", "hex")
+load("//rules:const.bzl", "CONST", "hex", "hex_digits")
 load(
     "//rules/opentitan:defs.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
+    "DEFAULT_TEST_SUCCESS_MSG",
+    "fpga_params",
     "opentitan_binary",
+    "opentitan_test",
 )
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
@@ -20,28 +24,24 @@ load(
 )
 
 manifest(d = {
-    "name": "manifest",
-    "identifier": hex(CONST.ROM_EXT),
+    "name": "manifest_allow_isfb_erase",
+    "identifier": hex(CONST.OWNER),
     "visibility": ["//visibility:public"],
-    "version_major": ROM_EXT_VERSION.MAJOR,
-    "version_minor": ROM_EXT_VERSION.MINOR,
-    "security_version": ROM_EXT_VERSION.SECURITY,
-    "integrator_specific_firmware_binding": integrator_specific_firmware_binding(
-        name = "isfb",
-        product_exprs = [
-            product_expr(
-                name = "constraint1",
-                mask = "0xffffffff",
-                value = "0xa5a5a5a5",
-            ),
-            product_expr(
-                name = "constraint2",
-                mask = "0xf0f0f0f0",
-                value = "0xa0a0a0a0",
-            ),
-        ],
-        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE",
+    "device_id": [
+        hex(CONST.DEFAULT_USAGE_CONSTRAINTS),
+        hex(0x66666666),
+        hex(0x55555555),
+    ],
+    "isfb_erase_allowed_policy": isfb_erase_allowed_policy(
+        name = "isfb_erase_allowed",
+        erase_allowed = True,
     ),
+})
+
+manifest(d = {
+    "name": "manifest_bad_erase_contraint",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
     "isfb_erase_allowed_policy": isfb_erase_allowed_policy(
         name = "isfb_erase_allowed",
         erase_allowed = True,
@@ -49,23 +49,199 @@ manifest(d = {
 })
 
 opentitan_binary(
-    name = "boot_test",
+    name = "isfb_page_init",
     testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
-    defines = ["WITH_OWNERSHIP_INFO=1"],
-    ecdsa_key = {
-        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod",
-    },
+    srcs = ["isfb_page_test.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+    ],
+    manifest = ":manifest_allow_isfb_erase",
+    deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "isfb_page_test",
+    srcs = ["isfb_page_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
-    manifest = ":manifest",
+    fpga = fpga_params(
+        # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
+        exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/ownership:datatypes",
     ],
 )
+
+opentitan_test(
+    name = "isfb_page_bad_erase_constraint_test",
+    srcs = ["isfb_page_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    fpga = fpga_params(
+        # Even though the isfb_erase extension is present and set to true,
+        # the manifest doesn't node lock this image.  The erase condition
+        # is not met and the ISFB page should not allow erase.
+        # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
+        exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = ":manifest_bad_erase_contraint",
+    deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+manifest(d = {
+    "name": "manifest_isfb_product_expr",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+    "integrator_specific_firmware_binding": integrator_specific_firmware_binding(
+        name = "isfb",
+        product_exprs = [
+            product_expr(
+                name = "abc-product",
+                mask = "0xffffffff",
+                value = "0x44434241",
+            ),
+            product_expr(
+                name = "wx-feature",
+                mask = "0x0000FFFF",
+                value = "0x00005857",
+            ),
+        ],
+        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE",
+    ),
+})
+
+manifest(d = {
+    "name": "manifest_isfb_bad_product_expr",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+    "integrator_specific_firmware_binding": integrator_specific_firmware_binding(
+        name = "isfb",
+        product_exprs = [
+            product_expr(
+                name = "abc-product",
+                mask = "0xffffffff",
+                value = "0x44434241",
+            ),
+            product_expr(
+                name = "uu-feature",
+                mask = "0x0000FFFF",
+                value = "0x00005555",
+            ),
+        ],
+        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE",
+    ),
+})
+
+manifest(d = {
+    "name": "manifest_isfb_bad_strike_mask",
+    "identifier": hex(CONST.OWNER),
+    "visibility": ["//visibility:public"],
+    "integrator_specific_firmware_binding": integrator_specific_firmware_binding(
+        name = "isfb",
+        product_exprs = [
+            product_expr(
+                name = "abc-product",
+                mask = "0xFFFFFFFF",
+                value = "0x44434241",
+            ),
+            product_expr(
+                name = "wx-feature",
+                mask = "0x0000FFFF",
+                value = "0x00005857",
+            ),
+        ],
+        strike_mask = "0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+    ),
+})
+
+_ISFB_CONTRAINT_TESTS = {
+    "unconstrained": {
+        "manifest": "//sw/device/silicon_owner:manifest",
+        "success": DEFAULT_TEST_SUCCESS_MSG,
+        "failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    "product_expr": {
+        "manifest": ":manifest_isfb_product_expr",
+        "success": DEFAULT_TEST_SUCCESS_MSG,
+        "failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    "bad_product_expr": {
+        "manifest": ":manifest_isfb_bad_product_expr",
+        "success": "BFV:{}".format(hex_digits(CONST.BFV.ISFB.PRODUCT_EXP)),
+        "failure": DEFAULT_TEST_SUCCESS_MSG,
+    },
+    "bad_strike_mask": {
+        "manifest": ":manifest_isfb_bad_strike_mask",
+        "success": "BFV:{}".format(hex_digits(CONST.BFV.ISFB.STRIKE_MASK)),
+        "failure": DEFAULT_TEST_SUCCESS_MSG,
+    },
+}
+
+[
+    opentitan_test(
+        name = "isfb_{}_test".format(name),
+        srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
+        fpga = fpga_params(
+            binaries = {
+                ":isfb_page_init": "isfb_page_init",
+            },
+            exit_failure = param["failure"],
+            exit_success = param["success"],
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
+            test_cmd = """
+                --exec="image assemble --output=init.bin --mirror=false --size=131072 {rom_ext}@0 {isfb_page_init}@0x10000"
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true init.bin"
+                --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
+                --exec="bootstrap --clear-uart=true {firmware}"
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
+                no-op
+            """,
+        ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        manifest = param["manifest"],
+        deps = [
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/ownership:datatypes",
+        ],
+    )
+    for name, param in _ISFB_CONTRAINT_TESTS.items()
+]
