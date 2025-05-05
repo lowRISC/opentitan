@@ -29,7 +29,6 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --package=${PACKAGE} \
   --fpga=${FPGA} \
-  --ast-cfg-version=10 \
   --log-ujson-payloads \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite
