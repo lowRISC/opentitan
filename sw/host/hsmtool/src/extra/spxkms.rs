@@ -226,7 +226,8 @@ impl SpxKms {
 
     fn get_public_key(&self, alias: &str) -> Result<KmsPublicKey> {
         let key = self.get_key_version(alias)?;
-        let url = self.keyring.join(&format!("/v1/{}/publicKey", key.name))?;
+        let mut url = self.keyring.join(&format!("/v1/{}/publicKey", key.name))?;
+        url.set_query(Some("public_key_format=NIST_PQC"));
         self.get(url)
     }
 }
