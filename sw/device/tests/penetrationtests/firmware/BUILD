@@ -29,7 +29,6 @@ PENTEST_EXEC_ENVS = dicts.add(
 
 FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
-    "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otp_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
@@ -40,6 +39,21 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
     "//sw/device/lib/testing:entropy_src_testutils",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/penetrationtests/json:commands",
+]
+
+FIRMWARE_DEPS_FI_IBEX = [
+    "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -100,6 +114,20 @@ opentitan_test(
         ],
     ),
     deps = FIRMWARE_DEPS_FI,
+)
+
+opentitan_test(
+    name = "pen_test_fi_ibex",
+    srcs = [":firmware_fi_ibex.c"],
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_FI_IBEX,
 )
 
 opentitan_test(
