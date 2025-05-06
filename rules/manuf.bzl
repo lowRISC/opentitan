@@ -61,7 +61,7 @@ device_id_header_gen = rule(
             doc = "Path to the template C file that script will fill in.",
         ),
         "clang_format": attr.label(
-            default = "@lowrisc_rv32imcb_files//:bin/clang-format",
+            default = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
             allow_single_file = True,
             cfg = "exec",
             executable = True,
