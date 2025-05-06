@@ -9,7 +9,7 @@
 `endif
 
 interface lc_ctrl_if #(
-  parameter int NumRmaAckSigs
+  parameter int NumRmaAckSigs = lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS
 ) (
   input clk,
   input rst_n
