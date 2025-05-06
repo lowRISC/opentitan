@@ -122,7 +122,7 @@ struct KmsDigest {
     sha256: String,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Debug, Default)]
 struct KmsSignRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     digest: Option<KmsDigest>,
@@ -131,7 +131,8 @@ struct KmsSignRequest {
 }
 
 impl SpxKms {
-    const ALGORITHM: &'static str = "PQ_SIGN_SLH_DSA_SHA2_128S";
+    const PURE_ALGORITHM: &'static str = "PQ_SIGN_SLH_DSA_SHA2_128S";
+    const PREHASH_ALGORITHM: &'static str = "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256";
 
     pub fn new(parameters: &str) -> Result<Box<Self>> {
         let output = Command::new("gcloud")
@@ -170,6 +171,21 @@ impl SpxKms {
         } else {
             let stderr = String::from_utf8_lossy(&output.stderr);
             Err(anyhow!("gcloud error {:?}: {}", output.status, stderr))
+        }
+    }
+
+    fn kms_to_algorithm(kms_algo: &str) -> Result<String> {
+        match kms_algo {
+            Self::PURE_ALGORITHM | Self::PREHASH_ALGORITHM => Ok("SLH-DSA-SHA2-128S".into()),
+            _ => Err(HsmError::Unsupported(format!("algorithm {kms_algo}")).into()),
+        }
+    }
+
+    fn kms_to_domain(kms_algo: &str) -> Result<SpxDomain> {
+        match kms_algo {
+            Self::PURE_ALGORITHM => Ok(SpxDomain::Pure),
+            Self::PREHASH_ALGORITHM => Ok(SpxDomain::PreHashedSha256),
+            _ => Err(HsmError::Unsupported(format!("algorithm {kms_algo}")).into()),
         }
     }
 
@@ -216,7 +232,7 @@ impl SpxKms {
         match versions
             .crypto_key_versions
             .iter()
-            .filter(|v| v.state == "ENABLED" && v.algorithm == Self::ALGORITHM)
+            .filter(|v| v.state == "ENABLED" && Self::kms_to_algorithm(&v.algorithm).is_ok())
             .next_back()
         {
             Some(key) => Ok(key.clone()),
@@ -250,14 +266,15 @@ impl SpxInterface for SpxKms {
                 .rsplit_once('/')
                 .ok_or_else(|| HsmError::ParseError("could not parse key name".into()))
                 .with_context(|| format!("key name {:?}", k.name))?;
-            if k.version_template.algorithm != Self::ALGORITHM {
+            if Self::kms_to_algorithm(&k.version_template.algorithm).is_err() {
                 continue;
             }
             let key = self.get_key_version(name)?;
             result.push(KeyEntry {
                 alias: name.into(),
                 hash: None,
-                algorithm: key.algorithm.clone(),
+                algorithm: Self::kms_to_algorithm(&key.algorithm)?,
+                domain: Some(Self::kms_to_domain(&key.algorithm)?),
                 ..Default::default()
             });
         }
@@ -267,10 +284,6 @@ impl SpxInterface for SpxKms {
     /// Get the public key info.
     fn get_key_info(&self, alias: &str) -> Result<KeyInfo> {
         let key = self.get_public_key(alias)?;
-        let algorithm = key
-            .algorithm
-            .trim_start_matches("PQ_SIGN_")
-            .replace('_', "-");
         let data = if let Some(pem) = &key.pem {
             pem.as_str()
         } else if let Some(public_key) = &key.public_key {
@@ -280,8 +293,8 @@ impl SpxInterface for SpxKms {
         };
         Ok(KeyInfo {
             hash: "".into(),
-            algorithm,
-            domain: Some(SpxDomain::Pure),
+            algorithm: Self::kms_to_algorithm(&key.algorithm)?,
+            domain: Some(Self::kms_to_domain(&key.algorithm)?),
             public_key: Base64::decode_vec(data)?,
             private_blob: Vec::new(),
         })
@@ -292,31 +305,33 @@ impl SpxInterface for SpxKms {
         &self,
         alias: &str,
         _algorithm: &str,
-        _domain: SpxDomain,
+        domain: SpxDomain,
         _token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
         if flags.contains(GenerateFlags::EXPORT_PRIVATE) {
             return Err(HsmError::Unsupported("export of private key material".into()).into());
         }
+        let algorithm = match domain {
+            SpxDomain::Pure => Self::PURE_ALGORITHM,
+            SpxDomain::PreHashedSha256 => Self::PREHASH_ALGORITHM,
+            _ => return Err(HsmError::Unsupported(format!("domain {domain}")).into()),
+        };
         let url = self
             .keyring
             .join(&format!("cryptoKeys?crypto_key_id={alias}"))?;
         let template = KmsCreateKey {
             purpose: "ASYMMETRIC_SIGN".into(),
             version_template: VersionTemplate {
-                algorithm: Self::ALGORITHM.into(),
+                algorithm: algorithm.into(),
                 protection_level: "SOFTWARE".into(),
             },
         };
         let resp = self.post::<KmsKeyRef>(url, &template)?;
         Ok(KeyEntry {
             alias: alias.into(),
-            algorithm: resp
-                .version_template
-                .algorithm
-                .trim_start_matches("PQ_SIGN_")
-                .replace('_', "-"),
+            algorithm: Self::kms_to_algorithm(&resp.version_template.algorithm)?,
+            domain: Some(Self::kms_to_domain(&resp.version_template.algorithm)?),
             ..Default::default()
         })
     }
@@ -347,28 +362,40 @@ impl SpxInterface for SpxKms {
         domain: SpxDomain,
         message: &[u8],
     ) -> Result<Vec<u8>> {
-        match domain {
-            SpxDomain::Pure => {}
-            _ => {
-                return Err(HsmError::Unsupported(format!(
-                    "domain {domain} not supported by {}",
-                    self.get_version()?
-                ))
-                .into());
-            }
-        };
         let alias = alias.ok_or(HsmError::NoSearchCriteria)?;
         if key_hash.is_some() {
             log::warn!("ignored key_hash {key_hash:?}");
         }
         let key = self.get_key_version(alias)?;
+        let keydomain = Self::kms_to_domain(&key.algorithm)?;
+        if domain != keydomain {
+            return Err(HsmError::Unsupported(format!(
+                "domain {domain} not supported by key {alias}",
+            ))
+            .into());
+        }
+
         let url = self
             .keyring
             .join(&format!("/v1/{}:asymmetricSign", key.name))?;
-        let req = KmsSignRequest {
-            digest: None,
-            data: Some(Base64::encode_string(message)),
+
+        // Format the signing request:
+        // - For the "pure" domain, we place the message in the `data` field.
+        // - For the "prehashed" domain, we place the digest into the `digest` field.
+        let req = match keydomain {
+            SpxDomain::Pure => KmsSignRequest {
+                data: Some(Base64::encode_string(message)),
+                ..Default::default()
+            },
+            SpxDomain::PreHashedSha256 => KmsSignRequest {
+                digest: Some(KmsDigest {
+                    sha256: Base64::encode_string(message),
+                }),
+                ..Default::default()
+            },
+            _ => unreachable!(),
         };
+
         let resp = self.post::<IndexMap<String, String>>(url, &req)?;
         let signature = Base64::decode_vec(&resp["signature"])?;
         Ok(signature)
@@ -388,6 +415,13 @@ impl SpxInterface for SpxKms {
             log::warn!("ignored key_hash {key_hash:?}");
         }
         let info = self.get_key_info(alias)?;
+        let keydomain = info.domain.expect("kms key domain");
+        if domain != keydomain {
+            return Err(HsmError::Unsupported(format!(
+                "domain {domain} not supported by key {alias}",
+            ))
+            .into());
+        }
         let pk =
             SpxPublicKey::from_bytes(SphincsPlus::from_str(&info.algorithm)?, &info.public_key)?;
         match pk.verify(domain, signature, message) {
