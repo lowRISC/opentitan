@@ -279,6 +279,7 @@ impl SpxInterface for SpxKms {
         Ok(KeyInfo {
             hash: "".into(),
             algorithm,
+            domain: Some(SpxDomain::Pure),
             public_key: Base64::decode_vec(data)?,
             private_blob: Vec::new(),
         })
@@ -289,6 +290,7 @@ impl SpxInterface for SpxKms {
         &self,
         alias: &str,
         _algorithm: &str,
+        _domain: SpxDomain,
         _token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -322,6 +324,7 @@ impl SpxInterface for SpxKms {
         &self,
         _alias: &str,
         _algorithm: &str,
+        _domain: SpxDomain,
         _token: &str,
         _overwrite: bool,
         _public_key: &[u8],
