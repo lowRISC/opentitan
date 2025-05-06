@@ -304,6 +304,7 @@ impl SpxInterface for Acorn {
                 Ok(KeyInfo {
                     hash: rust_string(rsp.hash),
                     algorithm: rust_string(rsp.algorithm),
+                    domain: None,
                     public_key: pkey.to_vec(),
                     private_blob: blob.to_vec(),
                 })
@@ -322,6 +323,7 @@ impl SpxInterface for Acorn {
         &self,
         alias: &str,
         algorithm: &str,
+        _domain: SpxDomain,
         token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -359,6 +361,7 @@ impl SpxInterface for Acorn {
                     alias: rust_string(rsp.alias),
                     hash: Some(rust_string(rsp.hash)),
                     algorithm: algorithm.to_string(),
+                    domain: None,
                     private_blob,
                     private_key,
                 })
@@ -377,6 +380,7 @@ impl SpxInterface for Acorn {
         &self,
         alias: &str,
         algorithm: &str,
+        _domain: SpxDomain,
         token: &str,
         overwrite: bool,
         public_key: &[u8],
@@ -422,6 +426,7 @@ impl SpxInterface for Acorn {
                     alias: rust_string(rsp.alias),
                     hash: Some(rust_string(rsp.hash)),
                     algorithm: algorithm.to_string(),
+                    domain: None,
                     ..Default::default()
                 })
             } else {

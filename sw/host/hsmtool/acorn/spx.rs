@@ -14,6 +14,8 @@ pub struct KeyEntry {
     pub hash: Option<String>,
     /// Algorithm to be used with the key.
     pub algorithm: String,
+    /// Domain to be used with the key (only when keys are restricted to a specific domain).
+    pub domain: Option<SpxDomain>,
     /// Opaque representation of the private key material.
     pub private_blob: Vec<u8>,
     /// Exported private key material (only when GenerateFlags::EXPORT_PRIVATE is set).
@@ -26,6 +28,8 @@ pub struct KeyInfo {
     pub hash: String,
     /// Algorithm to be used with the key.
     pub algorithm: String,
+    /// Domain to be used with the key (only when keys are restricted to a specific domain).
+    pub domain: Option<SpxDomain>,
     /// Public key material.
     pub public_key: Vec<u8>,
     /// Opaque representation of the private key material.
@@ -56,15 +60,18 @@ pub trait SpxInterface {
         &self,
         alias: &str,
         algorithm: &str,
+        domain: SpxDomain,
         token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry>;
 
     /// Import a key pair.
+    #[allow(clippy::too_many_arguments)]
     fn import_keypair(
         &self,
         alias: &str,
         algorithm: &str,
+        domain: SpxDomain,
         token: &str,
         overwrite: bool,
         public_key: &[u8],
