@@ -98,11 +98,14 @@ fn get_boot_log_test(
     let image = image::Image::read_from_file(binary)?;
     let rescue = params.create(transport)?;
     rescue.enter(transport, EntryMode::Reset)?;
-    let boot_log = rescue.get_boot_log().context("Failed to get boot log from rescue")?;
-    let rom_ext_manifest = image.subimages()?
-    .get(0)
-    .ok_or_else(|| anyhow!("No subimages found in the image"))?
-    .manifest;
+    let boot_log = rescue
+        .get_boot_log()
+        .context("Failed to get boot log from rescue")?;
+    let rom_ext_manifest = image
+        .subimages()?
+        .first()
+        .ok_or_else(|| anyhow!("No subimages found in the image"))?
+        .manifest;
     if boot_log.rom_ext_major != rom_ext_manifest.version_major {
         return Err(anyhow!(
             "rom_ext_major mismatch. Expected: {}, but got: {}",
