@@ -90,6 +90,7 @@ impl SpxInterface for SpxEf {
         Ok(KeyInfo {
             hash: "".into(),
             algorithm: pk.algorithm().to_string(),
+            domain: None,
             public_key: pk.as_bytes().to_vec(),
             private_blob: Vec::new(),
         })
@@ -100,6 +101,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: &str,
         algorithm: &str,
+        _domain: SpxDomain,
         _token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -134,6 +136,7 @@ impl SpxInterface for SpxEf {
             alias: alias.into(),
             hash: Some("".into()),
             algorithm: sk.algorithm().to_string(),
+            domain: None,
             private_blob: Vec::new(),
             private_key,
         })
@@ -144,6 +147,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: &str,
         algorithm: &str,
+        _domain: SpxDomain,
         _token: &str,
         overwrite: bool,
         public_key: &[u8],
@@ -178,6 +182,7 @@ impl SpxInterface for SpxEf {
             alias: alias.into(),
             hash: None,
             algorithm: sk.algorithm().to_string(),
+            domain: None,
             private_blob: Vec::new(),
             private_key: Vec::new(),
         })
