@@ -2858,8 +2858,6 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_otp_data_read(uj);
     case kIbexFiSubcommandOtpReadLock:
       return handle_ibex_fi_otp_read_lock(uj);
-    case kIbexFiSubcommandOtpWriteLock:
-      return handle_ibex_fi_otp_write_lock(uj);
     default:
       LOG_ERROR("Unrecognized IBEX FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
