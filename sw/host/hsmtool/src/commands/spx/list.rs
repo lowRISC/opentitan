@@ -5,6 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
+use sphincsplus::SpxDomain;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -19,6 +20,7 @@ pub struct Key {
     pub id: String,
     pub label: String,
     pub algorithm: String,
+    pub domain: Option<SpxDomain>,
 }
 
 #[derive(Default, Debug, Serialize)]
@@ -49,6 +51,7 @@ impl Dispatch for List {
                 id: info.hash,
                 label: key.alias,
                 algorithm: info.algorithm,
+                domain: info.domain,
             });
         }
         Ok(result)
