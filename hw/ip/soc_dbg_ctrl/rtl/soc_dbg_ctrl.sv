@@ -385,10 +385,10 @@ module soc_dbg_ctrl
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
-  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_o.d_valid)
-  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_o.a_ready)
-  `ASSERT_KNOWN(JtagTlDValidKnownO_A, jtag_tl_o.d_valid)
-  `ASSERT_KNOWN(JtagTlAReadyKnownO_A, jtag_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(CoreTlODKnown_A, core_tl_o, core_tl_o.d_valid)
+  `ASSERT_KNOWN(CoreTlOAReadyKnown_A, core_tl_o.a_ready)
+  `ASSERT_KNOWN_IF(JtagTlODKnown_A, jtag_tl_o, jtag_tl_o.d_valid)
+  `ASSERT_KNOWN(JtagTlOAReadyKnown_A, jtag_tl_o.a_ready)
 
   `ASSERT_KNOWN(SocDbgPolicyBusKnown_A, soc_dbg_policy_bus_o)
   `ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)
