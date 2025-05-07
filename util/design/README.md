@@ -235,6 +235,7 @@ The artifacts are generated for each type and width, and include the following:
 
 The functions and macros to be used for parameterized cases have comments that explain their use.
 These functions are in `hw/ip/prim/rtl/prim_secded_pkg.sv`, and the macros in `hw/ip/prim/rtl/prim_secded_inc.svh`.
+An example of how to parameterize secded is in `hw/ip/otp_macro/rtl/otp_macro.sv`.
 
 ## LFSR Coefficient Generator Tool
 
