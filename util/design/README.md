@@ -221,7 +221,20 @@ $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_d
 
 ## ECC Generator Tool
 
-TODO
+The `./util/design/secded_gen.py` script is used to create C and SV artifacts related to SECDED.
+It uses the `./util/design/data/secded_cfg.hjson` file to determine the secded type and widths supported.
+It creates artifacts to implement and emulate the encode and decode operations for each supported secded, and to instantiate these modules in parameterized contexts.
+The artifacts are generated for each type and width, and include the following:
+
+- RTL for decoder and encoders for each supported secded type and width
+- Testbench, assertions, bind, and core files to be used in the formal verification flow
+- C code and header files to emulate secded encoding and decoding
+- SV package with relevant types and code to emulate each encoder and decoder
+- SV types and constant functions that can be used in generate blocks
+- Macros to instantiate encode and decode prims driven by parameters using case generates
+
+The functions and macros to be used for parameterized cases have comments that explain their use.
+These functions are in `hw/ip/prim/rtl/prim_secded_pkg.sv`, and the macros in `hw/ip/prim/rtl/prim_secded_inc.svh`.
 
 ## LFSR Coefficient Generator Tool
 
