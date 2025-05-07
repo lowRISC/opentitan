@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -378,6 +379,9 @@ static void sha384_digest_get(sha512_state_t *state, uint32_t *digest) {
 }
 
 status_t sha512_final(sha512_state_t *state, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -388,6 +392,9 @@ status_t sha512_final(sha512_state_t *state, uint32_t *digest) {
 }
 
 status_t sha512(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   sha512_state_t state;
   sha512_init(&state);
 
@@ -405,6 +412,9 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
 }
 
 status_t sha384_final(sha384_state_t *state, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -415,6 +425,9 @@ status_t sha384_final(sha384_state_t *state, uint32_t *digest) {
 }
 
 status_t sha384(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   sha384_state_t state;
   sha384_init(&state);
 

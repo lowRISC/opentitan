@@ -31,3 +31,7 @@ uint32_t ibex_rnd32_read(void) {
   wait_rnd_valid();
   return abs_mmio_read32(kBaseAddr + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
+
+// Provides the source of randomness for `hardened_memshred` (see
+// `hardened_memory.h`).
+uint32_t hardened_memshred_random_word(void) { return ibex_rnd32_read(); }

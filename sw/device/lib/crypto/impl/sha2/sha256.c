@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 // Module ID for status codes.
@@ -267,6 +268,8 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
 /**
  * Replace sensitive data in a SHA-256 context with non-sensitive values.
  *
+ * The entropy complex must be initialized before calling this function.
+ *
  * @param state The context object to shred.
  */
 static void state_shred(sha256_state_t *state) {
@@ -298,6 +301,9 @@ static void digest_get(sha256_state_t *state, uint32_t *digest) {
 }
 
 status_t sha256_final(sha256_state_t *state, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   // Construct padding.
   HARDENED_TRY(process_message(state, NULL, 0, kHardenedBoolTrue));
 
@@ -308,6 +314,9 @@ status_t sha256_final(sha256_state_t *state, uint32_t *digest) {
 }
 
 status_t sha256(const uint8_t *msg, const size_t msg_len, uint32_t *digest) {
+  // Entropy complex needs to be initialized for `state_shred`.
+  HARDENED_TRY(entropy_complex_check());
+
   sha256_state_t state;
   sha256_init(&state);
 
