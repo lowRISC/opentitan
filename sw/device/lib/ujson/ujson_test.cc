@@ -141,6 +141,8 @@ TEST(UJson, ParseInteger) {
   INT(uint8_t, "256", 0);
   // This value overflows int64 and becomes its own negative.
   INT(int64_t, "9223372036854775808", -9223372036854775808);
+  // Quoted number.
+  INT(uint32_t, "\"123\"", 123);
 }
 #undef INT
 #undef SIMPLE_INT
