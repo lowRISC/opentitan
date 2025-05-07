@@ -47,3 +47,25 @@ stopat -task FSMParasiticState "dut.gen_alert_tx\[0\].u_prim_alert_sender.state_
 # the next state as the FSM treats the unrecognized state as Idle. This assertion also covers the
 # checker coverage for the default case.
 assert -name FSMParasiticState::AlertSenderFSMParasiticState_A {!(dut.gen_alert_tx[0].u_prim_alert_sender.state_q inside  {Idle, AlertHsPhase1, AlertHsPhase2, PingHsPhase1, PingHsPhase2, Pause0, Pause1}) ->  dut.gen_alert_tx[0].u_prim_alert_sender.state_d == Idle}
+
+proc clog2 {NumSrc} {
+  return [expr {ceil(log($NumSrc)/log(2))}]
+}
+
+# These are all the dead nodes in a binary tree. They are dead because the rightmost nodes at the
+# bottom of the tree are tied with 1'b0. Hence, their parents on levels below them also assigned
+# with 1'b0.
+proc tree {NumSrc} {
+  set NumLevels [clog2 $NumSrc]
+  for {set level 1} {$level < $NumLevels} {incr level} {
+    set h [expr {$NumLevels - $level}]
+    set node_int [expr {int(1 + floor(($NumSrc-1-2**($h-1))/(2**$h)))}]
+    set exp1 "dut.gen_target\[0].u_target.u_prim_max_tree"
+    for {set node $node_int} {$node < 2**$level} {incr node} {
+        set exp2 ".gen_tree\[$level].gen_level\[$node].gen_nodes.sel"
+        check_cov -waiver -add -expression "$exp1$exp2" -type {branch} -comment {Dead node}
+    }
+  }
+}
+
+tree {186}
