@@ -159,6 +159,8 @@ package spi_device_env_pkg;
 
   string msg_id = "spi_device_env_pkg";
 
+  string sck_committed_status_path =  "tb.dut.u_spid_status.sck_status_committed";
+
   // functions
   // get size of empty space in mem
   function automatic uint get_sram_space_bytes(uint wptr, uint rptr, uint sram_size_bytes,
