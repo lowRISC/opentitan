@@ -188,6 +188,38 @@ cc_library(
 )
 
 cc_library(
+    name = "rv_core_ibex",
+    srcs = ["rv_core_ibex.c"],
+    hdrs = ["rv_core_ibex.h"],
+    deps = [
+        "//hw/top:dt",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:csr",
+    ],
+)
+
+opentitan_test(
+    name = "rv_core_ibex_test",
+    srcs = ["rv_core_ibex_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":rv_core_ibex",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "otbn",
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],

@@ -118,42 +118,6 @@ cc_test(
 )
 
 cc_library(
-    name = "ibex",
-    srcs = ["ibex.c"],
-    hdrs = ["ibex.h"],
-    deps = [
-        ":abs_mmio",
-        ":csr",
-        ":status",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-opentitan_test(
-    name = "ibex_test",
-    srcs = ["ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":bitfield",
-        ":csr",
-        ":ibex",
-        ":status",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
