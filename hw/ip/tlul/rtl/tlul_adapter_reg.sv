@@ -163,15 +163,20 @@ module tlul_adapter_reg
     d_error:  error
   };
 
-  // outgoing integrity generation
-  tlul_rsp_intg_gen #(
-    .EnableRspIntgGen(EnableRspIntgGen),
-    .EnableDataIntgGen(EnableDataIntgGen),
-    .UserInIsZero(1'b1)
-  ) u_rsp_intg_gen (
-    .tl_i(tl_o_pre),
-    .tl_o(tl_o)
-  );
+  if (!EnableRspIntgGen && !EnableDataIntgGen) begin: gen_no_rsp_intg
+    assign tl_o = tl_o_pre;
+  end
+  else begin: gen_rsp_intg
+    // outgoing integrity generation
+    tlul_rsp_intg_gen #(
+      .EnableRspIntgGen(EnableRspIntgGen),
+      .EnableDataIntgGen(EnableDataIntgGen),
+      .UserInIsZero(1'b1)
+    ) u_rsp_intg_gen (
+      .tl_i(tl_o_pre),
+      .tl_o(tl_o)
+    );
+  end
 
   if (CmdIntgCheck) begin : gen_cmd_intg_check
     logic intg_error_q;
