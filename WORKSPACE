@@ -13,6 +13,11 @@ bazel_skylib_repos()
 load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 bazel_skylib_workspace()
 
+# Google/Bazel dependencies.  This needs to be after Python initialization
+# so that our preferred python configuration takes precedence.
+load("//third_party/google:repos.bzl", "google_repos")
+google_repos()
+
 # Python Toolchain + PIP Dependencies
 load("//third_party/python:repos.bzl", "python_repos")
 python_repos()
@@ -22,24 +27,11 @@ load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
 load("//third_party/python:requirements.bzl", install_ot_python_deps="install_deps")
 install_ot_python_deps(local_wheels_repo_target = "@ot_python_wheels//:sanitized_requirements.txt")
-
-# Google/Bazel dependencies.  This needs to be after Python initialization
-# so that our preferred python configuration takes precedence.
-load("//third_party/google:repos.bzl", "google_repos")
-google_repos()
 load("//third_party/google:deps.bzl", "google_deps")
 google_deps()
 
-# CRT is the Compiler Repository Toolkit.  It contains the configuration for
-# the windows compiler.
-load("//third_party/crt:repos.bzl", "crt_repos")
-crt_repos()
-load("@crt//:repos.bzl", "crt_repos")
-crt_repos()
-load("@crt//:deps.bzl", "crt_deps")
-crt_deps()
-load("@crt//config:registration.bzl", "crt_register_toolchains")
-crt_register_toolchains(riscv32 = True)
+load("//third_party/lowrisc:repos.bzl", "lowrisc_repos")
+lowrisc_repos()
 
 # Tools for release automation
 load("//third_party/github:repos.bzl", "github_tools_repos")
@@ -196,4 +188,5 @@ hyperdebug_repos()
 
 register_toolchains(
     "//rules/opentitan:localtools",
+    "//toolchain:cc_toolchain_opentitan",
 )
