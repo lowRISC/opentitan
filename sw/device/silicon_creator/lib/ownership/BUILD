@@ -38,6 +38,8 @@ cc_library(
         ":owner_block",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -77,6 +79,7 @@ dual_cc_library(
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:hardened_memory",
+            "//sw/device/silicon_creator/lib/drivers:rnd",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
             "//sw/device/silicon_creator/lib/drivers:kmac",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -111,6 +114,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
     ],
 )
 
@@ -128,7 +132,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
     ],
 )
 

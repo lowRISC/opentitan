@@ -120,3 +120,9 @@ uint32_t rnd_uint32(void) {
   CSR_READ(CSR_REG_MCYCLE, &mcycle);
   return mcycle + abs_mmio_read32(kBaseIbex + RV_CORE_IBEX_RND_DATA_REG_OFFSET);
 }
+
+// Provides the source of randomness for `hardened_memshred` (see
+// `hardened_memory.h`). Declare as weak in case the cryptolib driver is also
+// included.
+OT_WEAK
+uint32_t hardened_memshred_random_word(void) { return rnd_uint32(); }
