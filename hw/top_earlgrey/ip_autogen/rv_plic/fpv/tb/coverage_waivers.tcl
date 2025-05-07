@@ -58,3 +58,25 @@ foreach alert_sender_inst [get_design_info -list instance -filter "prim_alert_se
   check_cov -waiver -add -instance "$alert_sender_inst"\
     -comment {FPV for Alerts has already been done elsewhere}
 }
+
+proc clog2 {NumSrc} {
+  return [expr {ceil(log($NumSrc)/log(2))}]
+}
+
+# These are all the dead nodes in a binary tree. They are dead because the rightmost nodes at the
+# bottom of the tree are tied with 1'b0. Hence, their parents on levels below them also assigned
+# with 1'b0.
+proc tree {NumSrc} {
+  set NumLevels [clog2 $NumSrc]
+  for {set level 1} {$level < $NumLevels} {incr level} {
+    set h [expr {$NumLevels - $level}]
+    set node_int [expr {int(1 + floor(($NumSrc-1-2**($h-1))/(2**$h)))}]
+    set exp1 "dut.gen_target\[0].u_target.u_prim_max_tree"
+    for {set node $node_int} {$node < 2**$level} {incr node} {
+        set exp2 ".gen_tree\[$level].gen_level\[$node].gen_nodes.sel"
+        check_cov -waiver -add -expression "$exp1$exp2" -type {branch} -comment {Dead node}
+    }
+  }
+}
+
+tree {186}
