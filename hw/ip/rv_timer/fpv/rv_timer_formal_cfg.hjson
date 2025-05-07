@@ -1,0 +1,21 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: rv_timer_fpv
+
+  flow: formal
+  sub_flow: fpv
+  import_cfgs: [
+    "{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"
+  ]
+
+  dut: rv_timer
+  fusesoc_core: lowrisc:fpv:rv_timer_fpv
+  after_load: ["{proj_root}/hw/ip/rv_timer/fpv/verify.tcl"]
+
+ exports: [
+    {DUT_TOP: "rv_timer"}
+  ]
+}
