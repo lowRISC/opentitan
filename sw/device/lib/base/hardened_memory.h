@@ -54,10 +54,11 @@ void hardened_memcpy(uint32_t *OT_RESTRICT dest,
  * Internally, this function is careful to not dereference its operands
  * directly, and instead uses dedicated load/store intrinsics.
  *
+ * @param rnd Function to call for fresh randomness.
  * @param dest The destination of the set.
  * @param word_len The number of words to write.
  */
-void hardened_memshred(uint32_t *dest, size_t word_len);
+void hardened_memshred(uint32_t (*rnd)(void), uint32_t *dest, size_t word_len);
 
 /**
  * Compare two potentially-overlapping 32-bit aligned regions of memory for
