@@ -10,7 +10,8 @@ from collections import OrderedDict
 from collections.abc import Mapping
 from enum import Enum
 
-from topgen.lib import CEnum, CArrayMapping, Name
+from basegen.lib import Name
+from topgen.lib import CEnum, CArrayMapping
 from reggen.ip_block import IpBlock
 
 import logging
