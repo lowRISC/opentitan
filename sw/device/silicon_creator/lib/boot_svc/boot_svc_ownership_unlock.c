@@ -7,12 +7,15 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode, nonce_t nonce,
+void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode,
+                                        uint32_t next_owner_key_alg,
+                                        nonce_t nonce,
                                         const owner_keydata_t *next_owner_key,
                                         const owner_signature_t *signature,
                                         boot_svc_ownership_unlock_req_t *msg) {
   msg->unlock_mode = unlock_mode;
   memset(msg->reserved, 0, sizeof(msg->reserved));
+  msg->next_owner_key_alg = next_owner_key_alg;
   msg->nonce = nonce;
   msg->next_owner_key = *next_owner_key;
   msg->signature = *signature;
