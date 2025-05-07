@@ -12,7 +12,7 @@
 //      selected within [1:15] range, or stays same for 16 cycles.
 //  This test sequence reads DATA_IN and INTR_STATE register multiple times
 //  and every time, it checks for corresponding expected register value.
-class ${module_instance_name}_intr_with_filter_rand_intr_event_vseq extends ${module_instance_name}_base_vseq;
+class gpio_intr_with_filter_rand_intr_event_vseq extends gpio_base_vseq;
 
   // Random variable to specify for how many cycles one would like to keep
   // gpio input pin value stable
@@ -43,9 +43,9 @@ class ${module_instance_name}_intr_with_filter_rand_intr_event_vseq extends ${mo
     cp_cross: cross cp_pins, cp_stable_cycles, cp_pin_value, cp_filter_en;
   endgroup : pins_stable_period_and_filter_cg
 
-  `uvm_object_utils(${module_instance_name}_intr_with_filter_rand_intr_event_vseq)
+  `uvm_object_utils(gpio_intr_with_filter_rand_intr_event_vseq)
 
-  function new(string name = "${module_instance_name}_intr_with_filter_rand_intr_event_vseq");
+  function new(string name = "gpio_intr_with_filter_rand_intr_event_vseq");
     super.new(name);
     pins_stable_period_and_filter_cg = new();
   endfunction : new
@@ -302,4 +302,4 @@ class ${module_instance_name}_intr_with_filter_rand_intr_event_vseq extends ${mo
     end
   endfunction : update_intr_state
 
-endclass : ${module_instance_name}_intr_with_filter_rand_intr_event_vseq
+endclass : gpio_intr_with_filter_rand_intr_event_vseq
