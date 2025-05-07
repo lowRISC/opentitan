@@ -4,7 +4,5 @@
 #
 # waiver file for timer
 
-waive -rules ARITH_BITLEN -location {timer_core.sv} -msg {Bitlength mismatch between 'mtime' length 64 and 'step' length 8} \
-      -comment "Bitwidths are fine here, it's a wrap-around counter"
 waive -rules ONE_BIT_MEM_WIDTH -location {rv_timer.sv} -msg {Memory 'mtimecmp_update' has word width which is single bit wide} \
       -comment "This can occur in single hart/single timer configurations."
