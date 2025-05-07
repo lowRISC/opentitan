@@ -21,6 +21,7 @@ system.
 - Compliant with RISC-V privileged specification v1.11
 - Configurable number of timers per hart and number of harts
 
+Note: Although the number of timers is indeed configurable, the implementation currently only connects up one timer for one hart.
 ## Description
 
 The timer module provides a configurable number of 64-bit counters where each
