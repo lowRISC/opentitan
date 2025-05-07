@@ -55,6 +55,7 @@
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{top_dv_path}/chip_smoketests.hjson",
+                "{top_dv_path}/chip_manuf_ate_tests.hjson",
                 "{top_dv_path}/chip_rom_tests.hjson",
                 // Enable C compilation of chip level dpi
                 "{proj_root}/hw/dv/dpi/dpi_sim_cfg.hjson",
