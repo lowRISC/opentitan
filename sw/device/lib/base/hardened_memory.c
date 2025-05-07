@@ -79,10 +79,6 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   HARDENED_CHECK_EQ(count, expected_count);
 }
 
-// The source of randomness for shred, which may be replaced at link-time.
-OT_WEAK
-uint32_t hardened_memshred_random_word(void) { return 0xcaffe17e; }
-
 void hardened_memshred(uint32_t *dest, size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);

@@ -9,7 +9,9 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -437,6 +439,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   }
   *ciphertext_bytes_written = 0;
 
+  // Entropy complex needs to be initialized for `memshred`.
+  HARDENED_TRY(entropy_complex_check());
+
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
@@ -476,6 +481,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   }
   *plaintext_bytes_written = 0;
   *success = kHardenedBoolFalse;
+
+  // Entropy complex needs to be initialized for `memshred`.
+  HARDENED_TRY(entropy_complex_check());
 
   // Check the tag length.
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
