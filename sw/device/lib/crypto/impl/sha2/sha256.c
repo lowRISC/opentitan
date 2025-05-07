@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
@@ -270,6 +271,8 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
  * @param state The context object to shred.
  */
 static void state_shred(sha256_state_t *state) {
+  // Check if the entropy complex is in the expected state.
+  HARDENED_TRY(entropy_complex_check());
   hardened_memshred(state->H, kSha256StateWords);
   hardened_memshred(state->partial_block, kSha256MessageBlockWords);
   state->total_len = 0;

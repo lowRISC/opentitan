@@ -7,7 +7,9 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/ibex.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -122,20 +124,19 @@ static status_t otbn_assert_idle(void) {
  */
 static void otbn_write(uint32_t dest_addr, const uint32_t *src,
                        size_t num_words) {
-  // TODO: replace 0 with a random index like the silicon_creator driver
-  // (requires an interface to Ibex's RND valid bit and data register).
-  size_t i = ((uint64_t)0 * (uint64_t)num_words) >> 32;
-  enum { kStep = 1 };
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
-    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
-    i += kStep;
-    if (launder32(i) >= num_words) {
-      i -= num_words;
-    }
-    HARDENED_CHECK_LT(i, num_words);
+  // Start from a random index less than `num_words`.
+  random_order_t order;
+  random_order_init(&order, num_words);
+  size_t iter_cnt = 0, r_iter_cnt = num_words - 1;
+  for (; launder32(iter_cnt) < num_words && launder32(r_iter_cnt) < num_words;
+       ++iter_cnt, --r_iter_cnt) {
+    abs_mmio_write32(dest_addr + order.state * sizeof(uint32_t),
+                     src[order.state]);
+    random_order_advance(&order);
+    HARDENED_CHECK_LT(order.state, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 }
 
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
