@@ -509,30 +509,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     spi_host_wait_on_busy(busy_timeout_ns, busy_poll_interval_ns);
   endtask
 
-  // Load the flash binary specified by the `sw_image` path by sending a chip erase, then
-  // programming pages in sequence via the SPI flash interface presented by the ROM. Afterwards,
-  // bring the software straps back to 0, and issue a power-on reset.
-  //
-  // The `sw_image` path should point to an image usable by the `read_sw_frames` task.
-  //
-  // This task assumes the device was booted with software straps set before entry. In addition, it
-  // expects that the spi_agent was connected to the spi_device and is ready to issue flash
-  // transactions.
-  task spi_device_load_bootstrap(string sw_image);
-    spi_host_flash_seq m_spi_host_seq;
-    byte sw_byte_q[$];
-    uint bytes_to_write;
-    uint SPI_FLASH_PAGE_SIZE = 256;
-
-    // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
-    // it needs to capture CSB pulses.
-    cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
-    cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
-
-    // Configure the spi_agent for flash mode and add command info.
-    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
-
-    // Wait for the commands to be ready
+  // Wait for each of the SPI flash commands on the device to be loaded
+  protected task wait_for_flash_command_load();
     csr_spinwait(
       .ptr(ral.spi_device.cmd_info[spi_device_pkg::CmdInfoReadSfdp].opcode),
       .exp_data(SpiFlashReadSfdp),
@@ -548,15 +526,47 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .exp_data(SpiFlashWriteEnable),
       .backdoor(1),
       .spinwait_delay_ns(5000));
+  endtask
+
+  // Send a SPI command to request that flash is erased
+  protected task erase_flash_over_spi();
+    spi_host_flash_seq erase_seq;
+
+    erase_seq = spi_host_flash_seq::type_id::create("erase_seq");
+    erase_seq.opcode = SpiFlashChipErase;
+    spi_host_flash_issue_write_cmd(.write_command(erase_seq),
+                                   .busy_timeout_ns(200_000_000),
+                                   .busy_poll_interval_ns(1_000_000));
+  endtask
+
+  // Load the flash binary specified by the `sw_image` path by sending a chip erase, then
+  // programming pages in sequence via the SPI flash interface presented by the ROM. Afterwards,
+  // bring the software straps back to 0, and issue a power-on reset.
+  //
+  // The `sw_image` path should point to an image usable by the `read_sw_frames` task.
+  //
+  // This task assumes the device was booted with software straps set before entry. In addition, it
+  // expects that the spi_agent was connected to the spi_device and is ready to issue flash
+  // transactions.
+  task spi_device_load_bootstrap(string sw_image);
+    byte sw_byte_q[$];
+    uint bytes_to_write;
+    uint SPI_FLASH_PAGE_SIZE = 256;
+
+    // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
+    // it needs to capture CSB pulses.
+    cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
+    cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
+
+    // Configure the spi_agent for flash mode and add command info.
+    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
+
+    // Wait for the commands to be ready
+    wait_for_flash_command_load();
 
     read_sw_frames(sw_image, sw_byte_q);
 
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
-    m_spi_host_seq.opcode = SpiFlashChipErase;
-    spi_host_flash_issue_write_cmd(
-      .write_command(m_spi_host_seq),
-      .busy_timeout_ns(200_000_000),
-      .busy_poll_interval_ns(1_000_000));
+    erase_flash_over_spi();
 
     for (int unsigned idx = 0; idx < sw_byte_q.size(); idx += SPI_FLASH_PAGE_SIZE) begin
       spi_write_flash_page(sw_byte_q, idx, SPI_FLASH_PAGE_SIZE);

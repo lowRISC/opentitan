@@ -8,6 +8,19 @@
   # Note: Please maintain alphabetical order.
   tests: [
     {
+      name: ate_bootstrap_flash_erase
+      uvm_test_seq: chip_sw_ate_bootstrap_flash_erase_vseq
+      # We do not need to load any flash images as this test is entirely host driven.
+      sw_images: []
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=160_000_000"
+        "+skip_flash_bkdr_load=1",
+        "+use_spi_load_bootstrap=1",
+      ]
+      run_timeout_mins: 180
+    }
+    {
       name: ate_bootstrap_disjoint
       uvm_test_seq: chip_sw_ate_bootstrap_disjoint_vseq
       sw_images: ["//sw/device/silicon_creator/manuf/tests:multislot_empty_test:1:new_rules"]
