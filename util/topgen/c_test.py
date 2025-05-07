@@ -13,11 +13,12 @@ import sys
 from collections import defaultdict
 from typing import Dict
 
+from basegen.lib import Name
 from reggen.interrupt import IntrType
 from reggen.ip_block import IpBlock
 
 from .c import TopGenC
-from .lib import Name, find_module
+from .lib import find_module
 
 
 class TestPeripheral:
