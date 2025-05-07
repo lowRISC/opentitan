@@ -47,6 +47,7 @@
 #include "sw/device/silicon_creator/rom/boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
+#include "sw/device/silicon_creator/rom/rom_state.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_ecdsa_p256.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
@@ -757,26 +758,105 @@ static rom_error_t rom_try_boot(void) {
   return kErrorRomBootFailed;
 }
 
-void rom_main(void) {
+/*
+ * The bootstrap request is the `kRomStateBootstrapCheck` and
+ * `kRomStateBootstrap` ROM states argument. It must be undefined before
+ * entering the `kRomStateBootstrapCheck` state as only the
+ * `kRomStateBootstrapCheck` run callback or hooks should set it to either
+ * `kHardenedBoolFalse` or `kHardenedBoolTrue`.
+ */
+static hardened_bool_t bootstrap_request = 0;
+
+enum {
+  kRomStateCnt = 4,
+};
+
+/**
+ * Table of ROM states.
+ *
+ * Encoding generated with:
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 16 \
+ *     -s 519644925 --language=c
+ */
+// clang-format off
+#define ROM_STATES(X)                                                               \
+  X(kRomStateInit,           0x5616, rom_state_init, NULL)                          \
+  X(kRomStateBootstrapCheck, 0x0a92, rom_state_bootstrap_check, &bootstrap_request) \
+  X(kRomStateBootstrap,      0xd0a0, rom_state_bootstrap, &bootstrap_request)       \
+  X(kRomStateBootRomExt,     0xed14, rom_state_boot_rom_ext, NULL)
+// clang-format on
+
+ROM_STATE_INIT_TABLE(rom_states, kRomStateCnt, ROM_STATES);
+
+static OT_WARN_UNUSED_RESULT rom_error_t rom_state_init(void *arg,
+                                                        uint32_t *next_state) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);
-  SHUTDOWN_IF_ERROR(rom_init());
+  HARDENED_RETURN_IF_ERROR(rom_init());
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
-  if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
-    hardened_bool_t bootstrap_req = bootstrap_requested();
-    if (launder32(bootstrap_req) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
-      rom_bootstrap_message();
-      watchdog_disable();
-      shutdown_finalize(bootstrap());
-    }
+  *next_state = kRomStateBootstrapCheck;
+
+  return kErrorOk;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_bootstrap_check(void *arg, uint32_t *next_state) {
+  if (launder32(waking_from_low_power) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolTrue);
+    *next_state = kRomStateBootRomExt;
+
+    return kErrorOk;
   }
 
+  HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
+
+  hardened_bool_t *bootstrap_req = (hardened_bool_t *)arg;
+
+  if (launder32(*bootstrap_req) == 0) {
+    // The pre_ hook has not set the bootstrap request flag, it has to be
+    // checked and set to True or False
+    HARDENED_CHECK_EQ(*bootstrap_req, 0);
+    *bootstrap_req = bootstrap_requested();
+  }
+
+  // The bootstrap request flag must be True or False.
+  if (launder32(*bootstrap_req) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(*bootstrap_req, kHardenedBoolTrue);
+    *next_state = kRomStateBootstrap;
+  } else {
+    HARDENED_CHECK_EQ(*bootstrap_req, kHardenedBoolFalse);
+    *next_state = kRomStateBootRomExt;
+  }
+
+  return kErrorOk;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_bootstrap(void *arg, uint32_t *next_state) {
+  hardened_bool_t *bootstrap_req = (hardened_bool_t *)arg;
+
+  if (launder32(*bootstrap_req) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(*bootstrap_req, kHardenedBoolTrue);
+    rom_bootstrap_message();
+    watchdog_disable();
+    // `bootstrap` will not return unless there is an error.
+    HARDENED_RETURN_IF_ERROR(bootstrap());
+  }
+
+  return kErrorRomBootFailed;
+}
+
+static OT_WARN_UNUSED_RESULT rom_error_t
+rom_state_boot_rom_ext(void *arg, uint32_t *next_state) {
   // `rom_try_boot` will not return unless there is an error.
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 4, kCfiRomTryBoot);
-  shutdown_finalize(rom_try_boot());
+  return rom_try_boot();
+}
+
+void rom_main(void) {
+  CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
+  shutdown_finalize(rom_state_fsm_walk(rom_states, kRomStateCnt, kRomStateInit,
+                                       rom_states_cfi));
 }
