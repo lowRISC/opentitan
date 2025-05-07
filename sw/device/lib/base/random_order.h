@@ -35,6 +35,7 @@ extern "C" {
 typedef struct random_order {
   size_t state;
   size_t max;
+  size_t step;
 } random_order_t;
 
 /**
