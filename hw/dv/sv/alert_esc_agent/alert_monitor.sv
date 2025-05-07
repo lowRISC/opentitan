@@ -152,7 +152,7 @@ task alert_monitor::wait_alert_init_done();
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
         wait (cfg.vif.monitor_cb.alert_tx_final.alert_p !=
               cfg.vif.monitor_cb.alert_tx_final.alert_n);
-        @(posedge cfg.vif.clk);
+        @(cfg.vif.monitor_cb);
         `uvm_info("alert_monitor", "Alert init done!", UVM_HIGH)
         cfg.alert_init_done = 1;
         under_reset = 0;
@@ -195,7 +195,7 @@ task alert_monitor::ping_thread();
             req.ping_timeout = 1'b1;
           end
           begin : wait_ping_handshake
-            while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+            wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
             req.alert_handshake_sta = AlertReceived;
             wait_ack();
             req.alert_handshake_sta = AlertAckReceived;
@@ -225,7 +225,7 @@ task alert_monitor::ping_thread();
       // discussion on Issue #2321.
       if (req.ping_timeout && req.alert_handshake_sta == AlertReceived) begin
         @(cfg.vif.monitor_cb);
-        if (cfg.vif.alert_rx_final.ack_p == 1'b1) begin
+        if (cfg.vif.monitor_cb.alert_rx_final.ack_p == 1'b1) begin
           `uvm_info(`gfn, $sformatf("%m - Sending req: \n%0s",req.sprint), UVM_DEBUG)
           alert_esc_port.write(req);
         end
