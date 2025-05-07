@@ -21,6 +21,13 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
+ * Expects some external implementation of randomness to be linked.
+ *
+ * @return A fresh random word.
+ */
+extern uint32_t hardened_memshred_random_word(void);
+
+/**
  * Copies 32-bit words between non-overlapping regions.
  *
  * Unlike `memcpy()`, this function has important differences:
