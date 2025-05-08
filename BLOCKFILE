@@ -49,6 +49,7 @@ hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
 hw/ip/otp_ctrl/rtl/*
+hw/ip/otp_macro/rtl/*
 hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
@@ -87,6 +88,7 @@ hw/ip/rv_dm/data/rv_dm.hjson
 hw/ip/kmac/data/kmac.hjson
 hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
 hw/ip/otbn/data/otbn.hjson
+hw/ip/otp_macro/data/otp_macro.hjson
 hw/ip/entropy_src/data/entropy_src.hjson
 hw/ip/aes/data/aes.hjson
 hw/ip/i2c/data/i2c.hjson
