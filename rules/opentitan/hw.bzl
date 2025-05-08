@@ -205,7 +205,76 @@ def describe_top(name, all_tops, top):
         topname = top,
     )
 
+def _select_top_attr_impl(ctx):
+    target = opentitan_top_get_attr(
+        ctx.attr.top[OpenTitanTopInfo],
+        ctx.attr.attr,
+        required = ctx.attr.default != None,
+        default = ctx.attr.default,
+        output = "target",
+    )
 
+    # List of providers which are safe to copy
+    PROVIDERS = [CcInfo, OutputGroupInfo]
+    providers = [target[prov] for prov in PROVIDERS if prov in target]
+
+    # DefaultInfo needs to be re-created otherwise bazel will throw an error.
+    return providers + [
+        DefaultInfo(
+            files = target[DefaultInfo].files,
+            data_runfiles = target[DefaultInfo].data_runfiles,
+            default_runfiles = target[DefaultInfo].default_runfiles,
+        ),
+    ]
+
+select_top_attr = rule(
+    doc = """
+        This rule reate a target which points to a requested attribute of a top.
+        This allows other targets to depend on this attribute without creating a
+        custom rule that takes a top description as input. If the attribute is not
+        present in the top, a default value will be used if provided. If no default
+        value is provided, an error will occur.
+
+        Example:
+        ```py
+        # Assume that the top description contained a "my_top_attr" attribute:
+        TOP_DESC = opentitan_top(
+          name = "my_top_name",
+          my_top_attr = "//path/to/some:target",
+          ...
+        )
+        ALL_TOPS = [TOP_DESC, ...]
+        # Create a target for this top's description
+        describe_top(name = "my_top", [TOP_DESC], "my_top_name")
+        # Extract the attribute so it can be used
+        select_top_attr(
+            name = "my_top_attr_target",
+            attr = "my_top_attr",
+            default = "//optional/value/if/not/present:target"
+        )
+        # Maybe use this in other rules
+        cc_library(
+            name = "some_lib",
+            deps = [":my_top_attr_target"],
+        )
+
+        Limitations:
+        Due to the inability for starlark rules to re-export all providers of a target,
+        the target created by this rule will not contain all providers of the original
+        target provided in the top description. Currently, only the following providers
+        are forwarded (if present):
+        - DefaultInfo
+        - CcInfo
+        - OutputGroupInfo
+        ```
+""",
+    implementation = _select_top_attr_impl,
+    attrs = {
+        "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "attr": attr.string(mandatory = True, doc = "Name of the attribute to extract from the top description"),
+        "default": attr.label(doc = "Default value if the top does not contain the requested attribute"),
+    },
+)
 
 def select_top_lib(name, all_tops, top):
     """
