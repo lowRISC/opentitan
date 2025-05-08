@@ -17,7 +17,7 @@ class sram_ctrl_regwen_vseq extends sram_ctrl_executable_vseq;
   int readback_reg_val = 0;
   rand mubi4_t readback_en;
 
-  task req_mem_init(bit wait_done);
+  task req_mem_init(bit wait_done = 1);
     super.req_mem_init(wait_done);
     `DV_CHECK_RANDOMIZE_FATAL(ral.exec_regwen)
     csr_update(ral.exec_regwen);
