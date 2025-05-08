@@ -277,7 +277,7 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_map",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
