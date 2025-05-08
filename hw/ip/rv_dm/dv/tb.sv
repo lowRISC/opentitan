@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rv_dm_env_pkg::*;
   import rv_dm_test_pkg::*;
+  import top_racl_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -15,6 +16,8 @@ module tb;
 
   wire clk, rst_n, clk_lc, rst_lc_n;
   wire jtag_tdo_oe;
+  racl_policy_vec_t racl_policies;
+  assign racl_policies = 0; // Not currently used
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -63,7 +66,8 @@ module tb;
     .rst_ni                    (rst_n),
     .clk_lc_i                  (clk_lc  ),
     .rst_lc_ni                 (rst_lc_n),
-
+    .racl_policies_i           (racl_policies),
+    .racl_error_o              (),
     // We don't currently model systems with multiple debug modules. Tie this port off with the same
     // value as given as a default for next_dm_addr in rv_dm.hjson.
     .next_dm_addr_i            ('0),
