@@ -33,3 +33,53 @@ check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subre
 # For all the ip registers, de is true and hence wr_en is true. The branch misses the else part and
 # appeared dead.
 check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else part}
+
+# These are all the dead nodes in a binary tree. They are dead because the rightmost nodes at the
+# bottom of the tree are tied with 1'b0. Hence, their parents on levels below them also assigned
+# with 1'b0.
+for {set level 7} {$level > 0} {incr level -1} {
+  switch $level {
+    7
+    {
+      set min 93
+      set max 127
+    }
+    6
+    {
+      set min 46
+      set max 63
+    }
+    5
+    {
+      set min 23
+      set max 31
+    }
+    4
+    {
+      set min 12
+      set max 15
+    }
+    3
+    {
+      set min 6
+      set max 7
+    }
+    2
+    {
+      set min 3
+      set max 3
+    }
+    1
+    {
+      set min 1
+      set max 1
+    }
+  }
+  set exp1 "dut.gen_target\[0\].u_target.u_prim_max_tree"
+  for {set node $min} {$node <= $max} {incr node} {
+    set exp2 ".gen_tree\[$level\].gen_level\[$node\].gen_nodes.sel"
+    set exp ""
+    append exp $exp1 $exp2
+    check_cov -waiver -add -expression "$exp" -type {branch} -comment {Dead node}
+  }
+}
