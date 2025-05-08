@@ -47,6 +47,26 @@ sw a1, RV_TIMER_COMPARE_UPPER0_0_REG_OFFSET(t1)   # No smaller than new value.
 sw a0, RV_TIMER_COMPARE_LOWER0_0_REG_OFFSET(t1)   # New value.
 ```
 
+In typical usage the `mtime` register would not be written, but if there is a need
+to set it to an arbitrary, dynamically-determined value, the following sequence
+should be used to prevent the operation of the timer yielding an indeterminate
+result:
+
+```asm
+# Desired time is in a1:a0
+li t1, TOP_EARLGREY_RV_TIMER_BASE_ADDR
+sw x0, RV_TIMER_TIMER_V_LOWER0_0_REG_OFFSET(t1)
+sw a1, RV_TIMER_TIMER_V_UPPER0_0_REG_OFFSET(t1)  # Upper half of target value.
+sw a0, RV_TIMER_TIMER_V_LOWER0_0_REG_OFFSET(t1)  # Lower half of target value.
+```
+
+In the event that the target value of the lower half is close to 0xFFFF_FFFF,
+this sequence prevents the timer from assuming an incorrect time between the
+two 32-bit writes required to set the 64-bit timer value.
+
+If the value of `mtime` is modified in this manner then `mtimecmp` shall be
+written after `mtime` in order to clear any pending interrupt condition.
+
 ## Timer behaviour close to 2^64
 
 There are some peculiarities when `mtime` and `mtimecmp` get close to the end of
