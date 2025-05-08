@@ -58,6 +58,11 @@ opentitan_alias_top_attr(
     attr_name = "top_ld",
 )
 
+opentitan_alias_top_attr(
+    name = "top_otp_map",
+    attr_name = "otp_map",
+)
+
 # C register headers for all IPs.
 [
     opentitan_ip_c_header(
