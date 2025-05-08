@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo", "opentitan_top_get_ip_attr")
+load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo", "opentitan_top_get_attr", "opentitan_top_get_ip_attr")
 
 """Autogeneration rules for OpenTitan.
 
@@ -218,7 +218,8 @@ def _opentitan_top_dt_gen(ctx):
 
     top = ctx.attr.top[OpenTitanTopInfo]
 
-    inputs = [top.hjson]
+    top_hjson = opentitan_top_get_attr(top, "hjson")
+    inputs = [top_hjson]
     tools = []
     ips = []
     for ipname in top.ip_map:
@@ -241,7 +242,7 @@ def _opentitan_top_dt_gen(ctx):
 
     arguments = [
         "--topgencfg",
-        top.hjson.path,
+        top_hjson.path,
         "--outdir",
         outdir,
     ]
@@ -362,10 +363,11 @@ def _opentitan_autogen_testutils_gen(ctx):
             deps.append(ctx.actions.declare_file(file))
         outputs.extend(deps)
         groups[group] = depset(deps)
-    inputs = [top.hjson]
+    hjson = opentitan_top_get_attr(top, "hjson")
+    inputs = [hjson]
     arguments = [
         "--topcfg",
-        top.hjson.path,
+        hjson.path,
         "--outdir",
         outputs[0].dirname,
         "--clang-format",
