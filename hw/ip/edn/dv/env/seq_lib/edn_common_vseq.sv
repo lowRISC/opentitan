@@ -111,8 +111,8 @@ class edn_common_vseq extends edn_base_vseq;
           begin
             `DV_SPINWAIT(
                 do begin
-                  uvm_hdl_read($sformatf("%0s[%0d].edn_req", "tb.dut.u_edn_core.edn_i", index),
-                               req);
+                  string rtl_path = $sformatf("%0s[%0d].edn_req", "tb.dut.u_edn_core.edn_i", index);
+                  `DV_CHECK(uvm_hdl_read(rtl_path, req))
                   cfg.clk_rst_vif.wait_clks(1);
                 end while (!req);,
                 $sformatf("Waiting for EDN endpoint request timeout")
