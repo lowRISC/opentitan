@@ -119,19 +119,19 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
 # Install verilator prebuild binary
 RUN mkdir -p /tools/verilator \
     && curl -sSfL https://storage.googleapis.com/verilator-builds/verilator-v${VERILATOR_VERSION}.tar.gz | tar -C /tools/verilator -xvzf -
-ENV PATH "/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
+ENV PATH="/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
 
 # Install Verible
 RUN curl -f -Ls -o verible.tar.gz \
         https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz \
     && mkdir -p /tools/verible \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
-ENV PATH "/tools/verible/bin:${PATH}"
+ENV PATH="/tools/verible/bin:${PATH}"
 
 # Set Locale to utf-8 everywhere
-ENV LC_ALL en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
 
 # Scripting for use within this container.
 COPY util/container/start.sh /start.sh
@@ -153,7 +153,7 @@ USER dev:dev
 # specify that an older version of a package must be used for a certain
 # Python version. If that information is not read, pip installs the latest
 # version, which then fails to run.
-ENV PATH "/home/dev/.local/bin:${PATH}"
+ENV PATH="/home/dev/.local/bin:${PATH}"
 COPY --chown=dev:dev python-requirements.txt /tmp/python-requirements.txt
 RUN python3 -m pip install --user -U pip "setuptools<66.0.0" \
     && python3 -m pip install --user -r /tmp/python-requirements.txt \
