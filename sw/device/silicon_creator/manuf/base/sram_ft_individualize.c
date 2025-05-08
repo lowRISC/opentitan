@@ -189,5 +189,8 @@ bool test_main(void) {
   } else {
     CHECK_DIF_OK(dif_gpio_write(&gpio, kGpioPinTestDone, true));
   }
+#ifdef ATE
+  abort();
+#endif
   return true;
 }
