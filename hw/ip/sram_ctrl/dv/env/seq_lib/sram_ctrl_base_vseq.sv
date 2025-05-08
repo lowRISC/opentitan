@@ -85,8 +85,8 @@ class sram_ctrl_base_vseq #(
         begin
           forever begin
             cfg.clk_rst_vif.wait_clks($urandom_range(10, 10_000));
-            std::randomize(readback_en) with {
-              readback_en inside {MuBi4True, MuBi4False};};
+            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(readback_en,
+                                               readback_en inside {MuBi4True, MuBi4False};)
             // Wait until cfg.in_key_req == 0 as writing to the readback CSR
             // issues a TL-UL transaction to the register interface of the
             // module, which triggers the following assertion inside
