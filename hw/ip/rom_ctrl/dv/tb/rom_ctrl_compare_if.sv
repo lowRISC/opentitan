@@ -39,7 +39,10 @@ interface rom_ctrl_compare_if ();
     // that the valid states are separated by a hamming distance of at least 3, so we can just
     // invert one of the bits of the signal for a cycle and will know that we're setting an invalid
     // value.
-    int good_val = u_compare.state_d;
+    int good_val;
+    // Assignment is done in two lines to avoid Xcelium warning:
+    // *W,VARIST Local static variable with initializer requires 'static' keyword.
+    good_val = u_compare.state_d;
     force u_compare.state_d[0] = ~good_val[0];
     @(negedge u_compare.clk_i);
     release u_compare.state_d[0];
