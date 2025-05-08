@@ -158,6 +158,7 @@ module tb;
 
     // memory configuration
     .ram_cfg_i              ('0),
+    .ram_cfg_rsp_o          (  ),
 
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
