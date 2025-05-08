@@ -39,6 +39,19 @@
   `ASSUME_FPV(``NAME_``TriggerAfterAlertInit_S,                                            \
               $stable(rst_ni) == 0 |-> HIER_.ERR_NAME_ == 0 [*10])
 
+// When an error signal rises, expect to see the associated ALERT_IN_ signal go high in at most
+// MAX_CYCLES_
+//
+// This is expected to cause an alert to be signalled, but avoids needing to reason about the
+// internals of the alert sender (which are checked with formal properties in the prim_alert_rxtx*
+// cores).
+//
+// The NAME_, HIER_, GATE_, MAX_CYCLES_ and ERR_NAME_ arguments are the same as for
+// `ASSERT_ERROR_TRIGGER_ERR.
+`define ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_IN_, GATE_, MAX_CYCLES_, ERR_NAME_) \
+  `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ALERT_IN_, GATE_, MAX_CYCLES_, ERR_NAME_,           \
+                            `ASSERT_DEFAULT_CLK, `ASSERT_DEFAULT_RST)
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Assertions for CMs that trigger alerts
@@ -63,6 +76,35 @@
 
 `define ASSERT_PRIM_FIFO_SYNC_SINGLETON_ERROR_TRIGGER_ALERT(NAME, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
   `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// The input flavour of assertions for CMs that trigger alerts
+//
+// Note that the default value for MAX_CYCLES_ in these assertions is much smaller than
+// _SEC_CM_ALERT_MAX_CYC. Because we are asserting something about the *input* for the alert system,
+// the timing can be much tighter: we default to two cycles.
+//
+////////////////////////////////////////////////////////////////////////////////
+
+`define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, unused_err_o)
+
+`define ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
+`define ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(NAME_, REG_TOP_HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT_IN(NAME_, \
+    REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ALERT_, GATE_, MAX_CYCLES_)
+
+`define ASSERT_PRIM_FIFO_SYNC_SINGLETON_ERROR_TRIGGER_ALERT_IN(NAME, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = 2) \
+  `ASSERT_ERROR_TRIGGER_ALERT_IN(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
 
 ////////////////////////////////////////////////////////////////////////////////
 //
