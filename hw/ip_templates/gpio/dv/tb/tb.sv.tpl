@@ -67,6 +67,10 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
+    // RACL interface
+    .racl_policies_i('0),
+    .racl_error_o   (  ),
+
     .cio_gpio_i          (gpio_i),
     .cio_gpio_o          (gpio_o),
     .cio_gpio_en_o       (gpio_oe)
