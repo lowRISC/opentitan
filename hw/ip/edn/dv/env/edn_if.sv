@@ -33,7 +33,7 @@ interface edn_if(input clk, input rst_n);
     return {core_path, ".u_prim_count_max_reqs_cntr.err_o"};
   endfunction // cntr_err_path
 
-  function automatic drive_edn_disable(bit val);
+  function automatic void drive_edn_disable(bit val);
     edn_disable_o = val;
   endfunction
 
