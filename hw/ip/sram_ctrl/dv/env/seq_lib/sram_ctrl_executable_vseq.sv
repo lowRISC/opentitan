@@ -18,7 +18,7 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     super.pre_start();
   endtask
 
-  task req_mem_init(bit wait_done);
+  task req_mem_init(bit wait_done = 1);
     super.req_mem_init(wait_done);
     randomize_and_drive_ifetch_en();
   endtask
