@@ -64,6 +64,12 @@ select_top_attr(
     top = ":top_desc",
 )
 
+select_top_attr(
+    name = "top_otp_ctrl_mmap",
+    attr = "otp_ctrl_mmap",
+    top = ":top_desc",
+)
+
 # C register headers for all IPs.
 [
     opentitan_ip_c_header(
