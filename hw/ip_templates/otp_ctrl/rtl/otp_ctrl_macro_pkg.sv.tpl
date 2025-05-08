@@ -21,10 +21,10 @@ package otp_ctrl_macro_pkg;
   parameter int OtpSizeWidth     = 2;
   parameter int OtpPwrSeqWidth   = 2;
 
-  parameter int OtpAddrWidth     = ${round(math.log2(otp_mmap["otp"]["depth"]))};
+  parameter int OtpAddrWidth     = ${math.ceil(math.log2(otp_mmap["otp"]["depth"]))};
   parameter int OtpIfWidth       = 2**OtpSizeWidth*OtpWidth;
   // Number of Byte address bits to cut off in order to get the native OTP word address.
-  parameter int OtpAddrShift     = ${round(math.log2(otp_mmap["otp"]["width"]))};
+  parameter int OtpAddrShift     = ${math.ceil(math.log2(otp_mmap["otp"]["width"]))};
 
   typedef logic [OtpSizeWidth-1:0] otp_macro_size_t;
   typedef logic [OtpAddrWidth-1:0] otp_macro_addr_t;
