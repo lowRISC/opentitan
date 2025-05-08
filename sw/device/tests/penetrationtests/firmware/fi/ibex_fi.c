@@ -239,6 +239,8 @@ static inline void read_all_regs(uint32_t buffer[]) {
 static status_t read_otp_partitions(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t
       otp_data_read_res_vendor_test[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
@@ -276,6 +278,8 @@ static status_t read_otp_partitions(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Detect potential mismatch caused by faults.
   uint32_t res = 0;
@@ -317,6 +321,8 @@ static status_t read_otp_partitions(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -342,6 +348,8 @@ void not_increment_counter(void) __attribute__((optnone)) {
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t increment_100x10_mapping = {
@@ -394,6 +402,8 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   uint32_t result_target = increment_100x1_remapped(0);
   // Compare values
@@ -415,6 +425,8 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -422,6 +434,8 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
@@ -452,6 +466,8 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1_read_back;
@@ -487,6 +503,8 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -495,6 +513,8 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -547,6 +567,8 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -558,6 +580,8 @@ status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -566,6 +590,8 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -618,6 +644,8 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -629,6 +657,8 @@ status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -637,6 +667,8 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -689,6 +721,8 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -700,6 +734,8 @@ status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -708,6 +744,8 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -760,6 +798,8 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -771,6 +811,8 @@ status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -779,6 +821,8 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -831,6 +875,8 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -842,6 +888,8 @@ status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -850,6 +898,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t result1 = 0;
   uint32_t result2 = 0;
@@ -902,6 +952,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -913,6 +965,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -920,6 +974,8 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
@@ -947,6 +1003,8 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
   uint32_t res = 0;
@@ -965,6 +1023,8 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -973,6 +1033,8 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Init x5 with reference value.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
@@ -1014,6 +1076,8 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
   uj_output.result = 0;
@@ -1028,6 +1092,8 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1035,6 +1101,8 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1103,6 +1171,8 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
@@ -1126,6 +1196,8 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1133,6 +1205,8 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   if (!flash_init) {
     // Configure the data flash.
@@ -1176,6 +1250,8 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -1197,6 +1273,8 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1205,6 +1283,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1228,6 +1308,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1238,6 +1320,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1247,6 +1331,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1267,6 +1353,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1277,6 +1365,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1286,6 +1376,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1306,6 +1398,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1316,6 +1410,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1325,6 +1421,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1345,6 +1443,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1355,6 +1455,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1364,6 +1466,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   // uint32_t value1 = 0;
@@ -1384,6 +1488,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1394,6 +1500,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1403,6 +1511,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
@@ -1420,6 +1530,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1430,6 +1542,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   uj_output.result1 = value1;
   uj_output.result2 = value2;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1438,6 +1552,8 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -1451,6 +1567,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1462,6 +1580,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1469,6 +1589,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t res_values[7];
   // Initialize temporary registers with reference values.
@@ -1486,6 +1608,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1514,6 +1638,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1521,6 +1647,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t res_values[6];
   // Initialize temporary registers with reference values.
@@ -1567,6 +1695,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1595,6 +1725,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1602,6 +1734,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -1619,6 +1753,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -1630,6 +1766,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1637,6 +1775,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Init t0...t6 with 0.
   init_temp_regs(0);
@@ -1665,6 +1805,8 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   ibex_fi_faulty_addresses_data_t uj_output;
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
@@ -1684,6 +1826,8 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1705,6 +1849,8 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Get address of the ret. SRAM at the beginning of the owner section.
   uintptr_t sram_ret_buffer_addr =
@@ -1725,6 +1871,8 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
@@ -1753,6 +1901,8 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -1760,6 +1910,8 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -1782,6 +1934,8 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[32];
@@ -1803,6 +1957,8 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1811,6 +1967,8 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Initialize SRAM region with inverse reference value.
   sram_main_buffer[0] = ~ref_values[0];
@@ -1922,6 +2080,8 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   uint32_t res_values[3];
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -1947,6 +2107,8 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1954,6 +2116,8 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
 status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -2101,6 +2265,8 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back and compare against reference values.
   uint32_t res_values[64];
@@ -2122,6 +2288,8 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -2129,6 +2297,8 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -2172,6 +2342,8 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2182,6 +2354,8 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   uj_output.result = result;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -2191,6 +2365,8 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   read_all_regs(registers);
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -2235,6 +2411,8 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2246,6 +2424,8 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   memcpy(uj_output.registers, registers, sizeof(registers));
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_registers_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -2253,6 +2433,8 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -2271,6 +2453,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2281,6 +2465,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -2288,6 +2474,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -2308,6 +2496,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   pentest_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2318,6 +2508,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -2325,6 +2517,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint32_t addresses[8] = {0};
   uint32_t data[8] = {0};
@@ -2353,6 +2547,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -2364,11 +2560,16 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   memcpy(uj_output.data, data, sizeof(data));
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
@@ -2383,8 +2584,14 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler();
 
-  // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu();
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_data.icache_disable, uj_data.dummy_instr_disable,
+      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   // Enable the flash.
   flash_info = dif_flash_ctrl_get_device_info();
@@ -2402,9 +2609,8 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
       &rv_core_ibex));
 
   // Read device ID and return to host.
-  penetrationtest_device_id_t uj_output;
   TRY(pentest_read_device_id(uj_output.device_id));
-  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
@@ -2437,6 +2643,8 @@ status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
 status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   uint64_t faulty_token[kSecret0TestUnlockTokenSizeIn64BitWords];
   for (size_t i = 0; i < kSecret0TestUnlockTokenSizeIn64BitWords; i++) {
@@ -2450,6 +2658,11 @@ status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
   asm volatile(NOP10);
   pentest_set_trigger_low();
 
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
@@ -2460,6 +2673,8 @@ status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
       0;  // Writing to the locked OTP partition crashes the chip.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
 
   return OK_STATUS();

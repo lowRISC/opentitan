@@ -96,6 +96,8 @@ status_t otp_life_cycle_dump(uint32_t *buffer) {
 status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_hw_cfg_dump(otp_read32_result_hw_cfg_comp));
@@ -116,6 +118,8 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -133,12 +137,17 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   uj_output.alerts[0] = reg_alerts.alerts[0];
   uj_output.alerts[1] = reg_alerts.alerts[1];
   uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_hwcfg_partition_t, uj, &uj_output);
 
   return OK_STATUS();
 }
 
 status_t handle_otp_fi_init(ujson_t *uj) {
+  penetrationtest_cpuctrl_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
@@ -153,13 +162,23 @@ status_t handle_otp_fi_init(ujson_t *uj) {
   // and reported to the test.
   pentest_configure_alert_handler();
 
-  // Disable the instruction cache and dummy instructions for FI attacks.
-  pentest_configure_cpu();
+  // Configure the CPU for the pentest.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_data.icache_disable, uj_data.dummy_instr_disable,
+      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
+      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
+      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
+      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
 
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   init_otp_mem_dump_buffers();
+
+  // Read device ID and return to host.
+  TRY(pentest_read_device_id(uj_output.device_id));
+  RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -167,6 +186,8 @@ status_t handle_otp_fi_init(ujson_t *uj) {
 status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_life_cycle_dump(otp_read32_result_life_cycle_comp));
@@ -187,6 +208,8 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -204,6 +227,8 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   uj_output.alerts[0] = reg_alerts.alerts[0];
   uj_output.alerts[1] = reg_alerts.alerts[1];
   uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_lifecycle_partition_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -212,6 +237,8 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
 status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_owner_sw_cfg_dump(otp_read32_result_owner_sw_cfg_comp));
@@ -232,6 +259,8 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -249,6 +278,8 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   uj_output.alerts[0] = reg_alerts.alerts[0];
   uj_output.alerts[1] = reg_alerts.alerts[1];
   uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_ownerswcfg_partition_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -257,6 +288,8 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
 status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
 
   // Read OTP partition for comparison values
   TRY(otp_vendor_test_dump(otp_read32_result_vendor_test_comp));
@@ -277,6 +310,8 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Get OTP CTRL status
   dif_otp_ctrl_status_t status;
@@ -294,6 +329,8 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   uj_output.alerts[0] = reg_alerts.alerts[0];
   uj_output.alerts[1] = reg_alerts.alerts[1];
   uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_vendortest_partition_t, uj, &uj_output);
 
   return OK_STATUS();
