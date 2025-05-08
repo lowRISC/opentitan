@@ -47,6 +47,12 @@ module tb;
     .alert_rx_i           (alert_rx   ),
     .alert_tx_o           (alert_tx   ),
 
+    // RACL interface
+    .racl_policies_i      ('0         ),
+    .racl_error_o         (           ),
+
+    .lsio_trigger_o       (           ),
+
     .cio_rx_i             (uart_rx    ),
     .cio_tx_o             (uart_tx    ),
     .cio_tx_en_o          (uart_tx_en ),
