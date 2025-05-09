@@ -17,7 +17,8 @@ extern "C" {
     value(_, LifeCycle) \
     value(_, OwnerSwCfg) \
     value(_, VendorTest)
-UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(OtpFiSubcommand, otp_fi_subcommand_t, OTPFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define OTPFI_VENDORTEST_PARTITION(field, string) \
     field(vendor_test_comp, uint32_t, 16) \

@@ -21,7 +21,8 @@ extern "C" {
     value(_, EdnBias) \
     value(_, FWOverride) \
     value(_, EntropySrcBias)
-UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(RngFiSubcommand, rng_fi_subcommand_t, RNGFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define CRYPTOFI_CSRNG_MODE(field, string) \
     field(start_trigger, bool) \
@@ -61,12 +62,19 @@ UJSON_SERDE_STRUCT(RngFiEntrBiasOutput, rng_fi_entropy_src_bias_t, RNGFI_ENTRBIA
 UJSON_SERDE_STRUCT(RngFiFwOverwriteOutput, rng_fi_fw_overwrite_t, RNGFI_FWOVERWRITE_OUTPUT);
 
 #define RNGFI_EDN(field, string) \
-    field(collisions, uint32_t) \
     field(rand, uint32_t, 16) \
     field(alerts, uint32_t, 3) \
     field(err_status, uint32_t) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(RngFiEdn, rng_fi_edn_t, RNGFI_EDN);
+
+#define RNGFI_EDN_COLLISION(field, string) \
+    field(collisions, uint32_t) \
+    field(rand, uint32_t, 16) \
+    field(alerts, uint32_t, 3) \
+    field(err_status, uint32_t) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(RngFiEdnCollision, rng_fi_edn_collisions_t, RNGFI_EDN_COLLISION);
 
 #define RNGFI_FWOVERWRITE_HEALTH(field, string) \
     field(disable_health_check, bool)

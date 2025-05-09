@@ -1,0 +1,36 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "CsrngInit",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "CsrngBias",
+    "input": "{\"start_trigger\": true,\"valid_trigger\": true,\"read_trigger\": true,\"all_trigger\": true}",
+    "expected_output": "{\"res\":0,\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "EdnRespAck",
+    "expected_output": "{\"collisions\":0,\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "EdnBias",
+    "expected_output": "{\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "FWOverride",
+    "input": "{\"disable_health_check\": true}",
+    "expected_output": "{\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "FWOverride",
+    "input": "{\"disable_health_check\": false}",
+    "expected_output": "{\"rand\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  }
+]
