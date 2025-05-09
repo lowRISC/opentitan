@@ -113,41 +113,6 @@ cc_test(
 )
 
 cc_library(
-    name = "ibex",
-    srcs = ["ibex.c"],
-    hdrs = ["ibex.h"],
-    deps = [
-        ":abs_mmio",
-        ":csr",
-        ":status",
-        "//hw/top:dt",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-opentitan_test(
-    name = "ibex_test",
-    srcs = ["ibex_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":bitfield",
-        ":csr",
-        ":ibex",
-        ":status",
-        "//hw/top:rv_core_ibex_c_regs",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
-)
-
-cc_library(
     name = "stdasm",
     hdrs = ["stdasm.h"],
 )
@@ -296,7 +261,19 @@ cc_library(
     name = "random_order",
     srcs = ["random_order.c"],
     hdrs = ["random_order.h"],
-    deps = [":bitfield"],
+    deps = [
+        ":bitfield",
+        ":hardened",
+    ],
+)
+
+cc_test(
+    name = "random_order_unittest",
+    srcs = ["random_order_unittest.cc"],
+    deps = [
+        ":random_order",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
