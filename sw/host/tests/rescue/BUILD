@@ -41,5 +41,7 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:hex",
         "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
