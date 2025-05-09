@@ -582,13 +582,13 @@ impl From<&ManifestExtTable> for [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TA
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testdata;
+    use crate::util::testdata;
     use deser_hjson::from_str;
 
     #[test]
     fn test_manifest_from_hjson() {
         let def: ManifestSpec =
-            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
+            from_str(&std::fs::read_to_string(testdata("image/manifest.hjson")).unwrap()).unwrap();
 
         let _: Manifest = def.try_into().unwrap();
     }
@@ -596,7 +596,7 @@ mod tests {
     #[test]
     fn test_manifest_from_hjson_missing() {
         let def: ManifestSpec =
-            from_str(&std::fs::read_to_string(testdata!("manifest_missing.hjson")).unwrap())
+            from_str(&std::fs::read_to_string(testdata("image/manifest_missing.hjson")).unwrap())
                 .unwrap();
 
         let res: Result<Manifest> = def.try_into();
@@ -606,7 +606,7 @@ mod tests {
     #[test]
     fn test_manifest_overwrite() {
         let mut base: ManifestSpec =
-            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
+            from_str(&std::fs::read_to_string(testdata("image/manifest.hjson")).unwrap()).unwrap();
         let other = ManifestSpec {
             identifier: from_str("0xabcd").unwrap(),
             binding_value: from_str(stringify!(["0", "1", "2", "3", "4", "5", "6", "7"])).unwrap(),
@@ -626,7 +626,7 @@ mod tests {
     #[test]
     fn test_manifest_convert() {
         let def1: ManifestSpec =
-            from_str(&std::fs::read_to_string(testdata!("manifest.hjson")).unwrap()).unwrap();
+            from_str(&std::fs::read_to_string(testdata("image/manifest.hjson")).unwrap()).unwrap();
         let def2 = def1.clone();
 
         let bin1: Manifest = def1.try_into().unwrap();

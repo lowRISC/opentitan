@@ -5,7 +5,7 @@
 load("@bazel_skylib//rules:build_test.bzl", "build_test")
 load("@bazel_skylib//rules:diff_test.bzl", "diff_test")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
-load("//third_party/python:requirements.bzl", "all_data_requirements", "all_requirements", "all_whl_requirements")
+load("@ot_python_deps//:requirements.bzl", "all_data_requirements", "all_requirements", "all_whl_requirements")
 
 package(default_visibility = ["//visibility:public"])
 

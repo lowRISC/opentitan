@@ -115,16 +115,16 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 \
     --output bazel
   chmod +x bazel
-  git clone -b "${BAZEL_VERSION}" --depth 1 https://github.com/bazelbuild/bazel bazel-repo
-  cd bazel-repo
-  echo "Cloned bazel repo @ \"${BAZEL_VERSION}\" (commit $(git rev-parse HEAD))"
-  ../bazel build @additional_distfiles//:archives.tar
-  tar xvf bazel-bin/external/additional_distfiles/archives.tar \
-    -C "../${BAZEL_DISTDIR}" \
-    --strip-components=3
-  cd ..
-  rm -rf bazel-repo
-  echo "Done."
+
+  # Make Bazel fetch its own dependencies to the repository cache:
+  # https://bazel.build/run/build#repository_cache_with_bazel_7_or_later
+  mkdir -p "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
+  pushd "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
+    touch MODULE.bazel
+    cp "${REPO_TOP}/.bazelversion" .
+    bazel fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
+  popd
+  rm -rf "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
 fi
 
 ################################################################################
@@ -141,26 +141,11 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @remote_java_tools//... \
-    @remote_java_tools_linux//... \
-    @bindgen_clang_linux//... \
-    @rules_rust_bindgen__bindgen-0.65.1//... \
-    @go_sdk//... \
-    @lowrisc_rv32imcb_files//... \
-    @local_config_cc_toolchains//... \
+    @lowrisc_rv32imcb_toolchain//... \
     @local_config_platform//... \
-    @local_config_sh//... \
     @ot_python_wheels//... \
-    @python3_toolchains//... \
-    @remotejdk11_linux//... \
     @riscv-compliance//... \
-    @rules_foreign_cc//toolchains/... \
-    @ninja_1.11.0_linux//... \
-    @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_nightly-2023-10-05__x86_64-unknown-linux-gnu_tools//... \
-    @rust_analyzer_1.71.1_tools//... \
-    @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
-    @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
+    @rules_foreign_cc//toolchains/...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
   # We don't need all bitstreams in the cache, we just need the latest one so

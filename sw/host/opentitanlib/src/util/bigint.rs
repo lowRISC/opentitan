@@ -33,6 +33,7 @@ pub enum ParseBigIntError {
 ///     e.g. SHA-256 digests (at most 256 bits) or RSA-3072 signatures (at most 3072 bits),
 ///   - When `EXACT_LEN` is `true`, the number of bits required to represent the integer must be
 ///     exactly `BIT_LEN` bits, e.g. RSA-3072 moduli (exactly 3072 bits).
+///
 /// Note that while the type encapsulates the size information, the actual check is performed at
 /// runtime when an instance is created (see `check_len()`).
 ///

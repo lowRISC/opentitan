@@ -26,7 +26,6 @@ use serde::{Deserialize, Deserializer};
 ///   }
 /// }
 /// ```
-
 // This function was taken nearly verbatim from the serde documentation.
 // The example in the serde documentation constrains the `FromStr` error
 // type to `Void`; we constrain to any type implementing std::error::Error.

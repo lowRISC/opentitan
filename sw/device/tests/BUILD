@@ -2,20 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
 )
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-    "OPENTITAN_CPU",
-)
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -28,6 +21,7 @@ load(
     "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "OPENTITAN_CPU",
     "dv_params",
     "ecdsa_key_for_lc_state",
     "fpga_params",

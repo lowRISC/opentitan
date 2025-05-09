@@ -11,36 +11,13 @@ pub mod secret;
 pub mod signing;
 pub mod wrap;
 
-/// The `testdata` macro can be used in tests to reference testdata directories.
-#[macro_export]
+/// The `testdata` function can be used in tests to reference testdata directories.
 #[cfg(test)]
-macro_rules! testdata {
-    () => {{
-        use std::path::PathBuf;
-        let mut path = PathBuf::new();
-        path.push(file!());
-        path.pop();
-        path.push("testdata");
-        path
-    }};
-    ($f:expr) => {{
-        let mut path = testdata!();
-        path.push($f);
-        path
-    }};
-}
-
-#[cfg(test)]
-mod test {
-    #[test]
-    fn test_testdata() {
-        assert_eq!(
-            testdata!().to_str().unwrap(),
-            "sw/host/hsmtool/src/util/testdata"
-        );
-        assert_eq!(
-            testdata!("my.file").to_str().unwrap(),
-            "sw/host/hsmtool/src/util/testdata/my.file"
-        );
-    }
+pub fn testdata(test: &str) -> std::path::PathBuf {
+    let mut path: std::path::PathBuf = std::env::var_os("TESTDATA").unwrap().into();
+    // TESTDATA points an arbitrary test, remove two levels to get the directory.
+    path.pop();
+    path.pop();
+    path.push(test);
+    path
 }

@@ -131,8 +131,11 @@ rust_test(
     name = "hsmlib_test",
     crate = ":hsmlib",
     data = glob([
-        "src/util/key/testdata/**",
+        "testdata/**",
     ]),
+    env = {
+        "TESTDATA": "$(rootpath testdata/key/test1_pkcs1.der)",
+    },
 )
 
 rust_doc(

@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Enable bzlmod with `MODULE.bazel` and disable the `WORKSPACE` system.
+common --enable_bzlmod
+common --enable_workspace=no
+
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
 build --cxxopt='-std=gnu++14'
@@ -10,10 +14,6 @@ build --conlyopt='-std=gnu11'
 # Never strip debugging information so that we can produce annotated
 # disassemblies when compilation mode is fastbuild.
 build --strip='never'
-
-# Override default enablement of flags from @crt//common to control C compiler
-# warnings.
-build --features=-pedantic_warnings
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.
@@ -130,7 +130,7 @@ build --@rules_rust//rust/toolchain/channel=nightly
 # Configure the rust 'clippy' linter.
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
-build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
+build --@rules_rust//:clippy_flags="-Aclippy::bool_assert_comparison,-Aclippy::uninlined_format_args,-Aclippy::needless_lifetimes,-Aclippy::precedence,-Wclippy::undocumented_unsafe_blocks,-Dwarnings"
 
 # Configure the module ID check.
 build --aspects=rules/quality.bzl%modid_check_aspect

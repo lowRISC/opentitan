@@ -1,0 +1,173 @@
+commit 9ae095002fa2050f09f86e20f804ca2e96fd66c9
+Author: Tim Trippel <ttrippel@google.com>
+Date:   Wed Sep 13 09:56:21 2023 -0700
+
+    Add build setting to enable specifying other tool locations
+    
+    On some systems, the CC toolchain discovered by bazel uses a different
+    path for the linker than where the linker (that is specified by the
+    `-fuse-ld=` flag) actually lives on the system.
+    
+    The issue stems from rules_rust deciding to pass `-fuse-ld=lld` a link arg,
+    rather than just using what was detected by the CC toolchain. This results
+    in the linker not being found, as reported by
+    https://github.com/lowRISC/opentitan/issues/12448
+    
+    This is a workaround that enables telling rules_rust where other linker
+    directories might be on your system. It is used by passing
+    `--@rules_rust//:extra_rustc_toolchain_dirs=/path/to/somewhere/else` to
+    `bazel ...` invocations.
+    
+    Signed-off-by: Tim Trippel <ttrippel@google.com>
+
+diff --git a/BUILD.bazel b/BUILD.bazel
+index 3dfbda71..cafb693e 100644
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -72,6 +72,12 @@ alias(
+     visibility = ["//visibility:public"],
+ )
+ 
++alias(
++    name = "extra_rustc_toolchain_dirs",
++    actual = "//rust/settings:extra_rustc_toolchain_dirs",
++    visibility = ["//visibility:public"],
++)
++
+ alias(
+     name = "clippy.toml",
+     actual = "//rust/settings:clippy.toml",
+diff --git a/rust/defs.bzl b/rust/defs.bzl
+index e05c4ada..604e1aeb 100644
+--- a/rust/defs.bzl
++++ b/rust/defs.bzl
+@@ -53,6 +53,7 @@ load(
+     _extra_exec_rustc_flags = "extra_exec_rustc_flags",
+     _extra_rustc_flag = "extra_rustc_flag",
+     _extra_rustc_flags = "extra_rustc_flags",
++    _extra_rustc_toolchain_dirs = "extra_rustc_toolchain_dirs",
+     _no_std = "no_std",
+     _per_crate_rustc_flag = "per_crate_rustc_flag",
+     _rustc_output_diagnostics = "rustc_output_diagnostics",
+@@ -137,6 +138,9 @@ extra_rustc_flag = _extra_rustc_flag
+ extra_rustc_flags = _extra_rustc_flags
+ # See @rules_rust//rust/private:rustc.bzl for a complete description.
+ 
++extra_rustc_toolchain_dirs = _extra_rustc_toolchain_dirs
++# See @rules_rust//rust/private:rustc.bzl for a complete description.
++
+ extra_exec_rustc_flag = _extra_exec_rustc_flag
+ # See @rules_rust//rust/private:rustc.bzl for a complete description.
+ 
+diff --git a/rust/private/rust.bzl b/rust/private/rust.bzl
+index 74d458ee..f5168968 100644
+--- a/rust/private/rust.bzl
++++ b/rust/private/rust.bzl
+@@ -543,6 +543,9 @@ RUSTC_ATTRS = {
+     "_extra_rustc_flags": attr.label(
+         default = Label("//rust/settings:extra_rustc_flags"),
+     ),
++    "_extra_rustc_toolchain_dirs": attr.label(
++        default = Label("//:extra_rustc_toolchain_dirs"),
++    ),
+     "_is_proc_macro_dep": attr.label(
+         default = Label("//rust/private:is_proc_macro_dep"),
+     ),
+diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
+index 93c84408..ac6e20b9 100644
+--- a/rust/private/rustc.bzl
++++ b/rust/private/rustc.bzl
+@@ -82,6 +82,11 @@ PerCrateRustcFlagsInfo = provider(
+     fields = {"per_crate_rustc_flags": "List[string] Extra flags to pass to rustc in non-exec configuration"},
+ )
+ 
++ExtraRustcToolchainDirsInfo = provider(
++    doc = "Pass each value as an additional `-B` flag to rustc invocations. Enables use of linkers placed in different directories on the system.",
++    fields = {"extra_rustc_toolchain_dirs": "List[string] Extra `-B` flags to pass to rustc."},
++)
++
+ IsProcMacroDepInfo = provider(
+     doc = "Records if this is a transitive dependency of a proc-macro.",
+     fields = {"is_proc_macro_dep": "Boolean"},
+@@ -452,6 +457,10 @@ def get_linker_and_args(ctx, crate_type, cc_toolchain, feature_configuration, rp
+         action_name = action_name,
+         variables = link_variables,
+     )
++
++    # Make sure linker is locateable.
++    if hasattr(ctx.attr, "_extra_rustc_toolchain_dirs"):
++        link_args = link_args + ctx.attr._extra_rustc_toolchain_dirs[ExtraRustcToolchainDirsInfo].extra_rustc_toolchain_dirs
+     link_env = cc_common.get_environment_variables(
+         feature_configuration = feature_configuration,
+         action_name = action_name,
+@@ -2322,6 +2331,19 @@ per_crate_rustc_flag = rule(
+     build_setting = config.string_list(flag = True, repeatable = True),
+ )
+ 
++def _extra_rustc_toolchain_dirs_impl(ctx):
++    return ExtraRustcToolchainDirsInfo(extra_rustc_toolchain_dirs = ["-B" + f for f in ctx.build_setting_value if f != ""])
++
++extra_rustc_toolchain_dirs = rule(
++    doc = (
++        "Add additional `-B` rustc toolchain flags to specificy where CC toolchain executables are located on the system by" +
++        "using the command line switch `--@rules_rust//:extra_rustc_toolchain_dirs`. " +
++        "Multiple uses are accumulated."
++    ),
++    implementation = _extra_rustc_toolchain_dirs_impl,
++    build_setting = config.string(flag = True, allow_multiple = True),
++)
++
+ def _no_std_impl(ctx):
+     value = str(ctx.attr._no_std[BuildSettingInfo].value)
+     if is_exec_configuration(ctx):
+diff --git a/rust/settings/BUILD.bazel b/rust/settings/BUILD.bazel
+index 8fb46461..c5e7d6e5 100644
+--- a/rust/settings/BUILD.bazel
++++ b/rust/settings/BUILD.bazel
+@@ -17,6 +17,7 @@ load(
+     "extra_exec_rustc_flags",
+     "extra_rustc_flag",
+     "extra_rustc_flags",
++    "extra_rustc_toolchain_dirs",
+     "incompatible_change_rust_test_compilation_output_directory",
+     "incompatible_do_not_include_data_in_compile_data",
+     "lto",
+@@ -81,6 +82,8 @@ extra_rustc_flag()
+ 
+ extra_rustc_flags()
+ 
++extra_rustc_toolchain_dirs()
++
+ incompatible_change_rust_test_compilation_output_directory()
+ 
+ incompatible_do_not_include_data_in_compile_data()
+diff --git a/rust/settings/settings.bzl b/rust/settings/settings.bzl
+index 2f235df0..249bbac3 100644
+--- a/rust/settings/settings.bzl
++++ b/rust/settings/settings.bzl
+@@ -23,6 +23,7 @@ load(
+     _extra_exec_rustc_flags = "extra_exec_rustc_flags",
+     _extra_rustc_flag = "extra_rustc_flag",
+     _extra_rustc_flags = "extra_rustc_flags",
++    _extra_rustc_toolchain_dirs = "extra_rustc_toolchain_dirs",
+     _no_std = "no_std",
+     _per_crate_rustc_flag = "per_crate_rustc_flag",
+     _rustc_output_diagnostics = "rustc_output_diagnostics",
+@@ -269,6 +270,17 @@ def clippy_flag():
+         build_setting_default = [],
+     )
+ 
++# buildifier: disable=unnamed-macro
++def extra_rustc_toolchain_dirs():
++    """This setting is to enable passing additional `-B` options to the CC toolchain driver binary to
++    aid in locating toolchain directories on systems where not all toolchain tools are installed in
++    the same system location.
++    """
++    _extra_rustc_toolchain_dirs(
++        name = "extra_rustc_toolchain_dirs",
++        build_setting_default = "",
++    )
++
+ # buildifier: disable=unnamed-macro
+ def extra_rustc_flags():
+     """This setting may be used to pass extra options to rustc from the command line in non-exec configuration.

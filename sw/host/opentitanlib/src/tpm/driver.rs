@@ -104,8 +104,7 @@ pub trait Driver {
         let sz = self
             .poll_for_data_available()?
             .burst_count()
-            .max(RESPONSE_HEADER_SIZE)
-            .min(MAX_TRANSACTION_SIZE);
+            .clamp(RESPONSE_HEADER_SIZE, MAX_TRANSACTION_SIZE);
         let mut result: Vec<u8> = vec![0; sz];
         self.read_register(Register::DATA_FIFO, result.as_mut_slice())?;
         let resp_size: usize = u32::from_be_bytes(result[2..6].try_into().unwrap()) as usize;

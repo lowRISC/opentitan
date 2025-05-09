@@ -241,7 +241,7 @@ pub fn save_public_key<P: AsRef<Path>>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::testdata;
+    use crate::util::testdata;
 
     const TEST2_PRIVATE_KEY: &str = r#"{
   "CKA_CLASS": "CKO_PRIVATE_KEY",
@@ -259,29 +259,29 @@ mod tests {
 
     #[test]
     fn test_load_public_keys() -> Result<()> {
-        assert!(load_public_key(testdata!("test2_pkcs8.pub.der")).is_ok());
-        //let k = load_public_key(testdata!("test2_pkcs8.pub.der"))?;
+        assert!(load_public_key(testdata("key/test2_pkcs8.pub.der")).is_ok());
+        //let k = load_public_key(testdata("key/test2_pkcs8.pub.der"))?;
         //save_public_key("/tmp/test2_pkcs8.pub.pem", &k, KeyEncoding::Pkcs8Pem)?;
-        assert!(load_public_key(testdata!("test2_pkcs8.pub.pem")).is_ok());
+        assert!(load_public_key(testdata("key/test2_pkcs8.pub.pem")).is_ok());
         Ok(())
     }
 
     #[test]
     fn test_load_private_keys() -> Result<()> {
-        assert!(load_private_key(testdata!("test2_pkcs8.der")).is_ok());
-        //let k = load_private_key(testdata!("test2_pkcs8.der"))?;
+        assert!(load_private_key(testdata("key/test2_pkcs8.der")).is_ok());
+        //let k = load_private_key(testdata("key/test2_pkcs8.der"))?;
         //save_private_key("/tmp/test2_pkcs8.pem", &k, KeyEncoding::Pkcs8Pem)?;
-        assert!(load_private_key(testdata!("test2_pkcs8.pem")).is_ok());
+        assert!(load_private_key(testdata("key/test2_pkcs8.pem")).is_ok());
         Ok(())
     }
 
     #[test]
     fn test_convert_key_to_hsm() -> Result<()> {
-        let k = load_private_key(testdata!("test2_pkcs8.pem"))?;
+        let k = load_private_key(testdata("key/test2_pkcs8.pem"))?;
         let hsm = AttributeMap::try_from(&k)?;
         assert_eq!(serde_json::to_string_pretty(&hsm)?, TEST2_PRIVATE_KEY);
 
-        let k = load_public_key(testdata!("test2_pkcs8.pub.pem"))?;
+        let k = load_public_key(testdata("key/test2_pkcs8.pub.pem"))?;
         let hsm = AttributeMap::try_from(&k)?;
         assert_eq!(serde_json::to_string_pretty(&hsm)?, TEST2_PUBLIC_KEY);
         Ok(())
@@ -291,12 +291,12 @@ mod tests {
     fn test_convert_hsm_to_key() -> Result<()> {
         let hsm = serde_json::from_str::<AttributeMap>(TEST2_PRIVATE_KEY)?;
         let kpriv = SigningKey::try_from(&hsm)?;
-        let k = load_private_key(testdata!("test2_pkcs8.pem"))?;
+        let k = load_private_key(testdata("key/test2_pkcs8.pem"))?;
         assert_eq!(kpriv, k);
 
         let hsm = serde_json::from_str::<AttributeMap>(TEST2_PUBLIC_KEY)?;
         let kpub = VerifyingKey::try_from(&hsm)?;
-        let k = load_public_key(testdata!("test2_pkcs8.pub.pem"))?;
+        let k = load_public_key(testdata("key/test2_pkcs8.pub.pem"))?;
         assert_eq!(kpub, k);
         Ok(())
     }
