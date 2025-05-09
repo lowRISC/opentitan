@@ -1,0 +1,30 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:racl_ctrl_env:0.1"
+description: "RACL_CTRL DV UVM environment"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:cip_lib
+      - lowrisc:dv:racl_ctrl_ral
+    files:
+      - racl_ctrl_policies_if.sv
+      - racl_ctrl_env_pkg.sv
+      - racl_ctrl_reg_window.sv: {is_include_file: true}
+      - racl_ctrl_env_cfg.sv: {is_include_file: true}
+      - racl_ctrl_env_cov.sv: {is_include_file: true}
+      - racl_ctrl_virtual_sequencer.sv: {is_include_file: true}
+      - racl_ctrl_scoreboard.sv: {is_include_file: true}
+      - racl_ctrl_env.sv: {is_include_file: true}
+      - seq_lib/racl_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/racl_ctrl_base_vseq.sv: {is_include_file: true}
+      - seq_lib/racl_ctrl_common_vseq.sv: {is_include_file: true}
+      - seq_lib/racl_ctrl_smoke_vseq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
