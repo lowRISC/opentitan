@@ -17,6 +17,7 @@ module sram_ctrl
   parameter int NumRamInst                                 = 1,
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn             = {NumAlerts{1'b1}},
+  parameter bit                   FlopRamOutput            = 1'b0,
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                                  = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
@@ -514,7 +515,7 @@ module sram_ctrl
   logic [1:0] sram_rerror, sram_rerror_scr;
   logic [AddrWidth-1:0] sram_addr, sram_rerror_addr_scr;
   logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata, sram_rdata_scr;
-  logic                 sram_wpending, sram_wr_collision;
+  logic                 sram_wpending;
 
   logic sram_compound_txn_in_progress;
 
@@ -559,7 +560,6 @@ module sram_ctrl
     .compound_txn_in_progress_o (sram_compound_txn_in_progress),
     .readback_en_i              (reg_readback_en),
     .readback_error_o           (readback_error),
-    .wr_collision_i             (sram_wr_collision),
     .write_pending_i            (sram_wpending),
     // RACL interface
     .racl_policies_i            (racl_policies_i),
@@ -571,12 +571,7 @@ module sram_ctrl
 
   // Interposing mux logic for initialization with pseudo random data.
   assign sram_req        = tlul_req | init_req;
-  // This grant signal acts more like a ready internally in tlul_adapter_sram. In particular it's
-  // fine to assert it when tlul_req is low (it has no effect). So here tlul_gnt is asserted when
-  // a request from tlul_req will be granted regardless of whether a request exists. This is done
-  // for timing reasons so that the output TL ready isn't combinatorially connected to the incoming
-  // TL valid. In particular we must not use `sram_gnt` in the expression to avoid this.
-  assign tlul_gnt        = key_valid & ~init_req;
+  assign tlul_gnt        = sram_gnt & ~init_req;
   assign sram_we         = tlul_we | init_req;
   assign sram_intg_error = |bus_integ_error[2:1] & ~init_req;
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
@@ -678,6 +673,7 @@ module sram_ctrl
     .Depth(Depth),
     .InstDepth(InstDepth),
     .EnableParity(0),
+    .EnableOutputPipeline(FlopRamOutput),
     .DataBitsPerMask(DataWidth),
     .NumPrinceRoundsHalf(NumPrinceRoundsHalf)
   ) u_prim_ram_1p_scr (
@@ -701,7 +697,6 @@ module sram_ctrl
     .raddr_o          (sram_rerror_addr_scr),
     .cfg_i,
     .cfg_rsp_o,
-    .wr_collision_o   (sram_wr_collision),
     .write_pending_o  (sram_wpending),
     .alert_o          (sram_alert)
   );
