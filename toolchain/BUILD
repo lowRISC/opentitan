@@ -49,7 +49,6 @@ cc_toolchain(
     enabled_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_rv32_bitmanip",
-        ":feat_warnings_as_errors",
         ":feat_guards",
     ],
     known_features = [
