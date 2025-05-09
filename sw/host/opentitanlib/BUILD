@@ -235,6 +235,7 @@ rust_library(
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
+        "//sw/host/opentitanlib/util",
         "//sw/host/ot_hal",
         "//sw/host/ot_hal/bindgen",
         "//sw/host/sphincsplus",
