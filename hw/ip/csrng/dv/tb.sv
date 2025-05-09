@@ -38,7 +38,8 @@ module tb;
       entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
   push_pull_if#(.HostDataWidth(1))   aes_halt_if(.clk(clk), .rst_n(rst_n));
   csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
-  csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
+
+  bind dut csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
 
   // All CSRNG-EDN interfaces (and therefore EDN agents) can currently only be disabled together.
   assign edn_disable = csrng_agents_if.edn_disable;
@@ -113,7 +114,7 @@ module tb;
         (null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
     uvm_config_db#(virtual csrng_cov_if)::set(null, "*.env", "csrng_cov_if", dut.u_csrng_cov_if);
     uvm_config_db#(virtual csrng_assert_if)::set(null, "*.env", "csrng_assert_vif",
-                                                 csrng_assert_if);
+                                                 dut.csrng_assert_if);
     uvm_config_db#(virtual csrng_path_if)::set(null, "*.env", "csrng_path_vif", csrng_path_if);
     uvm_config_db#(virtual csrng_agents_if)::set(null, "*.env", "csrng_agents_vif",
                                                  csrng_agents_if);
