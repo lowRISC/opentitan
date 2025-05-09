@@ -468,9 +468,10 @@ module i2c_protocol_cov(
     bit en_cov;
     void'($value$plusargs("en_cov=%b", en_cov));
     if (en_cov) begin
-      i2c_protocol_cov_cg protocol_cov_cg = new();
-      i2c_rd_wr_cg        rd_wr_cg        = new();
-      i2c_cmd_complete_cg cmd_complete_cg = new();
+      static i2c_protocol_cov_cg protocol_cov_cg = new();
+      static i2c_rd_wr_cg        rd_wr_cg        = new();
+      static i2c_cmd_complete_cg cmd_complete_cg = new();
+
       fork
         begin
             forever begin
