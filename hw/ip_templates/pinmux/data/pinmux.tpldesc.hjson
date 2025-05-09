@@ -58,6 +58,12 @@
       default: "8"
     }
     {
+      name: "tap_strap0_idx"
+      desc: "Index of the MIO used for tap_strap0. If there is no such MIO, this is -1."
+      type: "int"
+      default: "-1"
+    }
+    {
       name: "n_dio_periph_out"
       desc: "Number of DIO periperal outs"
       type: "int"

@@ -97,6 +97,7 @@ pinmux_optional = {
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
+    'tap_strap0_idx': ['d', 'MIO index for tap_strap0; -1 if there is none.'],
 }
 pinmux_added = {
     'ios': ['l', 'Full list of IO'],

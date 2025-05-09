@@ -15,6 +15,7 @@
     n_dio_periph_out: 12
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    tap_strap0_idx: -1
     topname: englishbreakfast
     uniquified_modules: {}
   }
