@@ -2133,15 +2133,16 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile(NOP10);
   pentest_set_trigger_low();
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   uint32_t res_values[3];
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
   asm volatile("mv %0, x6" : "=r"(res_values[1]));
   asm volatile("mv %0, x7" : "=r"(res_values[2]));
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
@@ -2577,7 +2578,6 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   pentest_clear_sensor_recov_alerts();
 
   uint32_t addresses[8] = {0};
-  uint32_t data[8] = {0};
   asm volatile(INIT_TMPREGS);
 
   // FI code target.
@@ -2594,6 +2594,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
   asm volatile(ADDI_CHAIN);
   PENTEST_ASM_TRIGGER_LOW
 
+  uint32_t data[8] = {0};
   asm volatile("mv %0, x5" : "=r"(data[0]));
   asm volatile("mv %0, x6" : "=r"(data[1]));
   asm volatile("mv %0, x7" : "=r"(data[2]));
