@@ -21,6 +21,7 @@ import sys
 import requests
 import time
 from collections import Counter
+from pathlib import Path
 from typing import Optional, Dict, Tuple, Any
 
 # Flag to log progress in generating info
@@ -31,6 +32,12 @@ OT_REPO_URL = "https://github.com/lowRISC/opentitan"
 
 # GraphQL endpoint / query for commits, PRs, and reviews
 GH_GRAPHQL_API_ENDPOINT = "https://api.github.com/graphql"
+
+# The location of the top of the repository from this file
+REPO_TOP = Path(__file__).parents[3]
+
+# The location of the COMMITTERS file within the repo
+COMMITTERS_FILE = REPO_TOP / "COMMITTERS"
 
 
 def run_github_graphql_query(
@@ -318,13 +325,51 @@ def get_pr_and_review_authors(
     return pr_authors, review_authors
 
 
-def main(github_token: str, page_limit: Optional[int] = None) -> int:
+def get_existing_committers() -> Optional[list[str]]:
+    """Get a list of the existing OpenTitan project committers from the
+    COMMITTERS_FILE.
+
+    Returns:
+        Optional[list[str]]: The list of committers. Returns None if some
+        error occurred in the retrieval process.
+    """
+    if not os.path.exists(COMMITTERS_FILE):
+        print("Could not find COMMITTERS file. Did this script move?")
+        return None
+    if not os.path.isfile(COMMITTERS_FILE):
+        print("COMMITTERS file is not a file as expected.")
+        return None
+
+    try:
+        committers = []
+        with open(COMMITTERS_FILE, "r") as f:
+            # Very hard-coded parsing logic based on the COMMITTER file format
+            contents = f.read().strip().split("Committer list:")[-1]
+            entries = [c[1:].strip() for c in contents.splitlines()[1:]]
+            for entry in entries:
+                github_id = entry.split(" ")[-1]
+                if not github_id.startswith("(") or not github_id.endswith(")"):
+                    print("Warning: skipping unknown ID in COMMITTERS file:")
+                    print(f"  {entry}")
+                    continue
+                github_id = github_id[1:-1]
+                committers.append(github_id)
+
+        return committers
+    except Exception as e:
+        print(f"Error when reading the COMMITTERS file: {e}")
+        return None
+
+
+def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> int:
     """Calculate committer, contributor and reviewer statistics for the OpenTitan
     repository. Will output the results to stdout.
 
     Args:
         github_token (Optional[str], optional): The Github Personal Access Token
         (PAT) to use for authorization. Defaults to None.
+        filter (bool): Whether to filter the results to exclude any contributors
+        already in the current COMMITTERS_FILE.
         page_limit (Optional[int], optional): The number of pages to limit each
         request to. Intended to be used for testing purposes only. Defaults to
         None, meaning no page limits (fetch all the data).
@@ -337,6 +382,14 @@ def main(github_token: str, page_limit: Optional[int] = None) -> int:
     except ValueError:
         print("Invalid GitHub repository URL format.")
         return -1
+
+    if filter:
+        existing_committers = get_existing_committers()
+        if existing_committers is None:
+            print("Contributor results will not be filtered due to an error.")
+            filter = False
+        else:
+            print(f"Excluding existing committers: {', '.join(existing_committers)}")
 
     commit_data = get_commit_authors(
         owner, repo, github_token=github_token, page_limit=page_limit
@@ -356,14 +409,20 @@ def main(github_token: str, page_limit: Optional[int] = None) -> int:
 
     print("\nCommit Counts per Author:")
     for author, count in commit_data.most_common():
+        if filter and author in existing_committers:
+            continue
         print(f"- {author}: {count}")
 
     print("\nPull Request Counts per Contributor:")
     for contributor, count in pr_data.most_common():
+        if filter and contributor in existing_committers:
+            continue
         print(f"- {contributor}: {count}")
 
     print("\nReview Counts per Reviewer:")
     for reviewer, count in review_data.most_common():
+        if filter and reviewer in existing_committers:
+            continue
         print(f"- {reviewer}: {count}")
 
     return 0
@@ -392,6 +451,12 @@ if __name__ == "__main__":
             "Used for testing only."
         ),
     )
+    parser.add_argument(
+        "-f",
+        "--filter",
+        action="store_true",
+        help="Filter for only contributors not in the current COMMITTERS file.",
+    )
 
     args = parser.parse_args()
 
@@ -404,4 +469,4 @@ if __name__ == "__main__":
         print("Error: GH_GRAPHQL_API_PAT environment variable not set.")
         sys.exit(-1)
 
-    sys.exit(main(github_token, args.pages))
+    sys.exit(main(github_token, args.filter, args.pages))
