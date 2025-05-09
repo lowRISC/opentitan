@@ -1391,7 +1391,7 @@
             alert_handler_reg_pkg::PING_CNT_DW = 16
             ```
 
-            The alert escalation responder inside `pwrmgr` is connected to the `io_div4` clock,
+            The alert escalation responder inside `pwrmgr` is connected to the `io` clock,
             yielding a target 24MHz frequency. The result expected timeout based on the above
             parameters is thus:
 

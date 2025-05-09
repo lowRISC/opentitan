@@ -7,7 +7,6 @@
 `include "clkmgr_common_vseq.sv"
 `include "clkmgr_frequency_timeout_vseq.sv"
 `include "clkmgr_frequency_vseq.sv"
-`include "clkmgr_extclk_vseq.sv"
 `include "clkmgr_peri_vseq.sv"
 `include "clkmgr_regwen_vseq.sv"
 `include "clkmgr_smoke_vseq.sv"

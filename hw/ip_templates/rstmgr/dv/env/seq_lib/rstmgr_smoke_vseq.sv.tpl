@@ -4,6 +4,17 @@
 
 // Tests the different kinds of reset: POR, low power wakeup, hardware reset, debug_mode reset,
 // and software initiated peripheral resets.
+<% 
+sorted_clks = sorted(list(clk_freqs.keys()))
+
+def preferred_clk():
+    if "io_div4" in sorted_clks:
+        return "io_div4"
+    elif "io" in sorted_clks:
+        return "io"
+    else:
+        assert 0, "No preferred clock available"
+%>\
 class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
   `uvm_object_utils(rstmgr_smoke_vseq)
@@ -15,7 +26,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   constraint sw_rst_some_reset_c {sw_rst_regwen & ~sw_rst_ctrl_n != '0;}
 
   local task wait_between_resets();
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
+    cfg.${preferred_clk()}_clk_rst_vif.wait_clks(10);
   endtask
 
   task body();

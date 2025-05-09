@@ -28,8 +28,8 @@
 
 wire clk_main;
 clk_rst_if clk_rst_if_main(.clk(clk_main), .rst_n(rst_n));
-wire clk_io_div4;
-clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
+wire clk_io;
+clk_rst_if clk_rst_if_io(.clk(clk_io), .rst_n(rst_n));
 
 tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
 tl_if rv_core_ibex__cored_tl_if(clk_main, rst_n);
@@ -79,25 +79,25 @@ tl_if mbx6__core_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__core_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__core_tl_if(clk_main, rst_n);
 tl_if mbx_pcie1__core_tl_if(clk_main, rst_n);
-tl_if uart0_tl_if(clk_io_div4, rst_n);
-tl_if i2c0_tl_if(clk_io_div4, rst_n);
-tl_if gpio_tl_if(clk_io_div4, rst_n);
-tl_if spi_host0_tl_if(clk_io_div4, rst_n);
-tl_if spi_device_tl_if(clk_io_div4, rst_n);
-tl_if rv_timer_tl_if(clk_io_div4, rst_n);
-tl_if pwrmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if rstmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if clkmgr_aon_tl_if(clk_io_div4, rst_n);
-tl_if pinmux_aon_tl_if(clk_io_div4, rst_n);
-tl_if otp_ctrl__core_tl_if(clk_io_div4, rst_n);
-tl_if otp_macro_tl_if(clk_io_div4, rst_n);
-tl_if lc_ctrl__regs_tl_if(clk_io_div4, rst_n);
-tl_if alert_handler_tl_if(clk_io_div4, rst_n);
-tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io_div4, rst_n);
-tl_if sram_ctrl_ret_aon__ram_tl_if(clk_io_div4, rst_n);
-tl_if aon_timer_aon_tl_if(clk_io_div4, rst_n);
-tl_if ast_tl_if(clk_io_div4, rst_n);
-tl_if soc_dbg_ctrl__core_tl_if(clk_io_div4, rst_n);
+tl_if uart0_tl_if(clk_io, rst_n);
+tl_if i2c0_tl_if(clk_io, rst_n);
+tl_if gpio_tl_if(clk_io, rst_n);
+tl_if spi_host0_tl_if(clk_io, rst_n);
+tl_if spi_device_tl_if(clk_io, rst_n);
+tl_if rv_timer_tl_if(clk_io, rst_n);
+tl_if pwrmgr_aon_tl_if(clk_io, rst_n);
+tl_if rstmgr_aon_tl_if(clk_io, rst_n);
+tl_if clkmgr_aon_tl_if(clk_io, rst_n);
+tl_if pinmux_aon_tl_if(clk_io, rst_n);
+tl_if otp_ctrl__core_tl_if(clk_io, rst_n);
+tl_if otp_macro_tl_if(clk_io, rst_n);
+tl_if lc_ctrl__regs_tl_if(clk_io, rst_n);
+tl_if alert_handler_tl_if(clk_io, rst_n);
+tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io, rst_n);
+tl_if sram_ctrl_ret_aon__ram_tl_if(clk_io, rst_n);
+tl_if aon_timer_aon_tl_if(clk_io, rst_n);
+tl_if ast_tl_if(clk_io, rst_n);
+tl_if soc_dbg_ctrl__core_tl_if(clk_io, rst_n);
 tl_if mbx0__soc_tl_if(clk_main, rst_n);
 tl_if mbx1__soc_tl_if(clk_main, rst_n);
 tl_if mbx2__soc_tl_if(clk_main, rst_n);
@@ -111,8 +111,8 @@ tl_if racl_ctrl_tl_if(clk_main, rst_n);
 tl_if ac_range_check_tl_if(clk_main, rst_n);
 tl_if rv_dm__dbg_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
-tl_if lc_ctrl__dmi_tl_if(clk_io_div4, rst_n);
-tl_if soc_dbg_ctrl__jtag_tl_if(clk_io_div4, rst_n);
+tl_if lc_ctrl__dmi_tl_if(clk_io, rst_n);
+tl_if soc_dbg_ctrl__jtag_tl_if(clk_io, rst_n);
 
 initial begin
   wait (xbar_mode !== 1'bx);
@@ -129,11 +129,11 @@ initial begin
 
     // bypass clkmgr, force clocks directly
     force tb.dut.top_darjeeling.u_xbar_main.clk_main_i = clk_main;
-    force tb.dut.top_darjeeling.u_xbar_main.clk_fixed_i = clk_io_div4;
-    force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io_div4;
+    force tb.dut.top_darjeeling.u_xbar_main.clk_fixed_i = clk_io;
+    force tb.dut.top_darjeeling.u_xbar_peri.clk_peri_i = clk_io;
     force tb.dut.top_darjeeling.u_xbar_mbx.clk_mbx_i = clk_main;
     force tb.dut.top_darjeeling.u_xbar_dbg.clk_dbg_i = clk_main;
-    force tb.dut.top_darjeeling.u_xbar_dbg.clk_peri_i = clk_io_div4;
+    force tb.dut.top_darjeeling.u_xbar_dbg.clk_peri_i = clk_io;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_darjeeling.u_xbar_main.rst_main_ni = rst_n;
@@ -235,8 +235,8 @@ initial begin
 
     clk_rst_if_main.set_active(.drive_rst_n_val(0));
     clk_rst_if_main.set_freq_khz(1000000000 / 1000);
-    clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div4.set_freq_khz(250000000 / 1000);
+    clk_rst_if_io.set_active(.drive_rst_n_val(0));
+    clk_rst_if_io.set_freq_khz(250000000 / 1000);
 
   end
 end

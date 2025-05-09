@@ -4,6 +4,17 @@
 // Description:
 // Test assert glitch to shadow leaf reset module and
 // check if nomal reset module got affected or vice versa
+<% 
+sorted_clks = sorted(list(clk_freqs.keys()))
+
+def preferred_clk():
+    if "io_div4" in sorted_clks:
+        return "io_div4"
+    elif "io" in sorted_clks:
+        return "io"
+    else:
+        assert 0, "No preferred clock available"
+%>\
 class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_leaf_rst_shadow_attack_vseq)
 
@@ -22,8 +33,8 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   endtask : body
 
   task leaf_rst_attack(string npath, string gpath);
-    // Wait for any bit in rst_sys_io_div4_n to become inactive.
-    wait(|cfg.rstmgr_vif.resets_o.rst_sys_io_div4_n);
+    // Wait for any bit in rst_sys_${preferred_clk()}_n to become inactive.
+    wait(|cfg.rstmgr_vif.resets_o.rst_sys_${preferred_clk()}_n);
     // Disable cascading reset assertions, since forcing related signals causes failures.
     cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b1;
     `uvm_info(`gfn, $sformatf("Starting leaf attack between %s and %s", npath, gpath), UVM_MEDIUM)
@@ -56,7 +67,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
 
     // Wait enough cycles to allow the uvm_hdl_force to take effect, since it is not instantaneous,
     // and for side-effects to propagate.
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
+    cfg.${preferred_clk()}_clk_rst_vif.wait_clks(10);
 
     `uvm_info(`gfn, $sformatf("Checking rst and en for %s", path), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))

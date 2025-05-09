@@ -3,6 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // clkmgr interface.
+<% 
+sorted_clks = sorted(list(clk_freqs.keys()))
+
+def preferred_clk():
+    if "io_div4" in sorted_clks:
+        return "io_div4"
+    elif "io" in sorted_clks:
+        return "io"
+    else:
+        assert 0, "No preferred clock available"
+%>\
 
 interface rstmgr_if (
   input logic clk_aon,
@@ -65,5 +76,5 @@ interface rstmgr_if (
   always_comb cpu_info_en = `PATH_TO_DUT.reg2hw.cpu_info_ctrl.en.q;
 
   bit rst_ni_inactive;
-  always_comb rst_ni_inactive = resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel];
+  always_comb rst_ni_inactive = resets_o.rst_lc_${preferred_clk()}_n[rstmgr_pkg::Domain0Sel];
 endinterface

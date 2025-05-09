@@ -6,6 +6,17 @@
 // the test, and randomly glitches it for a few cycles at intervals less than the stretch cycle
 // count, which is at least 32 cycles, to make sure the internal and output resets won't be
 // released until the input is held steady for a sufficient number of cycles.
+<% 
+sorted_clks = sorted(list(clk_freqs.keys()))
+
+def preferred_clk():
+    if "io_div4" in sorted_clks:
+        return "io_div4"
+    elif "io" in sorted_clks:
+        return "io"
+    else:
+        assert 0, "No preferred clock available"
+%>\
 class rstmgr_por_stretcher_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_por_stretcher_vseq)
 
@@ -34,7 +45,7 @@ class rstmgr_por_stretcher_vseq extends rstmgr_base_vseq;
       cfg.aon_clk_rst_vif.wait_clks(glitch_separation_cycles);
       cfg.rstmgr_vif.por_n = 1'b0;
       cfg.aon_clk_rst_vif.wait_clks(glitch_duration_cycles);
-      `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel], 1'b0)
+      `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_por_${preferred_clk()}_n[rstmgr_pkg::DomainAonSel], 1'b0)
     end
     por_reset_done(.complete_it(1));
     csr_rd_check(.ptr(ral.reset_info.por), .compare_value(1'b1),

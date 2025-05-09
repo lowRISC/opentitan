@@ -154,6 +154,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       act:     "req",
       package: "clkmgr_pkg",
     },
+% if len(derived_clks) > 0:
 
     { struct:  "lc_tx",
       type:    "uni",
@@ -217,6 +218,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
       act:     "req",
       package: "lc_ctrl_pkg",
     },
+  % endif
 
     { struct:  "mubi4",
       type:    "uni",
@@ -275,6 +277,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "IDLE.INTERSIG.MUBI",
       desc: "Idle inputs are multibit encoded."
     }
+  % if len(derived_clks) > 0:
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
@@ -287,6 +290,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
     { name: "DIV.INTERSIG.MUBI",
       desc: "Divider step down request is multibit encoded."
     }
+  % endif
     { name: "JITTER.CONFIG.MUBI",
       desc: "The jitter enable configuration is multibit encoded."
     }
@@ -303,6 +307,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   ]
 
   registers: [
+  % if len(derived_clks) > 0:
     { name: "EXTCLK_CTRL_REGWEN",
       desc: "External clock control write enable",
       swaccess: "rw0c",
@@ -398,6 +403,10 @@ rg_srcs = get_rg_srcs(typed_clocks)
         },
       ]
     },
+    % else:
+    // Skip 3 registers for SW compatibility on the register layout if no derived clocks are in use
+    { reserved: "3" }
+    % endif
 
     { name: "JITTER_REGWEN",
       desc: "Jitter write enable",

@@ -38,6 +38,7 @@ interface clkmgr_if (
   // scanmode_i == MuBi4True defeats all clock gating.
   prim_mubi_pkg::mubi4_t scanmode_i;
 
+% if len(derived_clks) > 0:
   // Life cycle enables clock bypass functionality.
   lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i;
 
@@ -53,11 +54,14 @@ interface clkmgr_if (
 
   prim_mubi_pkg::mubi4_t div_step_down_req;
 
+% endif
   prim_mubi_pkg::mubi4_t jitter_en_o;
   clkmgr_pkg::clkmgr_out_t clocks_o;
 
   prim_mubi_pkg::mubi4_t calib_rdy;
+% if len(derived_clks) > 0:
   prim_mubi_pkg::mubi4_t hi_speed_sel;
+% endif
 
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
@@ -73,7 +77,11 @@ interface clkmgr_if (
     clk_enables_csr = '{
 % for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
 <% sep = "" if loop.last else "," %>\
+    % if len(typed_clocks['sw_clks']) == 1:
+      ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.q${sep}
+    % else:
       ${clk['src_name']}_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+    % endif
 % endfor
     };
 
@@ -94,6 +102,7 @@ interface clkmgr_if (
                              ${target}: `CLKMGR_HIER.u_reg.clk_hints_status_clk_main_${target}_val_qs${sep}
 % endfor
                              };
+% if len(derived_clks) > 0:
 
   prim_mubi_pkg::mubi4_t extclk_ctrl_csr_sel;
   always_comb begin
@@ -106,6 +115,7 @@ interface clkmgr_if (
         `CLKMGR_HIER.reg2hw.extclk_ctrl.hi_speed_sel.q);
   end
 
+% endif
   prim_mubi_pkg::mubi4_t jitter_enable_csr;
   always_comb begin
     jitter_enable_csr = prim_mubi_pkg::mubi4_t'(`CLKMGR_HIER.reg2hw.jitter_enable.q);
@@ -147,6 +157,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     scanmode_i = value;
   endfunction
 
+% if len(derived_clks) > 0:
   function automatic void update_lc_debug_en(lc_ctrl_pkg::lc_tx_t value);
     lc_hw_debug_en_i = value;
   endfunction
@@ -171,6 +182,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     io_clk_byp_ack = value;
   endfunction
 
+% endif
   function automatic void force_high_starting_count(clk_mesr_e clk);
     `uvm_info("clkmgr_if", $sformatf("Forcing count of %0s to all 1.", clk.name()), UVM_MEDIUM)
     case (clk)
@@ -182,16 +194,22 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
   endfunction
 
   task automatic init(mubi_hintables_t idle, prim_mubi_pkg::mubi4_t scanmode,
+    % if len(derived_clks) > 0:
                       lc_ctrl_pkg::lc_tx_t lc_debug_en = lc_ctrl_pkg::Off,
                       lc_ctrl_pkg::lc_tx_t lc_clk_byp_req = lc_ctrl_pkg::Off,
+    % endif
                       prim_mubi_pkg::mubi4_t calib_rdy = prim_mubi_pkg::MuBi4True);
     `uvm_info("clkmgr_if", "In clkmgr_if init", UVM_MEDIUM)
     update_calib_rdy(calib_rdy);
     update_idle(idle);
+  % if len(derived_clks) > 0:
     update_lc_clk_byp_req(lc_clk_byp_req);
     update_lc_debug_en(lc_debug_en);
+  % endif
     update_scanmode(scanmode);
+  % if len(derived_clks) > 0:
     update_all_clk_byp_ack(prim_mubi_pkg::MuBi4False);
+  % endif
   endtask
 
   // Pipeline signals that go through synchronizers with the target clock domain's clock.
@@ -248,6 +266,7 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     input idle_i;
   endclocking
 
+% if len(derived_clks) > 0:
   // Pipelining and clocking block for external clock bypass. The divisor control is
   // triggered by an ast ack, which goes through synchronizers.
   logic step_down_ff;
@@ -259,14 +278,17 @@ ${spc}fast: `CLKMGR_HIER.u_${src}_meas.u_meas.fast_o};
     end
   end
 
+% endif
   clocking clk_cb @(posedge clk);
     input calib_rdy;
+  % if len(derived_clks) > 0:
     input extclk_ctrl_csr_sel;
     input extclk_ctrl_csr_step_down;
     input lc_hw_debug_en_i;
     input io_clk_byp_req;
     input lc_clk_byp_req;
     input step_down = step_down_ff;
+  % endif
     input jitter_enable_csr;
   endclocking
 

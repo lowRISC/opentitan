@@ -50,23 +50,28 @@ typedef enum dif_clkmgr_measure_clock {
    * The Io_div2 clock.
    */
   kDifClkmgrMeasureClockIoDiv2,
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling doesn't have Io / Io_div2 clock measurements.
-#else
-#error "dif_clkmgr does not support this top"
-#endif
   /**
    * The Io div4 clock.
    */
   kDifClkmgrMeasureClockIoDiv4,
   /**
-   * The Main clock.
-   */
-  kDifClkmgrMeasureClockMain,
-  /**
    * The Usb clock.
    */
   kDifClkmgrMeasureClockUsb,
+#elif defined(OPENTITAN_IS_DARJEELING)
+  // Darjeeling doesn't have Io / Io_div2 clock measurements.
+  /**
+   * The Io clock.
+   */
+  kDifClkmgrMeasureClockIo,
+#else
+#error "dif_clkmgr does not support this top"
+#endif
+  /**
+   * The Main clock.
+   */
+  kDifClkmgrMeasureClockMain,
+
   /**
    * Total number of clock measurements.
    */
@@ -125,29 +130,21 @@ typedef enum dif_clkmgr_recov_err_type {
    */
   kDifClkmgrRecovErrTypeShadowUpdate = 1u << 0,
   /**
-   * A recoverable measurement error for IO_DIV4 clock.
+   * A recoverable measurement error for IO clock.
    */
-  kDifClkmgrRecovErrTypeIoDiv4Meas = 1u << 1,
+  kDifClkmgrRecovErrTypeIoMeas = 1u << 1,
   /**
    * A recoverable measurement error for MAIN clock.
    */
   kDifClkmgrRecovErrTypeMainMeas = 1u << 2,
   /**
-   * A recoverable measurement error for USB clock.
+   * A recoverable timeout error for IO clock.
    */
-  kDifClkmgrRecovErrTypeUsbMeas = 1u << 3,
-  /**
-   * A recoverable timeout error for IO_DIV4 clock.
-   */
-  kDifClkmgrRecovErrTypeIoDiv4Timeout = 1u << 4,
+  kDifClkmgrRecovErrTypeIoTimeout = 1u << 3,
   /**
    * A recoverable timeout error for MAIN clock.
    */
-  kDifClkmgrRecovErrTypeMainTimeout = 1u << 5,
-  /**
-   * A recoverable timeout error for USB clock.
-   */
-  kDifClkmgrRecovErrTypeUsbTimeout = 1u << 6,
+  kDifClkmgrRecovErrTypeMainTimeout = 1u << 4,
 #else
 #error "dif_clkmgr does not support this top"
 #endif
@@ -358,6 +355,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     dif_toggle_t *state);
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * Check if external clock control is locked.
  * @param clkmgr Clock Manager Handle.
@@ -411,6 +409,7 @@ dif_result_t dif_clkmgr_external_clock_set_disabled(const dif_clkmgr_t *clkmgr);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
                                                   bool *status);
+#endif
 
 /**
  * Disable measurement control updates.
@@ -522,6 +521,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_fatal_err_code_get_codes(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_codes_t *codes);
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * Wait for external clock switch to finish.
  *
@@ -530,6 +530,9 @@ dif_result_t dif_clkmgr_fatal_err_code_get_codes(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr);
+
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

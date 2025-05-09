@@ -28,8 +28,8 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
     super.pre_randomize();
 
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
-      // Uart bus clock is in div4 domain
-      uart_clk_freq_khz = cfg.chip_clock_source * 1000 / 4;  // div4
+      // Uart bus clock is in IO domain
+      uart_clk_freq_khz = cfg.chip_clock_source * 1000 / 4;  // IO
       if (cfg.chip_clock_source == ChipClockSourceExternal48Mhz) begin
         uart_clk_freq_khz = uart_clk_freq_khz * 2;  // div2
       end

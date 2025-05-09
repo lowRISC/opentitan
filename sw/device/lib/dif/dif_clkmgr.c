@@ -56,6 +56,7 @@ static bool jitter_enable_register_is_locked(const dif_clkmgr_t *clkmgr) {
       CLKMGR_JITTER_REGWEN_EN_BIT);
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * Checks if the external clock control register is locked.
  *
@@ -84,6 +85,7 @@ dif_result_t dif_clkmgr_external_clock_is_settled(const dif_clkmgr_t *clkmgr,
 
   return kDifOk;
 }
+#endif
 
 dif_result_t dif_clkmgr_jitter_enable_is_locked(const dif_clkmgr_t *clkmgr,
                                                 bool *is_locked) {
@@ -268,6 +270,7 @@ dif_result_t dif_clkmgr_hintable_clock_get_hint(
   return kDifOk;
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
 dif_result_t dif_clkmgr_external_clock_control_is_locked(
     const dif_clkmgr_t *clkmgr, bool *is_locked) {
   if (clkmgr == NULL || is_locked == NULL) {
@@ -333,6 +336,7 @@ dif_result_t dif_clkmgr_external_clock_set_disabled(
                       extclk_ctrl_reg);
   return kDifOk;
 }
+#endif
 
 dif_result_t dif_clkmgr_measure_ctrl_disable(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
@@ -421,17 +425,19 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
       PICK_COUNT_CTRL_FIELDS(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_COUNT_CTRL_FIELDS(IO_DIV2);
+    case kDifClkmgrMeasureClockIoDiv4:
+      PICK_COUNT_CTRL_FIELDS(IO_DIV4);
+    case kDifClkmgrMeasureClockUsb:
+      PICK_COUNT_CTRL_FIELDS(USB);
 #elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have Io / IoDiv2 clock measurements
+    // Darjeeling does not have Io / IoDiv2 clock measurements
+    case kDifClkmgrMeasureClockIo:
+      PICK_COUNT_CTRL_FIELDS(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
-    case kDifClkmgrMeasureClockIoDiv4:
-      PICK_COUNT_CTRL_FIELDS(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
       PICK_COUNT_CTRL_FIELDS(MAIN);
-    case kDifClkmgrMeasureClockUsb:
-      PICK_COUNT_CTRL_FIELDS(USB);
     default:
       return kDifBadArg;
 #undef PICK_COUNT_CTRL_FIELDS
@@ -479,19 +485,22 @@ dif_result_t dif_clkmgr_disable_measure_counts(
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_EN_OFFSET(IO_DIV2);
       break;
-#elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have Io / IoDiv2 clock measurements
-#else
-#error "dif_clkmgr does not support this top"
-#endif
     case kDifClkmgrMeasureClockIoDiv4:
       PICK_EN_OFFSET(IO_DIV4);
       break;
-    case kDifClkmgrMeasureClockMain:
-      PICK_EN_OFFSET(MAIN);
-      break;
     case kDifClkmgrMeasureClockUsb:
       PICK_EN_OFFSET(USB);
+      break;
+#elif defined(OPENTITAN_IS_DARJEELING)
+      // Darjeeling does not have Io / IoDiv2 clock measurements
+    case kDifClkmgrMeasureClockIo:
+      PICK_EN_OFFSET(IO);
+      break;
+#else
+#error "dif_clkmgr does not support this top"
+#endif
+    case kDifClkmgrMeasureClockMain:
+      PICK_EN_OFFSET(MAIN);
       break;
     default:
       return kDifBadArg;
@@ -521,17 +530,19 @@ dif_result_t dif_clkmgr_measure_counts_get_enable(
       PICK_EN_OFFSET(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_EN_OFFSET(IO_DIV2);
+    case kDifClkmgrMeasureClockIoDiv4:
+      PICK_EN_OFFSET(IO_DIV4);
+    case kDifClkmgrMeasureClockUsb:
+      PICK_EN_OFFSET(USB);
 #elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have Io / IoDiv2 clock measurements
+    // Darjeeling does not have Io / IoDiv2 clock measurements
+    case kDifClkmgrMeasureClockIo:
+      PICK_EN_OFFSET(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
-    case kDifClkmgrMeasureClockIoDiv4:
-      PICK_EN_OFFSET(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
       PICK_EN_OFFSET(MAIN);
-    case kDifClkmgrMeasureClockUsb:
-      PICK_EN_OFFSET(USB);
     default:
       return kDifBadArg;
 #undef PICK_EN_OFFSET
@@ -564,17 +575,19 @@ dif_result_t dif_clkmgr_measure_counts_get_thresholds(
       PICK_THRESHOLD_FIELDS(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_THRESHOLD_FIELDS(IO_DIV2);
+    case kDifClkmgrMeasureClockIoDiv4:
+      PICK_THRESHOLD_FIELDS(IO_DIV4);
+    case kDifClkmgrMeasureClockUsb:
+      PICK_THRESHOLD_FIELDS(USB);
 #elif defined(OPENTITAN_IS_DARJEELING)
-// Darjeeling does not have Io / IoDiv2 clock measurements
+      // Darjeeling does not have Io / IoDiv2 clock measurements
+    case kDifClkmgrMeasureClockIo:
+      PICK_THRESHOLD_FIELDS(IO);
 #else
 #error "dif_clkmgr does not support this top"
 #endif
-    case kDifClkmgrMeasureClockIoDiv4:
-      PICK_THRESHOLD_FIELDS(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
       PICK_THRESHOLD_FIELDS(MAIN);
-    case kDifClkmgrMeasureClockUsb:
-      PICK_THRESHOLD_FIELDS(USB);
     default:
       return kDifBadArg;
 #undef PICK_THRESHOLD_FIELDS
@@ -631,6 +644,7 @@ dif_result_t dif_clkmgr_fatal_err_code_get_codes(
   return kDifOk;
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
 dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
     return kDifBadArg;
@@ -642,3 +656,4 @@ dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
   } while (ext_status != kMultiBitBool4True);
   return kDifOk;
 }
+#endif

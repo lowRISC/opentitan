@@ -26,16 +26,6 @@ class rstmgr_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get io_clk_rst_vif from uvm_config_db")
     end
     if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "io_div2_clk_rst_vif", cfg.io_div2_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get io_div2_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "io_div4_clk_rst_vif", cfg.io_div4_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get io_div4_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
             this, "", "main_clk_rst_vif", cfg.main_clk_rst_vif
         )) begin
       `uvm_fatal(`gfn, "failed to get main_clk_rst_vif from uvm_config_db")

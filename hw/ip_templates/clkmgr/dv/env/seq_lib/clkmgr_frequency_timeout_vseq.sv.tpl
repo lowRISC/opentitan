@@ -120,7 +120,9 @@ for p, cs in parent_child_clks.items():
 % endfor
 % if len(childless) > 0:
           expected_recov_timeout_err[clk_mesr_timeout] = 1;
+  % if len(multi_children):
         end
+  % endif
 % endif
         disturb_measured_clock(.clk(clk_mesr_timeout), .enable(1'b0));
       end
