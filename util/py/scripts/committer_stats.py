@@ -14,7 +14,10 @@
 #       https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 # - Run this script with no parameters. Optionally use `--log-progress` to
 #   output query progress, as the paginated queries can take some time to run.
+#   You can use `--filter` to filter existing/historic committers, to assist in
+#   finding potential candidates for future committers.
 
+import git
 import json
 import os
 import sys
@@ -37,7 +40,8 @@ GH_GRAPHQL_API_ENDPOINT = "https://api.github.com/graphql"
 REPO_TOP = Path(__file__).parents[3]
 
 # The location of the COMMITTERS file within the repo
-COMMITTERS_FILE = REPO_TOP / "COMMITTERS"
+COMMITTERS_FILE = "COMMITTERS"
+COMMITERS_PATH = REPO_TOP / COMMITTERS_FILE
 
 
 def run_github_graphql_query(
@@ -333,18 +337,32 @@ def get_existing_committers() -> Optional[list[str]]:
         Optional[list[str]]: The list of committers. Returns None if some
         error occurred in the retrieval process.
     """
-    if not os.path.exists(COMMITTERS_FILE):
+    if not os.path.exists(COMMITERS_PATH):
         print("Could not find COMMITTERS file. Did this script move?")
         return None
-    if not os.path.isfile(COMMITTERS_FILE):
+    if not os.path.isfile(COMMITERS_PATH):
         print("COMMITTERS file is not a file as expected.")
         return None
 
     try:
-        committers = []
-        with open(COMMITTERS_FILE, "r") as f:
-            # Very hard-coded parsing logic based on the COMMITTER file format
-            contents = f.read().strip().split("Committer list:")[-1]
+        revision_list = [
+            (commit, (commit.tree / COMMITTERS_FILE).data_stream.read().decode("utf-8"))
+            for commit in git.Repo().iter_commits(paths=COMMITERS_PATH)
+        ]
+    except Exception as e:
+        print(f"Error when reading git history of COMMITTERS file: {e}")
+        print("Defaulting to use just the current file contents.")
+        try:
+            with open(COMMITERS_PATH, "r") as f:
+                revision_list = [("HEAD", f.read())]
+        except Exception as e2:
+            print(f"Error when reading the COMMITTERS file: {e2}")
+            return None
+
+    committers = set()
+    for commit, contents in revision_list:
+        try:
+            contents = contents.strip().split("Committer list:")[-1]
             entries = [c[1:].strip() for c in contents.splitlines()[1:]]
             for entry in entries:
                 github_id = entry.split(" ")[-1]
@@ -353,12 +371,12 @@ def get_existing_committers() -> Optional[list[str]]:
                     print(f"  {entry}")
                     continue
                 github_id = github_id[1:-1]
-                committers.append(github_id)
-
-        return committers
-    except Exception as e:
-        print(f"Error when reading the COMMITTERS file: {e}")
-        return None
+                committers.add(github_id)
+        except Exception as e:
+            print(f"Error parsing COMMITTERS at revision {commit}: {e}.")
+            print("Skipping revision...")
+            continue
+    return sorted(list(committers))
 
 
 def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> int:
