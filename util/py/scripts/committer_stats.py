@@ -25,6 +25,7 @@ import requests
 import time
 from collections import Counter
 from pathlib import Path
+from tabulate import tabulate
 from typing import Optional, Dict, Tuple, Any
 
 # Flag to log progress in generating info
@@ -89,7 +90,6 @@ def run_github_graphql_query(
                     f"wait of {sleep_time} seconds...",
                 )
             continue
-
 
         # Check status code
         if response.status_code == 403 and "X-RateLimit-Remaining" in response.headers:
@@ -427,23 +427,38 @@ def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> i
         print("Error: No Reviewer data found in response to query.")
         return -1
 
-    print("\nCommit Counts per Author:")
-    for author, count in commit_data.most_common():
-        if filter and author in existing_committers:
-            continue
-        print(f"- {author}: {count}")
+    contributors = (
+        set(commit_data.keys()) | set(pr_data.keys()) | set(review_data.keys())
+    )
+    if filter:
+        contributors.difference_update(set(existing_committers))
 
-    print("\nPull Request Counts per Contributor:")
-    for contributor, count in pr_data.most_common():
-        if filter and contributor in existing_committers:
-            continue
-        print(f"- {contributor}: {count}")
+    headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
+    table = []
+    for account in contributors:
+        commits = commit_data.get(account, 0)
+        prs = pr_data.get(account, 0)
+        reviews = review_data.get(account, 0)
+        table.append((account, commits, prs, reviews))
 
-    print("\nReview Counts per Reviewer:")
-    for reviewer, count in review_data.most_common():
-        if filter and reviewer in existing_committers:
-            continue
-        print(f"- {reviewer}: {count}")
+    # Sort by commits, then merged PRs, then reviewd PRs.
+    table_rows = sorted(table, key=lambda a: tuple(*a[1:]))
+    for entry in table_rows:
+        # Move the "Unknown Author" entry for deleted users to the end
+        if entry[0] == "Unknown Author":
+            table_rows.remove(entry)
+            table_rows.append(entry)
+            break
+
+    print("\nContributors sorted by authored commits, then merged PRs,",
+          "then reviewed PRs.")
+    print(
+        tabulate(
+            table_rows,
+            headers,
+            tablefmt="pretty",
+        )
+    )
 
     return 0
 
