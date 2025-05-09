@@ -53,9 +53,9 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
         do begin
           cfg.clk_rst_vif.wait_n_clks(1);
           if (write_op) begin
-            uvm_hdl_read(sram_we_path, req);
+            `DV_CHECK(uvm_hdl_read(sram_we_path, req))
           end else begin
-            uvm_hdl_read(sram_req_path, req);
+            `DV_CHECK(uvm_hdl_read(sram_req_path, req))
           end
         end while(!req);
       )
@@ -68,7 +68,7 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
                   UVM_LOW)
         fork
           begin : inject_fault
-            uvm_hdl_read(fi_path, value);
+            `DV_CHECK(uvm_hdl_read(fi_path, value))
             value_faulty = value ^ fi_mask;
             `DV_CHECK(uvm_hdl_force(fi_path, value_faulty))
             // Release the faulty signal after one clock cycle.
