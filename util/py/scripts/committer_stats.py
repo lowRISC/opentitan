@@ -294,7 +294,7 @@ def get_pr_and_review_authors(
                         if review["author"]
                         else "Unknown Author"
                     )
-                    if review_author not in unique_authors:
+                    if review_author != author and review_author not in unique_authors:
                         unique_authors.add(review_author)
                         review_authors[review_author] += 1
 
