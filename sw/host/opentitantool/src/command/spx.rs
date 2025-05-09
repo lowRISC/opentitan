@@ -10,6 +10,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::crypto::spx::SpxRawSignature;
 use sphincsplus::{DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxSecretKey};
 
 #[derive(Annotate, serde::Serialize)]
@@ -175,8 +176,8 @@ impl CommandDispatch for SpxVerifyCommand {
             message.reverse();
         }
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
-        let signature = std::fs::read(&self.signature)?;
-        public_key.verify(self.domain, &signature, &message)?;
+        let signature = SpxRawSignature::read_from_file(&self.signature)?;
+        public_key.verify(self.domain, &signature.raw_data, &message)?;
         Ok(None)
     }
 }
