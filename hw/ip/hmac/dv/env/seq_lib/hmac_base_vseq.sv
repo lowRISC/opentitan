@@ -589,7 +589,7 @@ task hmac_base_vseq::sar_stop_and_continue();
   trigger_hash_continue();
   sar_stop_continue_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_stop_and_continue;
+endtask : sar_stop_and_continue
 
 task hmac_base_vseq::sar_same_context();
   bit [TL_DW-1:0]     digest_a[16];
@@ -627,7 +627,7 @@ task hmac_base_vseq::sar_same_context();
   trigger_hash_continue();
   sar_same_ctxt_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_same_context;
+endtask : sar_same_context
 
 //   Different context:
 //   All those parameters could be changed: key length, digest size, digest swap, endian swap
@@ -745,7 +745,7 @@ task hmac_base_vseq::sar_different_context();
   trigger_hash_continue();
   sar_different_ctxt_ev.trigger();
   sar_ongoing = 0;
-endtask : sar_different_context;
+endtask : sar_different_context
 
 // Save the current config for some registers, and restore the previous saved config or genrate
 // a new random one
