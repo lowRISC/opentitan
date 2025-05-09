@@ -52,6 +52,7 @@ rust_library(
         "error.rs",
         "key.rs",
         "lib.rs",
+        "signature.rs",
         "variants.rs",
     ],
     proc_macro_deps = [
@@ -60,6 +61,7 @@ rust_library(
     deps = [
         ":bindgen_sha2_128s_simple",
         ":bindgen_shake_128s_simple",
+        "//sw/host/opentitanlib/util",
         "@crate_index//:asn1",
         "@crate_index//:pem-rfc7468",
         "@crate_index//:serde",

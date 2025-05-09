@@ -141,10 +141,9 @@ impl EcdsaRawSignature {
 
             // Let's try interpreting the file as ASN.1 DER.
             // If unsuccessful, attempt PEM decoding.
-            EcdsaRawSignature::from_der(&data).or_else(|_| {
-                EcdsaRawSignature::from_pem(&data)
-                    .with_context(|| format!("Failed parsing {path:?}"))
-            })
+            EcdsaRawSignature::from_der(&data)
+                .or_else(|_| EcdsaRawSignature::from_pem(&data))
+                .with_context(|| format!("Failed parsing {path:?}"))
         }
     }
 

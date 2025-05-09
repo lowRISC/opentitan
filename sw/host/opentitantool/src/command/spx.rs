@@ -10,7 +10,9 @@ use std::path::PathBuf;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
-use sphincsplus::{DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxSecretKey};
+use sphincsplus::{
+    DecodeKey, EncodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature, SpxSecretKey,
+};
 
 #[derive(Annotate)]
 pub struct SpxPublicKeyInfo {
@@ -155,6 +157,9 @@ pub struct SpxVerifyCommand {
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
+    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
+    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
+    spx_algorithm: SphincsPlus,
     /// The file containing the SPHINCS+ raw public key in PEM format.
     #[arg(value_name = "KEY")]
     public_key: PathBuf,
@@ -175,8 +180,8 @@ impl CommandDispatch for SpxVerifyCommand {
             message.reverse();
         }
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
-        let signature = std::fs::read(&self.signature)?;
-        public_key.verify(self.domain, &signature, &message)?;
+        let signature = SpxRawSignature::read_from_file(&self.signature, self.spx_algorithm)?;
+        public_key.verify(self.domain, signature.as_bytes(), &message)?;
         Ok(None)
     }
 }
