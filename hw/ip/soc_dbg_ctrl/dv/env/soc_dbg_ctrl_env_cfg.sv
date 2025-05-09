@@ -5,6 +5,9 @@
 class soc_dbg_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(soc_dbg_ctrl_core_reg_block));
   `uvm_object_utils(soc_dbg_ctrl_env_cfg)
 
+  // External interfaces
+  misc_vif_t misc_vif;
+
   string jtag_ral_name = "soc_dbg_ctrl_jtag_reg_block";
 
   // Standard SV/UVM methods

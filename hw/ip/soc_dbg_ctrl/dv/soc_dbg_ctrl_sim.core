@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:soc_dbg_ctrl_test
       - lowrisc:dv:soc_dbg_ctrl_sva
     files:
+      - env/soc_dbg_ctrl_misc_io_if.sv
       - tb.sv
     file_type: systemVerilogSource
 
