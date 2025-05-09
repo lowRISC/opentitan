@@ -208,3 +208,15 @@ foreach rel_path {
     task -edit GlitchyCounter -copy "tb.dut.u_tl_adapter_rom.${rel_path}*"
     assert -disable "tb.dut.u_tl_adapter_rom.${rel_path}"
 }
+
+# The RelAddrWide_A assertion checks that we don't throw away any nonzero address bits, but it only
+# applies after we have read through the lower part of ROM. A cover trace for the precondition would
+# be very long and we can't use a stopat to shorten it because the thing that would have to jump
+# directly drives the behaviour we test. Disable the precondition cover instead.
+cover -disable "tb.${fsm_path}.RelAddrWide_A:precondition1"
+
+# The LastImpliesValid_A assertion checks that we only tell KMAC that we've just read the last word
+# of the lower part of ROM. This consistency check has a precondition that would need a long cover
+# trace and (as with RelAddrWide_A) it's checking the behaviour of something that flows straight
+# from the counter address, so a stopat cannot work.
+cover -disable "tb.${fsm_path}.LastImpliesValid_A:precondition1"
