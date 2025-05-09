@@ -301,6 +301,7 @@ rust_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
         "//sw/host/opentitanlib/bindgen",
+        "//sw/host/opentitanlib/util",
         "//sw/host/sphincsplus",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
