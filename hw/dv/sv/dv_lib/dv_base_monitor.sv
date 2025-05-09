@@ -38,9 +38,52 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
 
   virtual task run_phase(uvm_phase phase);
     fork
-      collect_trans();
-    join
-  endtask
+      begin: monitor_reset
+        monitor_reset();
+      end
+      begin: main_thread
+        wait(cfg.in_reset);
+        forever begin
+          wait(!cfg.in_reset);
+          // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+          // processes at the same level from the base classes
+          fork begin : isolation_fork
+            fork
+              begin : main_thread
+                fork
+                  collect_trans();
+                join
+                wait fork;  // To ensure it will be killed only when the reset will occur
+              end
+              begin : reset_thread
+                wait(cfg.in_reset);
+              end
+            join_any
+            disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+          end join
+        end
+      end
+    join_none
+  endtask : run_phase
+
+  // Monitor reset to drive cfg.in_reset signal
+  // Should be overriden as require access to the interface
+  virtual task monitor_reset();
+    `uvm_fatal(`gfn, "This method should be overriden!")
+    // This should look like:
+    // forever begin
+    //   if (!cfg.clk_rst_vif.rst_n) begin
+    //     `uvm_info(`gfn, "reset occurred", UVM_HIGH)
+    //     cfg.reset_asserted();
+    //     @(posedge cfg.clk_rst_vif.rst_n);
+    //     cfg.reset_deasserted();
+    //     `uvm_info(`gfn, "out of reset", UVM_HIGH)
+    //   end else begin
+    //     // wait for a change to rst_n
+    //     @(cfg.clk_rst_vif.rst_n);
+    //   end
+    // end
+  endtask : monitor_reset
 
   // collect transactions forever
   virtual protected task collect_trans();
