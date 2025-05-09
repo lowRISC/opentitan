@@ -93,6 +93,7 @@ rust_library(
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
         "src/crypto/spx.rs",
+        "src/crypto/utils.rs",
         "src/debug/dmi.rs",
         "src/debug/elf_debugger.rs",
         "src/debug/mod.rs",

@@ -9,6 +9,7 @@ pub mod ecdsa;
 pub mod rsa;
 pub mod sha256;
 pub mod spx;
+pub mod utils;
 
 #[derive(Debug, Error)]
 pub enum Error {

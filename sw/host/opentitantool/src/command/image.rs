@@ -20,6 +20,7 @@ use opentitanlib::crypto::ecdsa::{
 };
 use opentitanlib::crypto::rsa::{RsaPrivateKey, RsaPublicKey, Signature as RsaSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
+use opentitanlib::crypto::spx::SpxRawSignature;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
@@ -334,8 +335,10 @@ impl CommandDispatch for ManifestUpdateCommand {
         }
         // Attach SPX+ signature.
         if let Some(spx_signature) = &self.spx_signature {
-            let signature = std::fs::read(spx_signature)?;
-            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(&signature)?)?;
+            let signature = SpxRawSignature::read_from_file(spx_signature)?;
+            image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
+                &signature.raw_data,
+            )?)?;
         }
 
         image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
