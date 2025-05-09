@@ -19,6 +19,7 @@ import json
 import os
 import sys
 import requests
+import time
 from collections import Counter
 from typing import Optional, Dict, Tuple, Any
 
@@ -58,9 +59,50 @@ def run_github_graphql_query(
     if variables is not None:
         payload["variables"] = variables
 
-    response = requests.post(GH_GRAPHQL_API_ENDPOINT, json=payload, headers=headers)
-    response.raise_for_status()
-    return response.json()
+    sleep_time = None
+    while True:
+        try:
+            response = requests.post(
+                GH_GRAPHQL_API_ENDPOINT, json=payload, headers=headers
+            )
+            if sleep_time is not None:
+                time.sleep(sleep_time)
+            response.raise_for_status()
+        except requests.exceptions.ConnectTimeout:
+            if sleep_time is None:
+                sleep_time = 1
+            else:
+                sleep_time *= 2
+                print(
+                    "Unable to connect to Github API. Retrying with a",
+                    f"wait of {sleep_time} seconds...",
+                )
+            continue
+
+
+        # Check status code
+        if response.status_code == 403 and "X-RateLimit-Remaining" in response.headers:
+            # If we hit a wait limit, sleep for the suggested time.
+            remaining_reqs = int(response.headers["X-RateLimit-Remaining"])
+            reset = int(response.headers.get("X-RateLimit-Reset", 0))
+            if remaining_reqs == 0:
+                wait_time = max(reset - time.time(), 5)
+                if LOG_PROGRESS:
+                    print(
+                        f"Rate limit exceeded - sleeping for {int(wait_time)}",
+                        "seconds before retrying...",
+                    )
+                time.sleep(wait_time)
+                continue
+        elif response.status_code != 200:  # HTTP OK
+            print(f"Query failed with code {response.status_code}: {response.text}")
+            sys.exit(-1)
+
+        # Check for GraphQL errors
+        data = response.json()
+        if "errors" in data:
+            print(f"GraphQL error: {data['errors']}")
+        return data
 
 
 def get_commit_authors(
@@ -229,7 +271,6 @@ def get_pr_and_review_authors(
                 base_branch = pr.get("baseRefName")
                 if base_branch != "master":
                     continue  # Skip PRs not to master
-
                 author = pr["author"]["login"] if pr["author"] else "Unknown Author"
                 if pr["merged"] and author:
                     pr_authors[author] += 1
