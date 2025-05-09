@@ -12,7 +12,8 @@
 #       GitHub account that will enable this script to use the GitHub GraphQL
 #       API. Follow the instructions here on how to create one:
 #       https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-# - Run this script with no parameters
+# - Run this script with no parameters. Optionally use `--log-progress` to
+#   output query progress, as the paginated queries can take some time to run.
 
 import json
 import os
@@ -22,7 +23,7 @@ from collections import Counter
 from typing import Optional, Dict, Tuple, Any
 
 # Flag to log progress in generating info
-LOG_PROGRESS = True
+LOG_PROGRESS = False
 
 # OpenTitan main repo URL
 OT_REPO_URL = "https://github.com/lowRISC/opentitan"
@@ -276,13 +277,16 @@ def get_pr_and_review_authors(
     return pr_authors, review_authors
 
 
-def main(github_token: str) -> int:
+def main(github_token: str, page_limit: Optional[int] = None) -> int:
     """Calculate committer, contributor and reviewer statistics for the OpenTitan
     repository. Will output the results to stdout.
 
     Args:
         github_token (Optional[str], optional): The Github Personal Access Token
         (PAT) to use for authorization. Defaults to None.
+        page_limit (Optional[int], optional): The number of pages to limit each
+        request to. Intended to be used for testing purposes only. Defaults to
+        None, meaning no page limits (fetch all the data).
 
     Returns:
         int: Return code (0 = Ok).
@@ -293,12 +297,14 @@ def main(github_token: str) -> int:
         print("Invalid GitHub repository URL format.")
         return -1
 
-    commit_data = get_commit_authors(owner, repo, github_token=github_token)
+    commit_data = get_commit_authors(
+        owner, repo, github_token=github_token, page_limit=page_limit
+    )
     if commit_data is None:
         print("Error: No commit author data found in response to query.")
         return -1
     pr_data, review_data = get_pr_and_review_authors(
-        owner, repo, github_token=github_token
+        owner, repo, github_token=github_token, page_limit=page_limit
     )
     if pr_data is None:
         print("Error: No PR author data found in response to query.")
@@ -323,6 +329,33 @@ def main(github_token: str) -> int:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    # Collect command-line arguments
+    desc = "Collect and display contributor statistics for the OpenTitan repo"
+    parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument(
+        "-l",
+        "--log-progress",
+        action="store_true",
+        help="Display progress logs for paginated queries of the repo.",
+    )
+    parser.add_argument(
+        "-p",
+        "--pages",
+        type=int,
+        default=None,
+        help=(
+            "The number of pages (100 items each) to limit requests to. "
+            "Used for testing only."
+        ),
+    )
+
+    args = parser.parse_args()
+
+    if args.log_progress:
+        LOG_PROGRESS = True
 
     # Get personal access token from environment variable
     github_token = os.environ.get("GH_GRAPHQL_API_PAT")
@@ -330,4 +363,4 @@ if __name__ == "__main__":
         print("Error: GH_GRAPHQL_API_PAT environment variable not set.")
         sys.exit(-1)
 
-    sys.exit(main(github_token))
+    sys.exit(main(github_token, args.pages))
