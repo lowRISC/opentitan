@@ -31,7 +31,7 @@
       design_stage:       "D3",
       verification_stage: "V2S",
       dif_stage:          "S2",
-      notes:              "D3 Reviewed @ 2022-07-28",
+      notes:              "D3 Reviewed @ 2025-05-09",
     }
   ]
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
