@@ -78,7 +78,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           uart_nf_vif.cb.rx_sync_q2);
       end
     end
-  endtask;
+  endtask
 
   virtual task process_uart_tx_fifo();
     uart_item act_item, exp_item;
