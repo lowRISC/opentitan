@@ -102,42 +102,42 @@
     {
       name: hmac_test_sha256_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=500_000_000 +sha2_digest_size=SHA2_256"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=500_000_000 +sha2_digest_size=SHA2_256"]
       reseed: 30
     }
 
     {
       name: hmac_test_sha384_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_384"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_384"]
       reseed: 75
     }
 
     {
       name: hmac_test_sha512_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_512"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_512"]
       reseed: 75
     }
 
     {
       name: hmac_test_hmac256_vectors
       uvm_test_seq: hmac_test_vectors_hmac_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=500_000_000 +sha2_digest_size=SHA2_256"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=500_000_000 +sha2_digest_size=SHA2_256"]
       reseed: 50
     }
 
     {
       name: hmac_test_hmac384_vectors
       uvm_test_seq: hmac_test_vectors_hmac_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_384"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_384"]
       reseed: 60
     }
 
     {
       name: hmac_test_hmac512_vectors
       uvm_test_seq: hmac_test_vectors_hmac_vseq
-      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_512"]
+      run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/fusesoc-work/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_512"]
       reseed: 75
     }
 

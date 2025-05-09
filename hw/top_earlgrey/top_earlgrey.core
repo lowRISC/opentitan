@@ -45,6 +45,7 @@ filesets:
       - lowrisc:earlgrey_ip:flash_ctrl
       - lowrisc:earlgrey_ip:gpio
       - lowrisc:earlgrey_ip:otp_ctrl
+      - lowrisc:earlgrey_ip:otp_ctrl_prim_reg_top
       - lowrisc:earlgrey_ip:pinmux
       - lowrisc:earlgrey_ip:pwm
       - lowrisc:earlgrey_ip:pwrmgr

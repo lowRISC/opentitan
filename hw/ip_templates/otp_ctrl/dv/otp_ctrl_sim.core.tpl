@@ -18,6 +18,8 @@ filesets:
       - ${instance_vlnv("lowrisc:dv:otp_ctrl_test")}
       - ${instance_vlnv("lowrisc:dv:otp_ctrl_sva")}
       - ${instance_vlnv("lowrisc:dv:otp_ctrl_cov")}
+      # TODO: prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
     files:
       - tb.sv
     file_type: systemVerilogSource

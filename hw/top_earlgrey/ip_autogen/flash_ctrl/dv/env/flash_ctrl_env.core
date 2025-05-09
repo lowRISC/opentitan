@@ -104,6 +104,7 @@ generate:
     parameters:
       name: flash_ctrl
       ip_hjson: ../../data/flash_ctrl.hjson
+    position: prepend
 
 targets:
   default:

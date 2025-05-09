@@ -5,7 +5,7 @@
   // Additional build-time options needed to compile C++ sources in
   // simulators such as VCS and Xcelium for anything that uses
   // otbn_tracer.
-  otbn_tracer_inc_dir: "{build_dir}/src/lowrisc_ip_otbn_tracer_0/cpp"
+  otbn_tracer_inc_dir: "{build_dir}/fusesoc-work/src/lowrisc_ip_otbn_tracer_0/cpp"
 
   build_modes: [
     {
