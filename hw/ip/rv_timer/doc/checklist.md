@@ -111,8 +111,8 @@ Review        | [REVIEW_SW_CHANGE][]    | N/A         |
 Review        | [REVIEW_SW_ERRATA][]    | N/A         |
 Security      | [SEC_NON_RESET_FLOPS][] | N/A         |
 Security      | [SEC_SHADOW_REGS][]     | N/A         |
-Review        | Reviewer(s)             | Done        | @jeoongp @timothytrippel @sriyerg
-Review        | Signoff date            | Done        | 2022-07-28
+Review        | Reviewer(s)             | Done        | @alees24 @rswarbrick
+Review        | Signoff date            | Done        | 2025-05-09
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
