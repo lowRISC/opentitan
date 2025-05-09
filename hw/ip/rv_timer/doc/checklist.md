@@ -258,7 +258,7 @@ Code Quality  | [TB_LINT_COMPLETE][]              | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
 Issues        | [NO_ISSUES_PENDING][]             | Done        | [#18918] Part of a future release
 Review        | Reviewer(s)                       | Done        | @rswarbrick
-Review        | Signoff date                      | Done        | TODO
+Review        | Signoff date                      | Done        | 2025-05-09
 
 [#18918]: https://github.com/lowRISC/opentitan/issues/18918
 
