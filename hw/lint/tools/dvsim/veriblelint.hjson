@@ -9,7 +9,6 @@
   report_cmd: "{proj_root}/util/dvsim/{tool}-report-parser.py "
   report_opts: ["--repfile={build_log}",
                 "--outfile={build_dir}/results.hjson"]
-  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
 
   // This customizes the report format
   is_style_lint: True
