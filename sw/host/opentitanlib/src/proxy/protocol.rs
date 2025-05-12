@@ -176,6 +176,7 @@ pub enum UartRequest {
     SetBaudrate {
         rate: u32,
     },
+    SetBreak(bool),
     SetParity(Parity),
     Read {
         timeout_millis: Option<u32>,
@@ -192,6 +193,7 @@ pub enum UartRequest {
 pub enum UartResponse {
     GetBaudrate { rate: u32 },
     SetBaudrate,
+    SetBreak,
     SetParity,
     Read { data: Vec<u8> },
     Write,
