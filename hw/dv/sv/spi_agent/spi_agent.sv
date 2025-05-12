@@ -31,4 +31,9 @@ class spi_agent extends dv_base_agent#(
     cfg.has_req_fifo = 1;
   endfunction : build_phase
 
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    monitor.host_analysis_port.connect(sequencer.host_mon_analysis_imp);
+  endfunction
+
 endclass
