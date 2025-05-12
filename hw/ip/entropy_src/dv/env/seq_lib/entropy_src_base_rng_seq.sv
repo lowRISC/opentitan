@@ -110,9 +110,9 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
     return is_hard_failed;
   endfunction
 
-  virtual task pre_body();
-    super.pre_body();
+  virtual task body();
     reset_rng();
+    super.body();
   endtask
 
   virtual function rng_val_t random_data_typical();
