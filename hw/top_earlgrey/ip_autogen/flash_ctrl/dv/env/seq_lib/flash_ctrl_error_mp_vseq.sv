@@ -294,7 +294,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
       endcase
 
       // Predict Status (for RAL)
-      ral.err_code.mp_err.predict(exp_alert);
+      `DV_CHECK(ral.err_code.mp_err.predict(exp_alert));
 
       // Check Alert Status
       check_exp_alert_status(exp_alert, "mp_err", flash_op, flash_op_data);

@@ -40,6 +40,8 @@ module tb;
   wire intr_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  ast_pkg::ast_obs_ctrl_t obs_ctrl;
+
   // interfaces
   clk_rst_if clk_rst_if (
     .clk  (clk),
@@ -197,7 +199,12 @@ module tb;
     .intr_op_done_o   (intr_op_done),
     .intr_corr_err_o  (intr_err),
     .alert_rx_i       (alert_rx),
-    .alert_tx_o       (alert_tx)
+    .alert_tx_o       (alert_tx),
+
+    // Observability
+    .obs_ctrl_i(obs_ctrl),
+    .fla_obs_o (        )
+
   );
 
   // Create edge in flash_power_down_h_i, whenever reset is asserted
