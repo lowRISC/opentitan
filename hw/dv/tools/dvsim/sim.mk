@@ -141,7 +141,7 @@ ifneq (${sw_images},)
 								$${run_dir}/$$(basename -s .bin $${artifact}).elf; \
 						fi; \
 				done; \
-			elif [[ $${kind} == "alias" || $${kind} == "opentitan_binary" ]]; then \
+			elif [[ $${kind} == "alias" || $${kind} == "opentitan_binary" || $${kind} == "filegroup" ]]; then \
 				for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} \
 					$${bazel_label} \
 					--ui_event_filters=-info \
@@ -149,7 +149,11 @@ ifneq (${sw_images},)
 					--output=starlark \
 					`# An opentitan_binary rule has all of its needed files in its runfiles.` \
 					--starlark:expr='"\n".join([f.path for f in target.files.to_list()])'); do \
-						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
+						if [[ $${kind} == "filegroup" ]]; then \
+							cp -f $$($${bazel_cmd} info output_base)/$${artifact} $${run_dir}/$$(basename $${artifact}); \
+						else \
+							cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
+						fi; \
 						if [[ $$artifact == *.bin && \
 							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \
 							cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
