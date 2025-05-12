@@ -122,7 +122,7 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_fetch_code_vseq;
       `uvm_info(`gfn, $sformatf("Program Data : %0p", flash_op_data_prog_win), UVM_MEDIUM)
 
       // Predict Alert Status (for RAL)
-      ral.err_code.prog_win_err.predict(exp_alert);
+      `DV_CHECK(ral.err_code.prog_win_err.predict(exp_alert))
 
       // Check Alert Status
       check_exp_alert_status(exp_alert, "prog_win_err", flash_op, flash_op_data);

@@ -67,7 +67,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   virtual function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    uvm_config_db#(flash_ctrl_env_cfg)::get(this, "", "cfg", cfg);
+    if (!uvm_config_db#(flash_ctrl_env_cfg)::get(this, "", "cfg", cfg))
+      `uvm_fatal(`gfn, "Failed to get 'flash_ctrl_env_cfg from config_db")
     cfg.otf_scb_h = this;
   endfunction // connect_phase
 
