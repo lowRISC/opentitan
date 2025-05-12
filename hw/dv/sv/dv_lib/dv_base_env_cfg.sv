@@ -180,11 +180,13 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
     if (obj == null) begin
       // print factory overrides to help debug
       factory.print();
-      `uvm_fatal(msg_id, $sformatf("could not create %0s as a RAL model, see above for a list of \
-                                    type/instance overrides", name))
+      `uvm_fatal(`gfn,
+                 $sformatf({"Could not create %0s as a RAL model. ",
+                            "See above for a list of type/instance overrides"},
+                           name))
     end
     if (!$cast(ral, obj)) begin
-      `uvm_fatal(msg_id, $sformatf("cast failed - %0s is not a dv_base_reg_block", name))
+      `uvm_fatal(`gfn, $sformatf("Cast failed - %0s is not a dv_base_reg_block", name))
     end
     return ral;
   endfunction
