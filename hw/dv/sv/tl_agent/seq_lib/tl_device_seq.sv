@@ -41,15 +41,10 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
     };
   }
 
-  // In case this seq start in the middle of other body.
-  // If we set `stop` at the beginning of this body, then
-  // there is a risk to get the race when start and stop are called
-  // at the same time.
-  virtual task pre_body();
-    stop = 0;
-  endtask
-
   virtual task body();
+    // Clear the stop flag (which may have been set by seq_stop on the previous run of the sequence)
+    stop = 0;
+
     fork
       begin: isolation_thread
         fork
@@ -183,13 +178,6 @@ class tl_device_seq #(type REQ = tl_seq_item, int unsigned AddrWidth = 32) exten
 
   // Stop running this seq and wait until it has finished gracefully.
   virtual task seq_stop();
-    // We want to tell the sequence to stop by setting the stop flag. The current implementation of
-    // pre_body clears the stop signal. To avoid our stop flag getting cleared before it has any
-    // effect, wait until pre_body is out of the way.
-    if (get_sequence_state() inside {UVM_CREATED, UVM_PRE_START}) begin
-      wait_for_sequence_state(UVM_BODY);
-    end
-
     stop = 1'b1;
     wait_for_sequence_state(UVM_FINISHED);
   endtask
