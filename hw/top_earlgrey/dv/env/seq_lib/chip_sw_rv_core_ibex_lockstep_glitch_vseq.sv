@@ -341,7 +341,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
-                #1step;
+                #1ps;
                 if (instr_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
@@ -360,7 +360,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
             // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
             `DV_SPINWAIT(
               forever begin
-                #1step;
+                #1ps;
                 if (data_open_cnt[glitch_lockstep_core] > 0) break;
                 @(cfg.chip_vif.cpu_clk_rst_if.cbn);
               end
@@ -426,7 +426,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           "instr_rvalid_i": begin
             // `instr_open_cnt` is updated on the negative edge. If it's greater than zero one delta
             // delay later, we know `instr_rvalid_i` is being used in the next clock cycle.
-            #1step;
+            #1ps;
             glitched_inp_used = (instr_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
           end
@@ -441,7 +441,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           "data_rvalid_i": begin
             // `data_open_cnt` is updated on the negative edge. If it's greater than zero one delta
             // delay later, we know `data_rvalid_i` is being used in the next clock cycle.
-            #1step;
+            #1ps;
             glitched_inp_used = (data_open_cnt[glitch_lockstep_core] > 0);
             @(cfg.chip_vif.cpu_clk_rst_if.cbn);
             // Data integrity errors are always reported, even if the core isn't currently doing
