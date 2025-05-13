@@ -15,12 +15,15 @@ This involves a specific sequence of register writes:
 
 To start a memory transfer, software needs to configure several registers that define the source and destination of the data, as well as the transfer size and access pattern:
 
-1.  **Source and Destination Configuration:** Configure the source and destination address modes using the [`SRC_CONFIG`](registers.md#src_config) and [`DST_CONFIG`](registers.md#dst_config) registers.
+1.  **Source and Destination Configuration:** Configure the source and destination address modes using the [`SRC_CONFIG`](registers.md#src_config) and [`DST_CONFIG`](registers.md#dst_config) registers. The DMA supports 3 addressing modes, which can be configured independently for the source and destination via the aforementioned registers:
+  * Continuously accessing the same address (`increment = 0`, `wrap = 0`)
+  * Linear addressing (`increment = 1`, `wrap = 0`), with an address increment after each transfer
+  * Wrap Mode:  (`increment = 1`, `wrap = 1`), with an address increment after each transfer and a wrap to the start address after finishing the transfer of one chunk.
 2.  **Source and Destination Addresses:** Specify the starting memory addresses for the source and destination using the lower and upper 32-bit parts of the addresses in the [`SRC_ADDR_LO`](registers.md#src_addr_lo), [`SRC_ADDR_HI`](registers.md#src_addr_hi), [`DST_ADDR_LO`](registers.md#dst_addr_lo), and [`DST_ADDR_HI`](registers.md#dst_addr_hi) registers.
 3.  **Total Transfer Size:** Define the total number of bytes to be transferred using the [`TOTAL_DATA_SIZE`](registers.md#total_data_size) register.
 4.  **Access Stride:** Configure the access stride (the number of bytes accessed in each burst) using the [`TRANSFER_WIDTH`](registers.md#transfer_width) register.
 5.  **Chunk Size (Memory-to-Memory):** The DMA performs memory access in chunks. For a standard memory-to-memory transfer, the [`CHUNK_DATA_SIZE`](registers.md#chunk_data_size) register is typically set to the same value as the [`TOTAL_DATA_SIZE`](registers.md#total_data_size) register. The concept of chunked transfers is further explained in the [Chunked Data Transfers](#Chunked_Data_Transfers) section.
-6.  **Start the Transfer:** Initiate the transfer by writing to the `go` bit in the [`CONTROL`](registers.md#control) register.
+6.  **Start the Transfer:** Initiate the transfer by writing to the `go` bit along with the `initial_transfer` bit in the [`CONTROL`](registers.md#control) register.
 7.  **Monitor Transfer Completion:** After starting the transfer, software can monitor its progress by either polling the [`STATUS`](registers.md#status) register or by waiting for a specific interrupt to be raised.
 
 ### Interrupt Handling
@@ -29,7 +32,7 @@ The DMA can signal various events to the software through interrupts.
 The following three types of interrupts are supported:
 
 1.  **Transfer Completion:** An interrupt is raised when the entire data transfer (as defined by `TOTAL_DATA_SIZE`) is complete.
-2.  **Chunk Completion:** An interrupt is raised after the transfer of a single chunk of data (as defined by `CHUNK_DATA_SIZE`) is finished.
+2.  **Chunk Completion:** An interrupt is raised after the transfer of a single chunk of data (as defined by `CHUNK_DATA_SIZE`) is finished. This interrupt is only available when not using the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode).
 3.  **Error Condition:** An interrupt is raised if an error occurs during the transfer process.
 
 The current status of the DMA, including pending interrupts, can be read from the [`STATUS`](registers.md#status) register.
@@ -38,6 +41,8 @@ Since interrupts are implemented as status bits, they are cleared by writing a '
 ### Aborting a Transfer
 
 Software can terminate an ongoing DMA transfer at any point by writing to the `abort` bit in the [`CONTROL`](registers.md#control) register.
+Aborting an operation happens immediately after writing the `abort` bit and does not require any further scheduling or waiting.
+The [`STATUS`](registers.md#status) indicates via the `aborted` bit that the DMA operation was aborted and the DMA stopped its operation.
 
 ## Chunked Data Transfers
 
@@ -47,6 +52,8 @@ After transferring a chunk, the DMA can optionally generate an interrupt.
 
 While chunked transfers are primarily utilized in conjunction with the [Hardware Handshaking Mode](#Hardware_Handshaking_Mode) for interacting with IO peripherals, they can also be employed in memory-to-memory transfers.
 A potential use case for chunked memory-to-memory transfers is memory initialization, where a small chunk of data (e.g., a block of zeros) can be repeatedly transferred to a larger memory region.
+For chunked data transfers the first transfer needs to assert the `initial_transfer` bit in the [`CONTROL`](registers.md#control) register.
+Initiating the transfer of subsequent chunks must not assert the `initial_transfer` bit.
 
 ## Hardware Handshaking Mode
 
@@ -62,9 +69,10 @@ To enable hardware handshaking, software must set the `hardware_handshake_enable
 
 The DMA's chunked transfer mechanism in hardware handshaking mode supports two address update modes for the peripheral:
 
-  * **Continuous Access:** The DMA continuously accesses the same address for each chunk.
+  * **Fixed address:** The DMA accesses the same address for each chunk.
   * **Wrap-around:** After transferring a chunk, the DMA's peripheral address wraps around to the starting address configured for the transfer.
 
+These modes are configured via the [`SRC_CONFIG`](registers.md#src_config) and [`DST_CONFIG`](registers.md#dst_config) registers as described above.
 For interrupt handling in hardware handshaking mode, software needs to enable the corresponding interrupt using the [`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable) register.
 
 The DMA also provides a mechanism to acknowledge the interrupt received from the IO peripheral by performing a configurable write operation.
