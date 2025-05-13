@@ -2,15 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# This line is a default case statement which could be executed if a parasitic state has been
-# injected to the state register of u_prim_alert_sender.
-check_cov -waiver -add -start_line 249 -end_line 249 -instance\
- {dut.gen_alert_tx[0].u_prim_alert_sender} -comment {No parasitic state injection while doing FPV}
-
-# The intention to add this assertion is to make sure that while doing FPV there is not a
-# possibility to inject parasitic state to the state register of alert sender FSM.
-assert -name AlertSenderNoParasiticState_A {dut.gen_alert_tx[0].u_prim_alert_sender.state_q <= 6}
-
 # The port data_o in u_data_chk is untied and used nowhere.
 check_cov -waiver -add -start_line 25 -end_line 56 -type {statement} -instance\
  {dut.u_reg.u_chk.u_tlul_data_integ_dec.u_data_chk} -comment {data_o is untied}
@@ -56,3 +47,17 @@ check_cov -waiver -add -start_line 397 -end_line 417 -instance {prim_mubi_pkg} -
 
 check_cov -waiver -add -start_line 536 -end_line 556 -instance {prim_mubi_pkg} -comment {Unused\
  code block}
+
+# Below task acts as an isolated container for the following assertion and stopat.
+task -create FSMParasiticState
+
+# Drives any possible value to state_q.
+stopat -task FSMParasiticState "dut.gen_alert_tx\[0\].u_prim_alert_sender.state_q"
+
+# If some silly state has been injected in state_q then the FSM will always comes back to Idle in
+# the next state as the FSM treats the unrecognized state as Idle. This assertion also covers the
+# checker coverage for the default case.
+assert -name FSMParasiticState::AlertSenderFSMParasiticState_A\
+ {!(dut.gen_alert_tx[0].u_prim_alert_sender.state_q inside\
+  {Idle, AlertHsPhase1, AlertHsPhase2, PingHsPhase1, PingHsPhase2, Pause0, Pause1}) ->\
+  dut.gen_alert_tx[0].u_prim_alert_sender.state_d == Idle}
