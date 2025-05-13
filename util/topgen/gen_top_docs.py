@@ -198,7 +198,7 @@ def gen_pinmux_docs(top, c_helper, out_path):
         table_rows.append(row)
 
     # Now create the summary table
-    summary_table = f'# "top_{top["name"]}" Pinmux Targets\n'
+    summary_table = f'# {top["name"].capitalize()} Pinout and Pinmux Connectivity Tables\n'
     summary_table += TABLE_HEADER.format(gencmd)
     summary_table += tabulate(table_rows,
                               headers="firstrow",
