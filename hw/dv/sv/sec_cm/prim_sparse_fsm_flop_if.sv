@@ -25,8 +25,10 @@ interface prim_sparse_fsm_flop_if #(
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string signal_forced = $sformatf("%s.u_state_flop.q_o", path);
 
-  // This signal only has to be forced if the associated parameter
-  // CustomForceName in prim_sparse_fsm_flop is set to a non-empty string.
+  // The prim_sparse_fsm_flop module is usually created with the PRIM_FLOP_SPARSE_FSM macro, which
+  // (when in simulation) passes an extra CustomForceName parameter to control how it should be
+  // forced.
+
   string parent_path = dv_utils_pkg::get_parent_hier($sformatf("%m"), 2);
   string custom_signal_forced = $sformatf("%s.%s", parent_path, CustomForceName);
 
@@ -72,10 +74,8 @@ interface prim_sparse_fsm_flop_if #(
 
       `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
                 UVM_LOW)
+
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s to original value %0d", custom_signal_forced, orig_value), UVM_LOW)
-      `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
     endtask
   endclass
 
