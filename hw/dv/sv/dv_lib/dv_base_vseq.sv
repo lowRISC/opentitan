@@ -65,8 +65,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     num_trans.rand_mode(0);
   endtask
 
-  task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
+  virtual task body();
+    //    Empty - to be overriden
   endtask : body
 
   task post_start();
