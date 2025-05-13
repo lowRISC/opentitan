@@ -309,8 +309,8 @@ otcrypto_status_t otcrypto_import_blinded_key(
                     keyblob_words * sizeof(uint32_t));
 
   // Construct the blinded key.
-  keyblob_from_shares(key_share0.data, key_share1.data, blinded_key->config,
-                      blinded_key->keyblob);
+  HARDENED_TRY(keyblob_from_shares(key_share0.data, key_share1.data,
+                                   blinded_key->config, blinded_key->keyblob));
   blinded_key->checksum = integrity_blinded_checksum(blinded_key);
   return OTCRYPTO_OK;
 }
