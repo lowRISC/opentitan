@@ -134,12 +134,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   `uvm_object_new
 
-  `uvm_object_utils_begin(chip_env_cfg)
+  `uvm_object_param_utils_begin(chip_env_cfg#(RAL_T))
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_host_agent_cfg,   UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
     `uvm_field_object(debugger,               UVM_DEFAULT)
-  `uvm_object_utils_end
+  `uvm_object_param_utils_end
 
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
