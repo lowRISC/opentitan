@@ -226,7 +226,7 @@ report
 #-------------------------------------------------------------------------
 
 if {$env(COV) == 1} {
-  check_cov -measure -time_limit 2h
+  check_cov -measure -all -time_limit 2h
   check_cov -report -force -exclude { reset waived }
   check_cov -report -no_return -report_file cover.html \
       -html -force -exclude { reset waived }
