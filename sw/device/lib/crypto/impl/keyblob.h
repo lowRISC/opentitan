@@ -74,8 +74,9 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
  * @param config Key configuration.
  * @param[out] keyblob Destination buffer.
  */
-void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const otcrypto_key_config_t config, uint32_t *keyblob);
+status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
+                             const otcrypto_key_config_t config,
+                             uint32_t *keyblob);
 
 /**
  * Construct key manager diversification data from a raw keyblob.

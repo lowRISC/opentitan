@@ -91,6 +91,9 @@ otcrypto_status_t otcrypto_drbg_instantiate(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   entropy_seed_material_t seed_material;
   seed_material_construct(perso_string, &seed_material);
 
@@ -105,6 +108,9 @@ otcrypto_status_t otcrypto_drbg_reseed(
   if (additional_input.len != 0 && additional_input.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
 
   entropy_seed_material_t seed_material;
   seed_material_construct(additional_input, &seed_material);
