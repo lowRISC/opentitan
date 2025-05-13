@@ -148,11 +148,11 @@ package trial1_reg_pkg;
     struct packed {
       logic [15:0] d;
       logic        de;
-    } field0;
+    } field1;
     struct packed {
       logic [15:0] d;
       logic        de;
-    } field1;
+    } field0;
   } trial1_hw2reg_rwtype3_reg_t;
 
   typedef struct packed {
@@ -189,15 +189,7 @@ package trial1_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } field1;
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } field3;
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } field4;
+    } field6;
     struct packed {
       logic [3:0]  d;
       logic        de;
@@ -205,7 +197,15 @@ package trial1_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } field6;
+    } field4;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } field3;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } field1;
   } trial1_hw2reg_mixtype0_reg_t;
 
   typedef struct packed {

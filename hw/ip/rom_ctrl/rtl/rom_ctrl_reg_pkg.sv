@@ -38,11 +38,11 @@ package rom_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } checker_error;
+    } integrity_error;
     struct packed {
       logic        d;
       logic        de;
-    } integrity_error;
+    } checker_error;
   } rom_ctrl_hw2reg_fatal_alert_cause_reg_t;
 
   typedef struct packed {

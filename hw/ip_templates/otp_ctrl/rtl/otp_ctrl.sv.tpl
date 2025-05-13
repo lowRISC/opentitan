@@ -442,8 +442,7 @@ module otp_ctrl
     // Aggregate all the remaining errors / alerts from the partitions and the DAI/LCI
     for (int k = 0; k < NumPart+2; k++) begin
       // Set the error bit if the error status of the corresponding partition is nonzero.
-      // Need to reverse the order here since the field enumeration in hw2reg.status is reversed.
-      part_errors_reduced[NumPart+1-k] = |part_error[k];
+      part_errors_reduced[k] = |part_error[k];
       // Filter for integrity and consistency check failures.
       fatal_check_error_d |= part_error[k] inside {CheckFailError, FsmStateError};
 
@@ -509,15 +508,17 @@ module otp_ctrl
     hw2reg.direct_access_rdata = dai_rdata;
     // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
     hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
-    // Assign these to the status register.
-    hw2reg.status = {part_errors_reduced,
-                     chk_timeout,
-                     lfsr_fsm_err,
-                     scrmbl_fsm_err,
-                     part_fsm_err[KdiIdx],
-                     fatal_bus_integ_error_q,
-                     dai_idle,
-                     chk_pending};
+    // Report partition errors in the status register; relies upon the field ordering and the
+    // presence of only the scalar signal 'd' in each partition-specific field.
+    hw2reg.status = otp_ctrl_hw2reg_status_reg_t'(part_errors_reduced);
+    // Overwrite the other fields of the status register with specific error conditions.
+    hw2reg.status.timeout_error.d = chk_timeout;
+    hw2reg.status.lfsr_fsm_error.d = lfsr_fsm_err;
+    hw2reg.status.scrambling_fsm_error.d = scrmbl_fsm_err;
+    hw2reg.status.key_deriv_fsm_error.d = part_fsm_err[KdiIdx];
+    hw2reg.status.bus_integ_error.d = fatal_bus_integ_error_q;
+    hw2reg.status.dai_idle.d = dai_idle;
+    hw2reg.status.check_pending.d = chk_pending;
     // Error code registers.
     hw2reg.err_code = part_error;
     // Interrupt signals

@@ -203,7 +203,7 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } dma_done;
+    } dma_error;
     struct packed {
       logic        d;
       logic        de;
@@ -211,7 +211,7 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } dma_error;
+    } dma_done;
   } dma_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -242,7 +242,7 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } initial_transfer;
+    } go;
     struct packed {
       logic        d;
       logic        de;
@@ -250,26 +250,14 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } go;
+    } initial_transfer;
   } dma_hw2reg_control_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } busy;
-    struct packed {
-      logic        d;
-      logic        de;
-    } done;
-    struct packed {
-      logic        d;
-      logic        de;
-    } aborted;
-    struct packed {
-      logic        d;
-      logic        de;
-    } error;
+    } chunk_done;
     struct packed {
       logic        d;
       logic        de;
@@ -277,34 +265,26 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } chunk_done;
+    } error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } aborted;
+    struct packed {
+      logic        d;
+      logic        de;
+    } done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } busy;
   } dma_hw2reg_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } src_addr_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } dst_addr_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } opcode_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } size_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } bus_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } base_limit_error;
+    } asid_error;
     struct packed {
       logic        d;
       logic        de;
@@ -312,7 +292,27 @@ package dma_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } asid_error;
+    } base_limit_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bus_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } size_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } opcode_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } dst_addr_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } src_addr_error;
   } dma_hw2reg_error_code_reg_t;
 
   typedef struct packed {

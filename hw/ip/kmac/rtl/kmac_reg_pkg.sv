@@ -181,7 +181,7 @@ package kmac_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } kmac_done;
+    } kmac_err;
     struct packed {
       logic        d;
       logic        de;
@@ -189,7 +189,7 @@ package kmac_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } kmac_err;
+    } kmac_done;
   } kmac_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -199,28 +199,28 @@ package kmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } sha3_idle;
-    struct packed {
-      logic        d;
-    } sha3_absorb;
-    struct packed {
-      logic        d;
-    } sha3_squeeze;
-    struct packed {
-      logic [4:0]  d;
-    } fifo_depth;
-    struct packed {
-      logic        d;
-    } fifo_empty;
-    struct packed {
-      logic        d;
-    } fifo_full;
+    } alert_recov_ctrl_update_err;
     struct packed {
       logic        d;
     } alert_fatal_fault;
     struct packed {
       logic        d;
-    } alert_recov_ctrl_update_err;
+    } fifo_full;
+    struct packed {
+      logic        d;
+    } fifo_empty;
+    struct packed {
+      logic [4:0]  d;
+    } fifo_depth;
+    struct packed {
+      logic        d;
+    } sha3_squeeze;
+    struct packed {
+      logic        d;
+    } sha3_absorb;
+    struct packed {
+      logic        d;
+    } sha3_idle;
   } kmac_hw2reg_status_reg_t;
 
   typedef struct packed {

@@ -77,11 +77,11 @@ package soc_dbg_ctrl_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } valid;
+    } relocked;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } relocked;
+    } valid;
   } soc_dbg_ctrl_hw2reg_trace_debug_policy_valid_relocked_reg_t;
 
   // Register -> HW type for core interface
@@ -160,56 +160,56 @@ package soc_dbg_ctrl_reg_pkg;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } valid;
+    } relocked;
     struct packed {
       logic [3:0]  d;
       logic        de;
-    } relocked;
+    } valid;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } auth_debug_intent_set;
-    struct packed {
-      logic        d;
-    } auth_window_open;
-    struct packed {
-      logic        d;
-    } auth_window_closed;
+    } auth_unlock_failed;
     struct packed {
       logic        d;
     } auth_unlock_success;
     struct packed {
       logic        d;
-    } auth_unlock_failed;
+    } auth_window_closed;
+    struct packed {
+      logic        d;
+    } auth_window_open;
+    struct packed {
+      logic        d;
+    } auth_debug_intent_set;
   } soc_dbg_ctrl_hw2reg_jtag_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } main_clk_status;
+      logic [2:0]  d;
+    } boot_greenlight_good;
+    struct packed {
+      logic [2:0]  d;
+    } boot_greenlight_done;
+    struct packed {
+      logic [5:0]  d;
+    } halt_fsm_state;
     struct packed {
       logic        d;
-    } io_clk_status;
-    struct packed {
-      logic        d;
-    } otp_done;
+    } cpu_fetch_en;
     struct packed {
       logic        d;
     } lc_done;
     struct packed {
       logic        d;
-    } cpu_fetch_en;
+    } otp_done;
     struct packed {
-      logic [5:0]  d;
-    } halt_fsm_state;
+      logic        d;
+    } io_clk_status;
     struct packed {
-      logic [2:0]  d;
-    } boot_greenlight_done;
-    struct packed {
-      logic [2:0]  d;
-    } boot_greenlight_good;
+      logic        d;
+    } main_clk_status;
   } soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t;
 
   typedef struct packed {

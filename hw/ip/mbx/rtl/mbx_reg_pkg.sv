@@ -116,7 +116,7 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } mbx_ready;
+    } mbx_error;
     struct packed {
       logic        d;
       logic        de;
@@ -124,31 +124,31 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } mbx_error;
+    } mbx_ready;
   } mbx_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } abort;
+    } error;
     struct packed {
       logic        d;
-    } error;
+    } abort;
   } mbx_hw2reg_control_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } busy;
-    struct packed {
-      logic        d;
-    } sys_intr_state;
+    } sys_async_enable;
     struct packed {
       logic        d;
     } sys_intr_enable;
     struct packed {
       logic        d;
-    } sys_async_enable;
+    } sys_intr_state;
+    struct packed {
+      logic        d;
+    } busy;
   } mbx_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -335,31 +335,23 @@ package mbx_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-    } abort;
-    struct packed {
-      logic        d;
-    } doe_intr_en;
+    } go;
     struct packed {
       logic        d;
     } doe_async_msg_en;
     struct packed {
       logic        d;
-    } go;
+    } doe_intr_en;
+    struct packed {
+      logic        d;
+    } abort;
   } mbx_hw2reg_soc_control_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } busy;
-    struct packed {
-      logic        d;
-      logic        de;
-    } doe_intr_status;
-    struct packed {
-      logic        d;
-      logic        de;
-    } error;
+    } ready;
     struct packed {
       logic        d;
       logic        de;
@@ -367,7 +359,15 @@ package mbx_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } ready;
+    } error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } doe_intr_status;
+    struct packed {
+      logic        d;
+      logic        de;
+    } busy;
   } mbx_hw2reg_soc_status_reg_t;
 
   // Register -> HW type for soc interface

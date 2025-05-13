@@ -146,21 +146,21 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  d;
-    } reasons;
+      logic        d;
+    } abort;
     struct packed {
       logic        d;
     } fall_through;
     struct packed {
-      logic        d;
-    } abort;
+      logic [3:0]  d;
+    } reasons;
   } pwrmgr_hw2reg_wake_info_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } reg_intg_err;
+    } main_pd_glitch;
     struct packed {
       logic        d;
       logic        de;
@@ -168,7 +168,7 @@ package pwrmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } main_pd_glitch;
+    } reg_intg_err;
   } pwrmgr_hw2reg_fault_status_reg_t;
 
   // Register -> HW type

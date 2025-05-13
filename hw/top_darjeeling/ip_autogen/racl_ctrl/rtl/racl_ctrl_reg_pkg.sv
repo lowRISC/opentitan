@@ -84,9 +84,17 @@ package racl_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [4:0]  d;
+      logic        de;
+    } ctn_uid;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } role;
+    struct packed {
       logic        d;
       logic        de;
-    } valid;
+    } read_access;
     struct packed {
       logic        d;
       logic        de;
@@ -94,15 +102,7 @@ package racl_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } read_access;
-    struct packed {
-      logic [3:0]  d;
-      logic        de;
-    } role;
-    struct packed {
-      logic [4:0]  d;
-      logic        de;
-    } ctn_uid;
+    } valid;
   } racl_ctrl_hw2reg_error_log_reg_t;
 
   typedef struct packed {
