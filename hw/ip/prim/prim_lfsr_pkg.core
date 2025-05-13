@@ -3,16 +3,12 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:lfsr:0.1"
-description: "A Linear-Feedback Shift Register (LFSR) primitive"
+name: "lowrisc:prim:lfsr_pkg:0.1"
+description: "PRINCE and PRESENT block cipher package"
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:prim:assert
-      - lowrisc:prim:lfsr_pkg
-      - lowrisc:prim:cipher_pkg
     files:
-      - rtl/prim_lfsr.sv
+      - rtl/prim_lfsr_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -24,8 +20,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
-      - lint/prim_lfsr.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -34,20 +28,9 @@ filesets:
       - lowrisc:lint:common
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    parameters:
-      - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"

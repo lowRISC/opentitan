@@ -6,9 +6,9 @@
 // The state vector of both LFSRs is constantly checked and an error is asserted if the
 // two states are inconsistent.
 
-module prim_double_lfsr #(
+module prim_double_lfsr import prim_lfsr_pkg::*; #(
   // prim_lfsr parameters - refer to prim_lfsr for their meaning/
-  parameter                    LfsrType     = "GAL_XOR",
+  parameter lfsr_type_e        LfsrType     = GAL_XOR,
   parameter int unsigned       LfsrDw       = 32,
   localparam int unsigned      LfsrIdxDw    = $clog2(LfsrDw),
   parameter int unsigned       EntropyDw    =  8,

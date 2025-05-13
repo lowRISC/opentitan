@@ -9,6 +9,7 @@ module prim_lfsr_tb;
 
   import dv_utils_pkg::*;
   `include "dv_macros.svh"
+  import prim_lfsr_pkg::*;
 
   //////////////////////////////////////////////////////
   // Build configurations:
@@ -18,9 +19,9 @@ module prim_lfsr_tb;
   // MAX_LFSR_DW: Maximum LFSR width tested.
   //////////////////////////////////////////////////////
 `ifdef LFSR_FIB_TYPE
-  localparam string           LfsrType   = "FIB_XNOR";
+  localparam lfsr_type_e      LfsrType   = FIB_XNOR;
 `else
-  localparam string           LfsrType   = "GAL_XOR";
+  localparam lfsr_type_e      LfsrType   = GAL_XOR;
 `endif
 `ifdef MIN_LFSR_DW
   localparam int unsigned     MinLfsrDw  = `MIN_LFSR_DW;
@@ -251,7 +252,7 @@ module prim_lfsr_tb;
       lfsr_en[k] = 1;
       seed_en[k] = 1;
 
-      if (LfsrType == "GAL_XOR") begin
+      if (LfsrType == GAL_XOR) begin
         seed[k] = {k{1'b0}};
       end else begin // "FIB_XNOR"
         seed[k] = {k{1'b1}};
@@ -292,7 +293,8 @@ module prim_lfsr_tb;
   end
 
   initial begin
-    $display("Testing LFSR of type %0s for widths {[%0d:%0d]}", LfsrType, MinLfsrDw, MaxLfsrDw);
+    $display("Testing LFSR of type %0s for widths {[%0d:%0d]}",
+             LfsrType.name(), MinLfsrDw, MaxLfsrDw);
     `DV_WAIT(test_done === '1, , 1_000_000_000 /*1ms*/, "prim_lfsr_tb")
     dv_test_status_pkg::dv_test_status(.passed(err === '0 && test_done === '1));
     $finish();
