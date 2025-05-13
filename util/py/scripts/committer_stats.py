@@ -23,12 +23,25 @@ import os
 import sys
 import requests
 import time
+import webbrowser
 from collections import Counter
+from enum import Enum
 from pathlib import Path
 from tabulate import tabulate
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Iterable, Any
 
-# Flag to log progress in generating info
+
+# Different formats the script can output in
+class OutputFormat(Enum):
+    Table = "table"
+    HtmlOutput = "html_output"
+    HtmlDisplay = "html_display"
+
+    def __str__(self):
+        return self.value
+
+
+# Flag to log progress in generating info using this script
 LOG_PROGRESS = False
 
 # OpenTitan main repo URL
@@ -43,6 +56,10 @@ REPO_TOP = Path(__file__).parents[3]
 # The location of the COMMITTERS file within the repo
 COMMITTERS_FILE = "COMMITTERS"
 COMMITERS_PATH = REPO_TOP / COMMITTERS_FILE
+
+# The location of the output HTML file to generate if using HtmlDisplay output
+HTML_OUTPUT_FILE = "committer_stats.html"
+HTML_OUTPUT_PATH = REPO_TOP / HTML_OUTPUT_FILE
 
 
 def run_github_graphql_query(
@@ -381,7 +398,82 @@ def get_existing_committers() -> Optional[list[str]]:
     return sorted(list(committers))
 
 
-def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> int:
+def output_contributor_stats(
+    data: Iterable[Iterable[int]], output_format: OutputFormat
+) -> None:
+    """Output the resulting contributor statistics information in a specified
+    output format.
+
+    Args:
+        data (Iterable[Iterable[int]]): A 2D tabular array of the contributor
+        statistics.
+        output_format (OutputFormat): A valid (implemented) output format.
+    """
+    headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
+    if output_format == OutputFormat.Table:
+        print(
+            "\nContributors sorted by authored commits, then merged PRs,",
+            "then reviewed PRs.",
+        )
+        print(
+            tabulate(
+                data,
+                headers,
+                tablefmt="pretty",
+            )
+        )
+    elif output_format in (OutputFormat.HtmlDisplay, OutputFormat.HtmlOutput):
+        # Format HTML for table headers
+        header_html = "                <tr>\n"
+        for col in headers:
+            header_html += " " * 20 + f'<th align="center">{col}</th>\n'
+        header_html += "                </tr>"
+        # Format HTML for table rows
+        row_html = ""
+        for row in data:
+            row_html += " " * 16 + "<tr>\n"
+            for item in row:
+                row_html += " " * 20 + f'<td align = "center">{item}</td>\n'
+            row_html += " " * 16 + "</tr>\n"
+
+        # Construct entire table HTML
+        table_html = f"""
+<html>
+    <head></head>
+    <body>
+        <table style="table-layout: auto; text-align: center; vertical-align: middle; width: 90%">
+            <thead>
+                {header_html.strip()}
+            </thead>
+            <tbody>
+                {row_html.strip()}
+            </tbody>
+        </table>
+    </body>
+</html>
+        """
+
+        table_html = table_html.strip()
+        if output_format == OutputFormat.HtmlOutput:
+            print(table_html)
+            return
+
+        # Write to a pre-determined file rather than a temporary file due to
+        # potential compartmentalisation issues with browsers on some OSs.
+        with open(HTML_OUTPUT_PATH, "w+") as f:
+            f.write(table_html)
+        webbrowser.open(f"file://{HTML_OUTPUT_PATH}")
+    else:
+        print(f"Unknown output_format: {output_format}")
+        sys.exit(1)
+
+
+def main(
+    github_token: str,
+    filter: bool,
+    format: OutputFormat,
+    page_limit: Optional[int] = None,
+) -> int:
     """Calculate committer, contributor and reviewer statistics for the OpenTitan
     repository. Will output the results to stdout.
 
@@ -390,6 +482,7 @@ def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> i
         (PAT) to use for authorization. Defaults to None.
         filter (bool): Whether to filter the results to exclude any contributors
         already in the current COMMITTERS_FILE.
+        format (OutputFormat): The format to display the output using.
         page_limit (Optional[int], optional): The number of pages to limit each
         request to. Intended to be used for testing purposes only. Defaults to
         None, meaning no page limits (fetch all the data).
@@ -433,7 +526,6 @@ def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> i
     if filter:
         contributors.difference_update(set(existing_committers))
 
-    headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
     table = []
     for account in contributors:
         commits = commit_data.get(account, 0)
@@ -442,7 +534,7 @@ def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> i
         table.append((account, commits, prs, reviews))
 
     # Sort by commits, then merged PRs, then reviewd PRs.
-    table_rows = sorted(table, key=lambda a: tuple(*a[1:]))
+    table_rows = sorted(table, key=lambda a: tuple(a[1:]), reverse=True)
     for entry in table_rows:
         # Move the "Unknown Author" entry for deleted users to the end
         if entry[0] == "Unknown Author":
@@ -450,15 +542,7 @@ def main(github_token: str, filter: bool, page_limit: Optional[int] = None) -> i
             table_rows.append(entry)
             break
 
-    print("\nContributors sorted by authored commits, then merged PRs,",
-          "then reviewed PRs.")
-    print(
-        tabulate(
-            table_rows,
-            headers,
-            tablefmt="pretty",
-        )
-    )
+    output_contributor_stats(table_rows, format)
 
     return 0
 
@@ -492,6 +576,7 @@ if __name__ == "__main__":
         action="store_true",
         help="Filter for only contributors not in the current COMMITTERS file.",
     )
+    parser.add_argument("-F", "--format", type=OutputFormat, choices=list(OutputFormat))
 
     args = parser.parse_args()
 
@@ -504,4 +589,4 @@ if __name__ == "__main__":
         print("Error: GH_GRAPHQL_API_PAT environment variable not set.")
         sys.exit(-1)
 
-    sys.exit(main(github_token, args.filter, args.pages))
+    sys.exit(main(github_token, args.filter, args.format, args.pages))
