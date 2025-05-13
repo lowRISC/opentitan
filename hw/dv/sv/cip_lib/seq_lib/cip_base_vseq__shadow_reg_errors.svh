@@ -65,7 +65,7 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
     for (int i = 0; i <= max_idx; ++i) begin
       if (cfg.stop_transaction_generators()) break;
       `uvm_info(`gfn, $sformatf("mycsr: %s    en_csr_rw_seq:%d",
-                shadowed_csrs[i].get_name(), en_csr_rw_seq), UVM_HIGH);
+                                shadowed_csrs[i].get_name(), en_csr_rw_seq), UVM_HIGH)
 
       repeat(5) begin
         bit ready_to_trigger_csr_rw = 0;
@@ -127,7 +127,7 @@ virtual task write_and_check_update_error(dv_base_reg shadowed_csr);
   // trigger update error. So we trigger dv_base_reg function to double check.
   predict_shadow_reg_status(.predict_update_err(shadowed_csr.get_shadow_update_err()));
   `uvm_info(`gfn, $sformatf("write %0s with first value %0h second value %0h",
-            shadowed_csr.get_name(), wdata, err_wdata), UVM_HIGH);
+                            shadowed_csr.get_name(), wdata, err_wdata), UVM_HIGH)
 
   read_check_shadow_reg_status("Write_and_check_update_error task");
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
@@ -145,7 +145,7 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   string         alert_name = shadowed_csr.get_update_err_alert_name();
   `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
 
-  `uvm_info(`gfn, $sformatf("%0s check csr read clear", shadowed_csr.get_name()), UVM_HIGH);
+  `uvm_info(`gfn, $sformatf("%0s check csr read clear", shadowed_csr.get_name()), UVM_HIGH)
   shadow_reg_wr(.csr(shadowed_csr), .wdata(wdata), .en_shadow_wr(0));
   csr_rd_check(.ptr(shadowed_csr), .compare_vs_ral(1));
   wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
@@ -192,7 +192,7 @@ virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
   csr_poke(.ptr(shadowed_csr), .value(err_val), .kind(kind), .predict(1));
   predict_shadow_reg_status(.predict_storage_err(shadowed_csr.get_shadow_storage_err()));
   `uvm_info(`gfn, $sformatf("backdoor write %s through %s with value 0x%0h",
-            shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH);
+                            shadowed_csr.`gfn, kind.name, err_val), UVM_HIGH)
 
    shadow_reg_errors_check_fatal_alert_nonblocking(shadowed_csr, alert_name);
   // Wait random clock cycles and ensure the fatal alert is continuously firing.
