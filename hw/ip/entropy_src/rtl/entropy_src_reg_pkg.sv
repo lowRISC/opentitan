@@ -279,11 +279,7 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } es_entropy_valid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_health_test_failed;
+    } es_fatal_err;
     struct packed {
       logic        d;
       logic        de;
@@ -291,7 +287,11 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } es_fatal_err;
+    } es_health_test_failed;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_entropy_valid;
   } entropy_src_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -306,163 +306,163 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_repcnt_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_repcnts_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_adaptp_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_adaptp_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_bucket_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_markov_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_markov_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_extht_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] d;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_hw2reg_extht_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_repcnt_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_repcnts_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_adaptp_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_adaptp_lo_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_extht_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_extht_lo_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_bucket_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_markov_hi_watermarks_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] d;
-    } fips_watermark;
+    } bypass_watermark;
     struct packed {
       logic [15:0] d;
-    } bypass_watermark;
+    } fips_watermark;
   } entropy_src_hw2reg_markov_lo_watermarks_reg_t;
 
   typedef struct packed {
@@ -508,34 +508,34 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  d;
-    } repcnt_fail_count;
-    struct packed {
-      logic [3:0]  d;
-    } adaptp_hi_fail_count;
-    struct packed {
-      logic [3:0]  d;
-    } adaptp_lo_fail_count;
-    struct packed {
-      logic [3:0]  d;
-    } bucket_fail_count;
-    struct packed {
-      logic [3:0]  d;
-    } markov_hi_fail_count;
+    } repcnts_fail_count;
     struct packed {
       logic [3:0]  d;
     } markov_lo_fail_count;
     struct packed {
       logic [3:0]  d;
-    } repcnts_fail_count;
+    } markov_hi_fail_count;
+    struct packed {
+      logic [3:0]  d;
+    } bucket_fail_count;
+    struct packed {
+      logic [3:0]  d;
+    } adaptp_lo_fail_count;
+    struct packed {
+      logic [3:0]  d;
+    } adaptp_hi_fail_count;
+    struct packed {
+      logic [3:0]  d;
+    } repcnt_fail_count;
   } entropy_src_hw2reg_alert_fail_counts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  d;
-    } extht_hi_fail_count;
+    } extht_lo_fail_count;
     struct packed {
       logic [3:0]  d;
-    } extht_lo_fail_count;
+    } extht_hi_fail_count;
   } entropy_src_hw2reg_extht_fail_counts_reg_t;
 
   typedef struct packed {
@@ -557,96 +557,36 @@ package entropy_src_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  d;
-    } entropy_fifo_depth;
-    struct packed {
-      logic [2:0]  d;
-    } sha3_fsm;
-    struct packed {
       logic        d;
-    } sha3_block_pr;
-    struct packed {
-      logic        d;
-    } sha3_squeezing;
-    struct packed {
-      logic        d;
-    } sha3_absorbed;
-    struct packed {
-      logic        d;
-    } sha3_err;
+    } main_sm_boot_done;
     struct packed {
       logic        d;
     } main_sm_idle;
     struct packed {
       logic        d;
-    } main_sm_boot_done;
+    } sha3_err;
+    struct packed {
+      logic        d;
+    } sha3_absorbed;
+    struct packed {
+      logic        d;
+    } sha3_squeezing;
+    struct packed {
+      logic        d;
+    } sha3_block_pr;
+    struct packed {
+      logic [2:0]  d;
+    } sha3_fsm;
+    struct packed {
+      logic [1:0]  d;
+    } entropy_fifo_depth;
   } entropy_src_hw2reg_debug_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } fips_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } entropy_data_reg_en_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } module_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } threshold_scope_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rng_bit_enable_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fw_ov_sha3_start_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fw_ov_mode_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fw_ov_entropy_insert_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_route_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_type_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_main_sm_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_bus_cmp_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_thresh_cfg_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_fw_ov_wr_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_fw_ov_disable_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fips_flag_field_alert;
+    } postht_entropy_drop_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -654,50 +594,74 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } postht_entropy_drop_alert;
+    } fips_flag_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_fw_ov_disable_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_fw_ov_wr_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_thresh_cfg_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_bus_cmp_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_main_sm_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_type_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_route_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fw_ov_entropy_insert_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fw_ov_mode_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fw_ov_sha3_start_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rng_bit_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } threshold_scope_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } module_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } entropy_data_reg_en_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fips_enable_field_alert;
   } entropy_src_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } sfifo_esrng_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_distr_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_observe_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sfifo_esfinal_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_ack_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_main_sm_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_cntr_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sha3_state_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } sha3_rst_storage_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fifo_write_err;
+    } fifo_state_err;
     struct packed {
       logic        d;
       logic        de;
@@ -705,7 +669,43 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fifo_state_err;
+    } fifo_write_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sha3_rst_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sha3_state_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_cntr_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_main_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } es_ack_sm_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_esfinal_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_observe_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_distr_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sfifo_esrng_err;
   } entropy_src_hw2reg_err_code_reg_t;
 
   typedef struct packed {

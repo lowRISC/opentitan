@@ -171,31 +171,7 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } shadow_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_measure_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div4_measure_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } main_measure_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } usb_measure_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_timeout_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } io_div4_timeout_err;
+    } usb_timeout_err;
     struct packed {
       logic        d;
       logic        de;
@@ -203,14 +179,38 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } usb_timeout_err;
+    } io_div4_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_timeout_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } usb_measure_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } main_measure_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_div4_measure_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } io_measure_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadow_update_err;
   } clkmgr_hw2reg_recov_err_code_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } reg_intg;
+    } shadow_storage_err;
     struct packed {
       logic        d;
       logic        de;
@@ -218,7 +218,7 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } shadow_storage_err;
+    } reg_intg;
   } clkmgr_hw2reg_fatal_err_code_reg_t;
 
   // Register -> HW type

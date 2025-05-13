@@ -233,31 +233,7 @@ package uart_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } tx_watermark;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_watermark;
-    struct packed {
-      logic        d;
-      logic        de;
-    } tx_done;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_overflow;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_frame_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_break_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rx_timeout;
+    } tx_empty;
     struct packed {
       logic        d;
       logic        de;
@@ -265,28 +241,52 @@ package uart_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } tx_empty;
+    } rx_timeout;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_break_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_frame_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_overflow;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tx_done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rx_watermark;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tx_watermark;
   } uart_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } txfull;
-    struct packed {
-      logic        d;
-    } rxfull;
-    struct packed {
-      logic        d;
-    } txempty;
-    struct packed {
-      logic        d;
-    } txidle;
+    } rxempty;
     struct packed {
       logic        d;
     } rxidle;
     struct packed {
       logic        d;
-    } rxempty;
+    } txidle;
+    struct packed {
+      logic        d;
+    } txempty;
+    struct packed {
+      logic        d;
+    } rxfull;
+    struct packed {
+      logic        d;
+    } txfull;
   } uart_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -297,20 +297,20 @@ package uart_reg_pkg;
     struct packed {
       logic [2:0]  d;
       logic        de;
-    } rxilvl;
+    } txilvl;
     struct packed {
       logic [2:0]  d;
       logic        de;
-    } txilvl;
+    } rxilvl;
   } uart_hw2reg_fifo_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  d;
-    } txlvl;
+    } rxlvl;
     struct packed {
       logic [7:0]  d;
-    } rxlvl;
+    } txlvl;
   } uart_hw2reg_fifo_status_reg_t;
 
   typedef struct packed {
