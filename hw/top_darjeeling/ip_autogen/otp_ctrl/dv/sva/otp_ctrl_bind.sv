@@ -5,7 +5,7 @@
 module otp_ctrl_bind;
 
   bind otp_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) core_tlul_assert_device (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module otp_ctrl_bind;
   );
 
   bind otp_macro tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) prim_tlul_assert_device (
     .clk_i,
     .rst_ni,

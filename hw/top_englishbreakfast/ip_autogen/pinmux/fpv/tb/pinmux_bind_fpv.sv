@@ -67,7 +67,7 @@ module pinmux_bind_fpv;
 
 
   bind pinmux tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) i_tlul_assert_device (
     .clk_i,
     .rst_ni,

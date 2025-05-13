@@ -5,6 +5,8 @@
 
 package tlul_pkg;
 
+  typedef enum bit {DEVICE, HOST} endpointtype_e;
+
   // this can be either PPC or BINTREE
   // there is no functional difference, but timing and area behavior is different
   // between the two instances. PPC can result in smaller implementations when timing

@@ -5,7 +5,7 @@
 module clkmgr_bind;
 `ifndef GATE_LEVEL
   bind clkmgr tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   // In top-level testbench, do not bind the csr_assert_fpv to reduce simulation time.
