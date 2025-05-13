@@ -125,6 +125,9 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
     "intr_test": begin
       // FIXME TODO MVy
     end
+    "debug_policy_relocked": begin
+      // FIXME TODO
+    end
     default: begin
       `uvm_fatal(`gfn, $sformatf("invalid CSR: %0s", csr.get_full_name()))
     end
