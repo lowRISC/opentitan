@@ -1149,7 +1149,7 @@ interface chip_if;
   // See dv_macros.svh for a signal probe function description, but they only deal with
   // vectors: it would be nice to extend them to deal with arbirary types, or at least
   // support enums.
-  function static lc_ctrl_state_pkg::lc_state_t signal_probe_otp_ctrl_lc_program_state (
+  function static void signal_probe_otp_ctrl_lc_program_state (
       dv_utils_pkg::signal_probe_e kind, lc_ctrl_state_pkg::lc_state_e state);
 `ifndef GATE_LEVEL
     case (kind)
@@ -1159,7 +1159,6 @@ interface chip_if;
       default:
         `uvm_fatal("signal_probe_otp_ctrl_lc_program_state", $sformatf("Bad value: %0d", kind))
     endcase
-    return `OTP_CTRL_HIER.lc_otp_program_i.state;
 `endif
   endfunction
 
