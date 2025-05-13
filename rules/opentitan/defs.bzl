@@ -211,10 +211,11 @@ def _exec_env_to_top_map(exec_env):
     top_map = {}
     for top in ALL_TOPS:
         # Extract the top's package from the hjson path.
+        hjson = top.attrs["hjson"]
         suffix = "/data/autogen:top_{}.gen.hjson".format(top.name)
-        if not top.hjson.endswith(suffix):
+        if not hjson.endswith(suffix):
             fail("top {}'s hjson does not end with the expected suffix".format(top.name))
-        pkg = top.hjson.removesuffix(suffix)
+        pkg = hjson.removesuffix(suffix)
         top_map[pkg] = top.name
 
     ev_map = {}
