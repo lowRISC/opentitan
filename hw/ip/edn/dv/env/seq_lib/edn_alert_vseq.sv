@@ -476,11 +476,6 @@ class edn_alert_vseq extends edn_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
-    if (cfg.use_invalid_mubi) begin
-      // Turn off DUT assertions so that the corresponding alert can fire
-      cfg.edn_assert_vif.assert_off_alert();
-    end
-
     // Depending on the value of cfg.which_invalid_mubi, one of the following ctrl register fields
     // will be set to an invalid MuBI value.
     // Apply the bad settings, and confirm the corresponding alert is fired.
@@ -561,10 +556,6 @@ class edn_alert_vseq extends edn_base_vseq;
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'h0));
     // Check the recov_alert_sts register
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
-
-    // Turn assertions back on
-    cfg.edn_assert_vif.assert_on_alert();
-
   endtask
 
 endclass : edn_alert_vseq
