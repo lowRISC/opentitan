@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -173,10 +172,6 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
 }
 
 status_t otbn_execute(void) {
-  // Ensure that the entropy complex is in a good state (for the RND
-  // instruction and data wiping).
-  HARDENED_TRY(entropy_complex_check());
-
   // Ensure OTBN is idle before attempting to run a command.
   HARDENED_TRY(otbn_assert_idle());
 
@@ -226,7 +221,6 @@ uint32_t otbn_instruction_count_get(void) {
 }
 
 status_t otbn_imem_sec_wipe(void) {
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(otbn_assert_idle());
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeImem);
   HARDENED_TRY(otbn_busy_wait_for_done());
@@ -234,7 +228,6 @@ status_t otbn_imem_sec_wipe(void) {
 }
 
 status_t otbn_dmem_sec_wipe(void) {
-  HARDENED_TRY(entropy_complex_check());
   HARDENED_TRY(otbn_assert_idle());
   abs_mmio_write32(kBase + OTBN_CMD_REG_OFFSET, kOtbnCmdSecWipeDmem);
   HARDENED_TRY(otbn_busy_wait_for_done());

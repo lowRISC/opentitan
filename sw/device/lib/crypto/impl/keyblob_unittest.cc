@@ -113,8 +113,9 @@ TEST(Keyblob, FromSharesSimpleTest) {
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   EXPECT_THAT(keyblob_share_num_words(kConfigCtr128), 4);
   std::vector<uint32_t> keyblob(keyblob_words, 0);
-  keyblob_from_shares(test_share0.data(), test_share1.data(), kConfigCtr128,
-                      keyblob.data());
+  status_t err = keyblob_from_shares(test_share0.data(), test_share1.data(),
+                                     kConfigCtr128, keyblob.data());
+  EXPECT_EQ(err.value, OTCRYPTO_OK.value);
 
   // Check that keyblob is both shares concatenated.
   for (size_t i = 0; i < test_share0.size(); i++) {
@@ -138,8 +139,9 @@ TEST(Keyblob, FromToSharesNoop) {
   // Convert shares to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   std::vector<uint32_t> keyblob(keyblob_words, 0);
-  keyblob_from_shares(test_share0.data(), test_share1.data(), kConfigCtr128,
-                      keyblob.data());
+  status_t err = keyblob_from_shares(test_share0.data(), test_share1.data(),
+                                     kConfigCtr128, keyblob.data());
+  EXPECT_EQ(err.value, OTCRYPTO_OK.value);
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {

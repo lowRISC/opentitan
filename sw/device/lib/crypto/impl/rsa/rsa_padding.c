@@ -222,6 +222,7 @@ status_t rsa_padding_pkcs1v15_verify(
   uint32_t expected_encoded_message[encoded_message_len];
   HARDENED_TRY(rsa_padding_pkcs1v15_encode(message_digest, encoded_message_len,
                                            expected_encoded_message));
+
   // Compare with the expected value.
   *result = hardened_memeq(encoded_message, expected_encoded_message,
                            ARRAYSIZE(expected_encoded_message));
@@ -328,6 +329,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
       otcrypto_hash((otcrypto_const_byte_buf_t){.data = hash_input,
                                                 .len = sizeof(hash_input)},
                     digest));
+
   hardened_memcpy(mask, digest_data, ceil_div(mask_len, sizeof(uint32_t)));
   return OTCRYPTO_OK;
 }
