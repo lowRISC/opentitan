@@ -18,7 +18,7 @@
 // and set a type override in the closed source environment
 
 class otp_ctrl_ast_inputs_cfg extends uvm_object;
-  `uvm_object_utils(otp_ctrl_ast_inputs_cfg);
+  `uvm_object_utils(otp_ctrl_ast_inputs_cfg)
   `uvm_object_new
 
   //  Group: Variables
