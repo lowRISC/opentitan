@@ -422,26 +422,26 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 
   `OTP_FATAL_ERR_ASSERT(LcDataValid_A, lc_data_o.valid == 0 && lc_data_o.error == 1)
   `OTP_FATAL_ERR_ASSERT(LcDataState_A, lc_data_o.state ==
-                        PartInvDefault[LcStateOffset*8+:LcStateSize*8])
+                        PartInvDefault[LcStateOffset+:LcStateSize])
   `OTP_FATAL_ERR_ASSERT(LcDataCount_A, lc_data_o.count ==
-                        PartInvDefault[LcTransitionCntOffset*8+:LcTransitionCntSize*8])
+                        PartInvDefault[LcTransitionCntOffset+:LcTransitionCntSize])
   `OTP_FATAL_ERR_ASSERT(LcDataTestUnlockToken_A, lc_data_o.test_unlock_token ==
-                        PartInvDefault[TestUnlockTokenOffset*8+:TestUnlockTokenSize*8])
+                        PartInvDefault[TestUnlockTokenOffset+:TestUnlockTokenSize])
   `OTP_FATAL_ERR_ASSERT(LcDataTestExitToken_A, lc_data_o.test_exit_token ==
-                        PartInvDefault[TestExitTokenOffset*8+:TestExitTokenSize*8])
+                        PartInvDefault[TestExitTokenOffset+:TestExitTokenSize])
   `OTP_FATAL_ERR_ASSERT(LcDataRmaToken_A, lc_data_o.rma_token ==
-                        PartInvDefault[RmaTokenOffset*8+:RmaTokenSize*8])
+                        PartInvDefault[RmaTokenOffset+:RmaTokenSize])
 
   `OTP_FATAL_ERR_ASSERT(KeymgrKeyData_A, keymgr_key_o.creator_root_key_share0 ==
-                        PartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
+                        PartInvDefault[CreatorRootKeyShare0Offset+:CreatorRootKeyShare0Size] &&
                         keymgr_key_o.creator_root_key_share1 ==
-                        PartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
+                        PartInvDefault[CreatorRootKeyShare1Offset+:CreatorRootKeyShare1Size])
 
   `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
   `OTP_FATAL_ERR_ASSERT(HwCfg0OData_A, otp_broadcast_o.hw_cfg0_data ==
-                        PartInvDefault[HwCfg0Offset*8+:HwCfg0Size*8])
+                        PartInvDefault[HwCfg0Offset+:HwCfg0Size])
   `OTP_FATAL_ERR_ASSERT(HwCfg1OData_A, otp_broadcast_o.hw_cfg1_data ==
-                        PartInvDefault[HwCfg1Offset*8+:HwCfg1Size*8])
+                        PartInvDefault[HwCfg1Offset+:HwCfg1Size])
 
   `OTP_FATAL_ERR_ASSERT(LcProgAck_A, lc_prog_ack == 0)
   `OTP_FATAL_ERR_ASSERT(SramAcks_A, sram_acks == 0)
