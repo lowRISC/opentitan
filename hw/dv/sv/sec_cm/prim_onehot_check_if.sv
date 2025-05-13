@@ -37,8 +37,6 @@ interface prim_onehot_check_if #(
     OnehotAddrFault
   } onehot_fault_type_e;
 
-  string msg_id = $sformatf("%m");
-
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string oh_signal_forced = $sformatf("%s.oh_i", path);
   string en_signal_forced = $sformatf("%s.en_i", path);
@@ -54,7 +52,7 @@ interface prim_onehot_check_if #(
     endfunction : new
 
     virtual function void sample_cov(onehot_fault_type_e onehot_fault_type);
-      `uvm_fatal(msg_id, "sample_cov in base class")
+      `uvm_fatal($sformatf("%m"), "sample_cov in base class")
     endfunction
 
     virtual task inject_fault();
@@ -99,20 +97,19 @@ interface prim_onehot_check_if #(
             };
         end
         default:
-        `uvm_fatal(msg_id, $sformatf("Unexpected onehot_fault_type: %s", onehot_fault_type.name))
+          `uvm_fatal($sformatf("%m"),
+                     $sformatf("Unexpected onehot_fault_type: %s", onehot_fault_type.name))
       endcase
-      `uvm_info(msg_id, $sformatf("onehot_fault_type: %0s", onehot_fault_type.name), UVM_LOW)
+      `uvm_info($sformatf("%m"),
+                $sformatf("onehot_fault_type: %0s", onehot_fault_type.name), UVM_LOW)
       `DV_CHECK_FATAL(success)
 
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s from %0d to %0d", en_signal_forced, en_orig_value, en_force_value),
+      `uvm_info($sformatf("%m"),
+                $sformatf("Forcing %s from %0d to %0d, %s from %0d to %0d and %s from %0d to %0d",
+                          en_signal_forced, en_orig_value, en_force_value,
+                          oh_signal_forced, oh_orig_value, oh_force_value,
+                          addr_signal_forced, addr_orig_value, addr_force_value),
                 UVM_LOW)
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s from %0d to %0d", oh_signal_forced, oh_orig_value, oh_force_value),
-                UVM_LOW)
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s from %0d to %0d", addr_signal_forced, addr_orig_value, addr_force_value
-                ), UVM_LOW)
 
       `DV_CHECK(uvm_hdl_force(en_signal_forced, en_force_value))
       `DV_CHECK(uvm_hdl_force(oh_signal_forced, oh_force_value))
@@ -124,12 +121,12 @@ interface prim_onehot_check_if #(
     endtask
 
     virtual task restore_fault();
-      `uvm_info(msg_id, $sformatf("Forcing %s original value %0d", en_signal_forced, en_orig_value),
+      `uvm_info($sformatf("%m"),
+                $sformatf("Restoring original value of %s (%0d), %s (%0d) and %s (%0d)",
+                          en_signal_forced, en_orig_value,
+                          oh_signal_forced, oh_orig_value,
+                          addr_signal_forced, addr_orig_value),
                 UVM_LOW)
-      `uvm_info(msg_id, $sformatf("Forcing %s original value %0d", oh_signal_forced, oh_orig_value),
-                UVM_LOW)
-      `uvm_info(msg_id, $sformatf("Forcing %s original value %0d",
-                                  addr_signal_forced, addr_orig_value), UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(en_signal_forced, en_orig_value))
       `DV_CHECK(uvm_hdl_deposit(oh_signal_forced, oh_orig_value))
       `DV_CHECK(uvm_hdl_deposit(addr_signal_forced, addr_orig_value))
@@ -164,7 +161,7 @@ interface prim_onehot_check_if #(
     function new(string name = "");
       super.new(name);
       if (sec_cm_pkg::en_sec_cm_cov) begin
-        onehot_with_addr_fault_cg = new(msg_id);
+        onehot_with_addr_fault_cg = new($sformatf("%m"));
       end
     endfunction
   endclass : prim_onehot_check_with_addr_fault_if_proxy
@@ -194,7 +191,7 @@ interface prim_onehot_check_if #(
     function new(string name = "");
       super.new(name);
       if (sec_cm_pkg::en_sec_cm_cov) begin
-        onehot_without_addr_fault_cg = new(msg_id);
+        onehot_without_addr_fault_cg = new($sformatf("%m"));
       end
     endfunction
   endclass : prim_onehot_check_without_addr_fault_if_proxy
@@ -202,8 +199,8 @@ interface prim_onehot_check_if #(
   prim_onehot_check_if_proxy if_proxy;
 
   initial begin
-    `DV_CHECK_FATAL(uvm_hdl_check_path(en_signal_forced),, msg_id)
-    `DV_CHECK_FATAL(uvm_hdl_check_path(oh_signal_forced),, msg_id)
+    `DV_CHECK_FATAL(uvm_hdl_check_path(en_signal_forced),, $sformatf("%m"))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(oh_signal_forced),, $sformatf("%m"))
 
     // Store the proxy object for TB to use
     if (AddrCheck) begin
@@ -219,6 +216,6 @@ interface prim_onehot_check_if #(
     if_proxy.path = path;
     sec_cm_pkg::sec_cm_if_proxy_q.push_back(if_proxy);
 
-    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
   end
 endinterface
