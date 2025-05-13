@@ -5,7 +5,7 @@
 module rv_core_ibex_bind;
 
   bind rv_core_ibex tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) tlul_assert_host_instr (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module rv_core_ibex_bind;
   );
 
   bind rv_core_ibex tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) tlul_assert_host_data (
     .clk_i,
     .rst_ni,

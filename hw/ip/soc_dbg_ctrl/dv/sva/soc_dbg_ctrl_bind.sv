@@ -4,7 +4,7 @@
 
 module soc_dbg_ctrl_bind;
   bind soc_dbg_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_core_assert_device (
     .clk_i,
     .rst_ni,
@@ -20,7 +20,7 @@ module soc_dbg_ctrl_bind;
   );
 
   bind soc_dbg_ctrl tlul_assert #(
-    .EndpointType("Device")
+      .EndpointType(tlul_pkg::DEVICE)
     ) tlul_jtag_assert_device (
       .clk_i,
       .rst_ni,

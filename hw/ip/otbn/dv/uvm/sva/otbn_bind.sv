@@ -5,7 +5,7 @@
 module otbn_bind;
 
   bind otbn tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_checker (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
