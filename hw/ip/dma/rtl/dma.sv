@@ -1093,7 +1093,7 @@ module dma
 
   // Interrupt logic
   prim_intr_hw #(
-    .IntrT ( "Status" )
+    .IntrT ( prim_intr_hw_pkg::STATUS )
   ) u_intr_dma_done (
     .clk_i                  ( clk_i                         ),
     .rst_ni                 ( rst_ni                        ),
@@ -1108,7 +1108,7 @@ module dma
   );
 
   prim_intr_hw #(
-    .IntrT ( "Status" )
+    .IntrT ( prim_intr_hw_pkg::STATUS )
   ) u_intr_chunk_dma_done (
     .clk_i                  ( clk_i                               ),
     .rst_ni                 ( rst_ni                              ),
@@ -1123,7 +1123,7 @@ module dma
   );
 
   prim_intr_hw #(
-    .IntrT ( "Status" )
+    .IntrT ( prim_intr_hw_pkg::STATUS )
   ) u_intr_error (
     .clk_i                  ( clk_i                          ),
     .rst_ni                 ( rst_ni                         ),

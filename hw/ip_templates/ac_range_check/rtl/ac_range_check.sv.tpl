@@ -339,7 +339,7 @@ module ${module_instance_name}
 
   prim_intr_hw #(
     .Width ( 1        ),
-    .IntrT ( "Status" )
+    .IntrT ( prim_intr_hw_pkg::STATUS )
   ) u_intr_range_check_deny (
     .clk_i                  ( clk_i                      ),
     .rst_ni                 ( rst_ni                     ),

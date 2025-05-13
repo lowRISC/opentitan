@@ -524,7 +524,7 @@ module spi_device
 
   prim_intr_hw #(
     .Width (1       ),
-    .IntrT ("Status")
+    .IntrT (prim_intr_hw_pkg::STATUS)
   ) u_intr_tpm_cmdaddr_notempty (
     .clk_i,
     .rst_ni,
@@ -540,7 +540,7 @@ module spi_device
 
   prim_intr_hw #(
     .Width (1      ),
-    .IntrT ("Event")
+    .IntrT (prim_intr_hw_pkg::EVENT)
   ) u_intr_tpm_rdfifo_cmd_end (
     .clk_i,
     .rst_ni,
@@ -556,7 +556,7 @@ module spi_device
 
   prim_intr_hw #(
     .Width (1      ),
-    .IntrT ("Event")
+    .IntrT (prim_intr_hw_pkg::EVENT)
   ) u_intr_tpm_rdfifo_drop (
     .clk_i,
     .rst_ni,
