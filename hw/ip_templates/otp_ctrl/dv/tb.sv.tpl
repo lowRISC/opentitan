@@ -162,8 +162,8 @@ module tb;
       .cio_test_en_o (otp_ctrl_if.cio_test_en_o),
 
       // Inter-module signals
-//      .obs_ctrl_i(otp_ctrl_if.obs_ctrl_i),
-//      .otp_obs_o(otp_obs_o),
+      .obs_ctrl_i('0),
+      .otp_obs_o (  ),
       .pwr_seq_o(ast_req),
       .pwr_seq_h_i(otp_ctrl_if.otp_ast_pwr_seq_h_i),
       .ext_voltage_h_io(otp_ext_voltage_h),
