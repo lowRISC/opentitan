@@ -8,22 +8,22 @@
 
 module prim_double_lfsr #(
   // prim_lfsr parameters - refer to prim_lfsr for their meaning/
-  parameter                    LfsrType     = "GAL_XOR",
-  parameter int unsigned       LfsrDw       = 32,
-  localparam int unsigned      LfsrIdxDw    = $clog2(LfsrDw),
-  parameter int unsigned       EntropyDw    =  8,
-  parameter int unsigned       StateOutDw   =  8,
-  parameter logic [LfsrDw-1:0] DefaultSeed  = LfsrDw'(1),
-  parameter logic [LfsrDw-1:0] CustomCoeffs = '0,
-  parameter bit                StatePermEn  = 1'b0,
-  parameter logic [LfsrDw-1:0][LfsrIdxDw-1:0] StatePerm = '0,
-  parameter bit                MaxLenSVA    = 1'b1,
-  parameter bit                LockupSVA    = 1'b1,
-  parameter bit                ExtSeedSVA   = 1'b1,
-  parameter bit                NonLinearOut = 1'b0,
+  parameter enum {GAL_XOR, FIB_XNOR}          LfsrType              = GAL_XOR,
+  parameter int unsigned                      LfsrDw                = 32,
+  localparam int unsigned                     LfsrIdxDw             = $clog2(LfsrDw),
+  parameter int unsigned                      EntropyDw             =  8,
+  parameter int unsigned                      StateOutDw            =  8,
+  parameter logic [LfsrDw-1:0]                DefaultSeed           = LfsrDw'(1),
+  parameter logic [LfsrDw-1:0]                CustomCoeffs          = '0,
+  parameter bit                               StatePermEn           = 1'b0,
+  parameter logic [LfsrDw-1:0][LfsrIdxDw-1:0] StatePerm             = '0,
+  parameter bit                               MaxLenSVA             = 1'b1,
+  parameter bit                               LockupSVA             = 1'b1,
+  parameter bit                               ExtSeedSVA            = 1'b1,
+  parameter bit                               NonLinearOut          = 1'b0,
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
-  parameter bit                EnableAlertTriggerSVA = 1
+  parameter bit                               EnableAlertTriggerSVA = 1
 ) (
   input                         clk_i,
   input                         rst_ni,
