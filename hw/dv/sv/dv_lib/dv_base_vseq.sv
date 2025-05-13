@@ -65,10 +65,6 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     num_trans.rand_mode(0);
   endtask
 
-  task body();
-    `uvm_fatal(`gtn, "Need to override this when you extend from this class!")
-  endtask : body
-
   task post_start();
     super.post_start();
     if (do_dut_shutdown) dut_shutdown();
