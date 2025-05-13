@@ -25,8 +25,10 @@ interface prim_sparse_fsm_flop_if #(
   string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
   string signal_forced = $sformatf("%s.u_state_flop.q_o", path);
 
-  // This signal only has to be forced if the associated parameter
-  // CustomForceName in prim_sparse_fsm_flop is set to a non-empty string.
+  // The prim_sparse_fsm_flop module is usually created with the PRIM_FLOP_SPARSE_FSM macro, which
+  // (when in simulation) passes an extra CustomForceName parameter to control how it should be
+  // forced.
+
   string parent_path = dv_utils_pkg::get_parent_hier($sformatf("%m"), 2);
   string custom_signal_forced = $sformatf("%s.%s", parent_path, CustomForceName);
 
@@ -45,12 +47,15 @@ interface prim_sparse_fsm_flop_if #(
                                              force_value ^ orig_value
                                          ) inside {[1 : MaxFlipBits]};)
 
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s from %0d to %0d", signal_forced, orig_value, force_value), UVM_LOW)
+      `uvm_info($sformatf("%m"),
+                $sformatf("Forcing %s from %0d to %0d",
+                          signal_forced, orig_value, force_value),
+                UVM_LOW)
       `DV_CHECK(uvm_hdl_force(signal_forced, force_value))
       if (CustomForceName != "") begin
-        `uvm_info(msg_id, $sformatf(
-                  "Forcing %s from %0d to %0d", custom_signal_forced, orig_value, force_value),
+        `uvm_info($sformatf("%m"),
+                  $sformatf("Forcing %s from %0d to %0d",
+                            custom_signal_forced, orig_value, force_value),
                   UVM_LOW)
         `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, force_value))
       end
@@ -70,19 +75,17 @@ interface prim_sparse_fsm_flop_if #(
       // implementation in the prim and the path is different in the close source
       if (CustomForceName != "") return;
 
-      `uvm_info(msg_id, $sformatf("Forcing %s to original value %0d", signal_forced, orig_value),
+      `uvm_info($sformatf("%m"),
+                $sformatf("Depositing original value (%0d) at %s", orig_value, signal_forced),
                 UVM_LOW)
       `DV_CHECK(uvm_hdl_deposit(signal_forced, orig_value))
-      `uvm_info(msg_id, $sformatf(
-                "Forcing %s to original value %0d", custom_signal_forced, orig_value), UVM_LOW)
-      `DV_CHECK(uvm_hdl_deposit(custom_signal_forced, orig_value))
     endtask
   endclass
 
   prim_sparse_fsm_flop_if_proxy if_proxy;
 
   initial begin
-    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced),, msg_id)
+    `DV_CHECK_FATAL(uvm_hdl_check_path(signal_forced),, $sformatf("%m"))
 
     // Store the proxy object for TB to use
     if_proxy = new("if_proxy");
@@ -90,6 +93,6 @@ interface prim_sparse_fsm_flop_if #(
     if_proxy.path = path;
     sec_cm_pkg::sec_cm_if_proxy_q.push_back(if_proxy);
 
-    `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("Interface proxy class is added for %s", path), UVM_HIGH)
   end
 endinterface

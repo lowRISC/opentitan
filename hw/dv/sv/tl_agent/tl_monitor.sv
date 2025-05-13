@@ -176,9 +176,7 @@ class tl_monitor extends dv_base_monitor#(
       req.a_mask   = h2d.a_mask;
       req.a_source = h2d.a_source;
       req.a_user   = h2d.a_user;
-      `uvm_info("tl_logging",
-                $sformatf("[%0s][a_chan] : %0s", agent_name, req.convert2string()),
-                UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("[%0s][a_chan] : %0s", agent_name, req.convert2string()), UVM_HIGH)
 
       if (cfg.en_cov) sample_outstanding_cov(req);
 
@@ -234,8 +232,7 @@ class tl_monitor extends dv_base_monitor#(
       rsp.d_size   = cfg.vif.mon_cb.d2h.d_size;
       rsp.d_user   = cfg.vif.mon_cb.d2h.d_user;
 
-      `uvm_info("tl_logging",
-                $sformatf("[%0s][d_chan] : %0s", agent_name, rsp.convert2string()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("[%0s][d_chan] : %0s", agent_name, rsp.convert2string()), UVM_HIGH)
 
       d_chan_port.write(rsp);
       if (cfg.synchronise_ports) channel_dir_port.write(DataChannel);

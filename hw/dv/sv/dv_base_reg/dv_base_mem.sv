@@ -53,7 +53,7 @@ function dv_base_mem::new(string           name,
                           int              has_coverage = UVM_NO_COVERAGE);
   super.new(name, size, n_bits, access, has_coverage);
   if (!(access inside {"RW", "RO", "WO"}))
-    `uvm_error("RegModel", $sformatf("Memory '%0s' can only be RW, RO or WO", get_full_name()))
+    `uvm_error(`gfn, $sformatf("Memory can only be RW, RO or WO (saw %s)", access))
 endfunction
 
 function void dv_base_mem::set_mem_partial_write_support(bit enable);
@@ -92,7 +92,7 @@ endfunction
 // (loosened slightly and now moved to the constructor)
 function void dv_base_mem::configure(uvm_reg_block parent, string hdl_path="");
    if (parent == null)
-     `uvm_fatal("REG/NULL_PARENT","configure: parent argument is null")
+     `uvm_fatal(`gfn, "configure: parent argument is null")
 
    set_parent(parent);
 
