@@ -98,6 +98,13 @@ filesets:
       - lint/top_darjeeling.vbl
     file_type: veribleLintWaiver
 
+mapping:
+  "lowrisc:virtual_constants:top_pkg": "lowrisc:darjeeling_constants:top_pkg"
+  "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:darjeeling_constants:top_racl_pkg"
+  "lowrisc:systems:ast_pkg": "lowrisc:systems:top_darjeeling_ast_pkg"
+  "lowrisc:dv:chip_env": "lowrisc:dv:top_darjeeling_chip_env"
+  # TODO(#27347): prim_legacy_pkg is deprecated
+  "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"
 
 parameters:
   SYNTHESIS:
