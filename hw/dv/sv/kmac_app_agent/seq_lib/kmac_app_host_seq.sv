@@ -34,7 +34,7 @@ class kmac_app_host_seq extends kmac_app_base_seq;
 
       // create push_pull_host_seq
       push_pull_host_seq#(`CONNECT_DATA_WIDTH) host_seq;
-      `uvm_create_on(host_seq, p_sequencer.m_push_pull_sequencer);
+      `uvm_create_on(host_seq, p_sequencer.m_push_pull_sequencer)
       `DV_CHECK_RANDOMIZE_FATAL(host_seq)
 
       // Assemble the message chunk and strb
