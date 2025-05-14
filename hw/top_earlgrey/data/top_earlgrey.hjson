@@ -203,6 +203,13 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
+  // Alert information for the design
+  alerts: {
+    // Any module with alerts that doesn't specify alert_handler
+    // will have its alerts sent here
+    default_handler: "alert_handler"
+  },
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every
@@ -292,8 +299,8 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      // alert connections names handler for each alert
-      alert_connections: {fatal_fault: "alert_handler"},
+      // This module's alerts go to this handler
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40000000",
       },
@@ -311,8 +318,8 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      // alert connections defines the port to alert domain
-      alert_connections: {fatal_fault: "alert_handler"},
+      // This module's alerts go to this handler
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40010000",
       },
@@ -330,8 +337,7 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      // alert connections defines the port to alert domain
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40020000",
       },
@@ -349,8 +355,7 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
-      // alert connections defines the port to alert domain
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40030000",
       },
@@ -361,7 +366,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "lc_io_div4"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40040000",
       },
@@ -376,7 +381,7 @@
       clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40050000",
       },
@@ -386,7 +391,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "i2c0"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40080000",
       },
@@ -396,7 +401,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "i2c1"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40090000",
       },
@@ -406,7 +411,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "i2c2"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x400A0000",
       },
@@ -416,7 +421,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "lc_io_div4"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x400E0000",
       },
@@ -426,7 +431,7 @@
       clock_srcs: {clk_i: "io_div4"},
       clock_group: "timers",
       reset_connections: {rst_ni: "lc_io_div4"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40100000",
       },
@@ -437,13 +442,7 @@
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
-      alert_connections: {
-        fatal_macro_error: "alert_handler",
-        fatal_check_error: "alert_handler",
-        fatal_bus_integ_error: "alert_handler",
-        fatal_prim_otp_alert: "alert_handler",
-        recov_prim_otp_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addrs: {
         core: {hart: "0x40130000"},
         prim: {hart: "0x40138000"},
@@ -455,11 +454,7 @@
       clock_srcs: {clk_i: "io_div4", clk_kmac_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_kmac_ni: "lc"},
-      alert_connections: {
-        fatal_prog_error: "alert_handler",
-        fatal_state_error: "alert_handler",
-        fatal_bus_integ_error: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addrs: {
         regs: {hart: "0x40140000"},
         dmi:  {hart: "0x0"}, // DMI is not used in EarlGrey
@@ -499,7 +494,7 @@
       clock_srcs: {clk_i: "io"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host0"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40300000",
       },
@@ -509,7 +504,7 @@
       clock_srcs: {clk_i: "io_div2"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_host1"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40310000",
       },
@@ -519,7 +514,7 @@
       clock_srcs: {clk_i: "usb", clk_aon_i: "aon"},
       clock_group: "peri",
       reset_connections: {rst_ni: "usb", rst_aon_ni: "usb_aon"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40320000",
       },
@@ -563,7 +558,7 @@
         },
       },
       domain: ["Aon", "0"],
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40400000",
       },
@@ -596,10 +591,7 @@
         },
       },
       domain: ["Aon", "0"],
-      alert_connections: {
-        fatal_fault: "alert_handler",
-        fatal_cnsty_fault: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40410000",
       },
@@ -643,10 +635,7 @@
                           rst_root_usb_ni: "por_usb",
                          },
       domain: ["Aon"],
-      alert_connections: {
-        recov_fault: "alert_handler",
-        fatal_fault: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40420000",
       },
@@ -658,7 +647,7 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
       domain: ["Aon"],
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40430000",
       }
@@ -669,7 +658,7 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
       domain: ["Aon"],
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40440000",
       }
@@ -681,7 +670,7 @@
       clock_group: "peri",
       reset_connections: {rst_ni: "lc_io_div4", rst_core_ni: "lc_aon"},
       domain: ["Aon"],
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40450000",
       },
@@ -697,7 +686,7 @@
                           rst_sys_ni: "sys_io_div4"
                          },
       domain: ["Aon"],
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40460000",
       },
@@ -714,7 +703,7 @@
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "timers",
       reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       domain: ["Aon"],
       base_addr: {
         hart: "0x40470000",
@@ -787,10 +776,7 @@
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_aon_ni: "lc_aon"},
       domain: ["Aon"],
-      alert_connections: {
-        recov_alert: "alert_handler",
-        fatal_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x40490000",
       },
@@ -802,7 +788,7 @@
       clock_group: "infra",
       reset_connections: {rst_ni: "lc_io_div4", rst_otp_ni: "lc_io_div4"},
       domain: ["Aon"],
-      alert_connections: {fatal_error: "alert_handler"},
+      alert_handler: "alert_handler",
       param_decl: {
         InstrExec: "0",
         InstSize: "4096",
@@ -830,13 +816,7 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      alert_connections: {
-        recov_err: "alert_handler",
-        fatal_std_err: "alert_handler",
-        fatal_err: "alert_handler",
-        fatal_prim_flash_alert: "alert_handler",
-        recov_prim_flash_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addrs: {
         core: {hart: "0x41000000"},
         prim: {hart: "0x41008000"},
@@ -867,7 +847,7 @@
       clock_srcs: {clk_i: "main", clk_lc_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "sys", rst_lc_ni: "lc"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       param_decl: {
         IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
       },
@@ -885,7 +865,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x48000000",
       },
@@ -896,10 +876,7 @@
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
-      alert_connections: {
-        recov_ctrl_update_err: "alert_handler",
-        fatal_fault: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       param_decl: {
         SecMasking: "1",
         SecSBoxImpl: "aes_pkg::SBoxImplDom"
@@ -913,7 +890,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "trans",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {fatal_fault: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41110000",
       },
@@ -926,10 +903,7 @@
       clock_srcs: {clk_i: "main", clk_edn_i: "main"}
       clock_group: "trans"
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"}
-      alert_connections: {
-        recov_operation_err: "alert_handler",
-        fatal_fault_err: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41120000",
       }
@@ -952,10 +926,7 @@
       },
       clock_group: "trans",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      alert_connections: {
-        fatal: "alert_handler",
-        recov: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41130000",
       },
@@ -965,10 +936,7 @@
       clock_srcs: {clk_i: "main", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc", rst_edn_ni: "lc"},
-      alert_connections: {
-        recov_operation_err: "alert_handler",
-        fatal_fault_err: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41140000",
       },
@@ -978,10 +946,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {
-        recov_alert: "alert_handler",
-        fatal_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41150000",
       },
@@ -991,10 +956,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {
-        recov_alert: "alert_handler",
-        fatal_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41160000",
       },
@@ -1004,10 +966,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {
-        recov_alert: "alert_handler",
-        fatal_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41170000",
       },
@@ -1017,10 +976,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {
-        recov_alert: "alert_handler",
-        fatal_alert: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x41180000",
       },
@@ -1030,7 +986,7 @@
       clock_srcs: {clk_i: "main", clk_otp_i: "io_div4"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
-      alert_connections: {fatal_error: "alert_handler"},
+      alert_handler: "alert_handler",
       param_decl: {
         InstrExec: "1",
         NumPrinceRoundsHalf: "2",
@@ -1058,7 +1014,7 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
-      alert_connections: {fatal: "alert_handler"},
+      alert_handler: "alert_handler",
       base_addrs: {
         rom:  {hart: "0x00008000"},
         regs: {hart: "0x411e0000"}
@@ -1131,12 +1087,7 @@
                           rst_edn_ni: "lc",
                           rst_esc_ni: "lc_io_div4",
                           rst_otp_ni: "lc_io_div4"},
-      alert_connections: {
-        fatal_sw_err: "alert_handler",
-        recov_sw_err: "alert_handler",
-        fatal_hw_err: "alert_handler",
-        recov_hw_err: "alert_handler",
-      },
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x411F0000",
       },
