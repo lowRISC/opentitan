@@ -13,6 +13,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:racl_ctrl_test
+      - lowrisc:dv:racl_error_log_agent
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva")}
     files:
       - tb.sv
