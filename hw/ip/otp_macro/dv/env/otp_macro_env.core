@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
 
 generate:
   ral:
