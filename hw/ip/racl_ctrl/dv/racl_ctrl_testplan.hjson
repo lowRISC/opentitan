@@ -1,0 +1,53 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This is a testplan for racl_ctrl. That IP block is actually templated (for example, see
+// hw/top_darjeeling/ip_autogen), but the testplan is the same for each instantiation.
+
+{
+  name: "racl_ctrl"
+  import_testplans: [
+    // Check that the alert_test register does indeed generate alerts
+    "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+
+    // Check that all the auto-generated registers are wired up as expected
+    "hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+
+    // Check the INTR_TEST register works
+    "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+
+    // Run the stress test and inject a reset at an unexpected time
+    "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+
+    // Check the TL machinery works correctly (handling things like illegal accesses or partial
+    // accesses)
+    "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+  ]
+
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+        Write an arbitrary value to each policy register and check that this gets correctly
+        reflected in the racl_policies_o output.
+
+        Also drive the racl_error_i and racl_error_external_i inputs. Check that intr_racl_error_o
+        is raised correctly.
+      '''
+      stage: V1
+      tests: ["racl_ctrl_smoke"] // TODO: racl_ctrl_smoke does not yet drive the error inputs.
+    }
+
+    {
+      name: error_log
+      desc: '''
+        Drive the racl_error_i and racl_error_external_i inputs. Check that intr_racl_error_o is
+        raised correctly. Also check that the ERROR_LOG and ERROR_LOG_ADDRESS registers are updated
+        in the expected way (checking the arbitration works as expected).
+      '''
+      stage: V2
+      tests: []
+    }
+  ]
+}
