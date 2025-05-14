@@ -23,9 +23,6 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
-  // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/racl_ctrl/data/racl_ctrl_testplan.hjson"
-
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
