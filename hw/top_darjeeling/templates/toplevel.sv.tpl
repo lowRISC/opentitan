@@ -493,18 +493,9 @@ for rst in output_rsts:
   // Peripheral Instantiation
 
 
-<%
-alert_idx = defaultdict(int)
-outgoing_alert_idx = defaultdict(int)
-outgoing_interrupt_idx = defaultdict(int) %>\
+<% outgoing_interrupt_idx = defaultdict(int) %>\
 % for m in top["module"]:
 <%
-alert_info = {
-  "tx_expr": "",
-  "rx_expr": "",
-  "async_expr": "",
-  "comments": []
-}
 if not lib.is_inst(m):
      continue
 
@@ -515,12 +506,12 @@ port_list = inputs + outputs + inouts
 max_sigwidth = max(len(x.name) for x in port_list) if port_list else 0
 max_intrwidth = (max(len(x.name) for x in block.interrupts)
                  if block.interrupts else 0)
+alert_info = top["alert_connections"][m["name"]]
 %>\
   % if m["param_list"] or block.alerts:
   ${m["type"]} #(
 <%include file="/toplevel_racl_parameters.tpl" args="module=m,top=top,block=block"/>\
   % if block.alerts:
-<%include file="/toplevel_alerts.tpl" args="m=m, alert_idx=alert_idx, block=block, alert_handler_signals=alert_handler_signals, alert_info=alert_info, default_handler=default_handler"/>\
     .AlertAsyncOn(${alert_info["async_expr"]})${"," if m["param_list"] else ""}
   % endif
     % for i in m["param_list"]:
@@ -564,22 +555,11 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
       % endif
     % endfor
     % if block.alerts:
-      % if 'outgoing_alert' in m:
-        % for i, alert in enumerate(block.alerts):
-      // External alert group "${m['outgoing_alert']}" [${outgoing_alert_idx[m['outgoing_alert']]}]: ${alert.name}<% outgoing_alert_idx[m['outgoing_alert']] += 2 %>
-        % endfor
-      % else:
-        % for comment in alert_info["comments"]:
+      % for comment in alert_info["comments"]:
       // ${comment}
-        % endfor
-      % endif
-      % if 'outgoing_alert' in m:
-      .alert_tx_o  ( outgoing_alert_${m['outgoing_alert']}_tx_o[${slice}] ),
-      .alert_rx_i  ( outgoing_alert_${m['outgoing_alert']}_rx_i[${slice}] ),
-      % else:
+      % endfor
       .alert_tx_o  ( ${alert_info["tx_expr"]} ),
       .alert_rx_i  ( ${alert_info["rx_expr"]} ),
-      % endif
     % endif
 <%include file="/toplevel_racl_signals.tpl" args="module=m,top=top,block=block"/>\
     ## TODO: Inter-module Connection

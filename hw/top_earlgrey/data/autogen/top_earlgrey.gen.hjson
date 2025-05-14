@@ -17805,269 +17805,440 @@
   ]
   alert_connections:
   {
-    alert_handler:
-    [
-      [
-        uart0
-        fatal_fault
-      ]
-      [
-        uart1
-        fatal_fault
-      ]
-      [
-        uart2
-        fatal_fault
-      ]
-      [
-        uart3
-        fatal_fault
-      ]
-      [
-        gpio
-        fatal_fault
-      ]
-      [
-        spi_device
-        fatal_fault
-      ]
-      [
-        i2c0
-        fatal_fault
-      ]
-      [
-        i2c1
-        fatal_fault
-      ]
-      [
-        i2c2
-        fatal_fault
-      ]
-      [
-        pattgen
-        fatal_fault
-      ]
-      [
-        rv_timer
-        fatal_fault
-      ]
-      [
-        otp_ctrl
-        fatal_macro_error
-      ]
-      [
-        otp_ctrl
-        fatal_check_error
-      ]
-      [
-        otp_ctrl
-        fatal_bus_integ_error
-      ]
-      [
-        otp_ctrl
-        fatal_prim_otp_alert
-      ]
-      [
-        otp_ctrl
-        recov_prim_otp_alert
-      ]
-      [
-        lc_ctrl
-        fatal_prog_error
-      ]
-      [
-        lc_ctrl
-        fatal_state_error
-      ]
-      [
-        lc_ctrl
-        fatal_bus_integ_error
-      ]
-      [
-        spi_host0
-        fatal_fault
-      ]
-      [
-        spi_host1
-        fatal_fault
-      ]
-      [
-        usbdev
-        fatal_fault
-      ]
-      [
-        pwrmgr_aon
-        fatal_fault
-      ]
-      [
-        rstmgr_aon
-        fatal_fault
-      ]
-      [
-        rstmgr_aon
-        fatal_cnsty_fault
-      ]
-      [
-        clkmgr_aon
-        recov_fault
-      ]
-      [
-        clkmgr_aon
-        fatal_fault
-      ]
-      [
-        sysrst_ctrl_aon
-        fatal_fault
-      ]
-      [
-        adc_ctrl_aon
-        fatal_fault
-      ]
-      [
-        pwm_aon
-        fatal_fault
-      ]
-      [
-        pinmux_aon
-        fatal_fault
-      ]
-      [
-        aon_timer_aon
-        fatal_fault
-      ]
-      [
-        sensor_ctrl_aon
-        recov_alert
-      ]
-      [
-        sensor_ctrl_aon
-        fatal_alert
-      ]
-      [
-        sram_ctrl_ret_aon
-        fatal_error
-      ]
-      [
-        flash_ctrl
-        recov_err
-      ]
-      [
-        flash_ctrl
-        fatal_std_err
-      ]
-      [
-        flash_ctrl
-        fatal_err
-      ]
-      [
-        flash_ctrl
-        fatal_prim_flash_alert
-      ]
-      [
-        flash_ctrl
-        recov_prim_flash_alert
-      ]
-      [
-        rv_dm
-        fatal_fault
-      ]
-      [
-        rv_plic
-        fatal_fault
-      ]
-      [
-        aes
-        recov_ctrl_update_err
-      ]
-      [
-        aes
-        fatal_fault
-      ]
-      [
-        hmac
-        fatal_fault
-      ]
-      [
-        kmac
-        recov_operation_err
-      ]
-      [
-        kmac
-        fatal_fault_err
-      ]
-      [
-        otbn
-        fatal
-      ]
-      [
-        otbn
-        recov
-      ]
-      [
-        keymgr
-        recov_operation_err
-      ]
-      [
-        keymgr
-        fatal_fault_err
-      ]
-      [
-        csrng
-        recov_alert
-      ]
-      [
-        csrng
-        fatal_alert
-      ]
-      [
-        entropy_src
-        recov_alert
-      ]
-      [
-        entropy_src
-        fatal_alert
-      ]
-      [
-        edn0
-        recov_alert
-      ]
-      [
-        edn0
-        fatal_alert
-      ]
-      [
-        edn1
-        recov_alert
-      ]
-      [
-        edn1
-        fatal_alert
-      ]
-      [
-        sram_ctrl_main
-        fatal_error
-      ]
-      [
-        rom_ctrl
-        fatal
-      ]
-      [
-        rv_core_ibex
-        fatal_sw_err
-      ]
-      [
-        rv_core_ibex
-        recov_sw_err
-      ]
-      [
-        rv_core_ibex
-        fatal_hw_err
-      ]
-      [
-        rv_core_ibex
-        recov_hw_err
-      ]
-    ]
+    uart0:
+    {
+      tx_expr: alert_tx[0:0]
+      rx_expr: alert_rx[0:0]
+      async_expr: alert_handler_reg_pkg::AsyncOn[0:0]
+      comments:
+      [
+        alert_handler[0]: fatal_fault
+      ]
+    }
+    uart1:
+    {
+      tx_expr: alert_tx[1:1]
+      rx_expr: alert_rx[1:1]
+      async_expr: alert_handler_reg_pkg::AsyncOn[1:1]
+      comments:
+      [
+        alert_handler[1]: fatal_fault
+      ]
+    }
+    uart2:
+    {
+      tx_expr: alert_tx[2:2]
+      rx_expr: alert_rx[2:2]
+      async_expr: alert_handler_reg_pkg::AsyncOn[2:2]
+      comments:
+      [
+        alert_handler[2]: fatal_fault
+      ]
+    }
+    uart3:
+    {
+      tx_expr: alert_tx[3:3]
+      rx_expr: alert_rx[3:3]
+      async_expr: alert_handler_reg_pkg::AsyncOn[3:3]
+      comments:
+      [
+        alert_handler[3]: fatal_fault
+      ]
+    }
+    gpio:
+    {
+      tx_expr: alert_tx[4:4]
+      rx_expr: alert_rx[4:4]
+      async_expr: alert_handler_reg_pkg::AsyncOn[4:4]
+      comments:
+      [
+        alert_handler[4]: fatal_fault
+      ]
+    }
+    spi_device:
+    {
+      tx_expr: alert_tx[5:5]
+      rx_expr: alert_rx[5:5]
+      async_expr: alert_handler_reg_pkg::AsyncOn[5:5]
+      comments:
+      [
+        alert_handler[5]: fatal_fault
+      ]
+    }
+    i2c0:
+    {
+      tx_expr: alert_tx[6:6]
+      rx_expr: alert_rx[6:6]
+      async_expr: alert_handler_reg_pkg::AsyncOn[6:6]
+      comments:
+      [
+        alert_handler[6]: fatal_fault
+      ]
+    }
+    i2c1:
+    {
+      tx_expr: alert_tx[7:7]
+      rx_expr: alert_rx[7:7]
+      async_expr: alert_handler_reg_pkg::AsyncOn[7:7]
+      comments:
+      [
+        alert_handler[7]: fatal_fault
+      ]
+    }
+    i2c2:
+    {
+      tx_expr: alert_tx[8:8]
+      rx_expr: alert_rx[8:8]
+      async_expr: alert_handler_reg_pkg::AsyncOn[8:8]
+      comments:
+      [
+        alert_handler[8]: fatal_fault
+      ]
+    }
+    pattgen:
+    {
+      tx_expr: alert_tx[9:9]
+      rx_expr: alert_rx[9:9]
+      async_expr: alert_handler_reg_pkg::AsyncOn[9:9]
+      comments:
+      [
+        alert_handler[9]: fatal_fault
+      ]
+    }
+    rv_timer:
+    {
+      tx_expr: alert_tx[10:10]
+      rx_expr: alert_rx[10:10]
+      async_expr: alert_handler_reg_pkg::AsyncOn[10:10]
+      comments:
+      [
+        alert_handler[10]: fatal_fault
+      ]
+    }
+    otp_ctrl:
+    {
+      tx_expr: alert_tx[15:11]
+      rx_expr: alert_rx[15:11]
+      async_expr: alert_handler_reg_pkg::AsyncOn[15:11]
+      comments:
+      [
+        alert_handler[11]: fatal_macro_error
+        alert_handler[12]: fatal_check_error
+        alert_handler[13]: fatal_bus_integ_error
+        alert_handler[14]: fatal_prim_otp_alert
+        alert_handler[15]: recov_prim_otp_alert
+      ]
+    }
+    lc_ctrl:
+    {
+      tx_expr: alert_tx[18:16]
+      rx_expr: alert_rx[18:16]
+      async_expr: alert_handler_reg_pkg::AsyncOn[18:16]
+      comments:
+      [
+        alert_handler[16]: fatal_prog_error
+        alert_handler[17]: fatal_state_error
+        alert_handler[18]: fatal_bus_integ_error
+      ]
+    }
+    spi_host0:
+    {
+      tx_expr: alert_tx[19:19]
+      rx_expr: alert_rx[19:19]
+      async_expr: alert_handler_reg_pkg::AsyncOn[19:19]
+      comments:
+      [
+        alert_handler[19]: fatal_fault
+      ]
+    }
+    spi_host1:
+    {
+      tx_expr: alert_tx[20:20]
+      rx_expr: alert_rx[20:20]
+      async_expr: alert_handler_reg_pkg::AsyncOn[20:20]
+      comments:
+      [
+        alert_handler[20]: fatal_fault
+      ]
+    }
+    usbdev:
+    {
+      tx_expr: alert_tx[21:21]
+      rx_expr: alert_rx[21:21]
+      async_expr: alert_handler_reg_pkg::AsyncOn[21:21]
+      comments:
+      [
+        alert_handler[21]: fatal_fault
+      ]
+    }
+    pwrmgr_aon:
+    {
+      tx_expr: alert_tx[22:22]
+      rx_expr: alert_rx[22:22]
+      async_expr: alert_handler_reg_pkg::AsyncOn[22:22]
+      comments:
+      [
+        alert_handler[22]: fatal_fault
+      ]
+    }
+    rstmgr_aon:
+    {
+      tx_expr: alert_tx[24:23]
+      rx_expr: alert_rx[24:23]
+      async_expr: alert_handler_reg_pkg::AsyncOn[24:23]
+      comments:
+      [
+        alert_handler[23]: fatal_fault
+        alert_handler[24]: fatal_cnsty_fault
+      ]
+    }
+    clkmgr_aon:
+    {
+      tx_expr: alert_tx[26:25]
+      rx_expr: alert_rx[26:25]
+      async_expr: alert_handler_reg_pkg::AsyncOn[26:25]
+      comments:
+      [
+        alert_handler[25]: recov_fault
+        alert_handler[26]: fatal_fault
+      ]
+    }
+    sysrst_ctrl_aon:
+    {
+      tx_expr: alert_tx[27:27]
+      rx_expr: alert_rx[27:27]
+      async_expr: alert_handler_reg_pkg::AsyncOn[27:27]
+      comments:
+      [
+        alert_handler[27]: fatal_fault
+      ]
+    }
+    adc_ctrl_aon:
+    {
+      tx_expr: alert_tx[28:28]
+      rx_expr: alert_rx[28:28]
+      async_expr: alert_handler_reg_pkg::AsyncOn[28:28]
+      comments:
+      [
+        alert_handler[28]: fatal_fault
+      ]
+    }
+    pwm_aon:
+    {
+      tx_expr: alert_tx[29:29]
+      rx_expr: alert_rx[29:29]
+      async_expr: alert_handler_reg_pkg::AsyncOn[29:29]
+      comments:
+      [
+        alert_handler[29]: fatal_fault
+      ]
+    }
+    pinmux_aon:
+    {
+      tx_expr: alert_tx[30:30]
+      rx_expr: alert_rx[30:30]
+      async_expr: alert_handler_reg_pkg::AsyncOn[30:30]
+      comments:
+      [
+        alert_handler[30]: fatal_fault
+      ]
+    }
+    aon_timer_aon:
+    {
+      tx_expr: alert_tx[31:31]
+      rx_expr: alert_rx[31:31]
+      async_expr: alert_handler_reg_pkg::AsyncOn[31:31]
+      comments:
+      [
+        alert_handler[31]: fatal_fault
+      ]
+    }
+    sensor_ctrl_aon:
+    {
+      tx_expr: alert_tx[33:32]
+      rx_expr: alert_rx[33:32]
+      async_expr: alert_handler_reg_pkg::AsyncOn[33:32]
+      comments:
+      [
+        alert_handler[32]: recov_alert
+        alert_handler[33]: fatal_alert
+      ]
+    }
+    sram_ctrl_ret_aon:
+    {
+      tx_expr: alert_tx[34:34]
+      rx_expr: alert_rx[34:34]
+      async_expr: alert_handler_reg_pkg::AsyncOn[34:34]
+      comments:
+      [
+        alert_handler[34]: fatal_error
+      ]
+    }
+    flash_ctrl:
+    {
+      tx_expr: alert_tx[39:35]
+      rx_expr: alert_rx[39:35]
+      async_expr: alert_handler_reg_pkg::AsyncOn[39:35]
+      comments:
+      [
+        alert_handler[35]: recov_err
+        alert_handler[36]: fatal_std_err
+        alert_handler[37]: fatal_err
+        alert_handler[38]: fatal_prim_flash_alert
+        alert_handler[39]: recov_prim_flash_alert
+      ]
+    }
+    rv_dm:
+    {
+      tx_expr: alert_tx[40:40]
+      rx_expr: alert_rx[40:40]
+      async_expr: alert_handler_reg_pkg::AsyncOn[40:40]
+      comments:
+      [
+        alert_handler[40]: fatal_fault
+      ]
+    }
+    rv_plic:
+    {
+      tx_expr: alert_tx[41:41]
+      rx_expr: alert_rx[41:41]
+      async_expr: alert_handler_reg_pkg::AsyncOn[41:41]
+      comments:
+      [
+        alert_handler[41]: fatal_fault
+      ]
+    }
+    aes:
+    {
+      tx_expr: alert_tx[43:42]
+      rx_expr: alert_rx[43:42]
+      async_expr: alert_handler_reg_pkg::AsyncOn[43:42]
+      comments:
+      [
+        alert_handler[42]: recov_ctrl_update_err
+        alert_handler[43]: fatal_fault
+      ]
+    }
+    hmac:
+    {
+      tx_expr: alert_tx[44:44]
+      rx_expr: alert_rx[44:44]
+      async_expr: alert_handler_reg_pkg::AsyncOn[44:44]
+      comments:
+      [
+        alert_handler[44]: fatal_fault
+      ]
+    }
+    kmac:
+    {
+      tx_expr: alert_tx[46:45]
+      rx_expr: alert_rx[46:45]
+      async_expr: alert_handler_reg_pkg::AsyncOn[46:45]
+      comments:
+      [
+        alert_handler[45]: recov_operation_err
+        alert_handler[46]: fatal_fault_err
+      ]
+    }
+    otbn:
+    {
+      tx_expr: alert_tx[48:47]
+      rx_expr: alert_rx[48:47]
+      async_expr: alert_handler_reg_pkg::AsyncOn[48:47]
+      comments:
+      [
+        alert_handler[47]: fatal
+        alert_handler[48]: recov
+      ]
+    }
+    keymgr:
+    {
+      tx_expr: alert_tx[50:49]
+      rx_expr: alert_rx[50:49]
+      async_expr: alert_handler_reg_pkg::AsyncOn[50:49]
+      comments:
+      [
+        alert_handler[49]: recov_operation_err
+        alert_handler[50]: fatal_fault_err
+      ]
+    }
+    csrng:
+    {
+      tx_expr: alert_tx[52:51]
+      rx_expr: alert_rx[52:51]
+      async_expr: alert_handler_reg_pkg::AsyncOn[52:51]
+      comments:
+      [
+        alert_handler[51]: recov_alert
+        alert_handler[52]: fatal_alert
+      ]
+    }
+    entropy_src:
+    {
+      tx_expr: alert_tx[54:53]
+      rx_expr: alert_rx[54:53]
+      async_expr: alert_handler_reg_pkg::AsyncOn[54:53]
+      comments:
+      [
+        alert_handler[53]: recov_alert
+        alert_handler[54]: fatal_alert
+      ]
+    }
+    edn0:
+    {
+      tx_expr: alert_tx[56:55]
+      rx_expr: alert_rx[56:55]
+      async_expr: alert_handler_reg_pkg::AsyncOn[56:55]
+      comments:
+      [
+        alert_handler[55]: recov_alert
+        alert_handler[56]: fatal_alert
+      ]
+    }
+    edn1:
+    {
+      tx_expr: alert_tx[58:57]
+      rx_expr: alert_rx[58:57]
+      async_expr: alert_handler_reg_pkg::AsyncOn[58:57]
+      comments:
+      [
+        alert_handler[57]: recov_alert
+        alert_handler[58]: fatal_alert
+      ]
+    }
+    sram_ctrl_main:
+    {
+      tx_expr: alert_tx[59:59]
+      rx_expr: alert_rx[59:59]
+      async_expr: alert_handler_reg_pkg::AsyncOn[59:59]
+      comments:
+      [
+        alert_handler[59]: fatal_error
+      ]
+    }
+    rom_ctrl:
+    {
+      tx_expr: alert_tx[60:60]
+      rx_expr: alert_rx[60:60]
+      async_expr: alert_handler_reg_pkg::AsyncOn[60:60]
+      comments:
+      [
+        alert_handler[60]: fatal
+      ]
+    }
+    rv_core_ibex:
+    {
+      tx_expr: alert_tx[64:61]
+      rx_expr: alert_rx[64:61]
+      async_expr: alert_handler_reg_pkg::AsyncOn[64:61]
+      comments:
+      [
+        alert_handler[61]: fatal_sw_err
+        alert_handler[62]: recov_sw_err
+        alert_handler[63]: fatal_hw_err
+        alert_handler[64]: recov_hw_err
+      ]
+    }
   }
   interrupt_module:
   [
