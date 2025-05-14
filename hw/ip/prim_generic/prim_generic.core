@@ -28,6 +28,7 @@ filesets:
       - lowrisc:prim_generic:usb_diff_rx
       - lowrisc:prim_generic:xnor2
       - lowrisc:prim_generic:xor2
+      - lowrisc:prim_generic:flop_no_rst
 # Note that flash is a macro that depend on IPs, so they are not
 # included here. They must be brought in explicitly.
 #      - lowrisc:prim_generic:flash
@@ -52,6 +53,7 @@ mapping:
   "lowrisc:prim:usb_diff_rx"  : "lowrisc:prim_generic:usb_diff_rx"
   "lowrisc:prim:xnor2"        : "lowrisc:prim_generic:xnor2"
   "lowrisc:prim:xor2"         : "lowrisc:prim_generic:xor2"
+  "lowrisc:prim:flop_no_rst"  : "lowrisc:prim_generic:flop_no_rst"
   # Flash is a good canditate to be removed from the prims and become a macro like OTP.
   # When this is done, it should be removed from this mapping.
   "lowrisc:prim:flash": "lowrisc:prim_generic:flash"
