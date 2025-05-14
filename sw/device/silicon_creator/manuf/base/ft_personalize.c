@@ -273,6 +273,45 @@ static status_t config_and_erase_certificate_flash_pages(void) {
 }
 
 /**
+ * Erase all of the owner's INFO pages so that they're in a known state.
+ */
+static status_t erase_owner_info_pages(owner_config_t *config) {
+  const flash_ctrl_info_page_t *pages[] = {
+      &kFlashCtrlInfoPageOwnerReserved0, &kFlashCtrlInfoPageOwnerReserved1,
+      &kFlashCtrlInfoPageOwnerReserved2, &kFlashCtrlInfoPageOwnerReserved3,
+      &kFlashCtrlInfoPageOwnerReserved4, &kFlashCtrlInfoPageOwnerReserved5,
+      &kFlashCtrlInfoPageOwnerReserved6, &kFlashCtrlInfoPageOwnerReserved7,
+  };
+
+  // First, initialize all of the owner INFO pages with ECC & Scrambling.
+  for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
+    flash_ctrl_cfg_t cfg = {
+        .scrambling = kMultiBitBool4True,
+        .ecc = kMultiBitBool4True,
+        .he = kMultiBitBool4False,
+    };
+    flash_ctrl_info_cfg_set(pages[i], cfg);
+  }
+
+  // Next, overwrite the INFO page configuration for those pages defined
+  // in the owner block.
+  TRY(owner_block_info_apply(config->info));
+
+  // Finally, erase each page.
+  for (size_t i = 0; i < ARRAYSIZE(pages); ++i) {
+    flash_ctrl_perms_t perms = {
+        .read = kMultiBitBool4True,
+        .write = kMultiBitBool4True,
+        .erase = kMultiBitBool4True,
+    };
+    flash_ctrl_info_perms_set(pages[i], perms);
+    TRY(flash_ctrl_info_erase(pages[i], kFlashCtrlEraseTypePage));
+  }
+
+  return OK_STATUS();
+}
+
+/**
  * Helper function to compute measurements of various OTP partitions that are to
  * be included in attestation certificates.
  */
@@ -701,7 +740,8 @@ static status_t boot_data_cfg_initialize(void) {
   return OK_STATUS();
 }
 
-static status_t install_owner(void) {
+static status_t install_owner(owner_config_t *config,
+                              owner_application_keyring_t *keyring) {
   // Get the boot_data; installing the owner will write it back with the
   // ownership_state set to LockedOwner.
   boot_data_t boot_data;
@@ -731,7 +771,9 @@ static status_t install_owner(void) {
   // Initialize ownership.  This will write the owner block into OwnerSlot0 and
   // set the ownership_state to LockedOwner.  The first boot of the ROM_EXT
   // will create a redundanty copy in OwnerSlot1.
-  TRY(sku_creator_owner_init(&boot_data);
+  TRY(sku_creator_owner_init(&boot_data));
+  TRY(owner_block_parse(&owner_page[0],
+                        /*check_only=*/kHardenedBoolFalse, config, keyring));
   return OK_STATUS();
 }
 
@@ -1058,8 +1100,16 @@ static status_t provision(ujson_t *uj) {
   // Provision OTP, flash secrets, certs, and install the first owner.
   TRY(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
   TRY(personalize_otp_and_flash_secrets(uj));
+
   TRY(personalize_gen_dice_certificates(uj));
-  TRY(install_owner());
+  owner_config_t owner_config;
+  owner_application_keyring_t owner_keyring = {0};
+  TRY(install_owner(&owner_config, &owner_keyring));
+
+  // Erase all of the owner-reserved INFO pages before performing any
+  // DICE or owner-customized certificate generation.
+  TRY(erase_owner_info_pages(&owner_config));
+
   personalize_extension_pre_endorse_t pre_endorse = {
       .uj = uj,
       .certgen_inputs = &certgen_inputs,
