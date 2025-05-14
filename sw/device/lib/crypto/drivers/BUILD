@@ -6,6 +6,12 @@ package(default_visibility = ["//visibility:public"])
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load(
+    "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
+    "dual_cc_library",
+    "dual_inputs",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
@@ -113,23 +119,30 @@ cc_library(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "entropy",
-    srcs = ["entropy.c"],
+    srcs = dual_inputs(
+        device = ["entropy.c"],
+        host = ["mock_entropy.cc"],
+    ),
     hdrs = ["entropy.h"],
-    deps = [
-        "//hw/ip/csrng/data:csrng_c_regs",
-        "//hw/ip/edn/data:edn_c_regs",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:math",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/crypto/impl:status",
-    ],
+    deps = dual_inputs(
+        device = [
+            "//hw/ip/csrng/data:csrng_c_regs",
+            "//hw/ip/edn/data:edn_c_regs",
+            "//hw/ip/entropy_src/data:entropy_src_c_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:bitfield",
+            "//sw/device/lib/base:hardened",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:math",
+            "//sw/device/lib/base:memory",
+        ],
+        shared = [
+            "//sw/device/lib/crypto/impl:status",
+        ],
+    ),
 )
 
 cc_library(
@@ -187,16 +200,23 @@ cc_library(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "rv_core_ibex",
-    srcs = ["rv_core_ibex.c"],
-    hdrs = ["rv_core_ibex.h"],
-    deps = [
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:csr",
-    ],
+    srcs = dual_inputs(
+        device = ["rv_core_ibex.c"],
+        host = ["mock_rv_core_ibex.cc"],
+    ),
+    hdrs = dual_inputs(
+        shared = ["rv_core_ibex.h"],
+    ),
+    deps = dual_inputs(
+        device = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:csr",
+        ],
+    ),
 )
 
 opentitan_test(
