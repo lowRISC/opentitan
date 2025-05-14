@@ -30,6 +30,7 @@ generate:
     parameters:
       name: soc_dbg_ctrl
       ip_hjson: ../../data/soc_dbg_ctrl.hjson
+    position: prepend
 
 targets:
   default:

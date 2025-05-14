@@ -35,6 +35,7 @@ generate:
     parameters:
       name: mbx
       ip_hjson: ../../data/mbx.hjson
+    position: prepend
 
 targets:
   default:
