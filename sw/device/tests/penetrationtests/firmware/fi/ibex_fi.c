@@ -27,6 +27,20 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
+enum {
+  /**
+   * Size (in number of 32-bit words) of the buffer that is allocated in the
+   * SRAM. This buffer is used by various SRAM tests.
+   */
+  kSramMainBufSize =
+      1 << 13,  // Size of the SRAM buffer used in the SRAM tests.
+  /**
+   * Number of registers that are available during a FI test. These registers
+   * include x5-x7, x12-x17, x28-x30.
+   */
+  kNumRegs = 12,
+};
+
 // A function which takes an uint32_t as its only argument.
 typedef uint32_t (*str_fn_t)(uint32_t);
 
@@ -141,7 +155,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
 OT_SECTION(".data")
-static volatile uint32_t sram_main_buffer[256];
+static volatile uint32_t sram_main_buffer[kSramMainBufSize];
 
 // Make sure that this function does not get optimized by the compiler.
 OT_USED
@@ -1843,30 +1857,51 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // Init t0...t6 with 0.
-  init_temp_regs(0);
+  int sram_buffer_size = sizeof(sram_main_buffer) / 4;
+  int sram_half_size = sram_buffer_size / 2;
 
-  // Write reference value into SRAM.
-  sram_main_buffer[0] = ref_values[0];
+  // Init the SRAM with counter values.
+  for (size_t i = 0; i < sram_buffer_size; i++) {
+    sram_main_buffer[i] = i;
+  }
+
+  // Init the SRAM position we are reading from with ref_values[0].
+  sram_main_buffer[sram_half_size] = ref_values[0];
+
+  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
+  init_reg_ref_values();
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // Read from SRAM into temporary registers.
-  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x28, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x29, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile("lw x31, (%0)" : : "r"(&sram_main_buffer[0]));
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x12, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x13, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x14, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x15, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x16, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x17, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x28, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x29, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  PENTEST_ASM_TRIGGER_LOW
 
   // Load register values.
-  // Result buffer.
-  uint32_t res_values[7];
-  read_temp_regs(res_values);
+  uint32_t res_values[kNumRegs];
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+  asm volatile("mv %0, x12" : "=r"(res_values[3]));
+  asm volatile("mv %0, x13" : "=r"(res_values[4]));
+  asm volatile("mv %0, x14" : "=r"(res_values[5]));
+  asm volatile("mv %0, x15" : "=r"(res_values[6]));
+  asm volatile("mv %0, x16" : "=r"(res_values[7]));
+  asm volatile("mv %0, x17" : "=r"(res_values[8]));
+  asm volatile("mv %0, x28" : "=r"(res_values[9]));
+  asm volatile("mv %0, x29" : "=r"(res_values[10]));
+  asm volatile("mv %0, x30" : "=r"(res_values[11]));
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1877,7 +1912,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
   memset(uj_output.data, 0, sizeof(uj_output.data));
 
-  for (uint32_t sram_pos = 0; sram_pos < 7; sram_pos++) {
+  for (uint32_t sram_pos = 0; sram_pos < kNumRegs; sram_pos++) {
     if (res_values[sram_pos] != ref_values[0]) {
       uj_output.addresses[sram_pos] = sram_pos;
       uj_output.data[sram_pos] = res_values[sram_pos];
