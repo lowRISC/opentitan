@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:cip_lib
       - lowrisc:dv:racl_ctrl_ral
+      - lowrisc:dv:racl_error_log_agent
     files:
       - racl_ctrl_policies_if.sv
       - racl_ctrl_env_pkg.sv
