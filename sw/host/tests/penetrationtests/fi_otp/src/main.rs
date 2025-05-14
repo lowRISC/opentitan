@@ -11,7 +11,7 @@ use clap::Parser;
 use serde::Deserialize;
 
 use pentest_commands::commands::PenetrationtestCommand;
-use pentest_commands::fi_ibex_commands::IbexFiSubcommand;
+use pentest_commands::fi_otp_commands::OtpFiSubcommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -30,11 +30,11 @@ struct Opts {
     timeout: Duration,
 
     #[arg(long, num_args = 1..)]
-    fi_ibex_json: Vec<String>,
+    fi_otp_json: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct FiIbexTestCase {
+struct FiOtpTestCase {
     test_case_id: usize,
     command: String,
     // Input only needed for the "Init" subcommand.
@@ -49,15 +49,23 @@ fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde
     map.remove("alerts");
     map.remove("ast_alerts");
     map.remove("err_status");
+    map.remove("otp_status_codes");
     // Device ID is different for each device.
     map.remove("device_id");
-    // Register file dump could change.
-    map.remove("registers");
+    // Remove these entries as the test just returns the OTP content, which could
+    // be different for different configurations.
+    map.remove("hw_cfg_comp");
+    map.remove("hw_cfg_fi");
+    map.remove("owner_sw_cfg_comp");
+    map.remove("owner_sw_cfg_fi");
+    map.remove("vendor_test_comp");
+    map.remove("vendor_test_fi");
+
     map
 }
 
-fn run_fi_ibex_testcase(
-    test_case: &FiIbexTestCase,
+fn run_fi_otp_testcase(
+    test_case: &FiOtpTestCase,
     opts: &Opts,
     uart: &dyn Uart,
     fail_counter: &mut u32,
@@ -67,11 +75,11 @@ fn run_fi_ibex_testcase(
         test_case.test_case_id,
         test_case.command
     );
-    PenetrationtestCommand::IbexFi.send(uart)?;
+    PenetrationtestCommand::OtpFi.send(uart)?;
 
     // Send test subcommand.
-    IbexFiSubcommand::from_str(test_case.command.as_str())
-        .context("unsupported Ibex FI subcommand")?
+    OtpFiSubcommand::from_str(test_case.command.as_str())
+        .context("unsupported Otp FI subcommand")?
         .send(uart)?;
 
     // Check if we need to send an input.
@@ -104,21 +112,21 @@ fn run_fi_ibex_testcase(
     Ok(())
 }
 
-fn test_fi_ibex(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_fi_otp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
-    let test_vector_files = &opts.fi_ibex_json;
+    let test_vector_files = &opts.fi_otp_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
-        let fi_ibex_tests: Vec<FiIbexTestCase> = serde_json::from_str(&raw_json)?;
-        for fi_ibex_test in &fi_ibex_tests {
+        let fi_otp_tests: Vec<FiOtpTestCase> = serde_json::from_str(&raw_json)?;
+        for fi_otp_test in &fi_otp_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_fi_ibex_testcase(fi_ibex_test, opts, &*uart, &mut fail_counter)?;
+            run_fi_otp_testcase(fi_otp_test, opts, &*uart, &mut fail_counter)?;
         }
     }
     assert_eq!(
@@ -134,6 +142,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    execute_test!(test_fi_ibex, &opts, &transport);
+    execute_test!(test_fi_otp, &opts, &transport);
     Ok(())
 }

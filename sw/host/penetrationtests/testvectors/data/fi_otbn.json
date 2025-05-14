@@ -1,0 +1,97 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "CharBeq",
+    "expected_output": "{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "CharBnRshi",
+    "input": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "expected_output": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":109,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "CharBnSel",
+     "input": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "expected_output": "{\"big_num\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1014,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "CharBnWsrr",
+    "expected_output": "{\"res\":0,\"insn_cnt\":1089,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "CharBne",
+    "expected_output": "{\"result\":0,\"insn_cnt\":509,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 7,
+    "command": "CharDmemAccess",
+    "expected_output": "{\"res\":0,\"insn_cnt\":271,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 8,
+    "command": "CharDmemWrite",
+    "expected_output": "{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 9,
+    "command": "CharHardwareDmemOpLoop",
+    "expected_output": "{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 10,
+    "command": "CharHardwareRegOpLoop",
+    "expected_output": "{\"loop_counter\":10000,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 11,
+    "command": "CharJal",
+    "expected_output": "{\"result\":0,\"insn_cnt\":505,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 12,
+    "command": "CharLw",
+    "expected_output": "{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"insn_cnt\":1084,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 13,
+    "command": "CharMem",
+    "input": "{\"byte_offset\":0,\"num_words\":4,\"imem\":false,\"dmem\":true}",
+    "expected_output": "{\"res\":0,\"imem_data\":[0,0,0,0,0,0,0,0],\"imem_addr\":[0,0,0,0,0,0,0,0],\"dmem_data\":[0,0,0,0,0,0,0,0],\"dmem_addr\":[0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 14,
+    "command": "CharRF",
+    "expected_output": "{\"res\":0,\"faulty_gpr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"faulty_wdr\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 15,
+    "command": "CharUnrolledDmemOpLoop",
+    "expected_output": "{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 16,
+    "command": "CharUnrolledRegOpLoop",
+    "expected_output": "{\"loop_counter\":100,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 17,
+    "command": "LoadIntegrity",
+    "expected_output": "{\"result\":0,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 18,
+    "command": "PC",
+    "input": "{\"pc\":2224}",
+    "expected_output": "{\"pc_dmem\":2224,\"pc_otbn\":2224,\"insn_cnt\":472,\"err_otbn\":0,\"err_ibx\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  }
+]

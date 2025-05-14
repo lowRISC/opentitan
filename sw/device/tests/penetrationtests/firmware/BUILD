@@ -84,20 +84,17 @@ opentitan_binary(
     deps = FIRMWARE_DEPS_FI,
 )
 
-[
-    opentitan_binary(
-        name = "fpga_pentest_fi_otbn_{}".format(exec_env),
-        testonly = True,
-        srcs = [":firmware_fi_otbn.c"],
-        exec_env = [
-            "//hw/top_earlgrey:{}".format(exec_env),
-        ],
-        deps = FIRMWARE_DEPS_FI_OTBN,
-    )
-    for exec_env in [
-        "fpga_cw310_test_rom",
-    ]
-]
+opentitan_binary(
+    name = "firmware_fi_otbn",
+    testonly = True,
+    srcs = [":firmware_fi_otbn.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    deps = FIRMWARE_DEPS_FI_OTBN,
+)
 
 [
     opentitan_binary(
