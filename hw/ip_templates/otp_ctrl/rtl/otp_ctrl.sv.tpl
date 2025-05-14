@@ -1131,7 +1131,7 @@ end
     end else if (PartInfo[k].variant == Buffered) begin : gen_buffered
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
+        .DataDefault(PartInvDefault[PartInfo[k].offset +: PartInfo[k].size])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
@@ -1188,7 +1188,7 @@ end
     end else if (PartInfo[k].variant == LifeCycle) begin : gen_lifecycle
       otp_ctrl_part_buf #(
         .Info(PartInfo[k]),
-        .DataDefault(PartInvDefault[PartInfo[k].offset*8 +: PartInfo[k].size*8])
+        .DataDefault(PartInvDefault[PartInfo[k].offset +: PartInfo[k].size])
       ) u_part_buf (
         .clk_i,
         .rst_ni,
