@@ -5,7 +5,9 @@
 #include "sw/device/lib/crypto/include/hmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -261,7 +263,9 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   hmac_ctx_t hmac_ctx;
   hmac_ctx_restore(ctx, &hmac_ctx);
   HARDENED_TRY(hmac_final(&hmac_ctx, tag.data, tag.len));
-  // TODO(#23191): Clear `ctx`.
+  // Clear `ctx`.
+  HARDENED_TRY(entropy_complex_check());
+  hardened_memshred(ibex_rnd32_read, ctx->data, kOtcryptoHashCtxStructWords);
   hmac_ctx_save(ctx, &hmac_ctx);
   return OTCRYPTO_OK;
 }
