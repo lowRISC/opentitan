@@ -407,21 +407,6 @@
       },
       attr: "ipgen",
     },
-    { name: "alert_handler1",
-      type: "alert_handler1",
-      template_type: "alert_handler",
-      clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
-      clock_group: "secure",
-      reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
-      base_addr: {
-        hart: "0x30180000",
-      },
-      param_decl: {
-        EscNumSeverities: "4",
-        EscPingCountWidth: "16"
-      },
-      attr: "ipgen",
-    },
     { name: "spi_host0",
       type: "spi_host",
       clock_srcs: {clk_i: "io_div4"},
