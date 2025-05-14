@@ -106,6 +106,7 @@
 `include "chip_sw_rom_e2e_jtag_debug_vseq.sv"
 `include "chip_sw_rom_e2e_jtag_inject_vseq.sv"
 `include "chip_sw_rom_e2e_self_hash_gls_vseq.sv"
+`include "chip_sw_ate_bootstrap_disjoint_vseq.sv"
 `include "chip_sw_ate_bootstrap_flash_erase_vseq.sv"
 `include "chip_sw_ate_bootstrap_one_frame_vseq.sv"
 `include "chip_sw_power_idle_load_vseq.sv"
