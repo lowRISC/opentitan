@@ -23,15 +23,15 @@ use crate::transport::TransportError;
 pub struct UartParams {
     /// UART instance.
     #[arg(long, default_value = "CONSOLE")]
-    uart: String,
+    pub uart: String,
 
     /// UART baudrate.
     #[arg(long)]
-    baudrate: Option<u32>,
+    pub baudrate: Option<u32>,
 
     /// Enable software flow control.
     #[arg(long)]
-    flow_control: bool,
+    pub flow_control: bool,
 }
 
 impl UartParams {
