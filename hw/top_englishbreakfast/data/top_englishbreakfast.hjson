@@ -294,6 +294,7 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
+      alert_handler: null,
       base_addr: {
         hart: "0x40010000",
       },

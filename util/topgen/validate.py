@@ -60,6 +60,7 @@ top_required = {
 
 top_optional = {
     'ac_range_check': ['g', 'Optional AC range configuration'],
+    'alerts': ['g', 'alert handler configuration'],
     'alert_module':
     ['l', 'list of the modules that connects to alert_handler'],
     'datawidth': ['pn', "default data width"],
@@ -287,7 +288,7 @@ module_optional = {
         'represent a dict that associates all interfaces with the given '
         'mapping. It is an error to specify both this and racl_mappings.'
     ],
-    'alert_connections': ['g', 'dict specifying handler for each alert'],
+    'alert_handler': ['s', 'Alert handler managing this module'],
 }
 
 module_added = {
@@ -586,21 +587,34 @@ def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
 def check_alerts(top: ConfigT, ip_name_to_block: IpBlocksT, prefix: str) -> int:
     if 'alert' not in top:
         return 0
-    error = 0
+    errors = 0
 
     # Check alert keys
     for alert in top['alert']:
-        error += check_keys(alert, alert_required, alert_optional, alert_added,
-                            prefix + ' Alert')
+        errors += check_keys(alert, alert_required, alert_optional,
+                             alert_added, prefix + ' Alert')
 
     # Check alert_connections for all IPs
     alert_handlers = find_modules(top['module'], "alert_handler",
                                   use_base_template_type=True)
+    handler_names = [handler['name'] for handler in alert_handlers]
+
+    # Check that the default handler exists
+    default_handler = None
+    if "alerts" in top and "default_handler" in top["alerts"]:
+        default_handler = top["alerts"]["default_handler"]
+        if default_handler is not None and \
+           default_handler not in handler_names:
+            errors += 1
+            log.error(f"{default_handler} (named as default alert handler) "
+                      f"does not exist")
+
     for module in top['module']:
         log.info(f'Checking alerts for {module["name"]}')
         block = ip_name_to_block[module['type']]
-        error += validate_alert(module, block, alert_handlers)
-    return error
+        errors += validate_alert(top, module, block, handler_names,
+                                 default_handler)
+    return errors
 
 
 def check_incoming_alerts(top: ConfigT, prefix: str) -> int:
@@ -1080,40 +1094,33 @@ def validate_clock(top: ConfigT,
 
 
 # Checks the following:
-# - that each alert in the IP's alert_list is named in alert_connections
-# - that each alert in alert_connections names a valid handler
-def validate_alert(top, block, handlers):
+# - that alert_handler, if specified, exists
+# Note that it's possible for the module `alert_handler` to be null,
+# the toplevel `alerts.default_handler` to be null, or both, and for
+# this not to be an error (in the case that a handler doesn't exist
+# at all, like in Englishbreakfast).
+def validate_alert(top, module, block, handlers, default_handler=None):
     errors = 0
-    name = top.name if isinstance(top, IpBlock) else top['name']
-    handler_names = [handler['name'] for handler in handlers]
-    if block.alerts:
-        alert_names = [alert.name for alert in block.alerts]
-        unused_alerts = set(alert_names)
-        if 'alert_connections' in top:
-            alert_connections = top['alert_connections']
-            for alert, handler in alert_connections.items():
-                if alert not in alert_names:
-                    errors += 1
-                    log.error(f'{name} does not have an alert called {alert}')
-                else:
-                    if alert not in unused_alerts:
-                        errors += 1
-                        log.error(f'{name} has more than one alert connection for {alert}')
-                    unused_alerts.remove(alert)
+    name = module.name if isinstance(module, IpBlock) else module['name']
 
-                if handler is not None and handler not in handler_names:
-                    errors += 1
-                    log.error(f"{name} specifies handler {handler} for alert {alert} "
-                              f"but the handler doesn't exist")
-        if unused_alerts:
+    # Check that the named alert handler exists
+    # (the default handler has already been checked)
+    handler = default_handler
+    if "alert_handler" in module:
+        handler = module["alert_handler"]
+        if handler is not None and handler not in handlers:
             errors += 1
-            log.error(f'module {name} did not assign handlers for these alerts: '
-                      f'{unused_alerts}')
-    else:
-        # No actual alerts to connect
-        if 'alert_connections' in top and len(top['alert_connections']):
-            errors += 1
-            log.error(f'{name} contains entries in alert_connections but there are no alerts')
+            log.error(f"{name} specifies {handler} as alert handler but that "
+                      f"alert handler doesn't exist")
+
+    # If there are actually alerts, check that it makes sense:
+    # - if the alert handler exists, that's ok
+    # - otherwise, if the default handler exists, that's ok
+    # - otherwise, if no handlers exist, that's ok
+    if block.alerts and handler is None and handlers:
+        errors += 1
+        log.error(f"{name} doesn't define alert_handler (and default_handler "
+                  f"isn't defined), but handlers are available")
 
     return errors
 

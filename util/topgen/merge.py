@@ -1114,17 +1114,20 @@ def get_alert_connections(top: ConfigT,
     if 'alert_connections' in top:
         return top['alert_connections']
 
+    alert_handler = None
+    if "alerts" in top and "default_handler" in top["alerts"]:
+        alert_handler = top["alerts"]["default_handler"]
+
     connections = defaultdict(list)
     for module in top['module']:
         block = name_to_block.get(module['type'])
         if block is None and allow_missing_blocks:
             continue
         if block.alerts and 'outgoing_alert' not in module:
-            if 'alert_connections' in module:
-                alert_connections = module['alert_connections']
-                for alert in block.alerts:
-                    handler = alert_connections[alert.name]
-                    connections[handler].append((module['name'], alert.name))
+            if "alert_handler" in module:
+                alert_handler = module["alert_handler"]
+            for alert in block.alerts:
+                connections[alert_handler].append((module["name"], alert.name))
 
     return connections
 
@@ -1188,6 +1191,11 @@ def amend_alert(top: ConfigT,
     outgoing_alerts = defaultdict(list)
     missing_ips = []
 
+    # Careful, "alert*s*"
+    default_handler = None
+    if "alerts" in top and "default_handler" in top["alerts"]:
+        default_handler = top["alerts"]["default_handler"]
+
     for m in alert_modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
@@ -1205,10 +1213,10 @@ def amend_alert(top: ConfigT,
         for alert in block.alerts:
             alert_dict = alert.as_nwt_dict('alert')
             alert_dict['async'] = '1'
-            if 'alert_connections' in ip:
-                alert_dict['handler'] = ip['alert_connections'][alert.name]
+            if 'alert_handler' in ip:
+                alert_dict['handler'] = ip["alert_handler"]
             else:
-                alert_dict['handler'] = None
+                alert_dict['handler'] = default_handler  # May still be None
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
             alert_name = alert_dict['name']

@@ -296,7 +296,7 @@ def _get_alert_handler_params(top: ConfigT, name: str) -> ParamsT:
         # set number of alerts to 1 such that the config is still valid
         # that input will be tied off
         n_alerts = 1
-        log.warning("no alerts are defined: is alert_handler needed?")
+        log.warning(f"{name} has no alerts attached to it; is it needed?")
 
     async_on = []
     async_on_format = "1'b{:01b}"

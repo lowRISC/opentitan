@@ -48,6 +48,10 @@ for m in top['memory']:
 
 last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 
+default_handler = None
+if "alerts" in top and "default_handler" in top["alerts"]:
+  default_handler = top["alerts"]["default_handler"]
+
 alert_handlers = [handler["type"] for handler in lib.find_modules(top["module"], "alert_handler")]
 alert_handler_signals = {}
 for handler in alert_handlers:
@@ -511,7 +515,7 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
   ${m["type"]} #(
 <%include file="/toplevel_racl.tpl" args="m=m,top=top"/>\
   % if block.alerts:
-<%include file="/toplevel_alerts.tpl" args="m=m, alert_idx=alert_idx, block=block, alert_handler_signals=alert_handler_signals, alert_info=alert_info"/>\
+<%include file="/toplevel_alerts.tpl" args="m=m, alert_idx=alert_idx, block=block, alert_handler_signals=alert_handler_signals, alert_info=alert_info, default_handler=default_handler"/>\
     .AlertAsyncOn(${alert_info["async_expr"]})${"," if m["param_list"] else ""}
   % endif
     % for i in m["param_list"]:
