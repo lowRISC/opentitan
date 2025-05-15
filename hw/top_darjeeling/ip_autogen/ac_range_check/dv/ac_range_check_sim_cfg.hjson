@@ -48,6 +48,10 @@
       name: ac_range_check_smoke
       uvm_test_seq: ac_range_check_smoke_vseq
     }
+    {
+      name: ac_range_check_smoke_racl
+      uvm_test_seq: ac_range_check_smoke_racl_vseq
+    }
 
     // TODO: add more tests here
   ]
@@ -56,7 +60,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["ac_range_check_smoke"]
+      tests: ["ac_range_check_smoke", "ac_range_check_smoke_racl"]
     }
   ]
 }
