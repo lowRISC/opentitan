@@ -124,5 +124,35 @@
     "test_case_id": 25,
     "command": "CharUnrolledRegOpLoopChain",
     "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[60,55,56,57,58,59,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 26,
+    "command": "CharSingleBeq",
+    "expected_output": "{\"result1\":43,\"result2\":60,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 27,
+    "command": "CharAddiSingleBeq",
+    "expected_output": "{\"result1\":43,\"result2\":60,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 28,
+    "command": "CharAddiSingleBeqNeg",
+    "expected_output": "{\"result1\":26,\"result2\":15,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 29,
+    "command": "CharSingleBne",
+    "expected_output": "{\"result1\":43,\"result2\":44,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 30,
+    "command": "CharAddiSingleBne",
+    "expected_output": "{\"result1\":43,\"result2\":44,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 31,
+    "command": "CharAddiSingleBneNeg",
+    "expected_output": "{\"result1\":26,\"result2\":26,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   }
 ]
