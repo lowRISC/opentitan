@@ -64,6 +64,8 @@ function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
   dut_cfg               = ac_range_check_dut_cfg::type_id::create("dut_cfg");
   predict               = ac_range_check_predictor::type_id::create("predict", this);
   predict.dut_cfg       = dut_cfg;
+  predict.cov           = cov;
+  predict.env_cfg       = cfg;
   exp_tl_filt_ev        = new();
   exp_tl_unfilt_ev      = new();
   tl_unfilt_d_chan_fifo = new("tl_unfilt_d_chan_fifo", this);
