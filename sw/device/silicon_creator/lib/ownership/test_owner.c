@@ -69,9 +69,7 @@
   (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
 #endif
 
-rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
-                                   owner_config_t *config,
-                                   owner_application_keyring_t *keyring) {
+rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   owner_keydata_t owner = OWNER_KEYDATA;
   ownership_state_t state = bootdata->ownership_state;
 
@@ -207,14 +205,18 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                (uintptr_t)app;
   memset(app, 0x5a, len);
 
+  // Check that the owner_block will parse correctly.
+  RETURN_IF_ERROR(owner_block_parse(&owner_page[0],
+                                    /*check_only=*/kHardenedBoolTrue, NULL,
+                                    NULL));
   ownership_seal_page(/*page=*/0);
-  memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
 
   // Since this module should only get linked in to FPGA builds, we can simply
   // thunk the ownership state to LockedOwner.
   bootdata->ownership_state = kOwnershipStateLockedOwner;
 
-  // Write the configuration to both owner pages.
+  // Write the configuration to both owner page 0.  The next boot of the ROM_EXT
+  // will make a redundant copyh in page 1.
   OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
                                    kFlashCtrlEraseTypePage));
   OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,

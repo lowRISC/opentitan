@@ -190,12 +190,8 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
 /**
  * Ownership initialization function.
  */
-OT_WEAK rom_error_t
-sku_creator_owner_init(boot_data_t *bootdata, owner_config_t *config,
-                       owner_application_keyring_t *keyring) {
+OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   OT_DISCARD(bootdata);
-  OT_DISCARD(config);
-  OT_DISCARD(keyring);
   LOG_ERROR("No ownership initialization");
   return kErrorOk;
 }
@@ -735,10 +731,7 @@ static status_t install_owner(void) {
   // Initialize ownership.  This will write the owner block into OwnerSlot0 and
   // set the ownership_state to LockedOwner.  The first boot of the ROM_EXT
   // will create a redundanty copy in OwnerSlot1.
-  owner_config_t config;
-  owner_config_default(&config);
-  owner_application_keyring_t keyring = {0};
-  TRY(sku_creator_owner_init(&boot_data, &config, &keyring));
+  TRY(sku_creator_owner_init(&boot_data);
   return OK_STATUS();
 }
 
