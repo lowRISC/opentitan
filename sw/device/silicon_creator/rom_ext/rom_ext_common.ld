@@ -77,13 +77,9 @@ SECTIONS {
     _text_start = .;
     _rom_ext_immutable_start = .;
     KEEP(*(.rom_ext_immutable))
-
-    /* TODO: Remove this fallback when rom_ext_immutable section is ready. */
-    KEEP(*(.rom_ext_immutable.fallback))
-
-    /* Ensure section end is word-aligned. */
-    . = ALIGN(256);
     _rom_ext_immutable_end = .;
+
+    _rom_ext_immutable_size = SIZEOF(.rom_ext_immutable);
   } > rom_ext_flash
 
   /**
