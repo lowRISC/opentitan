@@ -9841,6 +9841,7 @@
         }
         {
           name: halt_cpu_boot
+          desc: External request to halt the CPU until a JTAG command allows the boot process to continue.
           struct: logic
           type: uni
           act: rcv
@@ -25901,6 +25902,7 @@
       }
       {
         name: halt_cpu_boot
+        desc: External request to halt the CPU until a JTAG command allows the boot process to continue.
         struct: logic
         type: uni
         act: rcv
