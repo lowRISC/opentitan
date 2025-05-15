@@ -8,8 +8,7 @@
 #include "sw/device/lib/base/hardened.h"
 
 void random_order_init(random_order_t *ctx, size_t min_len) {
-  // Position relative to start index is always initialized to zero.
-  ctx->pos = 0;
+  ctx->ctr = 0;
 
   // If the sequence length is zero or one, there's not much randomization we
   // can do, but we can at least return one value past the range.
@@ -46,10 +45,9 @@ size_t random_order_advance(random_order_t *ctx) {
   // Normally, the increment is the step size. However, if we came back around
   // to the start index, increase it by one to change the offset of the step.
   uint32_t inc = ctx->step;
-  ctx->pos += inc;
-  if (ctx->pos >= ctx->max) {
+  ctx->ctr = launder32(ctx->ctr) + 1;
+  if (ctx->ctr % (ctx->max / ctx->step) == 0) {
     inc++;
-    ctx->pos = 0;
   }
 
   if (launder32(inc) >= ctx->max - ctx->state) {
