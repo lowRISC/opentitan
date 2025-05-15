@@ -59,9 +59,8 @@ static owner_page_status_t owner_page_validity_check(size_t page,
   return kOwnerPageStatusSigned;
 }
 
-OT_WEAK rom_error_t
-sku_creator_owner_init(boot_data_t *bootdata, owner_config_t *config,
-                       owner_application_keyring_t *keyring) {
+OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
+  OT_DISCARD(bootdata);
   return kErrorOk;
 }
 
@@ -252,7 +251,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   // When we settle on a default ownership configuration, we'll remove this
   // function and possibly relegate it to the `default` case below, only to
   // be used should the chip enter the "no owner recovery" state.
-  HARDENED_RETURN_IF_ERROR(sku_creator_owner_init(bootdata, config, keyring));
+  HARDENED_RETURN_IF_ERROR(sku_creator_owner_init(bootdata));
 
   rom_error_t error = kErrorOwnershipNoOwner;
   // TODO(#22386): Harden this switch/case statement.
