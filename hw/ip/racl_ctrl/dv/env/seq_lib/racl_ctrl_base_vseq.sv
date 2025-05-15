@@ -10,6 +10,10 @@ class racl_ctrl_base_vseq
 
   `uvm_object_utils(racl_ctrl_base_vseq)
 
+  // Handles to the sequencers for the internal and external error log agents
+  racl_error_log_sequencer internal_error_log_sequencer_h;
+  racl_error_log_sequencer external_error_log_sequencer_h;
+
   extern function new (string name="");
   extern task body();
 endclass
