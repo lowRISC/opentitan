@@ -91,6 +91,7 @@ TEST(RandomOrder, SpecTest) {
     uint32_t j = random_order_advance(&ctx);
     hit[j] = true;
   }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(ctx);
 
   EXPECT_THAT(hit, Each(true));
 }
