@@ -178,68 +178,68 @@ package pinmux_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } invert;
+      logic [3:0]  d;
+    } drive_strength;
+    struct packed {
+      logic [1:0]  d;
+    } slew_rate;
     struct packed {
       logic        d;
-    } virtual_od_en;
-    struct packed {
-      logic        d;
-    } pull_en;
-    struct packed {
-      logic        d;
-    } pull_select;
-    struct packed {
-      logic        d;
-    } keeper_en;
-    struct packed {
-      logic        d;
-    } schmitt_en;
+    } input_disable;
     struct packed {
       logic        d;
     } od_en;
     struct packed {
       logic        d;
-    } input_disable;
+    } schmitt_en;
     struct packed {
-      logic [1:0]  d;
-    } slew_rate;
+      logic        d;
+    } keeper_en;
     struct packed {
-      logic [3:0]  d;
-    } drive_strength;
+      logic        d;
+    } pull_select;
+    struct packed {
+      logic        d;
+    } pull_en;
+    struct packed {
+      logic        d;
+    } virtual_od_en;
+    struct packed {
+      logic        d;
+    } invert;
   } pinmux_hw2reg_mio_pad_attr_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-    } invert;
+      logic [3:0]  d;
+    } drive_strength;
+    struct packed {
+      logic [1:0]  d;
+    } slew_rate;
     struct packed {
       logic        d;
-    } virtual_od_en;
-    struct packed {
-      logic        d;
-    } pull_en;
-    struct packed {
-      logic        d;
-    } pull_select;
-    struct packed {
-      logic        d;
-    } keeper_en;
-    struct packed {
-      logic        d;
-    } schmitt_en;
+    } input_disable;
     struct packed {
       logic        d;
     } od_en;
     struct packed {
       logic        d;
-    } input_disable;
+    } schmitt_en;
     struct packed {
-      logic [1:0]  d;
-    } slew_rate;
+      logic        d;
+    } keeper_en;
     struct packed {
-      logic [3:0]  d;
-    } drive_strength;
+      logic        d;
+    } pull_select;
+    struct packed {
+      logic        d;
+    } pull_en;
+    struct packed {
+      logic        d;
+    } virtual_od_en;
+    struct packed {
+      logic        d;
+    } invert;
   } pinmux_hw2reg_dio_pad_attr_mreg_t;
 
   typedef struct packed {

@@ -102,11 +102,11 @@ package sensor_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } io_status_change;
+    } init_status_change;
     struct packed {
       logic        d;
       logic        de;
-    } init_status_change;
+    } io_status_change;
   } sensor_ctrl_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -121,25 +121,25 @@ package sensor_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        d;
-      logic        de;
-    } ast_init_done;
-    struct packed {
       logic [1:0]  d;
       logic        de;
     } io_pok;
+    struct packed {
+      logic        d;
+      logic        de;
+    } ast_init_done;
   } sensor_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } pull_en;
+    } input_disable;
     struct packed {
       logic        d;
     } pull_select;
     struct packed {
       logic        d;
-    } input_disable;
+    } pull_en;
   } sensor_ctrl_hw2reg_manual_pad_attr_mreg_t;
 
   // Register -> HW type

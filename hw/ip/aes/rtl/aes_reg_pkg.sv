@@ -147,34 +147,30 @@ package aes_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  d;
-    } operation;
-    struct packed {
-      logic [5:0]  d;
-    } mode;
-    struct packed {
-      logic [2:0]  d;
-    } key_len;
-    struct packed {
       logic        d;
-    } sideload;
+    } manual_operation;
     struct packed {
       logic [2:0]  d;
     } prng_reseed_rate;
     struct packed {
       logic        d;
-    } manual_operation;
+    } sideload;
+    struct packed {
+      logic [2:0]  d;
+    } key_len;
+    struct packed {
+      logic [5:0]  d;
+    } mode;
+    struct packed {
+      logic [1:0]  d;
+    } operation;
   } aes_hw2reg_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } start;
-    struct packed {
-      logic        d;
-      logic        de;
-    } key_iv_data_in_clear;
+    } prng_reseed;
     struct packed {
       logic        d;
       logic        de;
@@ -182,30 +178,18 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } prng_reseed;
+    } key_iv_data_in_clear;
+    struct packed {
+      logic        d;
+      logic        de;
+    } start;
   } aes_hw2reg_trigger_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
-    } idle;
-    struct packed {
-      logic        d;
-      logic        de;
-    } stall;
-    struct packed {
-      logic        d;
-      logic        de;
-    } output_lost;
-    struct packed {
-      logic        d;
-      logic        de;
-    } output_valid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } input_ready;
+    } alert_fatal_fault;
     struct packed {
       logic        d;
       logic        de;
@@ -213,7 +197,23 @@ package aes_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } alert_fatal_fault;
+    } input_ready;
+    struct packed {
+      logic        d;
+      logic        de;
+    } output_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } output_lost;
+    struct packed {
+      logic        d;
+      logic        de;
+    } stall;
+    struct packed {
+      logic        d;
+      logic        de;
+    } idle;
   } aes_hw2reg_status_reg_t;
 
   // Register -> HW type

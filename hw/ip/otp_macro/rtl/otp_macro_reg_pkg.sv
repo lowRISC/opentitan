@@ -157,33 +157,9 @@ package otp_macro_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } field0;
-    struct packed {
-      logic [9:0] d;
-      logic        de;
-    } field1;
-    struct packed {
       logic        d;
       logic        de;
-    } field2;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field3;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field4;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field5;
-    struct packed {
-      logic        d;
-      logic        de;
-    } field6;
+    } field8;
     struct packed {
       logic        d;
       logic        de;
@@ -191,26 +167,11 @@ package otp_macro_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } field8;
-  } otp_macro_hw2reg_csr3_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } field0;
-    struct packed {
-      logic [1:0]  d;
-      logic        de;
-    } field1;
+    } field6;
     struct packed {
       logic        d;
       logic        de;
-    } field2;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } field3;
+    } field5;
     struct packed {
       logic        d;
       logic        de;
@@ -218,30 +179,69 @@ package otp_macro_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } field5;
-    struct packed {
-      logic [15:0] d;
-      logic        de;
-    } field6;
-  } otp_macro_hw2reg_csr5_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic [5:0]  d;
-      logic        de;
-    } field0;
-    struct packed {
-      logic [2:0]  d;
-      logic        de;
-    } field1;
+    } field3;
     struct packed {
       logic        d;
       logic        de;
     } field2;
     struct packed {
+      logic [9:0] d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field0;
+  } otp_macro_hw2reg_csr3_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [15:0] d;
+      logic        de;
+    } field6;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field5;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field4;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic [1:0]  d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic [5:0]  d;
+      logic        de;
+    } field0;
+  } otp_macro_hw2reg_csr5_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic        d;
       logic        de;
     } field3;
+    struct packed {
+      logic        d;
+      logic        de;
+    } field2;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } field1;
+    struct packed {
+      logic [5:0]  d;
+      logic        de;
+    } field0;
   } otp_macro_hw2reg_csr7_reg_t;
 
   // Register -> HW type

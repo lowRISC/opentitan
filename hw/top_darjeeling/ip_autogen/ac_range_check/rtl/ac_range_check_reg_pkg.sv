@@ -102,11 +102,7 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } shadowed_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } shadowed_storage_err;
+    } counter_err;
     struct packed {
       logic        d;
       logic        de;
@@ -114,30 +110,30 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } counter_err;
+    } shadowed_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadowed_update_err;
   } ac_range_check_hw2reg_alert_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  d;
+      logic [4:0]  d;
       logic        de;
-    } deny_cnt;
+    } deny_range_index;
+    struct packed {
+      logic [4:0]  d;
+      logic        de;
+    } denied_ctn_uid;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } denied_source_role;
     struct packed {
       logic        d;
       logic        de;
-    } denied_read_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_write_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_execute_access;
-    struct packed {
-      logic        d;
-      logic        de;
-    } denied_no_match;
+    } denied_racl_write;
     struct packed {
       logic        d;
       logic        de;
@@ -145,19 +141,23 @@ package ac_range_check_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } denied_racl_write;
+    } denied_no_match;
     struct packed {
-      logic [3:0]  d;
+      logic        d;
       logic        de;
-    } denied_source_role;
+    } denied_execute_access;
     struct packed {
-      logic [4:0]  d;
+      logic        d;
       logic        de;
-    } denied_ctn_uid;
+    } denied_write_access;
     struct packed {
-      logic [4:0]  d;
+      logic        d;
       logic        de;
-    } deny_range_index;
+    } denied_read_access;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } deny_cnt;
   } ac_range_check_hw2reg_log_status_reg_t;
 
   typedef struct packed {

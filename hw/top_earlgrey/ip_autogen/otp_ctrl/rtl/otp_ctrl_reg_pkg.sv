@@ -410,74 +410,74 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } otp_operation_done;
+    } otp_error;
     struct packed {
       logic        d;
       logic        de;
-    } otp_error;
+    } otp_operation_done;
   } otp_ctrl_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        d;
-    } vendor_test_error;
-    struct packed {
-      logic        d;
-    } creator_sw_cfg_error;
-    struct packed {
-      logic        d;
-    } owner_sw_cfg_error;
-    struct packed {
-      logic        d;
-    } rot_creator_auth_codesign_error;
-    struct packed {
-      logic        d;
-    } rot_creator_auth_state_error;
-    struct packed {
-      logic        d;
-    } hw_cfg0_error;
-    struct packed {
-      logic        d;
-    } hw_cfg1_error;
-    struct packed {
-      logic        d;
-    } secret0_error;
-    struct packed {
-      logic        d;
-    } secret1_error;
-    struct packed {
-      logic        d;
-    } secret2_error;
-    struct packed {
-      logic        d;
-    } life_cycle_error;
-    struct packed {
-      logic        d;
-    } dai_error;
-    struct packed {
-      logic        d;
-    } lci_error;
-    struct packed {
-      logic        d;
-    } timeout_error;
-    struct packed {
-      logic        d;
-    } lfsr_fsm_error;
-    struct packed {
-      logic        d;
-    } scrambling_fsm_error;
-    struct packed {
-      logic        d;
-    } key_deriv_fsm_error;
-    struct packed {
-      logic        d;
-    } bus_integ_error;
+    } check_pending;
     struct packed {
       logic        d;
     } dai_idle;
     struct packed {
       logic        d;
-    } check_pending;
+    } bus_integ_error;
+    struct packed {
+      logic        d;
+    } key_deriv_fsm_error;
+    struct packed {
+      logic        d;
+    } scrambling_fsm_error;
+    struct packed {
+      logic        d;
+    } lfsr_fsm_error;
+    struct packed {
+      logic        d;
+    } timeout_error;
+    struct packed {
+      logic        d;
+    } lci_error;
+    struct packed {
+      logic        d;
+    } dai_error;
+    struct packed {
+      logic        d;
+    } life_cycle_error;
+    struct packed {
+      logic        d;
+    } secret2_error;
+    struct packed {
+      logic        d;
+    } secret1_error;
+    struct packed {
+      logic        d;
+    } secret0_error;
+    struct packed {
+      logic        d;
+    } hw_cfg1_error;
+    struct packed {
+      logic        d;
+    } hw_cfg0_error;
+    struct packed {
+      logic        d;
+    } rot_creator_auth_state_error;
+    struct packed {
+      logic        d;
+    } rot_creator_auth_codesign_error;
+    struct packed {
+      logic        d;
+    } owner_sw_cfg_error;
+    struct packed {
+      logic        d;
+    } creator_sw_cfg_error;
+    struct packed {
+      logic        d;
+    } vendor_test_error;
   } otp_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {

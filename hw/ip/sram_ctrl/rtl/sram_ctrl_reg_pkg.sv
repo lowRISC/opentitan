@@ -73,27 +73,7 @@ package sram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } bus_integ_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } init_error;
-    struct packed {
-      logic        d;
-      logic        de;
-    } escalated;
-    struct packed {
-      logic        d;
-      logic        de;
-    } scr_key_valid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } scr_key_seed_valid;
-    struct packed {
-      logic        d;
-      logic        de;
-    } init_done;
+    } sram_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -101,7 +81,27 @@ package sram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } sram_alert;
+    } init_done;
+    struct packed {
+      logic        d;
+      logic        de;
+    } scr_key_seed_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } scr_key_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } escalated;
+    struct packed {
+      logic        d;
+      logic        de;
+    } init_error;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bus_integ_error;
   } sram_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
