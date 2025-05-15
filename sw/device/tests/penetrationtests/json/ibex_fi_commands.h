@@ -14,6 +14,11 @@ extern "C" {
 #define IBEXFI_SUBCOMMAND(_, value) \
     value(_, AddressTranslation) \
     value(_, AddressTranslationCfg) \
+    value(_, CharAddiSingleBeq) \
+    value(_, CharAddiSingleBeqCm) \
+    value(_, CharAddiSingleBeqNeg) \
+    value(_, CharAddiSingleBne) \
+    value(_, CharAddiSingleBneNeg) \
     value(_, CharCondBranchBeq) \
     value(_, CharCondBranchBge) \
     value(_, CharCondBranchBgeu) \
@@ -34,6 +39,8 @@ extern "C" {
     value(_, CharRegisterFile) \
     value(_, CharRegisterFileRead) \
     value(_, CharRegOpLoop) \
+    value(_, CharSingleBeq) \
+    value(_, CharSingleBne) \
     value(_, CharSramRead) \
     value(_, CharSramStatic) \
     value(_, CharSramWrite) \
@@ -73,6 +80,15 @@ UJSON_SERDE_STRUCT(IbexFiTestResultRegisters, ibex_fi_test_result_registers_t, I
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiTestResultMult, ibex_fi_test_result_mult_t, IBEXFI_TEST_RESULT_MULT);
+
+#define IBEXFI_TEST_RESULT_SINGLE_BRANCH(field, string) \
+    field(result1, uint32_t) \
+    field(result2, uint32_t) \
+    field(registers, uint32_t, 10) \
+    field(err_status, uint32_t) \
+    field(alerts, uint32_t, 3) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(IbexFiTestResultSingleBranch, ibex_fi_test_result_single_branch_t, IBEXFI_TEST_RESULT_SINGLE_BRANCH);
 
 #define IBEXFI_LOOP_COUNTER_OUTPUT(field, string) \
     field(loop_counter, uint32_t) \
