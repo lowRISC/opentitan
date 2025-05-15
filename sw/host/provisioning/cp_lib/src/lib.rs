@@ -104,6 +104,9 @@ pub fn run_sram_cp_provision(
     response: &mut CpResponse,
     timeout: Duration,
 ) -> Result<()> {
+    // Reset the SPI console before loading the target firmware.
+    spi_console.reset_frame_counter();
+
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(reset_delay, true)?;
