@@ -73,7 +73,6 @@ package racl_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } valid;
   } racl_ctrl_reg2hw_error_log_reg_t;
 
@@ -112,14 +111,14 @@ package racl_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [105:74]
-    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [73:42]
-    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [41:10]
-    racl_ctrl_reg2hw_intr_state_reg_t intr_state; // [9:9]
-    racl_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [8:8]
-    racl_ctrl_reg2hw_intr_test_reg_t intr_test; // [7:6]
-    racl_ctrl_reg2hw_alert_test_reg_t alert_test; // [5:2]
-    racl_ctrl_reg2hw_error_log_reg_t error_log; // [1:0]
+    racl_ctrl_reg2hw_policy_all_rd_wr_shadowed_reg_t policy_all_rd_wr_shadowed; // [104:73]
+    racl_ctrl_reg2hw_policy_rot_private_shadowed_reg_t policy_rot_private_shadowed; // [72:41]
+    racl_ctrl_reg2hw_policy_soc_rot_shadowed_reg_t policy_soc_rot_shadowed; // [40:9]
+    racl_ctrl_reg2hw_intr_state_reg_t intr_state; // [8:8]
+    racl_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [7:7]
+    racl_ctrl_reg2hw_intr_test_reg_t intr_test; // [6:5]
+    racl_ctrl_reg2hw_alert_test_reg_t alert_test; // [4:1]
+    racl_ctrl_reg2hw_error_log_reg_t error_log; // [0:0]
   } racl_ctrl_reg2hw_t;
 
   // HW -> register type

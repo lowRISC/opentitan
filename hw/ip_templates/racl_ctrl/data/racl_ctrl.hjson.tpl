@@ -208,7 +208,7 @@
       desc: "Error logging registers"
       swaccess: "ro"
       hwaccess: "hwo"
-      hwqe: "true"
+      hwqe: "false"
       fields: [
         { bits: "0"
           name: "valid"
