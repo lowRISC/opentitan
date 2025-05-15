@@ -11,8 +11,13 @@ class racl_ctrl_base_vseq
   `uvm_object_utils(racl_ctrl_base_vseq)
 
   extern function new (string name="");
+  extern task body();
 endclass
 
 function racl_ctrl_base_vseq::new (string name="");
   super.new(name);
 endfunction
+
+task racl_ctrl_base_vseq::body();
+
+endtask
