@@ -16,13 +16,10 @@
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
- * ownership.c, thus allowing existing sival chips without an ownership
- * configuration to receive their ownership config simply installing the latest
- * ROM_EXT.
+ * ownership.c, thus allowing FPGA builds to install an owner configuration
+ * simply by booting the ROM_EXT.
  */
-rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
-                                   owner_config_t *config,
-                                   owner_application_keyring_t *keyring) {
+rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   const owner_keydata_t *owner =
       &((const owner_block_t *)sival_owner)->owner_key;
   uint32_t config_version =
@@ -50,6 +47,10 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   memset(&owner_page[0], 0x5a, sizeof(owner_page[0]));
   memcpy(&owner_page[0], sival_owner, sizeof(sival_owner));
 
+  // Check that the owner_block will parse correctly.
+  RETURN_IF_ERROR(owner_block_parse(&owner_page[0],
+                                    /*check_only=*/kHardenedBoolTrue, NULL,
+                                    NULL));
   ownership_seal_page(/*page=*/0);
 
   // Since this code should only execute when the ownership state is unknown, we
