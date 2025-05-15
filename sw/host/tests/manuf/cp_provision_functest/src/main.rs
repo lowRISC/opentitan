@@ -14,6 +14,7 @@ use zerocopy::IntoBytes;
 use cp_lib::{CpResponse, reset_and_lock, run_sram_cp_provision, unlock_raw};
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::console::spi::SpiConsoleDevice;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition;
@@ -36,6 +37,10 @@ pub struct Opts {
 
     #[arg(long)]
     pub test_sram_elf: Option<PathBuf>,
+
+    /// Name of the SPI interface to connect to the OTTF console.
+    #[arg(long, default_value = "IOA5")]
+    console_tx_indicator_pin: String,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -125,6 +130,8 @@ fn prep_flash_for_cp_init(
         elf: opts.test_sram_elf.clone(),
         ..Default::default()
     };
+    // Reset the SPI console before loading the target firmware.
+    spi_console.reset_frame_counter();
 
     // Set the TAP straps for the CPU and reset.
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
@@ -168,6 +175,9 @@ fn check_cp_provisioning(
     test_data: &ManufCpTestData,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
+    // Reset the SPI console before loading the target firmware.
+    spi_console.reset_frame_counter();
+
     let test_sram_program: SramProgramParams = SramProgramParams {
         elf: opts.test_sram_elf.clone(),
         ..Default::default()
@@ -215,7 +225,10 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
     let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let device_console_tx_ready_pin = &transport.gpio_pin(&opts.console_tx_indicator_pin)?;
+    device_console_tx_ready_pin.set_mode(PinMode::Input)?;
+    device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
 
     // Transition from RAW to TEST_UNLOCKED0.
     unlock_raw(&transport, &opts.init.jtag_params)?;
