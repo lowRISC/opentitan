@@ -75,7 +75,7 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
     // Perform the copy, without performing a typed dereference operation.
     write_32(read_32(src), dest);
   }
-
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, expected_count);
 }
 
@@ -105,6 +105,7 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
     // Write a freshly-generated random word to `*data`.
     write_32(hardened_memshred_random_word(), data);
   }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, expected_count);
 }
@@ -165,6 +166,7 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
     // has no chance to strength-reduce this operation.
     ones = launder32(ones) & (launder32(a) ^ ~b);
   }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, expected_count);
   if (launder32(zeros) == 0) {
