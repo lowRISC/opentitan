@@ -7,15 +7,15 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
-#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -29,14 +29,22 @@
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false, );
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
 
+OTTF_DEFINE_TEST_CONFIG(
+        .console.type = kOttfConsoleSpiDevice,
+        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+        .console.test_may_clobber = false, .silence_console_prints = true,
+        .console_tx_indicator.enable = true,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_gpio =
+            kGpioPinSpiConsoleTxReady);
+
+static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
+static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
-static dif_flash_ctrl_state_t flash_ctrl_state;
-static dif_lc_ctrl_t lc_ctrl;
 
 /**
  * Initializes all DIF handles used in this SRAM program.
@@ -45,12 +53,26 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
                       &pinmux));
+  return OK_STATUS();
+}
+
+/**
+ * Configure the ATE GPIO indicator pins.
+ */
+static status_t configure_ate_gpio_indicators(void) {
+  // IOA5 / GPIO0 is for SPI console TX ready signal.
+  TRY(dif_pinmux_output_select(
+      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1));  // Enable first GPIO.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();
 }
 
@@ -97,7 +119,7 @@ bool test_main(void) {
   // Initialize peripherals, pinmux, and console.
   CHECK_STATUS_OK(peripheral_handles_init());
   CHECK_STATUS_OK(entropy_complex_init());
-  pinmux_testutils_init(&pinmux);
+  CHECK_STATUS_OK(configure_ate_gpio_indicators());
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
 
@@ -106,14 +128,14 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc_ctrl, &lc_state));
 
   // Get CP test data over console.
-  LOG_INFO("Waiting for CP test data ...");
+  base_printf("Waiting for CP test data ...\n");
   manuf_cp_test_data_t test_data;
   CHECK_STATUS_OK(ujson_deserialize_manuf_cp_test_data_t(&uj, &test_data));
 
   if (lc_state == kDifLcCtrlStateTestUnlocked0) {
     // Write test data to flash info page 0.
     CHECK_STATUS_OK(prep_flash_info_page_0(&test_data));
-    LOG_INFO("Flash info page 0 programmed.");
+    base_printf("Flash info page 0 programmed.\n");
   } else if (lc_state == kDifLcCtrlStateTestUnlocked1) {
     // Read and validate CP device ID.
     uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {0};
@@ -141,9 +163,9 @@ bool test_main(void) {
 
     // Check the secret0 partition has been provisioned / locked.
     CHECK_STATUS_OK(manuf_individualize_device_secret0_check(&otp_ctrl));
-    LOG_INFO("Checks complete. Success");
+    base_printf("Checks complete. Success.\n");
   } else {
-    LOG_INFO("Bad LC state.");
+    base_printf("Bad LC state.\n");
     return false;
   }
 
