@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
@@ -54,10 +56,18 @@ typedef struct random_order {
    */
   size_t max;
   /**
-   * Position relative to the last offset change.
+   * Total number of iterations so far.
    */
-  size_t pos;
+  size_t ctr;
 } random_order_t;
+
+/**
+ * Hardened check that a random_order iteration is complete.
+ *
+ * @param ctx The context to check.
+ */
+#define RANDOM_ORDER_HARDENED_CHECK_DONE(ctx_) \
+  HARDENED_CHECK_EQ(ctx_.max, ctx_.ctr)
 
 /**
  * Constructs a new, randomly-seeded traversal order,
