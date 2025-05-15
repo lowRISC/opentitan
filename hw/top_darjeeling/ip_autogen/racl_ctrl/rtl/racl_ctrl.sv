@@ -43,7 +43,7 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   racl_ctrl_reg_top #(
     .EnableRacl   ( 1'b1         ),
     .RaclErrorRsp ( RaclErrorRsp )
-  ) u_racl_ctrl_reg (
+  ) u_reg (
     .clk_i                  ( clk_i                    ),
     .rst_ni                 ( rst_ni                   ),
     .rst_shadowed_ni        ( rst_shadowed_ni          ),
@@ -216,6 +216,5 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_racl_ctrl_reg,
-                                                 alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule
