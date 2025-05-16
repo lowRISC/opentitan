@@ -34,6 +34,7 @@ package ac_range_check_env_pkg;
   parameter uint   NUM_ALERTS                 = 2;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint   NUM_RANGES                 = ${num_ranges};
+  parameter uint   NUM_ROLES                  = ${num_roles};
 
   // Types
   typedef virtual ac_range_check_misc_io_if misc_vif_t;
