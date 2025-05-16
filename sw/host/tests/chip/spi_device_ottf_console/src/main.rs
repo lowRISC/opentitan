@@ -48,7 +48,7 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     let mut stdout = std::io::stdout();
     let spi = transport.spi(&opts.console_spi)?;
 
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     /* Load the ELF binary and get the expect data.*/
