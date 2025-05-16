@@ -51,10 +51,15 @@ elaborate -top $env(DUT_TOP)
 
 # Currently only for top_earlgrey
 if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
-  # Because in JasperGold we can only drive primary inputs. We put a stopat to
-  # aovid clock input from being driven internally.
+  # Because in JasperGold we can only drive primary inputs, we put a stopat to
+  # avoid the clock and reset inputs from being driven internally. Any logic
+  # driving these signals is not included in the analysis. This includes e.g.:
+  # - The disablement of the AST external clock input on IOC6. This is an MIO.
+  # - The pull-up functionality on the power-on reset input pin which is
+  #   enabled by default.
   stopat -env IOC6
   clock IOC6
+  stopat -env POR_N
   reset -expr {POR_N}
   # Add this assumption to avoid a false functional loop.
   assume -env {top_earlgrey.u_pinmux_aon.reg2hw.mio_pad_sleep_status == '1}
