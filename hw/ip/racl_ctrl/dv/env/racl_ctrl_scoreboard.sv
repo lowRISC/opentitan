@@ -13,9 +13,6 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   extern task run_phase(uvm_phase phase);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
 
-  // A dynamic array of bits (used as a return value)
-  typedef bit bit_vec_t[];
-
   // A function that looks at cfg.policies_vif and checks that its values match those requested in
   // the policy registers.
   extern function void check_policies();
