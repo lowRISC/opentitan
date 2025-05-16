@@ -28,6 +28,12 @@
       default: "32",
     }
     {
+      name:    "num_roles",
+      desc:    "Number of possible RACL Roles",
+      type:    "int",
+      default: "16",
+    }
+    {
       name:    "nr_role_bits",
       desc:    "Number of RACL bits",
       type:    "int",
