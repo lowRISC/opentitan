@@ -129,7 +129,11 @@ fn main() -> Result<()> {
     let device_console_tx_ready_pin = &transport.gpio_pin(&opts.console_tx_indicator_pin)?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
-    let spi_console = SpiConsoleDevice::new(&*spi, Some(device_console_tx_ready_pin))?;
+    let spi_console = SpiConsoleDevice::new(
+        &*spi,
+        Some(device_console_tx_ready_pin),
+        /*ignore_frame_num=*/ false,
+    )?;
     InitializeTest::print_result(
         "load_bitstream",
         opts.init.load_bitstream.init(&transport).map(|_| None),
