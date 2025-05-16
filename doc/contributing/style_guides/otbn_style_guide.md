@@ -245,7 +245,7 @@ bn.sel w4, w1, w0, FG0.C
 
 It is also necessary to use a dummy instruction to eliminate the transient leakage.
 Be aware there are some [flag blanking limitations](https://github.com/lowRISC/opentitan/blob/82bcfcae473e779a77fdabd789476b479cca0077/hw/ip/otbn/rtl/otbn_alu_bignum.sv#L257-L266) on `bn.mulqacc` instructions.
-Note that only the whole-word writeback version of `bn.mulqacc` (`bn.mulqacc.wo`) affects flags.
+Note that only the writeback versions of `bn.mulqacc` (`bn.mulqacc.wo` and `bn.mulqacc.so`) affect flags.
 ```armasm
 /* Leakage (if w0, w1 contain two shares of a secret) */
 bn.mulqacc.wo w6, w4.0, w0.0, 0, FG0
