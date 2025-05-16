@@ -5,8 +5,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -153,13 +153,12 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  uint32_t msg_digest_data[kSha256DigestWords];
+  uint32_t msg_digest_data[256 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
   otcrypto_word32_buf_t sig_buf = {
       .data = sig,
@@ -219,13 +218,12 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
-  uint32_t msg_digest_data[kSha256DigestWords];
+  uint32_t msg_digest_data[256 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf = {
       .data = sig,

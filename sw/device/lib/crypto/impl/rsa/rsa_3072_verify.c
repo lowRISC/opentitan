@@ -7,9 +7,9 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/crypto/include/hash.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -77,23 +77,13 @@ status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
   result->data[kRsa3072NumWords - 1] = 0x0001ffff;
 
   // Hash message.
-  otcrypto_const_byte_buf_t msg_buf = {
-      .data = msg,
-      .len = msgLen,
-  };
-  uint32_t digest_buf[kSha256DigestWords];
-  otcrypto_hash_digest_t digest = {
-      .mode = kOtcryptoHashModeSha256,
-      .data = digest_buf,
-      .len = kSha256DigestWords,
-  };
-  TRY(otcrypto_hash(msg_buf, digest));
+  uint32_t digest[kHmacSha256DigestWords];
+  TRY(hmac_hash_sha256(msg, msgLen, digest));
 
   // Copy the message digest into the least significant end of the result,
   // reversing the order of bytes to get little-endian form.
   for (size_t i = 0; i < kHmacSha256DigestWords; i++) {
-    result->data[i] =
-        __builtin_bswap32(digest.data[kHmacSha256DigestWords - 1 - i]);
+    result->data[i] = __builtin_bswap32(digest[kHmacSha256DigestWords - 1 - i]);
   }
 
   // Set remainder of 0x00 || T section

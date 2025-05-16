@@ -8,8 +8,8 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/include/hash.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'p', 'a')
@@ -68,25 +68,25 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
                                        size_t *len) {
   switch (hash_mode) {
     case kOtcryptoHashModeSha256:
-      *len = sizeof(kSha256DigestIdentifier) + kSha256DigestBytes;
+      *len = sizeof(kSha256DigestIdentifier) + kHmacSha256DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha384:
-      *len = sizeof(kSha384DigestIdentifier) + kSha384DigestBytes;
+      *len = sizeof(kSha384DigestIdentifier) + kHmacSha384DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha512:
-      *len = sizeof(kSha512DigestIdentifier) + kSha512DigestBytes;
+      *len = sizeof(kSha512DigestIdentifier) + kHmacSha512DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_224:
-      *len = sizeof(kSha3_224DigestIdentifier) + kSha3_224DigestBytes;
+      *len = sizeof(kSha3_224DigestIdentifier) + kKmacSha3224DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_256:
-      *len = sizeof(kSha3_256DigestIdentifier) + kSha3_256DigestBytes;
+      *len = sizeof(kSha3_256DigestIdentifier) + kKmacSha3256DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_384:
-      *len = sizeof(kSha3_384DigestIdentifier) + kSha3_384DigestBytes;
+      *len = sizeof(kSha3_384DigestIdentifier) + kKmacSha3384DigestBytes;
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_512:
-      *len = sizeof(kSha512DigestIdentifier) + kSha3_512DigestBytes;
+      *len = sizeof(kSha512DigestIdentifier) + kKmacSha3512DigestBytes;
       return OTCRYPTO_OK;
     default:
       // Unsupported or unrecognized hash function.
@@ -116,60 +116,51 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
 OT_WARN_UNUSED_RESULT
 static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
                                   uint32_t *encoding) {
+  size_t digest_wordlen = 0;
   switch (message_digest.mode) {
     case kOtcryptoHashModeSha256:
-      if (message_digest.len != kSha256DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha256DigestWords, &kSha256DigestIdentifier,
+      digest_wordlen = kHmacSha256DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha256DigestIdentifier,
              sizeof(kSha256DigestIdentifier));
       break;
     case kOtcryptoHashModeSha384:
-      if (message_digest.len != kSha384DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha384DigestWords, &kSha384DigestIdentifier,
+      digest_wordlen = kHmacSha384DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha384DigestIdentifier,
              sizeof(kSha384DigestIdentifier));
       break;
     case kOtcryptoHashModeSha512:
-      if (message_digest.len != kSha512DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha512DigestWords, &kSha512DigestIdentifier,
+      digest_wordlen = kHmacSha512DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha512DigestIdentifier,
              sizeof(kSha512DigestIdentifier));
       break;
     case kOtcryptoHashModeSha3_224:
-      if (message_digest.len != kSha3_224DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha3_224DigestWords, &kSha3_224DigestIdentifier,
+      digest_wordlen = kKmacSha3224DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha3_224DigestIdentifier,
              sizeof(kSha3_224DigestIdentifier));
       break;
     case kOtcryptoHashModeSha3_256:
-      if (message_digest.len != kSha3_256DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha3_256DigestWords, &kSha3_256DigestIdentifier,
+      digest_wordlen = kKmacSha3256DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha3_256DigestIdentifier,
              sizeof(kSha3_256DigestIdentifier));
       break;
     case kOtcryptoHashModeSha3_384:
-      if (message_digest.len != kSha3_384DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha3_384DigestWords, &kSha3_384DigestIdentifier,
+      digest_wordlen = kKmacSha3384DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha3_384DigestIdentifier,
              sizeof(kSha3_384DigestIdentifier));
       break;
     case kOtcryptoHashModeSha3_512:
-      if (message_digest.len != kSha3_512DigestWords) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      memcpy(encoding + kSha3_512DigestWords, &kSha3_512DigestIdentifier,
+      digest_wordlen = kKmacSha3512DigestWords;
+      memcpy(encoding + digest_wordlen, &kSha3_512DigestIdentifier,
              sizeof(kSha3_512DigestIdentifier));
       break;
     default:
       // Unsupported or unrecognized hash function.
       return OTCRYPTO_BAD_ARGS;
   };
+  if (launder32(message_digest.len) != digest_wordlen) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(message_digest.len, digest_wordlen);
 
   // Copy the digest into the encoding, reversing the order of bytes.
   for (size_t i = 0; i < ceil_div(message_digest.len, 2); i++) {
@@ -271,6 +262,54 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
 }
 
 /**
+ * Run an iteration of a hash function using the HMAC or KMAC driver.
+ *
+ * Only supports fixed-length hash functions (SHA2 or SHA3), not XOFs.
+ *
+ * It is the caller's responsibility to ensure there is enough space allocated
+ * at `digest` to hold the result.
+ *
+ * @param hash_mode Hash function to use.
+ * @param message Message data to hash.
+ * @param message_len Length of message data in bytes.
+ * @param[out] digest Destination buffer.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t hash(otcrypto_hash_mode_t hash_mode, const uint8_t *message,
+                     size_t message_len, uint32_t *digest) {
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha256:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha256);
+      return hmac_hash_sha256(message, message_len, digest);
+    case kOtcryptoHashModeSha384:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha384);
+      return hmac_hash_sha384(message, message_len, digest);
+    case kOtcryptoHashModeSha512:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha512);
+      return hmac_hash_sha512(message, message_len, digest);
+    case kOtcryptoHashModeSha3_224:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_224);
+      return kmac_sha3_224(message, message_len, digest);
+    case kOtcryptoHashModeSha3_256:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_256);
+      return kmac_sha3_256(message, message_len, digest);
+    case kOtcryptoHashModeSha3_384:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_384);
+      return kmac_sha3_384(message, message_len, digest);
+    case kOtcryptoHashModeSha3_512:
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha3_512);
+      return kmac_sha3_512(message, message_len, digest);
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  return OTCRYPTO_FATAL_ERR;
+}
+
+/**
  * Mask generation function MGF1 (RFC 8017, appendix B.2.1).
  *
  * The `mask` parameter is 32-bit aligned because this makes it more secure and
@@ -289,48 +328,31 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
 OT_WARN_UNUSED_RESULT
 static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
                      size_t seed_len, size_t mask_len, uint32_t *mask) {
-  // Check that the number of iterations won't overflow the counter.
   size_t digest_wordlen;
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
   size_t digest_bytelen = digest_wordlen * sizeof(uint32_t);
-  size_t num_iterations = ceil_div(mask_len, digest_bytelen);
-  if (num_iterations > UINT32_MAX) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
-  // First, process the iterations in which the entire digest will fit in the
-  // `mask` buffer.
   uint8_t hash_input[seed_len + sizeof(uint32_t)];
   memcpy(hash_input, seed, seed_len);
-  for (uint32_t i = 0; i < num_iterations - 1; i++) {
+  uint32_t i = 0;
+  while (0 < mask_len) {
     uint32_t ctr = __builtin_bswap32(i);
     memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
-    otcrypto_hash_digest_t digest = {
-        .data = mask, .len = digest_wordlen, .mode = hash_mode};
-    HARDENED_TRY(otcrypto_hash(
-        (otcrypto_const_byte_buf_t){
-            .data = hash_input,
-            .len = sizeof(hash_input),
-        },
-        digest));
+    if (mask_len < digest_bytelen) {
+      // Digest won't fit in mask (last iteration). Use a temporary buffer.
+      uint32_t digest[digest_wordlen];
+      HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), digest));
+      hardened_memcpy(mask, digest, ceil_div(mask_len, sizeof(uint32_t)));
+      mask_len = 0;
+    } else {
+      HARDENED_TRY(hash(hash_mode, hash_input, sizeof(hash_input), mask));
+      mask_len -= digest_bytelen;
+    }
     mask += digest_wordlen;
-    mask_len -= digest_bytelen;
+    i++;
   }
-  HARDENED_CHECK_LE(mask_len, digest_bytelen);
+  HARDENED_CHECK_EQ(mask_len, 0);
 
-  // Last iteration is special; use an intermediate buffer in case the digest
-  // is longer than the remaining mask buffer.
-  uint32_t ctr = __builtin_bswap32(num_iterations - 1);
-  memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
-  uint32_t digest_data[digest_wordlen];
-  otcrypto_hash_digest_t digest = {
-      .data = digest_data, .len = digest_wordlen, .mode = hash_mode};
-  HARDENED_TRY(
-      otcrypto_hash((otcrypto_const_byte_buf_t){.data = hash_input,
-                                                .len = sizeof(hash_input)},
-                    digest));
-
-  hardened_memcpy(mask, digest_data, ceil_div(mask_len, sizeof(uint32_t)));
   return OTCRYPTO_OK;
 }
 
@@ -380,12 +402,8 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
   }
 
   // Construct H = Hash(M').
-  otcrypto_hash_digest_t h_buffer = {
-      .data = h, .len = message_digest.len, .mode = message_digest.mode};
-  return otcrypto_hash(
-      (otcrypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
-                                  .len = sizeof(m_prime)},
-      h_buffer);
+  return hash(message_digest.mode, (unsigned char *)m_prime, sizeof(m_prime),
+              h);
 }
 
 status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
@@ -561,17 +579,8 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   HARDENED_TRY(digest_wordlen_get(hash_mode, &digest_wordlen));
 
   // Hash the label (step 2a).
-  otcrypto_const_byte_buf_t label_buf = {
-      .data = label,
-      .len = label_bytelen,
-  };
-  uint32_t lhash_data[digest_wordlen];
-  otcrypto_hash_digest_t lhash = {
-      .data = lhash_data,
-      .len = ARRAYSIZE(lhash_data),
-      .mode = hash_mode,
-  };
-  HARDENED_TRY(otcrypto_hash(label_buf, lhash));
+  uint32_t lhash[digest_wordlen];
+  HARDENED_TRY(hash(hash_mode, label, label_bytelen, lhash));
 
   // Generate a random string the same length as a hash digest (step 2d).
   uint32_t seed[digest_wordlen];
@@ -595,8 +604,8 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   // all-zero (step 2f). By computing the mask first, we can simply XOR with
   // lhash, 0x01, and M, skipping PS because XOR with zero is the identity
   // function.
-  for (size_t i = 0; i < ARRAYSIZE(lhash_data); i++) {
-    db[i] ^= lhash_data[i];
+  for (size_t i = 0; i < ARRAYSIZE(lhash); i++) {
+    db[i] ^= lhash[i];
   }
   size_t message_start_idx = db_bytelen - message_bytelen;
   unsigned char *db_bytes = (unsigned char *)db;
@@ -683,17 +692,8 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   }
 
   // Hash the label (step 3a).
-  otcrypto_const_byte_buf_t label_buf = {
-      .data = label,
-      .len = label_bytelen,
-  };
-  uint32_t lhash_data[digest_wordlen];
-  otcrypto_hash_digest_t lhash = {
-      .data = lhash_data,
-      .len = digest_wordlen,
-      .mode = hash_mode,
-  };
-  HARDENED_TRY(otcrypto_hash(label_buf, lhash));
+  uint32_t lhash[digest_wordlen];
+  HARDENED_TRY(hash(hash_mode, label, label_bytelen, lhash));
 
   // Note: as we compare parts of the encoded message to their expected values,
   // we must be careful that the attacker cannot differentiate error codes or
@@ -726,8 +726,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   decode_failure |= message_start_not_found;
 
   // Check that the first part of DB is equal to lhash.
-  hardened_bool_t lhash_matches =
-      hardened_memeq(lhash_data, db, digest_wordlen);
+  hardened_bool_t lhash_matches = hardened_memeq(lhash, db, digest_wordlen);
   ct_bool32_t lhash_match = ct_seq32(lhash_matches, kHardenedBoolTrue);
   ct_bool32_t lhash_mismatch = ~lhash_match;
   decode_failure |= lhash_mismatch;

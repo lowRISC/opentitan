@@ -66,9 +66,9 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:status",
     ],
 )
@@ -88,7 +88,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
-        "//sw/device/lib/crypto/impl:hash",
     ],
 )
 
@@ -102,8 +101,8 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:hash",
         "//sw/otbn/crypto:run_rsa_verify_3072",
     ],
 )
