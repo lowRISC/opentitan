@@ -157,7 +157,7 @@ module spi_device
   logic [1:0]        mem_b_rerror;
 
 
-  // Submoule SRAM Requests
+  // Submodule SRAM Requests
   sram_l2m_t flash_sram_l2m;
   sram_m2l_t flash_sram_m2l;
   sram_l2m_t sub_sram_l2m [IoModeEnd];
@@ -419,7 +419,7 @@ module spi_device
   assign txorder = reg2hw.cfg.tx_order.q;
   assign rxorder = reg2hw.cfg.rx_order.q;
 
-  // CSb : after 2stage synchronizer
+  // CSb : after two-stage synchronizer
   assign hw2reg.status.csb.d     = sys_csb_syncd;
   assign hw2reg.status.tpm_csb.d = sys_tpm_csb_syncd;
 
@@ -590,7 +590,7 @@ module spi_device
     end
   end
 
-  // Jedec ID
+  // JEDEC ID
   assign jedec_cfg = '{ num_cc:    reg2hw.jedec_cc.num_cc.q,
                         cc:        reg2hw.jedec_cc.cc.q,
                         jedec_id:  reg2hw.jedec_id.mf.q,
@@ -1516,7 +1516,7 @@ module spi_device
   // Passthrough block
   // signal: sys_csb_syncd -> sysclock 2FF CSb
   // signal: sys_busy  -> output of u_status readstatus_d[0]
-  //              set by CSb deassertion pulse & BUSY(SCK)
+  //              set by CSb de-assertion pulse & BUSY(SCK)
   //              clr by CSb = 1 & SW writing 0
   //
   // NOTE: there will be a gap between the actual assertion of CSb and the CSb
@@ -1524,7 +1524,7 @@ module spi_device
   //   there's chance that the SW may clear the BUSY right at the CSb
   //   assertion event. If that happens, passthrough block may set during SPI
   //   transaction. The behavior of the SPI_DEVICE in this scenario is
-  //   undeterminstic.
+  //   nondeterministic.
   logic  passthrough_block;
   assign passthrough_block = csb_status_busy_broadcast;
 
