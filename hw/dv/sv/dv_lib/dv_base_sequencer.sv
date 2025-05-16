@@ -19,6 +19,7 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
   uvm_tlm_analysis_fifo #(RSP_ITEM_T) rsp_analysis_fifo;
 
   CFG_T cfg;
+  event reset_done;
 
   `uvm_component_new
 
@@ -34,4 +35,15 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
     end
   endfunction : build_phase
 
+  virtual function void handle_reset(uvm_phase phase);
+    uvm_objection obj = phase.get_objection();
+    int obj_count;
+    stop_sequences();
+    obj_count = obj.get_objection_count(this);
+    if(obj_count > 0) begin
+      obj.drop_objection(this, $sformatf("Dropping %0d objections at reset", obj_count), obj_count);
+    end
+    start_phase_sequence(phase);
+    -> reset_done;
+  endfunction: handle_reset
 endclass
