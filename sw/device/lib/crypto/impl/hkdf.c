@@ -203,6 +203,7 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
       .keyblob = salt_keyblob,
       .keyblob_length = sizeof(salt_keyblob),
   };
+  salt_key.checksum = integrity_blinded_checksum(&salt_key);
 
   // Call HMAC(salt, IKM).
   uint32_t tag_data[digest_words];

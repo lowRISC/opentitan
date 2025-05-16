@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -119,8 +120,8 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
-      .checksum = 0,
   };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Construct the public key object.
   // TODO(#20762): once key-import exists for ECDH, use that instead.
@@ -134,6 +135,7 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
 
   // Create a destination for the shared secret.
   size_t shared_secret_words = kP256SharedSecretBytes / sizeof(uint32_t);
@@ -240,8 +242,8 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
           },
       .keyblob_length = sizeof(private_keyblob),
       .keyblob = private_keyblob,
-      .checksum = 0,
   };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Construct the public key object.
   // TODO(#20762): once key-import exists for ECDH, use that instead.
@@ -255,6 +257,7 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
 
   // Create a destination for the shared secret.
   size_t shared_secret_words = kP384SharedSecretBytes / sizeof(uint32_t);
