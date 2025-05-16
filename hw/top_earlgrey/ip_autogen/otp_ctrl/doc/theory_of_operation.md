@@ -374,7 +374,8 @@ This is illustrated in subfigure b).
 
 At the beginning of the digest calculation the 64bit state is initialized with an initialization vector (IV).
 Then, the data to be digested is split into 128bit chunks, each of which is used as a 128bit key input for updating the 64bit state with the compression function F.
-Chunks that are not aligned with 128bit are padded with zero, and the finalization operation consists of another 31-round encryption pass with a finalization constant.
+If a chunk is not an even number of 64bit blocks, its length is aligned to a multiple of 128 bits by repeating the last block.
+After the blocks have been included, there is a finalization operation that consists of another 31-round encryption pass but with a finalization constant.
 Note that both the IV as well as the finalization constant are global netlist constants chosen by the silicon creator.
 
 #### Scrambling Key Derivation
