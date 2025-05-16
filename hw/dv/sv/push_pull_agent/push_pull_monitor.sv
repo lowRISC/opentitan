@@ -20,6 +20,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
   `uvm_component_new
 
   task run_phase(uvm_phase phase);
+    super.run_phase(phase);
     @(posedge cfg.vif.rst_n);
     cfg.in_reset = 0;
     fork
