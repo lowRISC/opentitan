@@ -518,17 +518,6 @@ module racl_ctrl_reg_top
 
 
   // R[error_log]: V(False)
-  logic error_log_qe;
-  logic [4:0] error_log_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_error_log0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&(error_log_flds_we | 5'h1e)),
-    .q_o(error_log_qe)
-  );
   //   F[valid]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -548,14 +537,13 @@ module racl_ctrl_reg_top
     .d      (hw2reg.error_log.valid.d),
 
     // to internal hardware
-    .qe     (error_log_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.error_log.valid.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (error_log_valid_qs)
   );
-  assign reg2hw.error_log.valid.qe = error_log_qe;
 
   //   F[overflow]: 1:1
   prim_subreg #(
@@ -576,7 +564,7 @@ module racl_ctrl_reg_top
     .d      (hw2reg.error_log.overflow.d),
 
     // to internal hardware
-    .qe     (error_log_flds_we[1]),
+    .qe     (),
     .q      (),
     .ds     (),
 
@@ -603,7 +591,7 @@ module racl_ctrl_reg_top
     .d      (hw2reg.error_log.read_access.d),
 
     // to internal hardware
-    .qe     (error_log_flds_we[2]),
+    .qe     (),
     .q      (),
     .ds     (),
 
@@ -630,7 +618,7 @@ module racl_ctrl_reg_top
     .d      (hw2reg.error_log.role.d),
 
     // to internal hardware
-    .qe     (error_log_flds_we[3]),
+    .qe     (),
     .q      (),
     .ds     (),
 
@@ -657,7 +645,7 @@ module racl_ctrl_reg_top
     .d      (hw2reg.error_log.ctn_uid.d),
 
     // to internal hardware
-    .qe     (error_log_flds_we[4]),
+    .qe     (),
     .q      (),
     .ds     (),
 

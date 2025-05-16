@@ -152,35 +152,54 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
     .error_log_o ( racl_error_arb      )
   );
 
-  // On the first error, we log the address and other information
+  assign hw2reg.error_log.valid.d  = 1'b1;
+  assign hw2reg.error_log.valid.de = racl_error_arb.valid;
+
+  // Error logging is designed to snapshot information about the first error and then keep that
+  // static until the valid signal is cleared (using the fact that REG2HW.ERROR_LOG is rw1c).
+  //
+  // To make this work, most of the registers (ERROR_LOG_ADDRESS, ERROR_LOG.ERROR_READ_ACCESS,
+  // ERROR_LOG.ROLE and ERROR_LOG.CTN_UID) have a de signal that is high whenever error_log.valid.q
+  // is false. The data to be written is zero unless racl_error_arb.valid is true, in which case we
+  // take the value from racl_error_arb.
+  //
+  // The only register that behaves differently is the ERROR_LOG.OVERFLOW. This should go high if
+  // either of these events happen:
+  //
+  // - The overflow signal from racl_error_arb is true (which means that the arbiter saw more than
+  //   one error reported at once)
+  //
+  // - The register's valid signal is already true but racl_error_arb.valid is true. In this case,
+  //   the overflow has accumulated over time.
+  //
+  // As with the other registers described, this gets cleared again after a write to the VALID
+  // field.
+
+  logic had_error;
+  assign had_error = reg2hw.error_log.valid.q;
+
   logic first_error;
-  assign first_error = ~reg2hw.error_log.valid.q & racl_error_arb.valid;
+  assign first_error = racl_error_arb.valid & ~had_error;
 
-  // Writing 1 to the error valid bit clears the log and log address again
-  logic clear_log;
-  assign clear_log = reg2hw.error_log.valid.q & reg2hw.error_log.valid.qe;
 
-  assign hw2reg.error_log.valid.d  = ~clear_log;
-  assign hw2reg.error_log.valid.de = racl_error_arb.valid | clear_log;
+  assign hw2reg.error_log.overflow.d  = (racl_error_arb.overflow | had_error) &
+                                        racl_error_arb.valid;
 
-  // Overflow is raised when error is valid and a new error is coming in or more than one
-  // error is coming in at the same time
-  assign hw2reg.error_log.overflow.d  = ~clear_log;
-  assign hw2reg.error_log.overflow.de = (reg2hw.error_log.valid.q & racl_error_arb.valid) |
-                                        racl_error_arb.overflow                           |
-                                        clear_log;
+  assign hw2reg.error_log.overflow.de = racl_error_arb.overflow |
+                                        (had_error & racl_error_arb.valid) |
+                                        ~had_error;
 
-  assign hw2reg.error_log.read_access.d  = clear_log ? '0 : racl_error_arb.read_access;
-  assign hw2reg.error_log.read_access.de = first_error | clear_log;
+  assign hw2reg.error_log.read_access.d  = first_error ? racl_error_arb.read_access : '0;
+  assign hw2reg.error_log.read_access.de = ~had_error;
 
-  assign hw2reg.error_log.role.d  = clear_log ? '0 : racl_error_arb.racl_role;
-  assign hw2reg.error_log.role.de = first_error | clear_log;
+  assign hw2reg.error_log.role.d  = first_error ? racl_error_arb.racl_role : '0;
+  assign hw2reg.error_log.role.de = ~had_error;
 
-  assign hw2reg.error_log.ctn_uid.d  = clear_log ? '0 : racl_error_arb.ctn_uid;
-  assign hw2reg.error_log.ctn_uid.de = first_error | clear_log;
+  assign hw2reg.error_log.ctn_uid.d  = first_error ? racl_error_arb.ctn_uid : '0;
+  assign hw2reg.error_log.ctn_uid.de = ~had_error;
 
-  assign hw2reg.error_log_address.d  = clear_log ? '0 : racl_error_arb.request_address;
-  assign hw2reg.error_log_address.de = first_error | clear_log;
+  assign hw2reg.error_log_address.d  = first_error ? racl_error_arb.request_address : '0;
+  assign hw2reg.error_log_address.de = ~had_error;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Interrupt handling
