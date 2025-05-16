@@ -542,7 +542,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    if (ral_name != "otp_maco_reg_block") begin
+    if (ral_name != "otp_macro_reg_block") begin
       process_core_tl_access(item, csr_addr, ral_name, addr_mask,
                              addr_phase_read, addr_phase_write, data_phase_read, data_phase_write);
     end else begin
