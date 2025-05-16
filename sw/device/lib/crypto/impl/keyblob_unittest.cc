@@ -42,7 +42,7 @@ constexpr otcrypto_key_config_t kConfigOddBytes = {
 constexpr otcrypto_key_config_t kConfigHuge = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeAesCtr,
-    .key_length = SIZE_MAX,
+    .key_length = UINT32_MAX,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
@@ -136,7 +136,8 @@ TEST(Keyblob, FromToSharesNoop) {
   ASSERT_EQ(test_share1.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert shares to keyblob array.
-  size_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   status_t err = keyblob_from_shares(test_share0.data(), test_share1.data(),
                                      kConfigCtr128, keyblob);
@@ -145,7 +146,7 @@ TEST(Keyblob, FromToSharesNoop) {
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_bytes,
       .keyblob = keyblob,
       .checksum = 0,
   };
@@ -175,7 +176,8 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key/mask to keyblob array.
-  size_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
                                       kConfigCtr128, keyblob));
@@ -183,7 +185,7 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_bytes,
       .keyblob = keyblob,
       .checksum = 0,
   };
@@ -322,7 +324,8 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
   ASSERT_EQ(test_mask1.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and first mask to keyblob array.
-  size_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
                                       kConfigCtr128, keyblob));
@@ -330,7 +333,7 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_bytes,
       .keyblob = keyblob,
       .checksum = 0,
   };
@@ -366,7 +369,8 @@ TEST(Keyblob, RemaskWithZero) {
   ASSERT_EQ(test_mask1.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and first mask to keyblob array.
-  size_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
+  uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   uint32_t keyblob[keyblob_words] = {0};
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
                                       kConfigCtr128, keyblob));
@@ -374,7 +378,7 @@ TEST(Keyblob, RemaskWithZero) {
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = keyblob_bytes,
       .keyblob = keyblob,
       .checksum = 0,
   };
