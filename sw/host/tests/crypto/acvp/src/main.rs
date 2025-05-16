@@ -68,7 +68,7 @@ fn run<R: std::io::Read, W: std::io::Write>(
     output: Option<W>,
 ) -> Result<()> {
     let spi = transport.spi("BOOTSTRAP")?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi, None)?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi, None, /*ignore_frame_num=*/ false)?;
     let _ = UartConsole::wait_for(&spi_console_device, r"Running ", opts.timeout)?;
 
     let acvp_vectors: Vec<AcvpVectors> = serde_json::from_reader(input)?;
