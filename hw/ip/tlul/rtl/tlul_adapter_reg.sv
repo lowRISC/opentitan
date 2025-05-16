@@ -162,16 +162,15 @@ module tlul_adapter_reg
     d_user:   '0,
     d_error:  error
   };
-
-  // outgoing integrity generation
-  tlul_rsp_intg_gen #(
-    .EnableRspIntgGen(EnableRspIntgGen),
-    .EnableDataIntgGen(EnableDataIntgGen),
-    .UserInIsZero(1'b1)
-  ) u_rsp_intg_gen (
-    .tl_i(tl_o_pre),
-    .tl_o(tl_o)
-  );
+    // outgoing integrity generation
+    tlul_rsp_intg_gen #(
+      .EnableRspIntgGen(EnableRspIntgGen),
+      .EnableDataIntgGen(EnableDataIntgGen),
+      .UserInIsZero(1'b1)
+    ) u_rsp_intg_gen (
+      .tl_i(tl_o_pre),
+      .tl_o(tl_o)
+    );
 
   if (CmdIntgCheck) begin : gen_cmd_intg_check
     logic intg_error_q;

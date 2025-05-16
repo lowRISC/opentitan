@@ -43,10 +43,6 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
       .data_i(D2HRspMaxWidth'(rsp)),
       .data_o({rsp_intg, unused_payload})
     );
-  end else if (RspIntgInIsZero) begin : gen_zero_rsp_intg
-    assign rsp_intg = 0;
-  end else begin : gen_passthrough_rsp_intg
-    assign rsp_intg = tl_i.d_user.rsp_intg;
   end
 
   logic [DataIntgWidth-1:0] data_intg;
@@ -56,21 +52,16 @@ module tlul_rsp_intg_gen import tlul_pkg::*; #(
       .data_i(DataMaxWidth'(tl_i.d_data)),
       .data_intg_o({data_intg, unused_data})
     );
-  end else if (UserInIsZero) begin : gen_zero_data_intg
-    assign data_intg = 0;
-  end else begin : gen_passthrough_data_intg
-    assign data_intg = tl_i.d_user.data_intg;
   end
 
   always_comb begin
     tl_o = tl_i;
-    tl_o.d_user.rsp_intg = rsp_intg;
-    tl_o.d_user.data_intg = data_intg;
+    if (EnableRspIntgGen) tl_o.d_user.rsp_intg = rsp_intg;
+    if (EnableDataIntgGen) tl_o.d_user.data_intg = data_intg;
   end
 
   logic unused_tl;
   assign unused_tl = ^tl_i;
-
 
   `ASSERT_INIT(PayLoadWidthCheck, $bits(tl_d2h_rsp_intg_t) <= D2HRspMaxWidth)
   `ASSERT_INIT(DataWidthCheck_A, $bits(tl_i.d_data) <= DataMaxWidth)
