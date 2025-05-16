@@ -477,18 +477,18 @@ module rom_ctrl
 
   // Assertions to check that we've wired up our alert bits correctly
   if (!SecDisableScrambling) begin : gen_asserts_with_scrambling
-    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CompareFsmAlert_A,
-                                         gen_fsm_scramble_enabled.
-                                         u_checker_fsm.u_compare.u_state_regs,
-                                         alert_tx_o[AlertFatal])
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(CompareFsmAlert_A,
+                                            gen_fsm_scramble_enabled.
+                                            u_checker_fsm.u_compare.u_state_regs,
+                                            gen_alert_tx[AlertFatal].u_alert_sender.alert_req_i)
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CheckerFsmAlert_A,
                                          gen_fsm_scramble_enabled.
                                          u_checker_fsm.u_state_regs,
                                          alert_tx_o[AlertFatal])
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CompareAddrCtrCheck_A,
-                                           gen_fsm_scramble_enabled.
-                                           u_checker_fsm.u_compare.u_prim_count_addr,
-                                           alert_tx_o[AlertFatal])
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(CompareAddrCtrCheck_A,
+                                              gen_fsm_scramble_enabled.
+                                              u_checker_fsm.u_compare.u_prim_count_addr,
+                                              gen_alert_tx[AlertFatal].u_alert_sender.alert_req_i)
   end
 
   // The pwrmgr_data_o output (the "done" and "good" signals) should have a known value when out of
@@ -516,12 +516,11 @@ module rom_ctrl
 
   // Check that pwrmgr_data_o.done is never de-asserted once asserted
   `ASSERT(PwrmgrDataChk_A,
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True |=>
-          pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True,
+          !$fell(pwrmgr_data_o.done == prim_mubi_pkg::MuBi4True),
           clk_i, !rst_ni || internal_alert)
 
   // Check that keymgr_data_o.valid is never de-asserted once asserted
-  `ASSERT(KeymgrValidChk_A, keymgr_data_o.valid |=> keymgr_data_o.valid,
+  `ASSERT(KeymgrValidChk_A, !$fell(keymgr_data_o.valid),
           clk_i, !rst_ni || internal_alert)
 
   // Check that rom_tl_o.d_valid is not asserted unless pwrmgr_data_o.done is asseterd.
