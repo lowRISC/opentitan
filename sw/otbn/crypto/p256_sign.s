@@ -97,7 +97,8 @@ p256_sign:
   bn.lid    x2, 0(x3)
 
   /* scalar multiplication with base point (projective)
-     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
+     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G = 
+         ([w0,w1] + [w2,w3])*(dmem[p256_gx], dmem[p256_gy]) */
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
@@ -136,13 +137,24 @@ p256_sign:
   bn.rshi  w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
-       w4 <= w4 + 1 = alpha */
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the addition, as w4 contains a masking value that should be kept secret.
+     
+     Moreover, the bn.mov w26, w24 has been transposed so that accesses to
+     the (multiplicative) secret shares in [w0,w1] and w4 are non-consecutive.
+     These shares will unavoidably be used in the same instructions inside
+     mod_mul_320x128, but the transpose in particular removes one possible
+     interaction of these shares at no performance cost.
+
+     w4 <= w4 + 1 = alpha */
   bn.addi  w4, w4, 1
+  bn.mov   w26, w4
+  bn.addi  w31, w31, 0  /* dummy instruction to clear flags */
 
   /* w0 <= ([w0,w1] * w4) mod n = (k0 * alpha) mod n */
   bn.mov    w24, w0
   bn.mov    w25, w1
-  bn.mov    w26, w4
   jal       x1, mod_mul_320x128
   bn.mov    w0, w19
 
