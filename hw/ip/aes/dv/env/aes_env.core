@@ -52,6 +52,7 @@ generate:
     parameters:
       name: aes
       ip_hjson: ../../data/aes.hjson
+    position: prepend
 
 targets:
   default:

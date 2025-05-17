@@ -13,6 +13,10 @@ filesets:
       - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:earlgrey_systems:scan_role_pkg
+      - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx_ultrascale:all
+      - lowrisc:prim_generic:flash
     files:
       - rtl/clkgen_xil_ultrascale.sv
       - rtl/usr_access_xil7series.sv
@@ -41,6 +45,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     file_type: waiver
+
 
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1

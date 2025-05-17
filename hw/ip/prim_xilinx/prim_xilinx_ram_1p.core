@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:ram_1p"
 description: "Single port RAM"
+virtual:
+  - lowrisc:prim:ram_1p
+
 filesets:
   files_rtl:
     depend:
@@ -13,10 +16,10 @@ filesets:
       # It maps parameters to instructions for how to split memories into
       # logical groups of bits. See prim_xilinx_default_pkg for an example.
       - lowrisc:prim_xilinx:prim_xilinx_pkg
-      - lowrisc:prim_generic:ram_1p
+      - lowrisc:prim_generic:ram_1p_pkg
       - lowrisc:prim:util_memload
     files:
-      - rtl/prim_xilinx_ram_1p.sv
+      - rtl/prim_ram_1p.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

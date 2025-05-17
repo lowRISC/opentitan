@@ -2396,7 +2396,7 @@
         "bzlTransitiveDigest": "TGP6MHc11gJ9woCpDt9AjErdRQgorwimERJ2b3N5UTM=",
         "usagesDigest": "ZtUyGgCN5jAjxP2ihtejK0FyGAEc30zxHIv3rRzNKQ8=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "0650717d0e9b752ba713d13d88f5707ad326c88978565432e501a18e173d1913",
+          "@@//python-requirements.txt": "b4fc67889cabe76d3f2ebc070d6ae39d953c959e8f5588f5e12d972726d7837c",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2560,7 +2560,7 @@
               "dep_template": "@ot_python_deps//{name}:{target}",
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
-              "requirement": "edalize @ https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip --hash=sha256:da816ef1040d8063d4aa7377ef1fea33f0bffeca1f79a68b7a8930ef9d90c7c8"
+              "requirement": "edalize==0.6.1 --hash=sha256:2773339a404310b3b076ac8bcc68cadec8c937eba5a76c0a9b941064cd5ff9d7 --hash=sha256:6617b6b817d0445a7eaa003f2e7906f910b4ee659f9330ec6faeee633238536b"
             }
           },
           "ot_python_deps_310_enlighten": {
@@ -2581,6 +2581,15 @@
               "requirement": "exceptiongroup==1.2.2 --hash=sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b --hash=sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"
             }
           },
+          "ot_python_deps_310_fastjsonschema": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "fastjsonschema==2.21.1 --hash=sha256:794d4f0a58f848961ba16af7b9c85a3e88cd360df008c59aac6fc5ae9323b5d4 --hash=sha256:c9e5b7e908310918cf494a434eeb31384dd84a98b57a30bcb1f535015b554667"
+            }
+          },
           "ot_python_deps_310_flake8": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2596,7 +2605,7 @@
               "dep_template": "@ot_python_deps//{name}:{target}",
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
-              "requirement": "fusesoc @ https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip --hash=sha256:6d1d9b202748d160bc6da70ea8cf7a700ca80e1e7e4a78cbc1ec039bde595c65"
+              "requirement": "fusesoc==2.4.3 --hash=sha256:9ab4a82a5b7d4decbeb8f76049673a1b0806732ab8f807fee285bbc0452b3dc3 --hash=sha256:fc25b06cb52f516cd00c6d04c9f638205e46f3e35e840fc3f8ec00bb3a6405d5"
             }
           },
           "ot_python_deps_310_gitdb": {
@@ -2671,6 +2680,15 @@
               "requirement": "jsonschema==4.23.0 --hash=sha256:d71497fef26351a33265337fa77ffeb82423f3ea21283cd9467bb03999266bc4 --hash=sha256:fbadb6f8b144a8f8cf9f0b89ba94501d143e50411a1278633f56a7acf7fd5566"
             }
           },
+          "ot_python_deps_310_jsonschema2md": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "jsonschema2md==1.5.2 --hash=sha256:338cc3909a25d1424b6823b13e17782d40f0faed97be42ba8abb22b96a1d82f9 --hash=sha256:50492b944514ceac69d979d410b1a8a865c6a05a9bbc65a6a277ce10a61a9cab"
+            }
+          },
           "ot_python_deps_310_jsonschema_specifications": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2732,6 +2750,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "mako==1.3.9 --hash=sha256:95920acccb578427a9aa38e37a186b1e43156c87260d7ba18ca63aa4c7cbd3a1 --hash=sha256:b5d65ff3462870feec922dbccf38f6efb44e5714d7b593a656be86663d8600ac"
+            }
+          },
+          "ot_python_deps_310_markdown": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "markdown==3.7 --hash=sha256:2ae2471477cfd02dbbf038d5d9bc226d40def84b4fe2986e49b59b6b472bbed2 --hash=sha256:7eb6df5690b81a1d7942992c97fad2938e956e79df20cbc6186e9c3a77b1c803"
             }
           },
           "ot_python_deps_310_markupsafe": {
@@ -5769,6 +5796,7 @@
                 "edalize": "{\"ot_python_deps_310_edalize\":[{\"version\":\"3.10\"}]}",
                 "enlighten": "{\"ot_python_deps_310_enlighten\":[{\"version\":\"3.10\"}]}",
                 "exceptiongroup": "{\"ot_python_deps_310_exceptiongroup\":[{\"version\":\"3.10\"}]}",
+                "fastjsonschema": "{\"ot_python_deps_310_fastjsonschema\":[{\"version\":\"3.10\"}]}",
                 "flake8": "{\"ot_python_deps_310_flake8\":[{\"version\":\"3.10\"}]}",
                 "fusesoc": "{\"ot_python_deps_310_fusesoc\":[{\"version\":\"3.10\"}]}",
                 "gitdb": "{\"ot_python_deps_310_gitdb\":[{\"version\":\"3.10\"}]}",
@@ -5779,6 +5807,7 @@
                 "isort": "{\"ot_python_deps_310_isort\":[{\"version\":\"3.10\"}]}",
                 "jinja2": "{\"ot_python_deps_310_jinja2\":[{\"version\":\"3.10\"}]}",
                 "jsonschema": "{\"ot_python_deps_310_jsonschema\":[{\"version\":\"3.10\"}]}",
+                "jsonschema2md": "{\"ot_python_deps_310_jsonschema2md\":[{\"version\":\"3.10\"}]}",
                 "jsonschema_specifications": "{\"ot_python_deps_310_jsonschema_specifications\":[{\"version\":\"3.10\"}]}",
                 "libclang": "{\"ot_python_deps_310_libclang\":[{\"version\":\"3.10\"}]}",
                 "libcst": "{\"ot_python_deps_310_libcst\":[{\"version\":\"3.10\"}]}",
@@ -5786,6 +5815,7 @@
                 "lizard": "{\"ot_python_deps_310_lizard\":[{\"version\":\"3.10\"}]}",
                 "lxml": "{\"ot_python_deps_310_lxml\":[{\"version\":\"3.10\"}]}",
                 "mako": "{\"ot_python_deps_310_mako\":[{\"version\":\"3.10\"}]}",
+                "markdown": "{\"ot_python_deps_310_markdown\":[{\"version\":\"3.10\"}]}",
                 "markupsafe": "{\"ot_python_deps_310_markupsafe\":[{\"version\":\"3.10\"}]}",
                 "mccabe": "{\"ot_python_deps_310_mccabe\":[{\"version\":\"3.10\"}]}",
                 "mistletoe": "{\"ot_python_deps_310_mistletoe\":[{\"version\":\"3.10\"}]}",
@@ -5863,6 +5893,7 @@
                 "edalize",
                 "enlighten",
                 "exceptiongroup",
+                "fastjsonschema",
                 "flake8",
                 "fusesoc",
                 "gitdb",
@@ -5873,6 +5904,7 @@
                 "isort",
                 "jinja2",
                 "jsonschema",
+                "jsonschema2md",
                 "jsonschema_specifications",
                 "libclang",
                 "libcst",
@@ -5880,6 +5912,7 @@
                 "lizard",
                 "lxml",
                 "mako",
+                "markdown",
                 "markupsafe",
                 "mccabe",
                 "mistletoe",

@@ -8,6 +8,7 @@ description: "Reset manager registers"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
       - lowrisc:prim:subreg
       - ${instance_vlnv("lowrisc:ip:rstmgr_pkg")}
