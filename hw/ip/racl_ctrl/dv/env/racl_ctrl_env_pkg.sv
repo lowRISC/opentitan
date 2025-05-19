@@ -17,6 +17,8 @@ package racl_ctrl_env_pkg;
   import racl_error_log_agent_pkg::racl_error_log_agent;
   import racl_error_log_agent_pkg::racl_error_log_agent_cfg;
   import racl_error_log_agent_pkg::racl_error_log_sequencer;
+  import racl_error_log_agent_pkg::racl_error_log_item;
+  import racl_error_log_agent_pkg::racl_error_log_vec_item;
   import racl_error_log_agent_pkg::racl_error_log_sporadic_seq;
 
   // macro includes
@@ -37,6 +39,7 @@ package racl_ctrl_env_pkg;
   `include "racl_ctrl_env_cfg.sv"
   `include "racl_ctrl_env_cov.sv"
   `include "racl_ctrl_virtual_sequencer.sv"
+  `include "racl_ctrl_error_arb_predictor.sv"
   `include "racl_ctrl_scoreboard.sv"
   `include "racl_ctrl_env.sv"
   `include "racl_ctrl_vseq_list.sv"
