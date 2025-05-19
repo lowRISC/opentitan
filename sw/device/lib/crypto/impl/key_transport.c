@@ -316,55 +316,55 @@ otcrypto_status_t otcrypto_import_blinded_key(
 }
 
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
+    const otcrypto_blinded_key_t *blinded_key, otcrypto_word32_buf_t key_share0,
     otcrypto_word32_buf_t key_share1) {
-  if (blinded_key.keyblob == NULL || key_share0.data == NULL ||
+  if (blinded_key->keyblob == NULL || key_share0.data == NULL ||
       key_share1.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check key integrity.
-  if (launder32(integrity_blinded_key_check(&blinded_key)) !=
+  if (launder32(integrity_blinded_key_check(blinded_key)) !=
       kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(&blinded_key),
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(blinded_key),
                     kHardenedBoolTrue);
 
   // Ensure the key is symmetric and not hardware-backed.
-  HARDENED_TRY(keyblob_ensure_xor_masked(blinded_key.config));
+  HARDENED_TRY(keyblob_ensure_xor_masked(blinded_key->config));
 
   // Check that key is exportable.
-  if (launder32(blinded_key.config.exportable) != kHardenedBoolTrue) {
+  if (launder32(blinded_key->config.exportable) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(blinded_key.config.exportable, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(blinded_key->config.exportable, kHardenedBoolTrue);
 
   // Check the lengths of the shares.
-  size_t share_words = launder32(keyblob_share_num_words(blinded_key.config));
+  size_t share_words = launder32(keyblob_share_num_words(blinded_key->config));
   if (launder32(key_share0.len) != share_words ||
       launder32(key_share1.len) != share_words) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key_share0.len,
-                    keyblob_share_num_words(blinded_key.config));
+                    keyblob_share_num_words(blinded_key->config));
   HARDENED_CHECK_EQ(key_share1.len,
-                    keyblob_share_num_words(blinded_key.config));
+                    keyblob_share_num_words(blinded_key->config));
 
   // Check the length of the keyblob.
-  size_t keyblob_words = launder32(keyblob_num_words(blinded_key.config));
-  if ((blinded_key.keyblob_length % sizeof(uint32_t) != 0) ||
-      (blinded_key.keyblob_length / sizeof(uint32_t) != keyblob_words)) {
+  size_t keyblob_words = launder32(keyblob_num_words(blinded_key->config));
+  if ((blinded_key->keyblob_length % sizeof(uint32_t) != 0) ||
+      (blinded_key->keyblob_length / sizeof(uint32_t) != keyblob_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(blinded_key.keyblob_length,
+  HARDENED_CHECK_EQ(blinded_key->keyblob_length,
                     keyblob_words * sizeof(uint32_t));
 
   // Get pointers to the internal shares and copy them into output buffers.
   uint32_t *keyblob_share0;
   uint32_t *keyblob_share1;
   HARDENED_TRY(
-      keyblob_to_shares(&blinded_key, &keyblob_share0, &keyblob_share1));
+      keyblob_to_shares(blinded_key, &keyblob_share0, &keyblob_share1));
   hardened_memcpy(key_share0.data, keyblob_share0, key_share0.len);
   hardened_memcpy(key_share1.data, keyblob_share1, key_share1.len);
   return OTCRYPTO_OK;
