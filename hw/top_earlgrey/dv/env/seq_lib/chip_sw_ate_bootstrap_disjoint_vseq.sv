@@ -23,6 +23,7 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
     byte sw_byte_q[$];
     uint bytes_to_write;
     uint byte_cnt = 0;
+    uint page_cnt = 0;
     uint SPI_FLASH_PAGE_SIZE = 256;
 
     super.body();
@@ -94,16 +95,18 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
         for (int i = 0; i < bytes_to_write; i++) begin
           m_spi_host_seq.payload_q.push_back(sw_byte_q[byte_cnt + i]);
         end
+        spi_host_flash_issue_write_cmd(m_spi_host_seq);
+        `uvm_info(`gfn, $sformatf("Writing page %d ...\n", page_cnt), UVM_LOW);
       end
-      spi_host_flash_issue_write_cmd(m_spi_host_seq);
       byte_cnt += bytes_to_write;
+      page_cnt += 1;
     end
     `uvm_info(`gfn, "Done.", UVM_LOW)
 
     // Read back the programmed flash data page to confirm it has been
     // programmed correctly.
-    `uvm_info(`gfn, $sformatf("Checking page program succeeded ...\n"), UVM_LOW);
-    for (int a = 0; a < sw_byte_q.size; a += 4) begin
+    `uvm_info(`gfn, "Checking page program succeeded ...\n", UVM_LOW);
+    for (int a = 0; a < (sw_byte_q.size - 4); a += 4) begin
       logic [TL_DW-1:0] expected_word = {sw_byte_q[a + 3], sw_byte_q[a + 2],
                                          sw_byte_q[a + 1], sw_byte_q[a + 0]};
       `uvm_info(`gfn, $sformatf("  Checking SW image word at address %08x: %08x ...\n",
