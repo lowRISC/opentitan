@@ -306,13 +306,18 @@ class CommitterStatsReporter:
                         pr_authors[author] += 1
 
                     reviews = pr["reviews"]
+                    unique_authors = set()
                     for review in reviews["nodes"]:
                         review_author = (
                             review["author"]["login"]
                             if review["author"]
                             else "Unknown Author"
                         )
-                        if review_author:
+                        if (
+                            review_author != author
+                            and review_author not in unique_authors
+                        ):
+                            unique_authors.add(review_author)
                             review_authors[review_author] += 1
 
                 if self.log_progress:
