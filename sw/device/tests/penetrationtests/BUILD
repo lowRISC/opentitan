@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -242,4 +242,38 @@ pentest_sca(
     test_args = SHA3_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_sha3:harness",
     test_vectors = SHA3_SCA_TESTVECTOR_TARGETS,
+)
+
+CRYPTOLIB_FI_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_cryptolib",
+]
+
+CRYPTOLIB_FI_TESTVECTOR_ARGS = " ".join([
+    "--fi-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_FI_TESTVECTOR_TARGETS
+])
+
+pentest_cryptolib(
+    name = "fi_cryptolib",
+    slow_test = False,
+    test_args = CRYPTOLIB_FI_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_cryptolib:harness",
+    test_vectors = CRYPTOLIB_FI_TESTVECTOR_TARGETS,
+)
+
+CRYPTOLIB_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_cryptolib",
+]
+
+CRYPTOLIB_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_cryptolib(
+    name = "sca_cryptolib",
+    slow_test = False,
+    test_args = CRYPTOLIB_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_cryptolib:harness",
+    test_vectors = CRYPTOLIB_SCA_TESTVECTOR_TARGETS,
 )

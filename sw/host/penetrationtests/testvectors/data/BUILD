@@ -5,6 +5,11 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "fi_cryptolib",
+    srcs = ["fi_cryptolib.json"],
+)
+
+filegroup(
     name = "fi_crypto",
     srcs = ["fi_crypto.json"],
 )
@@ -42,6 +47,11 @@ filegroup(
 filegroup(
     name = "sca_aes",
     srcs = ["sca_aes.json"],
+)
+
+filegroup(
+    name = "sca_cryptolib",
+    srcs = ["sca_cryptolib.json"],
 )
 
 filegroup(
