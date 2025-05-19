@@ -19,6 +19,7 @@ import json
 import os
 import sys
 import requests
+import time
 from collections import Counter
 from typing import Optional, Dict, Tuple, Any
 
@@ -83,10 +84,60 @@ class CommitterStatsReporter:
         if variables is not None:
             payload["variables"] = variables
 
-        response = requests.post(GH_GRAPHQL_API_ENDPOINT, json=payload, headers=headers)
-        response.raise_for_status()
+        # Repeatedly try to request the data from the Github GraphQL API,
+        # respecting rate limit requests and using an exponential timeout
+        # scheme to handle connection issues.
+        response_wait_time = None
+        while True:
+            try:
+                response = requests.post(
+                    GH_GRAPHQL_API_ENDPOINT, json=payload, headers=headers
+                )
+                if response_wait_time is not None:
+                    time.sleep(response_wait_time)
+                response.raise_for_status()
+            except requests.exceptions.HTTPError as e:
+                print(f"HTTP Error: {e}\nWaiting 5 seconds and retrying...")
+                time.sleep(5)
+                continue
+            except requests.exceptions.ConnectTimeout:
+                if response_wait_time is None:
+                    response_wait_time = 1
+                else:
+                    response_wait_time *= 2
+                    print(
+                        "Unable to connect to Github API. Retrying with a",
+                        f"wait of {response_wait_time} seconds...",
+                    )
+                continue
 
-        return response.json()
+            # Check response status code
+            if (
+                response.status_code == 403
+                and "X-RateLimit-Remaining" in response.headers
+            ):
+                # If we hit a rate limit, sleep for the suggested time.
+                remaining_reqs = int(response.headers["X-RateLimit-Remaining"])
+                reset = int(response.headers.get("X-RateLimit-Reset", 0))
+                if remaining_reqs == 0:
+                    wait_time = max(reset - time.time(), 5)
+                    if self.log_progress:
+                        print(
+                            f"Rate limit exceeded - sleeping for {int(wait_time)}",
+                            "seconds before retrying...",
+                        )
+                    time.sleep(wait_time)
+                    continue
+            elif response.status_code != 200:  # response =/= HTTP OK
+                print(f"Query failed with code {response.status_code}: {response.text}")
+                sys.exit(-1)
+
+            # Also handle GraphQL errors from bad queries / API changes
+            data = response.json()
+            if "errors" in data:
+                print(f"GraphQL error: {data['errors']}")
+
+            return data
 
     def get_commit_authors(
         self,
