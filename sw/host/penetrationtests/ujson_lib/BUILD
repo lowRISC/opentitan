@@ -13,6 +13,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "fi_cryptolib_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:cryptolib_fi_commands"],
+)
+
+ujson_rust(
     name = "fi_crypto_commands_rust",
     srcs = ["//sw/device/tests/penetrationtests/json:crypto_fi_commands"],
 )
@@ -58,6 +63,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "sca_cryptolib_commands_rust",
+    srcs = ["//sw/device/tests/penetrationtests/json:cryptolib_sca_commands"],
+)
+
+ujson_rust(
     name = "sca_edn_commands_rust",
     srcs = ["//sw/device/tests/penetrationtests/json:edn_sca_commands"],
 )
@@ -92,6 +102,7 @@ rust_library(
     srcs = [
         "src/commands.rs",
         "src/fi_crypto_commands.rs",
+        "src/fi_cryptolib_commands.rs",
         "src/fi_ibex_commands.rs",
         "src/fi_lc_ctrl_commands.rs",
         "src/fi_otbn_commands.rs",
@@ -101,6 +112,7 @@ rust_library(
         "src/lib.rs",
         "src/pentest_lib_commands.rs",
         "src/sca_aes_commands.rs",
+        "src/sca_cryptolib_commands.rs",
         "src/sca_edn_commands.rs",
         "src/sca_hmac_commands.rs",
         "src/sca_ibex_commands.rs",
@@ -111,6 +123,7 @@ rust_library(
     compile_data = [
         ":commands_rust",
         ":fi_crypto_commands_rust",
+        ":fi_cryptolib_commands_rust",
         ":fi_ibex_commands_rust",
         ":fi_lc_ctrl_commands_rust",
         ":fi_otbn_commands_rust",
@@ -119,6 +132,7 @@ rust_library(
         ":fi_rom_commands_rust",
         ":pentest_lib_commands_rust",
         ":sca_aes_commands_rust",
+        ":sca_cryptolib_commands_rust",
         ":sca_edn_commands_rust",
         ":sca_hmac_commands_rust",
         ":sca_ibex_commands_rust",
@@ -129,6 +143,7 @@ rust_library(
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "fi_crypto_commands_loc": "$(execpath :fi_crypto_commands_rust)",
+        "fi_cryptolib_commands_loc": "$(execpath :fi_cryptolib_commands_rust)",
         "fi_ibex_commands_loc": "$(execpath :fi_ibex_commands_rust)",
         "fi_lc_ctrl_commands_loc": "$(execpath :fi_lc_ctrl_commands_rust)",
         "fi_otbn_commands_loc": "$(execpath :fi_otbn_commands_rust)",
@@ -137,6 +152,7 @@ rust_library(
         "fi_rom_commands_loc": "$(execpath :fi_rom_commands_rust)",
         "pentest_lib_commands_loc": "$(execpath :pentest_lib_commands_rust)",
         "sca_aes_commands_loc": "$(execpath :sca_aes_commands_rust)",
+        "sca_cryptolib_commands_loc": "$(execpath :sca_cryptolib_commands_rust)",
         "sca_edn_commands_loc": "$(execpath :sca_edn_commands_rust)",
         "sca_hmac_commands_loc": "$(execpath :sca_hmac_commands_rust)",
         "sca_ibex_commands_loc": "$(execpath :sca_ibex_commands_rust)",
