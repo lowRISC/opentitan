@@ -25,6 +25,23 @@ cc_library(
 )
 
 cc_library(
+    name = "cryptolib_sca",
+    srcs = ["cryptolib_sca.c"],
+    hdrs = ["cryptolib_sca.h"],
+    deps = [
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:cryptolib_sca_commands",
+    ],
+)
+
+cc_library(
     name = "ecc256_keygen_sca",
     srcs = ["ecc256_keygen_sca.c"],
     hdrs = ["ecc256_keygen_sca.h"],
