@@ -126,9 +126,10 @@ module prim_sram_arbiter #(
 
   // Request FIFO
   prim_fifo_sync #(
-    .Width    (N),
-    .Pass     (1'b0),
-    .Depth    (4)        // Assume at most 4 pipelined
+    .Width       (N),
+    .Pass        (1'b0),
+    .Depth       (4),       // Assume at most 4 pipelined
+    .NeverClears (1'b1)
   ) u_req_fifo (
     .clk_i,
     .rst_ni,

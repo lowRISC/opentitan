@@ -775,8 +775,9 @@ end
   // We can have up to two OTP commands in flight, hence we size this to be 2 deep.
   // The partitions can unconditionally sink requested data.
   prim_fifo_sync #(
-    .Width(vbits(NumAgents)),
-    .Depth(2)
+    .Width       (vbits(NumAgents)),
+    .Depth       (2),
+    .NeverClears (1'b1)
   ) u_otp_rsp_fifo (
     .clk_i,
     .rst_ni,

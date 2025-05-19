@@ -554,9 +554,10 @@ module hmac
   // Extended for 1024-bit block
   localparam int MsgFifoDepth = 32;
   prim_fifo_sync #(
-    .Width   ($bits(sha_fifo32_t)),
-    .Pass    (1'b1),
-    .Depth   (MsgFifoDepth)
+    .Width       ($bits(sha_fifo32_t)),
+    .Pass        (1'b1),
+    .Depth       (MsgFifoDepth),
+    .NeverClears (1'b1)
   ) u_msg_fifo (
     .clk_i,
     .rst_ni,
