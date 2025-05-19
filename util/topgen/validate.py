@@ -64,6 +64,7 @@ top_optional = {
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
     'inter_module': ['g', 'define the signal connections between the modules'],
+    'interrupts': ['g', 'interrupt controller configuration'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'outgoing_alert': ['g', 'the outgoing alert groups'],
@@ -290,6 +291,7 @@ module_optional = {
         'represent a dict that associates all interfaces with the given '
         'mapping. It is an error to specify both this and racl_mappings.'
     ],
+    'plic': ['s', 'Interrupt controller managing this module'],
 }
 
 module_added = {
@@ -384,10 +386,12 @@ interrupt_required = {
     'intr_type': ['s', 'The IntrType, either Event or Status'],
     'default_val': ['s', 'a string interpreted as boolean'],
     'incoming': ['s', 'a string interpreted as boolean'],
+    'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
 }
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
+    'plic': ['s', 'controller for this interrupt'],
 }
 interrupt_added = {}
 
