@@ -518,7 +518,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .Width(TxnDataWidth),
       .Pass(1'b0),
       .Depth(1),
-      .OutputZeroIfEmpty(1'b0)
+      .OutputZeroIfEmpty(1'b0),
+      .NeverClears(1'b1)
     ) u_sync_fifo (
       .clk_i,
       .rst_ni,
@@ -636,7 +637,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       .Width(top_pkg::TL_SZW),
       .Pass(1'b0),
       .Depth(Outstanding),
-      .OutputZeroIfEmpty(1'b1)
+      .OutputZeroIfEmpty(1'b1),
+      .NeverClears(1'b1)
     ) u_sync_fifo_a_size (
       .clk_i,
       .rst_ni,
