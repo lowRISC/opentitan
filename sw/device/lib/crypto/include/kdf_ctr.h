@@ -35,7 +35,7 @@ extern "C" {
  * @return Result of the key derivation operation.
  */
 otcrypto_status_t otcrypto_kdf_ctr_hmac(
-    const otcrypto_blinded_key_t key_derivation_key,
+    const otcrypto_blinded_key_t *key_derivation_key,
     const otcrypto_const_byte_buf_t label,
     const otcrypto_const_byte_buf_t context,
     otcrypto_blinded_key_t *output_key_material);
