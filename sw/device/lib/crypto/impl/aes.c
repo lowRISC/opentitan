@@ -34,12 +34,15 @@ OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, (uint32_t)kOtcryptoAesModeCtr);
  * function is only for basic AES modes; do not use for AES-GCM or AES-KWP keys
  * since they will fail the mode check.
  *
+ * Re-masks the key after checking its integrity. The caller should ensure the
+ * entropy complex is up before calling this function.
+ *
  * @param blinded_key Blinded key struct.
  * @param aes_mode Block cipher mode.
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t aes_key_construct(const otcrypto_blinded_key_t *blinded_key,
+static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
                                   const otcrypto_aes_mode_t aes_mode,
                                   aes_key_t *aes_key) {
   // Key integrity check.
@@ -59,6 +62,9 @@ static status_t aes_key_construct(const otcrypto_blinded_key_t *blinded_key,
     aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (blinded_key->config.hw_backed == kHardenedBoolFalse) {
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(blinded_key));
+
     // Get pointers to the individual shares.
     uint32_t *share0;
     uint32_t *share1;
@@ -239,7 +245,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
                                otcrypto_word32_buf_t iv,
                                otcrypto_aes_mode_t aes_mode,
                                otcrypto_aes_operation_t aes_operation,
