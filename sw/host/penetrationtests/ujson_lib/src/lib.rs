@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 pub mod commands;
 pub mod fi_crypto_commands;
+pub mod fi_cryptolib_commands;
 pub mod fi_ibex_commands;
 pub mod fi_lc_ctrl_commands;
 pub mod fi_otbn_commands;
@@ -11,6 +12,7 @@ pub mod fi_rng_commands;
 pub mod fi_rom_commands;
 pub mod pentest_lib_commands;
 pub mod sca_aes_commands;
+pub mod sca_cryptolib_commands;
 pub mod sca_edn_commands;
 pub mod sca_hmac_commands;
 pub mod sca_ibex_commands;

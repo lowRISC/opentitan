@@ -29,6 +29,23 @@ cc_library(
 )
 
 cc_library(
+    name = "cryptolib_fi",
+    srcs = ["cryptolib_fi.c"],
+    hdrs = ["cryptolib_fi.h"],
+    deps = [
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:cryptolib_fi_commands",
+    ],
+)
+
+cc_library(
     name = "ibex_fi",
     srcs = [
         "ibex_fi.S",
@@ -38,6 +55,7 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
