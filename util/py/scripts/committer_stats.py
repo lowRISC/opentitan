@@ -23,10 +23,12 @@ import os
 import sys
 import requests
 import time
+import webbrowser
 from collections import Counter
+from enum import Enum
 from pathlib import Path
 from tabulate import tabulate
-from typing import Optional, Dict, Tuple, Any
+from typing import Optional, Dict, Tuple, Iterable, Any
 
 
 # OpenTitan main repo URL
@@ -42,8 +44,22 @@ REPO_TOP = Path(__file__).parents[3]
 COMMITTERS_FILE = "COMMITTERS"
 COMMITTERS_PATH = REPO_TOP / COMMITTERS_FILE
 
+# The location of the output HTML file to generate if using HtmlDisplay output
+HTML_OUTPUT_FILE = "committer_stats.html"
+HTML_OUTPUT_PATH = REPO_TOP / HTML_OUTPUT_FILE
+
 
 class CommitterStatsReporter:
+
+    # Different formats the report can be output in
+    class OutputFormat(Enum):
+        Table = "table"
+        Json = "json"
+        HtmlOutput = "html_output"
+        HtmlDisplay = "html_display"
+
+        def __str__(self):
+            return self.value
 
     # A list of users to ignore from calculated statistics.
     IgnoredUsers = [
@@ -444,7 +460,116 @@ class CommitterStatsReporter:
 
         return 0
 
-    def display_stats(self, filtered: list[str]) -> int:
+    def _display_as_table(
+        headers: Iterable[str], data: Iterable[Iterable[int]]
+    ) -> None:
+        """Display the generated contributor statistics as a table.
+
+        Args:
+            headers (Iterable[str]): The table column headers to use.
+            data (Iterable[Iterable[int]]): The sorted table data, row-by-row.
+        """
+        print(
+            "\nContributors sorted by authored commits, then merged PRs,",
+            "then reviewed PRs.\n",
+            tabulate(
+                data,
+                headers,
+                tablefmt="pretty",
+            ),
+        )
+
+    def _display_as_json(fields: Iterable[str], data: Iterable[Iterable[int]]) -> None:
+        """Display the generated contributor statistics as JSON output.
+
+        Args:
+            fields (Iterable[str]): The JSON field names to use per-entity
+            (analogous to table column headers).
+            data (Iterable[Iterable[int]]): The sorted entity data, one-by-one.
+        """
+        # TODO: refactor to make available as a public API that returns the
+        # JSON for easier integration into other scripts.
+        print(
+            json.dumps(
+                {
+                    entry[0]: {fields[i]: entry[i] for i in range(1, len(entry))}
+                    for entry in data
+                }
+            )
+        )
+
+    def _display_as_html(
+        headers: Iterable[str], data: Iterable[Iterable[int]], display: bool
+    ) -> None:
+        """Display the generated contributor statistics as basic HTML.
+
+        Args:
+            headers (Iterable[str]): The table column headers to use.
+            data (Iterable[Iterable[int]]): The sorted table data, row-by-row.
+            display (bool): Whether to open write the HTML, and then display it
+            by opening the user's default web browser, or not (just write the
+            HTML source to stdout).
+        """
+        # Format HTML for table headers
+        header_html = "                <tr>\n"
+        for col in headers:
+            header_html += " " * 20 + f'<th align="center">{col}</th>\n'
+        header_html += "                </tr>"
+        # Format HTML for table rows
+        row_html = ""
+        for row in data:
+            row_html += " " * 16 + "<tr>\n"
+            for item in row:
+                row_html += " " * 20 + f'<td align = "center">{item}</td>\n'
+            row_html += " " * 16 + "</tr>\n"
+
+        # Construct entire table HTML
+        table_css = """
+    <style>
+        table {
+            table-layout: auto;
+            text-align: center;
+            vertical-align: middle;
+            width: 90%;
+            font-family: arials, sans-serif;
+        }
+        tr:nth-child(even) {
+            background-color: #EEEEEE;
+        }
+        th, td {
+            border: 1px solid #EEEEEE;
+        }
+    </style>
+        """
+        table_html = f"""
+<html>
+    <head></head>
+    {table_css.strip()}
+    <body>
+        <table>
+            <thead>
+                {header_html.strip()}
+            </thead>
+            <tbody>
+                {row_html.strip()}
+            </tbody>
+        </table>
+    </body>
+</html>
+        """
+
+        table_html = table_html.strip()
+        if not display:
+            print(table_html)
+            return
+
+        # Write to a pre-determined file rather than a temporary file due to
+        # potential compartmentalisation issues with browsers on some OSs.
+        with open(HTML_OUTPUT_PATH, "w+") as f:
+            f.write(table_html)
+        webbrowser.open(f"file://{HTML_OUTPUT_PATH}")
+
+    def display_stats(self, filtered: list[str], format: OutputFormat) -> int:
         """Display the most recently calculated contributor statistics for the
         configured repository. Requires `calculate_stats` to have been called
         at least once previously.
@@ -452,6 +577,7 @@ class CommitterStatsReporter:
         Args:
             filter (list[str]): A list of entries to filter out of the results,
             so that these entries are not displayed.
+            format (OutputFormat): The format to display the results using.
 
         Returns:
             int: Return code (0 = Ok).
@@ -479,7 +605,7 @@ class CommitterStatsReporter:
             reviews = self.review_data.get(account, 0)
             table.append((account, commits, prs, reviews))
 
-        # Sort by commits, then merged PRs, then reviewd PRs.
+        # Sort by commits, then merged PRs, then reviewed PRs.
         table_rows = sorted(table, key=lambda a: tuple(a[1:]), reverse=True)
         for entry in table_rows:
             # Move the "Unknown Author" entry for deleted users to the end
@@ -488,15 +614,18 @@ class CommitterStatsReporter:
                 table_rows.append(entry)
                 break
 
-        print(
-            "\nContributors sorted by authored commits, then merged PRs,",
-            "then reviewed PRs.",
-            tabulate(
-                table_rows,
-                headers,
-                tablefmt="pretty",
-            ),
-        )
+        match format:
+            case self.OutputFormat.Table:
+                CommitterStatsReporter._display_as_table(headers, table_rows)
+            case self.OutputFormat.Json:
+                CommitterStatsReporter._display_as_json(headers, table_rows)
+            case self.OutputFormat.HtmlDisplay | self.OutputFormat.HtmlOutput:
+                CommitterStatsReporter._display_as_html(
+                    headers, table_rows, format == self.OutputFormat.HtmlDisplay
+                )
+            case other_format:
+                print(f"Unknown output `format`: {other_format}")
+                return -1
 
         return 0
 
@@ -505,6 +634,7 @@ def main(
     repo_url: str,
     github_token: str,
     filter: bool,
+    format: CommitterStatsReporter.OutputFormat,
     log_progress: bool,
     page_limit: Optional[int] = None,
 ) -> int:
@@ -518,6 +648,7 @@ def main(
         API authorization.
         filter (bool): Whether to filter the results to exclude contributors
         that are already in the current `COMMITTERS_FILE`.
+        format (CommitterStatsReporter.OutputFormat): Output display format.
         log_progress (bool): Whether to log progress in computing stats or not.
         page_limit (Optional[int], optional): The number of pages to limit each
         request to. Intended to be used for testing purposes only. Defaults to
@@ -548,7 +679,7 @@ def main(
     if res != 0:
         return res
 
-    res = stats.display_stats(filtered_names)
+    res = stats.display_stats(filtered_names, format)
     if res != 0:
         return res
     return 0
@@ -583,6 +714,14 @@ if __name__ == "__main__":
         action="store_true",
         help="Filter for only contributors not in the current COMMITTERS file.",
     )
+    parser.add_argument(
+        "-F",
+        "--format",
+        type=CommitterStatsReporter.OutputFormat,
+        default=CommitterStatsReporter.OutputFormat.Table,
+        choices=list(CommitterStatsReporter.OutputFormat),
+        help="The output contributor stats report format.",
+    )
 
     args = parser.parse_args()
 
@@ -593,5 +732,12 @@ if __name__ == "__main__":
         sys.exit(-1)
 
     sys.exit(
-        main(OT_REPO_URL, github_token, args.filter, args.log_progress, args.pages)
+        main(
+            OT_REPO_URL,
+            github_token,
+            args.filter,
+            args.format,
+            args.log_progress,
+            args.pages,
+        )
     )
