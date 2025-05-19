@@ -18,6 +18,7 @@ filesets:
       - racl_ctrl_env_cov.sv: {is_include_file: true}
       - racl_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - racl_ctrl_scoreboard.sv: {is_include_file: true}
+      - racl_ctrl_error_arb_predictor.sv: {is_include_file: true}
       - racl_ctrl_env.sv: {is_include_file: true}
       - seq_lib/racl_ctrl_vseq_list.sv: {is_include_file: true}
       - seq_lib/racl_ctrl_base_vseq.sv: {is_include_file: true}

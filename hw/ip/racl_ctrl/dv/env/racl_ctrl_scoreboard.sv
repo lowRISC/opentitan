@@ -7,9 +7,13 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
                                                          .COV_T(racl_ctrl_env_cov));
   `uvm_component_utils(racl_ctrl_scoreboard)
 
+  uvm_analysis_export #(racl_error_log_vec_item) internal_errors_export;
+  uvm_analysis_export #(racl_error_log_vec_item) external_errors_export;
+
   extern function new (string name="", uvm_component parent=null);
 
   extern function void build_phase(uvm_phase phase);
+  extern function void connect_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
 
@@ -24,6 +28,8 @@ class racl_ctrl_scoreboard extends cip_base_scoreboard #(.CFG_T(racl_ctrl_env_cf
   // sync, the process_tl_access task does an analogous check after each write to one of those
   // policies.
   extern task watch_policies();
+
+  local racl_ctrl_error_arb_predictor arb_predictor;
 endclass
 
 function racl_ctrl_scoreboard::new (string name="", uvm_component parent=null);
@@ -34,6 +40,17 @@ function void racl_ctrl_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
   // TODO: remove once support alert checking
   do_alert_check = 0;
+
+  internal_errors_export = new("internal_errors_export", this);
+  external_errors_export = new("external_errors_export", this);
+
+  arb_predictor = racl_ctrl_error_arb_predictor::type_id::create("arb_predictor", this);
+  arb_predictor.cfg = cfg;
+endfunction
+
+function void racl_ctrl_scoreboard::connect_phase(uvm_phase phase);
+  internal_errors_export.connect(arb_predictor.internal_errors_fifo.analysis_export);
+  external_errors_export.connect(arb_predictor.external_errors_fifo.analysis_export);
 endfunction
 
 task racl_ctrl_scoreboard::run_phase(uvm_phase phase);
