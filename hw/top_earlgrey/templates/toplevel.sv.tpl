@@ -48,6 +48,9 @@ for m in top['memory']:
 
 last_modidx_with_params = lib.idx_of_last_module_with_params(top)
 
+# plic -> {count, prefix}
+plic_info = {}
+
 %>\
 module top_${top["name"]} #(
   // Manually defined parameters
@@ -232,28 +235,7 @@ module top_${top["name"]} #(
 % endfor
 
 
-<%
-  # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
-  # So, total number of interrupts are the number of entries in the list + 1
-  interrupt_num = sum([x["width"] if "width" in x else 1 for x in top["interrupt"]]) + 1
-%>\
-  logic [${interrupt_num-1}:0]  intr_vector;
-  // Interrupt source list
-% for m in top["module"]:
-<%
-  block = name_to_block[m['type']]
-%>\
-    % if not lib.is_inst(m):
-<% continue %>
-    % endif
-    % for intr in block.interrupts:
-        % if intr.bits.width() != 1:
-  logic [${intr.bits.width()-1}:0] intr_${m["name"]}_${intr.name};
-        % else:
-  logic intr_${m["name"]}_${intr.name};
-        % endif
-    % endfor
-% endfor
+<%include file="/toplevel_interrupts.tpl" args="lib=lib,top=top,name_to_block=name_to_block,plic_info=plic_info" />\
 
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
@@ -600,7 +582,7 @@ slice = f"{lo+w-1}:{lo}"
       % endfor
     % endif
     % if m.get("template_type") == "rv_plic":
-      .intr_src_i (intr_vector),
+      .intr_src_i (${plic_info[m["name"]]["vector"]}),
     % endif
     % if m.get("template_type") == "pinmux":
 
@@ -675,21 +657,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
 % endfor
 
   // interrupt assignments
-<% base = interrupt_num %>\
-  assign intr_vector = {
-  % for irq_group, irqs in reversed(top['incoming_interrupt'].items()):
-  <% base -= len(irqs) %>\
-    incoming_interrupt_${irq_group}_i, // IDs [${base} +: ${len(irqs)}]
-  % endfor
-  % for intr in top["interrupt"][::-1]:
-    % if intr['incoming']:
-<% continue %>\
-    % endif
-<% base -= intr["width"] %>\
-      intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
-  % endfor
-      1'b 0 // ID [0 +: 1] is a special case and tied to zero.
-  };
+<%include file="/toplevel_interrupt_assignments.tpl" args="top=top,plic_info=plic_info" />\
 
   // TL-UL Crossbar
 % for xbar in top["xbar"]:
