@@ -41,9 +41,12 @@ otcrypto_status_t otcrypto_kmac_kdf(
   }
 
   // Check the private key checksum.
-  if (integrity_blinded_key_check(key_derivation_key) != kHardenedBoolTrue) {
+  if (launder32(integrity_blinded_key_check(key_derivation_key)) !=
+      kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(key_derivation_key),
+                    kHardenedBoolTrue);
 
   // Check `key_len` is supported by KMAC HWIP.
   // The set of supported key sizes is {128, 192, 256, 384, 512}.
@@ -74,6 +77,9 @@ otcrypto_status_t otcrypto_kmac_kdf(
                                                    &diversification));
     HARDENED_TRY(keymgr_generate_key_kmac(diversification));
   } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key_derivation_key));
+
     if (key_derivation_key->keyblob_length !=
         keyblob_num_words(key_derivation_key->config) * sizeof(uint32_t)) {
       return OTCRYPTO_BAD_ARGS;

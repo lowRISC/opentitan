@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/kmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -13,7 +14,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
 
-otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_kmac(otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
                                 otcrypto_const_byte_buf_t customization_string,
                                 size_t required_output_len,
@@ -41,15 +42,19 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
 
   // Check `key_len` is valid/supported by KMAC HWIP.
   HARDENED_TRY(kmac_key_length_check(key_len));
 
   // Check the integrity of the blinded key.
-  if (integrity_blinded_key_check(key) != kHardenedBoolTrue) {
+  if (launder32(integrity_blinded_key_check(key)) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(key), kHardenedBoolTrue);
 
   kmac_blinded_key_t kmac_key = {
       .share0 = NULL,
@@ -70,6 +75,9 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
     HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
     HARDENED_TRY(keymgr_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key));
+
     // Check `key_len` matches `keyblob_length`.
     if (key->keyblob_length != 2 * key->config.key_length) {
       return OTCRYPTO_BAD_ARGS;
