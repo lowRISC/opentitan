@@ -187,7 +187,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_export_blinded_key(
-    const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
+    const otcrypto_blinded_key_t *blinded_key, otcrypto_word32_buf_t key_share0,
     otcrypto_word32_buf_t key_share1);
 
 #ifdef __cplusplus
