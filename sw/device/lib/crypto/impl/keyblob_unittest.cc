@@ -9,6 +9,7 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
@@ -314,21 +315,18 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
 TEST(Keyblob, RemaskDoesNotChangeKey) {
   std::array<uint32_t, 4> test_key = {0x01234567, 0x89abcdef, 0x00010203,
                                       0x04050607};
-  std::array<uint32_t, 4> test_mask0 = {0x08090a0b, 0x0c0d0e0f, 0x10111213,
-                                        0x14151617};
-  std::array<uint32_t, 4> test_mask1 = {0x18191a1b, 0x1c1d1e1f, 0x20212223,
-                                        0x24252627};
+  std::array<uint32_t, 4> test_mask = {0x08090a0b, 0x0c0d0e0f, 0x10111213,
+                                       0x14151617};
 
-  // Test assumption; key and masks are the correct size.
+  // Test assumption; key and mask are the correct size.
   ASSERT_EQ(test_key.size(), keyblob_share_num_words(kConfigCtr128));
-  ASSERT_EQ(test_mask0.size(), keyblob_share_num_words(kConfigCtr128));
-  ASSERT_EQ(test_mask1.size(), keyblob_share_num_words(kConfigCtr128));
+  ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and first mask to keyblob array.
   uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   std::vector<uint32_t> keyblob(keyblob_words, 0);
-  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
+  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
                                       kConfigCtr128, keyblob.data()));
 
   // Construct blinded key.
@@ -339,41 +337,39 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
       .checksum = 0,
   };
 
-  // Remask the key using the second mask.
-  EXPECT_OK(keyblob_remask(&key, test_mask1.data()));
+  // Copy the keyblob for later comparison.
+  uint32_t keyblob_copy[ARRAYSIZE(keyblob)];
+  memcpy(keyblob_copy, keyblob.data(), sizeof(keyblob));
 
-  // Retrieve pointers to each share.
-  uint32_t *share0;
-  uint32_t *share1;
-  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
+  // Remask the key.
+  EXPECT_OK(keyblob_remask(&key));
+
+  // Check that every word of the keyblob changed.
+  for (size_t i = 0; i < ARRAYSIZE(keyblob); i++) {
+    EXPECT_NE(keyblob[i], keyblob_copy[i]);
+  }
 
   // Unmask the key and check that it matches the original.
-  for (size_t i = 0; i < test_key.size(); i++) {
-    uint32_t share0 = keyblob[i];
-    uint32_t share1 = keyblob[test_key.size() + i];
-    EXPECT_EQ(share1, test_mask0[i] ^ test_mask1[i]);
-    EXPECT_EQ(share0 ^ share1, test_key[i]);
-  }
+  uint32_t unmasked_key[test_key.size()];
+  EXPECT_OK(keyblob_key_unmask(&key, test_key.size(), unmasked_key));
+  EXPECT_THAT(unmasked_key, testing::ElementsAreArray(test_key));
 }
 
-TEST(Keyblob, RemaskWithZero) {
+TEST(Keyblob, RemaskPassesIntegrity) {
   std::array<uint32_t, 4> test_key = {0x01234567, 0x89abcdef, 0x00010203,
                                       0x04050607};
-  std::array<uint32_t, 4> test_mask0 = {0x08090a0b, 0x0c0d0e0f, 0x10111213,
-                                        0x14151617};
-  std::array<uint32_t, 4> test_mask1 = {0x18191a1b, 0x1c1d1e1f, 0x20212223,
-                                        0x24252627};
+  std::array<uint32_t, 4> test_mask = {0x08090a0b, 0x0c0d0e0f, 0x10111213,
+                                       0x14151617};
 
-  // Test assumption; key and masks are the correct size.
+  // Test assumption; key and mask are the correct size.
   ASSERT_EQ(test_key.size(), keyblob_share_num_words(kConfigCtr128));
-  ASSERT_EQ(test_mask0.size(), keyblob_share_num_words(kConfigCtr128));
-  ASSERT_EQ(test_mask1.size(), keyblob_share_num_words(kConfigCtr128));
+  ASSERT_EQ(test_mask.size(), keyblob_share_num_words(kConfigCtr128));
 
   // Convert key and first mask to keyblob array.
   uint32_t keyblob_words = keyblob_num_words(kConfigCtr128);
   uint32_t keyblob_bytes = keyblob_words * sizeof(uint32_t);
   std::vector<uint32_t> keyblob(keyblob_words, 0);
-  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
+  EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
                                       kConfigCtr128, keyblob.data()));
 
   // Construct blinded key.
@@ -384,21 +380,15 @@ TEST(Keyblob, RemaskWithZero) {
       .checksum = 0,
   };
 
-  // Remask the key using the second mask.
-  EXPECT_OK(keyblob_remask(&key, test_mask1.data()));
+  // Copy the keyblob for later comparison.
+  uint32_t keyblob_copy[ARRAYSIZE(keyblob)];
+  memcpy(keyblob_copy, keyblob.data(), sizeof(keyblob));
 
-  // Retrieve pointers to each share.
-  uint32_t *share0;
-  uint32_t *share1;
-  EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
+  // Remask the key.
+  EXPECT_OK(keyblob_remask(&key));
 
-  // Unmask the key and check that it matches the original.
-  for (size_t i = 0; i < test_key.size(); i++) {
-    uint32_t share0 = keyblob[i];
-    uint32_t share1 = keyblob[test_key.size() + i];
-    EXPECT_EQ(share1, test_mask0[i] ^ test_mask1[i]);
-    EXPECT_EQ(share0 ^ share1, test_key[i]);
-  }
+  // Check that the integrity checksum was updated.
+  EXPECT_EQ(integrity_blinded_key_check(&key), kHardenedBoolTrue);
 }
 
 }  // namespace
