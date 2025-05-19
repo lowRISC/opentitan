@@ -12,7 +12,8 @@
 #       GitHub account that will enable this script to use the GitHub GraphQL
 #       API. Follow the instructions here on how to create one:
 #       https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
-# - Run this script with no parameters.
+# - Run this script with no parameters. Optionally use `--log-progress` to
+#   output query progress, as the paginated queries can take some time to run.
 
 import json
 import os
@@ -350,7 +351,12 @@ class CommitterStatsReporter:
         return 0
 
 
-def main(repo_url: str, github_token: str, log_progress: bool) -> int:
+def main(
+    repo_url: str,
+    github_token: str,
+    log_progress: bool,
+    page_limit: Optional[int] = None,
+) -> int:
     """The main body of the committer stats script, initialising a reporter
     for the OpenTitan repo with authentication, and then calculating and
     displaying the results.
@@ -360,6 +366,9 @@ def main(repo_url: str, github_token: str, log_progress: bool) -> int:
         github_token (str): The Github Personal Access Token (PAT) to use for
         API authorization.
         log_progress (bool): Whether to log progress in computing stats or not.
+        page_limit (Optional[int], optional): The number of pages to limit each
+        request to. Intended to be used for testing purposes only. Defaults to
+        None, meaning no page limits (fetch all the data).
 
     Returns:
         int: Return code (0 = ok).
@@ -371,7 +380,7 @@ def main(repo_url: str, github_token: str, log_progress: bool) -> int:
         return -1
 
     stats = CommitterStatsReporter(owner, repo, github_token, log_progress=log_progress)
-    res = stats.calculate_stats()
+    res = stats.calculate_stats(page_limit=page_limit)
     if res != 0:
         return res
 
@@ -382,10 +391,35 @@ def main(repo_url: str, github_token: str, log_progress: bool) -> int:
 
 
 if __name__ == "__main__":
+    import argparse
+
+    # Collect command-line arguments
+    desc = "Collect and display contributor statistics for the OpenTitan repo"
+    parser = argparse.ArgumentParser(description=desc)
+
+    parser.add_argument(
+        "-l",
+        "--log-progress",
+        action="store_true",
+        help="Display progress logs for paginated queries of the repo.",
+    )
+    parser.add_argument(
+        "-p",
+        "--pages",
+        type=int,
+        default=None,
+        help=(
+            "The number of pages (100 items each) to limit requests to. "
+            "Used for testing only."
+        ),
+    )
+
+    args = parser.parse_args()
+
     # Get personal access token from environment variable
     github_token = os.environ.get("GH_GRAPHQL_API_PAT")
     if not github_token:
         print("Error: GH_GRAPHQL_API_PAT environment variable not set.")
         sys.exit(-1)
 
-    sys.exit(main(OT_REPO_URL, github_token, True))
+    sys.exit(main(OT_REPO_URL, github_token, args.log_progress, args.pages))
