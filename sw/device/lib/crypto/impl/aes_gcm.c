@@ -71,11 +71,14 @@ static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
  *
  * Also performs integrity, mode, and null-pointer checks on the key.
  *
+ * Re-masks the key after checking its integrity. The caller should ensure the
+ * entropy complex is up before calling this function.
+ *
  * @param blinded_key Blinded key struct.
  * @param[out] aes_key Destination AES key struct.
  * @return Result of the operation.
  */
-static status_t aes_gcm_key_construct(const otcrypto_blinded_key_t *blinded_key,
+static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
                                       aes_key_t *aes_key) {
   // Key integrity check.
   if (launder32(integrity_blinded_key_check(blinded_key)) !=
@@ -116,6 +119,10 @@ static status_t aes_gcm_key_construct(const otcrypto_blinded_key_t *blinded_key,
     aes_key->sideload = launder32(kHardenedBoolTrue);
   } else if (launder32(blinded_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(blinded_key->config.hw_backed, kHardenedBoolFalse);
+
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(blinded_key));
+
     // Get pointers to the individual shares.
     uint32_t *share0;
     uint32_t *share1;
@@ -229,7 +236,7 @@ static status_t clear_key_if_sideloaded(const aes_key_t key) {
   return keymgr_sideload_clear_aes();
 }
 
-otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
+otcrypto_status_t otcrypto_aes_gcm_encrypt(otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t plaintext,
                                            otcrypto_const_word32_buf_t iv,
                                            otcrypto_const_byte_buf_t aad,
@@ -277,7 +284,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
-    const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
+    otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
     otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_byte_buf_t plaintext, hardened_bool_t *success) {
@@ -322,7 +329,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
-    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -347,7 +354,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
-    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
     otcrypto_aes_gcm_context_t *ctx) {
   if (key == NULL || key->keyblob == NULL || iv.data == NULL || ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
