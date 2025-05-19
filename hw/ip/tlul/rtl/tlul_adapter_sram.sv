@@ -559,10 +559,11 @@ module tlul_adapter_sram
   //    is write op, it is safe to return the response right away. If it is
   //    read request, then D response is waiting until read data arrives.
   prim_fifo_sync #(
-    .Width   (ReqFifoWidth),
-    .Pass    (1'b0),
-    .Depth   (Outstanding),
-    .Secure  (SecFifoPtr)
+    .Width       (ReqFifoWidth),
+    .Pass        (1'b0),
+    .Depth       (Outstanding),
+    .NeverClears (1'b1),
+    .Secure      (SecFifoPtr)
   ) u_reqfifo (
     .clk_i,
     .rst_ni,
@@ -586,6 +587,7 @@ module tlul_adapter_sram
     .Width             (SramReqFifoWidth),
     .Pass              (1'b0),
     .Depth             (Outstanding),
+    .NeverClears       (1'b1),
     .Secure            (SecFifoPtr),
     .OutputZeroIfEmpty (1)
   ) u_sramreqfifo (
@@ -617,10 +619,11 @@ module tlul_adapter_sram
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
   prim_fifo_sync #(
-    .Width   (RspFifoWidth),
-    .Pass    (1'b1),
-    .Depth   (Outstanding),
-    .Secure  (SecFifoPtr)
+    .Width       (RspFifoWidth),
+    .Pass        (1'b1),
+    .Depth       (Outstanding),
+    .NeverClears (1'b1),
+    .Secure      (SecFifoPtr)
   ) u_rspfifo (
     .clk_i,
     .rst_ni,
