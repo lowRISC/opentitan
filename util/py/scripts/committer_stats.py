@@ -25,6 +25,7 @@ import requests
 import time
 from collections import Counter
 from pathlib import Path
+from tabulate import tabulate
 from typing import Optional, Dict, Tuple, Any
 
 
@@ -462,23 +463,40 @@ class CommitterStatsReporter:
             )
             return -1
 
-        print("\nCommit Counts per Author:")
-        for author, count in self.commit_data.most_common():
-            if author in filtered:
-                continue
-            print(f"- {author}: {count}")
+        contributors = (
+            set(self.commit_data.keys())
+            | set(self.pr_data.keys())
+            | set(self.review_data.keys())
+        )
+        if filtered:
+            contributors.difference_update(set(filtered))
 
-        print("\nPull Request Counts per Contributor:")
-        for contributor, count in self.pr_data.most_common():
-            if contributor in filtered:
-                continue
-            print(f"- {contributor}: {count}")
+        headers = ("Account name", "Commits", "Merged PRs", "PRs Reviewed")
+        table = []
+        for account in contributors:
+            commits = self.commit_data.get(account, 0)
+            prs = self.pr_data.get(account, 0)
+            reviews = self.review_data.get(account, 0)
+            table.append((account, commits, prs, reviews))
 
-        print("\nReview Counts per Reviewer:")
-        for reviewer, count in self.review_data.most_common():
-            if reviewer in filtered:
-                continue
-            print(f"- {reviewer}: {count}")
+        # Sort by commits, then merged PRs, then reviewd PRs.
+        table_rows = sorted(table, key=lambda a: tuple(a[1:]), reverse=True)
+        for entry in table_rows:
+            # Move the "Unknown Author" entry for deleted users to the end
+            if entry[0] == "Unknown Author":
+                table_rows.remove(entry)
+                table_rows.append(entry)
+                break
+
+        print(
+            "\nContributors sorted by authored commits, then merged PRs,",
+            "then reviewed PRs.",
+            tabulate(
+                table_rows,
+                headers,
+                tablefmt="pretty",
+            ),
+        )
 
         return 0
 
