@@ -72,7 +72,8 @@ module prim_fifo_sync_cnt #(
   if (Secure) begin : gen_secure_ptrs
     logic wptr_err;
     prim_count #(
-      .Width(WrapPtrW)
+      .Width(WrapPtrW),
+      .PossibleActions(prim_count_pkg::Clr | prim_count_pkg::Set | prim_count_pkg::Incr)
     ) u_wptr (
       .clk_i,
       .rst_ni,
@@ -90,7 +91,8 @@ module prim_fifo_sync_cnt #(
 
     logic rptr_err;
     prim_count #(
-      .Width(WrapPtrW)
+      .Width(WrapPtrW),
+      .PossibleActions(prim_count_pkg::Clr | prim_count_pkg::Set | prim_count_pkg::Incr)
     ) u_rptr (
       .clk_i,
       .rst_ni,
