@@ -14,6 +14,8 @@
 #       https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens
 # - Run this script with no parameters. Optionally use `--log-progress` to
 #   output query progress, as the paginated queries can take some time to run.
+#   You can use `--filter` to filter existing committers, to assist in finding
+#   potential candidates for future committers.
 
 import json
 import os
@@ -21,6 +23,7 @@ import sys
 import requests
 import time
 from collections import Counter
+from pathlib import Path
 from typing import Optional, Dict, Tuple, Any
 
 
@@ -29,6 +32,13 @@ OT_REPO_URL = "https://github.com/lowRISC/opentitan"
 
 # GraphQL endpoint / query for commits, PRs, and reviews
 GH_GRAPHQL_API_ENDPOINT = "https://api.github.com/graphql"
+
+# The location of the top of the repository from this file
+REPO_TOP = Path(__file__).parents[3]
+
+# The location of the COMMITTERS file within the repo
+COMMITTERS_FILE = "COMMITTERS"
+COMMITERS_PATH = REPO_TOP / COMMITTERS_FILE
 
 
 class CommitterStatsReporter:
@@ -337,6 +347,41 @@ class CommitterStatsReporter:
 
         return pr_authors, review_authors
 
+    def get_existing_committers(self) -> Optional[list[str]]:
+        """Get a list of the existing OpenTitan project committers from the
+        COMMITTERS_FILE.
+
+        Returns:
+            Optional[list[str]]: The list of committers. Returns None if some
+            error occurred in the retrieval process.
+        """
+        if not os.path.exists(COMMITERS_PATH):
+            print("Could not find COMMITTERS file. Did this script move?")
+            return None
+        if not os.path.isfile(COMMITERS_PATH):
+            print("COMMITTERS file is not a file as expected.")
+            return None
+
+        try:
+            committers = []
+            with open(COMMITERS_PATH, "r") as f:
+                # Very hard-coded parsing logic based on the COMMITTER file format
+                committer_list = f.read().strip().split("Committer list:")[-1]
+                entries = [c[1:].strip() for c in committer_list.splitlines()[1:]]
+                for entry in entries:
+                    github_id = entry.split(" ")[-1]
+                    if not github_id.startswith("(") or not github_id.endswith(")"):
+                        print("Warning: skipping unknown ID in COMMITTERS file:")
+                        print(f"  {entry}")
+                        continue
+                    github_id = github_id[1:-1]
+                    committers.append(github_id)
+
+            return committers
+        except Exception as e:
+            print(f"Error when reading the COMMITTERS file: {e}")
+            return None
+
     def calculate_stats(
         self,
         page_limit: Optional[int] = None,
@@ -371,11 +416,14 @@ class CommitterStatsReporter:
 
         return 0
 
-    def display_stats(self) -> int:
+    def display_stats(self, filtered: list[str]) -> int:
         """Display the most recently calculated contributor statistics for the
         configured repository. Requires `calculate_stats` to have been called
         at least once previously.
 
+        Args:
+            filter (list[str]): A list of entries to filter out of the results,
+            so that these entries are not displayed.
 
         Returns:
             int: Return code (0 = Ok).
@@ -389,14 +437,20 @@ class CommitterStatsReporter:
 
         print("\nCommit Counts per Author:")
         for author, count in self.commit_data.most_common():
+            if author in filtered:
+                continue
             print(f"- {author}: {count}")
 
         print("\nPull Request Counts per Contributor:")
         for contributor, count in self.pr_data.most_common():
+            if contributor in filtered:
+                continue
             print(f"- {contributor}: {count}")
 
         print("\nReview Counts per Reviewer:")
         for reviewer, count in self.review_data.most_common():
+            if reviewer in filtered:
+                continue
             print(f"- {reviewer}: {count}")
 
         return 0
@@ -405,6 +459,7 @@ class CommitterStatsReporter:
 def main(
     repo_url: str,
     github_token: str,
+    filter: bool,
     log_progress: bool,
     page_limit: Optional[int] = None,
 ) -> int:
@@ -416,6 +471,8 @@ def main(
         repo_url (str): The URL of the GitHub repository to query.
         github_token (str): The Github Personal Access Token (PAT) to use for
         API authorization.
+        filter (bool): Whether to filter the results to exclude contributors
+        that are already in the current `COMMITTERS_FILE`.
         log_progress (bool): Whether to log progress in computing stats or not.
         page_limit (Optional[int], optional): The number of pages to limit each
         request to. Intended to be used for testing purposes only. Defaults to
@@ -431,11 +488,22 @@ def main(
         return -1
 
     stats = CommitterStatsReporter(owner, repo, github_token, log_progress=log_progress)
+
+    if filter:
+        filtered_names = stats.get_existing_committers()
+        if filtered_names is None:
+            print("Contributor results will not be filtered due to an error.")
+            filtered_names = []
+        else:
+            print(f"Excluding existing committers: {', '.join(filtered_names)}")
+    else:
+        filtered_names = []
+
     res = stats.calculate_stats(page_limit=page_limit)
     if res != 0:
         return res
 
-    res = stats.display_stats()
+    res = stats.display_stats(filtered_names)
     if res != 0:
         return res
     return 0
@@ -464,6 +532,12 @@ if __name__ == "__main__":
             "Used for testing only."
         ),
     )
+    parser.add_argument(
+        "-f",
+        "--filter",
+        action="store_true",
+        help="Filter for only contributors not in the current COMMITTERS file.",
+    )
 
     args = parser.parse_args()
 
@@ -473,4 +547,6 @@ if __name__ == "__main__":
         print("Error: GH_GRAPHQL_API_PAT environment variable not set.")
         sys.exit(-1)
 
-    sys.exit(main(OT_REPO_URL, github_token, args.log_progress, args.pages))
+    sys.exit(
+        main(OT_REPO_URL, github_token, args.filter, args.log_progress, args.pages)
+    )
