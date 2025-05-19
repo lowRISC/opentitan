@@ -442,6 +442,10 @@
     ]
   }
   num_cores: "1"
+  interrupts:
+  {
+    default_plic: rv_plic
+  }
   addr_spaces:
   [
     {
@@ -502,6 +506,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -593,6 +598,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -685,6 +691,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       param_decl:
       {
         GpioAsyncOn: "1"
@@ -815,6 +822,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -981,6 +989,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_peri
@@ -1096,6 +1105,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -1179,6 +1189,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_usb_peri
@@ -1514,6 +1525,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -2789,6 +2801,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -3016,6 +3029,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       base_addrs:
       {
         core:
