@@ -15,3 +15,8 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/top_${topname}/ip_autogen/ac_range_check/data:doc_files"],
+)

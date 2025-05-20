@@ -25,3 +25,12 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/rv_plic:rtl_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = [
+        "//hw/top_earlgrey/ip/ast:doc_files",
+        "//hw/top_earlgrey/ip/sensor_ctrl:doc_files",
+        "//hw/top_earlgrey/ip/xbar:doc_files",
+    ],
+)

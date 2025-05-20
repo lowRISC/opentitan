@@ -10,6 +10,11 @@ load("//rules:bitstreams.bzl", "bitstream_fragment_from_manifest")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 # By default, targets in this file will use cached artifacts from the GCP bucket
 # instead of building them from scratch.
 #

@@ -6,6 +6,11 @@ load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 label_flag(
     name = "token",
     build_setting_default = "//signing/tokens:local",

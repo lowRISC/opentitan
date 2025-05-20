@@ -10,3 +10,8 @@ filegroup(
         "//hw/top_darjeeling/ip/ast/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

@@ -6,6 +6,11 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 py_binary(
     name = "standalone",
     srcs = ["standalone.py"],

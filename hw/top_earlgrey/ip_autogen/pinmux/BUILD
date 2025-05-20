@@ -15,3 +15,8 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/top_earlgrey/ip_autogen/pinmux/data:doc_files"],
+)

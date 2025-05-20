@@ -10,3 +10,8 @@ filegroup(
         "//hw/top_darjeeling/ip/soc_proxy/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
