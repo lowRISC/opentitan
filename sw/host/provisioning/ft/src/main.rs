@@ -16,7 +16,6 @@ use indexmap::IndexMap;
 use p256::NistP256;
 
 use cert_lib::{CaConfig, CaKey, CaKeyType};
-use ft_lib::response::PersonalizeResponse;
 use ft_lib::{
     check_slot_b_boot_up, run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
 };
@@ -28,6 +27,7 @@ use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ot_hal::dif::lc_ctrl::DifLcCtrlState;
 use ujson_lib::UjsonPayloads;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
+use util_lib::response::PersonalizeResponse;
 use util_lib::{
     encrypt_token, hex_string_to_u8_arrayvec, hex_string_to_u32_arrayvec, load_rsa_public_key,
     random_token,

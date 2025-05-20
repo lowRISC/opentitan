@@ -8,13 +8,21 @@ package(default_visibility = ["//visibility:public"])
 
 rust_library(
     name = "util_lib",
-    srcs = ["src/lib.rs"],
+    srcs = [
+        "src/lib.rs",
+        "src/response.rs",
+    ],
     deps = [
+        "//sw/host/opentitanlib",
+        "//sw/host/ot_hal",
+        "//sw/host/provisioning/cert_lib",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:hex",
+        "@crate_index//:indexmap",
         "@crate_index//:rand",
         "@crate_index//:rsa",
+        "@crate_index//:serde",
         "@crate_index//:tiny-keccak",
         "@crate_index//:zerocopy",
     ],
