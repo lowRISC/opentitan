@@ -154,3 +154,25 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
     ],
 )
+
+[
+    py_binary(
+        name = "mdbook_{}".format(preprocessor),
+        srcs = ["mdbook_{}.py".format(preprocessor)],
+    )
+    for preprocessor in [
+        "code_snippet",
+        "dashboard",
+        "doxygen",
+        "otbn",
+        "readme2index",
+        "reggen",
+        "testplan",
+    ]
+]
+
+py_binary(
+    name = "mdbook_toolversion",
+    srcs = ["mdbook_toolversion.py"],
+    deps = ["//hw:check_tool_requirements"],
+)

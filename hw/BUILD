@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("@rules_python//python:defs.bzl", "py_library")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -46,6 +47,15 @@ string_list_flag(
         "-j",
         "4",
     ],
+)
+
+py_library(
+    name = "check_tool_requirements",
+    srcs = [
+        "check_tool_requirements.py",
+        "tool_requirements.py",
+    ],
+    imports = ["."],  # Allows `import check_tool_requirements` from dependents.
 )
 
 filegroup(
