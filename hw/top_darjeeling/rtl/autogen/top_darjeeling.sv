@@ -55,6 +55,7 @@ module top_darjeeling #(
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   parameter bit SramCtrlRetAonEccCorrection = 0,
   parameter bit SramCtrlRetAonFlopRamOutput = 1,
+  parameter bit SramCtrlRetAonFlopWdataScramble = 0,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
@@ -97,6 +98,7 @@ module top_darjeeling #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   parameter bit SramCtrlMainEccCorrection = 0,
   parameter bit SramCtrlMainFlopRamOutput = 1,
+  parameter bit SramCtrlMainFlopWdataScramble = 0,
   // parameters for sram_ctrl_mbox
   parameter int SramCtrlMboxInstSize = 4096,
   parameter int SramCtrlMboxNumRamInst = 1,
@@ -104,6 +106,7 @@ module top_darjeeling #(
   parameter int SramCtrlMboxNumPrinceRoundsHalf = 3,
   parameter bit SramCtrlMboxEccCorrection = 0,
   parameter bit SramCtrlMboxFlopRamOutput = 1,
+  parameter bit SramCtrlMboxFlopWdataScramble = 0,
   // parameters for rom_ctrl0
   parameter RomCtrl0BootRomInitFile = "",
   parameter bit SecRomCtrl0DisableScrambling = 1'b0,
@@ -1711,7 +1714,8 @@ module top_darjeeling #(
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
     .EccCorrection(SramCtrlRetAonEccCorrection),
-    .FlopRamOutput(SramCtrlRetAonFlopRamOutput)
+    .FlopRamOutput(SramCtrlRetAonFlopRamOutput),
+    .FlopWdataScramble(SramCtrlRetAonFlopWdataScramble)
   ) u_sram_ctrl_ret_aon (
       // [50]: fatal_error
       .alert_tx_o  ( alert_tx[50:50] ),
@@ -2089,7 +2093,8 @@ module top_darjeeling #(
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection),
-    .FlopRamOutput(SramCtrlMainFlopRamOutput)
+    .FlopRamOutput(SramCtrlMainFlopRamOutput),
+    .FlopWdataScramble(SramCtrlMainFlopWdataScramble)
   ) u_sram_ctrl_main (
       // [68]: fatal_error
       .alert_tx_o  ( alert_tx[68:68] ),
@@ -2131,7 +2136,8 @@ module top_darjeeling #(
     .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMboxOutstanding),
     .EccCorrection(SramCtrlMboxEccCorrection),
-    .FlopRamOutput(SramCtrlMboxFlopRamOutput)
+    .FlopRamOutput(SramCtrlMboxFlopRamOutput),
+    .FlopWdataScramble(SramCtrlMboxFlopWdataScramble)
   ) u_sram_ctrl_mbox (
       // [69]: fatal_error
       .alert_tx_o  ( alert_tx[69:69] ),
