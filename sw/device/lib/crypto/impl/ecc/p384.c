@@ -18,16 +18,16 @@ OTBN_DECLARE_APP_SYMBOLS(run_p384);
 static const otbn_app_t kOtbnAppP384 = OTBN_APP_T_INIT(run_p384);
 
 // Declare offsets for input and output buffers.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, mode);  // Mode of operation.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, msg);   // ECDSA message digest.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, r);     // ECDSA signature scalar R.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, s);     // ECDSA signature scalar S.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, x);     // Public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, y);     // Public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, d0);    // Private key scalar d (share 0).
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, d1);    // Private key scalar d (share 1).
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);   // ECDSA verification result.
-OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);    // Status code.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, mode);   // Mode of operation.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, msg);    // ECDSA message digest.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, r);      // ECDSA signature scalar R.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, s);      // ECDSA signature scalar S.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, x);      // Public key x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, y);      // Public key y-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, d0_io);  // Private key scalar d (share 0).
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, d1_io);  // Private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, x_r);    // ECDSA verification result.
+OTBN_DECLARE_SYMBOL_ADDR(run_p384, ok);     // Status code.
 
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p384, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p384, msg);
@@ -35,8 +35,8 @@ static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p384, r);
 static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p384, s);
 static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p384, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p384, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1);
+static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p384, d0_io);
+static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
 static const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p384, x_r);
 static const otbn_addr_t kOtbnVarOk = OTBN_ADDR_T_INIT(run_p384, ok);
 
