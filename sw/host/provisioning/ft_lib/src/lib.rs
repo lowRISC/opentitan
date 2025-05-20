@@ -39,9 +39,7 @@ use ujson_lib::provisioning_data::{
 };
 use ujson_lib::UjsonPayloads;
 use util_lib::hash_lc_token;
-
-pub mod response;
-use response::*;
+use util_lib::response::*;
 
 pub fn test_unlock(
     transport: &TransportWrapper,
