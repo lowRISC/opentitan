@@ -102,10 +102,10 @@ authorize_re = re.compile(r'^CHANGE AUTHORIZED: (.*)$', re.MULTILINE)
 
 
 def get_authorized_changes(comments: list[tuple[str, str]],
-                           committers: dict[str, str]) -> dict[str, list[str]]:
+                           committers: dict[str, str]) -> dict[str, set[str]]:
     """Returns a dict of file changes authorized by committters.
 
-    The key is the file name, the value is a list of committer handles that
+    The key is the file name, the value is a set of committer handles that
     authorized it.
     """
 
@@ -117,14 +117,9 @@ def get_authorized_changes(comments: list[tuple[str, str]],
         if comment_author not in committers:
             continue
 
-        file_authorizations = authorize_re.findall(comment_body)
-        for filename in file_authorizations:
-            filename = filename.strip()
-
-            if filename not in file_change_authorizations:
-                file_change_authorizations[filename] = [comment_author]
-            else:
-                file_change_authorizations[filename].append(comment_author)
+        for filename in authorize_re.findall(comment_body):
+            author_set = file_change_authorizations.setdefault(filename.strip(), set())
+            author_set.add(comment_author)
 
     return file_change_authorizations
 
