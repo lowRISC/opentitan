@@ -8,6 +8,7 @@ load(
     "doxygen_gather_cc",
     "doxygen_multitop",
 )
+load("@rules_rust_mdbook//:defs.bzl", "mdbook", "mdbook_server")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -53,4 +54,35 @@ doxygen(
         "html": ["doxy/"],
         "xml": ["api-xml/"],
     },
+)
+
+filegroup(
+    name = "doxygen_xml",
+    srcs = [":doxygen"],
+    output_group = "xml",
+)
+
+mdbook(
+    name = "mdbook",
+    srcs = [
+        ":doxygen_xml",
+        "//:SUMMARY.md",
+        "//:doc_files",
+    ],
+    book = "//:book.toml",
+    plugins = [
+        "//util:mdbook_code_snippet",
+        "//util:mdbook_dashboard",
+        "//util:mdbook_doxygen",
+        "//util:mdbook_otbn",
+        "//util:mdbook_readme2index",
+        "//util:mdbook_reggen",
+        "//util:mdbook_testplan",
+        "//util:mdbook_toolversion",
+    ],
+)
+
+mdbook_server(
+    name = "mdbook_serve",
+    book = ":mdbook",
 )
