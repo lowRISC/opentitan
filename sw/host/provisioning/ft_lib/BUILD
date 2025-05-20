@@ -12,7 +12,6 @@ package(default_visibility = ["//visibility:public"])
         name = "ft_lib_{}".format(sku),
         srcs = [
             "src/lib.rs",
-            "src/response.rs",
         ],
         crate_name = "ft_lib",
         deps = [
@@ -30,10 +29,7 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:clap",
             "@crate_index//:hex",
             "@crate_index//:hmac",
-            "@crate_index//:indexmap",
             "@crate_index//:log",
-            "@crate_index//:serde",
-            "@crate_index//:serde_json",
             "@crate_index//:sha2",
             "@crate_index//:zerocopy",
         ] + config["host_ext_libs"],
