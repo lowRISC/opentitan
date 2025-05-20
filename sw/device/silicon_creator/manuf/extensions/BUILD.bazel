@@ -25,6 +25,7 @@ rust_library(
     srcs = ["default_ft_ext_lib.rs"],
     crate_name = "ft_ext_lib",
     deps = [
+        "@//sw/host/provisioning/util_lib",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
     ],
