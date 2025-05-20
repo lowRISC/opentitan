@@ -57,7 +57,8 @@ void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
     uintptr_t destp = dest_addr + byte_idx;
     uintptr_t decoy1 = decoy_addr + (byte_idx % sizeof(decoys));
     uintptr_t decoy2 =
-        decoy_addr + ((byte_idx + sizeof(decoys) / 2) % sizeof(decoys));
+        decoy_addr +
+        ((byte_idx + (sizeof(decoys) / 2) + sizeof(uint32_t)) % sizeof(decoys));
 
     // Branchlessly select whether to do a "real" copy or a decoy copy,
     // depending on whether we've gone off the end of the array or not.
@@ -146,7 +147,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
     uintptr_t bp = rhs_addr + byte_idx;
     uintptr_t decoy1 = decoy_addr + (byte_idx % sizeof(decoys));
     uintptr_t decoy2 =
-        decoy_addr + ((byte_idx + sizeof(decoys) / 2) % sizeof(decoys));
+        decoy_addr +
+        ((byte_idx + (sizeof(decoys) / 2) + sizeof(uint32_t)) % sizeof(decoys));
 
     void *av = (void *)launderw(
         ct_cmovw(ct_sltuw(launderw(byte_idx), byte_len), ap, decoy1));
