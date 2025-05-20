@@ -15,3 +15,8 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/top_earlgrey/ip_autogen/flash_ctrl/data:doc_files"],
+)

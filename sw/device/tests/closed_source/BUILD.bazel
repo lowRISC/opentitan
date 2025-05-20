@@ -13,6 +13,11 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 # Note, this file contains step-by-step instructions on how to both:
 # 1. add custom test hook libraries (that override the default), labeled
 #    `TH-STEP *` for "Test Hook Step *", and,

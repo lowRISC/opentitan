@@ -17,3 +17,8 @@ filegroup(
         "//hw/ip/otp_macro/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

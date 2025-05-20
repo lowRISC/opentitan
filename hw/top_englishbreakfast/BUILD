@@ -23,7 +23,6 @@ fusesoc_build(
         "//hw:dv_common_files",
         "//hw:rtl_files",
         "//hw:verilator_files",
-        "//hw/ip:verilator_files",
     ],
     cores = [
         "//hw:cores",

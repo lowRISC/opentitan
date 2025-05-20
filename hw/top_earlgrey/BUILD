@@ -32,6 +32,26 @@ filegroup(
     ],
 )
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//hw/top_earlgrey/data:doc_files",
+        "//hw/top_earlgrey/dv:doc_files",
+        "//hw/top_earlgrey/ip:doc_files",
+        "//hw/top_earlgrey/ip_autogen/alert_handler:doc_files",
+        "//hw/top_earlgrey/ip_autogen/clkmgr:doc_files",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:doc_files",
+        "//hw/top_earlgrey/ip_autogen/gpio:doc_files",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:doc_files",
+        "//hw/top_earlgrey/ip_autogen/pinmux:doc_files",
+        "//hw/top_earlgrey/ip_autogen/pwm:doc_files",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr:doc_files",
+        "//hw/top_earlgrey/ip_autogen/rstmgr:doc_files",
+        "//hw/top_earlgrey/ip_autogen/rv_core_ibex:doc_files",
+        "//hw/top_earlgrey/ip_autogen/rv_plic:doc_files",
+    ],
+)
+
 # The following definition is used to define a null manifest in the signing
 # configuration for execution environments (exec_env) and opentitan_test
 # and opentitan_binary rules. When building the binaries, if the manifest equals

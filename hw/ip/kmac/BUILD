@@ -17,3 +17,8 @@ filegroup(
         "//hw/ip/kmac/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/ip/kmac/data:doc_files"],
+)

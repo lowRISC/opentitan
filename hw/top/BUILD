@@ -16,6 +16,11 @@ load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentita
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 # Use this flag to select the top.
 string_flag(
     name = "top",

@@ -31,3 +31,8 @@ py_test(
         requirement("pytest"),
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = [":README.md"],
+)

@@ -9,7 +9,14 @@ load(
     "doxygen_multitop",
 )
 
+package(default_visibility = ["//visibility:public"])
+
 exports_files(glob(["**"]))
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
 
 doxygen_gather_cc(
     name = "doxygen_srcs",

@@ -7,3 +7,8 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "crypto_testplan.hjson",
 ])
+
+filegroup(
+    name = "doc_files",
+    srcs = ["crypto_testplan.hjson"],
+)

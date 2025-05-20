@@ -19,6 +19,14 @@ load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/silicon_creator/rom/data:rom_e2e_testplan.hjson",
+        "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
+    ],
+)
+
 dual_cc_library(
     name = "boot_policy_ptrs",
     srcs = dual_inputs(

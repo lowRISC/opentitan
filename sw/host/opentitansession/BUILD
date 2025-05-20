@@ -27,3 +27,8 @@ rust_binary(
         "@crate_index//:thiserror",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

@@ -25,3 +25,8 @@ cc_library(
         "model/aes_modes.h",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/ip/aes/data:doc_files"],
+)

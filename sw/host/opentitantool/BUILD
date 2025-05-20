@@ -94,3 +94,8 @@ rust_test(
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

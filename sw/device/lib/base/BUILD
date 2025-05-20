@@ -16,6 +16,11 @@ load("//rules:doxygen.bzl", "doxygen_gather_all_package_cc")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 dual_cc_library(
     name = "crc32",
     srcs = dual_inputs(

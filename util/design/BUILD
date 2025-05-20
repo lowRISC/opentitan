@@ -109,3 +109,8 @@ py_test(
     srcs = ["sparse-fsm-encode-test.py"],
     deps = [":sparse-fsm-encode"],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = ["README.md"],
+)

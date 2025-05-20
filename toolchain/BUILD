@@ -415,3 +415,8 @@ cc_args(
         "-fno-common",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = ["README.md"],
+)
