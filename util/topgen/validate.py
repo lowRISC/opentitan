@@ -390,6 +390,7 @@ interrupt_required = {
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
+    'plic': ['s', 'controller for this interrupt'],
 }
 interrupt_added = {}
 
