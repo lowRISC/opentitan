@@ -65,14 +65,8 @@ start:
   addi  x3, x0, MODE_KEYGEN
   beq   x2, x3, random_keygen
 
-  addi  x3, x0, MODE_SIGN
-  beq   x2, x3, ecdsa_sign
-
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ecdsa_verify
-
-  addi  x3, x0, MODE_ECDH
-  beq   x2, x3, shared_key
 
   addi  x3, x0, MODE_SIDELOAD_KEYGEN
   beq   x2, x3, sideload_keygen
@@ -83,10 +77,50 @@ start:
   addi  x3, x0, MODE_SIDELOAD_ECDH
   beq   x2, x3, shared_key_from_seed
 
+  /* Copy the caller-provided secret key shares into scratchpad memory.
+       dmem[d0] <= dmem[d0_io]
+       dmem[d1] <= dmem[d1_io] */
+  la       x13, d0_io
+  la       x14, d0
+  jal      x1, copy_share
+  la       x13, d1_io
+  la       x14, d1
+  jal      x1, copy_share
+
+  addi  x3, x0, MODE_SIGN
+  beq   x2, x3, ecdsa_sign
+
+  addi  x3, x0, MODE_ECDH
+  beq   x2, x3, shared_key
+
   /* Invalid mode; fail. */
   unimp
   unimp
   unimp
+
+/**
+ * Helper routine to copy secret key shares.
+ *
+ * Copies 64 bytes from the source to destination location in DMEM. The source
+ * and destination may be the same but should not otherwise overlap.
+ *
+ * @param x13: dptr_src, pointer to source DMEM location
+ * @param x14: dptr_dst, pointer to destination DMEM location
+ * @param      dmem[dptr_src..dptr_src+64]: source data
+ * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
+ *
+ * clobbered registers: x10, w10
+ * clobbered flag groups: none
+ */
+copy_share:
+  /* Copy the secret key shares into Ibex-visible memory. */
+  li       x10, 10
+  bn.lid   x10, 0(x13)
+  bn.sid   x10, 0(x14)
+  bn.lid   x10, 32(x13)
+  bn.sid   x10, 32(x14)
+  ret
+
 
 /**
  * Generate a fresh, random keypair.
@@ -106,6 +140,16 @@ random_keygen:
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
   jal      x1, p256_base_mult
+
+  /* Copy the secret key shares into Ibex-visible memory.
+       dmem[d0_io] <= dmem[d0]
+       dmem[d1_io] <= dmem[d1] */
+  la       x13, d0
+  la       x14, d0_io
+  jal      x1, copy_share
+  la       x13, d1
+  la       x14, d1_io
+  jal      x1, copy_share
 
   ecall
 
@@ -285,7 +329,6 @@ secret_key_from_seed:
        w10, w11 <= d1 */
   jal      x1, p256_key_from_seed
 
-  /* TODO(##19875): do not store keymgr-derived values in DMEM! */
   /* Store secret key shares.
        dmem[d0] <= d0
        dmem[d1] <= d1 */
@@ -344,14 +387,14 @@ x:
 y:
   .zero 32
 
-/* Private key (d) in two shares: d = (d0 + d1) mod n. */
-.globl d0
+/* Private key input/output buffer. */
+.globl d0_io
 .balign 32
-d0:
+d0_io:
   .zero 64
-.globl d1
+.globl d1_io
 .balign 32
-d1:
+d1_io:
   .zero 64
 
 /* Verification result x_r (aka x_1). */
@@ -371,4 +414,14 @@ k0:
 .globl k1
 .balign 32
 k1:
+  .zero 64
+
+/* Private key (d) in two shares: d = (d0 + d1) mod n. */
+.globl d0
+.balign 32
+d0:
+  .zero 64
+.globl d1
+.balign 32
+d1:
   .zero 64
