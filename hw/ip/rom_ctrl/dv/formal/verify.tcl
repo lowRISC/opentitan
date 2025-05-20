@@ -9,6 +9,9 @@ proc move_to_task {task_name assert_name} {
     assert -disable ${assert_name}
 }
 
+# The hierarchical path to the checker FSM in the dut
+set fsm_path "dut.gen_fsm_scramble_enabled.u_checker_fsm"
+
 # There is a security check in FpvSecCmCompareFsmAlert_A. This checks that an FSM error in
 # u_checker_fsm.u_compare.u_state_regs will get propagated to an alert. Such an FSM error cannot
 # happen without fault injection, so we move the property into a task and use a stopat to allow the
@@ -17,7 +20,7 @@ proc move_to_task {task_name assert_name} {
 # Once the property has been copied, disable the original version (in <embedded>::) and the
 # associated cover property.
 task -create CompareFsm
-stopat -task CompareFsm "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q"
+stopat -task CompareFsm "${fsm_path}.u_compare.state_q"
 move_to_task CompareFsm "tb.dut.gen_asserts_with_scrambling.FpvSecCmCompareFsmAlert_A"
 
 # There is also a security check in FpvSecCmCheckerFsmAlert_A. The FSM uses PRIM_FLOP_SPARSE_FSM to
@@ -31,10 +34,10 @@ move_to_task CompareFsm "tb.dut.gen_asserts_with_scrambling.FpvSecCmCompareFsmAl
 # which says an unexpected state will instantly cause the prim_alert_sender to be asked to send an
 # alert.
 task -create CheckerFsm
-stopat -task CheckerFsm "dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q"
+stopat -task CheckerFsm "${fsm_path}.state_q"
 assert \
     -name "CheckerFsm::BadCheckerStateCausesAlert_A" \
-    "!(dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q inside
+    "!(${fsm_path}.state_q inside
        {rom_ctrl_pkg::ReadingLow, rom_ctrl_pkg::ReadingHigh, rom_ctrl_pkg::RomAhead,
         rom_ctrl_pkg::KmacAhead, rom_ctrl_pkg::Checking, rom_ctrl_pkg::Done})
        ->
@@ -79,7 +82,7 @@ move_to_task FreeWe "${prim_onehot_check_path}.gen_enable_check.gen_not_strict.E
 # wired to zero. For these instances, disable the cover property for the assertions that talk about
 # them handling the signals being nonzero.
 task -create PrimCount
-stopat -task PrimCount "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr.cnt_q"
+stopat -task PrimCount "${fsm_path}.u_compare.u_prim_count_addr.cnt_q"
 
 move_to_task PrimCount "tb.dut.gen_asserts_with_scrambling.FpvSecCmCompareAddrCtrCheck_A"
 
@@ -128,7 +131,7 @@ foreach fifo_pr { { u_reqfifo ReqFifo } { u_sramreqfifo SramReqFifo } { u_rspfif
 # We used a stopat above to allow the cnt_q for the u_compare address prim_count to be forced. The
 # clr_i, set_i and decr_en_i signals to that module are all wired to zero, so we need to waive the
 # preconditions for some associated assertions.
-set compare_count_path "dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.u_prim_count_addr"
+set compare_count_path "${fsm_path}.u_compare.u_prim_count_addr"
 assert -name "NoClear_compare_count_A" "!${compare_count_path}.clr_i"
 assert -name "NoSet_compare_count_A" "!${compare_count_path}.set_i"
 assert -name "NoDecr_compare_count_A" "!${compare_count_path}.decr_en_i"
@@ -149,4 +152,3 @@ assert -name "CannotSaturateDn_compare_count_A" \
     "${compare_count_path}.incr_en_i -> |${compare_count_path}.cnt_q\[1\]"
 cover -disable "tb.${compare_count_path}.g_check_incr.UpCntIncrStable_A:precondition1"
 cover -disable "tb.${compare_count_path}.g_check_incr.DnCntIncrStable_A:precondition1"
-
