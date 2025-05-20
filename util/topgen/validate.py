@@ -386,10 +386,12 @@ interrupt_required = {
     'intr_type': ['s', 'The IntrType, either Event or Status'],
     'default_val': ['s', 'a string interpreted as boolean'],
     'incoming': ['s', 'a string interpreted as boolean'],
+    'outgoing': ['s', 'boolean (as string) whether interrupt leaves toplevel'],
 }
 interrupt_optional = {
     'desc': ['s', 'the description of the interrupt'],
     'type': ['s', 'should contain "interrupt"'],
+    'plic': ['s', 'controller for this interrupt'],
 }
 interrupt_added = {}
 
