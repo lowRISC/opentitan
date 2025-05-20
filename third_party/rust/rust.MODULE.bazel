@@ -5,6 +5,7 @@
 # Dependencies:
 bazel_dep(name = "rules_rust", version = "0.59.2")
 bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
+bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
