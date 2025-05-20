@@ -550,3 +550,26 @@ alias(
     name = "multislot_empty_test_sim_dv",
     actual = "multislot_empty_test",
 )
+
+opentitan_test(
+    name = "ujson_msg_size_functest",
+    srcs = ["ujson_msg_size_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        tags = ["manuf"],
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/manuf/manuf_ujson_msg_size",
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+    ],
+)
