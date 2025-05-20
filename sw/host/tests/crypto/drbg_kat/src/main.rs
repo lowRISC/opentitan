@@ -98,7 +98,7 @@ fn run_drbg_testcase(
     .send(spi_console)?;
 
     // Get output
-    let drbg_output = CryptotestDrbgOutput::recv(spi_console, opts.timeout, false)?;
+    let drbg_output = CryptotestDrbgOutput::recv(spi_console, opts.timeout, false, false)?;
     // The expected output is in a mixed-endian format (32-bit words
     // are in little-endian order, but the bytes within the words are
     // in big-endian order). Convert the actual output to match this

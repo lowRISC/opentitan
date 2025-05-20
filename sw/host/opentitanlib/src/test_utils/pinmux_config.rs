@@ -73,7 +73,7 @@ impl PinmuxConfig {
             }
             TestCommand::PinmuxConfig.send(uart)?;
             config.send(uart)?;
-            Status::recv(uart, Duration::from_secs(300), false)?;
+            Status::recv(uart, Duration::from_secs(300), false, false)?;
         }
         Ok(())
     }

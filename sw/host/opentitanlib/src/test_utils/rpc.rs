@@ -52,7 +52,7 @@ pub trait ConsoleRecv<T>
 where
     T: ConsoleDevice + ?Sized,
 {
-    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
+    fn recv(device: &T, timeout: Duration, quiet: bool, skip_crc: bool) -> Result<Self>
     where
         Self: Sized;
 }
@@ -62,7 +62,7 @@ where
     T: ConsoleDevice + ?Sized,
     U: DeserializeOwned,
 {
-    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
+    fn recv(device: &T, timeout: Duration, quiet: bool, skip_crc: bool) -> Result<Self>
     where
         Self: Sized,
     {
@@ -90,7 +90,9 @@ where
                     .expect("RESP_OK capture");
                 let json_str = cap.get(1).expect("RESP_OK group").as_str();
                 let crc_str = cap.get(2).expect("CRC group").as_str();
-                check_crc(json_str, crc_str)?;
+                if !skip_crc {
+                    check_crc(json_str, crc_str)?;
+                }
                 Ok(serde_json::from_str::<Self>(json_str)?)
             }
             ExitStatus::ExitFailure => {

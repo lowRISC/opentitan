@@ -105,13 +105,14 @@ fn run_sphincsplus_testcase(
     .send(spi_console)?;
 
     // Get verification output
-    let success = match CryptotestSphincsPlusVerifyOutput::recv(spi_console, opts.timeout, false)? {
-        CryptotestSphincsPlusVerifyOutput::Success => true,
-        CryptotestSphincsPlusVerifyOutput::Failure => false,
-        CryptotestSphincsPlusVerifyOutput::IntValue(i) => {
-            panic!("Invalid SPHINCS+ verify result: {}", i)
-        }
-    };
+    let success =
+        match CryptotestSphincsPlusVerifyOutput::recv(spi_console, opts.timeout, false, false)? {
+            CryptotestSphincsPlusVerifyOutput::Success => true,
+            CryptotestSphincsPlusVerifyOutput::Failure => false,
+            CryptotestSphincsPlusVerifyOutput::IntValue(i) => {
+                panic!("Invalid SPHINCS+ verify result: {}", i)
+            }
+        };
     if test_case.result != success {
         log::info!(
             "FAILED test #{}: expected = {}, actual = {}",

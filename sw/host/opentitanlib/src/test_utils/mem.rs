@@ -22,7 +22,7 @@ impl MemRead32Req {
         TestCommand::MemRead32.send_with_crc(device)?;
         let op = MemRead32Req { address };
         op.send_with_crc(device)?;
-        let resp = MemRead32Resp::recv(device, Duration::from_secs(300), false)?;
+        let resp = MemRead32Resp::recv(device, Duration::from_secs(300), false, false)?;
         Ok(resp.value)
     }
 }
@@ -46,7 +46,7 @@ impl MemReadReq {
                 data_len: op_size.try_into().unwrap(),
             };
             op.send_with_crc(device)?;
-            let resp = MemReadResp::recv(device, Duration::from_secs(300), false)?;
+            let resp = MemReadResp::recv(device, Duration::from_secs(300), false, false)?;
             data[bytes_read..(bytes_read + op_size)].copy_from_slice(resp.data.as_slice());
             bytes_read += op_size;
         }
@@ -62,7 +62,7 @@ impl MemWrite32Req {
         TestCommand::MemWrite32.send_with_crc(device)?;
         let op = MemWrite32Req { address, value };
         op.send_with_crc(device)?;
-        Status::recv(device, Duration::from_secs(300), false)?;
+        Status::recv(device, Duration::from_secs(300), false, false)?;
         Ok(())
     }
 }
@@ -86,7 +86,7 @@ impl MemWriteReq {
                 .try_extend_from_slice(&data[bytes_written..(bytes_written + op_size)])?;
             op.data_len = op_size.try_into().unwrap();
             op.send_with_crc(device)?;
-            let _ = Status::recv(device, Duration::from_secs(300), false)?;
+            let _ = Status::recv(device, Duration::from_secs(300), false, false)?;
             bytes_written += op_size;
         }
         Ok(())
