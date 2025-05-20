@@ -102,7 +102,7 @@ fn run_fi_ibex_testcase(
     if !test_case.expected_output.is_empty() {
         for exp_output in test_case.expected_output.iter() {
             // Get test output & filter.
-            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
                 let output_received = filter_response(output.clone());
@@ -131,7 +131,7 @@ fn run_fi_ibex_testcase(
     if !test_case.flaky_expected_output.is_empty() {
         for exp_output in test_case.flaky_expected_output.iter() {
             // Get test output & filter.
-            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            let output = serde_json::Value::recv(uart, opts.timeout, false, false)?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
                 let output_received = filter_response(output.clone());

@@ -101,7 +101,7 @@ fn run_hmac_case(
     }
     .send(spi_console)?;
 
-    let hmac_output = CryptotestHmacTag::recv(spi_console, timeout, false)?;
+    let hmac_output = CryptotestHmacTag::recv(spi_console, timeout, false, false)?;
 
     let returned_bits = hmac_output.tag[..std::cmp::min(mac_len / 8, hmac_output.tag_len)]
         .iter()

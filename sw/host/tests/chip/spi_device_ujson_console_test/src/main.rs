@@ -40,7 +40,7 @@ const SYNC_MSG: &str = r"SYNC:";
 
 fn test_perso_blob_strcut(opts: &Opts, spi_console: &SpiConsoleDevice) -> Result<()> {
     UartConsole::wait_for(spi_console, SYNC_MSG, opts.timeout)?;
-    let perso_blob = PersoBlob::recv(spi_console, opts.timeout, true)?;
+    let perso_blob = PersoBlob::recv(spi_console, opts.timeout, true, false)?;
     UartConsole::wait_for(spi_console, SYNC_MSG, opts.timeout)?;
     perso_blob.send(spi_console)?;
     Ok(())

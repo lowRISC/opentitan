@@ -196,7 +196,7 @@ fn run_ecdh_testcase(
     }
     .send(spi_console)?;
 
-    let ecdh_output = CryptotestEcdhDeriveOutput::recv(spi_console, opts.timeout, false)?;
+    let ecdh_output = CryptotestEcdhDeriveOutput::recv(spi_console, opts.timeout, false, false)?;
     let out_len = ecdh_output.shared_secret_len;
     if out_len > ecdh_output.shared_secret.len() {
         panic!("ECDH returned shared secret was too long for device firmware configuration.");

@@ -114,7 +114,7 @@ fn run_hash_testcase(
     .send(spi_console)?;
 
     // Get hash output
-    let hash_output = CryptotestHashOutput::recv(spi_console, opts.timeout, false)?;
+    let hash_output = CryptotestHashOutput::recv(spi_console, opts.timeout, false, false)?;
     // Stepwise hashing is currently supported by SHA2 only.
     let mut failed = false;
     match test_case.algorithm.as_str() {

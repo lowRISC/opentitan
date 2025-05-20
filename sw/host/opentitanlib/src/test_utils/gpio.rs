@@ -17,7 +17,7 @@ impl GpioSet {
     fn execute(&self, uart: &dyn Uart) -> Result<()> {
         TestCommand::GpioSet.send(uart)?;
         self.send(uart)?;
-        Status::recv(uart, Duration::from_secs(300), false)?;
+        Status::recv(uart, Duration::from_secs(300), false, false)?;
         Ok(())
     }
 
@@ -148,7 +148,7 @@ impl GpioSet {
 impl GpioGet {
     pub fn read_all(uart: &dyn Uart) -> Result<u32> {
         TestCommand::GpioGet.send(uart)?;
-        let data = GpioGet::recv(uart, Duration::from_secs(300), false)?;
+        let data = GpioGet::recv(uart, Duration::from_secs(300), false, false)?;
         Ok(data.state)
     }
 }

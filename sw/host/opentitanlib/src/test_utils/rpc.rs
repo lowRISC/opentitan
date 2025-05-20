@@ -51,7 +51,7 @@ pub trait ConsoleRecv<T>
 where
     T: ConsoleDevice + ?Sized,
 {
-    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
+    fn recv(device: &T, timeout: Duration, quiet: bool, skip_crc: bool) -> Result<Self>
     where
         Self: Sized;
 }
@@ -61,7 +61,7 @@ where
     T: ConsoleDevice + ?Sized,
     U: DeserializeOwned,
 {
-    fn recv(device: &T, timeout: Duration, quiet: bool) -> Result<Self>
+    fn recv(device: &T, timeout: Duration, quiet: bool, skip_crc: bool) -> Result<Self>
     where
         Self: Sized,
     {
@@ -78,7 +78,9 @@ where
             PassFailResult::Pass(cap) => {
                 let json_str = &cap[1];
                 let crc_str = &cap[2];
-                check_crc(json_str, crc_str)?;
+                if !skip_crc {
+                    check_crc(json_str, crc_str)?;
+                }
                 Ok(serde_json::from_str::<Self>(json_str)?)
             }
             PassFailResult::Fail(cap) => {

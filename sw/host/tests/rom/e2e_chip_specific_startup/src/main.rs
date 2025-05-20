@@ -327,7 +327,7 @@ fn test_chip_specific_startup(opts: &Opts, transport: &TransportWrapper) -> Resu
     let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
     TestCommand::ChipStartup.send(&*uart)?;
-    let response = ChipStartup::recv(&*uart, opts.timeout, false)?;
+    let response = ChipStartup::recv(&*uart, opts.timeout, false, false)?;
     log::info!("{:#x?}", response);
 
     check_ast(opts, &response)?;

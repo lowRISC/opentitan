@@ -349,7 +349,12 @@ fn provision_certificates(
     // Wait until the device exports the TBS certificates.
     let t0 = Instant::now();
     let _ = UartConsole::wait_for(spi_console, r"Exporting TBS certificates ...", timeout)?;
-    let perso_blob = PersoBlob::recv(spi_console, timeout, /*quite=*/ true)?;
+    let perso_blob = PersoBlob::recv(
+        spi_console,
+        timeout,
+        /*quiet=*/ true,
+        /*skip_crc=*/ true,
+    )?;
     response.stats.log_elapsed_time("perso-tbs-export", t0);
 
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
@@ -537,7 +542,13 @@ fn provision_certificates(
 
     // Check the integrity of the certificates written to the device's flash by comparing a
     // SHA256 over all certificates computed on the host and device sides.
-    let device_computed_certs_hash = SerdesSha256Hash::recv(spi_console, timeout, false)?;
+    let device_computed_certs_hash = SerdesSha256Hash::recv(
+        spi_console,
+        timeout,
+        /*quiet=*/ false,
+        /*skip_crc=*/ true,
+    )?;
+
     if !device_computed_certs_hash
         .data
         .as_bytes()

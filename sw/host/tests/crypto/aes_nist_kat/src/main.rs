@@ -120,7 +120,7 @@ fn run_aes_testcase(
     }
     .send(spi_console)?;
 
-    let aes_output = CryptotestAesOutput::recv(spi_console, opts.timeout, false)?;
+    let aes_output = CryptotestAesOutput::recv(spi_console, opts.timeout, false, false)?;
     assert_eq!(
         aes_output.output[0..input_len],
         expected_output[0..input_len]

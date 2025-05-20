@@ -127,7 +127,7 @@ pub fn run_sram_cp_provision(
 
     // Wait to receive CP device ID, and encode in big-endian in response.
     let _ = UartConsole::wait_for(spi_console, r"Exporting CP device ID ...", timeout)?;
-    response.cp_device_id = ManufCpProvisioningDataOut::recv(spi_console, timeout, true)?
+    response.cp_device_id = ManufCpProvisioningDataOut::recv(spi_console, timeout, true, false)?
         .cp_device_id
         .iter()
         .rev()
