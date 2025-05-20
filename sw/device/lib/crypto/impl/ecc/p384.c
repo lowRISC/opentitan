@@ -76,6 +76,18 @@ enum {
       (kOtbnWideWordNumWords -
        (kP384MaskedScalarShareWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
+  /**
+   * Number of extra padding words needed for unmasked scalars.
+   */
+  kScalarPaddingWords =
+      (kOtbnWideWordNumWords - (kP384ScalarWords % kOtbnWideWordNumWords)) %
+      kOtbnWideWordNumWords,
+  /**
+   * Number of extra padding words needed for unmasked coordinates.
+   */
+  kCoordPaddingWords =
+      (kOtbnWideWordNumWords - (kP384CoordWords % kOtbnWideWordNumWords)) %
+      kOtbnWideWordNumWords,
 };
 
 static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
@@ -96,6 +108,33 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
   return OTCRYPTO_OK;
 }
 
+/**
+ * Write a scalar-sized value into DMEM, with padding as needed.
+ *
+ * @param src Source value.
+ * @param addr DMEM address to write.
+ */
+static status_t p384_scalar_write(const uint32_t src[kP384ScalarWords],
+                                  const otbn_addr_t addr) {
+  HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, src, addr));
+
+  return otbn_dmem_set(kScalarPaddingWords, 0, addr + kP384ScalarBytes);
+}
+
+/**
+ * Write a point into the x and y buffers, with padding as needed.
+ *
+ * @param p Point to write.
+ */
+static status_t set_public_key(const p384_point_t *p) {
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->x, kOtbnVarX));
+  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, p->y, kOtbnVarY));
+
+  HARDENED_TRY(
+      otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarX + kP384CoordBytes));
+  return otbn_dmem_set(kCoordPaddingWords, 0, kOtbnVarY + kP384CoordBytes);
+}
+
 static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
                                    const otbn_addr_t dst) {
   // Set the message digest. We swap all the bytes so that OTBN can interpret
@@ -109,7 +148,7 @@ static status_t set_message_digest(const uint32_t digest[kP384ScalarWords],
         __builtin_bswap32(digest[kP384ScalarWords - 1 - i]);
   }
   HARDENED_CHECK_EQ(i, kP384ScalarWords);
-  return otbn_dmem_write(kP384ScalarWords, digest_little_endian, dst);
+  return p384_scalar_write(digest_little_endian, dst);
 }
 
 status_t p384_keygen_start(void) {
@@ -236,16 +275,13 @@ status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
   HARDENED_TRY(set_message_digest(digest, kOtbnVarMsg));
 
   // Set the signature R.
-  HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, signature->r, kOtbnVarR));
+  HARDENED_TRY(p384_scalar_write(signature->r, kOtbnVarR));
 
   // Set the signature S.
-  HARDENED_TRY(otbn_dmem_write(kP384ScalarWords, signature->s, kOtbnVarS));
+  HARDENED_TRY(p384_scalar_write(signature->s, kOtbnVarS));
 
-  // Set the public key x coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->x, kOtbnVarX));
-
-  // Set the public key y coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->y, kOtbnVarY));
+  // Set the public key.
+  HARDENED_TRY(set_public_key(public_key));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -289,11 +325,8 @@ status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
   // Set the private key shares.
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
-  // Set the public key x coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->x, kOtbnVarX));
-
-  // Set the public key y coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->y, kOtbnVarY));
+  // Set the public key.
+  HARDENED_TRY(set_public_key(public_key));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -330,11 +363,8 @@ status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {
   uint32_t mode = kP384ModeSideloadEcdh;
   HARDENED_TRY(otbn_dmem_write(kP384ModeWords, &mode, kOtbnVarMode));
 
-  // Set the public key x coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->x, kOtbnVarX));
-
-  // Set the public key y coordinate.
-  HARDENED_TRY(otbn_dmem_write(kP384CoordWords, public_key->y, kOtbnVarY));
+  // Set the public key.
+  HARDENED_TRY(set_public_key(public_key));
 
   // Start the OTBN routine.
   return otbn_execute();
