@@ -97,7 +97,8 @@ p256_sign:
   bn.lid    x2, 0(x3)
 
   /* scalar multiplication with base point (projective)
-     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
+     (x_1, y_1, z_1) = (w8, w9, w10) <= k*G
+         = ([w0,w1] + [w2,w3])*(dmem[p256_gx], dmem[p256_gy]) */
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
