@@ -380,7 +380,7 @@ shared_key_from_seed:
   jal       x0, shared_key
 
 
-.data
+.bss
 
 /* Operational mode. */
 .globl mode
