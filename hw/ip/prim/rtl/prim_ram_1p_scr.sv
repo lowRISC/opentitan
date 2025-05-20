@@ -29,6 +29,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  bit EnableWdataScrPipeline = 0, // Add pipeline stage after wdata scrambler
+                                             // (write latency +1 cycle).
   parameter  bit EnableOutputPipeline = 0, // Add pipeline stage after memory macro output.
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
@@ -130,14 +132,16 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Read / write strobes
   mubi4_t read_en, read_en_buf;
   logic   read_en_b;
-  mubi4_t write_en_d, write_en_buf_d, write_en_q;
+  mubi4_t write_en_d, write_en_buf_d, write_en_q, macro_write_mubi;
   logic   write_en_b;
   logic [MuBi4Width-1:0] read_en_b_buf, write_en_buf_b_d;
 
   // Grant requests if ...
   assign gnt_o = req_i & key_valid_i & ( // the key is valid and ...
-      write_i // it is a write request ...
-      | mubi4_test_false_loose(write_en_q) // or (it is a read request and) no write is pending.
+      // it is a write request ...
+      write_i
+      // or (it is a read request and) no write is pending.
+      | mubi4_test_false_loose(macro_write_mubi)
   );
 
   assign read_en = mubi4_bool_to_mubi(gnt_o & ~write_i & ~intg_error_i);
@@ -165,8 +169,23 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [AddrWidth-1:0] waddr_scr_q;
 
   // Macro requests and write strobe
+  if (EnableWdataScrPipeline) begin : gen_macro_write_pipeline
+    mubi4_t write_en_qq;
+    prim_flop #(
+      .Width(MuBi4Width),
+      .ResetValue(MuBi4Width'(MuBi4False))
+    ) u_write_en_q_flop (
+      .clk_i,
+      .rst_ni,
+      .d_i(MuBi4Width'(write_en_q)),
+      .q_o({write_en_qq})
+    );
+    assign macro_write_mubi = write_en_qq;
+  end else begin : gen_no_macro_write_pipeline
+    assign macro_write_mubi = write_en_q;
+  end
   logic macro_write;
-  assign macro_write = mubi4_test_true_loose(write_en_q);
+  assign macro_write = mubi4_test_true_loose(macro_write_mubi);
   logic macro_req;
   assign macro_req = mubi4_test_true_loose(read_en) | macro_write;
 
@@ -181,9 +200,27 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Address Scrambling //
   ////////////////////////
 
+  logic [AddrWidth-1:0] waddr_scr_to_mux;
+
+  if (EnableWdataScrPipeline) begin: gen_waddr_scr_pipeline
+    logic [AddrWidth-1:0] waddr_scr_qq;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        waddr_scr_qq <= '0;
+      end else begin
+        waddr_scr_qq <= waddr_scr_q;
+      end
+    end
+
+    assign waddr_scr_to_mux = waddr_scr_qq;
+
+  end else begin: gen_no_waddr_scr_pipeline
+    assign waddr_scr_to_mux = waddr_scr_q;
+  end
+
   // We select the stored write address if a write is pending.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = macro_write ? waddr_scr_q : addr_scr;
+  assign addr_mux = macro_write ? waddr_scr_to_mux : addr_scr;
 
   // This creates a bijective address mapping using a substitution / permutation network.
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
@@ -423,6 +460,29 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     end
   end
 
+  logic [Width-1:0] macro_wdata, macro_wmask;
+
+  if (EnableWdataScrPipeline) begin : gen_wdata_scr_pipeline
+    logic [Width-1:0] wdata_scr_q, wmask_qq;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        wdata_scr_q <= '0;
+        wmask_qq    <= '0;
+      end else begin
+        wdata_scr_q <= wdata_scr;
+        wmask_qq    <= wmask_q;
+      end
+    end
+
+    assign macro_wdata = wdata_scr_q;
+    assign macro_wmask = wmask_qq;
+
+  end else begin : gen_no_wdata_scr_pipeline
+    assign macro_wdata = wdata_scr;
+    assign macro_wmask = wmask_q;
+  end
+
   //////////////////
   // Memory Macro //
   //////////////////
@@ -442,8 +502,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .req_i    ( macro_req   ),
     .write_i  ( macro_write ),
     .addr_i   ( addr_mux    ),
-    .wdata_i  ( wdata_scr   ),
-    .wmask_i  ( wmask_q     ),
+    .wdata_i  ( macro_wdata ),
+    .wmask_i  ( macro_wmask ),
     .rdata_o  ( rdata_scr   ),
     .rvalid_o ( ),
     .rerror_o,

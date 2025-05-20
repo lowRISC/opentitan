@@ -5938,6 +5938,15 @@
           expose: "true"
           name_top: SramCtrlRetAonFlopRamOutput
         }
+        {
+          name: FlopWdataScramble
+          desc: Add a flop stage after the write data scrambler.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopWdataScramble
+        }
       ]
       inter_signal_list:
       [
@@ -8933,6 +8942,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMainFlopRamOutput
+        }
+        {
+          name: FlopWdataScramble
+          desc: Add a flop stage after the write data scrambler.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopWdataScramble
         }
       ]
       inter_signal_list:
