@@ -450,7 +450,7 @@ fn run_ecdsa_testcase(
     let success = match operation {
         CryptotestEcdsaOperation::Sign => {
             let mut output_signature =
-                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false)?;
+                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false, false)?;
             // Truncate signature values to correct size for curve and convert to big-endian
             output_signature.r.truncate(output_signature.r_len);
             output_signature.s.truncate(output_signature.s_len);
@@ -477,7 +477,8 @@ fn run_ecdsa_testcase(
             }
         }
         CryptotestEcdsaOperation::Verify => {
-            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false)?;
+            let ecdsa_output =
+                CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false, false)?;
             match ecdsa_output {
                 CryptotestEcdsaVerifyOutput::Success => true,
                 CryptotestEcdsaVerifyOutput::Failure => false,
