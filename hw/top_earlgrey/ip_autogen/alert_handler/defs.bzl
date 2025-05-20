@@ -5,5 +5,5 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 ALERT_HANDLER = opentitan_ip(
     name = "alert_handler",
-    hjson = "//hw/top_earlgrey/ip_autogen/alert_handler:data/alert_handler.hjson",
+    hjson = "//hw/top_earlgrey/ip_autogen/alert_handler/data:alert_handler.hjson",
 )

@@ -7,6 +7,11 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test", "rus
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
+filegroup(
     name = "generic_cert",
     srcs = ["tests/generic.hjson"],
 )

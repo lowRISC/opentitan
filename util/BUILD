@@ -9,6 +9,21 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//util/design:doc_files",
+        "//util/dvsim:doc_files",
+        "//util/fpvgen:doc_files",
+        "//util/i2csvg:doc_files",
+        "//util/ipgen:doc_files",
+        "//util/reggen:doc_files",
+        "//util/tlgen:doc_files",
+        "//util/topgen:doc_files",
+        "//util/uvmdvgen:doc_files",
+    ],
+)
+
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],

@@ -12,7 +12,21 @@ load("//rules:fusesoc.bzl", "fusesoc_build")
 # run with 4 threads.
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 
+package(default_visibility = ["//visibility:public"])
+
 exports_files(["tool_requirements.py"])
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//hw/bitstream:doc_files",
+        "//hw/dv:doc_files",
+        "//hw/ip:doc_files",
+        "//hw/top:doc_files",
+        "//hw/top_darjeeling:doc_files",
+        "//hw/top_earlgrey:doc_files",
+    ],
+)
 
 string_list_flag(
     name = "verilator_options",
@@ -44,19 +58,22 @@ filegroup(
 
 filegroup(
     name = "verilator_files",
-    srcs = glob(["dv/verilator/**"]),
+    srcs = [
+        "//hw/dv:verilator_files",
+        "//hw/ip:verilator_files",
+    ],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "dpi_files",
-    srcs = glob(["dv/dpi/**"]),
+    srcs = ["//hw/dv:dpi_files"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "dv_common_files",
-    srcs = glob(["dv/sv/**"]),
+    srcs = ["//hw/dv/sv:dv_common_files"],
     visibility = ["//visibility:public"],
 )
 
@@ -67,7 +84,6 @@ fusesoc_build(
         ":dv_common_files",
         ":rtl_files",
         ":verilator_files",
-        "//hw/ip:verilator_files",
     ],
     cores = [
         ":cores",
@@ -147,10 +163,9 @@ filegroup(
             "**/dv/**",
             "doc/**",
         ],
-    ) + glob(
-        # dv_macros are needed by Ibex, so include this back in.
-        ["dv/sv/dv_utils/**"],
     ) + [
+        # dv_macros are needed by Ibex, so include this back in.
+        "//hw/dv/sv:dv_macros",
         "//hw/ip:rtl_files",
         "//hw/top_earlgrey:rtl_files",
     ],

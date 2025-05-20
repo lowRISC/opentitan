@@ -49,6 +49,14 @@ exports_files(glob([
     "*.h",
 ]))
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/tests/closed_source:doc_files",
+        "//sw/device/tests/crypto/cryptotest:doc_files",
+    ],
+)
+
 opentitan_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],

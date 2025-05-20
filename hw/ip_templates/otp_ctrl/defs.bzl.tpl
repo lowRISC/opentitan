@@ -5,5 +5,5 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 OTP_CTRL = opentitan_ip(
     name = "otp_ctrl",
-    hjson = "//hw/top_${topname}/ip_autogen/otp_ctrl:data/otp_ctrl.hjson",
+    hjson = "//hw/top_${topname}/ip_autogen/otp_ctrl/data:otp_ctrl.hjson",
 )

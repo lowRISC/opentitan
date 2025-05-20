@@ -5,7 +5,7 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 CLKMGR = opentitan_ip(
     name = "clkmgr",
-    hjson = "//hw/top_darjeeling/ip_autogen/clkmgr:data/clkmgr.hjson",
-    ipconfig = "//hw/top_darjeeling/ip_autogen/clkmgr:data/top_darjeeling_clkmgr.ipconfig.hjson",
+    hjson = "//hw/top_darjeeling/ip_autogen/clkmgr/data:clkmgr.hjson",
+    ipconfig = "//hw/top_darjeeling/ip_autogen/clkmgr/data:top_darjeeling_clkmgr.ipconfig.hjson",
     extension = "//hw/top_darjeeling/ip_autogen/clkmgr/util:dt",
 )

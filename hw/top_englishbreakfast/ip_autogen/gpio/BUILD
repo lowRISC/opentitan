@@ -15,3 +15,8 @@ filegroup(
         ],
     ),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/top_englishbreakfast/ip_autogen/gpio/data:doc_files"],
+)

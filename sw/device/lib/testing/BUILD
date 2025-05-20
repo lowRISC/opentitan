@@ -9,6 +9,13 @@ load("//rules:doxygen.bzl", "doxygen_gather_cc")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/lib/testing/test_framework:doc_files",
+    ],
+)
+
 alias(
     name = "isr_testutils",
     actual = "//sw/device/lib/testing/autogen:isr_testutils",

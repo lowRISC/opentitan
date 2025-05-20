@@ -5,5 +5,5 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 PINMUX = opentitan_ip(
     name = "pinmux",
-    hjson = "//hw/top_darjeeling/ip_autogen/pinmux:data/pinmux.hjson",
+    hjson = "//hw/top_darjeeling/ip_autogen/pinmux/data:pinmux.hjson",
 )

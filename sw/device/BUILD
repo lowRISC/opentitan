@@ -30,3 +30,17 @@ config_setting(
 cc_library(
     name = "nothing",
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//sw/device/lib:doc_files",
+        "//sw/device/lib/base:doc_files",
+        "//sw/device/lib/crypto/data:doc_files",
+        "//sw/device/lib/dif:doc_files",
+        "//sw/device/lib/testing:doc_files",
+        "//sw/device/lib/testing/test_framework:doc_files",
+        "//sw/device/silicon_creator:doc_files",
+        "//sw/device/tests:doc_files",
+    ],
+)

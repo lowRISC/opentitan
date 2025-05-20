@@ -12,3 +12,8 @@ filegroup(
         "chip_smoketests.hjson",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
