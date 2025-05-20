@@ -64,7 +64,7 @@ fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<
     }
 
     // Receive the UJSON string transmitted and verify its contents.
-    let perso_blob = PersoBlob::recv(&spi_console_device, opts.timeout, true)?;
+    let perso_blob = PersoBlob::recv(&spi_console_device, opts.timeout, true, false)?;
     for i in 0..perso_blob.body.len() {
         assert_eq!(perso_blob.body[i], (i % 256) as u8);
     }

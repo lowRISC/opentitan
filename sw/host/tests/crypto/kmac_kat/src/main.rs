@@ -121,7 +121,7 @@ fn run_kmac_testcase(
     }
     .send(spi_console)?;
 
-    let kmac_tag = CryptotestKmacTag::recv(spi_console, opts.timeout, false)?;
+    let kmac_tag = CryptotestKmacTag::recv(spi_console, opts.timeout, false, false)?;
     // Cryptolib could have chosen to return more tag bytes than we asked for. If it did, we can
     // ignore the extra ones.
     let success = test_case.tag[..] == kmac_tag.tag[..test_case.tag.len()];

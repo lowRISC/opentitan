@@ -119,7 +119,7 @@ fn run_rsa_testcase(
 
                 // Get and evaluate the response.
                 let rsa_verify_resp =
-                    CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false)?;
+                    CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
                 assert_eq!(rsa_verify_resp.result, test_case.result);
             }
             "decrypt" => {
@@ -147,7 +147,7 @@ fn run_rsa_testcase(
 
                 // Get and evaluate the response.
                 let rsa_decrypt_resp =
-                    CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false)?;
+                    CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false, false)?;
                 // Check if the decryption was successful.
                 assert_eq!(rsa_decrypt_resp.result, test_case.result);
 
@@ -182,7 +182,7 @@ fn run_rsa_testcase(
 
                 // Get and evaluate the response.
                 let rsa_encrypt_resp =
-                    CryptotestRsaEncryptResp::recv(spi_console, opts.timeout, false)?;
+                    CryptotestRsaEncryptResp::recv(spi_console, opts.timeout, false, false)?;
                 // Check if the encryption was successful.
                 assert_eq!(rsa_encrypt_resp.result, test_case.result);
 
@@ -216,7 +216,7 @@ fn run_rsa_testcase(
 
                     // Get and evaluate the response.
                     let rsa_decrypt_resp =
-                        CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false)?;
+                        CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false, false)?;
                     // Check if the decryption was successful.
                     assert_eq!(rsa_decrypt_resp.result, test_case.result);
 

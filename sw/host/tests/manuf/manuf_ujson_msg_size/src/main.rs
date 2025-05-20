@@ -50,11 +50,30 @@ fn main() -> Result<()> {
     )?;
 
     // Receive the payloads from the device.
-    let sha256_hash = SerdesSha256Hash::recv(&spi_console, opts.timeout, /*quiet=*/ true)?;
-    let lc_token_hash = LcTokenHash::recv(&spi_console, opts.timeout, /*quiet=*/ true)?;
-    let certgen_inputs =
-        ManufCertgenInputs::recv(&spi_console, opts.timeout, /*quiet=*/ true)?;
-    let perso_blob = PersoBlob::recv(&spi_console, opts.timeout, /*quiet=*/ true)?;
+    let sha256_hash = SerdesSha256Hash::recv(
+        &spi_console,
+        opts.timeout,
+        /*quiet=*/ true,
+        /*skip_crc=*/ true,
+    )?;
+    let lc_token_hash = LcTokenHash::recv(
+        &spi_console,
+        opts.timeout,
+        /*quiet=*/ true,
+        /*skip_crc=*/ true,
+    )?;
+    let certgen_inputs = ManufCertgenInputs::recv(
+        &spi_console,
+        opts.timeout,
+        /*quiet=*/ true,
+        /*skip_crc=*/ true,
+    )?;
+    let perso_blob = PersoBlob::recv(
+        &spi_console,
+        opts.timeout,
+        /*quiet=*/ true,
+        /*skip_crc=*/ true,
+    )?;
 
     // Send the payloads back to the device.
     let sha256_hash_str = sha256_hash.send(&spi_console)?;

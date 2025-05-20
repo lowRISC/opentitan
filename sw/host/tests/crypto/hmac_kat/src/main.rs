@@ -100,7 +100,7 @@ fn run_hmac_testcase(
     }
     .send(spi_console)?;
 
-    let hmac_tag = CryptotestHmacTag::recv(spi_console, opts.timeout, false)?;
+    let hmac_tag = CryptotestHmacTag::recv(spi_console, opts.timeout, false, false)?;
     let success = if test_case.tag.len() > hmac_tag.tag_len {
         // If we got a shorter tag back then the test asks for, we can't accept the tag, even if
         // the beginning bytes match.

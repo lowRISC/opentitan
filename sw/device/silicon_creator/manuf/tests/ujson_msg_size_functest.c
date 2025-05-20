@@ -75,10 +75,11 @@ static status_t send_ujson_msgs(ujson_t *uj) {
   memset(&perso_blob_msg.body, UINT8_MAX, sizeof(perso_blob_msg.body));
 
   // TX payloads to the host.
-  RESP_OK(ujson_serialize_serdes_sha256_hash_t, uj, &sha256_hash_msg);
-  RESP_OK(ujson_serialize_lc_token_hash_t, uj, &lc_token_hash_msg);
-  RESP_OK(ujson_serialize_manuf_certgen_inputs_t, uj, &certgen_inputs_msg);
-  RESP_OK(ujson_serialize_perso_blob_t, uj, &perso_blob_msg);
+  RESP_OK_NO_CRC(ujson_serialize_serdes_sha256_hash_t, uj, &sha256_hash_msg);
+  RESP_OK_NO_CRC(ujson_serialize_lc_token_hash_t, uj, &lc_token_hash_msg);
+  RESP_OK_NO_CRC(ujson_serialize_manuf_certgen_inputs_t, uj,
+                 &certgen_inputs_msg);
+  RESP_OK_NO_CRC(ujson_serialize_perso_blob_t, uj, &perso_blob_msg);
 
   // RX payloads echoed back by host.
   TRY(ujson_deserialize_serdes_sha256_hash_t(uj, &sha256_hash_msg));

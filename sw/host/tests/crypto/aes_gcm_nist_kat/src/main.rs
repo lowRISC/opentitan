@@ -112,7 +112,7 @@ fn run_aes_gcm_testcase(
     }
     .send(spi_console)?;
 
-    let aes_gcm_output = CryptotestAesGcmOutput::recv(spi_console, opts.timeout, false)?;
+    let aes_gcm_output = CryptotestAesGcmOutput::recv(spi_console, opts.timeout, false, false)?;
 
     // Check if the tag comparison matches.
     assert_eq!(aes_gcm_output.tag_valid, expected_tag_check);
