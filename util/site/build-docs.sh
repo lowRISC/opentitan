@@ -17,7 +17,7 @@ declare command="build"
 # The following are only used for "command='serve-proxy'" ------------------------|
 declare public_domain="" # (optional) The public-facing domain                  <-|
 declare public_port=""   # (optional)The port added to the public-facing domain <-|
-declare book_out
+declare book_out="${build_dir}/book"
 
 command="$1"
 public_domain="${2}"
@@ -25,7 +25,6 @@ public_port="${3}"
 
 case "$command" in
   "build"|"build-staging"|"build-local"|"serve"|"serve-proxy")
-    book_out="${build_dir}/book"
     ;;
   "help"|*)
     echo "USAGE: $0 <command> [public_domain] [public_port]"
@@ -82,25 +81,6 @@ getURLs () {
 }
 getURLs
 
-# Register the pre-processors
-# Each book should only be passed the preprocessors it specifies inside the book.toml
-# ./book.toml
-book_env="env"
-book_env+=" MDBOOK_PREPROCESSOR__TESTPLAN__COMMAND=${proj_root}/util/mdbook_testplan.py"
-book_env+=" MDBOOK_PREPROCESSOR__TOOLVERSION__COMMAND=${proj_root}/util/mdbook_toolversion.py"
-book_env+=" MDBOOK_PREPROCESSOR__OTBN__COMMAND=${proj_root}/util/mdbook_otbn.py"
-book_env+=" MDBOOK_PREPROCESSOR__CODE_SNIPPET__COMMAND=${proj_root}/util/mdbook_code_snippet.py"
-book_env+=" MDBOOK_PREPROCESSOR__DOXYGEN__COMMAND=${proj_root}/util/mdbook_doxygen.py"
-book_env+=" MDBOOK_PREPROCESSOR__REGGEN__COMMAND=${proj_root}/util/mdbook_reggen.py"
-book_env+=" MDBOOK_PREPROCESSOR__README2INDEX__COMMAND=${proj_root}/util/mdbook_readme2index.py"
-book_env+=" MDBOOK_PREPROCESSOR__DASHBOARD__COMMAND=${proj_root}/util/mdbook_dashboard.py"
-book_env+=" MDBOOK_OUTPUT__HTML__THEME=$proj_root/site/book-theme/"
-book_env+=" MDBOOK_OUTPUT__HTML__DEFAULT_THEME=unicorn-vomit-light"
-book_env+=" MDBOOK_OUTPUT__HTML__PREFERRED_DARK_THEME=unicorn-vomit-light"
-book_args="build"
-book_args+=" --dest-dir ${book_out}/"
-book_args+=" ${proj_root}"
-
 ############
 # BUILDING #
 ############
@@ -120,11 +100,13 @@ buildSite () {
     chmod +w -R "${build_dir}/gen/"
     echo "Doxygen build complete."
 
-    # shellcheck disable=SC2086
-    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @mdbook_index//:mdbook__mdbook -- ${book_args}
-    # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
-    local font="Recursive_wght,CASL@300__800,0_5.woff2"
-    cp "${proj_root}/site/book-theme/${font}" "${book_out}/site/book-theme/${font}"
+    echo "Building mdBook..."
+    ./bazelisk.sh build //doc:mdbook
+    while read -r line; do
+      cp -rf "$line" "${book_out}"
+    done < <(./bazelisk.sh cquery --output=files //doc:mdbook)
+    chmod +w -R "${book_out}"
+    echo "mdBook build complete."
 
     # Build Rust Documentation
     local rustdoc_dir="${build_dir}/gen/rustdoc/"
