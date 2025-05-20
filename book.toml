@@ -20,6 +20,10 @@ edit-url-template = "https://github.com/lowrisc/opentitan/edit/master/{path}"
 curly-quotes = true
 mathjax-support = true
 
+theme = "site/book-theme"
+default_theme = "unicorn-vomit-light"
+preferred_dark_theme = "unicorn-vomit-light"
+
 additional-js = [
     "./site/book-theme/codeblock-conversions.js",
     "./site/book-theme/pagetoc.js",
@@ -59,7 +63,7 @@ command = "./util/mdbook_code_snippet.py"
 
 [preprocessor.doxygen]
 command = "./util/mdbook_doxygen.py"
-out-dir = "build-site/gen"
+out-dir = "doc/doxygen"
 html-out-dir = "gen/doxy"
 dif-src-py-regex = 'dif_\S*\.h'
 
