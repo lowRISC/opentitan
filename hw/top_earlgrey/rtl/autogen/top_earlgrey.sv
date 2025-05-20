@@ -69,6 +69,7 @@ module top_earlgrey #(
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   parameter bit SramCtrlRetAonEccCorrection = 0,
   parameter bit SramCtrlRetAonFlopRamOutput = 0,
+  parameter bit SramCtrlRetAonFlopWdataScramble = 0,
   // parameters for flash_ctrl
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
@@ -119,6 +120,7 @@ module top_earlgrey #(
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   parameter bit SramCtrlMainEccCorrection = 0,
   parameter bit SramCtrlMainFlopRamOutput = 0,
+  parameter bit SramCtrlMainFlopWdataScramble = 0,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
   parameter bit SecRomCtrlDisableScrambling = 1'b0,
@@ -2208,7 +2210,8 @@ module top_earlgrey #(
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
     .EccCorrection(SramCtrlRetAonEccCorrection),
-    .FlopRamOutput(SramCtrlRetAonFlopRamOutput)
+    .FlopRamOutput(SramCtrlRetAonFlopRamOutput),
+    .FlopWdataScramble(SramCtrlRetAonFlopWdataScramble)
   ) u_sram_ctrl_ret_aon (
       // [34]: fatal_error
       .alert_tx_o  ( alert_tx[34:34] ),
@@ -2709,7 +2712,8 @@ module top_earlgrey #(
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
     .EccCorrection(SramCtrlMainEccCorrection),
-    .FlopRamOutput(SramCtrlMainFlopRamOutput)
+    .FlopRamOutput(SramCtrlMainFlopRamOutput),
+    .FlopWdataScramble(SramCtrlMainFlopWdataScramble)
   ) u_sram_ctrl_main (
       // [59]: fatal_error
       .alert_tx_o  ( alert_tx[59:59] ),

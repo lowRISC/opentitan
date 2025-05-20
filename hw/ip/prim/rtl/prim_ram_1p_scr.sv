@@ -29,6 +29,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  bit EnableWdataScrPipeline = 0, // Add pipeline stage after wdata scrambler
+                                             // (write latency +1 cycle).
   parameter  bit EnableOutputPipeline = 0, // Add pipeline stage after memory macro output.
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
@@ -130,7 +132,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Read / write strobes
   mubi4_t read_en, read_en_buf;
   logic   read_en_b;
-  mubi4_t write_en_d, write_en_buf_d, write_en_q;
+  mubi4_t write_en_d, write_en_q, write_en_buf_d, write_en_pipelined;
   logic   write_en_b;
   logic [MuBi4Width-1:0] read_en_b_buf, write_en_buf_b_d;
   logic macro_write;
@@ -165,10 +167,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   assign write_en_buf_d = mubi4_t'(write_en_buf_b_d);
 
   logic [AddrWidth-1:0] addr_scr;
-  logic [AddrWidth-1:0] waddr_scr_q;
+  logic [AddrWidth-1:0] waddr_scr_pipelined;
 
   // Macro requests and write strobe
-  assign macro_write = mubi4_test_true_loose(write_en_q);
+  assign macro_write = mubi4_test_true_loose(write_en_pipelined);
   logic macro_req;
   assign macro_req = mubi4_test_true_loose(read_en) | macro_write;
 
@@ -185,7 +187,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // We select the stored write address if a write is pending.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = macro_write ? waddr_scr_q : addr_scr;
+  assign addr_mux = macro_write ? waddr_scr_pipelined : addr_scr;
 
   // This creates a bijective address mapping using a substitution / permutation network.
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
@@ -363,7 +365,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic ram_alert;
 
   mubi4_t rvalid_pipelined;
-  assign alert_o = mubi4_test_invalid(write_en_q) |
+  assign alert_o = mubi4_test_invalid(write_en_pipelined) |
                    mubi4_test_invalid(rvalid_pipelined) | ram_alert;
 
   prim_flop #(
@@ -374,6 +376,17 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .rst_ni,
     .d_i(MuBi4Width'(write_en_buf_d)),
     .q_o({write_en_q})
+  );
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .Depth(EnableWdataScrPipeline),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_write_en_pipeline (
+    .clk_i,
+    .rst_ni,
+    .d_i(MuBi4Width'(write_en_q)),
+    .q_o({write_en_pipelined})
   );
 
   prim_flop #(
@@ -393,20 +406,54 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   assign read_en_b = mubi4_test_true_loose(read_en_buf);
   assign write_en_b = mubi4_test_true_loose(write_en_buf_d);
 
-  logic [Width-1:0] wmask_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
-    if (!rst_ni) begin
-      waddr_scr_q         <= '0;
-      wmask_q             <= '0;
-      wdata_q             <= '0;
-    end else begin
-      if (write_en_b) begin
-        waddr_scr_q    <= addr_scr;
-        wmask_q        <= wmask_i;
-        wdata_q        <= wdata_i;
-      end
-    end
-  end
+  prim_flop_en #(
+    .Width(AddrWidth),
+    .Depth(1 + EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_waddr_scr_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(addr_scr),
+    .q_o(waddr_scr_pipelined)
+  );
+
+  logic [Width-1:0] macro_wmask;
+  prim_flop_en #(
+    .Width(Width),
+    .Depth(1 + EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_wmask_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(wmask_i),
+    .q_o(macro_wmask)
+  );
+
+  prim_flop_en #(
+    .Width(Width),
+    .Depth(1),
+    .ResetValue('0)
+  ) u_wdata_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(wdata_i),
+    .q_o(wdata_q)
+  );
+
+  logic [Width-1:0] macro_wdata;
+  prim_flop #(
+    .Width(Width),
+    .Depth(EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_wdata_scr_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(wdata_scr),
+    .q_o(macro_wdata)
+  );
 
   //////////////////
   // Memory Macro //
@@ -427,8 +474,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .req_i    ( macro_req   ),
     .write_i  ( macro_write ),
     .addr_i   ( addr_mux    ),
-    .wdata_i  ( wdata_scr   ),
-    .wmask_i  ( wmask_q     ),
+    .wdata_i  ( macro_wdata ),
+    .wmask_i  ( macro_wmask ),
     .rdata_o  ( rdata_scr   ),
     .rvalid_o ( ),
     .rerror_o,
