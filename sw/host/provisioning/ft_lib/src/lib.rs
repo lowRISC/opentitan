@@ -483,7 +483,6 @@ fn provision_certificates(
 
     // Execute extension hook.
     let t0 = Instant::now();
-    endorsed_cert_concat = ft_ext(endorsed_cert_concat)?;
     response.stats.log_elapsed_time("perso-ft-ext", t0);
 
     // Authenticate WAS HMAC.
@@ -674,13 +673,17 @@ pub fn check_slot_b_boot_up(
 
     let error_code_msg = r"BFV:.*\r\n";
 
-    let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
-        format!(
-            r"(?s)({}|{}|{})",
-            rom_ext_failure_msg, error_code_msg, owner_anchor
-        )
-    } else {
-        format!(r"(?s)({}|{})", rom_ext_failure_msg, error_code_msg)
+    // Optional text requried by certain SKUs.
+    let owner_ext_string = ft_ext(response)?;
+
+    // Compile the full regex anchor including possible error messages and
+    // expected owner FW messages.
+    let errors_text = format!(r"{}|{}", rom_ext_failure_msg, error_code_msg);
+    let anchor_text = match (owner_ext_string.clone(), owner_fw_success_string.clone()) {
+        (Some(x), Some(y)) => format!(r"(?s)({errors_text}|{x}.*{y})"),
+        (Some(x), None) => format!(r"(?s)({errors_text}|{x})"),
+        (None, Some(y)) => format!(r"(?s)({errors_text}|{y})"),
+        (None, None) => format!(r"(?s)({errors_text})"),
     };
 
     let result =
@@ -697,6 +700,7 @@ pub fn check_slot_b_boot_up(
         }
         Err(e) => {
             if owner_fw_success_string.is_none()
+                && owner_ext_string.is_none()
                 && matches!(
                     e.downcast_ref::<ConsoleError>(),
                     Some(ConsoleError::TimedOut)
