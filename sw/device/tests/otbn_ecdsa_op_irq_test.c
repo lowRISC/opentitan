@@ -43,8 +43,8 @@ OTBN_DECLARE_SYMBOL_ADDR(run_p256, r);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, s);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, x);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, y);
-OTBN_DECLARE_SYMBOL_ADDR(run_p256, d0);
-OTBN_DECLARE_SYMBOL_ADDR(run_p256, d1);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, d0_io);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, d1_io);
 OTBN_DECLARE_SYMBOL_ADDR(run_p256, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(run_p256);
@@ -55,8 +55,8 @@ static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p256, r);
 static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p256, s);
 static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p256, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p256, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p256, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p256, d1);
+static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p256, d0_io);
+static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p256, d1_io);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(run_p256, x_r);
 
 // Declare mode constants.
