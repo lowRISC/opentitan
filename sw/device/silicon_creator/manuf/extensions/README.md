@@ -50,7 +50,7 @@ respectively:
 
 Additionally, the FT provisioning test harness provides an hook function to call
 during the certificate endorsement operation:
-`pub fn ft_ext(endorsed_cert_concat: ArrayVec<u8, 4096>) -> Result<ArrayVec<u8, 4096>>`
+`pub fn ft_ext(_response: &PersonalizeResponse) -> Result<Option<String>>`
 
 The default functions provided in this example external Bazel repo do nothing.
 However, this provides a mechanism for SKU owners / customers to develop
