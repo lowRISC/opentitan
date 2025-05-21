@@ -91,3 +91,11 @@ EARLGREY_SKUS = {
     #     "offline": True,
     # },
 } | EXT_EARLGREY_SKUS
+
+# TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
+def disqualified_for_signing(name, data):
+    if "staging" in name:
+        return True
+    if "em00" in data["otp"]:
+        return True
+    return False
