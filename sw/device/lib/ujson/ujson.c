@@ -28,6 +28,7 @@ void ujson_crc32_reset(ujson_t *uj) { crc32_init(&uj->crc32); }
 uint32_t ujson_crc32_finish(ujson_t *uj) { return crc32_finish(&uj->crc32); }
 
 status_t ujson_putbuf(ujson_t *uj, const char *buf, size_t len) {
+  uj->str_size += len;
   crc32_add(&uj->crc32, buf, len);
   return uj->putbuf(uj->io_context, buf, len);
 }
