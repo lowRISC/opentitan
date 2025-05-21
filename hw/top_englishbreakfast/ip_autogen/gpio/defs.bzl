@@ -6,4 +6,5 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 GPIO = opentitan_ip(
     name = "gpio",
     hjson = "//hw/top_englishbreakfast/ip_autogen/gpio/data:gpio.hjson",
+    ipconfig = "//hw/top_englishbreakfast/ip_autogen/gpio/data:top_englishbreakfast_gpio.ipconfig.hjson",
 )
