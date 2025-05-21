@@ -21,6 +21,7 @@ load(
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EARLGREY_SKUS",
+    "disqualified_for_signing",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -392,8 +393,6 @@ filegroup(
            EXT_SIGNED_PERSO_BINS,
 )
 
-_DISQUALIFIED_FOR_SIGNING = ["em00"]
-
 [
     offline_presigning_artifacts(
         name = "provisioning_{}".format(sku),
@@ -405,7 +404,7 @@ _DISQUALIFIED_FOR_SIGNING = ["em00"]
         tags = ["manual"],
     )
     for sku, data in EARLGREY_SKUS.items()
-    if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+    if not disqualified_for_signing(sku, data)
 ]
 
 pkg_tar(
@@ -414,7 +413,7 @@ pkg_tar(
     srcs = [
         ":provisioning_{}".format(sku)
         for sku, data in EARLGREY_SKUS.items()
-        if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+        if not disqualified_for_signing(sku, data)
     ],
     mode = "0644",
     tags = ["manual"],
@@ -426,21 +425,21 @@ offline_signature_attach(
     srcs = [
         ":provisioning_{}".format(sku)
         for sku, data in EARLGREY_SKUS.items()
-        if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+        if not disqualified_for_signing(sku, data)
     ],
     ecdsa_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:ecdsa_signatures",
     ] + depset([
         "{}:ecdsa_signatures".format(data["signature_prefix"])
         for sku, data in EARLGREY_SKUS.items()
-        if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+        if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
     spx_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:spx_signatures",
     ] + depset([
         "{}:spx_signatures".format(data["signature_prefix"])
         for sku, data in EARLGREY_SKUS.items()
-        if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+        if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
     tags = ["manual"],
 )
