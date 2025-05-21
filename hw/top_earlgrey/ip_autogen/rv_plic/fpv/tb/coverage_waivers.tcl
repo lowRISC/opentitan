@@ -47,3 +47,7 @@ stopat -task FSMParasiticState "dut.gen_alert_tx\[0\].u_prim_alert_sender.state_
 # the next state as the FSM treats the unrecognized state as Idle. This assertion also covers the
 # checker coverage for the default case.
 assert -name FSMParasiticState::AlertSenderFSMParasiticState_A {!(dut.gen_alert_tx[0].u_prim_alert_sender.state_q inside  {Idle, AlertHsPhase1, AlertHsPhase2, PingHsPhase1, PingHsPhase2, Pause0, Pause1}) ->  dut.gen_alert_tx[0].u_prim_alert_sender.state_d == Idle}
+
+# These two blocking assignment appear as undetectable and making an assertion for them looks
+# unreasonable as for this particular instance, they will always be generated as zero.
+check_cov -waiver -add -start_line 67 -end_line 68 -type {statement} -instance {dut.u_reg.u_reg_if.u_rsp_intg_gen} -comment {Rsp and Data Intg will always be zero}
