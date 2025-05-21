@@ -26,6 +26,11 @@
       desc: "Number of output channels"
       type: "int"
       default: "6"
+      dtgen:
+      {
+        type: "uint8"
+        name: "output_channel_count"
+      }
     }
   ]
 }
