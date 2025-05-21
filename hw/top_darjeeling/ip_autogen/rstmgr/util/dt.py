@@ -6,7 +6,6 @@ files.
 """
 from dtgen.helper import IpHelper, Extension, StructType, ScalarType, ArrayMapType
 from topgen.lib import Name
-from typing import Optional
 from collections import OrderedDict
 import os
 import sys
@@ -80,7 +79,7 @@ dt_reset_t dt_rstmgr_sw_reset(dt_rstmgr_t dt, size_t idx) {
   if (idx >= %(sw_reset_count)d) {
     return kDtResetUnknown;
   }
-  return TRY_GET_DT(dt, kDtResetUnknown)->ext.sw_rst[idx];
+  return TRY_GET_DT(dt, kDtResetUnknown)->rstmgr_ext.sw_rst[idx];
 }
 """
 
@@ -116,7 +115,7 @@ class RstmgrExt(Extension):
         if ip_helper.ip.name == "rstmgr":
             return RstmgrExt(ip_helper)
 
-    def extend_dt_ip(self) -> Optional[StructType]:
+    def extend_dt_ip(self) -> tuple[Name, StructType]:
         sw_rsts_count = len(self.ipconfig.sw_rsts_list())
         hw_reqs_count = len(self.ipconfig.hw_reset_req_list())
 
@@ -141,7 +140,7 @@ class RstmgrExt(Extension):
             ),
             docstring = "List of hardware reset requests, in the order of the register fields",
         )
-        return st
+        return Name(["rstmgr_ext"]), st
 
     def fill_dt_ip(self, m) -> dict:
         sw_rsts = {}

@@ -89,7 +89,7 @@ size_t dt_pwrmgr_wakeup_src_count(dt_pwrmgr_t dt) {
 
 dt_pwrmgr_wakeup_src_t dt_pwrmgr_wakeup_src(dt_pwrmgr_t dt, size_t idx) {
   dt_pwrmgr_wakeup_src_t invalid = {.inst_id = kDtInstanceIdUnknown, .wakeup = 0};
-  return TRY_GET_DT(dt, invalid)->ext.wakeup_src[idx];
+  return TRY_GET_DT(dt, invalid)->pwrmgr_ext.wakeup_src[idx];
 }
 
 size_t dt_pwrmgr_reset_request_src_count(dt_pwrmgr_t dt) {
@@ -98,7 +98,7 @@ size_t dt_pwrmgr_reset_request_src_count(dt_pwrmgr_t dt) {
 
 dt_pwrmgr_reset_req_src_t dt_pwrmgr_reset_request_src(dt_pwrmgr_t dt, size_t idx) {
   dt_pwrmgr_reset_req_src_t invalid = {.inst_id = kDtInstanceIdUnknown, .reset_req = 0};
-  return TRY_GET_DT(dt, invalid)->ext.rst_reqs[idx];
+  return TRY_GET_DT(dt, invalid)->pwrmgr_ext.rst_reqs[idx];
 }
 """
 
@@ -149,7 +149,7 @@ class PwrmgrExt(Extension):
         if ip_helper.ip.name == "pwrmgr":
             return PwrmgrExt(ip_helper)
 
-    def extend_dt_ip(self) -> Optional[StructType]:
+    def extend_dt_ip(self) -> tuple[Name, StructType]:
         wakeup_count = len(self.ipconfig.wakeup_list())
         rstreq_count = len(self.ipconfig.peripheral_reset_req_list())
 
@@ -174,7 +174,7 @@ class PwrmgrExt(Extension):
             ),
             docstring = "List of reset requests, in the order of the register fields",
         )
-        return st
+        return Name(["pwrmgr_ext"]), st
 
     def fill_dt_ip(self, m) -> Optional[dict]:
         wakeup_srcs = {}
