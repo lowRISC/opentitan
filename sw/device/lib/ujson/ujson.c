@@ -48,6 +48,7 @@ status_t ujson_getc(ujson_t *uj) {
     uj->buffer = -1;
     return OK_STATUS(buffer);
   } else {
+    uj->str_size++;
     status_t s = uj->getc(uj->io_context);
     if (!status_err(s)) {
       crc32_add8(&uj->crc32, (uint8_t)s.value);

@@ -21,6 +21,7 @@ where
 {
     fn send(&self, device: &T) -> Result<String>;
     fn send_with_crc(&self, device: &T) -> Result<String>;
+    fn send_with_padding(&self, device: &T, max_size: usize) -> Result<String>;
 }
 
 impl<T, U> ConsoleSend<T> for U
@@ -44,6 +45,15 @@ where
         };
         let crc_s = actual_crc.send(device)?;
         Ok(s + &crc_s)
+    }
+
+    fn send_with_padding(&self, device: &T, max_size: usize) -> Result<String> {
+        let mut s = serde_json::to_string(self)?;
+        let pad_len = max_size - s.len();
+        let pad_str = ' '.to_string().repeat(pad_len);
+        s.insert_str(s.len() - 1, &pad_str);
+        device.write(s.as_bytes())?;
+        Ok(s)
     }
 }
 
