@@ -11,6 +11,9 @@ pub mod provisioning_data;
 /// The are obtained by running the following FPGA test:
 /// bazel test --test_output=streamed \
 ///  //sw/device/silicon_creator/manuf/tests:ujson_msg_size_functest
+///
+/// These should match the constants in:
+/// sw/device/lib/testing/json/provisioning_data.h
 pub const SERDES_SHA256_HASH_SERIALIZED_MAX_SIZE: usize = 98;
 pub const LC_TOKEN_HASH_SERIALIZED_MAX_SIZE: usize = 52;
 pub const MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE: usize = 210;
