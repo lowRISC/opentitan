@@ -15,6 +15,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 
 from reggen.ip_block import IpBlock
 from dtgen.helper import TopHelper, IpHelper, Extension
+from dtgen.ipgen_ext import IpgenExt
 from topgen.lib import CArrayMapping, CEnum
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parents[1].resolve() / "util" / "dtgen"
@@ -188,6 +189,7 @@ def main():
                                     f"but no default was specified, will use {default_node}")
 
             extension_cls = find_extension_class(ext_mod, Extension)
+            extension_cls.append(IpgenExt)
 
             # The instance name is 'top_{topname}_{ipname}'.
             ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
