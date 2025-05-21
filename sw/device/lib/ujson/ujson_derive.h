@@ -205,6 +205,7 @@
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         size_t nfield = 0; \
         char key[128]; \
+        uj->str_size = 0; \
         TRY(ujson_consume(uj, '{')); \
         while(TRY(ujson_consume_maybe(uj, '}')) == 0) { \
             if (nfield++ > 0) { \
@@ -228,6 +229,7 @@
 #define UJSON_IMPL_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         char value[128]; \
+        uj->str_size = 0; \
         if (TRY(ujson_consume_maybe(uj, '"'))) { \
             TRY(ujson_ungetc(uj, '"')); \
             TRY(ujson_parse_qs(uj, value, sizeof(value))); \
