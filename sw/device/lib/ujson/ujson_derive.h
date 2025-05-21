@@ -119,6 +119,22 @@
         if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
     }
 
+#define UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
+    status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) { \
+        size_t nfield = decl_(ujson_count, ujson_count); \
+        uj->str_size = 0; \
+        TRY(ujson_putbuf(uj, "{", 1)); \
+        decl_(ujson_ser_field, ujson_ser_string) \
+        if (max_size > uj->str_size + 1) { \
+          for (size_t i = 0; i < max_size - uj->str_size - 1; i++) { \
+            TRY(ujson_putbuf(uj, " ", 1)); \
+          } \
+        } \
+        TRY(ujson_putbuf(uj, "}", 1)); \
+        return OK_STATUS(); \
+    } \
+    extern const int __never_referenced___here_to_eat_a_semicolon[]
+
 #define UJSON_IMPL_SERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
         size_t nfield = decl_(ujson_count, ujson_count); \
@@ -266,6 +282,14 @@
         status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) \
     ) /*endif*/
 
+#define UJSON_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_serialize_with_padding_##name_(ujson_t *uj, const name_ *self, size_t max_size) \
+    ) /*endif*/
+
 #define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     OT_IIF(UJSON_SERDE_IMPL) \
     ( /*then*/ \
@@ -297,6 +321,7 @@
 #define UJSON_SERDE_STRUCT(formal_name_, name_, decl_, ...)        \
   UJSON_DECLARE_STRUCT(formal_name_, name_, decl_, ##__VA_ARGS__); \
   UJSON_SERIALIZE_STRUCT(name_, decl_);                            \
+  UJSON_SERIALIZE_STRUCT_WITH_PADDING(name_, decl_);               \
   UJSON_DESERIALIZE_STRUCT(name_, decl_)
 
 #define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...)          \

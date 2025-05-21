@@ -84,12 +84,16 @@ static status_t send_ujson_msgs(ujson_t *uj) {
     perso_blob_msg.body[i] = 0x5;
   }
 
-  // TX payloads to the host.
-  RESP_OK_NO_CRC(ujson_serialize_serdes_sha256_hash_t, uj, &sha256_hash_msg);
-  RESP_OK_NO_CRC(ujson_serialize_lc_token_hash_t, uj, &lc_token_hash_msg);
-  RESP_OK_NO_CRC(ujson_serialize_manuf_certgen_inputs_t, uj,
-                 &certgen_inputs_msg);
-  RESP_OK_NO_CRC(ujson_serialize_perso_blob_t, uj, &perso_blob_msg);
+  // TX payloads to the host padding the payloads with whitespace.
+  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_serdes_sha256_hash_t, uj,
+                        &sha256_hash_msg, kSerdesSha256HashSerializedMaxSize);
+  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_lc_token_hash_t, uj,
+                        &lc_token_hash_msg, kLcTokenHashSerializedMaxSize);
+  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_manuf_certgen_inputs_t, uj,
+                        &certgen_inputs_msg,
+                        kManufCertgenInputsSerializedMaxSize);
+  RESP_OK_PADDED_NO_CRC(ujson_serialize_with_padding_perso_blob_t, uj,
+                        &perso_blob_msg, kPersoBlobSerializedMaxSize);
 
   // RX payloads echoed back by host and check their sizes when received.
   TRY(ujson_deserialize_serdes_sha256_hash_t(uj, &sha256_hash_msg));
