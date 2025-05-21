@@ -6,7 +6,7 @@ files.
 """
 from dtgen.helper import IpHelper, Extension, StructType, ScalarType, ArrayMapType
 from topgen.lib import Name
-from typing import Dict
+from typing import Dict, Optional
 import os
 import sys
 
@@ -59,7 +59,7 @@ size_t dt_clkmgr_gateable_clock_count(dt_clkmgr_t dt) {
 }
 
 dt_instance_id_t dt_clkmgr_gateable_clock(dt_clkmgr_t dt, size_t idx) {
-  return TRY_GET_DT(dt, kDtInstanceIdUnknown)->ext.sw_clks[idx];
+  return TRY_GET_DT(dt, kDtInstanceIdUnknown)->clkmgr_ext.sw_clks[idx];
 }
 
 size_t dt_clkmgr_hintable_clock_count(dt_clkmgr_t dt) {
@@ -67,7 +67,7 @@ size_t dt_clkmgr_hintable_clock_count(dt_clkmgr_t dt) {
 }
 
 dt_instance_id_t dt_clkmgr_hintable_clock(dt_clkmgr_t dt, size_t idx) {
-  return TRY_GET_DT(dt, kDtInstanceIdUnknown)->ext.hint_clks[idx];
+  return TRY_GET_DT(dt, kDtInstanceIdUnknown)->clkmgr_ext.hint_clks[idx];
 }
 """
 
@@ -83,11 +83,11 @@ class ClkmgrExt(Extension):
         self.ipconfig = ClkmgrIpConfig(self.ip_helper.ipconfig)
 
     @staticmethod
-    def create_ext(ip_helper: IpHelper):
+    def create_ext(ip_helper: IpHelper) -> Optional["Extension"]:
         if ip_helper.ip.name == "clkmgr":
             return ClkmgrExt(ip_helper)
 
-    def extend_dt_ip(self) -> StructType:
+    def extend_dt_ip(self) -> tuple[Name, StructType]:
         sw_clk_count = len(self.ipconfig.sw_clks())
         hint_clk_count = len(self.ipconfig.hint_clks())
         instance_id_enum = self.ip_helper.top_helper.instance_id_enum
@@ -113,7 +113,7 @@ class ClkmgrExt(Extension):
             ),
             docstring = "List of hintable clocks, in the order of the register fields",
         )
-        return st
+        return Name(["clkmgr_ext"]), st
 
     def fill_dt_ip(self, m) -> Dict:
         sw_clks = {}

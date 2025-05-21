@@ -80,7 +80,7 @@ dt_reset_t dt_rstmgr_sw_reset(dt_rstmgr_t dt, size_t idx) {
   if (idx >= %(sw_reset_count)d) {
     return kDtResetUnknown;
   }
-  return TRY_GET_DT(dt, kDtResetUnknown)->ext.sw_rst[idx];
+  return TRY_GET_DT(dt, kDtResetUnknown)->rstmgr_ext.sw_rst[idx];
 }
 """
 
@@ -141,7 +141,7 @@ class RstmgrExt(Extension):
             ),
             docstring = "List of hardware reset requests, in the order of the register fields",
         )
-        return st
+        return Name(["rstmgr_ext"]), st
 
     def fill_dt_ip(self, m) -> dict:
         sw_rsts = {}
