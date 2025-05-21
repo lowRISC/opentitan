@@ -14,6 +14,25 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'p', 'd')
 
 /**
+ * Max sizes of the UJSON structs below when they are serialized.
+ *
+ * The are obtained by running the following FPGA test:
+ * bazel test --test_output=streamed \
+ *  //sw/device/silicon_creator/manuf/tests:ujson_msg_size_functest
+ *
+ * These should match the constants in:
+ * sw/host/provisioning/ujson_lib/src/lib.rs
+ */
+#ifndef RUST_PREPROCESSOR_EMIT
+enum {
+  kSerdesSha256HashSerializedMaxSize = 98,
+  kLcTokenHashSerializedMaxSize = 52,
+  kManufCertgenInputsSerializedMaxSize = 210,
+  kPersoBlobSerializedMaxSize = 20535,
+};
+#endif
+
+/**
  * Provisioning data imported onto the device during CP.
  */
 // clang-format off

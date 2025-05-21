@@ -12,6 +12,7 @@ use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use ujson_lib::provisioning_data::{LcTokenHash, ManufCertgenInputs, PersoBlob, SerdesSha256Hash};
+use ujson_lib::*;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -75,19 +76,26 @@ fn main() -> Result<()> {
     )?;
 
     // Send the payloads back to the device.
-    let sha256_hash_str = sha256_hash.send(&spi_console)?;
-    let lc_token_hash_str = lc_token_hash.send(&spi_console)?;
-    let certgen_inputs_str = certgen_inputs.send(&spi_console)?;
-    let perso_blob_str = perso_blob.send(&spi_console)?;
+    let sha256_hash_str =
+        sha256_hash.send_with_padding(&spi_console, SERDES_SHA256_HASH_SERIALIZED_MAX_SIZE)?;
+    let lc_token_hash_str =
+        lc_token_hash.send_with_padding(&spi_console, LC_TOKEN_HASH_SERIALIZED_MAX_SIZE)?;
+    let certgen_inputs_str =
+        certgen_inputs.send_with_padding(&spi_console, MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE)?;
+    let perso_blob_str =
+        perso_blob.send_with_padding(&spi_console, PERSO_BLOB_SERIALIZED_MAX_SIZE)?;
 
-    // Print UJSON payload sizes to the console.
-    println!("Sha256Hash Size:         {} bytes", sha256_hash_str.len());
-    println!("LcTokenHash Size:        {} bytes", lc_token_hash_str.len());
-    println!(
-        "ManufCertgenInputs Size: {} bytes",
-        certgen_inputs_str.len()
+    // Check padded UJSON string sizes.
+    assert_eq!(
+        sha256_hash_str.len(),
+        SERDES_SHA256_HASH_SERIALIZED_MAX_SIZE
     );
-    println!("PersoBlob Size:          {} bytes", perso_blob_str.len());
+    assert_eq!(lc_token_hash_str.len(), LC_TOKEN_HASH_SERIALIZED_MAX_SIZE);
+    assert_eq!(
+        certgen_inputs_str.len(),
+        MANUF_CERTGEN_INPUTS_SERIALIZED_MAX_SIZE
+    );
+    assert_eq!(perso_blob_str.len(), PERSO_BLOB_SERIALIZED_MAX_SIZE);
 
     Ok(())
 }
