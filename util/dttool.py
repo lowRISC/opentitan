@@ -44,10 +44,10 @@ def load_extension(plugin_path: Path):
 
 def find_extension_class(ext_mod, cls):
     if ext_mod is None:
-        return None
+        return []
 
     # Look for a class extended `cls`
-    ext_cls = None
+    ext_cls = []
     for (name, obj) in inspect.getmembers(ext_mod):
         if not inspect.isclass(obj):
             continue
@@ -57,12 +57,9 @@ def find_extension_class(ext_mod, cls):
         if not issubclass(obj, cls):
             continue
         # Found one.
-        if ext_cls is not None:
-            logging.error(f"extension defines several extension classes: {ext_cls} and {obj}")
-            raise RuntimeError("invalid extension")
-        ext_cls = obj
+        ext_cls.append(obj)
 
-    if ext_cls is None:
+    if not ext_cls:
         logging.error("extension does not define any extension class")
         raise RuntimeError("invalid extension")
 

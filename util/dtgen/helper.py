@@ -237,12 +237,13 @@ class Extension(ABC):
         return `None`.
         """
 
-    def extend_dt_ip(self) -> Optional[StructType]:
+    def extend_dt_ip(self) -> Optional[tuple[Name, StructType]]:
         """
         Override this function to add some fields to the structure storing
         fields for a given IP. This method MUST not modify `ip_helper` but
         it can access its public fields. Return `None` if you don't want to
-        add more fields.
+        add more fields. Otherwise return a tuple (name, struct): the ext
+        struct will be placed in the DT struct under the name `name`.
         """
 
     def fill_dt_ip(self, m) -> Optional[dict]:
@@ -264,11 +265,6 @@ class Extension(ABC):
         Return a string that will be inserted in the dt_<ip>.{c,h} file at a given position.
         """
         return ""
-
-
-class EmptyExtension(Extension):
-    def create_ext(ip_helper: "IpHelper") -> Optional[Extension]:
-        return None
 
 
 class TopHelper:
@@ -597,7 +593,8 @@ class IpHelper:
     EXTENSION_FIELD_NAME = Name(["ext"])
 
     def __init__(self, top_helper: TopHelper, ip: IpBlock, ipconfig: object, default_node: str,
-                 enum_type: object, array_mapping_type: object, extension_cls = None):
+                 enum_type: object, array_mapping_type: object,
+                 extension_cls: Optional[list[Extension]] = None):
         self.top_helper = top_helper
         self.top = top_helper.top
         self.ip = ip
@@ -626,7 +623,9 @@ class IpHelper:
         self._init_resets()
         self._init_periph_io()
         self._init_features()
-        self.extension = (extension_cls or EmptyExtension).create_ext(self)
+        self.extensions = list(filter(lambda x: x is not None,
+                                      [ext_cls.create_ext(self)
+                                       for ext_cls in extension_cls or []]))
 
         self._init_instances()
 
@@ -913,14 +912,17 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 docstring = "Description of each peripheral I/O"
             )
         # Add extension fields.
-        if self.extension:
-            ext_struct = self.extension.extend_dt_ip()
-            if ext_struct:
+        self._extension_structs = {}
+        for ext in self.extensions:
+            ext_desc = ext.extend_dt_ip()
+            if ext_desc:
+                ext_name, ext_struct = ext_desc
                 self.inst_struct.add_field(
-                    name = self.EXTENSION_FIELD_NAME,
+                    name = ext_name,
                     field_type = ext_struct,
-                    docstring = "Extension"
+                    docstring = "Extension",
                 )
+                self._extension_structs[ext] = ext_name
 
     def _create_instance(self, m):
         """
@@ -1026,10 +1028,11 @@ This value is undefined if the block is not connected to the Alert Handler."""
                     periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
             inst_desc[self.PERIPH_IO_FIELD_NAME] = periph_ios
         # Add extension fields.
-        if self.extension:
-            ext_fields = self.extension.fill_dt_ip(m)
-            if ext_fields:
-                inst_desc[self.EXTENSION_FIELD_NAME] = ext_fields
+        for (ext, ext_field_name) in self._extension_structs.items():
+            ext_fields = ext.fill_dt_ip(m)
+            assert ext_fields is not None, \
+                "extension did not return fields data despite creating extension fields"
+            inst_desc[ext_field_name] = ext_fields
 
         return inst_desc
 
@@ -1107,4 +1110,7 @@ This value is undefined if the block is not connected to the Alert Handler."""
         }
 
     def render_extension(self, ip_pos: Extension.DtIpPos) -> str:
-        return self.extension.render_dt_ip(ip_pos) if self.extension else ""
+        out = ""
+        for ext in self.extensions:
+            out += "\n" + ext.render_dt_ip(ip_pos) + "\n"
+        return out
