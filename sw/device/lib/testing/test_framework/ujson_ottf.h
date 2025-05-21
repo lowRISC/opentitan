@@ -109,6 +109,23 @@ ujson_t ujson_ottf_console(void);
   })
 
 /**
+ * Respond with an OK result, JSON encoded data padded to specific size, and
+ * empty CRC.
+ *
+ * @param responder_ A ujson serializer function for `data_`.
+ * @param uj_ctx_ A `ujson_t` representing the IO context.
+ * @param data_ A pointer to the data to send.
+ * @param max_size_ Max size the payload should be padded to.
+ */
+#define RESP_OK_PADDED_NO_CRC(responder_, uj_ctx_, data_, max_size_) \
+  ({                                                                 \
+    TRY(ujson_putbuf(uj_ctx_, "RESP_OK:", 8));                       \
+    TRY(responder_(uj_ctx_, data_, max_size_));                      \
+    RESP_NO_CRC(uj_ctx_);                                            \
+    OK_STATUS();                                                     \
+  })
+
+/**
  * Respond with an OK result, JSON encoded data, and valid CRC.
  *
  * @param responder_ A ujson serializer function for `data_`.
