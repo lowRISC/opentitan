@@ -516,6 +516,7 @@
         hart: "0x48000000",
       },
       attr: "ipgen",
+      targets: ["rv_core_ibex"]
     },
     { name: "aes",
       type: "aes",

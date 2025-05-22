@@ -405,16 +405,20 @@ def _get_rv_plic_params(top: ConfigT, name: str) -> ParamsT:
     for intr in top["interrupt"]:
         if intr.get("plic") == name:
             num_srcs += int(intr["width"]) if "width" in intr else 1
-    num_cores = int(top["num_cores"], 0) if "num_cores" in top else 1
+
+    num_targets = len(module.get("targets", []))
     uniquified_modules.add_module(module["template_type"], module["type"])
 
     if num_srcs <= 1:
         log.warning(f"no interrupts are connected to {name}, is it needed?")
 
+    if num_targets < 1:
+        log.warning(f"{name} specifies no targets, is it needed?")
+
     return {
         "module_instance_name": name,
         "src": num_srcs,
-        "target": num_cores,
+        "target": num_targets,
         "prio": 3,
     }
 

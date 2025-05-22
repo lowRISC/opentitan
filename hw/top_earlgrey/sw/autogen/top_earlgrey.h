@@ -1265,6 +1265,7 @@ typedef enum top_earlgrey_plic_target {
   kTopEarlgreyPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_earlgrey_plic_target_t;
 
+
 /**
  * Alert Handler Source Peripheral.
  *

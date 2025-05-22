@@ -5102,6 +5102,10 @@
         }
       }
       attr: ipgen
+      targets:
+      [
+        rv_core_ibex
+      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
