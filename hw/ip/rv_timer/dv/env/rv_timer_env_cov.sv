@@ -41,7 +41,7 @@ class rv_timer_cfg_cov_obj extends uvm_object;
     }
   endgroup : timer_cfg_cg
 
-  function new(string name="rv_timer_cfg_cov");
+  function new(string name = "");
     super.new(name);
     timer_cfg_cg = new(name);
   endfunction : new
@@ -59,7 +59,7 @@ class rv_timer_ctrl_reg_cov_obj extends uvm_object;
     }
   endgroup : timer_active_cg
 
-  function new(string name="rv_timer_ctrl_reg_cov");
+  function new(string name = "");
     super.new(name);
     timer_active_cg = new(name);
   endfunction : new
