@@ -68,3 +68,8 @@ filegroup(
     name = "sca_otbn",
     srcs = ["sca_otbn.json"],
 )
+
+filegroup(
+    name = "sca_sha3",
+    srcs = ["sca_sha3.json"],
+)
