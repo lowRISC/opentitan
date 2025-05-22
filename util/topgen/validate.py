@@ -292,6 +292,7 @@ module_optional = {
         'mapping. It is an error to specify both this and racl_mappings.'
     ],
     'plic': ['s', 'Interrupt controller managing this module'],
+    'targets': ['l', 'Optional list of targets for this PLIC'],
 }
 
 module_added = {
