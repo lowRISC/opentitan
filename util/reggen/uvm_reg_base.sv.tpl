@@ -121,7 +121,7 @@ ${make_ral_pkg_window_class(dv_base_names.mem, esc_if_name, window)}
 
     `uvm_object_utils(${reg_block_name})
 
-    function new(string name = "${reg_block_name}",
+    function new(string name = "",
                  int    has_coverage = UVM_NO_COVERAGE);
       super.new(name, has_coverage);
     endfunction : new
@@ -353,7 +353,7 @@ reg_block_path, reg, mr, reg_idx)">\
 
     `uvm_object_utils(${class_name})
 
-    function new(string       name = "${class_name}",
+    function new(string       name = "",
                  int unsigned n_bits = ${reg_width},
                  int          has_coverage = UVM_NO_COVERAGE);
       super.new(name, n_bits, has_coverage);
@@ -494,7 +494,7 @@ reg_field_name, field)">\
 
     `uvm_object_utils(${class_name})
 
-    function new(string           name = "${class_name}",
+    function new(string           name = "",
                  longint unsigned size = ${mem_size},
                  int unsigned     n_bits = ${mem_n_bits},
                  string           access = "${mem_right}",

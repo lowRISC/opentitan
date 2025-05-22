@@ -15,7 +15,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
   // the `tl_agent_cfg` instance associated with this adapter instance.
   tl_agent_cfg cfg;
 
-  function new(string name = "tl_reg_adapter");
+  function new(string name = "");
     super.new(name);
     // Force the uvm_reg_map to use this sequence to sync with the driver instead.
     parent_sequence = tl_host_base_seq#(ITEM_T)::type_id::create("m_tl_host_base_seq");
