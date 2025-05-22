@@ -903,6 +903,10 @@ def get_addr_space_suffix(addr_space: str) -> str:
     return "_" + addr_space['name']
 
 
+def remove_prefix(s: str, prefix: str) -> str:
+    return s[len(prefix):] if s.startswith(prefix) else s
+
+
 class TopGen:
 
     def __init__(self, top_info: ConfigT, name_to_block: IpBlocksT, enum_type,
@@ -918,8 +922,11 @@ class TopGen:
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
 
-        self._init_plic_targets()
-        self._init_plic_mapping()
+        if "interrupts" in self.top:
+            self.default_plic = self.top["interrupts"].get("default_plic")
+        else:
+            self.default_plic = None
+        self._init_plics()
 
         # Only generate alert_handler and mappings if there is an alert_handler
         if find_module(self.top['module'], 'alert_handler'):
@@ -1044,22 +1051,46 @@ class TopGen:
 
         return ret
 
-    def _init_plic_targets(self):
-        enum = self._enum_type(self._top_name, Name(["plic", "target"]))
+    def _init_plics(self):
+        self.plic_targets = {}
+        self.plic_sources = {}
+        self.plic_interrupts = {}
+        self.plic_mapping = {}
+        self.device_irqs = {}
 
-        # TODO: Model interrupt domains to show explicit connectivity.
-        for core_id in range(int(self.top["num_cores"])):
-            enum.add_constant(Name(["ibex", str(core_id)]),
-                              docstring="Ibex Core {}".format(core_id))
+        for plic in find_modules(self.top["module"], "rv_plic"):
+            plic_targets = self._init_plic_targets(plic)
+            name = plic["name"]
+            self.plic_targets[name] = plic_targets
+
+            plic_sources, plic_interrupts, plic_mapping = self._init_plic_mapping(plic)
+            self.plic_sources[name] = plic_sources
+            self.plic_interrupts[name] = plic_interrupts
+            self.plic_mapping[name] = plic_mapping
+
+    def _init_plic_targets(self, plic):
+        unsnaked_name = Name.from_snake_case(remove_prefix(plic["name"], "rv_"))
+        enum = self._enum_type(self._top_name, unsnaked_name + Name(["target"]))
+
+        # In the special case of one target called "rv_core_ibex",
+        # call this "Ibex0" for compatibility with existing tests.
+        targets = plic.get("targets", [])
+        if len(targets) == 1 and targets[0] == "rv_core_ibex":
+            enum.add_constant(Name(["ibex", "0"]), docstring="Ibex Core 0")
+        else:
+            for target in targets:
+                shortened_target = remove_prefix(target, "rv_core_")
+                enum.add_constant(Name.from_snake_case(shortened_target),
+                                  docstring="Ibex {}".format(target))
 
         if isinstance(enum, RustEnum):
             enum.add_number_of_variants("Final number of PLIC target")
         else:
             enum.add_last_constant("Final PLIC target")
 
-        self.plic_targets = enum
+        return enum
 
-    def _init_plic_mapping(self):
+    def _init_plic_mapping(self, plic):
         """We eventually want to generate a mapping from interrupt id to the
         source peripheral.
 
@@ -1074,14 +1105,14 @@ class TopGen:
         that they get the correct mapping to their PLIC id, which is used for
         addressing the right registers and bits.
         """
-        # TODO: Model interrupt domains to show explicit connectivity.
-        sources = self._enum_type(self._top_name, Name(["plic", "peripheral"]),
+        # A lot of code counts on this being named "Plic" and not "RvPlic"
+        unsnaked_name = Name.from_snake_case(remove_prefix(plic["name"], "rv_"))
+        sources = self._enum_type(self._top_name, unsnaked_name + Name(["peripheral"]),
                                   self.regwidth)
         interrupts = self._enum_type(self._top_name,
-                                     Name(["plic", "irq",
-                                           "id"]), self.regwidth)
+                                     unsnaked_name + Name(["irq", "id"]), self.regwidth)
         plic_mapping = self._array_mapping_type(
-            self._top_name, Name(["plic", "interrupt", "for", "peripheral"]),
+            self._top_name, unsnaked_name + Name(["interrupt", "for", "peripheral"]),
             sources.short_name
             if isinstance(sources, RustEnum) else sources.name)
 
@@ -1096,7 +1127,11 @@ class TopGen:
         # short module name to the full name object used for the enum constant.
         source_name_map = {'unknown': unknown_source}
 
+        my_modules = {x["name"] for x in self.top["module"]
+                      if x.get("plic", self.default_plic) == plic["name"]}
         for name in self.top["interrupt_module"]:
+            if name not in my_modules:
+                continue
 
             source_name = sources.add_constant(Name.from_snake_case(name),
                                                docstring=name)
@@ -1107,9 +1142,12 @@ class TopGen:
         else:
             sources.add_last_constant("Final PLIC peripheral")
 
-        # Maintain a list of instance-specific IRQs by instance name.
-        self.device_irqs = defaultdict(list)
+        # Maintain a list of instance-specific IRQs organized first by PLIC, then by instance name.
+        self.device_irqs[plic["name"]] = defaultdict(list)
         for intr in self.top["interrupt"]:
+            if intr.get("plic", self.default_plic) != plic["name"]:
+                continue
+
             # Some interrupts are multiple bits wide. Here we deal with that by
             # adding a bit-index suffix
             if "width" in intr and int(intr["width"]) != 1:
@@ -1122,8 +1160,8 @@ class TopGen:
                         'module_name']
                     source_name = source_name_map[source_name_key]
                     plic_mapping.add_entry(irq_id, source_name)
-                    self.device_irqs[intr["module_name"]].append(intr["name"] +
-                                                                 str(i))
+                    self.device_irqs[plic["name"]][intr["module_name"]].append(intr["name"] +
+                                                                               str(i))
             else:
                 name = Name.from_snake_case(intr["name"])
                 irq_id = interrupts.add_constant(name, docstring=intr["name"])
@@ -1131,16 +1169,14 @@ class TopGen:
                     'module_name']
                 source_name = source_name_map[source_name_key]
                 plic_mapping.add_entry(irq_id, source_name)
-                self.device_irqs[intr["module_name"]].append(intr["name"])
+                self.device_irqs[plic["name"]][intr["module_name"]].append(intr["name"])
 
         if isinstance(interrupts, RustEnum):
             interrupts.add_number_of_variants("Number of Interrupt ID.")
         else:
             interrupts.add_last_constant("The Last Valid Interrupt ID.")
 
-        self.plic_sources = sources
-        self.plic_interrupts = interrupts
-        self.plic_mapping = plic_mapping
+        return (sources, interrupts, plic_mapping)
 
     def _init_alert_mapping(self):
         """We eventually want to generate a mapping from alert id to the source
