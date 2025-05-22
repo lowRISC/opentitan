@@ -1261,9 +1261,10 @@ extern const top_earlgrey_plic_peripheral_t
  * access for a given interrupt target.
  */
 typedef enum top_earlgrey_plic_target {
-  kTopEarlgreyPlicTargetIbex0 = 0, /**< Ibex Core 0 */
+  kTopEarlgreyPlicTargetRvCoreIbex = 0, /**< Ibex rv_core_ibex */
   kTopEarlgreyPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_earlgrey_plic_target_t;
+
 
 /**
  * Alert Handler Source Peripheral.

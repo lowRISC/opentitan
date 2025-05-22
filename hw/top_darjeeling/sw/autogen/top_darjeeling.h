@@ -1256,9 +1256,10 @@ extern const top_darjeeling_plic_peripheral_t
  * access for a given interrupt target.
  */
 typedef enum top_darjeeling_plic_target {
-  kTopDarjeelingPlicTargetIbex0 = 0, /**< Ibex Core 0 */
+  kTopDarjeelingPlicTargetRvCoreIbex = 0, /**< Ibex rv_core_ibex */
   kTopDarjeelingPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_darjeeling_plic_target_t;
+
 
 /**
  * Alert Handler Source Peripheral.
