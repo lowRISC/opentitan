@@ -24,7 +24,8 @@ extern "C" {
     value(_, FixedMessageSet) \
     value(_, SeedLfsr) \
     value(_, DisableMasking)
-UJSON_SERDE_ENUM(Sha3ScaSubcommand, sha3_sca_subcommand_t, SHA3_SCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(Sha3ScaSubcommand, sha3_sca_subcommand_t, SHA3_SCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(Sha3ScaSubcommand, sha3_sca_subcommand_t, SHA3_SCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define SHA3_SCA_MASKS(field, string) \
     field(masks_off, uint8_t)

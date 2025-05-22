@@ -226,3 +226,20 @@ pentest_sca(
     test_harness = "//sw/host/tests/penetrationtests/sca_otbn:harness",
     test_vectors = OTBN_SCA_TESTVECTOR_TARGETS,
 )
+
+SHA3_SCA_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_sha3",
+]
+
+SHA3_SCA_TESTVECTOR_ARGS = " ".join([
+    "--sca-sha3-json=\"$(rootpath {})\"".format(target)
+    for target in SHA3_SCA_TESTVECTOR_TARGETS
+])
+
+pentest_sca(
+    name = "sca_sha3",
+    slow_test = True,
+    test_args = SHA3_SCA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_sha3:harness",
+    test_vectors = SHA3_SCA_TESTVECTOR_TARGETS,
+)
