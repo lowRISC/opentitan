@@ -151,5 +151,6 @@
     ]
     topname: earlgrey
     uniquified_modules: {}
+    racl_support: false
   }
 }
