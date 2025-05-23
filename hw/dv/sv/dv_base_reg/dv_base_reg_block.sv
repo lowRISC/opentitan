@@ -76,9 +76,9 @@ class dv_base_reg_block extends uvm_reg_block;
   endfunction
 
   function string get_ip_name();
-    // `DV_CHECK_NE_FATAL can't take "" as an input
+    // `DV_CHECK_FATAL can't take "" as an input
     string empty_str = "";
-    `DV_CHECK_NE_FATAL(ip_name, empty_str, "ip_name hasn't been set yet")
+    `DV_CHECK_FATAL(ip_name != empty_str, "ip_name hasn't been set yet")
     return ip_name;
   endfunction
 
