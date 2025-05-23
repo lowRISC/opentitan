@@ -13,7 +13,7 @@ from pathlib import Path
 
 from reggen import (
     gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
-    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
+    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_systemrdl, gen_tock, version,
 )
 from reggen.ip_block import IpBlock
 
@@ -89,6 +89,9 @@ def main():
     parser.add_argument('-s',
                         action='store_true',
                         help='Output as UVM Register class')
+    parser.add_argument('--systemrdl',
+                        action='store_true',
+                        help='Output a SystemRDL description')
     parser.add_argument('-f',
                         action='store_true',
                         help='Output as FPV CSR rw assertion module')
@@ -172,6 +175,7 @@ def main():
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None)), ('tock', ('trs', None)),
                      ('interfaces', ('interfaces', None)),
+                     ('systemrdl', ('systemrdl', None)),
                      ('doc_html_old', ('doc_html_old', None))]
     fmt = None
     dirspec = None
@@ -271,6 +275,8 @@ def main():
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
         if fmt == 'fpv':
             return gen_fpv.gen_fpv(obj, outdir)
+        if fmt == 'systemrdl':
+            return gen_systemrdl.gen(obj, outdir)
         src_lic = None
         src_copy = ''
         found_spdx = None
