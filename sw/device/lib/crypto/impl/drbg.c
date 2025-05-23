@@ -25,7 +25,7 @@
  * @param[out] seed_material Resulting entropy complex seed.
  * @return OK or error.
  */
-static otcrypto_status_t seed_material_construct(
+static status_t seed_material_construct(
     otcrypto_const_byte_buf_t value, entropy_seed_material_t *seed_material) {
   if (value.len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -34,16 +34,13 @@ static otcrypto_status_t seed_material_construct(
   size_t nwords = ceil_div(value.len, sizeof(uint32_t));
   seed_material->len = nwords;
 
-  // Initialize the set words to zero.
-  memset(seed_material->data, 0, nwords * sizeof(uint32_t));
-
-  if (value.len == 0) {
-    return OTCRYPTO_OK;
-  }
-
   // Copy seed data.
   // TODO(#17711) Change to `hardened_memcpy`.
   memcpy(seed_material->data, value.data, value.len);
+
+  // Set any unset bytes to zero.
+  size_t unset_bytes = nwords * sizeof(uint32_t) - value.len;
+  memset(((unsigned char *)seed_material->data) + value.len, 0, unset_bytes);
 
   return OTCRYPTO_OK;
 }
@@ -95,6 +92,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
   HARDENED_TRY(entropy_complex_check());
 
   entropy_seed_material_t seed_material;
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   seed_material_construct(perso_string, &seed_material);
 
   HARDENED_TRY(entropy_csrng_uninstantiate());
@@ -113,6 +111,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
   HARDENED_TRY(entropy_complex_check());
 
   entropy_seed_material_t seed_material;
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   seed_material_construct(additional_input, &seed_material);
 
   return entropy_csrng_reseed(/*disable_trng_input=*/kHardenedBoolFalse,
@@ -195,6 +194,12 @@ static otcrypto_status_t generate(hardened_bool_t fips_check,
 otcrypto_status_t otcrypto_drbg_generate(
     otcrypto_const_byte_buf_t additional_input,
     otcrypto_word32_buf_t drbg_output) {
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
+  // Randomize destination buffer.
+  hardened_memshred(drbg_output.data, drbg_output.len);
+
   return generate(/*fips_check=*/kHardenedBoolTrue, additional_input,
                   drbg_output);
 }
