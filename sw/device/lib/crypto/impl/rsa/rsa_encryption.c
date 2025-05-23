@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
@@ -20,6 +21,7 @@ status_t rsa_encrypt_2048_start(const rsa_2048_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_2048_int_t encoded_message;
+  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
@@ -43,27 +45,30 @@ status_t rsa_decrypt_2048_start(const rsa_2048_private_key_t *private_key,
 
 status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
-                              size_t plaintext_max_wordlen, uint8_t *plaintext,
+                              size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_len) {
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
 
-  // Guard against overflow in the plaintext length checks.
-  if (plaintext_max_wordlen > UINT32_MAX / sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Check that enough space has been allocated for the plaintext.
   size_t max_plaintext_bytelen = 0;
   HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(hash_mode, num_words,
                                                     &max_plaintext_bytelen));
-  if (plaintext_max_wordlen <
-      ceil_div(max_plaintext_bytelen, sizeof(uint32_t))) {
+  if (plaintext_max_bytelen < max_plaintext_bytelen) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_GE(plaintext_max_wordlen * sizeof(uint32_t),
-                    max_plaintext_bytelen);
+  HARDENED_CHECK_GE(plaintext_max_bytelen, max_plaintext_bytelen);
+
+  // Randomize the plaintext destination buffer as best we can, considering its
+  // alignment.
+  ptrdiff_t misalignment = misalignment32_of((uintptr_t)plaintext);
+  size_t aligned_offset =
+      (sizeof(uint32_t) - (size_t)misalignment) % sizeof(uint32_t);
+  size_t num_aligned_full_words =
+      (plaintext_max_bytelen - aligned_offset) / sizeof(uint32_t);
+  hardened_memshred((uint32_t *)((uintptr_t)plaintext + aligned_offset),
+                    num_aligned_full_words);
 
   // Call the appropriate `finalize()` operation to get the recovered encoded
   // message.
@@ -105,6 +110,7 @@ status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_3072_int_t encoded_message;
+  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
@@ -132,6 +138,7 @@ status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
                                 const uint8_t *label, size_t label_bytelen) {
   // Encode the message.
   rsa_4096_int_t encoded_message;
+  hardened_memshred(encoded_message.data, ARRAYSIZE(encoded_message.data));
   HARDENED_TRY(rsa_padding_oaep_encode(
       hash_mode, message, message_bytelen, label, label_bytelen,
       ARRAYSIZE(encoded_message.data), encoded_message.data));
