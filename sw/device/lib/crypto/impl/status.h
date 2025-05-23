@@ -58,6 +58,7 @@ extern "C" {
 
 #endif
 
+#ifndef OT_DISABLE_HARDENING
 /**
  * Hardened version of the `TRY` macro from `status.h`.
  *
@@ -68,7 +69,7 @@ extern "C" {
  * @return The enclosed OK value.
  */
 #define HARDENED_TRY(expr_)                                             \
-  ({                                                                    \
+  do {                                                                  \
     status_t status_ = expr_;                                           \
     if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) {   \
       return (status_t){                                                \
@@ -76,7 +77,30 @@ extern "C" {
     }                                                                   \
     HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);                \
     status_.value;                                                      \
-  })
+  } while (false)
+
+#else  // OT_DISABLE_HARDENING
+
+/**
+ * Alternate version of HARDENED_TRY that is logically equivalent.
+ *
+ * This can be used to measure the code size and performance impact of
+ * control-flow countermeasures.
+ *
+ * @param expr_ An expression that evaluates to a `status_t`.
+ * @return The enclosed OK value.
+ */
+#define HARDENED_TRY(expr_)                                             \
+  do {                                                                  \
+    status_t status_ = expr_;                                           \
+    if (status_.value != kHardenedBoolTrue) {                           \
+      return (status_t){                                                \
+          .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
+    }                                                                   \
+    status_.value;                                                      \
+  } while (false)
+
+#endif  // OT_DISABLE_HARDENING
 
 #ifdef __cplusplus
 }
