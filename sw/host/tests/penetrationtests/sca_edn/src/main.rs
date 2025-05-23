@@ -19,6 +19,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
+use pentest_lib::filter_response_common;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -43,9 +44,10 @@ struct ScaEdnTestCase {
 }
 
 fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
-    let mut map: serde_json::Map<String, serde_json::Value> = response.as_object().unwrap().clone();
-    // Device ID is different for each device.
-    map.remove("device_id");
+    // Filter common items.
+    let response_common_filtered = filter_response_common(response.clone());
+    // Filter test-specifc items.
+    let mut map: serde_json::Map<String, serde_json::Value> = response_common_filtered.clone();
     // Ignore rnd_data as it contains random data.
     map.remove("rnd_data");
     map

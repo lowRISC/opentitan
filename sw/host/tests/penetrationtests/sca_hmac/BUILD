@@ -13,6 +13,7 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/penetrationtests/ujson_lib:pentest_commands",
+        "//sw/host/tests/penetrationtests/pentest_lib",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:clap",
