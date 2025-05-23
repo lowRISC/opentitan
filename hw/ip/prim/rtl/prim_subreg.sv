@@ -62,7 +62,7 @@ module prim_subreg
 
   // feed back out for consolidation
   assign ds = wr_en ? wr_data : qs;
-  assign qe = wr_en;
+  assign qe = we;
 
   if (SwAccess == SwAccessRC) begin : gen_rc
     // In case of a SW RC colliding with a HW write, SW gets the value written by HW
