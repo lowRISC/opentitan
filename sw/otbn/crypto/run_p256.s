@@ -113,6 +113,9 @@ start:
  * clobbered flag groups: none
  */
 copy_share:
+  /* Randomize the content of w10 to prevent leakage. */
+  bn.wsrr  w10, URND
+
   /* Copy the secret key shares into Ibex-visible memory. */
   li       x10, 10
   bn.lid   x10, 0(x13)
