@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
@@ -202,14 +203,19 @@ static status_t internal_p256_keygen_finalize(
     HARDENED_TRY(p256_sideload_keygen_finalize(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+
+    // Randomize the keyblob before writing secret data.
+    hardened_memshred(private_key->keyblob,
+                      keyblob_num_words(private_key->config));
+
     p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
     HARDENED_TRY(p256_keygen_finalize(sk, pk));
-    private_key->checksum = integrity_blinded_checksum(private_key);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Prepare the public key.
+  // Set the key checksums.
+  private_key->checksum = integrity_blinded_checksum(private_key);
   public_key->checksum = integrity_unblinded_checksum(public_key);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
@@ -495,6 +501,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
   p256_ecdh_shared_key_t ss;
+  hardened_memshred(ss.share0, ARRAYSIZE(ss.share0));
+  hardened_memshred(ss.share1, ARRAYSIZE(ss.share1));
   HARDENED_TRY(p256_ecdh_finalize(&ss));
 
   HARDENED_TRY(keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,
