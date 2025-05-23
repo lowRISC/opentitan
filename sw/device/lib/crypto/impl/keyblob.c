@@ -97,6 +97,9 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
   // Entropy complex must be initialized for `hardened_memcpy`.
   HARDENED_TRY(entropy_complex_check());
 
+  // Randomize the keyblob contents before writing shares.
+  hardened_memshred(keyblob, keyblob_num_words(config));
+
   size_t share_words = keyblob_share_num_words(config);
   hardened_memcpy(keyblob, share0, share_words);
   hardened_memcpy(keyblob + share_words, share1, share_words);
