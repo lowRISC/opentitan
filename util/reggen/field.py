@@ -14,6 +14,9 @@ from reggen.lib import (check_keys, check_str, check_name, check_bool,
                         check_list, check_str_list, check_xint)
 from reggen.params import ReggenParams
 
+from systemrdl.importer import RDLImporter
+import systemrdl.component
+
 REQUIRED_FIELDS = {'bits': ['b', "bit or bit range (msb:lsb)"]}
 
 OPTIONAL_FIELDS = {
@@ -434,3 +437,10 @@ class Field:
         self.resval = 0
         self.tags = []
         self.alias_target = None
+
+    def to_systemrdl(self, importer: RDLImporter) -> systemrdl.component.Field:
+        rdl_t = importer.create_field_definition(self.name)
+        return importer.instantiate_field(rdl_t,
+                                          self.name,
+                                          self.bits.lsb,
+                                          self.bits.width())
