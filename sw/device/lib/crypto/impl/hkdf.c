@@ -172,13 +172,9 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   // struct.
 
   // Unmask the input key.
-  uint32_t *ikm_share0;
-  uint32_t *ikm_share1;
-  HARDENED_TRY(keyblob_to_shares(ikm, &ikm_share0, &ikm_share1));
   uint32_t unmasked_ikm_data[keyblob_share_num_words(ikm->config)];
-  for (size_t i = 0; i < ARRAYSIZE(unmasked_ikm_data); i++) {
-    unmasked_ikm_data[i] = ikm_share0[i] ^ ikm_share1[i];
-  }
+  HARDENED_TRY(
+      keyblob_key_unmask(ikm, ARRAYSIZE(unmasked_ikm_data), unmasked_ikm_data));
   otcrypto_const_byte_buf_t unmasked_ikm = {
       .data = (unsigned char *)unmasked_ikm_data,
       .len = ikm->config.key_length,
