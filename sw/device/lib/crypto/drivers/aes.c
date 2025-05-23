@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "aes_regs.h"  // Generated.
@@ -24,6 +25,7 @@ enum {
   kAesKeyWordLen128 = 128 / (sizeof(uint32_t) * 8),
   kAesKeyWordLen192 = 192 / (sizeof(uint32_t) * 8),
   kAesKeyWordLen256 = 256 / (sizeof(uint32_t) * 8),
+  kAesKeyWordLenMax = kAesKeyWordLen256,
 };
 
 /**
@@ -46,6 +48,8 @@ static status_t spin_until(uint32_t bit) {
  * Write the key to the AES hardware block.
  *
  * If the key is sideloaded, this is a no-op.
+ *
+ * Consumes randomness; the caller must ensure the entropy complex is up.
  *
  * @param key AES key.
  * @return result, OK or error.
@@ -75,12 +79,13 @@ static status_t aes_write_key(aes_key_t key) {
   }
   HARDENED_CHECK_EQ(i, key.key_len);
 
-  // NOTE: all eight share registers must be written; in the case we don't have
-  // enough key data, we fill it with zeroes.
-  for (size_t i = key.key_len; i < 8; ++i) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), 0);
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), 0);
+  // Write random words to remaining key registers.
+  for (; i < kAesKeyWordLenMax; i++) {
+    abs_mmio_write32(share0 + i * sizeof(uint32_t), ibex_rnd32_read());
+    abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
   }
+  HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+
   return spin_until(AES_STATUS_IDLE_BIT);
 }
 
