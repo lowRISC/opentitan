@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 
@@ -26,6 +27,9 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   // hardware-backed or non-symmetric keys.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
 
+  // Ensure that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   // Get pointers to the shares within the keyblob. Fails if the key length
   // doesn't match the mode.
   uint32_t *share0;
@@ -41,6 +45,10 @@ otcrypto_status_t otcrypto_symmetric_keygen(
       .data = share1,
       .len = keyblob_share_num_words(key->config),
   };
+
+  // Randomize the memory before writing the shares.
+  hardened_memshred(share0_buf.data, share0_buf.len);
+  hardened_memshred(share1_buf.data, share1_buf.len);
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
