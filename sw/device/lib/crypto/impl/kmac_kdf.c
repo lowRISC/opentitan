@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
@@ -106,6 +107,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
       keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Randomize the keyblob memory.
+  hardened_memshred(output_key_material->keyblob,
+                    keyblob_num_words(output_key_material->config));
 
   switch (launder32(key_derivation_key->config.key_mode)) {
     case kOtcryptoKeyModeKdfKmac128: {
