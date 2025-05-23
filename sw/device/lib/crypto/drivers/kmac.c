@@ -525,6 +525,9 @@ static status_t kmac_init(kmac_operation_t operation,
  *
  * If the key is hardware-backed, this is a no-op.
  *
+ * Uses hardening primitives internally that consume entropy; the caller must
+ * ensure the entropy complex is up before calling.
+ *
  * @param key The input key passed as a struct.
  * @return Error code.
  */
@@ -545,6 +548,14 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   uint32_t key_len_reg = bitfield_field32_write(
       KMAC_KEY_LEN_REG_RESVAL, KMAC_KEY_LEN_LEN_FIELD, key_len_enum);
   abs_mmio_write32(kKmacBaseAddr + KMAC_KEY_LEN_REG_OFFSET, key_len_reg);
+
+  // Write random words to the key registers.
+  for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
+    abs_mmio_write32(kKmacKeyShare0Addr + i * sizeof(uint32_t),
+                     ibex_rnd32_read());
+    abs_mmio_write32(kKmacKeyShare1Addr + i * sizeof(uint32_t),
+                     ibex_rnd32_read());
+  }
 
   for (size_t i = 0; i * sizeof(uint32_t) < key->len; i++) {
     abs_mmio_write32(kKmacKeyShare0Addr + i * sizeof(uint32_t), key->share0[i]);
