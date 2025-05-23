@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -148,6 +149,10 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   // Start the operation and wait for it to complete.
   keymgr_start(diversification);
   HARDENED_TRY(keymgr_wait_until_done());
+
+  // Randomize the destination buffer.
+  hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
+  hardened_memshred(key->share1, kKeymgrOutputShareNumWords);
 
   // Collect output.
   // TODO: for SCA hardening, randomize the order of these reads.
