@@ -22,6 +22,9 @@ from reggen.reg_block import RegBlock
 from reggen.signal import Signal
 from semantic_version import Version
 
+from systemrdl.component import Addrmap
+from systemrdl.importer import RDLImporter
+
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
     1: 'adc_ctrl',
@@ -645,3 +648,7 @@ class IpBlock:
                           f"register block: {', '.join(unused_regwens)}")
                 status = False
         return status
+
+    def to_systemrdl(self, importer: RDLImporter) -> Addrmap:
+        # TODO: Put something into the address map...
+        return importer.create_addrmap_definition(self.name)
