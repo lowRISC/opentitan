@@ -40,6 +40,13 @@ hardened_bool_t integrity_unblinded_key_check(
 }
 
 hardened_bool_t integrity_blinded_key_check(const otcrypto_blinded_key_t *key) {
+  // Reject keys that come from a newer version of the library (downgrade
+  // protection).
+  if (launder32(key->config.version) != kOtcryptoLibVersion1) {
+    return kHardenedBoolFalse;
+  }
+  HARDENED_CHECK_EQ(key->config.version, kOtcryptoLibVersion1);
+
   if (key->checksum == launder32(integrity_blinded_checksum(key))) {
     HARDENED_CHECK_EQ(key->checksum, integrity_blinded_checksum(key));
     return kHardenedBoolTrue;
