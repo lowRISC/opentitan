@@ -649,6 +649,22 @@ class IpBlock:
                 status = False
         return status
 
-    def to_systemrdl(self, importer: RDLImporter) -> Addrmap:
-        # TODO: Put something into the address map...
-        return importer.create_addrmap_definition(self.name)
+    def to_systemrdl(self, importer: RDLImporter) -> Optional[Addrmap]:
+        num_children = 0
+
+        rdl_addrmap = importer.create_addrmap_definition(self.name)
+
+        for rb in self.reg_blocks.values():
+            rdl_rb = rb.to_systemrdl(importer)
+
+            # Skip empty interfaces
+            if rdl_rb is None:
+                continue
+
+            importer.add_child(rdl_addrmap, rdl_rb)
+            num_children += 1
+
+        if num_children > 1:
+            rdl_addrmap.properties['bridge'] = True
+
+        return rdl_addrmap if num_children else None
