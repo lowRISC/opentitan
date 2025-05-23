@@ -19,6 +19,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
+use pentest_lib::filter_response_common;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -42,16 +43,6 @@ struct ScaHmacTestCase {
     #[serde(default)]
     key: String,
     expected_output: String,
-}
-
-fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
-    let mut map: serde_json::Map<String, serde_json::Value> = response.as_object().unwrap().clone();
-    // Device ID is different for each device.
-    map.remove("device_id");
-    // Ignore rnd_data as it contains random data.
-    map.remove("rnd_data");
-
-    map
 }
 
 fn run_sca_hmac_testcase(
@@ -85,12 +76,12 @@ fn run_sca_hmac_testcase(
 
     // Get test output & filter.
     let output = serde_json::Value::recv(uart, opts.timeout, false)?;
-    let output_received = filter_response(output.clone());
+    let output_received = filter_response_common(output.clone());
 
     // Filter expected output.
     let exp_output: serde_json::Value =
         serde_json::from_str(test_case.expected_output.as_str()).unwrap();
-    let output_expected = filter_response(exp_output.clone());
+    let output_expected = filter_response_common(exp_output.clone());
 
     // Check received with expected output.
     if output_expected != output_received {
