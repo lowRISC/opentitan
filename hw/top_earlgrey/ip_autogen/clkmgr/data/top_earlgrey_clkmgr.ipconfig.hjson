@@ -261,5 +261,6 @@
     with_alert_handler: true
     topname: earlgrey
     uniquified_modules: {}
+    module_instance_name: clkmgr
   }
 }

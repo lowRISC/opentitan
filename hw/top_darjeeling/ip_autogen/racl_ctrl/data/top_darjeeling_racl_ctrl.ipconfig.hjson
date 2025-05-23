@@ -64,5 +64,6 @@
     ]
     topname: darjeeling
     uniquified_modules: {}
+    enable_shadow_reg: true
   }
 }

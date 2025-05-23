@@ -11,5 +11,6 @@
     prio: 3
     topname: earlgrey
     uniquified_modules: {}
+    racl_support: false
   }
 }

@@ -25,5 +25,6 @@
     size: 65536
     topname: englishbreakfast
     uniquified_modules: {}
+    module_instance_name: flash_ctrl
   }
 }

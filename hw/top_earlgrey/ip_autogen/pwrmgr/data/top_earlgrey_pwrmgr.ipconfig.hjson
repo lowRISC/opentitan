@@ -90,5 +90,6 @@
     ]
     topname: earlgrey
     uniquified_modules: {}
+    module_instance_name: pwrmgr
   }
 }

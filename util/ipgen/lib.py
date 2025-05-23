@@ -267,6 +267,12 @@ class IpConfig:
 
             param_values_typed[key] = param_value_typed
 
+        # Ensure that params dict is fully populated. Defaults are passed for params that
+        # are not explicitly specified.
+        for key, value in template_params.items():
+            if key not in param_values_typed:
+                param_values_typed[key] = value.default
+
         return param_values_typed
 
     @classmethod
