@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/rsa.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_encryption.h"
@@ -200,6 +201,10 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 
   // Check the mode and lengths for the private key.
   HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  // Randomize the keyblob.
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
 
   switch (size) {
     case kOtcryptoRsaSize2048: {
@@ -460,6 +465,10 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
+  // Randomize the keyblob memory.
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
+
   // Call the required finalize() operation.
   switch (size) {
     case kOtcryptoRsaSize2048: {
@@ -569,6 +578,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
 
   // Check the caller-provided private key buffer.
   HARDENED_TRY(private_key_structural_check(size, private_key));
+
+  // Randomize the keyblob memory.
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
 
   // Call the required finalize() operation.
   switch (size) {
