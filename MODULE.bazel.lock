@@ -2396,7 +2396,7 @@
         "bzlTransitiveDigest": "TGP6MHc11gJ9woCpDt9AjErdRQgorwimERJ2b3N5UTM=",
         "usagesDigest": "ZtUyGgCN5jAjxP2ihtejK0FyGAEc30zxHIv3rRzNKQ8=",
         "recordedFileInputs": {
-          "@@//python-requirements.txt": "0650717d0e9b752ba713d13d88f5707ad326c88978565432e501a18e173d1913",
+          "@@//python-requirements.txt": "0dd1b72f9264b1ce1424500380a76ae25f82f4bff8ab0b02e8b3d05a379f959d",
           "@@lowrisc_misc_linters+//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
           "@@protobuf+//python/requirements.txt": "983be60d3cec4b319dcab6d48aeb3f5b2f7c3350f26b3a9e97486c37967c73c5",
           "@@rules_fuzzing+//fuzzing/requirements.txt": "ab04664be026b632a0d2a2446c4f65982b7654f5b6851d2f9d399a19b7242a5b",
@@ -2410,6 +2410,15 @@
           "RULES_PYTHON_REPO_DEBUG_VERBOSITY": null
         },
         "generatedRepoSpecs": {
+          "ot_python_deps_310_antlr4_python3_runtime": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "antlr4-python3-runtime==4.13.2 --hash=sha256:909b647e1d2fc2b70180ac586df3933e38919c85f98ccc656a96cd3f25ef3916 --hash=sha256:fe3835eb8d33daece0e799090eda89719dbccee7aa39ef94eed3818cafa5a7e8"
+            }
+          },
           "ot_python_deps_310_anytree": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2572,15 +2581,6 @@
               "requirement": "enlighten==1.14.1 --hash=sha256:5fbd0c959ca1644034c41bb0ace5db19c9852cf9d721b6103f5f130663c57be8 --hash=sha256:85c35412a9a4f3886b3337d41f813441fab9a30d9f5b5f0c015bd078a4411473"
             }
           },
-          "ot_python_deps_310_exceptiongroup": {
-            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
-            "attributes": {
-              "dep_template": "@ot_python_deps//{name}:{target}",
-              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
-              "repo": "ot_python_deps_310",
-              "requirement": "exceptiongroup==1.2.2 --hash=sha256:3111b9d131c238bec2f8f516e123e14ba243563fb135d3fe885990585aa7795b --hash=sha256:47c2edf7c6738fafb49fd34290706d1a1a2f4d1c6df275526b62cbb4aa5393cc"
-            }
-          },
           "ot_python_deps_310_flake8": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2734,6 +2734,15 @@
               "requirement": "mako==1.3.9 --hash=sha256:95920acccb578427a9aa38e37a186b1e43156c87260d7ba18ca63aa4c7cbd3a1 --hash=sha256:b5d65ff3462870feec922dbccf38f6efb44e5714d7b593a656be86663d8600ac"
             }
           },
+          "ot_python_deps_310_markdown": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "markdown==3.8 --hash=sha256:794a929b79c5af141ef5ab0f2f642d0f7b1872981250230e72682346f7cc90dc --hash=sha256:7df81e63f0df5c4b24b7d156eb81e4690595239b7d70937d0409f1b0de319c6f"
+            }
+          },
           "ot_python_deps_310_markupsafe": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -2831,6 +2840,15 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "pathspec==0.12.1 --hash=sha256:a0d503e138a4c123b27490a4f7beda6a01c6f288df0e4a8b79c7eb0dc7b4cc08 --hash=sha256:a482d51503a1ab33b1c67a6c3813a26953dbdc71c31dacaef9a838c4e29f5712"
+            }
+          },
+          "ot_python_deps_310_peakrdl_systemrdl": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "peakrdl-systemrdl==0.3.0 --hash=sha256:a20369b70b00920a132327f9e49eaab6732a6ecd701e98ecb6ecbf2ab570457e"
             }
           },
           "ot_python_deps_310_pluggy": {
@@ -3103,6 +3121,15 @@
               "requirement": "soupsieve==2.6 --hash=sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb --hash=sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9"
             }
           },
+          "ot_python_deps_310_systemrdl_compiler": {
+            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
+            "attributes": {
+              "dep_template": "@ot_python_deps//{name}:{target}",
+              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
+              "repo": "ot_python_deps_310",
+              "requirement": "systemrdl-compiler==1.29.3 --hash=sha256:0e996704f04638d211d8cc24da64346e37ef8385d8a567d3f826388e2a242318 --hash=sha256:0ee3a1f4da5c18330a4694febe35e54fea5a74518542b5b49749b975c7a8e9c3 --hash=sha256:1b37a46d1bcf3c0b604569dd00de943d81b0a1ded1544ddaca14b3432d1e9d2e --hash=sha256:1db74ee0a8cfec5b624a787bd1309fe4378f863838afc487f2411b182e6f645c --hash=sha256:3f4c15abcb0006544d67496819c521f2c9d7c1581ced2db648ded049e1fe8bbf --hash=sha256:70d07d7588d437b5f3a15ce17aebbc226ae47c481e4c340d6780c6dc30606a4a --hash=sha256:80298fb74abf45aef9f8d9a327ab250415aa9cca561e307d1b3d6a696503d330 --hash=sha256:abd765ea6d6ffd13ef1e4234dd1365b51579611560757d26cfe26192926b1d9d --hash=sha256:fe59be0aa1cd93b76160cfd68271455509c94cbab6ea7c1c7682e08394904055"
+            }
+          },
           "ot_python_deps_310_tabulate": {
             "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
             "attributes": {
@@ -3137,15 +3164,6 @@
               "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
               "repo": "ot_python_deps_310",
               "requirement": "toml==0.10.2 --hash=sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b --hash=sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"
-            }
-          },
-          "ot_python_deps_310_tomli": {
-            "repoRuleId": "@@rules_python+//python/private/pypi:whl_library.bzl%whl_library",
-            "attributes": {
-              "dep_template": "@ot_python_deps//{name}:{target}",
-              "python_interpreter_target": "@@rules_python++python+python_3_10_host//:python",
-              "repo": "ot_python_deps_310",
-              "requirement": "tomli==2.2.1 --hash=sha256:023aa114dd824ade0100497eb2318602af309e5a55595f76b626d6d9f3b7b0a6 --hash=sha256:02abe224de6ae62c19f090f68da4e27b10af2b93213d36cf44e6e1c5abd19fdd --hash=sha256:286f0ca2ffeeb5b9bd4fcc8d6c330534323ec51b2f52da063b11c502da16f30c --hash=sha256:2d0f2fdd22b02c6d81637a3c95f8cd77f995846af7414c5c4b8d0545afa1bc4b --hash=sha256:33580bccab0338d00994d7f16f4c4ec25b776af3ffaac1ed74e0b3fc95e885a8 --hash=sha256:400e720fe168c0f8521520190686ef8ef033fb19fc493da09779e592861b78c6 --hash=sha256:40741994320b232529c802f8bc86da4e1aa9f413db394617b9a256ae0f9a7f77 --hash=sha256:465af0e0875402f1d226519c9904f37254b3045fc5084697cefb9bdde1ff99ff --hash=sha256:4a8f6e44de52d5e6c657c9fe83b562f5f4256d8ebbfe4ff922c495620a7f6cea --hash=sha256:4e340144ad7ae1533cb897d406382b4b6fede8890a03738ff1683af800d54192 --hash=sha256:678e4fa69e4575eb77d103de3df8a895e1591b48e740211bd1067378c69e8249 --hash=sha256:6972ca9c9cc9f0acaa56a8ca1ff51e7af152a9f87fb64623e31d5c83700080ee --hash=sha256:7fc04e92e1d624a4a63c76474610238576942d6b8950a2d7f908a340494e67e4 --hash=sha256:889f80ef92701b9dbb224e49ec87c645ce5df3fa2cc548664eb8a25e03127a98 --hash=sha256:8d57ca8095a641b8237d5b079147646153d22552f1c637fd3ba7f4b0b29167a8 --hash=sha256:8dd28b3e155b80f4d54beb40a441d366adcfe740969820caf156c019fb5c7ec4 --hash=sha256:9316dc65bed1684c9a98ee68759ceaed29d229e985297003e494aa825ebb0281 --hash=sha256:a198f10c4d1b1375d7687bc25294306e551bf1abfa4eace6650070a5c1ae2744 --hash=sha256:a38aa0308e754b0e3c67e344754dff64999ff9b513e691d0e786265c93583c69 --hash=sha256:a92ef1a44547e894e2a17d24e7557a5e85a9e1d0048b0b5e7541f76c5032cb13 --hash=sha256:ac065718db92ca818f8d6141b5f66369833d4a80a9d74435a268c52bdfa73140 --hash=sha256:b82ebccc8c8a36f2094e969560a1b836758481f3dc360ce9a3277c65f374285e --hash=sha256:c954d2250168d28797dd4e3ac5cf812a406cd5a92674ee4c8f123c889786aa8e --hash=sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc --hash=sha256:cd45e1dc79c835ce60f7404ec8119f2eb06d38b1deba146f07ced3bbc44505ff --hash=sha256:d3f5614314d758649ab2ab3a62d4f2004c825922f9e370b29416484086b264ec --hash=sha256:d920f33822747519673ee656a4b6ac33e382eca9d331c87770faa3eef562aeb2 --hash=sha256:db2b95f9de79181805df90bedc5a5ab4c165e6ec3fe99f970d0e302f384ad222 --hash=sha256:e59e304978767a54663af13c07b3d1af22ddee3bb2fb0618ca1593e4f593a106 --hash=sha256:e85e99945e688e32d5a35c1ff38ed0b3f41f43fad8df0bdf79f72b2ba7bc5272 --hash=sha256:ece47d672db52ac607a3d9599a9d48dcb2f2f735c6c2d1f34130085bb12b112a --hash=sha256:f4039b9cbc3048b2416cc57ab3bda989a6fcf9b36cf8937f01a6e731b64f80d7"
             }
           },
           "ot_python_deps_310_tqdm": {
@@ -5750,6 +5768,7 @@
               "repo_name": "ot_python_deps",
               "extra_hub_aliases": {},
               "whl_map": {
+                "antlr4_python3_runtime": "{\"ot_python_deps_310_antlr4_python3_runtime\":[{\"version\":\"3.10\"}]}",
                 "anytree": "{\"ot_python_deps_310_anytree\":[{\"version\":\"3.10\"}]}",
                 "argcomplete": "{\"ot_python_deps_310_argcomplete\":[{\"version\":\"3.10\"}]}",
                 "attrs": "{\"ot_python_deps_310_attrs\":[{\"version\":\"3.10\"}]}",
@@ -5768,7 +5787,6 @@
                 "cython": "{\"ot_python_deps_310_cython\":[{\"version\":\"3.10\"}]}",
                 "edalize": "{\"ot_python_deps_310_edalize\":[{\"version\":\"3.10\"}]}",
                 "enlighten": "{\"ot_python_deps_310_enlighten\":[{\"version\":\"3.10\"}]}",
-                "exceptiongroup": "{\"ot_python_deps_310_exceptiongroup\":[{\"version\":\"3.10\"}]}",
                 "flake8": "{\"ot_python_deps_310_flake8\":[{\"version\":\"3.10\"}]}",
                 "fusesoc": "{\"ot_python_deps_310_fusesoc\":[{\"version\":\"3.10\"}]}",
                 "gitdb": "{\"ot_python_deps_310_gitdb\":[{\"version\":\"3.10\"}]}",
@@ -5786,6 +5804,7 @@
                 "lizard": "{\"ot_python_deps_310_lizard\":[{\"version\":\"3.10\"}]}",
                 "lxml": "{\"ot_python_deps_310_lxml\":[{\"version\":\"3.10\"}]}",
                 "mako": "{\"ot_python_deps_310_mako\":[{\"version\":\"3.10\"}]}",
+                "markdown": "{\"ot_python_deps_310_markdown\":[{\"version\":\"3.10\"}]}",
                 "markupsafe": "{\"ot_python_deps_310_markupsafe\":[{\"version\":\"3.10\"}]}",
                 "mccabe": "{\"ot_python_deps_310_mccabe\":[{\"version\":\"3.10\"}]}",
                 "mistletoe": "{\"ot_python_deps_310_mistletoe\":[{\"version\":\"3.10\"}]}",
@@ -5797,6 +5816,7 @@
                 "okonomiyaki": "{\"ot_python_deps_310_okonomiyaki\":[{\"version\":\"3.10\"}]}",
                 "packaging": "{\"ot_python_deps_310_packaging\":[{\"version\":\"3.10\"}]}",
                 "pathspec": "{\"ot_python_deps_310_pathspec\":[{\"version\":\"3.10\"}]}",
+                "peakrdl_systemrdl": "{\"ot_python_deps_310_peakrdl_systemrdl\":[{\"version\":\"3.10\"}]}",
                 "pluggy": "{\"ot_python_deps_310_pluggy\":[{\"version\":\"3.10\"}]}",
                 "pluralizer": "{\"ot_python_deps_310_pluralizer\":[{\"version\":\"3.10\"}]}",
                 "prefixed": "{\"ot_python_deps_310_prefixed\":[{\"version\":\"3.10\"}]}",
@@ -5827,11 +5847,11 @@
                 "six": "{\"ot_python_deps_310_six\":[{\"version\":\"3.10\"}]}",
                 "smmap": "{\"ot_python_deps_310_smmap\":[{\"version\":\"3.10\"}]}",
                 "soupsieve": "{\"ot_python_deps_310_soupsieve\":[{\"version\":\"3.10\"}]}",
+                "systemrdl_compiler": "{\"ot_python_deps_310_systemrdl_compiler\":[{\"version\":\"3.10\"}]}",
                 "tabulate": "{\"ot_python_deps_310_tabulate\":[{\"version\":\"3.10\"}]}",
                 "termcolor": "{\"ot_python_deps_310_termcolor\":[{\"version\":\"3.10\"}]}",
                 "tockloader": "{\"ot_python_deps_310_tockloader\":[{\"version\":\"3.10\"}]}",
                 "toml": "{\"ot_python_deps_310_toml\":[{\"version\":\"3.10\"}]}",
-                "tomli": "{\"ot_python_deps_310_tomli\":[{\"version\":\"3.10\"}]}",
                 "tqdm": "{\"ot_python_deps_310_tqdm\":[{\"version\":\"3.10\"}]}",
                 "typer": "{\"ot_python_deps_310_typer\":[{\"version\":\"3.10\"}]}",
                 "types_pytz": "{\"ot_python_deps_310_types_pytz\":[{\"version\":\"3.10\"}]}",
@@ -5844,6 +5864,7 @@
                 "yapf": "{\"ot_python_deps_310_yapf\":[{\"version\":\"3.10\"}]}"
               },
               "packages": [
+                "antlr4_python3_runtime",
                 "anytree",
                 "argcomplete",
                 "attrs",
@@ -5862,7 +5883,6 @@
                 "cython",
                 "edalize",
                 "enlighten",
-                "exceptiongroup",
                 "flake8",
                 "fusesoc",
                 "gitdb",
@@ -5880,6 +5900,7 @@
                 "lizard",
                 "lxml",
                 "mako",
+                "markdown",
                 "markupsafe",
                 "mccabe",
                 "mistletoe",
@@ -5891,6 +5912,7 @@
                 "okonomiyaki",
                 "packaging",
                 "pathspec",
+                "peakrdl_systemrdl",
                 "pluggy",
                 "pluralizer",
                 "prefixed",
@@ -5921,11 +5943,11 @@
                 "six",
                 "smmap",
                 "soupsieve",
+                "systemrdl_compiler",
                 "tabulate",
                 "termcolor",
                 "tockloader",
                 "toml",
-                "tomli",
                 "tqdm",
                 "typer",
                 "types_pytz",

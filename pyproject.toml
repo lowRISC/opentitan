@@ -67,6 +67,8 @@ dependencies = [
   # Dependency of third_party/tock
   "tockloader==1.13",
 
+  "peakrdl-systemrdl >= 1.0",
+
   # Development version with OT-specific changes
   "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
 
