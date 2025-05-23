@@ -9,8 +9,6 @@ import os
 
 from reggen.ip_block import IpBlock
 
-from systemrdl.node import AddrmapNode
-from systemrdl.compiler import RDLEnvironment
 from systemrdl.importer import RDLImporter, RDLCompiler
 from peakrdl_systemrdl import exporter
 
@@ -23,10 +21,11 @@ def gen(block: IpBlock, outdir: str) -> int:
     imp.default_src_ref = None
     exp = exporter.SystemRDLExporter()
 
-    empty_env = RDLEnvironment({})
-    node = AddrmapNode(block.to_systemrdl(imp),
-                       empty_env,
-                       None)
+    rdl_addrmap = block.to_systemrdl(imp)
+    if rdl_addrmap is None:
+        raise RuntimeError('Block has no registers or windows.')
 
-    exp.export(node, out_file)
+    imp.register_root_component(rdl_addrmap)
+
+    exp.export(comp.elaborate(), out_file)
     return 0
