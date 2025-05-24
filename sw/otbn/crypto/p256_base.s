@@ -74,7 +74,7 @@ trigger_fault_if_fg0_z:
 /**
  * Reduce a 512-bit value by a 256-bit P-256 modulus (either n or p).
  *
- * Returns c = a mod m
+ * Returns c = x mod m
  *
  * Expects a 512 bit input, a 256 bit modulus and pre-computed parameter u for
  * Barrett reduction (usually greek mu in literature). u is expected without
@@ -106,8 +106,8 @@ trigger_fault_if_fg0_z:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  [w19,w20]: a, input (512 bits) such that a < 2^256 * m
- * @param[in]  w22: correction factor, msb(a) * u
+ * @param[in]  [w19,w20]: x, input (512 bits) such that x < 2^256 * m
+ * @param[in]  w22: correction factor, msb(x) * u
  * @param[in]  w29: m, modulus, curve order n or finite field modulus p
  * @param[in]  w28: u, lower 256 bit of Barrett constant for m
  * @param[in]  w31: all-zero
@@ -153,7 +153,7 @@ p256_reduce:
      256 bit to the right (by dropping the lower 256 bit), perform the
      additions, and shift the result another bit to the right. */
 
-  /* w25 = q1[256] = a[511:256] >> 255 */
+  /* w25 = q1[256] = x[511:256] >> 255 */
   bn.rshi   w25, w31, w20 >> 255
 
   /* compensate for neglected MSB of u, by adding full q1
@@ -187,16 +187,11 @@ p256_reduce:
     N.B. The bn.mulqacc.so.z instruction below is to clear the value of ACC as
     well as the flags set by the prior mulqacc.so instructions, as p256_reduce
     may be called on secret shares of the same value back-to-back. For instance,
-    p256_sign calls mod_mul_32x128 to compute d0 * alpha and  d1 * alpha
-    back-to-back, where alpha is a random multiplicative value for masking and
-    d0, d1 are additive shares of the ECDSA private key d.
-
-    While each of {k0 * alpha, k1 * alpha} is indistinguishable from a non-zero
-    uniformly random value mod p, the below (unreduced) computation of q3 * p
-    may have high correlation with the input value a = [w20, w19]. If each of
-    {d0 * alpha, d1 * alpha} is recovered, this allows for the recovery of the
-    (unreduced) value d * alpha, which may leak information on each of its
-    multiplicands when in unreduced form. */
+    p256_sign calls mod_mul_32x128 to multiplicatively mask a pair of additive
+    secret shares; while these are indeed indistinguishable from random values
+    once reduced mod p, the values left in ACC after the below multiplications
+    are unreduced and have the potential to leak information about their
+    multiplicands. */
   bn.mulqacc.z            w29.0, w21.0,  0
   bn.mulqacc              w29.1, w21.0, 64
   bn.mulqacc.so    w22.L, w29.0, w21.1, 64
@@ -225,7 +220,7 @@ p256_reduce:
      [w20, w19] contains the input to p256_reduce, which may be a secret share
      as noted above.
 
-     [w20, w22] = r <= [w20, w19] - [w23, w22] = a - q3*p  */
+     [w20, w22] = r <= [w20, w19] - [w23, w22] = x - q3*p  */
   bn.sub    w22, w19, w22
   bn.subb   w20, w20, w23
 
@@ -1318,16 +1313,16 @@ scalar_mult_int:
   bn.rshi   w2, w2, w31 >> 64
 
   /* double-and-add loop with decreasing index */
-  loopi     320, 38
+  loopi     320, 39
 
     /* double point Q
        Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
     jal       x1, proj_double
 
-    /* prepare a mostly-randomized word with MSb matching that of k0, for
+    /* prepare a mostly-randomized word with LSb matching the MSb of k0 for
        performing a MSb check on k0 and k1 after the following call. */
-    bn.wsrr   w7, RND
-    bn.xor    w7, w1, w7 >> 8
+    bn.wsrr   w20, URND
+    bn.rshi   w7, w20, w1 >> 255
 
     /* re-fetch and randomize P again
        P = (w14, w15, w16) */
@@ -1337,14 +1332,17 @@ scalar_mult_int:
        - If only one MSb is set, select P for addition
        - If both MSbs are set, select 2P for addition
        - If neither MSB is set, also 2P will be selected but this will be
-         discarded later */
-    bn.xor    w20, w3, w7
+         discarded later
 
-    /* N.B. The M bit here is secret. For side channel protection in the
+       w26 <= MSb(k1) */
+    bn.rshi   w26, w31, w3 >> 255
+    bn.xor    w20, w7, w26
+
+    /* N.B. The L bit here is secret. For side channel protection in the
        selects below, it is vital that neither option is equal to the
        destionation register (e.g. bn.sel w0, w0, w1). In this case, the
        hamming distance from the destination's previous value to its new value
-       will be 0 in one of the cases and potentially reveal M.
+       will be 0 in one of the cases and potentially reveal L.
 
        Note that the randomized XOR instruction following the bn.sel
        instructions below acts both to randomize the low bits of k0 for use in a
@@ -1352,14 +1350,14 @@ scalar_mult_int:
 
        P = (w11, w12, w13)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
-    bn.sel    w11, w14, w4, M
-    bn.sel    w12, w15, w5, M
-    bn.sel    w13, w16, w6, M
+    bn.sel    w11, w14, w4, L
+    bn.sel    w12, w15, w5, L
+    bn.sel    w13, w16, w6, L
 
-    /* prepare a mostly-randomized word with MSb matching that of k0, for
+    /* prepare a mostly-randomized word with LSb matching the MSb of k0 for
        performing a MSb check on k0 and k1 after the following call. */
-    bn.wsrr   w7, RND
-    bn.xor    w7, w1, w7 >> 8
+    bn.wsrr   w20, URND
+    bn.rshi   w7, w20, w1 >> 255
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1367,7 +1365,7 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or    w20, w3, w7
+    bn.or     w20, w7, w26
 
     /* duplicate point P to allow distinct source/destination registers for
        the select instructions below.
@@ -1377,13 +1375,13 @@ scalar_mult_int:
     bn.mov    w30, w10
 
     /* N.B. As before, the select instructions below must use distinct
-       source/destination registers to avoid revealing M.
+       source/destination registers to avoid revealing L.
 
        Select doubling result (Q) or addition result (Q+P)
          Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
-    bn.sel    w8, w11, w7, M
-    bn.sel    w9, w12, w26, M
-    bn.sel    w10, w13, w30, M
+    bn.sel    w8, w11, w7, L
+    bn.sel    w9, w12, w26, L
+    bn.sel    w10, w13, w30, L
 
     /* Shift k0 left 1 bit.
 
@@ -1922,7 +1920,7 @@ p256_key_from_seed:
        [w11,w10] <= x1 mod (n << 64) = d1 */
   bn.sel    w10, w10, w24, FG0.C
   bn.sel    w11, w11, w25, FG0.C
-  bn.sub    w23, w23, w23
+  bn.sub    w23, w23, w23  /* dummy instruction to clear flags */
 
   /* Isolate the carry bit and shift it back into position.
        w25 <= x0[320] << 64 */
