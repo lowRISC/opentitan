@@ -13,7 +13,15 @@ class chip_sw_ate_bootstrap_disjoint_vseq extends chip_sw_base_vseq;
   local function automatic void _check_flash_data_page(input integer address,
                                                        input integer expected);
     logic [TL_DW-1:0] actual;
-    actual = cfg.mem_bkdr_util_h[FlashBank0Data].read32(address);
+    int flash_offset;
+
+    if (address >= flash_ctrl_reg_pkg::BytesPerBank) begin
+      flash_offset = address - flash_ctrl_reg_pkg::BytesPerBank;
+      actual = cfg.mem_bkdr_util_h[FlashBank1Data].read32(flash_offset);
+    end else begin
+      flash_offset = address;
+      actual = cfg.mem_bkdr_util_h[FlashBank0Data].read32(flash_offset);
+    end
     `DV_CHECK_EQ(actual, expected)
   endfunction
 
