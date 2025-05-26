@@ -35,10 +35,10 @@ otcrypto_status_t otcrypto_sha3_256(otcrypto_const_byte_buf_t message,
 
 otcrypto_status_t otcrypto_sha3_384(otcrypto_const_byte_buf_t message,
                                     otcrypto_hash_digest_t *digest) {
-  if (launder32(digest->len) != kKmacSha3224DigestWords) {
+  if (launder32(digest->len) != kKmacSha3384DigestWords) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(digest->len, kKmacSha3224DigestWords);
+  HARDENED_CHECK_EQ(digest->len, kKmacSha3384DigestWords);
   digest->mode = kOtcryptoHashModeSha3_384;
   return kmac_sha3_384(message.data, message.len, digest->data);
 }
