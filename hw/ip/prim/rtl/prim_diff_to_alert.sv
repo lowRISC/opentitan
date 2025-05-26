@@ -24,7 +24,7 @@ module prim_diff_to_alert #(
   logic diff_p_sync, diff_n_sync;
 
   if (AsyncOn) begin : gen_async
-    prim_generic_flop_2sync #(
+    prim_flop_2sync #(
       .Width(2),
       .ResetValue(2'b10)
     ) u_sync (
