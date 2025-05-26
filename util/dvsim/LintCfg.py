@@ -34,6 +34,10 @@ class LintCfg(OneShotCfg):
         # Message bucket format configuration
         # Format: [{category: str, severity: str,  label: str}, ...]
         self.message_buckets = []
+        # This key is used as a wildcard to place an additional
+        # fusesoc argument before the name of the core to invoke.
+        # Format: str
+        self.additional_fusesoc_argument = ''
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
 
