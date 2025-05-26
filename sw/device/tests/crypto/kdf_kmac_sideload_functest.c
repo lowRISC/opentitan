@@ -69,6 +69,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -127,6 +128,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac128,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -209,6 +211,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKdfKmac256,
                         .key_length = 32,
                         .hw_backed = kHardenedBoolTrue,
@@ -321,6 +324,7 @@ static status_t run_test_vector(void) {
   otcrypto_key_config_t km_config = {
       // The following key_mode is a dummy placeholder. It does not
       // necessarily match the `key_length`.
+      .version = kOtcryptoLibVersion1,
       .key_mode = kOtcryptoKeyModeKdfKmac128,
       .key_length = km_key_len,
       .hw_backed = kHardenedBoolFalse,
