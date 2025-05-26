@@ -163,8 +163,10 @@ static status_t ecdh_p256(cryptotest_ecdh_private_key_t d,
       break;
     }
     case kOtcryptoStatusValueBadArgs: {
+      // If the input was rejected (e.g. invalid public key, exit early.
       *valid = false;
-      break;
+      memset(ss, 0, kP256SharedSecretBytes);
+      return OK_STATUS();
     }
     default: {
       TRY(status);
@@ -285,8 +287,10 @@ static status_t ecdh_p384(cryptotest_ecdh_private_key_t d,
       break;
     }
     case kOtcryptoStatusValueBadArgs: {
+      // If the input was rejected (e.g. invalid public key, exit early.
       *valid = false;
-      break;
+      memset(ss, 0, kP384SharedSecretBytes);
+      return OK_STATUS();
     }
     default: {
       TRY(status);

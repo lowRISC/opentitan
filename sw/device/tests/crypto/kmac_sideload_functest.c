@@ -53,6 +53,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
@@ -108,6 +109,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac256,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,
@@ -187,6 +189,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
             {
                 .config =
                     {
+                        .version = kOtcryptoLibVersion1,
                         .key_mode = kOtcryptoKeyModeKmac128,
                         .key_length = kKmacSideloadKeyLengthBytes,
                         .hw_backed = kHardenedBoolTrue,

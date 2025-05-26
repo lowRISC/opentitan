@@ -36,6 +36,7 @@ static status_t run_test_vector(void) {
               // The following key_mode is a dummy placeholder. It does not
               // necessarily match the `key_length`.
               .key_mode = kOtcryptoKeyModeKdfKmac128,
+              .version = kOtcryptoLibVersion1,
               .key_length = km_num_words * sizeof(uint32_t),
               .hw_backed = kHardenedBoolFalse,
               .security_level = kOtcryptoKeySecurityLevelLow,
