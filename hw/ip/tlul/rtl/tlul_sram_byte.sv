@@ -42,7 +42,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   input prim_mubi_pkg::mubi4_t readback_en_i,
 
-  input logic wr_collision_i,
   input logic write_pending_i
 );
 
@@ -205,14 +204,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
         .d_i(rdback_data_exp_intg_d),
         .q_o(rdback_data_exp_intg_q)
       );
-
-    // If the readback feature is enabled and we are currently in the readback phase,
-    // no address collision should happen inside prim_ram_1p_scr. If this would be the
-    // case, we would read from the holding register inside prim_ram_1p_scr instead of
-    // actually performing the readback from the memory.
-    `ASSERT(WRCollisionDuringReadBack_A, (rdback_phase | rdback_phase_wrreadback) &
-        mubi4_test_true_loose(rdback_en_q) |-> !wr_collision_i)
-
 
     // If the readback feature is enabled, we assume that the write phase takes one extra cycle
     // due to the underyling scrambling mechanism. If this additional cycle is not needed anymore
@@ -716,9 +707,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
   end
 
   // Signals only used for SVA.
-  logic unused_write_pending, unused_wr_collision;
+  logic unused_write_pending;
   assign unused_write_pending = write_pending_i;
-  assign unused_wr_collision = wr_collision_i;
 
   // EnableReadback requires that EnableIntg is on.
   // EnableIntg can be used without EnableReadback.
