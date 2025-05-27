@@ -19,6 +19,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -178,7 +179,7 @@ void ottf_console_configure_uart(uintptr_t base_addr) {
                               .tx_enable = kDifToggleEnabled,
                               .rx_enable = kDifToggleEnabled,
                           }));
-  base_uart_stdout(&ottf_console_uart);
+  base_console_uart_stdout(&ottf_console_uart);
 
   // Initialize/Configure console flow control (if requested).
   if (kOttfTestConfig.enable_uart_flow_control) {
@@ -271,22 +272,26 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
 
   // Setup TX GPIO if requested.
   if (kOttfTestConfig.console_tx_indicator.enable) {
-    CHECK_DIF_OK(dif_gpio_init(
-        mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &ottf_console_gpio));
+    CHECK_DIF_OK(
+        dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
+                      &ottf_console_gpio));
     CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &ottf_console_pinmux));
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+        &ottf_console_pinmux));
     CHECK_DIF_OK(dif_pinmux_output_select(
-        &ottf_console_pinmux, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio,
+        &ottf_console_pinmux,
+        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio,
         kTopEarlgreyPinmuxOutselGpioGpio0 +
             kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio));
     CHECK_DIF_OK(dif_gpio_write(
-        &ottf_console_gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
-        false));
+        &ottf_console_gpio,
+        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio, false));
     CHECK_DIF_OK(dif_gpio_output_set_enabled(
-        &ottf_console_gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
-        true));
+        &ottf_console_gpio,
+        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio, true));
     base_spi_device_set_gpio_tx_indicator(
-        &ottf_console_gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio);
+        &ottf_console_gpio,
+        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio);
     spi_device_clear_flash_buffer(&ottf_console_spi_device);
   } else {
     spi_device_wait_for_sync(&ottf_console_spi_device);
