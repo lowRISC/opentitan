@@ -16,7 +16,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
-#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 /**
  * OTTF console configuration parameters.
@@ -39,22 +38,24 @@ enum {
 static volatile ottf_console_flow_control_t flow_control_state;
 static volatile uint32_t flow_control_irqs;
 
-void ottf_console_configure_uart(uintptr_t base_addr) {
+void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr) {
+  console->type = kOttfConsoleUart;
   CHECK_DIF_OK(
-      dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
+      dif_uart_init(mmio_region_from_addr(base_addr), &console->data.uart.dif));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
   CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
         "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(dif_uart_configure(
-      &ottf_console_uart, (dif_uart_config_t){
-                              .baudrate = (uint32_t)kUartBaudrate,
-                              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                              .parity_enable = kDifToggleDisabled,
-                              .parity = kDifUartParityEven,
-                              .tx_enable = kDifToggleEnabled,
-                              .rx_enable = kDifToggleEnabled,
-                          }));
-  base_uart_stdout(&ottf_console_uart);
+  CHECK_DIF_OK(
+      dif_uart_configure(&console->data.uart.dif,
+                         (dif_uart_config_t){
+                             .baudrate = (uint32_t)kUartBaudrate,
+                             .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                             .parity_enable = kDifToggleDisabled,
+                             .parity = kDifUartParityEven,
+                             .tx_enable = kDifToggleEnabled,
+                             .rx_enable = kDifToggleEnabled,
+                         }));
+  base_console_uart_stdout(console);
 
   // Initialize/Configure console flow control (if requested).
   if (kOttfTestConfig.enable_uart_flow_control) {
@@ -63,17 +64,18 @@ void ottf_console_configure_uart(uintptr_t base_addr) {
 }
 
 status_t uart_getc(void *io) {
-  const dif_uart_t *uart = (const dif_uart_t *)io;
+  ottf_console_t *console = io;
   uint8_t byte;
-  TRY(dif_uart_byte_receive_polled(uart, &byte));
-  TRY(ottf_console_flow_control(uart, kOttfConsoleFlowControlAuto));
+  TRY(dif_uart_byte_receive_polled(&console->data.uart.dif, &byte));
+  TRY(ottf_console_flow_control(io, kOttfConsoleFlowControlAuto));
   return OK_STATUS(byte);
 }
 
-static size_t base_dev_uart(void *data, const char *buf, size_t len) {
-  const dif_uart_t *uart = (const dif_uart_t *)data;
+static size_t base_dev_uart(void *io, const char *buf, size_t len) {
+  ottf_console_t *console = io;
   for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(uart, (uint8_t)buf[i]) != kDifOk) {
+    if (dif_uart_byte_send_polled(&console->data.uart.dif, (uint8_t)buf[i]) !=
+        kDifOk) {
       return i;
     }
   }
@@ -82,9 +84,9 @@ static size_t base_dev_uart(void *data, const char *buf, size_t len) {
 
 sink_func_ptr get_uart_sink(void) { return &base_dev_uart; }
 
-void base_console_uart_stdout(const dif_uart_t *uart) {
+void base_console_uart_stdout(ottf_console_t *console) {
   base_set_stdout(
-      (buffer_sink_t){.data = (void *)uart, .sink = &base_dev_uart});
+      (buffer_sink_t){.data = (void *)console, .sink = &base_dev_uart});
 }
 
 static uint32_t get_flow_control_watermark_plic_id(void) {
@@ -98,7 +100,7 @@ static uint32_t get_flow_control_watermark_plic_id(void) {
 }
 
 void ottf_console_flow_control_enable(void) {
-  dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
+  const dif_uart_t *uart = &ottf_console_get()->data.uart.dif;
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
@@ -118,13 +120,13 @@ void ottf_console_flow_control_enable(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   // Make sure we're in the Resume state and we emit a Resume to the UART.
-  ottf_console_flow_control((dif_uart_t *)ottf_console_get(),
-                            kOttfConsoleFlowControlResume);
+  ottf_console_flow_control(ottf_console_get(), kOttfConsoleFlowControlResume);
 }
 
 // This version of the function is safe to call from within the ISR.
-static status_t manage_flow_control(const dif_uart_t *uart,
+static status_t manage_flow_control(ottf_console_t *console,
                                     ottf_console_flow_control_t ctrl) {
+  const dif_uart_t *uart = &console->data.uart.dif;
   if (flow_control_state == kOttfConsoleFlowControlNone) {
     return OK_STATUS((int32_t)flow_control_state);
   }
@@ -156,12 +158,13 @@ static status_t manage_flow_control(const dif_uart_t *uart,
 }
 
 bool ottf_console_flow_control_isr(uint32_t *exc_info) {
-  dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
+  ottf_console_t *console = ottf_console_get();
+  const dif_uart_t *uart = &console->data.uart.dif;
   flow_control_irqs += 1;
   bool rx;
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
   if (rx) {
-    manage_flow_control(uart, kOttfConsoleFlowControlAuto);
+    manage_flow_control(console, kOttfConsoleFlowControlAuto);
     CHECK_DIF_OK(dif_uart_irq_acknowledge(uart, kDifUartIrqRxWatermark));
     return true;
   }
@@ -170,11 +173,12 @@ bool ottf_console_flow_control_isr(uint32_t *exc_info) {
 
 // The public API has to save and restore interrupts to avoid an
 // unexpected write to the global `flow_control_state`.
-status_t ottf_console_flow_control(const dif_uart_t *uart,
+status_t ottf_console_flow_control(ottf_console_t *console,
                                    ottf_console_flow_control_t ctrl) {
+  const dif_uart_t *uart = &console->data.uart.dif;
   dif_uart_irq_enable_snapshot_t snapshot;
   CHECK_DIF_OK(dif_uart_irq_disable_all(uart, &snapshot));
-  status_t s = manage_flow_control(uart, ctrl);
+  status_t s = manage_flow_control(console, ctrl);
   CHECK_DIF_OK(dif_uart_irq_restore_all(uart, &snapshot));
   return s;
 }

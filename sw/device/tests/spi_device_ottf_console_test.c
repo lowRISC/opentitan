@@ -104,24 +104,24 @@ bool test_main(void) {
   LOG_INFO("Sending test string to Host...");
   LOG_INFO("%s", kTestStr);
   LOG_INFO("SYNC: Waiting for console data");
-  size_t received_data_len =
-      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  size_t received_data_len = ottf_console_spi_device_read(
+      ottf_console_get(), sizeof(input_buf), input_buf);
   CHECK(received_data_len == sizeof(kTestStr));
   CHECK_ARRAYS_EQ(input_buf, kTestStr, ARRAYSIZE(kTestStr));
 
   LOG_INFO("Sending 64B data to Host...");
   LOG_INFO("%s", kTest64bDataStr);
   LOG_INFO("SYNC: Waiting for console data");
-  received_data_len =
-      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  received_data_len = ottf_console_spi_device_read(
+      ottf_console_get(), sizeof(input_buf), input_buf);
   CHECK(received_data_len == sizeof(kTest64bDataStr));
   CHECK_ARRAYS_EQ(input_buf, kTest64bDataStr, ARRAYSIZE(kTest64bDataStr));
 
   LOG_INFO("Sending 256B data to Host...");
   LOG_INFO("%s", kTest256bDataStr);
   LOG_INFO("SYNC: Waiting for console data");
-  received_data_len =
-      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  received_data_len = ottf_console_spi_device_read(
+      ottf_console_get(), sizeof(input_buf), input_buf);
   CHECK(received_data_len == sizeof(kTest256bDataStr));
   CHECK_ARRAYS_EQ(input_buf, kTest256bDataStr, ARRAYSIZE(kTest256bDataStr));
 
@@ -130,8 +130,8 @@ bool test_main(void) {
     LOG_INFO("Round: %d", i);
     LOG_INFO("%s", kTest1KbDataStr);
     LOG_INFO("SYNC: Waiting for console data");
-    received_data_len =
-        ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+    received_data_len = ottf_console_spi_device_read(
+        ottf_console_get(), sizeof(input_buf), input_buf);
     CHECK(received_data_len == sizeof(kTest1KbDataStr));
     CHECK_ARRAYS_EQ(input_buf, kTest1KbDataStr, ARRAYSIZE(kTest1KbDataStr));
   }
@@ -139,8 +139,8 @@ bool test_main(void) {
   LOG_INFO("Sending 4KB data to Host...");
   LOG_INFO("%s", kTest4KbDataStr);
   LOG_INFO("SYNC: Waiting for console data");
-  received_data_len =
-      ottf_console_spi_device_read(sizeof(input_buf), input_buf);
+  received_data_len = ottf_console_spi_device_read(
+      ottf_console_get(), sizeof(input_buf), input_buf);
   CHECK(received_data_len == sizeof(kTest4KbDataStr));
   CHECK_ARRAYS_EQ(input_buf, kTest4KbDataStr, ARRAYSIZE(kTest4KbDataStr));
 
