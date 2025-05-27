@@ -2,44 +2,32 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Interface: edn_assert_if
-// Description: Asserts interface to turn off assertions that have long paths
+// An interface that is bound into the edn_core module and enables/disables assertions embedded in
+// its code.
 
-`define PATH1 \
-    tb.dut.u_edn_core.u_prim_count_max_reqs_cntr
-`define PATH2 \
-    tb.dut.u_edn_core.u_prim_mubi4_sync_edn_enable
-`define PATH3 \
-    tb.dut.u_edn_core.u_prim_mubi4_sync_boot_req_mode
-`define PATH4 \
-    tb.dut.u_edn_core.u_prim_mubi4_sync_auto_req_mode
-`define PATH5 \
-    tb.dut.u_edn_core.u_prim_mubi4_sync_cmd_fifo_rst
-`define PATH6 \
-    tb.dut.u_edn_core.u_edn_main_sm
-`define PATH7 \
-    tb.dut.u_edn_core.gen_ep_blk[0].u_edn_ack_sm_ep
+// These hierarchical paths are all up-references and go up one step (to leave the bound-in
+// interface), then select a block that is a child of the edn_core module.
 
-interface edn_assert_if(input clk, input rst_n);
+`define PATH1 u_prim_count_max_reqs_cntr
+`define PATH2 u_edn_main_sm
+`define PATH3 gen_ep_blk[0].u_edn_ack_sm_ep
+
+interface edn_assert_if();
 
   task automatic assert_off ();
     $assertoff(0, `PATH1.CntErrReported_A);
-    $assertoff(0, `PATH6.u_state_regs_A);
-    $assertoff(0, `PATH7.u_state_regs_A);
-  endtask // assert_off
+    $assertoff(0, `PATH2.u_state_regs_A);
+    $assertoff(0, `PATH3.u_state_regs_A);
+  endtask
 
   task automatic assert_on ();
     $asserton(0, `PATH1.CntErrReported_A);
-    $asserton(0, `PATH6.u_state_regs_A);
-    $asserton(0, `PATH7.u_state_regs_A);
-  endtask // assert_on
-
-  task automatic assert_off_alert ();
-
-  endtask // assert_off_alert
-
-  task automatic assert_on_alert ();
-
-  endtask // assert_on_alert
+    $asserton(0, `PATH2.u_state_regs_A);
+    $asserton(0, `PATH3.u_state_regs_A);
+  endtask
 
 endinterface
+
+`undef PATH3
+`undef PATH2
+`undef PATH1
