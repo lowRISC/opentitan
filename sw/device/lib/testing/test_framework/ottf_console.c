@@ -19,6 +19,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -180,7 +181,7 @@ void ottf_console_configure_uart(uintptr_t base_addr) {
                               .tx_enable = kDifToggleEnabled,
                               .rx_enable = kDifToggleEnabled,
                           }));
-  base_uart_stdout(&ottf_console_uart);
+  base_console_uart_stdout(&ottf_console_uart);
 
   // Initialize/Configure console flow control (if requested).
   if (kOttfTestConfig.enable_uart_flow_control) {
