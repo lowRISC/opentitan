@@ -113,7 +113,7 @@ impl TryFrom<&[u8]> for EcdsaRawSignature {
 }
 
 impl EcdsaRawSignature {
-    const SIZE: usize = 64;
+    pub const SIZE: usize = 64;
 
     pub fn read(src: &mut impl Read) -> Result<Self> {
         let mut sig = Self::default();
