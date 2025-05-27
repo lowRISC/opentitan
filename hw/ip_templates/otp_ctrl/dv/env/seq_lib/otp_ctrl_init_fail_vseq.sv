@@ -112,7 +112,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
           addr = PART_OTP_DIGEST_ADDRS[i] << 2;
         end else begin
           // During OTP init, non SW partitions read all value
-          addr = $urandom_range(PartInfo[i].offset, PartInfo[i].offset + PartInfo[i].size - 1);
+          addr = PartInfo[i].offset + $urandom_range(0, PartInfo[i].size - 1);
         end
 
         void'(backdoor_inject_ecc_err(addr, ecc_otp_err));
