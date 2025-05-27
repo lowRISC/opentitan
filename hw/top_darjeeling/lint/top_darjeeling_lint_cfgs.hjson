@@ -36,16 +36,16 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/aes/lint/{tool}"
              },
+             {
+                  name: ac_range_check
+                  fusesoc_core: lowrisc:darjeeling_ip:ac_range_check
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_darjeeling/ip_autogen/ac_range_check/lint/{tool}"
+             },
              {    name: alert_handler
                   fusesoc_core: lowrisc:darjeeling_ip:alert_handler
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/alert_handler/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: aon_timer
                   fusesoc_core: lowrisc:ip:aon_timer
@@ -56,23 +56,11 @@
                   fusesoc_core: lowrisc:systems:top_darjeeling_ast
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip/ast/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              //{    name: clkmgr
              //     fusesoc_core: lowrisc:darjeeling_ip:clkmgr
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
              //     rel_path: "hw/top_darjeeling/ip_autogen/clkmgr/lint/{tool}",
-             //     overrides: [
-             //       {
-             //         name: design_level
-             //         value: "top"
-             //       }
-             //     ]
              //},
              {    name: csrng
                   fusesoc_core: lowrisc:ip:csrng
@@ -103,12 +91,6 @@
                   fusesoc_core: lowrisc:ip:lc_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/lc_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: keymgr
                   fusesoc_core: lowrisc:ip:keymgr
@@ -129,34 +111,16 @@
                   fusesoc_core: lowrisc:darjeeling_ip:otp_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/otp_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              //{    name: pinmux
              //     fusesoc_core: lowrisc:darjeeling_ip:pinmux
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
              //     rel_path: "hw/top_darjeeling/ip_autogen/pinmux/lint/{tool}"
-             //     overrides: [
-             //       {
-             //         name: design_level
-             //         value: "top"
-             //       }
-             //     ]
              //},
              {    name: pwrmgr
                   fusesoc_core: lowrisc:darjeeling_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/pwrmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:ip:rom_ctrl
@@ -167,34 +131,16 @@
                   fusesoc_core: lowrisc:darjeeling_ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/rstmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: gpio
                   fusesoc_core: lowrisc:darjeeling_ip:gpio
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip_autogen/gpio/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:darjeeling_ip:rv_core_ibex
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/top_darjeeling/ip_autogen/rv_core_ibex/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
@@ -240,12 +186,6 @@
                   fusesoc_core: lowrisc:ip:sram_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/sram_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: uart
                   fusesoc_core: lowrisc:ip:uart
@@ -291,23 +231,11 @@
                   fusesoc_core: lowrisc:systems:top_darjeeling
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              //{    name: chip_darjeeling_asic
              //     fusesoc_core: lowrisc:systems:chip_darjeeling_asic
              //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
              //     rel_path: "hw/top_darjeeling/lint/{tool}"
-             //     overrides: [
-             //       {
-             //         name: design_level
-             //         value: "top"
-             //       }
-             //     ]
              //},
             ]
 

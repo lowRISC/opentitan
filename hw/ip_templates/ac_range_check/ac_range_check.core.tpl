@@ -69,4 +69,5 @@ targets:
       verilator:
         mode: lint-only
         verilator_options:
-          - "-Wall"
+          - '-Wall'
+          - '-Wno-ALWCOMBORDER'
