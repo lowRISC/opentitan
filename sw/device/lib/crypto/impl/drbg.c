@@ -42,7 +42,7 @@ static otcrypto_status_t seed_material_construct(
   }
 
   // Copy seed data.
-  // TODO(#17711) Change to `hardened_memcpy`.
+  // Use `memcpy` instead of `hardened_memcpy` to support byte-aligned values.
   memcpy(seed_material->data, value.data, value.len);
 
   return OTCRYPTO_OK;
