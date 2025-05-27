@@ -5,14 +5,15 @@
 
 set -ex
 
-# Prefetch bazel airgapped dependencies if not already done.
+# Prepare the airgapped environment if it doesn't already exist.
 if [ ! -d bazel-airgapped ]; then
   echo "Airgapped environment not found, preparing..." >&2
-  util/prep-bazel-airgapped-build.sh -f
+  util/prep-bazel-airgapped-build.sh
 fi
 
-# Remove the airgapped network namespace.
+# Remove the airgapped network namespace on exit.
 remove_airgapped_netns() {
+  # shellcheck disable=SC2317 # only reachable on EXIT.
   sudo ip netns delete airgapped
 }
 trap remove_airgapped_netns EXIT
@@ -22,15 +23,14 @@ sudo ip netns add airgapped
 sudo ip netns exec airgapped ip addr add 127.0.0.1/8 dev lo
 sudo ip netns exec airgapped ip link set dev lo up
 
-# Enter the network namespace and perform several builds.
+# Enter the network namespace and perform a build.
 sudo ip netns exec airgapped sudo -u "$USER" \
   env \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
     OT_AIRGAPPED="true"                                              \
     BITSTREAM="--offline latest"                                     \
   "${PWD}/bazel-airgapped/bazel" build                               \
-    --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
-    --repository_cache="${PWD}/bazel-airgapped/bazel-cache"          \
+    --vendor_dir "${PWD}/bazel-airgapped/bazel-vendor"               \
     --define DISABLE_VERILATOR_BUILD=true                            \
     //sw/device/silicon_creator/rom:mask_rom
 
