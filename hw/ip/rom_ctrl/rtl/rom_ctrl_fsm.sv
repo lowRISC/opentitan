@@ -273,9 +273,11 @@ module rom_ctrl_fsm
 
   // The top bits of rel_addr_wide should always be zero if we're reading the top bits (because TAW
   // bits should be enough to encode the difference between counter_data_addr and TopStartAddr)
-  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> ~|rel_addr_wide[AW-1:TAW])
+  //
+  // Consider them unused and add an assertion to check that the are indeed zero.
   logic unused_top_rel_addr_wide;
   assign unused_top_rel_addr_wide = |rel_addr_wide[AW-1:TAW];
+  `ASSERT(RelAddrWide_A, exp_digest_vld_o |-> !unused_top_rel_addr_wide)
 
   assign exp_digest_o = rom_data_i;
   assign exp_digest_vld_o = reading_top;
@@ -350,6 +352,7 @@ module rom_ctrl_fsm
 
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
-  `ASSERT(CounterLntImpliesKmacRomVldO_A, counter_lnt -> kmac_rom_vld_o)
+  `ASSERT(CounterLntImpliesKmacRomVldO_A,
+          state_q == ReadingLow && counter_lnt -> kmac_rom_vld_o)
 
 endmodule
