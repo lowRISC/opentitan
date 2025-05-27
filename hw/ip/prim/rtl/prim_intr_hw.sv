@@ -17,8 +17,8 @@
 module prim_intr_hw # (
   // This module can be instantiated once per interrupt field (Width == 1), or
   // "bussified" with all fields of the interrupt vector (Width == $width(vec)).
-  parameter int unsigned Width = 1,
-  parameter bit          FlopOutput = 1,
+  parameter int unsigned         Width            = 1,
+  parameter bit                  FlopOutput       = 1,
 
   // As the wired interrupt signal intr_o is a level-triggered interrupt, the upstream consumer sw
   // has two options to make forward progress when this signal is asserted:
@@ -36,7 +36,7 @@ module prim_intr_hw # (
   //   - INTR_STATE for *status* interrupts is RO (it simply presents the raw HW input signal).
   //   - If the root_cause is cleared, INTR_STATE/intr_o also clears automatically.
   // More details about the interrupt type distinctions can be found in the comportability docs.
-  parameter              IntrT = "Event" // Event or Status
+  parameter enum {EVENT, STATUS} IntrT            = EVENT
 ) (
   // event
   input  clk_i,
@@ -57,7 +57,7 @@ module prim_intr_hw # (
 
   logic [Width-1:0] status; // incl. test
 
-  if (IntrT == "Event") begin : g_intr_event
+  if (IntrT == EVENT) begin : g_intr_event
     logic  [Width-1:0]    new_event;
     assign new_event =
                (({Width{reg2hw_intr_test_qe_i}} & reg2hw_intr_test_q_i) | event_intr_i);
@@ -68,7 +68,7 @@ module prim_intr_hw # (
 
     assign status = reg2hw_intr_state_q_i ;
   end : g_intr_event
-  else if (IntrT == "Status") begin : g_intr_status
+  else if (IntrT == STATUS) begin : g_intr_status
     logic [Width-1:0] test_q; // Storing test. Cleared by SW
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -107,6 +107,5 @@ module prim_intr_hw # (
     assign intr_o = reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i;
   end
 
-  `ASSERT_INIT(IntrTKind_A, IntrT inside {"Event", "Status"})
 
 endmodule

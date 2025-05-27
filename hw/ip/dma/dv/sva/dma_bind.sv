@@ -6,7 +6,7 @@ module dma_bind;
 
   // Bind assertion module to config interface
   bind dma tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,
@@ -24,7 +24,7 @@ module dma_bind;
 
   // Bind assertion module to CTN interface
   bind dma tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_ctn (
     .clk_i,
     .rst_ni,
@@ -34,7 +34,7 @@ module dma_bind;
 
   // Bind assertion module to HOST interface
   bind dma tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_host (
     .clk_i,
     .rst_ni,

@@ -28,19 +28,19 @@
 
 module prim_lfsr #(
   // Lfsr Type, can be FIB_XNOR or GAL_XOR
-  parameter                    LfsrType     = "GAL_XOR",
+  parameter enum {GAL_XOR, FIB_XNOR}          LfsrType           = GAL_XOR,
   // Lfsr width
-  parameter int unsigned       LfsrDw       = 32,
+  parameter int unsigned                      LfsrDw                   = 32,
   // Derived parameter, do not override
-  localparam int unsigned      LfsrIdxDw    = $clog2(LfsrDw),
+  localparam int unsigned                     LfsrIdxDw                = $clog2(LfsrDw),
   // Width of the entropy input to be XOR'd into state (lfsr_q[EntropyDw-1:0])
-  parameter int unsigned       EntropyDw    =  8,
+  parameter int unsigned                      EntropyDw                =  8,
   // Width of output tap (from lfsr_q[StateOutDw-1:0])
-  parameter int unsigned       StateOutDw   =  8,
+  parameter int unsigned                      StateOutDw               =  8,
   // Lfsr reset state, must be nonzero!
-  parameter logic [LfsrDw-1:0] DefaultSeed  = LfsrDw'(1),
+  parameter logic [LfsrDw-1:0]                DefaultSeed              = LfsrDw'(1),
   // Custom polynomial coeffs
-  parameter logic [LfsrDw-1:0] CustomCoeffs = '0,
+  parameter logic [LfsrDw-1:0]                CustomCoeffs             = '0,
   // If StatePermEn is set to 1, the custom permutation specified via StatePerm is applied to the
   // state output, in order to break linear shifting patterns of the LFSR. Note that this
   // permutation represents a way of customizing the LFSR via a random netlist constant. This is
@@ -49,19 +49,19 @@ module prim_lfsr #(
   // comes basically "for free" in terms of area and timing impact. NonLinearOut on the other hand
   // has area and timing implications and designers should consider whether the use of that feature
   // is justified.
-  parameter bit                StatePermEn  = 1'b0,
-  parameter logic [LfsrDw-1:0][LfsrIdxDw-1:0] StatePerm = '0,
+  parameter bit                               StatePermEn              = 1'b0,
+  parameter logic [LfsrDw-1:0][LfsrIdxDw-1:0] StatePerm                = '0,
   // Enable this for DV, disable this for long LFSRs in FPV
-  parameter bit                MaxLenSVA    = 1'b1,
+  parameter bit                               MaxLenSVA                = 1'b1,
   // Can be disabled in cases where seed and entropy
   // inputs are unused in order to not distort coverage
   // (the SVA will be unreachable in such cases)
-  parameter bit                LockupSVA    = 1'b1,
-  parameter bit                ExtSeedSVA   = 1'b1,
+  parameter bit                               LockupSVA                = 1'b1,
+  parameter bit                               ExtSeedSVA               = 1'b1,
   // Introduce non-linearity to lfsr output. Note, unlike StatePermEn, this feature is not "for
   // free". Please double check that this feature is indeed required. Also note that this feature
   // is only available for LFSRs that have a power-of-two width greater or equal 16bit.
-  parameter bit                NonLinearOut = 1'b0
+  parameter bit                               NonLinearOut             = 1'b0
 ) (
   input                         clk_i,
   input                         rst_ni,
@@ -280,7 +280,7 @@ module prim_lfsr #(
   ////////////////
   // Galois XOR //
   ////////////////
-  if (64'(LfsrType) == 64'("GAL_XOR")) begin : gen_gal_xor
+  if (LfsrType == GAL_XOR) begin : gen_gal_xor
 
     // if custom polynomial is provided
     if (CustomCoeffs > 0) begin : gen_custom
@@ -305,7 +305,7 @@ module prim_lfsr #(
   ////////////////////
   // Fibonacci XNOR //
   ////////////////////
-  end else if (64'(LfsrType) == "FIB_XNOR") begin : gen_fib_xnor
+  end else if (LfsrType == FIB_XNOR) begin : gen_fib_xnor
 
     // if custom polynomial is provided
     if (CustomCoeffs > 0) begin : gen_custom
@@ -327,14 +327,6 @@ module prim_lfsr #(
     `ASSERT_INIT(DefaultSeedNzCheck_A, !(&DefaultSeedLocal))
 
 
-  /////////////
-  // Unknown //
-  /////////////
-  end else begin : gen_unknown_type
-    assign coeffs = '0;
-    assign next_lfsr_state = '0;
-    assign lockup = 1'b0;
-    `ASSERT_INIT(UnknownLfsrType_A, 0)
   end
 
 
