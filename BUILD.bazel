@@ -14,6 +14,7 @@ exports_files([
 filegroup(
     name = "doc_files",
     srcs = [
+        "README.md",
         "//doc:doc_files",
         "//hw:doc_files",
         "//rules/opentitan:doc_files",
