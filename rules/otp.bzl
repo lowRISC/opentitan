@@ -50,31 +50,32 @@ def get_otp_images():
     img_target is the full path of the OTP image target.
     """
 
-    img_targets = [
-        "//hw/top_earlgrey/data/otp:img_dev",
-        "//hw/top_earlgrey/data/otp:img_rma",
-        "//hw/top_earlgrey/data/otp:img_test_locked0",
-        "//hw/top_earlgrey/data/otp:img_test_locked1",
-        "//hw/top_earlgrey/data/otp:img_test_locked2",
-        "//hw/top_earlgrey/data/otp:img_test_locked3",
-        "//hw/top_earlgrey/data/otp:img_test_locked4",
-        "//hw/top_earlgrey/data/otp:img_test_locked5",
-        "//hw/top_earlgrey/data/otp:img_test_locked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
-        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
-        "//hw/top_earlgrey/data/otp:img_prod",
-        "//hw/top_earlgrey/data/otp:img_prod_end",
-        "//hw/top_earlgrey/data/otp:img_exec_disabled",
-        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
-        "//hw/top_earlgrey/data/otp:img_raw",
-    ]
+#    img_targets = [
+#        "//hw/top_earlgrey/data/otp:img_dev",
+#        "//hw/top_earlgrey/data/otp:img_rma",
+#        "//hw/top_earlgrey/data/otp:img_test_locked0",
+#        "//hw/top_earlgrey/data/otp:img_test_locked1",
+#        "//hw/top_earlgrey/data/otp:img_test_locked2",
+#        "//hw/top_earlgrey/data/otp:img_test_locked3",
+#        "//hw/top_earlgrey/data/otp:img_test_locked4",
+#        "//hw/top_earlgrey/data/otp:img_test_locked5",
+#        "//hw/top_earlgrey/data/otp:img_test_locked6",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
+#        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
+#        "//hw/top_earlgrey/data/otp:img_prod",
+#        "//hw/top_earlgrey/data/otp:img_prod_end",
+#        "//hw/top_earlgrey/data/otp:img_exec_disabled",
+#        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
+#        "//hw/top_earlgrey/data/otp:img_raw",
+#    ]
+    img_targets = [ "//hw/top_darjeeling/data/otp:img_rma", ]
 
     out = []
     for img_target in img_targets:
@@ -277,7 +278,7 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top_darjeeling/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -357,7 +358,8 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top_darjeeling/data/otp:otp_ctrl_mmap.hjson",
+#           default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -393,26 +395,34 @@ otp_image_consts = rule(
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
 OTP_SIGVERIFY_FAKE_KEYS = [
-    "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
+#   "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
 # This set overlays does not include any of the SECRET[0-2] partitions.
 STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
+#    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
+#    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
+#    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
+#    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
+#    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
+    "//hw/top_darjeeling/data/otp:otp_json_creator_sw_cfg",
+    "//hw/top_darjeeling/data/otp:otp_json_owner_sw_cfg",
+    "//hw/top_darjeeling/data/otp:otp_json_alert_digest_cfg",
+    "//hw/top_darjeeling/data/otp:otp_json_hw_cfg0",
+    "//hw/top_darjeeling/data/otp:otp_json_hw_cfg1",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
 STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret0",
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
+#    "//hw/top_earlgrey/data/otp:otp_json_secret0",
+#    "//hw/top_earlgrey/data/otp:otp_json_secret1",
+#    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
+    "//hw/top_darjeeling/data/otp:otp_json_secret0",
+    "//hw/top_darjeeling/data/otp:otp_json_secret1",
+    "//hw/top_darjeeling/data/otp:otp_json_secret2_unlocked",
 ]
 
 def otp_hex(v):
