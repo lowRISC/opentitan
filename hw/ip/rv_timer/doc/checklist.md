@@ -20,7 +20,7 @@ RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
-[RV_TIMER Spec]:      ../../../../doc/introduction.md
+[RV_TIMER Spec]:      ../README.md
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
