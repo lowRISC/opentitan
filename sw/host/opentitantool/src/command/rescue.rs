@@ -4,13 +4,10 @@
 
 use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
-use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
-use std::rc::Rc;
-use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -19,7 +16,7 @@ use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams}
 use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::ownership::{OwnerBlock, TlvHeader};
-use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{EntryMode, RescueMode, RescueParams};
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -32,8 +29,6 @@ pub struct RawBytes(
 
 #[derive(Debug, Args)]
 pub struct Firmware {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(long, help = "After connecting to rescue, negotiate faster baudrate")]
     rate: Option<u32>,
     #[arg(long, default_value = "SlotA", help = "Which flash slot to rescue")]
@@ -42,6 +37,8 @@ pub struct Firmware {
     offset: Option<usize>,
     #[arg(long, default_value_t = false, help = "Upload the file contents as-is")]
     raw: bool,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = false,
@@ -57,11 +54,11 @@ pub struct Firmware {
     erase_other_slot: bool,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -69,7 +66,7 @@ pub struct Firmware {
 impl CommandDispatch for Firmware {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = Image::read_from_file(&self.filename)?;
@@ -90,15 +87,13 @@ impl CommandDispatch for Firmware {
             }
             subimage.data
         };
-        let uart = self.params.create(transport)?;
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         let mut prev_baudrate = 0u32;
-        let rescue = RescueSerial::new(Rc::clone(&uart));
         rescue.enter(transport, self.reset_target)?;
         if let Some(rate) = self.rate {
-            prev_baudrate = uart.get_baudrate()?;
-            rescue.set_baud(rate)?;
+            prev_baudrate = rescue.set_speed(rate)?;
         }
-        rescue.wait()?;
         if self.erase_other_slot {
             // Invalidate the other slot by overwriting its header.
             if self.slot == BootSlot::SlotB {
@@ -109,10 +104,12 @@ impl CommandDispatch for Firmware {
         }
         rescue.update_firmware(self.slot, payload)?;
         if self.rate.is_some() {
-            rescue.set_baud(prev_baudrate)?;
+            rescue.set_speed(prev_baudrate)?;
         }
-        if !self.wait {
-            transport.reset_target(Duration::from_millis(50), false)?;
+        // Since wait == false and reboot == true are the defaults, either one being non-default
+        // skips the reboot. Eventually `--wait` will be removed.
+        if !self.wait && self.reboot {
+            rescue.reboot()?;
         }
         Ok(None)
     }
@@ -120,15 +117,15 @@ impl CommandDispatch for Firmware {
 
 #[derive(Debug, Args)]
 pub struct GetBootLog {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -136,33 +133,37 @@ pub struct GetBootLog {
 impl CommandDispatch for GetBootLog {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
-            let data = rescue.get_raw(RescueSerial::BOOT_LOG)?;
-            Ok(Some(Box::new(RawBytes(data))))
+        let result: Box<dyn Annotate> = if self.raw {
+            let data = rescue.get_raw(RescueMode::BootLog)?;
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_boot_log()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
 #[derive(Debug, Args)]
 pub struct GetBootSvc {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -170,33 +171,37 @@ pub struct GetBootSvc {
 impl CommandDispatch for GetBootSvc {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
-            let data = rescue.get_raw(RescueSerial::BOOT_SVC_RSP)?;
-            Ok(Some(Box::new(RawBytes(data))))
+        let result: Box<dyn Annotate> = if self.raw {
+            let data = rescue.get_raw(RescueMode::BootSvcRsp)?;
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_boot_svc()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
 #[derive(Debug, Args)]
 pub struct GetDeviceId {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false")]
     raw: bool,
 }
@@ -204,26 +209,28 @@ pub struct GetDeviceId {
 impl CommandDispatch for GetDeviceId {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
-        if self.raw {
-            let data = rescue.get_raw(RescueSerial::OT_ID)?;
-            Ok(Some(Box::new(RawBytes(data))))
+        let result: Box<dyn Annotate> = if self.raw {
+            let data = rescue.get_raw(RescueMode::DeviceId)?;
+            Box::new(RawBytes(data))
         } else {
             let data = rescue.get_device_id()?;
-            Ok(Some(Box::new(data)))
+            Box::new(data)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(Some(result))
     }
 }
 
 #[derive(Debug, Args)]
 pub struct SetNextBl0Slot {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         short,
@@ -240,11 +247,13 @@ pub struct SetNextBl0Slot {
     next: BootSlot,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -257,35 +266,38 @@ pub struct SetNextBl0Slot {
 impl CommandDispatch for SetNextBl0Slot {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_next_bl0_slot(self.primary, self.next)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn Annotate>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
 #[derive(Debug, Args)]
 pub struct OwnershipUnlock {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -302,39 +314,42 @@ pub struct OwnershipUnlock {
 impl CommandDispatch for OwnershipUnlock {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let unlock = self
             .unlock
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_unlock(unlock)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn Annotate>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
 #[derive(Debug, Args)]
 pub struct OwnershipActivate {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -351,39 +366,42 @@ pub struct OwnershipActivate {
 impl CommandDispatch for OwnershipActivate {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let activate = self
             .activate
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_activate(activate)?;
-        if self.get_response {
-            rescue.enter(transport, false)?;
+        let result = if self.get_response {
+            rescue.enter(transport, EntryMode::Reboot)?;
             let response = rescue.get_boot_svc()?;
-            rescue.reboot()?;
-            Ok(Some(Box::new(response)))
+            Some(Box::new(response) as Box<dyn Annotate>)
         } else {
-            Ok(None)
+            None
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
 #[derive(Debug, Args)]
 pub struct SetOwnerConfig {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(help = "A signed owner configuration block")]
     input: PathBuf,
 }
@@ -391,29 +409,32 @@ pub struct SetOwnerConfig {
 impl CommandDispatch for SetOwnerConfig {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let data = std::fs::read(&self.input)?;
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_owner_config(&data)?;
+        if self.reboot {
+            rescue.reboot()?;
+        }
         Ok(None)
     }
 }
 
 #[derive(Debug, Args)]
 pub struct GetOwnerConfig {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, short, default_value = "false", conflicts_with = "output")]
     raw: bool,
     #[arg(long, short, default_value = "0", help = "Owner page number")]
@@ -430,42 +451,46 @@ pub struct GetOwnerConfig {
 impl CommandDispatch for GetOwnerConfig {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let page = match self.page {
-            0 => RescueSerial::GET_OWNER_PAGE0,
-            1 => RescueSerial::GET_OWNER_PAGE1,
+            0 => RescueMode::GetOwnerPage0,
+            1 => RescueMode::GetOwnerPage1,
             _ => return Err(anyhow!("Unsupported page {}", self.page)),
         };
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         let data = rescue.get_raw(page)?;
-        if let Some(output) = &self.output {
+        let result = if let Some(output) = &self.output {
             std::fs::write(output, &data)?;
-            Ok(None)
+            None
         } else if self.raw {
-            Ok(Some(Box::new(RawBytes(data))))
+            Some(Box::new(RawBytes(data)) as Box<dyn Annotate>)
         } else {
             let mut cursor = std::io::Cursor::new(&data);
             let header = TlvHeader::read(&mut cursor)?;
-            Ok(Some(Box::new(OwnerBlock::read(&mut cursor, header)?)))
+            Some(Box::new(OwnerBlock::read(&mut cursor, header)?) as Box<dyn Annotate>)
+        };
+        if self.reboot {
+            rescue.reboot()?;
         }
+        Ok(result)
     }
 }
 
 #[derive(Debug, Args)]
 pub struct EraseOwner {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
-        default_value_t = true,
-        action = clap::ArgAction::Set,
-        help = "Reset the target to enter rescue mode"
+        value_enum,
+        default_value_t = EntryMode::Reset,
+        help = "Method to reset for rescue mode",
     )]
-    reset_target: bool,
+    reset_target: EntryMode,
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Reboot after the rescue command")]
+    reboot: bool,
     #[arg(long, default_value_t = false, help = "Really erase the owner config")]
     really: bool,
 }
@@ -473,14 +498,17 @@ pub struct EraseOwner {
 impl CommandDispatch for EraseOwner {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         if self.really {
-            let uart = self.params.create(transport)?;
-            let rescue = RescueSerial::new(uart);
+            let context = context.downcast_ref::<RescueCommand>().unwrap();
+            let rescue = context.params.create(transport)?;
             rescue.enter(transport, self.reset_target)?;
             rescue.erase_owner()?;
+            if self.reboot {
+                rescue.reboot()?;
+            }
             Ok(None)
         } else {
             Err(anyhow!("The owner may only be erased on DEV lifecycle-state chips with a ROM_EXT configured to permit owner erasing.\n\nUse the `--really` flag to send the command."))
@@ -497,7 +525,7 @@ pub enum BootSvcCommand {
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
-pub enum RescueCommand {
+pub enum InternalRescueCommand {
     #[command(subcommand)]
     BootSvc(BootSvcCommand),
     EraseOwner(EraseOwner),
@@ -506,4 +534,25 @@ pub enum RescueCommand {
     Firmware(Firmware),
     SetOwnerConfig(SetOwnerConfig),
     GetOwnerConfig(GetOwnerConfig),
+}
+
+#[derive(Debug, Args)]
+pub struct RescueCommand {
+    #[command(flatten)]
+    params: RescueParams,
+
+    #[command(subcommand)]
+    command: InternalRescueCommand,
+}
+
+impl CommandDispatch for RescueCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // None of the SPI commands care about the prior context, but they do
+        // care about the `bus` parameter in the current node.
+        self.command.run(self, transport)
+    }
 }
