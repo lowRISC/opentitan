@@ -35,6 +35,7 @@ class push_pull_agent_cov #(parameter int HostDataWidth = 32,
   valid_ready_cg m_valid_ready_cg;
   req_ack_cg m_req_ack_cg;
   function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
     if (cfg.agent_type == PushAgent) begin
       m_valid_ready_cg = new("m_valid_ready_cg", `gfn);
     end else begin

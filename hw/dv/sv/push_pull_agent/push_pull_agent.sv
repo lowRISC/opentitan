@@ -44,6 +44,7 @@ class push_pull_agent #(
   virtual task run_phase(uvm_phase phase);
     push_pull_device_seq#(HostDataWidth, DeviceDataWidth) m_seq =
         push_pull_device_seq#(HostDataWidth, DeviceDataWidth)::type_id::create("m_seq", this);
+    super.run_phase(phase);
     if (cfg.if_mode == dv_utils_pkg::Device && cfg.start_default_device_seq) begin
       uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                               "default_sequence", m_seq.get_type());
