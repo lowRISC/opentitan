@@ -143,9 +143,9 @@ interface alert_esc_if(input clk, input rst_n);
 
   function automatic bit get_alert();
     if (alert_tx_final.alert_p === 1'b1 && ping_pending) begin
-      `uvm_info("alert_esc_if::get_alert", $sformatf(
-                "This alert is a ping response: alert_p:%b, alert_n:%b, ping_pending:%p",
-                alert_tx_final.alert_p, alert_tx_final.alert_n, ping_pending),
+      `uvm_info($sformatf("%m"),
+                $sformatf("This alert is a ping response: alert_p:%b, alert_n:%b, ping_pending:%p",
+                          alert_tx_final.alert_p, alert_tx_final.alert_n, ping_pending),
                 UVM_MEDIUM)
     end
     get_alert = (alert_tx_final.alert_p === 1'b1 && alert_tx_final.alert_n === 1'b0 &&
