@@ -313,7 +313,10 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                   `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
                   // Update exp val and predict it in read address_channel
                   intr_status_exp[a_i][a_j] = 1'b1;
-                  $display("check_interrupt_pin#1 - intr_status_exp = %p", intr_status_exp);
+                  `uvm_info(`gfn,
+                            $sformatf("check_interrupt_pin#1 - intr_status_exp = %p",
+                                      intr_status_exp),
+                            UVM_MEDIUM)
                   check_interrupt_pin();
                   if (cfg.en_cov) begin
                     int timer_idx = a_i * NUM_TIMERS + a_j;
