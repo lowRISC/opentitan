@@ -15,6 +15,12 @@
 
 #include "spi_device_regs.h"  // Generated.
 
+// Defined in ottf_console.c
+extern dif_gpio_t ottf_console_gpio;
+extern dif_pinmux_t ottf_console_pinmux;
+extern dif_spi_device_handle_t ottf_console_spi_device;
+extern dif_uart_t ottf_console_uart;
+
 /**
  * SPI console buffer management constants.
  */
@@ -33,6 +39,22 @@ enum {
  * Returns a function pointer to the uart sink function.
  */
 sink_func_ptr get_uart_sink(void);
+
+/**
+ * See `.ottf_console_getc`
+ */
+status_t uart_getc(void *io);
+
+/**
+ * See `.ottf_console_getc`
+ *
+ * The user of this function needs to be aware of the following:
+ * 1. The exact amount of data expected to be sent from the host side must be
+ * known in advance.
+ * 2. Characters should be retrieved from the console as soon as they become
+ * available. Failure to do so may result in an SPI transaction timeout.
+ */
+status_t spi_device_getc(void *io);
 
 /**
  * Configures UART stdout for `base_print.h` to use.
