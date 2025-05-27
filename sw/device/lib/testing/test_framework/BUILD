@@ -319,7 +319,6 @@ dual_cc_library(
         device = [
             ":check",
             ":ottf_isrs",
-            ":ottf_test_config",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/runtime:print",
             "//sw/device/lib/dif:rv_plic",
@@ -331,6 +330,7 @@ dual_cc_library(
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         shared = [
+            ":ottf_test_config",
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:uart",
             "//sw/device/lib/dif:spi_device",
