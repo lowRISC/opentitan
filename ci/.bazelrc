@@ -22,3 +22,6 @@ build --keep_going
 # Use the remote Bazel cache for CI.
 build --remote_cache=https://storage.googleapis.com/opentitan-bazel-cache
 build --remote_timeout=5
+
+# Print the full stdout and stderr of tests, not just the summary
+test --test_output=all
