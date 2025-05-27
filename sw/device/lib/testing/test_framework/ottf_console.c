@@ -34,8 +34,9 @@
 // Potential DIF handles for OTTF console communication.
 dif_gpio_t ottf_console_gpio;
 dif_pinmux_t ottf_console_pinmux;
-dif_spi_device_handle_t ottf_console_spi_device;
-dif_uart_t ottf_console_uart;
+
+// Main console.
+static ottf_console_t main_console;
 
 // Function pointer to the currently active data sink.
 static sink_func_ptr sink;
@@ -46,18 +47,12 @@ static status_t (*getc)(void *);
 static char spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
 static size_t spi_buf_end;
 
-void *ottf_console_get(void) {
-  switch (kOttfTestConfig.console.type) {
-    case kOttfConsoleSpiDevice:
-      return &ottf_console_spi_device;
-    default:
-      return &ottf_console_uart;
-  }
-}
+ottf_console_t *ottf_console_get(void) { return &main_console; }
 
 void ottf_console_init(void) {
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
+
   switch (kOttfTestConfig.console.type) {
     case kOttfConsoleUart:
       // Set a default for the console base address if the base address is not
@@ -67,12 +62,12 @@ void ottf_console_init(void) {
         base_addr = dt_uart_primary_reg_block(kDtUart0);
       }
 
-      ottf_console_configure_uart(base_addr);
+      ottf_console_configure_uart(&main_console, base_addr);
       sink = get_uart_sink();
       getc = uart_getc;
       break;
     case (kOttfConsoleSpiDevice):
-      ottf_console_configure_spi_device(base_addr);
+      ottf_console_configure_spi_device(&main_console, base_addr);
       sink = get_spi_device_sink();
       getc = spi_device_getc;
       spi_buf_end = 0;
