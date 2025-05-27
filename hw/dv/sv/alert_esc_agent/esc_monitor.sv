@@ -118,7 +118,7 @@ task esc_monitor::esc_thread();
         end
       end
 
-      `uvm_info("esc_monitor", $sformatf("[%s]: handshake status is %s, timeout=%0b",
+      `uvm_info(`gfn, $sformatf("[%s]: handshake status is %s, timeout=%0b",
                                          req.alert_esc_type.name(), req.esc_handshake_sta.name(),
                                          req.ping_timeout), UVM_HIGH)
       if (cfg.en_cov) begin
@@ -163,7 +163,7 @@ task esc_monitor::check_esc_resp(alert_esc_seq_item req, bit is_ping, bit ping_t
         `downcast(req_clone, req.clone());
         req_clone.esc_handshake_sta = EscIntFail;
         alert_esc_port.write(req_clone);
-        `uvm_info("esc_monitor", $sformatf("[%s]: EscReceived has integrity error",
+        `uvm_info(`gfn, $sformatf("[%s]: EscReceived has integrity error",
                                            req.alert_esc_type.name()), UVM_HIGH)
       end
       // If there is signal integrity error or it is not the first ping request or escalation
@@ -181,7 +181,7 @@ task esc_monitor::check_esc_resp(alert_esc_seq_item req, bit is_ping, bit ping_t
       end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 1) begin
         req.esc_handshake_sta = EscIntFail;
         alert_esc_port.write(req);
-        `uvm_info("esc_monitor", $sformatf("[%s]: EscRespHi has integrity error",
+        `uvm_info(`gfn, $sformatf("[%s]: EscRespHi has integrity error",
                                            req.alert_esc_type.name()), UVM_HIGH)
       end else begin
         req.esc_handshake_sta = EscRespLo;
@@ -193,7 +193,7 @@ task esc_monitor::check_esc_resp(alert_esc_seq_item req, bit is_ping, bit ping_t
       end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
         req.esc_handshake_sta = EscIntFail;
         alert_esc_port.write(req);
-        `uvm_info("esc_monitor", $sformatf("[%s]: EscRespLow has integrity error",
+        `uvm_info(`gfn, $sformatf("[%s]: EscRespLow has integrity error",
                                            req.alert_esc_type.name()), UVM_HIGH)
       end else begin
         if (is_ping) req.esc_handshake_sta = EscRespPing0;
@@ -218,7 +218,7 @@ task esc_monitor::check_esc_resp(alert_esc_seq_item req, bit is_ping, bit ping_t
       end else if (cfg.vif.monitor_cb.esc_rx.resp_p !== 0) begin
         req.esc_handshake_sta = EscIntFail;
         alert_esc_port.write(req);
-        `uvm_info("esc_monitor", $sformatf("[%s]: EscRespPing1 has integrity error",
+        `uvm_info(`gfn, $sformatf("[%s]: EscRespPing1 has integrity error",
                                            req.alert_esc_type.name()), UVM_HIGH)
       end else begin
         req.esc_handshake_sta = EscRespComplete;
