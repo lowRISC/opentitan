@@ -1,6 +1,6 @@
 # Summary
 
-[OpenTitan](./doc/introduction.md)
+[OpenTitan](./README.md)
 
 # Getting Started
 

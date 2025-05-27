@@ -141,7 +141,6 @@ crate.annotation(
     gen_binaries = ["mdbook"],
     patch_args = ["-p1"],
     patches = [
-        "@//third_party/mdbook/patches:mdbook-landing-page-links.patch",
         "@//third_party/mdbook/patches:mdbook-mdignore.patch",
     ],
     repositories = ["mdbook_index"],
