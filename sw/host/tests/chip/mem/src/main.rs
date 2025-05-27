@@ -22,7 +22,7 @@ struct Opts {
     init: InitializeTest,
 
     /// Console receive timeout.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
 
     /// Path to the firmware's ELF file, for querying symbol addresses.
