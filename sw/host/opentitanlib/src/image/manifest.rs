@@ -184,6 +184,15 @@ pub struct Timestamp {
     pub timestamp_high: u32,
 }
 
+impl From<u64> for Timestamp {
+    fn from(value: u64) -> Self {
+        Self {
+            timestamp_low: value as u32,
+            timestamp_high: (value >> 32) as u32,
+        }
+    }
+}
+
 #[repr(C)]
 #[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
 pub struct KeymgrBindingValue {
