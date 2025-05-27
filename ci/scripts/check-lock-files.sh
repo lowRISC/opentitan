@@ -32,7 +32,6 @@ cargo=(bazel run @rules_rust//tools/upstream_wrapper:cargo --)
 cargo_manifests=(
   third_party/rust/Cargo.toml
   third_party/tock/Cargo.toml
-  third_party/mdbook/Cargo.toml
 )
 for toml in "${cargo_manifests[@]}"; do
   "${cargo[@]}" update -w --manifest-path "$toml"
