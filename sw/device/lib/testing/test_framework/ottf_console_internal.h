@@ -18,8 +18,6 @@
 // Defined in ottf_console.c
 extern dif_gpio_t ottf_console_gpio;
 extern dif_pinmux_t ottf_console_pinmux;
-extern dif_spi_device_handle_t ottf_console_spi_device;
-extern dif_uart_t ottf_console_uart;
 
 /**
  * SPI console buffer management constants.
@@ -64,7 +62,7 @@ status_t spi_device_getc(void *io);
  *
  * @param uart The UART handle to use for stdout.
  */
-void base_console_uart_stdout(const dif_uart_t *uart);
+void base_console_uart_stdout(ottf_console_t *console);
 
 /**
  * Configures SPI device GPIO TX indicator pin for `base_print.h` to use.
@@ -86,7 +84,7 @@ void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
  *
  * @param spi_device The SPI device handle to use for stdout.
  */
-void base_spi_device_stdout(const dif_spi_device_handle_t *spi_device);
+void base_spi_device_stdout(ottf_console_t *console);
 
 /**
  * Returns a function pointer to the spi device sink function.

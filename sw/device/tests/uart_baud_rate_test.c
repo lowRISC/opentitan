@@ -103,7 +103,8 @@ bool test_main(void) {
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(ottf_console_get(),
+                                TOP_EARLGREY_UART1_BASE_ADDR);
   }
 
   CHECK_STATUS_OK(
