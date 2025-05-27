@@ -18,6 +18,7 @@ use crate::util;
 
 /// Implementation of the `Uart` trait on top of a serial device, such as `/dev/ttyUSB0`.
 pub struct SerialPortUart {
+    port_name: String,
     flow_control: Cell<FlowControl>,
     port: RefCell<TTYPort>,
     rxbuf: RefCell<VecDeque<u8>>,
@@ -38,6 +39,7 @@ impl SerialPortUart {
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
+            port_name: port_name.to_string(),
             flow_control: Cell::new(FlowControl::None),
             port: RefCell::new(port),
             rxbuf: RefCell::default(),
@@ -51,6 +53,7 @@ impl SerialPortUart {
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
+            port_name: port_name.to_string(),
             flow_control: Cell::new(FlowControl::None),
             port: RefCell::new(port),
             rxbuf: RefCell::default(),
@@ -134,6 +137,10 @@ impl Uart for SerialPortUart {
             true => FlowControl::Resume,
         });
         Ok(())
+    }
+
+    fn get_device_path(&self) -> Result<String> {
+        Ok(self.port_name.clone())
     }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
