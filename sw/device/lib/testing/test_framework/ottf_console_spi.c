@@ -273,7 +273,7 @@ size_t ottf_console_spi_device_read(ottf_console_t *console, size_t buf_size,
   return received_data_len;
 }
 
-static size_t base_dev_spi_device(void *io, const char *buf, size_t len) {
+static size_t ottf_console_spi_sink(void *io, const char *buf, size_t len) {
   ottf_console_t *console = io;
   dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
   size_t write_data_len = 0;
@@ -290,6 +290,28 @@ static size_t base_dev_spi_device(void *io, const char *buf, size_t len) {
   }
 
   return write_data_len;
+}
+
+/*
+ * The user of this function needs to be aware of the following:
+ * 1. The exact amount of data expected to be sent from the host side must be
+ * known in advance.
+ * 2. Characters should be retrieved from the console as soon as they become
+ * available. Failure to do so may result in an SPI transaction timeout.
+ */
+static status_t ottf_console_spi_getc(void *io) {
+  ottf_console_t *console = io;
+  dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
+  static size_t index = 0;
+  static upload_info_t info = {0};
+  if (index == info.data_len) {
+    memset(&info, 0, sizeof(upload_info_t));
+    CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
+    index = 0;
+    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
+  }
+
+  return OK_STATUS(info.data[index++]);
 }
 
 void ottf_console_configure_spi_device(ottf_console_t *console,
@@ -399,42 +421,13 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
   } else {
     spi_device_wait_for_sync(spi_device);
   }
-  base_spi_device_stdout(console);
+
+  console->getc = ottf_console_spi_getc;
+  console->sink = ottf_console_spi_sink;
 }
-
-/*
- * The user of this function needs to be aware of the following:
- * 1. The exact amount of data expected to be sent from the host side must be
- * known in advance.
- * 2. Characters should be retrieved from the console as soon as they become
- * available. Failure to do so may result in an SPI transaction timeout.
- */
-status_t spi_device_getc(void *io) {
-  ottf_console_t *console = io;
-  dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
-  static size_t index = 0;
-  static upload_info_t info = {0};
-  if (index == info.data_len) {
-    memset(&info, 0, sizeof(upload_info_t));
-    CHECK_STATUS_OK(spi_device_testutils_wait_for_upload(spi_device, &info));
-    index = 0;
-    CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(spi_device, 0x00));
-  }
-
-  return OK_STATUS(info.data[index++]);
-}
-
-sink_func_ptr get_spi_device_sink(void) { return &base_dev_spi_device; }
 
 void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
                                            dif_gpio_pin_t tx_indicator_pin) {
   spi_console_gpio = gpio;
   spi_console_tx_ready_gpio = tx_indicator_pin;
-}
-
-void base_spi_device_stdout(ottf_console_t *console) {
-  // Reset the frame counter.
-  spi_device_frame_num = 0;
-  base_set_stdout(
-      (buffer_sink_t){.data = (void *)console, .sink = &base_dev_spi_device});
 }

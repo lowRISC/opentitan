@@ -16,7 +16,6 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
-#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_console_internal.h"
@@ -38,11 +37,6 @@ dif_pinmux_t ottf_console_pinmux;
 // Main console.
 static ottf_console_t main_console;
 
-// Function pointer to the currently active data sink.
-static sink_func_ptr sink;
-// Function pointer to a function that retrieves a single character.
-static status_t (*getc)(void *);
-
 // Staging buffer for the SPI console implementation.
 static char spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
 static size_t spi_buf_end;
@@ -63,13 +57,9 @@ void ottf_console_init(void) {
       }
 
       ottf_console_configure_uart(&main_console, base_addr);
-      sink = get_uart_sink();
-      getc = uart_getc;
       break;
     case (kOttfConsoleSpiDevice):
       ottf_console_configure_spi_device(&main_console, base_addr);
-      sink = get_spi_device_sink();
-      getc = spi_device_getc;
       spi_buf_end = 0;
       memset(spi_buf, 0, kSpiDeviceMaxFramePayloadSizeBytes);
       break;
@@ -77,12 +67,16 @@ void ottf_console_init(void) {
       CHECK(false, "unsupported OTTF console interface.");
       break;
   }
+
+  base_set_stdout((buffer_sink_t){.data = (void *)&main_console,
+                                  .sink = main_console.sink});
 }
 
 status_t ottf_console_flushbuf(void *io) {
+  ottf_console_t *console = io;
   size_t written_len = 0;
   if (kOttfTestConfig.console.putbuf_buffered && spi_buf_end > 0) {
-    written_len = sink(io, spi_buf, spi_buf_end);
+    written_len = console->sink(io, spi_buf, spi_buf_end);
     if (spi_buf_end != written_len) {
       return DATA_LOSS((int32_t)(spi_buf_end - written_len));
     }
@@ -92,10 +86,11 @@ status_t ottf_console_flushbuf(void *io) {
 }
 
 static status_t ottf_buffered_putbuf(void *io, const char *buf, size_t len) {
+  ottf_console_t *console = io;
   if (len > sizeof(spi_buf)) {
     // Flush and skip the staging buffer if the payload is already the max size.
     TRY(ottf_console_flushbuf(io));
-    size_t written_len = sink(io, buf, len);
+    size_t written_len = console->sink(io, buf, len);
     if (len != written_len) {
       return DATA_LOSS((int32_t)(len - written_len));
     }
@@ -114,7 +109,8 @@ static status_t ottf_buffered_putbuf(void *io, const char *buf, size_t len) {
 
 static status_t ottf_non_buffered_putbuf(void *io, const char *buf,
                                          size_t len) {
-  size_t written_len = sink(io, buf, len);
+  ottf_console_t *console = io;
+  size_t written_len = console->sink(io, buf, len);
   if (len != written_len) {
     return DATA_LOSS((int32_t)(len - written_len));
   }
@@ -129,4 +125,7 @@ status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
   }
 }
 
-status_t ottf_console_getc(void *io) { return getc(io); }
+status_t ottf_console_getc(void *io) {
+  ottf_console_t *console = io;
+  return console->getc(io);
+}
