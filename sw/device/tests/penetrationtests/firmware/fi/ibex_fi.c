@@ -369,7 +369,8 @@ void not_increment_counter(void) __attribute__((optnone)) {
   asm volatile(ADDI10);
 }
 
-status_t handle_ibex_fi_address_translation(ujson_t *uj) {
+status_t handle_ibex_fi_address_translation(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -455,7 +456,8 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
+status_t handle_ibex_fi_address_translation_config(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -533,7 +535,8 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj) {
+status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -606,7 +609,8 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj) {
+status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -683,7 +687,8 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj) {
+status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -756,7 +761,8 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj) {
+status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -828,7 +834,8 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj) {
+status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -1368,7 +1375,7 @@ status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
+status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -1426,7 +1433,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
+status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   ibex_fi_test_result_t uj_output;
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
@@ -1605,7 +1612,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
+status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -1960,7 +1967,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
+status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -1997,7 +2004,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
+status_t handle_ibex_fi_char_register_file(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2054,7 +2062,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
+status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2176,7 +2185,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
+status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2218,7 +2227,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_single_beq(ujson_t *uj) {
+status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2262,7 +2271,7 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_single_bne(ujson_t *uj) {
+status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2305,7 +2314,7 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
+status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2386,7 +2395,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
     dif_sram_ctrl_t ret_sram;
@@ -2460,7 +2469,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   return OK_STATUS(0);
 }
 
-status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
+status_t handle_ibex_fi_char_sram_write(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2667,7 +2676,8 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
+status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2848,7 +2858,8 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
+status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2914,7 +2925,8 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
+status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
+    __attribute__((optnone)) {
   uint32_t registers[32] = {0};
   read_all_regs(registers);
   // Clear registered alerts in alert handler.
@@ -2984,7 +2996,8 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
+status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -3025,7 +3038,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
+status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -3069,7 +3083,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj) {
+status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -3181,13 +3196,13 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_otp_data_read(ujson_t *uj) {
+status_t handle_ibex_fi_otp_data_read(ujson_t *uj) __attribute__((optnone)) {
   TRY(init_ref_otp_data());
   TRY(read_otp_partitions(uj));
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
+status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) __attribute__((optnone)) {
   TRY(init_ref_otp_data());
   TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionVendorTest));
   TRY(dif_otp_ctrl_lock_reading(&otp, kDifOtpCtrlPartitionCreatorSwCfg));
@@ -3198,7 +3213,7 @@ status_t handle_ibex_fi_otp_read_lock(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) {
+status_t handle_ibex_fi_otp_write_lock(ujson_t *uj) __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
