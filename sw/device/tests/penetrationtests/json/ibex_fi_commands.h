@@ -21,6 +21,7 @@ extern "C" {
     value(_, AddressTranslationCfg) \
     value(_, CharAddiSingleBeq) \
     value(_, CharAddiSingleBeqCm) \
+    value(_, CharAddiSingleBeqCm2) \
     value(_, CharAddiSingleBeqNeg) \
     value(_, CharAddiSingleBne) \
     value(_, CharAddiSingleBneNeg) \
