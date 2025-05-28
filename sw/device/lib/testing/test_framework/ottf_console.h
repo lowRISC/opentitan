@@ -55,6 +55,8 @@ typedef struct ottf_console {
     struct {
       /** DIF handle. */
       dif_spi_device_handle_t dif;
+      /** SPI device frame number. */
+      uint32_t frame_num;
     } spi;
   } data;
 } ottf_console_t;
