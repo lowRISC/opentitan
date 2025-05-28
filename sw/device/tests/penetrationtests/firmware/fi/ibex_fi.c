@@ -831,6 +831,95 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_addi_single_beq_cm2(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // As this test is expected to crash, pull down the trigger to low to avoid
+  // that it is still at high.
+  PENTEST_ASM_TRIGGER_LOW;
+  asm volatile(NOP100);
+
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Those values are on purpose different such that the hardened check fails.
+  volatile hardened_bool_t value1 = HARDENED_BOOL_TRUE;
+  volatile hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  asm volatile(
+      "c.addi x12, 1\n"
+      "c.addi x13, 1\n"
+      "c.addi x14, 1\n"
+      "c.addi x15, 1\n"
+      "c.addi x16, 1\n"
+      "c.addi x17, 1\n"
+      "c.addi x28, 1\n"
+      "c.addi x29, 1\n"
+      "c.addi x30, 1\n"
+      "c.addi x31, 1\n"
+      "mv a0, %0\n"
+      "mv a1, %1\n"
+      "beq a0,a1,cm2_fault\n"
+      "cm2_correct:\n"
+      "unimp\n"
+      "unimp\n"
+      "bne a0,a1,cm2_correct\n"
+      "cm2_fault:\n"
+      "c.addi x12, 16\n"
+      "c.addi x13, 16\n"
+      "j labelend2\n"
+      "j labelend2\n"
+      "c.addi x14, 16\n"
+      "j labelend2\n"
+      "c.addi x15, 16\n"
+      "j labelend2\n"
+      "c.addi x16, 16\n"
+      "j labelend2\n"
+      "j labelend2\n"
+      "j labelend2\n"
+      "c.addi x17, 16\n"
+      "c.addi x28, 16\n"
+      "j labelend2\n"
+      "j labelend2\n"
+      "c.addi x29, 16\n"
+      "c.addi x30, 16\n"
+      "c.addi x31, 16\n"
+      "labelend2:\n"
+      : "=r"(value1), "=r"(value2));
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_rf_dump_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_rf_dump_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
@@ -3862,6 +3951,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_addi_single_beq(uj);
     case kIbexFiSubcommandCharAddiSingleBeqCm:
       return handle_ibex_fi_char_addi_single_beq_cm(uj);
+    case kIbexFiSubcommandCharAddiSingleBeqCm2:
+      return handle_ibex_fi_char_addi_single_beq_cm2(uj);
     case kIbexFiSubcommandCharAddiSingleBeqNeg:
       return handle_ibex_fi_char_addi_single_beq_neg(uj);
     case kIbexFiSubcommandCharAddiSingleBne:

@@ -46,7 +46,8 @@ status_t handle_ibex_sca_combi_operations_batch(ujson_t *uj);
  *
  * This SCA penetration test executes the following tests depending on the
  * trigger:
- * - Generate num_iteration random values using the software LFSR.Add commentMore actions
+ * - Generate num_iteration random values using the software LFSR.Add
+ * commentMore actions
  * - Loop num_iterations:
  *  - XOR values
  *  - ADD values

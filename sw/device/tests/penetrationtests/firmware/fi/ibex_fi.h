@@ -128,6 +128,16 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj);
 status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj);
 
 /**
+ * ibex.fi.char_addi_single_beq_cm2 command handler.
+ *
+ * Similar to handle_ibex_fi_char_addi_single_beq_cm but with an extra unimp.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_beq_cm2(ujson_t *uj);
+
+/**
  * ibex.fi.char_addi_single_beq command handler.
  * Similar to handle_ibex_fi_char_addi_single_beq but sets input values not
  * equal to each other.
