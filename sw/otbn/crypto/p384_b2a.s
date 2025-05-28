@@ -63,7 +63,7 @@ p384_boolean_to_arithmetic:
        [w4, w3] <= [w4, w3] - [w2, w1] = ((s0 ^ gamma) - gamma) mod 2^512 */
   bn.sub    w3, w3, w1
   bn.subb   w4, w4, w2
-  bn.sub    w31, w31, w31 # dummy instruction to clear flags
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Truncate subtraction result to 385 bits.
        [w4, w3] <= [w4, w3] mod 2^385 = T */
@@ -85,7 +85,7 @@ p384_boolean_to_arithmetic:
   /* [w21, w20] <= [w21, w20] - [w2, w1] = ((s0 ^ G) - G) mod 2^512 */
   bn.sub    w20, w20, w1
   bn.subb   w21, w21, w2
-  bn.sub    w31, w31, w31 # dummy instruction to clear flags
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w21, w20] <= [w21, w20] mod 2^385 = A */
   bn.rshi   w21, w21, w31 >> 129
@@ -104,5 +104,6 @@ p384_boolean_to_arithmetic:
   /* remove fresh mask */
   bn.xor    w20, w28, w20
   bn.xor    w21, w29, w21
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
