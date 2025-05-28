@@ -38,6 +38,25 @@ enum {
 static volatile ottf_console_flow_control_t flow_control_state;
 static volatile uint32_t flow_control_irqs;
 
+static status_t ottf_console_uart_getc(void *io) {
+  ottf_console_t *console = io;
+  uint8_t byte;
+  TRY(dif_uart_byte_receive_polled(&console->data.uart.dif, &byte));
+  TRY(ottf_console_flow_control(io, kOttfConsoleFlowControlAuto));
+  return OK_STATUS(byte);
+}
+
+static size_t ottf_console_uart_sink(void *io, const char *buf, size_t len) {
+  ottf_console_t *console = io;
+  for (size_t i = 0; i < len; ++i) {
+    if (dif_uart_byte_send_polled(&console->data.uart.dif, (uint8_t)buf[i]) !=
+        kDifOk) {
+      return i;
+    }
+  }
+  return len;
+}
+
 void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr) {
   console->type = kOttfConsoleUart;
   CHECK_DIF_OK(
@@ -55,38 +74,14 @@ void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr) {
                              .tx_enable = kDifToggleEnabled,
                              .rx_enable = kDifToggleEnabled,
                          }));
-  base_console_uart_stdout(console);
+
+  console->getc = ottf_console_uart_getc;
+  console->sink = ottf_console_uart_sink;
 
   // Initialize/Configure console flow control (if requested).
   if (kOttfTestConfig.enable_uart_flow_control) {
     ottf_console_flow_control_enable();
   }
-}
-
-status_t uart_getc(void *io) {
-  ottf_console_t *console = io;
-  uint8_t byte;
-  TRY(dif_uart_byte_receive_polled(&console->data.uart.dif, &byte));
-  TRY(ottf_console_flow_control(io, kOttfConsoleFlowControlAuto));
-  return OK_STATUS(byte);
-}
-
-static size_t base_dev_uart(void *io, const char *buf, size_t len) {
-  ottf_console_t *console = io;
-  for (size_t i = 0; i < len; ++i) {
-    if (dif_uart_byte_send_polled(&console->data.uart.dif, (uint8_t)buf[i]) !=
-        kDifOk) {
-      return i;
-    }
-  }
-  return len;
-}
-
-sink_func_ptr get_uart_sink(void) { return &base_dev_uart; }
-
-void base_console_uart_stdout(ottf_console_t *console) {
-  base_set_stdout(
-      (buffer_sink_t){.data = (void *)console, .sink = &base_dev_uart});
 }
 
 static uint32_t get_flow_control_watermark_plic_id(void) {
