@@ -74,6 +74,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     fpga = fpga_params(
+        changes_otp = True,
         # Check that bank=0 page=5 is configured for RD/WR, but not ERase.
         exit_success = "info region bank=0 part=0 page=5 RD-WR-uu-uu-uu-uu LK",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
@@ -97,6 +98,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     fpga = fpga_params(
+        changes_otp = True,
         # Even though the isfb_erase extension is present and set to true,
         # the manifest doesn't node lock this image.  The erase condition
         # is not met and the ISFB page should not allow erase.
@@ -217,6 +219,7 @@ _ISFB_CONTRAINT_TESTS = {
             binaries = {
                 ":isfb_page_init": "isfb_page_init",
             },
+            changes_otp = True,
             exit_failure = param["failure"],
             exit_success = param["success"],
             rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_isfb",
