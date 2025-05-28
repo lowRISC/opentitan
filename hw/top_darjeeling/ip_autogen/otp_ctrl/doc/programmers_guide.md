@@ -15,9 +15,9 @@ The only initialization steps that SW should perform are:
 
 1. Check that the OTP controller has successfully initialized by reading [`STATUS`](registers.md#status). I.e., make sure that none of the ERROR bits are set, and that the DAI is idle ([`STATUS.DAI_IDLE`](registers.md#status)).
 2. Set up the periodic background checks:
-    - Choose whether the periodic [background checks](#partition-checks) shall be subject to a timeout by programming a nonzero timeout cycle count to [`CHECK_TIMEOUT`](registers.md#check_timeout).
+    - Choose whether the periodic [background checks](theory_of_operation.md#partition-checks) shall be subject to a timeout by programming a nonzero timeout cycle count to [`CHECK_TIMEOUT`](registers.md#check_timeout).
       In this case, the [`CHECK_TIMEOUT`](registers.md#check_timeout) register must be set before the [`INTEGRITY_CHECK_PERIOD`](registers.md#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD`](registers.md#consistency_check_period) registers (see next point).
-    - Enable periodic [background checks](#partition-checks) by programming nonzero mask values to [`INTEGRITY_CHECK_PERIOD`](registers.md#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD`](registers.md#consistency_check_period).
+    - Enable periodic [background checks](theory_of_operation.md#partition-checks) by programming nonzero mask values to [`INTEGRITY_CHECK_PERIOD`](registers.md#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD`](registers.md#consistency_check_period).
     - It is recommended to lock down the background check registers via [`CHECK_REGWEN`](registers.md#check_regwen), once the background checks have been set up.
 
 If needed, one-off integrity and consistency checks can be triggered via [`CHECK_TRIGGER`](registers.md#check_trigger).
@@ -68,7 +68,7 @@ Note that the address is aligned with the granule, meaning that either 2 or 3 LS
 3. Trigger a read command by writing 0x1 to [`DIRECT_ACCESS_CMD`](registers.md#direct_access_cmd).
 4. Poll the [`STATUS`](registers.md#status) until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-5. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
+5. If the status register flags a DAI error, additional handling is required (see [Error handling](#error-handling)).
 6. If the region accessed has a 32bit access granule, the 32bit chunk of read data can be read from [`DIRECT_ACCESS_RDATA_0`](registers.md#direct_access_rdata).
 If the region accessed has a 64bit access granule, the 64bit chunk of read data can be read from the [`DIRECT_ACCESS_RDATA_0`](registers.md#direct_access_rdata) and [`DIRECT_ACCESS_RDATA_1`](registers.md#direct_access_rdata) registers.
 7. Go back to 1. and repeat until all data has been read.
@@ -87,7 +87,7 @@ Note that the address is aligned with the granule, meaning that either 2 or 3 LS
 4. Trigger a write command by writing 0x2 to [`DIRECT_ACCESS_CMD`](registers.md#direct_access_cmd).
 5. Poll the [`STATUS`](registers.md#status) until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
+6. If the status register flags a DAI error, additional handling is required (see [Error handling](#error-handling)).
 7. Go back to 1. and repeat until all data has been written.
 
 The hardware will set [`DIRECT_ACCESS_REGWEN`](registers.md#direct_access_regwen) to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
@@ -104,7 +104,7 @@ The hardware digest computation for the hardware and secret partitions can be tr
 4. Trigger a digest calculation command by writing 0x4 to [`DIRECT_ACCESS_CMD`](registers.md#direct_access_cmd).
 5. Poll the [`STATUS`](registers.md#status) until the DAI state goes back to idle.
 Alternatively, the `otp_operation_done` interrupt can be enabled up to notify the processor once an access has completed.
-6. If the status register flags a DAI error, additional handling is required (see [Section on Error handling](#error-handling)).
+6. If the status register flags a DAI error, additional handling is required (see [Error handling](#error-handling)).
 
 The hardware will set [`DIRECT_ACCESS_REGWEN`](registers.md#direct_access_regwen) to 0x0 while an operation is pending in order to temporarily lock write access to the CSRs registers.
 
@@ -178,7 +178,7 @@ Write access to the affected partition will be locked if the digest has a nonzer
 For the software partition digests, it is entirely up to software to decide on the digest algorithm to be used.
 Hardware will determine the lock condition only based on whether a non-zero value is present at that location or not.
 
-For the hardware partitions, hardware calculates this digest and uses it for [background verification](#partition-checks).
+For the hardware partitions, hardware calculates this digest and uses it for [background verification](theory_of_operation.md#partition-checks).
 Digest calculation can be triggered via the DAI.
 
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.

@@ -484,7 +484,7 @@ class OtpMemMap():
             integrity = "no"
             if part["integrity"]:
                 integrity = "yes"
-            desc = part["desc"]
+            desc = " ".join(part.get("desc", "").split("\n"))
             row = [
                 part["name"], is_secret, is_buffered, integrity, wr_lockable,
                 rd_lockable, desc
