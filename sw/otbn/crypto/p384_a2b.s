@@ -80,8 +80,15 @@ p384_arithmetic_to_boolean_mod:
   bn.subb   w12, w12, w14
 
   /* Call 385-bit A2B function.
-     [w21,w20] <= x' */
+
+     N.B. To avoid leaking the MSB of the second A2B result below, we move the
+     result from [w21,w20] to [w1,w0] so that the bn.sel instructions below
+     don't reuse their destination as a source.
+
+     [w2,w1] <= x' */
   jal       x1, p384_arithmetic_to_boolean
+  bn.mov    w1, w20
+  bn.mov    w2, w21
 
   /* Restore initial mask input of w19 for consistency
      in calling functions.
@@ -96,8 +103,9 @@ p384_arithmetic_to_boolean_mod:
   /* Return the unreduced A2B computation (second result),
      if zero flag is set, otherwise return the reduced
      A2B computation (first result). */
-  bn.sel    w20, w20, w27, FG0.Z
-  bn.sel    w21, w21, w28, FG0.Z
+  bn.sel    w20, w1, w27, FG0.Z
+  bn.sel    w21, w2, w28, FG0.Z
+  bn.cmp    w31, w31  /* dummy instruction to clear flags */
 
   ret
 
@@ -146,52 +154,76 @@ p384_arithmetic_to_boolean:
   bn.rshi   w4, w4, w31 >> 129
   bn.rshi   w4, w31, w4 >> 127
 
-  /* [w21,w20] = x'     <= [w2,w1] ^ [w19,w18] = gamma ^ r */
+  /* [w21,w20] = x'     <= [w2,w1] ^ [w19,w18] = gamma ^ r
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w18 and w19 is the secret share r. */
   bn.xor    w20, w1, w18
   bn.xor    w21, w2, w19
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w6,w5] = omega    <= [w2,w1] & [w21,w20] = gamma & x' */
   bn.and    w5, w1, w20
   bn.and    w6, w2, w21
 
-  /* [w21,w20] = x'     <= [w4,w3] ^ [w12,w11] = T ^ A */
+  /* [w21,w20] = x'     <= [w4,w3] ^ [w12,w11] = T ^ A
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w11 and w12 is the secret share A. */
   bn.xor    w20, w3, w11
   bn.xor    w21, w4, w12
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w2,w1] = gamma    <= [w2,w1] ^ [w21,w20] = gamma ^ x' */
   bn.xor    w1, w1, w20
   bn.xor    w2, w2, w21
 
-  /* [w2,w1] = gamma    <= [w2,w1] & [w19,w18] = gamma & r */
+  /* [w2,w1] = gamma    <= [w2,w1] & [w19,w18] = gamma & r
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w18 and w19 is the secret share r. */
   bn.and    w1, w1, w18
   bn.and    w2, w2, w19
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w6,w5] = omega    <= [w6,w5] ^ [w2,w1] = omega ^ gamma */
   bn.xor    w5, w5, w1
   bn.xor    w6, w6, w2
 
-  /* [w2,w1] = gamma    <= [w4,w3] & [w12,w11] = T & A */
+  /* [w2,w1] = gamma    <= [w4,w3] & [w12,w11] = T & A
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w11 and w12 is the secret share A. */
   bn.and    w1, w3, w11
   bn.and    w2, w4, w12
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* [w6,w5] = omega    <= [w6,w5] ^ [w2,w1] = omega ^ gamma */
   bn.xor    w5, w5, w1
   bn.xor    w6, w6, w2
 
   /* Loop for k = 1 to K - 1 = 385 - 1 */
-  loopi     384, 12
+  loopi     384, 14
 
-    /* [w2,w1] = gamma  <= [w4,w3] & [w19,w18] = T & r */
+    /* [w2,w1] = gamma  <= [w4,w3] & [w19,w18] = T & r
+
+       N.B. The dummy instruction below is to clear the flags from performing
+       the XORs, as their input in w18 and w19 is the secret share r. */
     bn.and     w1, w3, w18
     bn.and     w2, w4, w19
+    bn.xor     w31, w31, w31  /* dummy instruction to clear flags */
 
     /* [w2,w1] = gamma  <= [w2,w1] ^ [w6,w5] = gamma ^ omega */
     bn.xor     w1, w1, w5
     bn.xor     w2, w2, w6
 
-    /* [w4,w3] = T      <= [w4,w3] & [w12,w11] = T & A */
+    /* [w4,w3] = T      <= [w4,w3] & [w12,w11] = T & A
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w11 and w12 is the secret share A. */
     bn.and     w3, w3, w11
     bn.and     w4, w4, w12
+    bn.xor     w31, w31, w31  /* dummy instruction to clear flags */
 
     /* [w2,w1] = gamma  <= [w2,w1] ^ [w4,w3] = gamma ^ T */
     bn.xor     w1, w1, w3
@@ -204,8 +236,12 @@ p384_arithmetic_to_boolean:
     bn.rshi   w4, w4, w31 >> 129
     bn.rshi   w4, w31, w4 >> 127
 
-  /* [w21,w20] = x'     <= [w21,w20] ^ [w4,w3] = x' ^ T */
+  /* [w21,w20] = x'     <= [w21,w20] ^ [w4,w3] = x' ^ T
+
+     N.B. The dummy instruction below is to clear the flags from performing
+     the XORs, as their input in w11 and w12 is the secret share x'. */
   bn.xor    w20, w20, w3
   bn.xor    w21, w21, w4
+  bn.xor    w31, w31, w31  /* dummy instruction to clear flags */
 
   ret
