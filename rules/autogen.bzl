@@ -211,16 +211,17 @@ def opentitan_autogen_dif(name, top, ip, deps = [], target_compatible_with = [])
 
 def _opentitan_top_dt_gen(ctx):
     outputs = []
-    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    _subdir_ignore = ctx.actions.declare_directory("_ignore_{}".format(ctx.label.name))
+    outdir = _subdir_ignore.dirname
 
     groups = {}
     for group, files in ctx.attr.output_groups.items():
         deps = []
         for file in files:
-            deps.append(ctx.actions.declare_file(file))
+            f = ctx.actions.declare_file(file)
+            deps.append(f)
         outputs.extend(deps)
         groups[group] = depset(deps)
-
     top = ctx.attr.top[OpenTitanTopInfo]
 
     inputs = [top.hjson]
@@ -258,7 +259,7 @@ def _opentitan_top_dt_gen(ctx):
     arguments.extend(ips)
 
     ctx.actions.run(
-        outputs = outputs,
+        outputs = outputs + [_subdir_ignore],
         inputs = inputs,
         arguments = arguments,
         executable = ctx.executable._dttool,
