@@ -59,7 +59,10 @@ void ottf_console_init(void) {
       ottf_console_configure_uart(&main_console, base_addr);
       break;
     case (kOttfConsoleSpiDevice):
-      ottf_console_configure_spi_device(&main_console, base_addr);
+      ottf_console_configure_spi_device(
+          &main_console, base_addr, kOttfTestConfig.console_tx_indicator.enable,
+          kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
+          kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio);
       spi_buf_end = 0;
       memset(spi_buf, 0, kSpiDeviceMaxFramePayloadSizeBytes);
       break;
