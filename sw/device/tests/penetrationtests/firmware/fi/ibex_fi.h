@@ -8,6 +8,44 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+enum {
+  /**
+   * Mapping from register name (e.g., x5) to position in register array.
+   */
+  kRegX0 = 0,
+  kRegX1 = 1,
+  kRegX2 = 2,
+  kRegX3 = 3,
+  kRegX4 = 4,
+  kRegX5 = 5,
+  kRegX6 = 6,
+  kRegX7 = 7,
+  kRegX8 = 8,
+  kRegX9 = 9,
+  kRegX10 = 10,
+  kRegX11 = 11,
+  kRegX12 = 12,
+  kRegX13 = 13,
+  kRegX14 = 14,
+  kRegX15 = 15,
+  kRegX16 = 16,
+  kRegX17 = 17,
+  kRegX18 = 18,
+  kRegX19 = 19,
+  kRegX20 = 20,
+  kRegX21 = 21,
+  kRegX22 = 22,
+  kRegX23 = 23,
+  kRegX24 = 24,
+  kRegX25 = 25,
+  kRegX26 = 26,
+  kRegX27 = 27,
+  kRegX28 = 28,
+  kRegX29 = 29,
+  kRegX30 = 30,
+  kRegX31 = 31,
+};
+
 /**
  * ibex.fi.address_translation command handler.
  *

@@ -35,10 +35,9 @@ enum {
   kSramMainBufSize =
       1 << 13,  // Size of the SRAM buffer used in the SRAM tests.
   /**
-   * Number of registers that are available during a FI test. These registers
-   * include x5-x7, x12-x17, x28-x30.
+   * Number of reference values that are available in the ref_values array.
    */
-  kNumRegs = 12,
+  kNumRefValues = 32,
 };
 
 // A function which takes an uint32_t as its only argument.
@@ -133,14 +132,222 @@ uint32_t
 // Load word, subi, sw macro.
 #define LWSUBISW1 "lw x6, (%0)\n addi x6, x6, -1\n sw x6, (%0)\n"
 
-// Reference values.
-const uint32_t ref_values[32] = {
+// Reference values used by different FI tests.
+const uint32_t ref_values[kNumRefValues] = {
     0x1BADB002, 0x8BADF00D, 0xA5A5A5A5, 0xABABABAB, 0xABBABABE, 0xABADCAFE,
     0xBAAAAAAD, 0xBAD22222, 0xBBADBEEF, 0xBEBEBEBE, 0xBEEFCACE, 0xC00010FF,
     0xCAFED00D, 0xCAFEFEED, 0xCCCCCCCC, 0xCDCDCDCD, 0x0D15EA5E, 0xDEAD10CC,
     0xDEADBEEF, 0xDEADCAFE, 0xDEADC0DE, 0xDEADFA11, 0xDEADF00D, 0xDEFEC8ED,
     0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
     0xFEEDFACE, 0xFEEEFEEE};
+
+/**
+ * Initialize the register file with the ref_values.
+ *
+ * This inline function pre-initializes the register file with the ref_values
+ * before a FI test. All registers except x0 (zero register), x2 (stack
+ * pointer), and x8 (frame pointer) are written. The idea of bringing the
+ * register file to a pre-defined state is to more easily detect any potential
+ * bit-flip that was introduced by FI.
+ */
+OT_ALWAYS_INLINE void init_reg_ref_values(void) {
+  asm volatile("li x1, %0" : : "i"(ref_values[kRegX1]));
+  asm volatile("li x3, %0" : : "i"(ref_values[kRegX3]));
+  asm volatile("li x4, %0" : : "i"(ref_values[kRegX4]));
+  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]));
+  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]));
+  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]));
+  asm volatile("li x9, %0" : : "i"(ref_values[kRegX9]));
+  asm volatile("li x10, %0" : : "i"(ref_values[kRegX10]));
+  asm volatile("li x11, %0" : : "i"(ref_values[kRegX11]));
+  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]));
+  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]));
+  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]));
+  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]));
+  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]));
+  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]));
+  asm volatile("li x18, %0" : : "i"(ref_values[kRegX18]));
+  asm volatile("li x19, %0" : : "i"(ref_values[kRegX19]));
+  asm volatile("li x20, %0" : : "i"(ref_values[kRegX20]));
+  asm volatile("li x21, %0" : : "i"(ref_values[kRegX21]));
+  asm volatile("li x22, %0" : : "i"(ref_values[kRegX22]));
+  asm volatile("li x23, %0" : : "i"(ref_values[kRegX23]));
+  asm volatile("li x24, %0" : : "i"(ref_values[kRegX24]));
+  asm volatile("li x25, %0" : : "i"(ref_values[kRegX25]));
+  asm volatile("li x26, %0" : : "i"(ref_values[kRegX26]));
+  asm volatile("li x27, %0" : : "i"(ref_values[kRegX27]));
+  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]));
+  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]));
+  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]));
+  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]));
+}
+
+/**
+ * Initialize the temporary and function argument registers with the ref_values.
+ *
+ * This inline function pre-initializes the temporary and some function argument
+ * registers in the RF with the ref_values. This includes x5...x7, x12...x17,
+ * and x28...x31.
+ */
+OT_ALWAYS_INLINE void init_tmp_reg_ref_values(void) {
+  asm volatile("li x5, %0" : : "i"(ref_values[kRegX5]));
+  asm volatile("li x6, %0" : : "i"(ref_values[kRegX6]));
+  asm volatile("li x7, %0" : : "i"(ref_values[kRegX7]));
+
+  asm volatile("li x12, %0" : : "i"(ref_values[kRegX12]));
+  asm volatile("li x13, %0" : : "i"(ref_values[kRegX13]));
+  asm volatile("li x14, %0" : : "i"(ref_values[kRegX14]));
+  asm volatile("li x15, %0" : : "i"(ref_values[kRegX15]));
+  asm volatile("li x16, %0" : : "i"(ref_values[kRegX16]));
+  asm volatile("li x17, %0" : : "i"(ref_values[kRegX17]));
+
+  asm volatile("li x28, %0" : : "i"(ref_values[kRegX28]));
+  asm volatile("li x29, %0" : : "i"(ref_values[kRegX29]));
+  asm volatile("li x30, %0" : : "i"(ref_values[kRegX30]));
+  asm volatile("li x31, %0" : : "i"(ref_values[kRegX31]));
+}
+
+/**
+ * Save the content of the register file (x0...x31) into the buffer.
+ *
+ * This function can be used to save the register file state before and after
+ * the FI trigger window. Call this function before init_reg_ref_values() such
+ * that the register file content can be restored after the FI test. After a FI
+ * test this function can be used to dump the register file content to detect
+ * any differences.
+ *
+ * @param buffer: The buffer to store the register file content.
+ */
+OT_ALWAYS_INLINE void save_all_regs(uint32_t buffer[]) {
+  asm volatile("sw x0,    0(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x1,    4(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x2,    8(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x3,   12(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x4,   16(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x5,   20(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x6,   24(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x7,   28(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x8,   32(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x9,   36(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x10,  40(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x11,  44(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x12,  48(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x13,  52(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x14,  56(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x15,  60(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x16,  64(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x17,  68(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x18,  72(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x19,  76(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x20,  80(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x21,  84(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x22,  88(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x23,  92(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x24,  96(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x25, 100(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x26, 104(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x27, 108(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x28, 112(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x29, 116(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x30, 120(%0)" : : "r"(&buffer[0]));
+  asm volatile("sw x31, 124(%0)" : : "r"(&buffer[0]));
+}
+
+/**
+ * Initialize the temporary and function argument registers with the ref_values.
+ *
+ * This inline function pre-initializes the temporary and some function argument
+ * registers in the RF with the ref_values. This includes x5...x7, x12...x17,
+ * and x28...x31.
+ */
+
+/**
+ * Save the content of the temporary and function argument registers into the
+ * buffer.
+ *
+ * This includes x5...x7, x12...x17, and x28...x31.
+ *
+ * @param buffer: The buffer to store the register file content.
+ */
+OT_ALWAYS_INLINE void save_tmp_regs(uint32_t buffer[]) {
+  asm volatile("mv %0, x5" : "=r"(buffer[kRegX5]));
+  asm volatile("mv %0, x6" : "=r"(buffer[kRegX6]));
+  asm volatile("mv %0, x7" : "=r"(buffer[kRegX7]));
+
+  asm volatile("mv %0, x12" : "=r"(buffer[kRegX12]));
+  asm volatile("mv %0, x13" : "=r"(buffer[kRegX13]));
+  asm volatile("mv %0, x14" : "=r"(buffer[kRegX14]));
+  asm volatile("mv %0, x15" : "=r"(buffer[kRegX15]));
+  asm volatile("mv %0, x16" : "=r"(buffer[kRegX16]));
+  asm volatile("mv %0, x17" : "=r"(buffer[kRegX17]));
+
+  asm volatile("mv %0, x28" : "=r"(buffer[kRegX28]));
+  asm volatile("mv %0, x29" : "=r"(buffer[kRegX29]));
+  asm volatile("mv %0, x30" : "=r"(buffer[kRegX30]));
+  asm volatile("mv %0, x31" : "=r"(buffer[kRegX31]));
+}
+
+/**
+ * Restore the content of the register file (x0...x31) from the buffer.
+ *
+ * @param buffer: The buffer to store the register file content.
+ */
+OT_ALWAYS_INLINE void restore_all_regs(uint32_t buffer[]) {
+  asm volatile("lw x0,    0(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x1,    4(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x2,    8(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x3,   12(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x4,   16(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x5,   20(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x6,   24(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x7,   28(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x8,   32(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x9,   36(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x10,  40(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x11,  44(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x12,  48(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x13,  52(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x14,  56(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x15,  60(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x16,  64(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x17,  68(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x18,  72(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x19,  76(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x20,  80(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x21,  84(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x22,  88(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x23,  92(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x24,  96(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x25, 100(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x26, 104(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x27, 108(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x28, 112(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x29, 116(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x30, 120(%0)" : : "r"(&buffer[0]));
+  asm volatile("lw x31, 124(%0)" : : "r"(&buffer[0]));
+}
+
+// Save the current register file content and initialize it with pre-defined
+// values.
+#define INIT_REGISTER_FILE                         \
+  uint32_t registers_saved[IBEXFI_NUM_REGS] = {0}; \
+  save_all_regs(registers_saved);                  \
+  init_reg_ref_values();                           \
+  uint32_t registers_dumped[IBEXFI_NUM_REGS];
+
+// Init the temporary registers with reference values.
+#define INIT_TMP_REGISTER_FILE                      \
+  uint32_t registers_dumped[IBEXFI_NUM_REGS] = {0}; \
+  init_tmp_reg_ref_values();
+
+// Save the current register file content and restore it wit the saved
+// values.
+#define DUMP_REGISTER_FILE         \
+  save_all_regs(registers_dumped); \
+  restore_all_regs(registers_saved);
+
+// Save the temporary registers.
+#define DUMP_TMP_REGISTER_FILE save_tmp_regs(registers_dumped);
 
 // Flash information.
 static dif_flash_ctrl_state_t flash;
@@ -190,73 +397,6 @@ static status_t init_ref_otp_data(void) {
     otp_ref_init = true;
   }
   return OK_STATUS();
-}
-
-// Init temporary registers t0...t7 with given value.
-static inline void init_temp_regs(uint32_t value) {
-  asm volatile("li x5, %0" : : "i"(value));
-  asm volatile("li x6, %0" : : "i"(value));
-  asm volatile("li x7, %0" : : "i"(value));
-  asm volatile("li x28, %0" : : "i"(value));
-  asm volatile("li x29, %0" : : "i"(value));
-  asm volatile("li x30, %0" : : "i"(value));
-  asm volatile("li x31, %0" : : "i"(value));
-}
-
-static inline void init_reg_ref_values(void) {
-  asm volatile("li x5, %0" : : "i"(ref_values[0]));
-  asm volatile("li x6, %0" : : "i"(ref_values[1]));
-  asm volatile("li x7, %0" : : "i"(ref_values[2]));
-  asm volatile("li x12, %0" : : "i"(ref_values[3]));
-  asm volatile("li x13, %0" : : "i"(ref_values[4]));
-  asm volatile("li x14, %0" : : "i"(ref_values[5]));
-  asm volatile("li x15, %0" : : "i"(ref_values[6]));
-  asm volatile("li x16, %0" : : "i"(ref_values[7]));
-  asm volatile("li x17, %0" : : "i"(ref_values[8]));
-  asm volatile("li x28, %0" : : "i"(ref_values[9]));
-  asm volatile("li x29, %0" : : "i"(ref_values[10]));
-  asm volatile("li x30, %0" : : "i"(ref_values[11]));
-}
-
-// Read back values from all registers x1...x31 into buffer.
-static inline void read_all_regs(uint32_t buffer[]) {
-  // The much nicer approach with
-  // asm volatile("sw x1, %0" : : "m"(buffer[1]));
-  // leads to two INSNs. Test in godbolt promised single INSN
-  // Uglier workaround below inserts single INSN, but requires
-  // read_all_regs() to be called prior to the FI trigger
-  // start to avoid register overwrite.
-  asm volatile("sw x1,    0(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x2,    4(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x3,    8(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x4,   12(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x5,   16(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x6,   20(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x7,   24(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x8,   28(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x9,   32(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x10,  36(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x11,  40(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x12,  44(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x13,  48(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x14,  52(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x15,  56(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x16,  60(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x17,  64(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x18,  68(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x19,  72(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x20,  76(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x21,  80(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x22,  84(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x23,  88(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x24,  92(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x25,  96(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x26, 100(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x27, 104(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x28, 108(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x29, 112(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x30, 116(%0)" : : "r"(&buffer[0]));
-  asm volatile("sw x31, 120(%0)" : : "r"(&buffer[0]));
 }
 
 static status_t read_otp_partitions(ujson_t *uj) {
@@ -349,17 +489,6 @@ static status_t read_otp_partitions(ujson_t *uj) {
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
 
   return OK_STATUS();
-}
-
-// Read back values fromo temporary registers t0...t7 into buffer.
-static inline void read_temp_regs(uint32_t buffer[]) {
-  asm volatile("mv %0, x5" : "=r"(buffer[0]));
-  asm volatile("mv %0, x6" : "=r"(buffer[1]));
-  asm volatile("mv %0, x7" : "=r"(buffer[2]));
-  asm volatile("mv %0, x28" : "=r"(buffer[3]));
-  asm volatile("mv %0, x29" : "=r"(buffer[4]));
-  asm volatile("mv %0, x30" : "=r"(buffer[5]));
-  asm volatile("mv %0, x31" : "=r"(buffer[6]));
 }
 
 // Make sure that this function does not get optimized by the compiler.
@@ -542,16 +671,14 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // Initialize x5-x7, x12-x17, and x28-x30 with 0.
-  init_regs(0);
-  uint32_t res_values[13];
-
-  // FI code target.
+  // Init x5 and x6.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x1a\n");
+
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
       "c.addi x12, 1\n"
@@ -581,9 +708,9 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
       "addi x6, x6, 0x22\n"
       "badaddibeq:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
-  read_regs(res_values);
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -594,18 +721,31 @@ status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_single_branch_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
-  for (int i = 0; i < 10; i++) {
-    uj_output.registers[i] = res_values[i + 3];
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != (0x11 + 0x1a)) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
   }
+
+  if (registers_dumped[kRegX6] != (0x22 + 0x1a)) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_single_branch_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -621,13 +761,14 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
   PENTEST_ASM_TRIGGER_LOW;
   asm volatile(NOP100);
 
-  // Initialize x5-x7, x12-x17, and x28-x30 with 0.
-  init_regs(0);
-  uint32_t res_values[13];
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // FI code target.
+  // Those values are on purpose different such that the hardened check fails.
   volatile hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   volatile hardened_bool_t value2 = HARDENED_BOOL_FALSE;
+
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
       "c.addi x12, 1\n"
@@ -663,7 +804,9 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
       "c.addi x31, 16\n"
       "labelend:\n");
   PENTEST_ASM_TRIGGER_LOW
-  read_regs(res_values);
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -674,16 +817,17 @@ status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_faulty_reg_data_t uj_output;
-  for (int i = 0; i < 13; i++) {
-    uj_output.registers[i] = res_values[i];
-  }
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_rf_dump_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_reg_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_rf_dump_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
@@ -694,16 +838,13 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // Initialize x5-x7, x12-x17, and x28-x30 with 0.
-  init_regs(0);
-  uint32_t res_values[13];
-
-  // FI code target.
+  // Set the registers used in the FI trigger window (x5, x6) to constants.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x0f\n");
+
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
       "c.addi x12, 1\n"
@@ -733,9 +874,9 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
       "addi x6, x6, 0x22\n"
       "correctbeqneg:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
-  read_regs(res_values);
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -746,18 +887,31 @@ status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_single_branch_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
-  for (int i = 0; i < 10; i++) {
-    uj_output.registers[i] = res_values[i + 3];
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != 0x1a) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
   }
+
+  if (registers_dumped[kRegX6] != 0x0f) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_single_branch_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -768,15 +922,13 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // Initialize x5-x7, x12-x17, and x28-x30 with 0.
-  init_regs(0);
-  uint32_t res_values[13];
-
+  // Set the registers used in the FI trigger window (x5, x6) to constants.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x0a\n");
+
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
       "c.addi x12, 1\n"
@@ -806,9 +958,9 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
       "addi x6, x6, 0x22\n"
       "badaddibne:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
-  read_regs(res_values);
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -819,18 +971,31 @@ status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_single_branch_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
-  for (int i = 0; i < 10; i++) {
-    uj_output.registers[i] = res_values[i + 3];
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != (0x11 + 0x1a)) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
   }
+
+  if (registers_dumped[kRegX6] != (0x22 + 0x0a)) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_single_branch_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -841,15 +1006,13 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // Initialize x5-x7, x12-x17, and x28-x30 with 0.
-  init_regs(0);
-  uint32_t res_values[13];
-
+  // Set the registers used in the FI trigger window (x5, x6) to a constant.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x1a\n");
+
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(
       "c.addi x12, 1\n"
@@ -879,9 +1042,9 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
       "addi x6, x6, 0x22\n"
       "correctbneneg:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
-  read_regs(res_values);
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -892,18 +1055,31 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_single_branch_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
-  for (int i = 0; i < 10; i++) {
-    uj_output.registers[i] = res_values[i + 3];
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != 0x1a) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
   }
+
+  if (registers_dumped[kRegX6] != 0x1a) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_single_branch_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -1384,35 +1560,50 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
 
-  // Init t0...t6 with 0.
-  init_temp_regs(0);
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("csrr x5,mscratch");
   asm volatile("csrr x6,mscratch");
   asm volatile("csrr x7,mscratch");
+  asm volatile("csrr x12,mscratch");
+  asm volatile("csrr x13,mscratch");
+  asm volatile("csrr x14,mscratch");
+  asm volatile("csrr x15,mscratch");
+  asm volatile("csrr x16,mscratch");
+  asm volatile("csrr x17,mscratch");
   asm volatile("csrr x28,mscratch");
   asm volatile("csrr x29,mscratch");
   asm volatile("csrr x30,mscratch");
   asm volatile("csrr x31,mscratch");
   PENTEST_ASM_TRIGGER_LOW
 
-  // Load register values.
-  // Result buffer.
-  uint32_t res_values[7];
-  read_temp_regs(res_values);
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
   // Compare against reference values.
-  uint32_t res = 0;
-  for (int i = 0; i < 7; i++) {
-    if (res_values[i] != ref_values[0]) {
-      res |= 1;
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[0]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
     }
   }
 
@@ -1420,26 +1611,25 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send alerts back to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
-  ibex_fi_test_result_t uj_output;
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // Init x5 with reference value.
-  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1471,8 +1661,8 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("csrr x5,mscratch");
   PENTEST_ASM_TRIGGER_LOW
 
-  uint32_t res_value;
-  asm volatile("mv %0, x5" : "=r"(res_value));
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -1480,15 +1670,20 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Compare against reference values.
+  ibex_fi_test_result_t uj_output;
+  // Compare x5 with the expected value.
   uj_output.result = 0;
-  if (res_value != ref_values[0]) {
-    uj_output.result = res_value;
+  if (registers_dumped[kRegX5] != ref_values[kRegX5]) {
+    uj_output.result = registers_dumped[kRegX5];
   }
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
+  // Return register file dump back to host.
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
@@ -1542,7 +1737,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
     // Prepare page and write reference values into it.
     uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
     memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < kNumRefValues; i++) {
       input_page[i] = ref_values[i];
     }
 
@@ -1554,40 +1749,50 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
     flash_data_valid = true;
   }
 
-  // Init t0...t6 with 0.
-  init_temp_regs(0);
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("lw x5, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x6, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x7, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x12, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x13, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x14, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x15, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x16, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x17, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x28, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x29, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x30, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x31, (%0)" : : "r"((flash_bank_1.base)));
   PENTEST_ASM_TRIGGER_LOW
 
-  // Load register values.
-  // Result buffer.
-  uint32_t res_values[7];
-  read_temp_regs(res_values);
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Compare against reference values.
-  ibex_fi_faulty_addresses_data_t uj_output;
-  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
 
-  for (uint32_t flash_pos = 0; flash_pos < 7; flash_pos++) {
-    if (res_values[flash_pos] != ref_values[0]) {
-      uj_output.addresses[flash_pos] = flash_pos;
-      uj_output.data[flash_pos] = res_values[flash_pos];
-
+  // Check if one or multiple registers values are faulty.
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[0]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
       // Re-init flash with valid data.
       flash_data_valid = false;
     }
@@ -1597,12 +1802,14 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -1649,7 +1856,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   // Prepare page and write reference values into it.
   uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
   memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < kNumRefValues; i++) {
     input_page[i] = ref_values[i];
   }
 
@@ -1660,15 +1867,16 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
       &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read back and compare against reference values.
-  uint32_t res_values[32];
+  uint32_t res_values[kNumRefValues];
   uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < kNumRefValues; i++) {
     res_values[i] =
         mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t));
     if (res_values[i] != ref_values[i]) {
@@ -1684,6 +1892,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -1699,9 +1908,6 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
-  // uint32_t value1 = 0;
-  // uint32_t value2 = 1;
-  // JH: Changed 28th June. Tests before used unharded values
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
@@ -1716,6 +1922,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1745,9 +1952,6 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
-  // uint32_t value1 = 0;
-  // uint32_t value2 = 1;
-  // JH: Changed 28th June. Tests before used unharded values
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
@@ -1759,6 +1963,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1788,9 +1993,6 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
-  // uint32_t value1 = 0;
-  // uint32_t value2 = 1;
-  // JH: Changed 28th June. Tests before used unharded values
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
@@ -1802,6 +2004,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1831,9 +2034,6 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
-  // uint32_t value1 = 0;
-  // uint32_t value2 = 1;
-  // JH: Changed 28th June. Tests before used unharded values
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
@@ -1845,6 +2045,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1874,9 +2075,6 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   pentest_clear_sensor_recov_alerts();
 
   // Values are intentially not equal.
-  // uint32_t value1 = 0;
-  // uint32_t value2 = 1;
-  // JH: Changed 28th June. Tests before used unharded values
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
@@ -1888,6 +2086,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1928,6 +2127,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
   PENTEST_ASM_TRIGGER_LOW
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1955,16 +2155,24 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) __attribute__((optnone)) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // FI code target.
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Init the loop counters.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
+
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile(NOP100);
   for (int loop_cnt = 0; loop_cnt < 10000; loop_cnt++) {
     asm volatile(LWADDISW1 : : "r"((uint32_t *)&loop_counter1));
     asm volatile(LWSUBISW1 : : "r"((uint32_t *)&loop_counter2));
   }
   PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1974,15 +2182,21 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_loop_counter_mirrored_t uj_output;
-  uj_output.loop_counter1 = loop_counter1;
-  uj_output.loop_counter2 = loop_counter2;
+  // Send register file dump, loop counter, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_array_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send back loop counters.
+  memset(uj_output.result, 0, sizeof(uj_output.result));
+  uj_output.result[0] = loop_counter1;
+  uj_output.result[1] = loop_counter2;
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_array_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
@@ -1993,28 +2207,16 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t res_values[12];
-  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
-  init_reg_ref_values();
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP1000);
   PENTEST_ASM_TRIGGER_LOW;
 
-  // Load register values.
-  asm volatile("mv %0, x5" : "=r"(res_values[0]));
-  asm volatile("mv %0, x6" : "=r"(res_values[1]));
-  asm volatile("mv %0, x7" : "=r"(res_values[2]));
-  asm volatile("mv %0, x12" : "=r"(res_values[3]));
-  asm volatile("mv %0, x13" : "=r"(res_values[4]));
-  asm volatile("mv %0, x14" : "=r"(res_values[5]));
-  asm volatile("mv %0, x15" : "=r"(res_values[6]));
-  asm volatile("mv %0, x16" : "=r"(res_values[7]));
-  asm volatile("mv %0, x17" : "=r"(res_values[8]));
-  asm volatile("mv %0, x28" : "=r"(res_values[9]));
-  asm volatile("mv %0, x29" : "=r"(res_values[10]));
-  asm volatile("mv %0, x30" : "=r"(res_values[11]));
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2022,10 +2224,22 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj)
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Check if one or multiple registers values are faulty.
-  uint32_t res = 0;
-  for (int it = 0; it < 12; it++) {
-    if (res_values[it] != ref_values[it]) {
-      res |= 1;
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
+  // Compare against reference values.
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[compare_regs[it]]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
     }
   }
 
@@ -2033,14 +2247,15 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
+  // Return register file dump back to host.
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
   // Send result & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2051,9 +2266,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t res_values[14];
-  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
-  init_reg_ref_values();
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -2069,6 +2283,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+  asm volatile("or x31, x31, x31");
 
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
@@ -2082,6 +2297,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+  asm volatile("or x31, x31, x31");
 
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
@@ -2095,6 +2311,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+  asm volatile("or x31, x31, x31");
 
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
@@ -2108,6 +2325,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+  asm volatile("or x31, x31, x31");
 
   asm volatile("or x5, x5, x5");
   asm volatile("or x6, x6, x6");
@@ -2121,36 +2339,33 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   asm volatile("or x28, x28, x28");
   asm volatile("or x29, x29, x29");
   asm volatile("or x30, x30, x30");
+  asm volatile("or x31, x31, x31");
   PENTEST_ASM_TRIGGER_LOW
 
-  // Load register values.
-  asm volatile("mv %0, x5" : "=r"(res_values[0]));
-  asm volatile("mv %0, x6" : "=r"(res_values[1]));
-  asm volatile("mv %0, x7" : "=r"(res_values[2]));
-  asm volatile("mv %0, x12" : "=r"(res_values[3]));
-  asm volatile("mv %0, x13" : "=r"(res_values[4]));
-  asm volatile("mv %0, x14" : "=r"(res_values[5]));
-  asm volatile("mv %0, x15" : "=r"(res_values[6]));
-  asm volatile("mv %0, x16" : "=r"(res_values[7]));
-  asm volatile("mv %0, x17" : "=r"(res_values[8]));
-  asm volatile("mv %0, x28" : "=r"(res_values[9]));
-  asm volatile("mv %0, x29" : "=r"(res_values[10]));
-  asm volatile("mv %0, x30" : "=r"(res_values[11]));
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Check if one or multiple registers values are faulty.
-  ibex_fi_faulty_addresses_data_t uj_output;
-  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   memset(uj_output.data, 0, sizeof(uj_output.data));
-  for (uint32_t it = 0; it < 12; it++) {
-    if (res_values[it] != ref_values[it]) {
-      uj_output.addresses[it] = 1;  // 1 indicates an error in the register at
-                                    // position it
-      uj_output.data[it] = res_values[it];
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
+  // Check if one or multiple registers values are faulty.
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[compare_regs[it]]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
     }
   }
 
@@ -2158,12 +2373,14 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
   // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2173,20 +2390,23 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) __attribute__((optnone)) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // FI code target.
-  uint32_t loop_counter1 = 0;
-  uint32_t loop_counter2 = 10000;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Init x5=0 and x6=10000.
   asm volatile(INITX5);
   asm volatile(INITX6);
-  asm volatile(NOP100);
+
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   for (int loop_cnt = 0; loop_cnt < 10000; loop_cnt++) {
     asm volatile(ADDI1);
     asm volatile(SUBI1);
   }
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(loop_counter1));
-  asm volatile("mv %0, x6" : "=r"(loop_counter2));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2197,15 +2417,29 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_loop_counter_mirrored_t uj_output;
-  uj_output.loop_counter1 = loop_counter1;
-  uj_output.loop_counter2 = loop_counter2;
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_faulty_data_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Check if loop counters match expected values.
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.data_faulty, 0, sizeof(uj_output.data_faulty));
+  // x5 should be 10000.
+  if (registers_dumped[kRegX5] != 10000) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
+  }
+  // x6 should be 0.
+  if (registers_dumped[kRegX6] != 0) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2215,12 +2449,14 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // FI code target.
+  // Init x5 and x6.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x1a\n");
+
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP10 "beq x5, x6, correctbeq\n" NOP10
                      "j badbeq\n"
@@ -2229,8 +2465,9 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
                      "addi x6, x6, 0x22\n"
                      "badbeq:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2241,15 +2478,31 @@ status_t handle_ibex_fi_char_single_beq(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_mult_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != (0x11 + 0x1a)) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
+  }
+
+  if (registers_dumped[kRegX6] != (0x22 + 0x1a)) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2259,11 +2512,13 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result1 = 0;
-  uint32_t result2 = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
+  // Init x5 and x6.
   asm volatile("li x5, 0x1a\n");
   asm volatile("li x6, 0x0a\n");
+
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP10 "bne x5, x6, correctbne\n" NOP10
                      "j badbne\n"
@@ -2272,8 +2527,9 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
                      "addi x6, x6, 0x22\n"
                      "badbne:\n");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result1));
-  asm volatile("mv %0, x6" : "=r"(result2));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2284,15 +2540,31 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_mult_t uj_output;
-  uj_output.result1 = result1;
-  uj_output.result2 = result2;
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  // If there is a mismatch, set data_faulty to true and return the
+  // faulty value.
+  if (registers_dumped[kRegX5] != (0x11 + 0x1a)) {
+    uj_output.data_faulty[0] = true;
+    uj_output.data[0] = registers_dumped[kRegX5];
+  }
+
+  if (registers_dumped[kRegX6] != (0x22 + 0x0a)) {
+    uj_output.data_faulty[1] = true;
+    uj_output.data[1] = registers_dumped[kRegX6];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2313,8 +2585,8 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   // Init the SRAM position we are reading from with ref_values[0].
   sram_main_buffer[sram_half_size] = ref_values[0];
 
-  // Initialize x5-x7, x12-x18, and x28-x30 with reference values.
-  init_reg_ref_values();
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -2331,36 +2603,33 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("lw x28, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
   asm volatile("lw x29, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
   asm volatile("lw x30, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
+  asm volatile("lw x31, (%0)" : : "r"(&sram_main_buffer[sram_half_size]));
   PENTEST_ASM_TRIGGER_LOW
 
-  // Load register values.
-  uint32_t res_values[kNumRegs];
-  asm volatile("mv %0, x5" : "=r"(res_values[0]));
-  asm volatile("mv %0, x6" : "=r"(res_values[1]));
-  asm volatile("mv %0, x7" : "=r"(res_values[2]));
-  asm volatile("mv %0, x12" : "=r"(res_values[3]));
-  asm volatile("mv %0, x13" : "=r"(res_values[4]));
-  asm volatile("mv %0, x14" : "=r"(res_values[5]));
-  asm volatile("mv %0, x15" : "=r"(res_values[6]));
-  asm volatile("mv %0, x16" : "=r"(res_values[7]));
-  asm volatile("mv %0, x17" : "=r"(res_values[8]));
-  asm volatile("mv %0, x28" : "=r"(res_values[9]));
-  asm volatile("mv %0, x29" : "=r"(res_values[10]));
-  asm volatile("mv %0, x30" : "=r"(res_values[11]));
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  ibex_fi_faulty_addresses_data_t uj_output;
-  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
 
-  for (uint32_t sram_pos = 0; sram_pos < kNumRegs; sram_pos++) {
-    if (res_values[sram_pos] != ref_values[0]) {
-      uj_output.addresses[sram_pos] = sram_pos;
-      uj_output.data[sram_pos] = res_values[sram_pos];
+  // Check if one or multiple registers values are faulty.
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[0]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
     }
   }
 
@@ -2368,12 +2637,14 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2409,17 +2680,27 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
                         ref_values[0]);
   }
 
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP1000);
   PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Compare against reference values.
   ibex_fi_faulty_addresses_data_t uj_output;
+  // Send back register file dump.
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Compare against reference values.
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
   memset(uj_output.data, 0, sizeof(uj_output.data));
   int faulty_address_pos = 0;
@@ -2430,9 +2711,10 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
       uj_output.addresses[faulty_address_pos] = (uint32_t)sram_pos;
       uj_output.data[faulty_address_pos] = res_value;
       faulty_address_pos++;
-      // Currently, we register only up to 8 faulty SRAM positions. If there
-      // are more, we overwrite the addresses array.
-      if (faulty_address_pos > 7) {
+      // Currently, we register only up to IBEXFI_MAX_FAULTY_ADDRESSES_DATA
+      // faulty SRAM positions. If there are more, we overwrite the addresses
+      // array.
+      if (faulty_address_pos >= IBEXFI_MAX_FAULTY_ADDRESSES_DATA) {
         faulty_address_pos = 0;
       }
     }
@@ -2462,48 +2744,51 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) __attribute__((optnone)) {
   mmio_region_t sram_region_main_addr =
       mmio_region_from_addr(sram_main_buffer_addr);
 
-  // Initialize SRAM region with inverse ref_values to avoid that data from a
-  // previous run are still in memory.
-  for (int i = 0; i < 32; i++) {
+  // Initialize SRAM region with inverse ref_values[0] to avoid that data from a
+  // previous run is still in memory.
+  for (int i = 0; i < IBEXFI_SRAM_WORDS; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
-                        ~ref_values[i]);
+                        ~ref_values[0]);
   }
+
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < IBEXFI_SRAM_WORDS; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
-                        ref_values[i]);
+                        ref_values[i % 32]);
   }
   PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Read back and compare against reference values.
-  uint32_t res_values[32];
-  uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
-    res_values[i] = mmio_region_read32(sram_region_main_addr,
-                                       i * (ptrdiff_t)sizeof(uint32_t));
-    if (res_values[i] != ref_values[i]) {
-      res |= 1;
-    }
-  }
-
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
+  // Send register file dump, memory dump, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_sram_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Return memory back to host.
+  for (int it = 0; it < IBEXFI_SRAM_WORDS; it++) {
+    uj_output.memory[it] = mmio_region_read32(sram_region_main_addr,
+                                              it * (ptrdiff_t)sizeof(uint32_t));
+  }
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2514,14 +2799,10 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  // Initialize SRAM region with inverse reference value.
-  sram_main_buffer[0] = ~ref_values[0];
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
 
-  // Init x5, x6, x6 with the reference values.
-  asm volatile("li x5, %0" : : "i"(ref_values[0]));
-  asm volatile("li x6, %0" : : "i"(ref_values[1]));
-  asm volatile("li x7, %0" : : "i"(ref_values[2]));
-
+  // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
@@ -2621,38 +2902,43 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   PENTEST_ASM_TRIGGER_LOW
 
-  uint32_t res_values[3];
-  asm volatile("mv %0, x5" : "=r"(res_values[0]));
-  asm volatile("mv %0, x6" : "=r"(res_values[1]));
-  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Compare against reference values.
-  ibex_fi_faulty_addresses_data_t uj_output;
-  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
-  memset(uj_output.data, 0, sizeof(uj_output.data));
-
-  for (uint32_t addr = 0; addr < 3; addr++) {
-    if (res_values[addr] != ref_values[addr]) {
-      uj_output.addresses[addr] = (uint32_t)&sram_main_buffer[0];
-      uj_output.data[addr] = res_values[addr];
-    }
-  }
-
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
+  ibex_fi_faulty_data_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
+  // Check if one or multiple registers values are faulty.
+  size_t compare_regs[3] = {kRegX5, kRegX6, kRegX7};
+  for (size_t it = 0; it < 3; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[compare_regs[it]]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
+    }
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2669,11 +2955,14 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
       mmio_region_from_addr(sram_main_buffer_addr);
 
   // Initialize SRAM region with inverse ref_values to avoid that data from a
-  // previous run are still in memory.
-  for (int i = 0; i < 64; i++) {
+  // previous run is still in memory.
+  for (int i = 0; i < IBEXFI_SRAM_WORDS; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
                         ~ref_values[0]);
   }
+
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
 
   // FI code target.
   // Unrolled for easier fault injection characterization.
@@ -2807,34 +3096,34 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
   mmio_region_write32(sram_region_main_addr, 63 * (ptrdiff_t)sizeof(uint32_t),
                       ref_values[0]);
   PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
-  // Read back and compare against reference values.
-  uint32_t res_values[64];
-  uint32_t res = 0;
-  for (int i = 0; i < 64; i++) {
-    res_values[i] = mmio_region_read32(sram_region_main_addr,
-                                       i * (ptrdiff_t)sizeof(uint32_t));
-    if (res_values[i] != ref_values[0]) {
-      res |= 1;
-    }
-  }
-
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
+  // Send register file dump, memory dump, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_sram_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Return memory back to host.
+  for (int it = 0; it < IBEXFI_SRAM_WORDS; it++) {
+    uj_output.memory[it] = mmio_region_read32(sram_region_main_addr,
+                                              it * (ptrdiff_t)sizeof(uint32_t));
+  }
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2845,8 +3134,10 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result = 0;
-  // Init x5 register we are using for the increment.
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Set the register that is used in the FI trigger window (x5) to 0.
   asm volatile(INITX5);
 
   // FI code target.
@@ -2883,7 +3174,9 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
   asm volatile("jal ra, increment_counter");
   asm volatile("jal ra, increment_counter");
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(result));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2894,9 +3187,13 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
+  // Send register file dump, alerts & ERR_STATUS to host.
   ibex_fi_test_result_t uj_output;
-  uj_output.result = result;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Incremented counter is stored in register x5.
+  uj_output.result = registers_dumped[kRegX5];
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
@@ -2907,15 +3204,15 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj)
 
 status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
     __attribute__((optnone)) {
-  uint32_t registers[32] = {0};
-  read_all_regs(registers);
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t result = 0;
-  // Init x5 register we are using for the increment.
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Set the register that is used in the FI trigger window (x5) to 0.
   asm volatile(INITX5);
 
   // FI code target.
@@ -2952,8 +3249,9 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
   asm volatile("jal ra, not_increment_counter");
   asm volatile("jal ra, not_increment_counter");
   PENTEST_ASM_TRIGGER_LOW
-  read_all_regs(registers);
-  asm volatile("mv %0, x5" : "=r"(result));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -2964,15 +3262,18 @@ status_t handle_ibex_fi_char_unconditional_branch_nop(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counters & ERR_STATUS to host.
-  ibex_fi_test_result_registers_t uj_output;
-  uj_output.result = result;
-  memcpy(uj_output.registers, registers, sizeof(registers));
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Incremented counter is stored in register x5.
+  uj_output.result = registers_dumped[kRegX5];
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_registers_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -2983,10 +3284,12 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
   // FI code target.
   uint32_t loop_counter = 0;
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile(NOP100);
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
@@ -2998,6 +3301,10 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -3007,14 +3314,17 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counter & ERR_STATUS to host.
-  ibex_fi_loop_counter_t uj_output;
-  uj_output.loop_counter = loop_counter;
+  // Send register file dump, loop counter, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  uj_output.result = loop_counter;
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -3025,7 +3335,10 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t loop_counter = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Set the register that is used in the FI trigger window (x5) to 0.
   asm volatile(INITX5);
 
   // FI code target.
@@ -3041,7 +3354,9 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj)
   asm volatile(ADDI1000);
   asm volatile(ADDI1000);
   PENTEST_ASM_TRIGGER_LOW
-  asm volatile("mv %0, x5" : "=r"(loop_counter));
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -3052,14 +3367,18 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send loop counter & ERR_STATUS to host.
-  ibex_fi_loop_counter_t uj_output;
-  uj_output.loop_counter = loop_counter;
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Loop counter is stored in register x5.
+  uj_output.result = registers_dumped[kRegX5];
+
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -3070,7 +3389,11 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  uint32_t addresses[8] = {0};
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // Set the registers that are used in the FI trigger window (x5, x6, x7, x28,
+  // x29, and x30) to 0.
   asm volatile(INIT_TMPREGS);
 
   // FI code target.
@@ -3087,13 +3410,8 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
   asm volatile(ADDI_CHAIN);
   PENTEST_ASM_TRIGGER_LOW
 
-  uint32_t data[8] = {0};
-  asm volatile("mv %0, x5" : "=r"(data[0]));
-  asm volatile("mv %0, x6" : "=r"(data[1]));
-  asm volatile("mv %0, x7" : "=r"(data[2]));
-  asm volatile("mv %0, x28" : "=r"(data[3]));
-  asm volatile("mv %0, x29" : "=r"(data[4]));
-  asm volatile("mv %0, x30" : "=r"(data[5]));
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -3104,18 +3422,25 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
   dif_rv_core_ibex_error_status_t codes;
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Send data, alerts & ERR_STATUS to host.
-  ibex_fi_faulty_addresses_data_t uj_output;
-  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
-  memset(uj_output.data, 0, sizeof(uj_output.data));
+  // Send register file dump, alerts & ERR_STATUS to host.
+  ibex_fi_test_result_array_t uj_output;
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Return registers used in the FI trigger window back to the host.
+  memset(uj_output.result, 0, sizeof(uj_output.result));
+  uj_output.result[0] = registers_dumped[kRegX5];
+  uj_output.result[1] = registers_dumped[kRegX6];
+  uj_output.result[2] = registers_dumped[kRegX7];
+  uj_output.result[3] = registers_dumped[kRegX28];
+  uj_output.result[4] = registers_dumped[kRegX29];
+  uj_output.result[5] = registers_dumped[kRegX30];
 
-  memcpy(uj_output.addresses, addresses, sizeof(addresses));
-  memcpy(uj_output.data, data, sizeof(data));
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_array_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
