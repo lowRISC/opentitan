@@ -18,9 +18,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"  // Generated.
 
-// The GPIO TX indicator pin that can be used with the SPI console.
-static dif_gpio_t *spi_console_gpio = NULL;
-static dif_gpio_pin_t spi_console_tx_ready_gpio = UINT32_MAX;
+enum {
+  /* Placeholder used to indicate that no TX GPIO indicator is enabled. */
+  kOttfSpiNoTxGpio = UINT32_MAX,
+};
 
 static status_t spi_device_send_data(dif_spi_device_handle_t *spi_device,
                                      const uint8_t *buf, size_t len,
@@ -96,7 +97,7 @@ static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
 
   // Wait for enough space to free up in the SPI flash buffer if we are in
   // operating in polling mode.
-  if (spi_console_gpio == NULL) {
+  if (console->data.spi.tx_ready_gpio == kOttfSpiNoTxGpio) {
     uint32_t available_buffer_size = 0;
     uint32_t last_read_address = 0;
     do {
@@ -187,9 +188,9 @@ static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
   // Block until the host to reads out the frame by toggling the GPIO TX-ready
   // indicator pin to signal to the host to clock out data from the spi_device
   // egress buffer.
-  if (spi_console_gpio != NULL) {
-    OT_DISCARD(
-        dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, true));
+  if (console->data.spi.tx_ready_gpio != kOttfSpiNoTxGpio) {
+    OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
+                              console->data.spi.tx_ready_gpio, true));
     bool cs_state = true;
     bool target_cs_state = false;
     // There will be two bulk transfers that can be synchronized by the
@@ -205,8 +206,8 @@ static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
         }
       } while (cs_state != target_cs_state);
       if (i == 0) {
-        OT_DISCARD(
-            dif_gpio_write(spi_console_gpio, spi_console_tx_ready_gpio, false));
+        OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
+                                  console->data.spi.tx_ready_gpio, false));
       }
       target_cs_state = !target_cs_state;
     }
@@ -314,7 +315,10 @@ static status_t ottf_console_spi_getc(void *io) {
 }
 
 void ottf_console_configure_spi_device(ottf_console_t *console,
-                                       uintptr_t base_addr) {
+                                       uintptr_t base_addr,
+                                       bool tx_ready_enable,
+                                       uint32_t tx_ready_gpio,
+                                       uint32_t tx_ready_mio) {
   dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
   // Configure spi_device SPI flash emulation.
   CHECK_DIF_OK(
@@ -400,7 +404,8 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
   console->data.spi.frame_num = 0;
 
   // Setup TX GPIO if requested.
-  if (kOttfTestConfig.console_tx_indicator.enable) {
+  if (tx_ready_enable) {
+    console->data.spi.tx_ready_gpio = tx_ready_gpio;
     CHECK_DIF_OK(
         dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
                       &ottf_console_gpio));
@@ -408,30 +413,17 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
         mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
         &ottf_console_pinmux));
     CHECK_DIF_OK(dif_pinmux_output_select(
-        &ottf_console_pinmux,
-        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio,
-        kTopEarlgreyPinmuxOutselGpioGpio0 +
-            kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio));
-    CHECK_DIF_OK(dif_gpio_write(
-        &ottf_console_gpio,
-        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio, false));
-    CHECK_DIF_OK(dif_gpio_output_set_enabled(
-        &ottf_console_gpio,
-        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio, true));
-    base_spi_device_set_gpio_tx_indicator(
-        &ottf_console_gpio,
-        kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio);
+        &ottf_console_pinmux, tx_ready_mio,
+        kTopEarlgreyPinmuxOutselGpioGpio0 + tx_ready_gpio));
+    CHECK_DIF_OK(dif_gpio_write(&ottf_console_gpio, tx_ready_gpio, false));
+    CHECK_DIF_OK(
+        dif_gpio_output_set_enabled(&ottf_console_gpio, tx_ready_gpio, true));
     spi_device_clear_flash_buffer(spi_device);
   } else {
+    console->data.spi.tx_ready_gpio = kOttfSpiNoTxGpio;
     spi_device_wait_for_sync(spi_device);
   }
 
   console->getc = ottf_console_spi_getc;
   console->sink = ottf_console_spi_sink;
-}
-
-void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
-                                           dif_gpio_pin_t tx_indicator_pin) {
-  spi_console_gpio = gpio;
-  spi_console_tx_ready_gpio = tx_indicator_pin;
 }
