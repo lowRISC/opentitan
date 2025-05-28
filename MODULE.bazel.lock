@@ -196,7 +196,7 @@
         "recordedDirentsInputs": {},
         "envVariables": {
           "MANUFACTURER_HOOKS_DIR": null,
-          "PROV_EXTS_DIR": "/usr/local/google/home/cfrantz/opentitan/ot-provisioning-google-skus/skus",
+          "PROV_EXTS_DIR": null,
           "SECURE_MANUFACTURER_HOOKS_DIR": null
         },
         "generatedRepoSpecs": {
@@ -213,9 +213,9 @@
             }
           },
           "provisioning_exts": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:local.bzl%local_repository",
+            "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
             "attributes": {
-              "path": "/usr/local/google/home/cfrantz/opentitan/ot-provisioning-google-skus/skus"
+              "src": "@@//:sw/device/silicon_creator/manuf/extensions"
             }
           }
         },

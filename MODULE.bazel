@@ -388,11 +388,15 @@ use_repo(
     "secure_manufacturer_test_hooks",
 )
 
-bazel_dep(name = "rom_hooks", version = "")
-local_path_override(
-    module_name = "rom_hooks",
-    path = "./sw/device/silicon_creator/rom/hooks",
-)
+# FIXME: This doesn't work when lowrisc_opentitan is used as a dependency of
+# another repository.
+#local_path_override(
+#    module_name = "rom_hooks",
+#    path = "sw/device/silicon_creator/rom/hooks",
+#)
+#bazel_dep(
+#    name = "rom_hooks",
+#)
 
 register_toolchains("//rules/opentitan:localtools")
 
