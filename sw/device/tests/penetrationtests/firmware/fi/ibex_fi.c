@@ -1388,8 +1388,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   init_temp_regs(0);
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile("csrr x5,mscratch");
   asm volatile("csrr x6,mscratch");
   asm volatile("csrr x7,mscratch");
@@ -1397,8 +1396,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("csrr x29,mscratch");
   asm volatile("csrr x30,mscratch");
   asm volatile("csrr x31,mscratch");
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
 
   // Load register values.
   // Result buffer.
@@ -1444,8 +1442,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile("csrw	mscratch, x5");
   asm volatile("csrr x5,mscratch");
   asm volatile("csrw	mscratch, x5");
@@ -1472,8 +1469,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("csrr x5,mscratch");
   asm volatile("csrw	mscratch, x5");
   asm volatile("csrr x5,mscratch");
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
 
   uint32_t res_value;
   asm volatile("mv %0, x5" : "=r"(res_value));
@@ -1562,8 +1558,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   init_temp_regs(0);
 
   // FI code target.
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile("lw x5, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x6, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x7, (%0)" : : "r"((flash_bank_1.base)));
@@ -1571,8 +1566,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("lw x29, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x30, (%0)" : : "r"((flash_bank_1.base)));
   asm volatile("lw x31, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
 
   // Load register values.
   // Result buffer.
@@ -1660,12 +1654,12 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   }
 
   // FI code target.
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   // Erase flash and write page with reference values.
   TRY(flash_ctrl_testutils_erase_and_write_page(
       &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1711,8 +1705,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile(
@@ -1722,8 +1715,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2)
   );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1759,16 +1751,14 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp;" \
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1804,16 +1794,14 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp;" \
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1849,16 +1837,14 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp;" \
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1894,16 +1880,14 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp; unimp;" \
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1936,16 +1920,14 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   hardened_bool_t value1 = HARDENED_BOOL_TRUE;
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   // The HARDENED_CHECK macro from hardened.h is solved explicitely.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp; unimp; unimp;" \
     ".L_HARDENED_%=:;"::"r"(value1), "r"(value2) );
   // clang-format on
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -1976,13 +1958,13 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) __attribute__((optnone)) {
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP100);
   for (int loop_cnt = 0; loop_cnt < 10000; loop_cnt++) {
     asm volatile(LWADDISW1 : : "r"((uint32_t *)&loop_counter1));
     asm volatile(LWSUBISW1 : : "r"((uint32_t *)&loop_counter2));
   }
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2428,9 +2410,9 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   }
 
   // FI code target.
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP1000);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2488,12 +2470,12 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) __attribute__((optnone)) {
   }
 
   // FI code target.
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   for (int i = 0; i < 32; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
                         ref_values[i]);
   }
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -2540,8 +2522,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
   asm volatile("li x7, %0" : : "i"(ref_values[2]));
 
-  pentest_set_trigger_high();
-  asm volatile(NOP10);
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
@@ -2638,8 +2619,7 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
   asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
-  asm volatile(NOP10);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
 
   uint32_t res_values[3];
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -2697,7 +2677,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
 
   // FI code target.
   // Unrolled for easier fault injection characterization.
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   mmio_region_write32(sram_region_main_addr, 0 * (ptrdiff_t)sizeof(uint32_t),
                       ref_values[0]);
   mmio_region_write32(sram_region_main_addr, 1 * (ptrdiff_t)sizeof(uint32_t),
@@ -2826,7 +2806,7 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
                       ref_values[0]);
   mmio_region_write32(sram_region_main_addr, 63 * (ptrdiff_t)sizeof(uint32_t),
                       ref_values[0]);
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
@@ -3005,7 +2985,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
 
   // FI code target.
   uint32_t loop_counter = 0;
-  pentest_set_trigger_high();
+  PENTEST_ASM_TRIGGER_HIGH
   asm volatile(NOP100);
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
@@ -3017,7 +2997,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj)
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
-  pentest_set_trigger_low();
+  PENTEST_ASM_TRIGGER_LOW
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
