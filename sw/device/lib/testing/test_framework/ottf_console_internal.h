@@ -34,37 +34,6 @@ enum {
 };
 
 /**
- * Returns a function pointer to the uart sink function.
- */
-sink_func_ptr get_uart_sink(void);
-
-/**
- * See `.ottf_console_getc`
- */
-status_t uart_getc(void *io);
-
-/**
- * See `.ottf_console_getc`
- *
- * The user of this function needs to be aware of the following:
- * 1. The exact amount of data expected to be sent from the host side must be
- * known in advance.
- * 2. Characters should be retrieved from the console as soon as they become
- * available. Failure to do so may result in an SPI transaction timeout.
- */
-status_t spi_device_getc(void *io);
-
-/**
- * Configures UART stdout for `base_print.h` to use.
- *
- * Note that this function will save `uart` in a global variable, so the pointer
- * must have static storage duration.
- *
- * @param uart The UART handle to use for stdout.
- */
-void base_console_uart_stdout(ottf_console_t *console);
-
-/**
  * Configures SPI device GPIO TX indicator pin for `base_print.h` to use.
  *
  * Note that this function will save `gpio` in a global variable, so the
@@ -75,20 +44,5 @@ void base_console_uart_stdout(ottf_console_t *console);
  */
 void base_spi_device_set_gpio_tx_indicator(dif_gpio_t *gpio,
                                            dif_gpio_pin_t tx_indicator_pin);
-
-/**
- * Configures SPI device stdout for `base_print.h` to use.
- *
- * Note that this function will save `spi_device` in a global variable, so the
- * pointer must have static storage duration.
- *
- * @param spi_device The SPI device handle to use for stdout.
- */
-void base_spi_device_stdout(ottf_console_t *console);
-
-/**
- * Returns a function pointer to the spi device sink function.
- */
-sink_func_ptr get_spi_device_sink(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_INTERNAL_H_

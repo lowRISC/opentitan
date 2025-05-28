@@ -11,6 +11,7 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 /**
@@ -39,6 +40,10 @@ typedef enum ottf_console_flow_control {
 typedef struct ottf_console {
   /** Console type. */
   ottf_console_type_t type;
+  /* Function pointer to the currently active data sink. */
+  sink_func_ptr sink;
+  /* Function pointer to a function that retrieves a single character. */
+  status_t (*getc)(void *);
   /** Auxiliary data, per console type */
   union {
     /** UART data. */
