@@ -120,8 +120,8 @@ p384_random_scalar:
   bn.mov    w10, w6
   bn.mov    w11, w7
   jal       x1, p384_mulmod448x128_n
-  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   bn.mov    w25, w16
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   bn.mov    w26, w17
 
   /* [w28,w27] <= ([w9,w8] * w4) mod n = (seed1 * x) mod n */
