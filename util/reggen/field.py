@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from design.mubi import prim_mubi
 
@@ -82,11 +82,141 @@ class Field:
         self.auto_split = auto_split
 
     @staticmethod
-    def from_raw(reg_name: str, field_idx: int, num_fields: int,
-                 default_swaccess: SWAccess, default_hwaccess: HWAccess,
-                 reg_resval: Optional[int], reg_width: int,
-                 params: ReggenParams, hwext: bool, default_hwqe: bool,
-                 shadowed: bool, is_alias: bool, raw: object) -> 'Field':
+    def resval_from_raw(field_bits: Bits,
+                        bindings: Dict[str, int],
+                        raw_value: Any,
+                        is_mubi: bool,
+                        where: str) -> Optional[Union[str, int]]:
+        '''Calculate any specific resval for the field
+
+        field_bits is an object giving the (indices of the) bits that make up
+        the field in the register.
+
+        The bindings dictionary gives values to zero or more named local
+        variables that may used when evaluating the field reset value
+        (described below).
+
+        If raw_value is not None, this is a value from the hjson input, giving
+        the resval that is specified for the field itself. This value can be
+        specified in several different ways:
+
+         - A boolean (parsed by check_bool)
+
+         - An integer or the string 'x' (both parsed by check_xint)
+
+         - A string that contains a (Python) expression that evaluates to an
+           integer. This evaluation is performed with bindings supplied by the
+           local_bindings dictionary.
+
+        If raw_value is 'x' then the reset value is explicitly unknown and this
+        function should return 'x'. Otherwise the result of interpreting this
+        string/bool/int will be an integer, which is interpreted as the logical
+        reset value for the field.
+
+        If is_mubi is true, the field is encoded as a multi-bit boolean with a
+        width that can be calculated from field_bits. This has no effect if
+        raw_value is None (because we are computing the field reset value by
+        extracting bits from reg_resval). If raw_value is neither 'x' nor None,
+        on the other hand, it must have evaluated to an integer that is 0 or 1.
+        This logical reset value will be encoded as the appropriate mubi
+        physical value.
+
+        The where argument is a string that describes where the reset value is
+        being specified (used in error messages).
+        '''
+        if raw_value is None:
+            return None
+
+        what = f'resval field for {where}'
+
+        resval = None  # type: Any
+
+        # Start by checking whether raw_value can be interpreted as a boolean.
+        # If not, it's no problem: just leave resval equal to None.
+        try:
+            resval = check_bool(raw_value, what)
+        except ValueError:
+            pass
+
+        # Now check whether raw_value can be interpreted as an integer. Allow
+        # 'x', which means there is no resval specifically defined for this
+        # field and we return None. Again: this interpretation might not be
+        # possible. That's fine: still leave resval equal to None.
+        if resval is None:
+            try:
+                resval = check_xint(raw_value, what)
+                if resval is None:
+                    return 'x'
+            except ValueError:
+                pass
+
+        # If we still haven't managed to parse things, we want to evaluate
+        # raw_value as Python code.
+        if resval is None:
+            # raw_value should be a string which we can evaluate as Python
+            # code.
+            if not isinstance(raw_value, str):
+                raise ValueError(f'{what} is not a bool or integer, so it '
+                                 f'should be a string containing a Python '
+                                 f'expression. Instead, it is {raw_value!r}')
+
+            try:
+                resval = eval(raw_value, bindings)
+            except Exception as err:
+                raise ValueError(f'Failed to evaluate Python expression for '
+                                 f'value of {what}: {err}')
+
+            if not isinstance(resval, int):
+                raise ValueError(f'The expression for the value of {what} '
+                                 f'was {raw_value!r}, which evaluated to '
+                                 f'{resval!r} rather than an integer.')
+
+        assert isinstance(resval, int)
+
+        # At this point, we have parsed resval to some integer which gives the
+        # logical reset value for the field. If this field is a multi-bit
+        # boolean, encode it as the corresponding multi-bit value now.
+        if is_mubi:
+            if resval not in [0, 1]:
+                raise ValueError(f'The resval for {where} is {resval!r}, '
+                                 f'which cannot be encoded as a mubi value.')
+
+            if not prim_mubi.is_width_valid(field_bits.width()):
+                raise ValueError(f'The field {where} is defined as a mubi '
+                                 f'value of the unsupported width '
+                                 f'{field_bits.width()}.')
+
+            physval = prim_mubi.mubi_value_as_int(resval == 1,
+                                                  field_bits.width())
+        else:
+            physval = resval
+
+        assert isinstance(physval, int)
+
+        # Now we have an encoding, check that it can actually be represented in
+        # the field's bits.
+        if not (0 <= physval <= field_bits.max_value()):
+            raise ValueError(f'The resval {where} is {physval!r}, which '
+                             f'isn\'t representable as an unsigned '
+                             f'{field_bits.width()}-bit integer.')
+
+        return physval
+
+    @staticmethod
+    def from_raw(reg_name: str,
+                 field_idx: int,
+                 num_fields: int,
+                 default_swaccess: SWAccess,
+                 default_hwaccess: HWAccess,
+                 reg_resval: Optional[int],
+                 reg_width: int,
+                 params: ReggenParams,
+                 hwext: bool,
+                 default_hwqe: bool,
+                 shadowed: bool,
+                 is_alias: bool,
+                 raw: object,
+                 bindings: Dict[str, int]) -> 'Field':
         where = f'field {field_idx} of {reg_name} register'
         rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()),
                         list(OPTIONAL_FIELDS.keys()))
@@ -143,61 +273,41 @@ class Field:
                              'support hardware write')
 
         bits = Bits.from_raw(where, reg_width, params, rd['bits'])
-        raw_resval = rd.get('resval')
-        if is_mubi:
-            # When mubi type, the resval supplied is a boolean which is converted
-            # to a mubi value
-            chk_resval = check_bool(raw_resval, f'resval field for {where}')
 
-            # Check mubi width is supported
-            if not prim_mubi.is_width_valid(bits.width()):
-                raise ValueError(
-                    f'mubi field for {name} does not support width of '
-                    f'{bits.width()}')
+        # Make sense of the reset value of the field. First, try to evaluate
+        # any 'resval' that has been defined for the field directly.
+        field_resval = Field.resval_from_raw(bits,
+                                             bindings,
+                                             rd.get('resval'),
+                                             is_mubi,
+                                             where)
+        if isinstance(field_resval, str):
+            assert field_resval == 'x'
 
-            # Get actual integer value based on mubi selection
-            raw_resval = prim_mubi.mubi_value_as_int(chk_resval, bits.width())
-
-        if raw_resval is None:
-            # The field doesn't define a reset value. Use bits from reg_resval
-            # if it's defined. If not, we assume that a hwext register comes up
-            # as "x" (because the reggen code doesn't have any way to predict
-            # it). That's represented as None. A non-hwext register is reset to
-            # zero.
-            if reg_resval is not None:
-                resval = bits.extract_field(reg_resval)  # type: Optional[int]
-            elif hwext:
-                resval = None
-            else:
-                resval = 0
+        # Now interpret the reset value implied by the register reset value.
+        # This defaults to zero if we don't actually have a register reset
+        # value (because the implied default is zero), but is None if the
+        # register is hwext.
+        resval_from_reg = None  # type: Optional[int]
+        if reg_resval is not None:
+            resval_from_reg = bits.extract_field(reg_resval)
+        elif hwext or field_resval == 'x':
+            resval_from_reg = None
         else:
-            # The field does define a reset value. It should be an integer or
-            # 'x'. In the latter case, we set resval to None (as above).
-            resval = check_xint(raw_resval, f'resval field for {where}')
-            if resval is None:
-                # We don't allow a field to be explicitly 'x' on reset but for
-                # the containing register to have a reset value.
-                if reg_resval is not None:
-                    raise ValueError(
-                        f'resval field for {where} is "x", but the register '
-                        'defines a resval as well.')
-            else:
-                # Check that the reset value is representable with bits
-                if not (0 <= resval <= bits.max_value()):
-                    raise ValueError(
-                        f"resval field for {where} is {resval}, which isn't "
-                        f"representable as an unsigned {bits.width}-bit "
-                        "integer.")
+            resval_from_reg = 0
 
-                # If the register had a resval, check this value matches it.
-                if reg_resval is not None:
-                    resval_from_reg = bits.extract_field(reg_resval)
-                    if resval != resval_from_reg:
-                        raise ValueError(
-                            f'resval field for {where} is {resval}, but the '
-                            'register defines a resval as well, where bits '
-                            f'{bits.msb}:{bits.lsb} would give '
-                            f'{resval_from_reg}.')
+        # Resolve the two resvals. If neither is defined (or both are 'x'),
+        # this resolves to None. If only one is defined, it takes precedence.
+        # If both are defined, check that they match.
+        if field_resval is None or isinstance(field_resval, str):
+            merged_resval = resval_from_reg
+        else:
+            merged_resval = field_resval
+            if reg_resval is not None and field_resval != resval_from_reg:
+                raise ValueError(f'resval for {where} is {field_resval}, '
+                                 f'but the register defines a resval as '
+                                 f'well, where the field\'s bits would '
+                                 f'give {resval_from_reg}.')
 
         raw_enum = rd.get('enum')
         if raw_enum is None:
@@ -217,8 +327,8 @@ class Field:
                 enum.append(entry)
                 enum_val_to_name[entry.value] = entry.name
 
-        return Field(name, alias_target, desc, tags, swaccess, hwaccess, hwqe,
-                     bits, resval, enum, is_mubi, is_auto_split)
+        return Field(name, alias_target, desc, tags, swaccess, hwaccess,
+                     hwqe, bits, merged_resval, enum, is_mubi, is_auto_split)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
@@ -254,57 +364,12 @@ class Field:
             n_bits += int(not hwext)
         return n_bits
 
-    def make_multi(self, reg_width: int, min_reg_idx: int, max_reg_idx: int,
-                   cname: str, creg_idx: int, stripped: bool) -> List['Field']:
-        assert 0 <= min_reg_idx <= max_reg_idx
-
-        # Check that we won't overflow reg_width. We assume that the LSB should
-        # be preserved: if msb=5, lsb=2 then the replicated copies will be
-        # [5:2], [11:8] etc.
-        num_copies = 1 + max_reg_idx - min_reg_idx
-        field_width = self.bits.msb + 1
-
-        if field_width * num_copies > reg_width:
-            raise ValueError(
-                f'Cannot replicate field {self.name} {num_copies} times: the '
-                f'resulting width would be {field_width * num_copies}, but '
-                f'the register width is just {reg_width}.')
-
-        desc = f'For {cname}{creg_idx}' if stripped else self.desc
-        enum = None if stripped else self.enum
-
-        ret = []
-        for reg_idx in range(min_reg_idx, max_reg_idx + 1):
-            name = f'{self.name}_{reg_idx}'
-            # In case this is an alias register, we need to make sure that
-            # the alias_target name is expanded as well.
-            alias_target = None
-            if self.alias_target is not None:
-                alias_target = f'{self.alias_target}_{reg_idx}'
-
-            bit_offset = field_width * (reg_idx - min_reg_idx)
-            bits = (self.bits if bit_offset == 0 else
-                    self.bits.make_translated(bit_offset))
-
-            ret.append(
-                Field(name, alias_target, desc, self.tags, self.swaccess,
-                      self.hwaccess, self.hwqe, bits, self.resval, enum,
-                      self.mubi, self.auto_split))
-
-        return ret
-
-    def make_suffixed(self, suffix: str, cname: str, creg_idx: int,
-                      stripped: bool) -> 'Field':
-        desc = f'For {cname}{creg_idx}' if stripped else self.desc
-        enum = None if stripped else self.enum
-
-        alias_target = None
-        if self.alias_target is not None:
-            alias_target = self.alias_target + suffix
-
-        return Field(self.name + suffix, alias_target, desc, self.tags,
-                     self.swaccess, self.hwaccess, self.hwqe, self.bits,
-                     self.resval, enum, self.mubi, self.auto_split)
+    def make_translated(self, delta: int) -> 'Field':
+        '''Return a copy of this field, translated by delta bits'''
+        return Field(self.name, self.alias_target, self.desc, self.tags,
+                     self.swaccess, self.hwaccess, self.hwqe,
+                     self.bits.make_translated(delta),
+                     self.resval, self.enum, self.mubi, self.auto_split)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {

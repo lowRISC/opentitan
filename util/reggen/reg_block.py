@@ -221,7 +221,7 @@ class RegBlock:
     def _handle_register(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
         reg = Register.from_raw(self._reg_width, self.offset, self._params,
-                                body, clocks, is_alias)
+                                body, clocks, is_alias, None)
 
         self._validate_async(reg.async_name, reg.async_clk)
         self._validate_sync(reg.sync_name, reg.sync_clk)
@@ -283,8 +283,10 @@ class RegBlock:
         '''
 
         try:
-            mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
-                               self._params, body, clocks, is_alias)
+            mr = MultiRegister.from_raw(body,
+                                        self._reg_width, self.offset,
+                                        self._addrsep, self._params,
+                                        clocks, is_alias)
         except EmptyMultiRegException:
             return
 
@@ -292,14 +294,14 @@ class RegBlock:
         self._validate_async(mr.async_name, mr.async_clk)
         self._validate_sync(mr.sync_name, mr.sync_clk)
 
-        for reg in mr.regs:
+        for reg in mr.cregs:
             lname = reg.name.lower()
             if lname in self.name_to_offset:
                 raise ValueError('Multiregister {} (at offset {:#x}) expands '
                                  'to a register with name {} (at offset '
                                  '{:#x}), but this already names something at '
                                  'offset {:#x}.'.format(
-                                     mr.reg.name, mr.reg.offset, reg.name,
+                                     mr.name, mr.offset, reg.name,
                                      reg.offset, self.name_to_offset[lname]))
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
@@ -308,7 +310,12 @@ class RegBlock:
         self.multiregs.append(mr)
         self.all_regs.append(mr)
         if mr.dv_compact is True:
-            self.type_regs.append(mr.reg)
+            # Because dv_compact is true, all the pseudo-registers in mr.pregs
+            # are compatible for how they are used in self.type_regs. They are
+            # used in uvm_reg_base.sv.tpl to make forward declarations (through
+            # gen_dv.rcname), so the only thing that matters is the "name"
+            # instance variable.
+            self.type_regs.append(mr.pregs[0])
         self.entries.append(mr)
         self.offset = mr.next_offset(self._addrsep)
 
