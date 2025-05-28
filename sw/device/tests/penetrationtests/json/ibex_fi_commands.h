@@ -9,6 +9,11 @@
 extern "C" {
 #endif
 
+#define IBEXFI_NUM_REGS 32
+#define IBEXFI_SRAM_WORDS 64
+#define IBEXFI_MAX_FAULTY_ADDRESSES_DATA 13
+#define IBEXFI_MAX_RESULT_ARRAY 12
+
 // clang-format off
 
 #define IBEXFI_SUBCOMMAND(_, value) \
@@ -60,18 +65,27 @@ RUST_ONLY(UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOM
 
 #define IBEXFI_TEST_RESULT(field, string) \
     field(result, uint32_t) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiTestResult, ibex_fi_test_result_t, IBEXFI_TEST_RESULT);
 
-#define IBEXFI_TEST_RESULT_REGISTERS(field, string) \
-    field(result, uint32_t) \
-    field(registers, uint32_t, 32) \
+#define IBEXFI_TEST_RESULT_ARRAY(field, string) \
+    field(result, uint32_t, IBEXFI_MAX_RESULT_ARRAY) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiTestResultRegisters, ibex_fi_test_result_registers_t, IBEXFI_TEST_RESULT_REGISTERS);
+UJSON_SERDE_STRUCT(IbexFiTestResultArray, ibex_fi_test_result_array_t, IBEXFI_TEST_RESULT_ARRAY);
+
+#define IBEXFI_TEST_RESULT_SRAM(field, string) \
+    field(memory, uint32_t, IBEXFI_SRAM_WORDS) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
+    field(err_status, uint32_t) \
+    field(alerts, uint32_t, 3) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(IbexFiTestResultSram, ibex_fi_test_result_sram_t, IBEXFI_TEST_RESULT_SRAM);
 
 #define IBEXFI_TEST_RESULT_MULT(field, string) \
     field(result1, uint32_t) \
@@ -81,44 +95,30 @@ UJSON_SERDE_STRUCT(IbexFiTestResultRegisters, ibex_fi_test_result_registers_t, I
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiTestResultMult, ibex_fi_test_result_mult_t, IBEXFI_TEST_RESULT_MULT);
 
-#define IBEXFI_TEST_RESULT_SINGLE_BRANCH(field, string) \
-    field(result1, uint32_t) \
-    field(result2, uint32_t) \
-    field(registers, uint32_t, 10) \
+#define IBEXFI_FAULTY_DATA(field, string) \
     field(err_status, uint32_t) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
+    field(data_faulty, bool, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(data, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiTestResultSingleBranch, ibex_fi_test_result_single_branch_t, IBEXFI_TEST_RESULT_SINGLE_BRANCH);
+UJSON_SERDE_STRUCT(IbexFiFaultyData, ibex_fi_faulty_data_t, IBEXFI_FAULTY_DATA);
 
-#define IBEXFI_LOOP_COUNTER_OUTPUT(field, string) \
-    field(loop_counter, uint32_t) \
+#define IBEXFI_FAULTY_ADDRESS_DATA(field, string) \
     field(err_status, uint32_t) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
+    field(addresses, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(data, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiLoopCounterOutput, ibex_fi_loop_counter_t, IBEXFI_LOOP_COUNTER_OUTPUT);
+UJSON_SERDE_STRUCT(IbexFiFaultyAddressData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESS_DATA);
 
-#define IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT(field, string) \
-    field(loop_counter1, uint32_t) \
-    field(loop_counter2, uint32_t) \
+#define IBEXFI_RF_DUMP(field, string) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
     field(err_status, uint32_t) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrored_t, IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT);
-
-#define IBEXFI_FAULTY_ADDRESSES_DATA(field, string) \
-    field(err_status, uint32_t) \
-    field(addresses, uint32_t, 12) \
-    field(data, uint32_t, 12) \
-    field(alerts, uint32_t, 3) \
-    field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiFaultyAddressesData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESSES_DATA);
-
-#define IBEXFI_FAULTY_ADDRESSES(field, string) \
-    field(err_status, uint32_t) \
-    field(addresses, uint32_t, 8) \
-    field(alerts, uint32_t, 3) \
-    field(ast_alerts, uint32_t, 2)
-UJSON_SERDE_STRUCT(IbexFiFaultyAddresses, ibex_fi_faulty_addresses_t, IBEXFI_FAULTY_ADDRESSES);
+UJSON_SERDE_STRUCT(IbexFiRfDump, ibex_fi_rf_dump_t, IBEXFI_RF_DUMP);
 
 // clang-format on
 
