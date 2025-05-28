@@ -26,6 +26,11 @@
       desc: "number of input period counters"
       type: "int"
       default: 0
+      dtgen:
+      {
+        type: "uint8"
+        name: "input_period_counter_count"
+      }
     }
   ]
 }

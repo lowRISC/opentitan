@@ -15,6 +15,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 
 from reggen.ip_block import IpBlock
 from dtgen.helper import TopHelper, IpHelper, Extension
+from dtgen.ipgen_ext import IpgenExt
 from topgen.lib import CArrayMapping, CEnum
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parents[1].resolve() / "util" / "dtgen"
@@ -44,10 +45,10 @@ def load_extension(plugin_path: Path):
 
 def find_extension_class(ext_mod, cls):
     if ext_mod is None:
-        return None
+        return []
 
     # Look for a class extended `cls`
-    ext_cls = None
+    ext_cls = []
     for (name, obj) in inspect.getmembers(ext_mod):
         if not inspect.isclass(obj):
             continue
@@ -57,12 +58,9 @@ def find_extension_class(ext_mod, cls):
         if not issubclass(obj, cls):
             continue
         # Found one.
-        if ext_cls is not None:
-            logging.error(f"extension defines several extension classes: {ext_cls} and {obj}")
-            raise RuntimeError("invalid extension")
-        ext_cls = obj
+        ext_cls.append(obj)
 
-    if ext_cls is None:
+    if len(ext_cls) == 0:
         logging.error("extension does not define any extension class")
         raise RuntimeError("invalid extension")
 
@@ -191,6 +189,7 @@ def main():
                                     f"but no default was specified, will use {default_node}")
 
             extension_cls = find_extension_class(ext_mod, Extension)
+            extension_cls.append(IpgenExt)
 
             # The instance name is 'top_{topname}_{ipname}'.
             ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
