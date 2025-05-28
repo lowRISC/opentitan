@@ -47,7 +47,7 @@ The OTP controller for OpenTitan contains the seven logical partitions shown bel
 
 Generally speaking, the production life cycle of a device is split into 5 stages "Manufacturing" -> "Calibration and Testing" -> "Provisioning" -> "Mission" -> "RMA".
 OTP values are usually programmed during "Calibration and Testing", "Provisioning" and "RMA" stages, as explained below.
-A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](programmers_guide.md)) further below.
+A detailed listing of all the items and the corresponding memory map can be found in the [Programmer's Guide](programmers_guide.md).
 
 ### Calibration and Test
 
@@ -75,10 +75,11 @@ In order to support this transition, the [life cycle state](../../../../ip/lc_ct
 
 Write access to a partition can be permanently locked when software determines it will no longer make any updates to that partition.
 To lock, an integrity constant is calculated and programmed alongside the other data of that partition.
-The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit (see also [Direct Access Memory Map](#direct-access-memory-map)).
+The size of that integrity constant depends on the partition size granule, and is either 32bit or 64bit.
+The memory map detailing these can be found in the [Programmer's Guide](programmers_guide.md#direct-access-memory-map).
 
 Once the "integrity digest" is non-zero, no further updates are allowed.
-If the partition is secret, software is in addition no longer able to read its contents (see [Secret Partition description](#secret-vs-nonsecret-partitions)).
+If the partition is secret, software is in addition no longer able to read its contents (see [Secret vs Non-Secret Partitions](#secret-vs-non-secret-partitions)).
 
 Note however, in all partitions, the digest itself is **ALWAYS** readable.
 This gives software an opportunity to confirm that the locking operation has proceeded correctly, and if not, scrap the part immediately.
@@ -228,7 +229,7 @@ The life cycle interface is used to update the life cycle state and transition c
 The commands are issued from the [life cycle controller](../../../../ip/lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
-For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md)) further below.
+For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md).
 
 
 ## Design Details
@@ -239,7 +240,7 @@ The following is a high-level block diagram that illustrates everything that has
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfill its tasks.
+Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
@@ -274,7 +275,7 @@ Since the life cycle partition is the only partition that needs live updates in-
 The life cycle state is hence encoded such that incremental updates to the state are always carried out at the granularity of a 16bit word.
 Further, the life cycle transition counter is encoded such that each stroke consumes a full 16bit word for the same reason.
 
-See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details on the life cycle encoding.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details on the life cycle encoding.
 
 ### Partition Controllers
 
@@ -292,7 +293,7 @@ Write access through the DAI will be locked in case the digest is set to a non-z
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
 
-Note that unrecoverable [OTP errors](#generalized-open-source-interface), ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
+Note that unrecoverable OTP errors, ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
 
 #### Buffered Partition
 
@@ -318,7 +319,7 @@ In case of a mismatch, the buffered values are gated to their default, and an al
 Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
 
 External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well.
-See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
 
 ### Direct Access Interface Control
 
@@ -326,7 +327,8 @@ See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for 
 
 Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
 Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
-The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands (see [here](#direct-access-interface) for more information about how to interact with the DAI through the CSRs).
+The DAI then becomes operational once all partitions have initialized, and supports read, write and digest calculation commands.
+More information about how to interact with the DAI through the CSRs can be found in the [Programmer's Guide](programmers_guide.md#direct-access-interface).
 
 Read and write commands transfer either 32bit or 64bit of data from the OTP to the corresponding CSR and vice versa. The access size is determined automatically, depending on whether the partition is scrambled or not. Also, (de)scrambling is performed transparently, depending on whether the partition is scrambled or not.
 
@@ -340,7 +342,7 @@ Also, the DAI consumes the read and write access information provided by the par
 ![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
-Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here](#state-transitions).
+Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface (described in the [Hardware Interfaces](interfaces.md#state-transitions)).
 The LCI controller takes the life cycle state to be programmed and writes all 16bit words to OTP.
 In case of unrecoverable OTP errors, the FSM signals an error to the life cycle controller and moves into a terminal error state.
 
@@ -349,7 +351,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 ![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
-Once it is in the idle state, key derivation can be requested via the [flash](#interface-to-flash-scrambler) and [sram](#interface-to-sram-and-otbn-scramblers) interfaces.
+Once it is in the idle state, key derivation can be requested via the [flash](interfaces.md#interface-to-flash-scrambler) and [sram](interfaces.md#interface-to-sram-and-otbn-scramblers) interfaces.
 Based on which interface makes the request, the KDI controller will evaluate a variant of the PRESENT digest mechanism as described in more detail below.
 
 ### Scrambling Datapath
@@ -470,7 +472,7 @@ Signal                  | Direction        | Type                        | Descr
 The `write raw` and `read raw` command instructs the `otp_macro` wrapper to store / read the data in raw format without generating nor checking integrity information.
 That means that the wrapper must return the raw, uncorrected data and no integrity errors.
 
-The `otp_macro` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in [OTP error handling](#error-handling).
+The `otp_macro` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in the [Programmer's Guide](programmers_guide.md#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
