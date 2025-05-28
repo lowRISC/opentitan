@@ -38,7 +38,7 @@
   {
     "test_case_id": 8,
     "command": "CharCsrRead",
-    "expected_output": "{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 9,
@@ -48,7 +48,7 @@
   {
     "test_case_id": 10,
     "command": "CharFlashRead",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 11,
@@ -58,47 +58,47 @@
   {
     "test_case_id": 12,
     "command": "CharMemOpLoop",
-    "expected_output": "{\"loop_counter1\":10000,\"loop_counter2\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"result\":[10000,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 13,
     "command": "CharRegisterFile",
-    "expected_output": "{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 14,
     "command": "CharRegisterFileRead",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 15,
     "command": "CharRegOpLoop",
-    "expected_output": "{\"loop_counter1\":10000,\"loop_counter2\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 16,
     "command": "CharSramRead",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 17,
     "command": "CharSramStatic",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 18,
     "command": "CharSramWrite",
-    "expected_output": "{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"memory\":[464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694,464367618,2343432205,2779096485,2880154539,2881141438,2880293630,3131746989,3134333474,3148725999,3200171710,3203386062,3221229823,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,3735928559,3735931646,3735929054,3735943697,3735941133,3741239533,3735936685,3490524077,3958107115,4208909997,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 19,
     "command": "CharSramWriteRead",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 20,
     "command": "CharSramWriteStaticUnrolled",
-    "expected_output": "{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"memory\":[464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618,464367618],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 21,
@@ -113,46 +113,46 @@
   {
     "test_case_id": 23,
     "command": "CharUnrolledMemOpLoop",
-    "expected_output": "{\"loop_counter\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 24,
     "command": "CharUnrolledRegOpLoop",
-    "expected_output": "{\"loop_counter\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"result\":10000,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 25,
     "command": "CharUnrolledRegOpLoopChain",
-    "expected_output": "{\"addresses\":[0,0,0,0,0,0,0,0,0,0,0,0],\"data\":[60,55,56,57,58,59,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"result\":[60,55,56,57,58,59,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 26,
     "command": "CharSingleBeq",
-    "expected_output": "{\"result1\":43,\"result2\":60,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 27,
     "command": "CharAddiSingleBeq",
-    "expected_output": "{\"result1\":43,\"result2\":60,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 28,
     "command": "CharAddiSingleBeqNeg",
-    "expected_output": "{\"result1\":26,\"result2\":15,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 29,
     "command": "CharSingleBne",
-    "expected_output": "{\"result1\":43,\"result2\":44,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 30,
     "command": "CharAddiSingleBne",
-    "expected_output": "{\"result1\":43,\"result2\":44,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   },
   {
     "test_case_id": 31,
     "command": "CharAddiSingleBneNeg",
-    "expected_output": "{\"result1\":26,\"result2\":26,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    "expected_output": "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
   }
 ]
