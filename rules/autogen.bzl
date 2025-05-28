@@ -209,15 +209,32 @@ def opentitan_autogen_dif(name, top, ip, deps = [], target_compatible_with = [])
         deps = deps,
     )
 
+# Get the parent of the directory in which `file` resides.
+def _dirname_hack(file):
+    dirname = file.dirname
+    parent, _ = dirname.rsplit('/', 1)
+    return parent
+
 def _opentitan_top_dt_gen(ctx):
     outputs = []
-    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    outdir = None
 
     groups = {}
     for group, files in ctx.attr.output_groups.items():
         deps = []
         for file in files:
-            deps.append(ctx.actions.declare_file(file))
+            f = ctx.actions.declare_file(file)
+            if not outdir:
+                # Compute the outdir from the files we're generating.
+                # The files are in some/path/dt/filename, and we want
+                # the parent of 'filename's target directory (e.g. some/path).
+                outdir = _dirname_hack(f)
+            else:
+                # Fail if any of the files want to be generated in a
+                # different outdir.
+                if outdir != _dirname_hack(f):
+                    fail("Unexpected file path", f, "not in", outdir)
+            deps.append(f)
         outputs.extend(deps)
         groups[group] = depset(deps)
 
