@@ -57,6 +57,8 @@ typedef struct ottf_console {
       dif_spi_device_handle_t dif;
       /** SPI device frame number. */
       uint32_t frame_num;
+      /** TX ready GPIO, set to kOttfSpiNoTxGpio if not used. */
+      dif_gpio_pin_t tx_ready_gpio;
     } spi;
   } data;
 } ottf_console_t;
@@ -74,6 +76,7 @@ void ottf_console_init(void);
 /**
  * Configures the given UART to be used by the OTTF console.
  *
+ * @param console Console pointer
  * @param base_addr The base address of the UART to use.
  */
 void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr);
@@ -81,10 +84,18 @@ void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr);
 /**
  * Configures the given SPI device to be used by the OTTF console.
  *
+ * @param console Console pointer
  * @param base_addr The base address of the SPI device to use.
+ * @param tx_ready_enable Enable TX indicator
+ * @param tx_ready_gpio If TX indicator is enable, GPIO number to use.
+ * @param tx_ready_mio If TX indicator is enable, MIO number to which to connect
+ * it.
  */
 void ottf_console_configure_spi_device(ottf_console_t *console,
-                                       uintptr_t base_addr);
+                                       uintptr_t base_addr,
+                                       bool tx_ready_enable,
+                                       uint32_t tx_ready_gpio,
+                                       uint32_t tx_ready_mio);
 
 /**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
