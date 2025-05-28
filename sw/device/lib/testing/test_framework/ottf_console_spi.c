@@ -21,8 +21,6 @@
 static dif_gpio_t *spi_console_gpio = NULL;
 static dif_gpio_pin_t spi_console_tx_ready_gpio = UINT32_MAX;
 
-static uint32_t spi_device_frame_num = 0;
-
 static status_t spi_device_send_data(dif_spi_device_handle_t *spi_device,
                                      const uint8_t *buf, size_t len,
                                      size_t address) {
@@ -68,8 +66,9 @@ static status_t spi_device_send_data(dif_spi_device_handle_t *spi_device,
  * |     0xFF Pad Bytes    | <4-bytes |          |
  * -----------------------------------|----------|
  */
-static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
-  dif_spi_device_handle_t *spi_device = (dif_spi_device_handle_t *)data;
+static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
+                                    size_t len) {
+  dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
   const size_t data_packet_size_bytes = ((len + 3u) & ~3u);
   const size_t frame_size_bytes =
       kSpiDeviceFrameHeaderSizeBytes + data_packet_size_bytes;
@@ -87,7 +86,7 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
   }
   // Add the frame number.
   for (size_t i = 0; i < 4; ++i) {
-    frame_header_bytes[i + 4] = (spi_device_frame_num >> (i * 8)) & 0xff;
+    frame_header_bytes[i + 4] = (console->data.spi.frame_num >> (i * 8)) & 0xff;
   }
   // Add the data length.
   for (size_t i = 0; i < 4; ++i) {
@@ -182,7 +181,7 @@ static size_t spi_device_send_frame(void *data, const char *buf, size_t len) {
   // Update the next write address and frame number.
   next_write_address =
       (next_write_address + frame_size_bytes) % kSpiDeviceReadBufferSizeBytes;
-  spi_device_frame_num++;
+  console->data.spi.frame_num++;
 
   // Block until the host to reads out the frame by toggling the GPIO TX-ready
   // indicator pin to signal to the host to clock out data from the spi_device
@@ -275,7 +274,6 @@ size_t ottf_console_spi_device_read(ottf_console_t *console, size_t buf_size,
 
 static size_t ottf_console_spi_sink(void *io, const char *buf, size_t len) {
   ottf_console_t *console = io;
-  dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
   size_t write_data_len = 0;
 
   while (write_data_len < len) {
@@ -283,7 +281,7 @@ static size_t ottf_console_spi_sink(void *io, const char *buf, size_t len) {
     if (payload_len > kSpiDeviceMaxFramePayloadSizeBytes) {
       payload_len = kSpiDeviceMaxFramePayloadSizeBytes;
     }
-    if (spi_device_send_frame(spi_device, buf + write_data_len, payload_len) ==
+    if (spi_device_send_frame(console, buf + write_data_len, payload_len) ==
         payload_len) {
       write_data_len += payload_len;
     }
@@ -397,6 +395,8 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
     CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
         spi_device, slot, kDifToggleEnabled, write_commands[i]));
   }
+
+  console->data.spi.frame_num = 0;
 
   // Setup TX GPIO if requested.
   if (kOttfTestConfig.console_tx_indicator.enable) {
