@@ -44,6 +44,14 @@ typedef struct ottf_console {
   sink_func_ptr sink;
   /* Function pointer to a function that retrieves a single character. */
   status_t (*getc)(void *);
+  /* Enable SW buffering. */
+  bool buffered;
+  /** Staging buffer. */
+  char *buf;
+  /** Staging buffer size. */
+  size_t buf_size;
+  /** Where to write next to the staging buffer. */
+  size_t buf_end;
   /** Auxiliary data, per console type */
   union {
     /** UART data. */
@@ -96,6 +104,21 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
                                        bool tx_ready_enable,
                                        uint32_t tx_ready_gpio,
                                        uint32_t tx_ready_mio);
+
+/**
+ * Configures software buffering of the console.
+ *
+ * If the console previously had buffering enabled, disabling buffering will
+ * simply drop the content of the staging buffer. Therefore the content should
+ * be flushed before disabling buffering.
+ *
+ * @param console Pointer to the console to configure
+ * @param enabled Enable/disable buffering.
+ * @param buffer Staging buffer used for buffering.
+ * @param size Length of the staging buffer.
+ */
+void ottf_console_set_buffering(ottf_console_t *console, bool enabled,
+                                char *buffer, size_t size);
 
 /**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
@@ -157,7 +180,7 @@ size_t ottf_console_spi_device_read(ottf_console_t *console, size_t buf_size,
 /**
  * Write a buffer to the OTTF console.
  *
- * @param context An IO context
+ * @param io An IO context: pointer to an `ottf_console_t`.
  * @param buf The buffer to write to the OTTF console.
  * @param len The length of the buffer.
  * @return OK or an error.
@@ -167,7 +190,10 @@ status_t ottf_console_putbuf(void *io, const char *buf, size_t len);
 /**
  * Flush remaining buffered data to the OTTF console.
  *
- * @param context An IO context
+ * On success, an OK_STATUS is returned with the number of flushed bytes.
+ * On error, the unflushed data will be lost.
+ *
+ * @param io An IO context: pointer to an `ottf_console_t`.
  * @return OK or an error.
  */
 status_t ottf_console_flushbuf(void *io);
@@ -175,6 +201,7 @@ status_t ottf_console_flushbuf(void *io);
 /**
  * Get a single character from the OTTF console.
  *
+ * @param io An IO context: pointer to an `ottf_console_t`.
  * @return The next character or an error.
  */
 status_t ottf_console_getc(void *io);
