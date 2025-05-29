@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "time_macros",
+rust_library(
+    name = "powerfmt",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,10 +34,6 @@ rust_proc_macro(
             "WORKSPACE.bazel",
         ],
     ),
-    crate_features = [
-        "formatting",
-        "parsing",
-    ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_env_files = [
@@ -48,7 +44,7 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=time-macros",
+        "crate-name=powerfmt",
         "manual",
         "noclippy",
         "norustfmt",
@@ -92,8 +88,5 @@ rust_proc_macro(
         "@rules_rust//rust/platform:x86_64-unknown-uefi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.14",
-    deps = [
-        "@crate_index__time-core-0.1.1//:time_core",
-    ],
+    version = "0.2.0",
 )

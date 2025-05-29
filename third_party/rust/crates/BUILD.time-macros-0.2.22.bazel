@@ -7,7 +7,7 @@
 ###############################################################################
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
-load("@rules_rust//rust:defs.bzl", "rust_library")
+load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -16,8 +16,8 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_library(
-    name = "simple_asn1",
+rust_proc_macro(
+    name = "time_macros",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -34,8 +34,12 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "formatting",
+        "parsing",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2018",
+    edition = "2021",
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -44,7 +48,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=simple_asn1",
+        "crate-name=time-macros",
         "manual",
         "noclippy",
         "norustfmt",
@@ -88,11 +92,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-uefi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.6.2",
+    version = "0.2.22",
     deps = [
-        "@crate_index__num-bigint-0.4.4//:num_bigint",
-        "@crate_index__num-traits-0.2.17//:num_traits",
-        "@crate_index__thiserror-1.0.49//:thiserror",
-        "@crate_index__time-0.3.41//:time",
+        "@crate_index__num-conv-0.1.0//:num_conv",
+        "@crate_index__time-core-0.1.4//:time_core",
     ],
 )

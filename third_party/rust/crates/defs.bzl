@@ -1221,12 +1221,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__deranged-0.3.8",
-        sha256 = "f2696e8a945f658fd14dc3b87242e6b80cd0f36ff04ea560fa39082368847946",
+        name = "crate_index__deranged-0.4.0",
+        sha256 = "9c9e6a11ca8224451684bc0d7d5a7adbf8f2fd6887261a1cfc3c0432f9d4068e",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/deranged/0.3.8/download"],
-        strip_prefix = "deranged-0.3.8",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.deranged-0.3.8.bazel"),
+        urls = ["https://static.crates.io/crates/deranged/0.4.0/download"],
+        strip_prefix = "deranged-0.4.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.deranged-0.4.0.bazel"),
     )
 
     maybe(
@@ -2393,6 +2393,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__num-conv-0.1.0",
+        sha256 = "51d515d32fb182ee37cda2ccdcb92950d6a3c2893aa280e540671c2cd0f3b1d9",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/num-conv/0.1.0/download"],
+        strip_prefix = "num-conv-0.1.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.num-conv-0.1.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__num-integer-0.1.45",
         sha256 = "225d3389fb3509a24c93f5c29eb6bde2586b98d9f016636dff58d7c6f7569cd9",
         type = "tar.gz",
@@ -2739,6 +2749,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/portable-atomic/1.4.3/download"],
         strip_prefix = "portable-atomic-1.4.3",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.portable-atomic-1.4.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__powerfmt-0.2.0",
+        sha256 = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/powerfmt/0.2.0/download"],
+        strip_prefix = "powerfmt-0.2.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.powerfmt-0.2.0.bazel"),
     )
 
     maybe(
@@ -3643,32 +3663,32 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__time-0.3.28",
-        sha256 = "17f6bb557fd245c28e6411aa56b6403c689ad95061f50e4be16c274e70a17e48",
+        name = "crate_index__time-0.3.41",
+        sha256 = "8a7619e19bc266e0f9c5e6686659d394bc57973859340060a69221e57dbc0c40",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/time/0.3.28/download"],
-        strip_prefix = "time-0.3.28",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-0.3.28.bazel"),
+        urls = ["https://static.crates.io/crates/time/0.3.41/download"],
+        strip_prefix = "time-0.3.41",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-0.3.41.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__time-core-0.1.1",
-        sha256 = "7300fbefb4dadc1af235a9cef3737cea692a9d97e1b9cbcd4ebdae6f8868e6fb",
+        name = "crate_index__time-core-0.1.4",
+        sha256 = "c9e9a38711f559d9e3ce1cdb06dd7c5b8ea546bc90052da6d06bb76da74bb07c",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/time-core/0.1.1/download"],
-        strip_prefix = "time-core-0.1.1",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-core-0.1.1.bazel"),
+        urls = ["https://static.crates.io/crates/time-core/0.1.4/download"],
+        strip_prefix = "time-core-0.1.4",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-core-0.1.4.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__time-macros-0.2.14",
-        sha256 = "1a942f44339478ef67935ab2bbaec2fb0322496cf3cbe84b261e06ac3814c572",
+        name = "crate_index__time-macros-0.2.22",
+        sha256 = "3526739392ec93fd8b359c8e98514cb3e8e021beb4e5f597b00a0221f8ed8a49",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/time-macros/0.2.14/download"],
-        strip_prefix = "time-macros-0.2.14",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-macros-0.2.14.bazel"),
+        urls = ["https://static.crates.io/crates/time-macros/0.2.22/download"],
+        strip_prefix = "time-macros-0.2.22",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.time-macros-0.2.22.bazel"),
     )
 
     maybe(
