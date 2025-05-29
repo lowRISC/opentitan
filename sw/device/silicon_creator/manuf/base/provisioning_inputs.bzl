@@ -16,8 +16,6 @@ EARLGREY_OTP_CFGS = {
     "em00": "//hw/top_earlgrey/data/otp/emulation:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
-EXT_SIGNED_PERSO_BINS = []
-
 # A dictionary of SKU configurations that will be used to generate FT
 # personalization binaries that configure OTP and flash info pages as defined
 # in these bazel targets.

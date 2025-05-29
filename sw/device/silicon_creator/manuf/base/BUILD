@@ -4,10 +4,6 @@
 
 load("@//rules:manuf.bzl", "device_id_header")
 load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
-load(
-    "@provisioning_exts//:cfg.bzl",
-    "EXT_SIGNED_PERSO_BINS",
-)
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
@@ -390,15 +386,24 @@ manifest(d = {
 filegroup(
     name = "ft_personalize_all",
     testonly = True,
-    srcs = [
-               ":ft_personalize_{}".format(sku)
-               for sku in EARLGREY_SKUS.keys()
-           ] +
-           [
-               ":ft_fw_bundle_{}".format(sku)
-               for sku in EARLGREY_SKUS.keys()
-           ] + ["//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival"] +
-           EXT_SIGNED_PERSO_BINS,
+    # The depset(...).to_list() syntax removes duplicate bazel targets. Some
+    # SKUs have duplicate "staging" versions that are identical to their
+    # production counterparts, including the perso binaries used, except for CA
+    # keys, so we need to remove duplicates.
+    srcs = depset([
+                      # Select pre-signed / checked-in perso binaries over ones
+                      # built on the fly with fake keys if a pre-signed one
+                      # exists.
+                      config.get(
+                          "perso_bin",
+                          ":ft_personalize_{}".format(sku),
+                      )
+                      for sku, config in EARLGREY_SKUS.items()
+                  ] +
+                  [
+                      ":ft_fw_bundle_{}".format(sku)
+                      for sku in EARLGREY_SKUS.keys()
+                  ]).to_list(),
 )
 
 _DISQUALIFIED_FOR_SIGNING = ["em00"]
