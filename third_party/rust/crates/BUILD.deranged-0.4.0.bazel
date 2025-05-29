@@ -17,7 +17,7 @@ cargo_toml_env_vars(
 )
 
 rust_library(
-    name = "time",
+    name = "deranged",
     srcs = glob(
         include = ["**/*.rs"],
         allow_empty = True,
@@ -36,16 +36,11 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "formatting",
-        "macros",
-        "parsing",
+        "powerfmt",
         "std",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
-    proc_macro_deps = [
-        "@crate_index__time-macros-0.2.14//:time_macros",
-    ],
     rustc_env_files = [
         ":cargo_toml_env_vars",
     ],
@@ -54,7 +49,7 @@ rust_library(
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=time",
+        "crate-name=deranged",
         "manual",
         "noclippy",
         "norustfmt",
@@ -98,10 +93,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-uefi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.28",
+    version = "0.4.0",
     deps = [
-        "@crate_index__deranged-0.3.8//:deranged",
-        "@crate_index__itoa-1.0.9//:itoa",
-        "@crate_index__time-core-0.1.1//:time_core",
+        "@crate_index__powerfmt-0.2.0//:powerfmt",
     ],
 )
