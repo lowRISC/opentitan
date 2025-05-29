@@ -12,6 +12,7 @@
 autoconf
 bison
 brotli
+bsdmainutils
 build-essential
 clang-format
 cmake

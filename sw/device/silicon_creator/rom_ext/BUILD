@@ -13,6 +13,7 @@ load(
     "ROM_EXT_VERSION",
     "SLOTS",
     "TEST_OWNER_CONFIGS",
+    "TEST_OWNER_CONFIGS_FROM_OWNER_BLOCK",
 )
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 
@@ -281,6 +282,32 @@ manifest(d = {
         ] + param["rescue_module"],
     )
     for name, param in TEST_OWNER_CONFIGS.items()
+]
+
+[
+    opentitan_binary(
+        name = "rom_ext_{}".format(name),
+        testonly = True,
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_earlgrey:fpga_cw310",
+        ],
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
+        ],
+        linker_script = ":ld_slot_a",
+        manifest = ":manifest",
+        deps = [
+            ":rom_ext_dice_x509",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake",
+            "//sw/device/silicon_creator/rom_ext/imm_section:main_section_dice_x509_slot_a",
+        ] + param["owner_lib"] + param["rescue_module"],
+    )
+    for name, param in TEST_OWNER_CONFIGS_FROM_OWNER_BLOCK.items()
 ]
 
 manifest(d = {
