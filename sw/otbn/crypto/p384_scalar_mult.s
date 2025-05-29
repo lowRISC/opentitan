@@ -124,6 +124,7 @@ p384_scalar_mult:
   bn.subb   w1, w26, w19
   bn.sel    w25, w6, w8, FG0.C
   bn.sel    w26, w7, w9, FG0.C
+  bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
 
   /* Store mask to dmem for later use.
      y coordinate is not required afterwards and therefore can be used
