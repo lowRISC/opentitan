@@ -4,9 +4,6 @@
 
 class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_reg_block));
 
-  // Local variables
-  bit bypass_enable;
-
   // External interfaces
   misc_vif_t misc_vif;
 

@@ -11,6 +11,5 @@
     nr_ctn_uid_bits: 5
     topname: darjeeling
     uniquified_modules: {}
-    num_roles: 16
   }
 }

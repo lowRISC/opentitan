@@ -5,5 +5,4 @@
 `include "ac_range_check_base_vseq.sv"
 `include "ac_range_check_smoke_vseq.sv"
 `include "ac_range_check_smoke_racl_vseq.sv"
-`include "ac_range_check_bypass_vseq.sv"
 `include "ac_range_check_common_vseq.sv"
