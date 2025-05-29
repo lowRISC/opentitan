@@ -35,7 +35,7 @@ package ac_range_check_env_pkg;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_ctrl_update_err", "fatal_fault"};
   parameter uint   NUM_RANGES                 = 32;
   parameter uint   NUM_ROLES                  = 16;
-  parameter uint   ROLEWIDTH                  = 4;
+  parameter uint   ROLE_WIDTH                 = 4;
 
   // Types
   typedef virtual ac_range_check_misc_io_if misc_vif_t;
@@ -45,9 +45,9 @@ package ac_range_check_env_pkg;
   } ac_range_check_intr_e;
 
   typedef enum {
-    Execute = 0,
-    Read    = 1,
-    Write   = 2
+    Read    = 0,
+    Write   = 1,
+    Execute = 2
   } access_type_e;
 
   typedef enum bit [1:0] {
@@ -82,8 +82,7 @@ package ac_range_check_env_pkg;
     bit [MaskWidth-1:0] mask;
     bit [DataWidth-1:0] data;
 
-    // TODO: Need to move RoleWidth to where AddrWidth is defined
-    bit [ROLEWIDTH-1:0] role;
+    bit [ROLE_WIDTH-1:0] role;
   } tl_main_vars_t;
 
   // Functions

@@ -52,7 +52,6 @@ endfunction : new
 
 task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
   // Initialize some of DUT inputs
-  cfg.bypass_enable = 0;
   cfg.misc_vif.set_range_check_overwrite(0);
   cfg.misc_vif.init_racl_policies();
 
@@ -130,7 +129,7 @@ task ac_range_check_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
                                  addr       == tl_main_vars.addr;
                                  mask       == tl_main_vars.mask;
                                  data       == tl_main_vars.data;
-                                 role       == tl_main_vars.role;)
+                                 racl_role  == tl_main_vars.role;)
 
   csr_utils_pkg::increment_outstanding_access();
   `uvm_info(`gfn, "Starting tl_unfilt_host_seq", UVM_MEDIUM)

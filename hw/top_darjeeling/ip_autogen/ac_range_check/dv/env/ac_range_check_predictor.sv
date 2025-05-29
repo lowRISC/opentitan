@@ -13,8 +13,6 @@ class ac_range_check_predictor extends uvm_component;
   // coverage is enabled
   ac_range_check_env_cov cov;
 
-  bit bypass_sampled; // This is used for sampling the bypass mode setup
-
   cip_tl_seq_item latest_filtered_item;
   ac_range_check_scb_item exp_tl_filt_a_chan;
   ac_range_check_scb_item exp_tl_unfilt_d_chan;
@@ -54,7 +52,6 @@ function ac_range_check_predictor::new(string name="", uvm_component parent=null
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
 
-  bypass_sampled = 0;
 endfunction : new
 
 function void ac_range_check_predictor::build_phase (uvm_phase phase);
@@ -169,7 +166,6 @@ endtask : get_tl_filt_d_chan_item
 //       granting or denying the access.
 // TODO: check if RACL policies control is OK as done below
 function access_decision_e ac_range_check_predictor::check_access(tl_seq_item item);
-  string     acc_name;
   bit        attr_ok;
   bit        racl_ok;
   int        racl_role;
@@ -177,36 +173,15 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
 
   tlul_pkg::tl_a_user_t a_user;
 
-  int        cov_idx;
-  bit [2:0]  cov_attr;
-  int        cov_role;
-  bit        cov_racl;
-  bit        cov_acc_permit; // This will be set just before coverage sampling
-  bit        cov_addr_hit;
-
-  ac_range_check_env_pkg::access_type_e cov_access_type; // Type of transaction access (R/W/X)
+  ac_range_check_env_pkg::access_type_e access_type; // Type of transaction access (R/W/X)
 
   `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", all_unfilt_a_chan_cnt), UVM_MEDIUM)
-
-  // First check if the block is in bypass mode. We first sample the coverage since in
-  // bypass mode everything else is ignored
-  if (env_cfg.en_cov && !bypass_sampled) begin
-    bypass_sampled = 1;
-    cov.sample_bypass_cg(env_cfg.bypass_enable);
-  end
-
-  if (env_cfg.bypass_enable) begin
-    return AccessGranted;
-  end
-
-
 
   // Due to the note above, we should keep this loop starting from index 0
   for (int i = 0; i < NUM_RANGES; i++) begin
     // Start building coverage model right from the begining
     if (env_cfg.en_cov) begin
-      cov_idx = i;
-      cov.sample_range_cg(cov_idx, dut_cfg.range_attr[i].enable);
+      cov.sample_range_cg(.idx(i), .range_en(dut_cfg.range_attr[i].enable));
     end
 
     // Skip disabled ranges
@@ -220,15 +195,13 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
     if (item.a_addr < dut_cfg.range_base[i] || item.a_addr >= dut_cfg.range_limit[i]) begin
       `uvm_info(`gfn, $sformatf("Address 0x%0h not in range #%0d", item.a_addr, i), UVM_HIGH)
       if (env_cfg.en_cov) begin
-        cov_addr_hit = 0;
-        cov.sample_addr_match_cg(cov_idx, cov_addr_hit);
+        cov.sample_addr_match_cg(.idx(i), .addr_hit(0));
       end
       continue;
     end
 
     if (env_cfg.en_cov) begin
-      cov_addr_hit = 1;
-      cov.sample_addr_match_cg(cov_idx, cov_addr_hit);
+      cov.sample_addr_match_cg(.idx(i), .addr_hit(1));
     end
 
     // At this point we know the address of the transaction address is within
@@ -236,26 +209,21 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
     // transaction we are observing and fetch the necessary permissions for
     // the access type
     if (item.is_write()) begin
-      acc_name  = "WRITE";
       attr_ok   = dut_cfg.range_attr[i].write_access;
       racl_perm = dut_cfg.range_racl_policy[i].write_perm;
-      if (env_cfg.en_cov) cov_access_type = ac_range_check_env_pkg::Write;
-    end
-    else if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
-      acc_name  = "EXECUTE";
+      access_type = ac_range_check_env_pkg::Write;
+    end else if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
       attr_ok   = dut_cfg.range_attr[i].execute_access;
       racl_perm = dut_cfg.range_racl_policy[i].read_perm; // EXECUTE reuses READ in RACL
-      if (env_cfg.en_cov) cov_access_type = ac_range_check_env_pkg::Execute;
-    end
-    else begin
-      acc_name  = "READ";
+      access_type = ac_range_check_env_pkg::Execute;
+    end else begin
       attr_ok   = dut_cfg.range_attr[i].read_access;
       racl_perm = dut_cfg.range_racl_policy[i].read_perm;
-      if (env_cfg.en_cov) cov_access_type = ac_range_check_env_pkg::Read;
+      access_type = ac_range_check_env_pkg::Read;
     end
     `uvm_info(`gfn, $sformatf("RACL Permissions: 0x%0h", racl_perm), UVM_MEDIUM)
 
-    // Extract the role bits that is part of the a_user.rsvd field.
+    // Extract the role bits that are part of the a_user.rsvd field.
     a_user    = item.a_user;
     racl_role = top_racl_pkg::tlul_extract_racl_role_bits(a_user.rsvd);
     `uvm_info(`gfn, $sformatf("a_user: 0x%0h", a_user), UVM_MEDIUM)
@@ -266,25 +234,19 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
     racl_ok = racl_perm[racl_role];
     `uvm_info(`gfn, $sformatf("racl_ok: %0b", racl_ok), UVM_MEDIUM)
 
-    if (env_cfg.en_cov) begin
-      cov_attr = {dut_cfg.range_attr[i].execute_access,
-                  dut_cfg.range_attr[i].write_access,
-                  dut_cfg.range_attr[i].read_access};   // {X,W,R}
-      cov_role = racl_role;
-      cov_racl = racl_ok;
-    end
-
-
     // ---------------------------------------------------------
     // Apply policy
     // ---------------------------------------------------------
     if (!attr_ok) begin
       `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *DENIED* by range_attr[%0d]",
-                acc_name, item.a_addr, i), UVM_MEDIUM)
+                access_type.name(), item.a_addr, i), UVM_MEDIUM)
       // Sample coverage data
       if (env_cfg.en_cov) begin
-        cov_acc_permit = 0;
-        cov.sample_attr_cg(cov_idx, cov_access_type, cov_attr, cov_acc_permit);
+        cov.sample_attr_cg(.idx(i), .access_type(access_type),
+                           .read_perm   (dut_cfg.range_attr[i].read_access   ),
+                           .write_perm  (dut_cfg.range_attr[i].write_access  ),
+                           .execute_perm(dut_cfg.range_attr[i].execute_access),
+                           .acc_permit(0));
       end
 
       return AccessDenied;
@@ -292,20 +254,24 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
 
     if (!racl_ok) begin
       `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *DENIED* by range_racl_policy[%0d]",
-                acc_name, item.a_addr, i), UVM_MEDIUM)
-      if (env_cfg.en_cov) cov.sample_racl_cg(cov_idx, cov_access_type, cov_role, cov_racl);
+                access_type.name(), item.a_addr, i), UVM_MEDIUM)
+      if (env_cfg.en_cov) cov.sample_racl_cg(.idx(i), .access_type(access_type),
+                                             .role(racl_role), .racl_check(0));
       return AccessDenied;
     end
 
     // At this point all checks have passed including RACL. So transaction is GRANTED access
     if (env_cfg.en_cov) begin
-      cov_acc_permit = 1;
-      cov.sample_attr_cg(cov_idx, cov_access_type, cov_attr, cov_acc_permit);
-      cov.sample_racl_cg(cov_idx, cov_access_type, cov_role, cov_racl);
+      cov.sample_attr_cg(.idx(i), .access_type(access_type),
+                           .read_perm   (dut_cfg.range_attr[i].read_access   ),
+                           .write_perm  (dut_cfg.range_attr[i].write_access  ),
+                           .execute_perm(dut_cfg.range_attr[i].execute_access),
+                           .acc_permit(1));
+      cov.sample_racl_cg(.idx(i), .access_type(access_type), .role(racl_role), .racl_check(1));
     end
 
     `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *GRANTED* by range[%0d]",
-              acc_name, item.a_addr, i), UVM_MEDIUM)
+              access_type.name(), item.a_addr, i), UVM_MEDIUM)
     return AccessGranted;
   end // end for i<NUM_RANGES
 
@@ -315,7 +281,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
             all_unfilt_a_chan_cnt, item.a_addr), UVM_MEDIUM)
 
   if (env_cfg.en_cov) begin
-      cov.sample_all_index_miss_cg();
+    cov.sample_all_index_miss_cg();
   end
   return AccessDenied;
 endfunction : check_access
