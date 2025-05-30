@@ -1,0 +1,44 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "mode": "{\"fpga_mode\": 0}",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "SeedLfsr",
+    "input": "{\"seed\": [0,1,2,3]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "DisableMasking",
+    "input": "{\"masks_off\":0}",
+    "status": "{\"status\":0}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "SingleAbsorb",
+    "input": "{\"msg\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"msg_length\":16}",
+    "expected_output": "{\"batch_digest\":[57,70,45,42,35,32,248,218,87,42,151,176,179,148,115,212,49,46,2,40,178,62,44,47,224,174,155,108,103,242,52,60]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "DisableMasking",
+    "input": "{\"masks_off\":0}",
+    "status": "{\"status\":0}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "FixedMessageSet",
+    "input": "{\"msg\":[15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0],\"msg_length\":16}"
+  },
+  {
+    "test_case_id": 7,
+    "command": "Batch",
+    "input": "{\"num_enc\":5}",
+    "status": "{\"status\":0}",
+    "expected_output": "{\"batch_digest\":[78,156,36,44,156,24,252,3,16,68,117,11,55,171,149,58,152,143,114,202,67,172,205,36,169,3,204,103,215,104,166,97]}"
+  }
+]

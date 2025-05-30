@@ -33,7 +33,8 @@ extern "C" {
     value(_, SeedLfsr) \
     value(_, SeedLfsrOrder) \
     value(_, SingleEncrypt)
-UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define AES_SCA_KEY(field, string) \
     field(key, uint8_t, AESSCA_CMD_MAX_KEY_BYTES) \
@@ -61,6 +62,10 @@ UJSON_SERDE_STRUCT(CryptotestAesScaCiphertext, aes_sca_ciphertext_t, AES_SCA_CIP
 #define AES_SCA_FPGA_MODE(field, string) \
     field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaFpgaMode, aes_sca_fpga_mode_t, AES_SCA_FPGA_MODE);
+
+#define AES_SCA_CMD(field, string) \
+    field(cmd, uint32_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaCmd, aes_sca_cmd_t, AES_SCA_CMD);
 // clang-format on
 
 #ifdef __cplusplus

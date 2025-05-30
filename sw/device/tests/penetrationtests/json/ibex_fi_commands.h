@@ -48,7 +48,8 @@ extern "C" {
     value(_, OtpDataRead) \
     value(_, OtpReadLock) \
     value(_, OtpWriteLock)
-UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define IBEXFI_TEST_RESULT(field, string) \
     field(result, uint32_t) \
@@ -90,8 +91,8 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrore
 
 #define IBEXFI_FAULTY_ADDRESSES_DATA(field, string) \
     field(err_status, uint32_t) \
-    field(addresses, uint32_t, 8) \
-    field(data, uint32_t, 8) \
+    field(addresses, uint32_t, 12) \
+    field(data, uint32_t, 12) \
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiFaultyAddressesData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESSES_DATA);

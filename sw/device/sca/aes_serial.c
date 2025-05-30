@@ -166,6 +166,37 @@ dif_aes_transaction_t transaction = {
 };
 
 /**
+ * Poll the IDLE AES register.
+ *
+ */
+static void aes_sca_wait_for_idle(void) {
+  bool idle = false;
+  do {
+    SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
+  } while (!idle);
+}
+
+/**
+ * Load fixed seed into AES.
+ *
+ * Before calling this function, use
+ * aes_testutils_masking_prng_zero_output_seed() to initialize the entropy
+ * complex for performing AES SCA measurements with masking switched off. This
+ * function then loads the fixed seed into the AES, allowing the disable the
+ * masking.
+ *
+ * @param key Key.
+ * @param key_len Key length.
+ */
+static void aes_sca_load_fixed_seed(void) {
+  aes_sca_wait_for_idle();
+  // Load magic seed such that masking is turned off. We need to do this after
+  // dif_aes_start() as then the force_masks is correctly set.
+  SS_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  aes_sca_wait_for_idle();
+}
+
+/**
  * Mask and configure key.
  *
  * This function masks the provided key using a software LFSR and then
@@ -192,7 +223,17 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
+#if !OT_IS_ENGLISH_BREAKFAST
+  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
+#endif
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    aes_sca_load_fixed_seed();
+  }
+#endif
 }
 
 /**
@@ -245,7 +286,9 @@ static void aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
   // configured to start operation 40 cycles after receiving the start trigger.
   // This allows Ibex to go to sleep in order to not disturb the capture.
+  pentest_set_trigger_high();
   pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false, false);
+  pentest_set_trigger_low();
 }
 
 /**
@@ -293,9 +336,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
     block_ctr = 1;
   }
 
-  pentest_set_trigger_high();
   aes_encrypt(plaintext, plaintext_len);
-  pentest_set_trigger_low();
 
   aes_send_ciphertext(false);
 }
@@ -374,12 +415,10 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
     block_ctr = num_encryptions;
   }
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_encrypt(plaintext_random, kAesTextLength);
     aes_serial_advance_random();
   }
-  pentest_set_trigger_low();
 
   aes_send_ciphertext(true);
 }
@@ -427,7 +466,6 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
   // Set trigger high outside of loop
   // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
   // AES operation
-  pentest_set_trigger_high();
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
@@ -444,7 +482,6 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
-  pentest_set_trigger_low();
   // Acknowledge command
   simple_serial_send_status(0);
   // send last ciphertext
@@ -563,12 +600,10 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   num_encryptions = read_32(data);
   SS_CHECK(num_encryptions <= kNumBatchOpsMax);
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
@@ -625,12 +660,10 @@ static void aes_serial_fvsr_data_batch_encrypt(const uint8_t *data,
     sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
@@ -776,11 +809,7 @@ bool test_main(void) {
   if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
     CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
-    CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-    bool idle = false;
-    do {
-      CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
-    } while (!idle);
+    aes_sca_load_fixed_seed();
   }
 #endif
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));

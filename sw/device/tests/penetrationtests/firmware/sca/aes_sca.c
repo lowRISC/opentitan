@@ -15,6 +15,7 @@
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/commands.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/testing/aes_testutils.h"
@@ -31,6 +32,7 @@ enum {
   kAesKeyLengthMax = 32,
   kAesKeyLength = 16,
   kAesTextLength = 16,
+  kTestTimeout = (1000 * 1000),
   /**
    * Number of cycles (at `kClockFreqCpuHz`) that Ibex should sleep to minimize
    * noise during AES operations. Caution: This number should be chosen to
@@ -148,6 +150,28 @@ dif_aes_transaction_t transaction = {
 };
 
 /**
+ * Load fixed seed into AES.
+ *
+ * Before calling this function, use
+ * aes_testutils_masking_prng_zero_output_seed() to initialize the entropy
+ * complex for performing AES SCA measurements with masking switched off. This
+ * function then loads the fixed seed into the AES, allowing the disable the
+ * masking.
+ *
+ * @param key Key.
+ * @param key_len Key length.
+ */
+static status_t aes_sca_load_fixed_seed(void) {
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+  // Load magic seed such that masking is turned off. We need to do this after
+  // dif_aes_start() as then the force_masks is correctly set.
+  TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
+
+  return OK_STATUS();
+}
+
+/**
  * Mask and configure key.
  *
  * This function masks the provided key using a software LFSR and then
@@ -158,10 +182,9 @@ dif_aes_transaction_t transaction = {
  * @param key Key.
  * @param key_len Key length.
  */
-static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
-                                               size_t key_len) {
+static status_t aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   if (key_len != kAesKeyLength) {
-    return aesScaOutOfRange;
+    return ABORTED();
   }
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
@@ -177,11 +200,16 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
-  if (dif_aes_start(&aes, &transaction, &key_shares, NULL) != kDifOk) {
-    return aesScaAborted;
-  }
+  TRY(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
-  return aesScaOk;
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    TRY(aes_sca_load_fixed_seed());
+  }
+#endif
+
+  return OK_STATUS();
 }
 
 /**
@@ -201,29 +229,27 @@ static void aes_manual_trigger(void) {
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
  */
-static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
-                                   size_t plaintext_len) {
+static status_t aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   bool ready = false;
   do {
-    if (dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready) != kDifOk) {
-      return aesScaAborted;
-    }
+    TRY(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready));
   } while (!ready);
 
   dif_aes_data_t data;
   if (plaintext_len != sizeof(data.data)) {
-    return aesScaOutOfRange;
+    return ABORTED();
   }
   memcpy(data.data, plaintext, plaintext_len);
-  if (dif_aes_load_data(&aes, data)) {
-    return aesScaAborted;
-  }
+  TRY(dif_aes_load_data(&aes, data));
 
   // Start AES operation (this triggers the capture) and go to sleep.
   if (fpga_mode) {
-    // On the FPGA, the AES block automatically sets and unsets the trigger.
+    // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per.
+    // Activate the GPIO by setting the GPIO.
+    pentest_set_trigger_high();
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false,
                            false);
+    pentest_set_trigger_low();
   } else {
     // On the chip, we need to manually set and unset the trigger. This is done
     // in this function to have the trigger as close as possible to the AES
@@ -231,7 +257,7 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true,
                            false);
   }
-  return aesScaOk;
+  return OK_STATUS();
 }
 
 /**
@@ -325,14 +351,13 @@ static void aes_serial_advance_random_data(void) {
  *
  * @param uj The received uJSON data.
  */
-static status_t aes_sca_fvsr_key_batch_generate(aes_sca_data_t uj_data) {
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-  if (num_encryptions > kNumBatchOpsMax) {
+static status_t aes_sca_fvsr_key_batch_generate(
+    penetrationtest_num_enc_t uj_data) {
+  if (uj_data.num_enc > kNumBatchOpsMax) {
     return OUT_OF_RANGE();
   }
 
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     if (sample_fixed) {
       memcpy(batch_keys[i], key_fixed, kAesKeyLength);
       memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
@@ -349,37 +374,25 @@ static status_t aes_sca_fvsr_key_batch_generate(aes_sca_data_t uj_data) {
 }
 
 status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
-
-  // Get num_encryptions from input
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
   // Add to current block_ctr to check if > kBlockCtrMax
-  block_ctr += num_encryptions;
+  block_ctr += uj_data.num_enc;
   // Rewrite the key to reset the internal block counter. Otherwise, the AES
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    aes_key_mask_and_config(key_fixed, kAesKeyLength);
-    block_ctr = num_encryptions;
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
+    block_ctr = uj_data.num_enc;
   }
 
   // First plaintext has been set through command into batch_plaintext
 
-  // Set trigger high outside of loop
-  // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
-  // AES operation
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   dif_aes_data_t ciphertext;
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     // Encrypt
-    if (aes_encrypt(batch_plaintext, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_encrypt(batch_plaintext, kAesTextLength));
 
     // Get ciphertext
     bool ready = false;
@@ -394,12 +407,10 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
-  }
 
   // send last ciphertext
   aes_sca_ciphertext_t uj_output;
+  uj_output.ciphertext_length = kAesTextLength;
   memcpy(uj_output.ciphertext, (uint8_t *)ciphertext.data, kAesTextLength);
   RESP_OK(ujson_serialize_aes_sca_ciphertext_t, uj, &uj_output);
 
@@ -407,33 +418,21 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
-  block_ctr += num_encryptions;
+  block_ctr += uj_data.num_enc;
   // Rewrite the key to reset the internal block counter. Otherwise, the AES
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    block_ctr = num_encryptions;
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
+    block_ctr = uj_data.num_enc;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+    TRY(aes_encrypt(plaintext_random, kAesTextLength));
     aes_serial_advance_random();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -442,36 +441,22 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
-  block_ctr += num_encryptions;
+  block_ctr += uj_data.num_enc;
   // Rewrite the key to reset the internal block counter. Otherwise, the AES
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    block_ctr = num_encryptions;
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
+    block_ctr = uj_data.num_enc;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
+    TRY(aes_encrypt(plaintext_random, kAesTextLength));
     aes_serial_advance_random();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -492,16 +477,14 @@ status_t handle_aes_sca_batch_plaintext_set(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-  if (num_encryptions > kNumBatchOpsMax) {
+  if (uj_data.num_enc > kNumBatchOpsMax) {
     return OUT_OF_RANGE();
   }
 
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
     memcpy(batch_keys[i], key_fixed, kAesKeyLength);
     if (sample_fixed) {
       memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
@@ -512,15 +495,9 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
     sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
-    aes_encrypt(batch_plaintexts[i], kAesTextLength);
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
+    TRY(aes_encrypt(batch_plaintexts[i], kAesTextLength));
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -529,28 +506,16 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
-  uint32_t num_encryptions = 0;
-  num_encryptions = read_32(uj_data.data);
-  if (num_encryptions > kNumBatchOpsMax) {
+  if (uj_data.num_enc > kNumBatchOpsMax) {
     return OUT_OF_RANGE();
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
-  for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
+  for (uint32_t i = 0; i < uj_data.num_enc; ++i) {
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
+    TRY(aes_encrypt(batch_plaintexts[i], kAesTextLength));
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -561,8 +526,8 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_fvsr_key_batch_generate(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
+  penetrationtest_num_enc_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_num_enc_t(uj, &uj_data));
 
   return aes_sca_fvsr_key_batch_generate(uj_data);
 }
@@ -579,10 +544,8 @@ status_t handle_aes_sca_fvsr_key_set(ujson_t *uj) {
 }
 
 status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
-  aes_sca_data_t uj_data;
-  TRY(ujson_deserialize_aes_sca_data_t(uj, &uj_data));
-  uint32_t command = 0;
-  command = read_32(uj_data.data);
+  aes_sca_cmd_t uj_data;
+  TRY(ujson_deserialize_aes_sca_cmd_t(uj, &uj_data));
 
   static const uint8_t kPlaintextFixedStartFvsrKey[kAesTextLength] = {
       0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
@@ -611,7 +574,7 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
   static const uint32_t kPrngInitialState = 0x99999999;
 
   // If fixed-vs-random key analysis
-  if (command == 1) {
+  if (uj_data.cmd == 1) {
     memcpy(plaintext_fixed, kPlaintextFixedStartFvsrKey, kAesTextLength);
     memcpy(key_fixed, kKeyFixedStartFvsrKey, kAesKeyLength);
     memcpy(plaintext_random, kPlaintextRandomStartFvsrKey, kAesTextLength);
@@ -619,7 +582,7 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
   }
 
   // If fixed-vs-random data analysis
-  if (command == 2) {
+  if (uj_data.cmd == 2) {
     memcpy(plaintext_fixed, kPlaintextFixedStartFvsrData, kAesTextLength);
     memcpy(key_fixed, kKeyStartFvsrData, kAesKeyLength);
     memcpy(plaintext_random, kPlaintextRandomStartFvsrData, kAesTextLength);
@@ -675,9 +638,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
 
   memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
   block_ctr = 0;
-  if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
-    return ABORTED();
-  }
+  TRY(aes_key_mask_and_config(key_fixed, uj_key_data.key_length));
   return OK_STATUS();
 }
 
@@ -704,16 +665,12 @@ status_t handle_aes_pentest_seed_lfsr(ujson_t *uj) {
     }
     // Load the magic seed into the PRNG. After this, the PRNG outputs
     // an all-zero vector.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-    bool idle = false;
-    do {
-      TRY(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
-    } while (!idle);
-    // Load the PRNG output into the buffer stage.
-    TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+    TRY(aes_sca_load_fixed_seed());
   }
 #endif
 
+  TRY(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true, kTestTimeout);
   return OK_STATUS();
 }
 
@@ -739,21 +696,11 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = 1;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
-  if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
-    return ABORTED();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
-  }
+  TRY(aes_encrypt(uj_data.text, uj_data.text_length));
 
   TRY(aes_send_ciphertext(false, uj));
   return OK_STATUS();

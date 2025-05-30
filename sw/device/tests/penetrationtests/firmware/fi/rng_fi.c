@@ -22,11 +22,6 @@
 #include "edn_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
-
 enum {
   kEdnKatTimeout = (10 * 1000 * 1000),
   kCsrngExpectedOutputLen = 16,
@@ -104,12 +99,6 @@ static dif_edn_auto_params_t kat_auto_params_build(void) {
       .reseed_interval = 32,
   };
 }
-
-static const uint32_t kExpectedOutput[kEdnKatOutputLen] = {
-    0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
-    0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,
-    0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
-};
 
 /**
  * Flushes the data entropy buffer until there is no data available to read.
@@ -309,28 +298,17 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Enable EDN0 in auto request mode.
   TRY(dif_edn_set_auto_mode(&edn0, kat_auto_params_build()));
 
-  uint32_t ibex_rnd_data_got[kEdnBiasMaxData];
+  rng_fi_edn_t uj_output;
+  memset(uj_output.rand, 0, sizeof(uj_output.rand));
 
   pentest_set_trigger_high();
   asm volatile(NOP30);
   for (size_t it = 0; it < kEdnBiasMaxData; it++) {
     CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
-        &rv_core_ibex, kEdnKatTimeout, &ibex_rnd_data_got[it]));
+        &rv_core_ibex, kEdnKatTimeout, &uj_output.rand[it]));
   }
   asm volatile(NOP30);
   pentest_set_trigger_low();
-
-  rng_fi_edn_t uj_output;
-  memset(uj_output.rand, 0, sizeof(uj_output.rand));
-  size_t collisions = 0;
-  for (size_t got = 0; got < kEdnBiasMaxData; got++) {
-    for (size_t ref = 0; ref < kEdnBiasMaxData; ref++) {
-      if (ibex_rnd_data_got[got] == kExpectedOutput[ref]) {
-        uj_output.rand[collisions] = ibex_rnd_data_got[got];
-        collisions++;
-      }
-    }
-  }
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
@@ -342,7 +320,6 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
 
   // Send result & ERR_STATUS to host.
-  uj_output.collisions = collisions;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
@@ -375,7 +352,7 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   pentest_set_trigger_low();
 
   // Check if there are any collisions.
-  rng_fi_edn_t uj_output;
+  rng_fi_edn_collisions_t uj_output;
   memset(uj_output.rand, 0, sizeof(uj_output.rand));
   size_t collisions = 0;
   for (size_t outer = 0; outer < kEdnBusAckMaxData; outer++) {
@@ -404,7 +381,7 @@ status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   uj_output.err_status = err_ibx;
-  RESP_OK(ujson_serialize_rng_fi_edn_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_rng_fi_edn_collisions_t, uj, &uj_output);
   return OK_STATUS();
 }
 

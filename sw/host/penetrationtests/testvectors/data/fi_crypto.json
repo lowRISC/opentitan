@@ -1,0 +1,99 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "Aes",
+    "mode": "{\"key_trigger\": true,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
+    "expected_output": "{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "Aes",
+    "mode": "{\"key_trigger\": false,\"plaintext_trigger\": true,\"encrypt_trigger\": false,\"ciphertext_trigger\": false}",
+    "expected_output": "{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "Aes",
+    "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": true,\"ciphertext_trigger\": false}",
+    "expected_output": "{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 5,
+    "command": "Aes",
+    "mode": "{\"key_trigger\": false,\"plaintext_trigger\": false,\"encrypt_trigger\": false,\"ciphertext_trigger\": true}",
+    "expected_output": "{\"ciphertext\":[141,145,88,155,234,129,16,92,221,12,69,21,69,208,99,12],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 6,
+    "command": "Kmac",
+    "mode": "{\"key_trigger\": true,\"absorb_trigger\": false,\"static_trigger\": false,\"squeeze_trigger\": false}",
+    "expected_output": "{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 7,
+    "command": "Kmac",
+    "mode": "{\"key_trigger\": false,\"absorb_trigger\": true,\"static_trigger\": false,\"squeeze_trigger\": false}",
+    "expected_output": "{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 8,
+    "command": "Kmac",
+    "mode": "{\"key_trigger\": false,\"absorb_trigger\": false,\"static_trigger\": true,\"squeeze_trigger\": false}",
+    "expected_output": "{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 9,
+    "command": "Kmac",
+    "mode": "{\"key_trigger\": false,\"absorb_trigger\": false,\"static_trigger\": false,\"squeeze_trigger\": true}",
+    "expected_output": "{\"digest\":[184,34,91,108,231,47,251,27],\"digest_2nd\":[142,188,186,201,216,47,203,192],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 10,
+    "command": "KmacState",
+    "expected_output": "{\"digest\":[184,34,91,108,231,47,251,27],\"share0\":[168,31,28,190,140,6,235,119,202,55,129,61,31,221,97,54,201,182,175,200,60,240,99,162,34,70,184,1,169,199,155,137,199,21,166,226,106,179,98,249,101,65,178,235,2,211,113,56,88,225,175,108,61,95,19,198,197,231,202,185,4,101,56,244,114,31,234,125,225,126,28,173,181,108,127,148,160,220,131,34,182,88,177,17,94,56,199,224,126,187,122,92,152,238,216,100,88,61,108,213,29,251,235,148,145,99,77,149,221,13,128,228,13,26,230,143,116,223,228,207,233,90,156,121,223,120,91,21,84,191,96,64,206,80,162,187,114,83,219,121,163,162,109,86,188,116,65,158,80,212,144,98,209,56,113,134,43,85,112,128,14,25,139,126,49,104,231,41,230,90,143,245,177,42,209,230,176,204,61,38,235,51,106,56,204,18,44,115,30,106,30,159,60,152,217,147,245,173,18,99], \"share1\": [16,61,71,210,107,41,16,108,170,255,75,141,112,27,129,192,106,34,217,60,0,9,134,114,167,165,248,253,101,35,171,138,185,143,55,87,2,191,132,184,145,19,156,5,186,11,190,103,7,53,249,90,176,27,236,206,170,101,38,115,109,136,230,237,252,163,80,180,57,81,215,109,102,224,97,53,168,152,2,43,118,77,150,109,153,47,176,198,185,117,94,130,159,28,85,216,85,93,101,95,242,84,50,129,216,139,224,215,217,68,215,28,238,249,156,219,224,30,116,181,94,13,244,179,232,1,217,35,109,31,50,174,157,31,126,158,254,106,227,249,54,150,163,32,114,31,117,24,160,167,100,139,108,127,12,236,92,245,254,144,188,30,44,151,48,78,221,38,113,206,94,4,187,19,17,217,159,162,248,255,171,51,124,205,226,207,231,86,132,74,185,169,126,221,67,204,253,13,21,24], \"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 11,
+    "command": "Sha256",
+    "input": "{\"message\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]}",
+    "mode": "{\"start_trigger\": true,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": false}",
+    "expected_output": "{\"tag\":[686569403,627255979,3962665531,1869430007,3580678696,2543765621,4151418325,927402239],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 12,
+    "command": "Sha256",
+    "input": "{\"message\": [255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": true,\"process_trigger\": false,\"finish_trigger\": false}",
+    "expected_output": "{\"tag\":[1080378907,3894047529,4265098468,2275438372,2555095219,287412521,1595297801,1522967956],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 13,
+    "command": "Sha256",
+    "input": "{\"message\": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": true,\"finish_trigger\": false}",
+    "expected_output": "{\"tag\":[3996813713,3685128488,2749163006,1137088592,438890749,3186001028,96417470,3192245030],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 14,
+    "command": "Sha256",
+    "input": "{\"message\": [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]}",
+    "mode": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": "{\"tag\":[956051232,3683224361,4139697432,3225996988,496274419,3147268997,3136358402,529633942],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 15,
+    "command": "ShadowRegAccess",
+    "expected_output": "{\"result\":[68162304,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  },
+  {
+    "test_case_id": 16,
+    "command": "ShadowRegRead",
+    "expected_output": "{\"result\":[0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+  }
+]

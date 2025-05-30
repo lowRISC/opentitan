@@ -79,12 +79,6 @@ static uint32_t char_mem_num_words;
 uint32_t key_share_0_l_ref, key_share_0_h_ref;
 uint32_t key_share_1_l_ref, key_share_1_h_ref;
 
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
-#define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
-
 // Reference values.
 static const uint32_t ref_values[32] = {
     0x1BADB002, 0x8BADF00D, 0xA5A5A5A5, 0xABABABAB, 0xABBABABE, 0xABADCAFE,

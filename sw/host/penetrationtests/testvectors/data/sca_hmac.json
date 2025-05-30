@@ -1,0 +1,28 @@
+[
+  {
+    "test_case_id": 1,
+    "command": "Init",
+    "input": "{\"icache_disable\": true,\"dummy_instr_disable\": true,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
+    "expected_output": "{\"device_id\":[0,0,0,0,0,0,0,0],\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}"
+  },
+  {
+    "test_case_id": 2,
+    "command": "Single",
+    "key": "{\"key\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],\"mask\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "input": "{\"message\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "expected_output": "{\"tag\":[73,93,70,170,57,45,81,19,46,219,147,188,73,230,14,202,174,183,128,47,58,229,41,119,157,88,131,249,51,10,245,97]}"
+  },
+  {
+    "test_case_id": 3,
+    "command": "BatchFvsr",
+    "key": "{\"key\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"mask\":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15]}",
+    "input": "{\"num_iterations\":25}",
+    "expected_output": "{\"tag\":[222,119,46,197,96,156,175,74,143,135,111,165,17,180,223,120,156,80,64,88,128,220,191,153,226,80,82,55,116,232,101,144]}"
+  },
+  {
+    "test_case_id": 4,
+    "command": "BatchRandom",
+    "input": "{\"num_iterations\":50}",
+    "expected_output": "{\"tag\":[216,117,234,27,24,1,76,70,216,164,161,144,246,30,223,31,26,39,167,83,73,209,234,252,85,4,189,153,73,182,197,155]}"
+  }
+]

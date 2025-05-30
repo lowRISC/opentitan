@@ -20,7 +20,8 @@ extern "C" {
     value(_, BatchFvsr) \
     value(_, BatchRandom) \
     value(_, Single)
-UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND);
+C_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND));
+RUST_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
 #define HMACSCA_MESSAGE(field, string) \
     field(message, uint8_t, HMACSCA_CMD_MAX_MESSAGE_BYTES)

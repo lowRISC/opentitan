@@ -9,10 +9,12 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_aes.h"
+#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
+#include "sw/device/lib/testing/hmac_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -22,11 +24,6 @@
 #include "aes_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "kmac_regs.h"
-
-// NOP macros.
-#define NOP1 "addi x0, x0, 0\n"
-#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
-#define NOP30 NOP10 NOP10 NOP10
 
 #define SHADOW_REG_ACCESS(shadow_reg_addr, tmp)    \
   abs_mmio_write32_shadowed(shadow_reg_addr, tmp); \
@@ -53,11 +50,17 @@ enum {
 
 static dif_aes_t aes;
 static dif_kmac_t kmac;
+static dif_hmac_t hmac;
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
 static dif_aes_key_share_t aes_key_shares;
 static dif_aes_data_t aes_plaintext;
+
+static const dif_hmac_transaction_t kHmacTransactionConfig = {
+    .digest_endianness = kDifHmacEndiannessLittle,
+    .message_endianness = kDifHmacEndiannessLittle,
+};
 
 /**
  * KMAC test description.
@@ -242,7 +245,8 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralAes |
                    kPentestPeripheralKmac | kPentestPeripheralEdn |
-                   kPentestPeripheralCsrng | kPentestPeripheralEntropy);
+                   kPentestPeripheralCsrng | kPentestPeripheralEntropy |
+                   kPentestPeripheralHmac);
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
   pentest_configure_alert_handler();
@@ -286,6 +290,10 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
   };
 
   TRY(dif_kmac_configure(&kmac, config));
+
+  // Init the HMAC block.
+  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
+  TRY(dif_hmac_init(base_addr, &hmac));
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
@@ -387,9 +395,6 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
 }
 
 status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
-  // Get the test mode.
-  crypto_fi_kmac_mode_t uj_data;
-  TRY(ujson_deserialize_crypto_fi_kmac_mode_t(uj, &uj_data));
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -447,6 +452,66 @@ status_t handle_crypto_fi_kmac_state(ujson_t *uj) {
   RESP_OK(ujson_serialize_crypto_fi_kmac_state_t, uj, &uj_output);
 
   TRY(dif_kmac_end(&kmac, &kmac_operation_state));
+  return OK_STATUS();
+}
+
+status_t handle_crypto_fi_sha256(ujson_t *uj) {
+  // Get the message.
+  crypto_fi_hmac_message_t uj_msg;
+  TRY(ujson_deserialize_crypto_fi_hmac_message_t(uj, &uj_msg));
+  // Get the test mode.
+  crypto_fi_hmac_mode_t uj_data;
+  TRY(ujson_deserialize_crypto_fi_hmac_mode_t(uj, &uj_data));
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  if (uj_data.start_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_hmac_mode_sha256_start(&hmac, kHmacTransactionConfig));
+  if (uj_data.start_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  if (uj_data.msg_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(hmac_testutils_push_message(&hmac, (char *)uj_msg.message,
+                                  sizeof(uj_msg.message)));
+  if (uj_data.msg_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  if (uj_data.process_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(dif_hmac_process(&hmac));
+  if (uj_data.process_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  dif_hmac_digest_t digest;
+  if (uj_data.finish_trigger) {
+    pentest_set_trigger_high();
+  }
+  TRY(hmac_testutils_finish_polled(&hmac, &digest));
+  if (uj_data.finish_trigger) {
+    pentest_set_trigger_low();
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send the digest and the alerts back to the host.
+  crypto_fi_hmac_tag_t uj_output;
+  uj_output.err_status = codes;
+  memcpy(uj_output.tag, digest.digest, sizeof(uj_output.tag));
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_crypto_fi_hmac_tag_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -614,6 +679,8 @@ status_t handle_crypto_fi(ujson_t *uj) {
       return handle_crypto_fi_kmac(uj);
     case kCryptoFiSubcommandKmacState:
       return handle_crypto_fi_kmac_state(uj);
+    case kCryptoFiSubcommandSha256:
+      return handle_crypto_fi_sha256(uj);
     case kCryptoFiSubcommandShadowRegAccess:
       return handle_crypto_fi_shadow_reg_access(uj);
     case kCryptoFiSubcommandShadowRegRead:
