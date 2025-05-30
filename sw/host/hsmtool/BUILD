@@ -6,6 +6,11 @@ load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc", "rust_library", "r
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
+
 alias(
     name = "binding_srcs",
     actual = "@crate_index//:cryptoki-sys-binding-srcs",

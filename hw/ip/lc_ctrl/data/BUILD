@@ -10,3 +10,8 @@ filegroup(
 )
 
 exports_files(glob(["**"]))
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["*_testplan.hjson"]),
+)

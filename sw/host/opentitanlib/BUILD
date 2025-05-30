@@ -375,3 +375,8 @@ rust_doc(
     name = "opentitanlib_doc",
     crate = ":opentitanlib",
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

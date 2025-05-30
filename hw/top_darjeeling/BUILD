@@ -41,3 +41,20 @@ sim_dv(
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//hw/top_darjeeling/ip_autogen/ac_range_check:doc_files",
+        "//hw/top_darjeeling/ip_autogen/alert_handler:doc_files",
+        "//hw/top_darjeeling/ip_autogen/clkmgr:doc_files",
+        "//hw/top_darjeeling/ip_autogen/gpio:doc_files",
+        "//hw/top_darjeeling/ip_autogen/otp_ctrl:doc_files",
+        "//hw/top_darjeeling/ip_autogen/pinmux:doc_files",
+        "//hw/top_darjeeling/ip_autogen/pwrmgr:doc_files",
+        "//hw/top_darjeeling/ip_autogen/racl_ctrl:doc_files",
+        "//hw/top_darjeeling/ip_autogen/rstmgr:doc_files",
+        "//hw/top_darjeeling/ip_autogen/rv_core_ibex:doc_files",
+        "//hw/top_darjeeling/ip_autogen/rv_plic:doc_files",
+    ],
+)

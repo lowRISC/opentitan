@@ -17,3 +17,8 @@ filegroup(
         "//hw/ip/usbdev/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/ip/usbdev/data:doc_files"],
+)

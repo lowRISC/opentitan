@@ -17,3 +17,8 @@ filegroup(
         "//hw/ip/rv_dm/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + ["//hw/ip/rv_dm/data:doc_files"],
+)

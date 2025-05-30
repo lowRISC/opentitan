@@ -17,3 +17,10 @@ filegroup(
         "//hw/ip/otbn/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]) + [
+        "//hw/ip/otbn/dv/otbnsim:doc_files",
+    ],
+)

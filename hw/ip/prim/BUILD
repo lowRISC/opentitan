@@ -22,3 +22,8 @@ filegroup(
         ":rtl_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)

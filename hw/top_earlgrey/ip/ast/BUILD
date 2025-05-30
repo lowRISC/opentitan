@@ -17,3 +17,8 @@ filegroup(
         "//hw/top_earlgrey/ip/ast/data:all_files",
     ],
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = glob(["**/*.md"]),
+)
