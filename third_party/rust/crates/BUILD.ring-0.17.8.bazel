@@ -6,16 +6,29 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
+load(
+    "@rules_rust//cargo:defs.bzl",
+    "cargo_build_script",
+    "cargo_toml_env_vars",
+)
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cargo_toml_env_vars(
+    name = "cargo_toml_env_vars",
+    src = "Cargo.toml",
+)
+
 rust_library(
     name = "ring",
-    srcs = glob(["**/*.rs"]),
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
     compile_data = glob(
         include = ["**"],
+        allow_empty = True,
         exclude = [
             "**/* *",
             ".tmp_git_root/**/*",
@@ -27,7 +40,12 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2021",
-    rustc_flags = ["--cap-lints=allow"],
+    rustc_env_files = [
+        ":cargo_toml_env_vars",
+    ],
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
     tags = [
         "cargo-bazel",
         "crate-name=ring",
@@ -39,10 +57,13 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-darwin": [],
         "@rules_rust//rust/platform:aarch64-apple-ios": [],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [],
-        "@rules_rust//rust/platform:aarch64-fuchsia": [],
         "@rules_rust//rust/platform:aarch64-linux-android": [],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [],
+        "@rules_rust//rust/platform:aarch64-unknown-fuchsia": [],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu": [],
+        "@rules_rust//rust/platform:aarch64-unknown-nto-qnx710": [],
+        "@rules_rust//rust/platform:aarch64-unknown-uefi": [],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [],
         "@rules_rust//rust/platform:armv7-linux-androideabi": [],
         "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi": [],
@@ -58,15 +79,17 @@ rust_library(
         "@rules_rust//rust/platform:thumbv7em-none-eabi": [],
         "@rules_rust//rust/platform:thumbv8m.main-none-eabi": [],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [],
-        "@rules_rust//rust/platform:wasm32-wasi": [],
+        "@rules_rust//rust/platform:wasm32-wasip1": [],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [],
         "@rules_rust//rust/platform:x86_64-apple-ios": [],
-        "@rules_rust//rust/platform:x86_64-fuchsia": [],
         "@rules_rust//rust/platform:x86_64-linux-android": [],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [],
+        "@rules_rust//rust/platform:x86_64-unknown-fuchsia": [],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [],
+        "@rules_rust//rust/platform:x86_64-unknown-nixos-gnu": [],
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
+        "@rules_rust//rust/platform:x86_64-unknown-uefi": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
     version = "0.17.8",
@@ -85,9 +108,6 @@ rust_library(
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
-        "@rules_rust//rust/platform:aarch64-fuchsia": [
-            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
-        ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
             "@crate_index__libc-0.2.169//:libc",  # cfg(all(any(target_os = "android", target_os = "linux"), any(target_arch = "aarch64", target_arch = "arm")))
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
@@ -96,8 +116,21 @@ rust_library(
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
             "@crate_index__windows-sys-0.52.0//:windows_sys",  # cfg(all(target_arch = "aarch64", target_os = "windows"))
         ],
+        "@rules_rust//rust/platform:aarch64-unknown-fuchsia": [
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
             "@crate_index__libc-0.2.169//:libc",  # cfg(all(any(target_os = "android", target_os = "linux"), any(target_arch = "aarch64", target_arch = "arm")))
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-nixos-gnu": [
+            "@crate_index__libc-0.2.169//:libc",  # cfg(all(any(target_os = "android", target_os = "linux"), any(target_arch = "aarch64", target_arch = "arm")))
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-nto-qnx710": [
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
+        "@rules_rust//rust/platform:aarch64-unknown-uefi": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
         "@rules_rust//rust/platform:arm-unknown-linux-gnueabi": [
@@ -139,9 +172,6 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-apple-ios": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
-        "@rules_rust//rust/platform:x86_64-fuchsia": [
-            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
-        ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
@@ -151,10 +181,19 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
+        "@rules_rust//rust/platform:x86_64-unknown-fuchsia": [
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
+        "@rules_rust//rust/platform:x86_64-unknown-nixos-gnu": [
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
         "@rules_rust//rust/platform:x86_64-unknown-none": [
+            "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
+        ],
+        "@rules_rust//rust/platform:x86_64-unknown-uefi": [
             "@crate_index__spin-0.9.8//:spin",  # cfg(any(target_arch = "aarch64", target_arch = "arm", target_arch = "x86", target_arch = "x86_64"))
         ],
         "//conditions:default": [],
@@ -162,12 +201,29 @@ rust_library(
 )
 
 cargo_build_script(
-    name = "ring_build_script",
-    srcs = glob(["**/*.rs"]),
+    name = "_bs",
+    srcs = glob(
+        include = ["**/*.rs"],
+        allow_empty = True,
+    ),
+    compile_data = glob(
+        include = ["**"],
+        allow_empty = True,
+        exclude = [
+            "**/* *",
+            "**/*.rs",
+            ".tmp_git_root/**/*",
+            "BUILD",
+            "BUILD.bazel",
+            "WORKSPACE",
+            "WORKSPACE.bazel",
+        ],
+    ),
     crate_name = "build_script_build",
     crate_root = "build.rs",
     data = glob(
         include = ["**"],
+        allow_empty = True,
         exclude = [
             "**/* *",
             ".tmp_git_root/**/*",
@@ -179,6 +235,7 @@ cargo_build_script(
     ),
     edition = "2021",
     links = "ring_core_0_17_8",
+    pkg_name = "ring",
     rustc_flags = [
         "--cap-lints=allow",
     ],
@@ -198,6 +255,6 @@ cargo_build_script(
 
 alias(
     name = "build_script_build",
-    actual = "ring_build_script",
+    actual = ":_bs",
     tags = ["manual"],
 )

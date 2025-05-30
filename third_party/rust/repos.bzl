@@ -65,7 +65,7 @@ rust_bindgen_libstdcxx = repository_rule(
     environ = ["RULES_RUST_BINDGEN_LIBSTDCXX_DIR"],
 )
 
-def rust_repos(rules_rust = None, serde_annotate = None):
+def rust_repos(rules_rust = None, serde_annotate = None, rules_rust_bindgen = None):
     # Since rules_rust 0.23.0, bindgen depedns on the llvm project and
     # builds the llvm libaries from source.  Building llvm from source has a
     # huge impact on build times.  Instead, we depend on a pre-built llvm
@@ -95,9 +95,18 @@ def rust_repos(rules_rust = None, serde_annotate = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "1a110ae8bfa34091e2a62e4c0325f8231f934b2956f3a585d4cafba5c81c2676",
-        strip_prefix = "rules_rust-rebase-20231115_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20231115_01.tar.gz",
+        integrity = "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz"],
+        patches = ["//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch"],
+    )
+
+    http_archive_or_local(
+        name = "rules_rust_bindgen",
+        local = rules_rust_bindgen,
+        integrity = "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
+        strip_prefix = "extensions/bindgen",
+        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz"],
+        patches = ["//third_party/rust/patches:rules_rust.bindgen_static_lib.patch"],
     )
 
     http_archive_or_local(

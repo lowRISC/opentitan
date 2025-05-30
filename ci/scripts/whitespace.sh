@@ -28,6 +28,7 @@ git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
         ':!signing/softhsm/tokens/*' \
         ':!sw/device/silicon_creator/rom/e2e/ate/binaries/*' \
         ':!sw/device/silicon_creator/rom/e2e/ate/signatures/*' \
+        ':!*/testdata/*' \
         ':!*/vendor/*' | \
     xargs -r util/fix_trailing_whitespace.py --dry-run || {
     echo -n "##vso[task.logissue type=error]"

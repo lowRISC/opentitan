@@ -13,21 +13,39 @@ exports_files(
         "cargo-bazel.json",
         "crates.bzl",
         "defs.bzl",
-    ] + glob(["*.bazel"]),
+    ] + glob(
+        include = ["*.bazel"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "srcs",
-    srcs = glob([
-        "*.bazel",
-        "*.bzl",
-    ]),
+    srcs = glob(
+        include = [
+            "*.bazel",
+            "*.bzl",
+        ],
+        allow_empty = True,
+    ),
 )
 
 # Workspace Member Dependencies
 alias(
+    name = "ghash-0.4.4",
+    actual = "@tock_index__ghash-0.4.4//:ghash",
+    tags = ["manual"],
+)
+
+alias(
     name = "ghash",
     actual = "@tock_index__ghash-0.4.4//:ghash",
+    tags = ["manual"],
+)
+
+alias(
+    name = "libm-0.2.7",
+    actual = "@tock_index__libm-0.2.7//:libm",
     tags = ["manual"],
 )
 

@@ -97,7 +97,7 @@ impl SignData {
                 // Data is a slice of plaintext: hash.
                 SignData::Slice(a, b) => Self::data_plain_text(&input[*a..*b]),
             },
-            _ => Err(HsmError::Unsupported("SignData prepare for {keytype:?}".into()).into()),
+            _ => Err(HsmError::Unsupported(format!("SignData prepare for {keytype:?}")).into()),
         }
     }
 
@@ -155,7 +155,7 @@ impl SignData {
                 SignData::Raw => Ok(Mechanism::Ecdsa),
                 SignData::Slice(_, _) => Ok(Mechanism::Ecdsa),
             },
-            _ => Err(HsmError::Unsupported("No mechanism for {keytype:?}".into()).into()),
+            _ => Err(HsmError::Unsupported(format!("No mechanism for {keytype:?}")).into()),
         }
     }
 

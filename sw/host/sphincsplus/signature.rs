@@ -17,8 +17,7 @@ pub struct SpxRawSignature {
 
 impl SpxRawSignature {
     pub fn read(src: &mut impl Read, algorithm: SphincsPlus) -> Result<Self, SpxError> {
-        let mut raw_data = Vec::new();
-        raw_data.resize(algorithm.signature_len(), 0);
+        let mut raw_data = vec![0; algorithm.signature_len()];
         src.read_exact(&mut raw_data)?;
         Ok(SpxRawSignature { raw_data })
     }
