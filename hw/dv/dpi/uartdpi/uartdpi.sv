@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module uartdpi #(
-  parameter integer BAUD = 'x,
-  parameter integer FREQ = 'x,
-  parameter string NAME = "uart0",
-  parameter string EXIT_STRING = "",
+  parameter integer BAUD               = 'x,
+  parameter integer FREQ               = 'x,
+  parameter string  NAME               = "uart0",
+  parameter string  EXIT_STRING        = "",
   parameter integer EXIT_STRING_LENGTH = 0
 )(
   input  logic clk_i,
@@ -61,8 +61,8 @@ module uartdpi #(
 
   // TX
   reg txactive;
-  int  txcount;
-  int  txcyccount;
+  int txcount;
+  int txcyccount;
   reg [9:0] txsymbol;
   bit seen_reset;
 
