@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:util
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:count
     files:
       - rtl/prim_fifo_async_sram_adapter.sv
       - rtl/prim_fifo_async_simple.sv
