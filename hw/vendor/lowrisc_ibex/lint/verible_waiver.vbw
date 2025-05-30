@@ -1,0 +1,1 @@
+waive --rule=module-port --location="spec_instance.sv"

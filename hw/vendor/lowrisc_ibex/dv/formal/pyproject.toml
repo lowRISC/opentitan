@@ -1,0 +1,26 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[tool.poetry]
+name = "ibex"
+version = "0.0.0"
+description = "Ibex"
+authors = []
+license = "Apache 2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+packaging = "23.1"
+anytree = "2.8.0"
+hjson = "3.1.0"
+mako = "1.1.6"
+pyyaml = "6.0"
+wheel = "0.41.2"
+edalize = { git = "https://github.com/lowRISC/edalize.git", tag = "v0.4.0"}
+fusesoc = { git = "https://github.com/lowRISC/fusesoc.git", tag = "ot-0.4" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

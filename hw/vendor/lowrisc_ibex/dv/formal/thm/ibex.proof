@@ -1,0 +1,337 @@
+# Copyright lowRISC contributors.
+# Copyright 2024 University of Oxford, see also CREDITS.md.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# Original author: Louis-Emile Ploix
+# SPDX-License-Identifier: Apache-2.0
+
+# This file contains mostly just small helper invariants about all sorts. They are all generally easy to prove.
+# It also contains the first memory graph induction, it's consequences, and liveness.
+
+lemma ibex
+  NotDataIndTiming: have (~`CSR.data_ind_timing_o)
+
+  PrivMorUMpp: have ((`CSR.mstatus_q.mpp == PRIV_LVL_U) || (`CSR.mstatus_q.mpp == PRIV_LVL_M))
+  PrivMorUCur: have ((`CSR.priv_lvl_q == PRIV_LVL_U) || (`CSR.priv_lvl_q == PRIV_LVL_M))
+
+  PCBit0: have (`ID.instr_valid_i -> ~`CR.pc_id[0])
+  MEPCBit0: have (~`CSR.mepc_q[0])
+  MtvecLow: have (pre_mtvec[7:0] == 8'h01)
+  NmiMode: have (~`IDC.nmi_mode_q)
+  EBreakIntoDebug: have (~`IDC.ebreak_into_debug)
+  NoEnterDebugMode: have (~`IDC.enter_debug_mode)
+  IfBusErr: have (`IF.if_id_pipe_reg_we |-> ~`IF.if_instr_bus_err)
+
+  WfiKill: have (wbexc_exists & wbexc_is_wfi |-> ex_kill)
+  ErrKill: have (wbexc_exists & wbexc_err |-> ex_kill)
+
+  ReqRequiresInstr: have (data_req_o |-> ex_has_compressed_instr)
+  ReqRequiresNotIllegal: have (data_req_o |->  ~`CR.illegal_insn_id & ~`CR.illegal_c_insn_id)
+
+  AluInstrMatch: have (`ID.instr_valid_i |-> `CR.instr_rdata_id == `CR.instr_rdata_alu_id)
+
+  IdExNotReq: have (~ex_is_mem_instr -> ~data_req_o)
+  IdExNotMemMuteIncr: have (`CR.instr_valid_id & ~ex_is_mem_instr -> ~`ID.lsu_addr_incr_req_i & ~`ID.lsu_req_done_i)
+  ExecNoSpecialReq: have (`ID.instr_executing & ~instr_will_progress |-> ~`IDC.special_req)
+  StallIdFSM1: have (`ID.instr_executing && `ID.id_fsm_d != 0 |-> ~instr_will_progress)
+
+  WbexcErrMonotonic: have (wbexc_exists & wbexc_err & ~instr_will_progress & ~wbexc_finishing |=> wbexc_err)
+
+  NonCompressedMatch: have (wbexc_finishing && wbexc_instr[1:0] == 2'b11 |-> wbexc_instr == wbexc_decompressed_instr)
+  CompressedMatch: have (ex_has_compressed_instr |-> ex_compressed_instr[15:0] == `CR.instr_rdata_c_id)
+
+  PostFlushNoInstr: have (`IDC.ctrl_fsm_cs == `IDC.FLUSH |=> ~`CR.instr_valid_id)
+
+  DecompressionIllegalIdEx: have (ex_has_compressed_instr |-> decompressed_instr_illegal == `CR.illegal_c_insn_id)
+  DecompressionMatchIdEx: have (ex_has_compressed_instr & ~`CR.illegal_insn_id & ~`CR.illegal_c_insn_id |-> decompressed_instr == `CR.instr_rdata_id)
+  DecompressionIllegalWbexc: have (wbexc_exists |-> decompressed_instr_illegal_2 == wbexc_compressed_illegal)
+  DecompressionMatchWbexc: have (wbexc_exists & ~wbexc_illegal & ~wbexc_compressed_illegal |-> decompressed_instr_2 == wbexc_decompressed_instr)
+
+  HasCompressed: have (`CR.instr_valid_id |-> ex_has_compressed_instr)
+  LSUInstrStable: have (`LSU.ls_fsm_cs != 0 |-> $stable(`CR.instr_rdata_id))
+
+  NoneIdleIsDecode: have (`LSU.ls_fsm_cs != 0 |-> `IDC.ctrl_fsm_cs == 5)
+  LSUFinishWaitRvalidMisGntsDone: have (`LSU.ls_fsm_cs == 4 && data_rvalid_i |-> instr_will_progress)
+  LSUFinishWaitRvalidMis: have (`LSU.ls_fsm_cs == 2 && data_rvalid_i && data_gnt_i |-> instr_will_progress)
+  LSUFinishWaitGnt: have (`LSU.ls_fsm_cs == 3 && data_gnt_i |-> instr_will_progress)
+  LSUFinishFast: have (`LSU.ls_fsm_cs == 0 && data_gnt_i && `LSU.ls_fsm_ns == 0 |-> instr_will_progress)
+
+  SndGntReqFstGnt: have (mem_gnt_snd_d |-> mem_gnt_fst_q)
+
+  WBOutstandingNoReq: have (outstanding_mem & ~`LSU.lsu_resp_valid_o |-> ~data_req_o)
+
+  NotIdleReqDec: have (`LSU.ls_fsm_cs != `LSU.IDLE |-> `ID.lsu_req_dec)
+  NotIdleNoExErr: have (`LSU.ls_fsm_cs != `LSU.IDLE |-> ~ex_err)
+
+  ProgressNoWbStall: have (instr_will_progress |-> ~`IDC.stall_wb_i)
+
+  NoStoreWb: have (`WBG.wb_instr_type_q == WB_INSTR_STORE |-> ~`WB.rf_we_wb_o)
+  WbInstrDefined: have (`WBG.wb_valid_q |-> `WBG.wb_instr_type_q != 2'b11)
+
+  RfWriteWb: have (`CR.rf_write_wb & wbexc_finishing |-> `WB.rf_we_wb_o)
+
+  CtrlWbexc: have (wbexc_exists |-> `IDC.ctrl_fsm_cs == `IDC.DECODE || `IDC.ctrl_fsm_cs == `IDC.FLUSH)
+  ProgressDecode: have (instr_will_progress |-> `IDC.ctrl_fsm_cs == `IDC.DECODE)
+
+  BranchedProg: have (ex_has_branched_d & ~instr_will_progress |=> ex_has_branched_d | `IDC.wb_exception_o)
+
+  IDCFsmAny: have (`IDC.ctrl_fsm_cs inside {`IDC.RESET, `IDC.BOOT_SET, `IDC.WAIT_SLEEP, `IDC.SLEEP, `IDC.FIRST_FETCH, `IDC.DECODE, `IDC.IRQ_TAKEN, `IDC.FLUSH})
+  IDCFsmNotBoot: have (##3 ~(`IDC.ctrl_fsm_cs inside {`IDC.RESET, `IDC.BOOT_SET}))
+
+  MemInstrEx: have (`LSU.ls_fsm_cs != `LSU.IDLE |-> ex_is_mem_instr)
+  MemInstrWbLoad: have (`WB.outstanding_load_wb_o |-> wbexc_is_load_instr)
+  MemInstrWbStore: have (`WB.outstanding_store_wb_o |-> wbexc_is_store_instr)
+  MemClockEn: have (`LSU.ls_fsm_cs != `LSU.IDLE |-> ibex_top_i.core_busy_q)
+
+  ClockEn: have (instr_will_progress |-> ibex_top_i.clock_en)
+  EnWbProgress: have (`WB.en_wb_i |-> instr_will_progress)
+  DoneFin: have (`WBG.wb_done & `WBG.wb_valid_q & ~wbexc_err |-> wbexc_finishing)
+  ValidExists: have (`WBG.wb_valid_q |-> wbexc_exists)
+
+  UnCheckableNoPresent: have (wbexc_exists & `ISS_CSR & ~wbexc_is_checkable_csr |-> ~has_spec_past)
+
+  MemInstrWbWrite: have (
+    wbexc_exists & wbexc_is_store_instr & ~wbexc_err |->
+    ~`WBG.rf_we_wb_q & (`WBG.wb_instr_type_q != WB_INSTR_LOAD)
+  )
+  ValidToBranch: have (ex_has_branched_d |-> `CR.instr_valid_id)
+
+  LsuWeq: block
+    Ex: have (`LSU.ls_fsm_cs != `LSU.IDLE && mem_gnt_fst_q |-> ex_is_store_instr == `LSU.data_we_q)
+    /
+    Wb: have (outstanding_mem |-> wbexc_is_store_instr == `LSU.data_we_q)
+
+  block
+    LSUEmpty: have (`LSU.ls_fsm_cs != `LSU.IDLE |-> ~wbexc_exists & ~ex_kill)
+    /
+    LSUEnd: have (`LSU.lsu_req_done_o |-> instr_will_progress)
+
+  block
+    NoFinishingIRQ: have (wbexc_exists |-> ~wbexc_handling_irq)
+    /
+    SpecPastReg: have (wbexc_exists & wbexc_post_wX_en |-> spec_past_regs[wbexc_post_wX_addr] == wbexc_post_wX)
+    SpecPastWbexc:
+    each X Priv:(priv) Mstatus:(mstatus) Mie:(mie) Mcause:(mcause) Mtval:(mtval) Mtvec:(mtvec) \
+          Mscratch:(mscratch) Mepc:(mepc) Mcounteren:(mcounteren) \
+          Pmp_cfg:(pmp_cfg) Pmp_addr:(pmp_addr) Mseccfg:(mseccfg) \
+          Pc:(pc)
+      have (wbexc_exists |-> spec_past_``X == wbexc_post_``X)
+
+  /
+
+  # This graph induction bounds the number of waiting responses,
+  # and establishes conditions for PMP errors, and relates the presence
+  # of waiting responses to the outstanding_mem signal.
+  # It includes all LSU states and a couple of extra states for
+  # once the instruction moves/has moved to writeback.
+  Memory: graph_induction +rev
+    inv idle (
+      ~`LSU.handle_misaligned_q &&
+      `CR.lsu_resp_valid == outstanding_mem &&
+      data_mem_assume.outstanding_reqs == data_gnt_i
+    )
+    inv idle_active (
+      data_mem_assume.outstanding_reqs == data_gnt_i &&
+      ~`LSU.pmp_err_q && ~`LSU.lsu_err_d && ~`LSU.handle_misaligned_q &&
+      `CR.lsu_resp_valid == outstanding_mem
+    )
+    inv wait_gnt_mis (
+      $stable(data_addr_o) && ~has_resp_waiting_q && ~`LSU.lsu_err_q &&
+      (data_req_o == ~`LSU.pmp_err_q) && (`LSU.pmp_err_q == `CR.pmp_req_err[2])
+    )
+    inv wait_gnt (
+      $stable(data_addr_o) && ~has_resp_waiting_q &&
+      (data_req_o == ~`LSU.pmp_err_q) && (`LSU.pmp_err_q == `CR.pmp_req_err[2])
+    )
+    inv wait_rvalid_mis (
+      ($stable(`LSU.ls_fsm_cs) -> $stable(data_addr_o)) &&
+      ~`LSU.lsu_err_q &&
+      ((~`LSU.pmp_err_q && has_one_resp_waiting_q) || (`LSU.pmp_err_q && ~has_resp_waiting_q))
+    )
+    inv wait_rvalid_mis_gnts_done (
+      $stable(data_addr_o) &&
+      (`LSU.pmp_err_q == `CR.pmp_req_err[2]) &&
+      (
+        (~`LSU.lsu_err_q && ~`LSU.pmp_err_q  && has_two_resp_waiting_q) ||
+        ((`LSU.lsu_err_q != `LSU.pmp_err_q) && has_one_resp_waiting_q) ||
+        (`LSU.lsu_err_q && `LSU.pmp_err_q && ~has_resp_waiting_q)
+      )
+    )
+
+    inv step (`LSU.ls_fsm_ns == `LSU.IDLE && `CR.instr_type_wb != WB_INSTR_OTHER && has_one_resp_waiting_d)
+    inv step_fail (`LSU.ls_fsm_ns == `LSU.IDLE && `CR.instr_type_wb != WB_INSTR_OTHER && ~has_resp_waiting_d && `CR.pmp_req_err[2])
+    inv wait (outstanding_mem && has_one_resp_waiting_q && ~`LSU.lsu_req_i && wbexc_exists)
+    inv end (outstanding_mem && has_one_resp_waiting_q && wbexc_exists)
+    inv fail (outstanding_mem && ~has_resp_waiting_q && wbexc_exists)
+
+    entry ($rose(rst_ni)) -> idle
+
+    node idle idle (`LSU.ls_fsm_cs == `LSU.IDLE && ~`IDG.outstanding_memory_access && (`ID.lsu_req_dec || ~`ID.lsu_req_done_i))
+    edge idle => idle
+    edge idle -> idle_active
+
+    node idle_active idle_active (`LSU.ls_fsm_cs == `LSU.IDLE && `CR.lsu_req)
+    edge idle_active => wait_rvalid_mis wait_gnt_mis wait_gnt
+    edge idle_active -> step step_fail
+
+    node wait_gnt_mis wait_gnt_mis (`LSU.ls_fsm_cs == `LSU.WAIT_GNT_MIS)
+    edge wait_gnt_mis => wait_gnt_mis wait_rvalid_mis
+
+    node wait_rvalid_mis wait_rvalid_mis (`LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS)
+    edge wait_rvalid_mis => wait_rvalid_mis wait_rvalid_mis_gnts_done wait_gnt
+    edge wait_rvalid_mis -> step step_fail
+
+    node wait_gnt wait_gnt (`LSU.ls_fsm_cs == `LSU.WAIT_GNT)
+    edge wait_gnt => wait_gnt
+    edge wait_gnt -> step step_fail
+
+    node wait_rvalid_mis_gnts_done wait_rvalid_mis_gnts_done (`LSU.ls_fsm_cs == `LSU.WAIT_RVALID_MIS_GNTS_DONE)
+    edge wait_rvalid_mis_gnts_done => wait_rvalid_mis_gnts_done
+    edge wait_rvalid_mis_gnts_done -> step step_fail
+
+    node step step (`LSU.lsu_req_done_o && ~`LSU.pmp_err_d)
+    edge step => wait end
+
+    node step_fail step_fail (`LSU.lsu_req_done_o && `LSU.pmp_err_d)
+    edge step_fail => fail
+
+    node wait wait (`IDG.outstanding_memory_access && ~`CR.lsu_resp_valid && `LSU.ls_fsm_cs == `LSU.IDLE && ~instr_will_progress)
+    edge wait => wait end
+
+    node end end (`CR.lsu_resp_valid && `LSU.ls_fsm_cs == `LSU.IDLE && data_rvalid_i)
+    edge end -> idle
+
+    node fail fail (`CR.lsu_resp_valid && `LSU.ls_fsm_cs == `LSU.IDLE && ~data_rvalid_i)
+    edge fail -> idle
+  /
+  NoMemAccessNoRValid: have (`LSU.lsu_resp_valid_o -> outstanding_mem)
+  StallNoChangeA: have (`LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(`ID.rf_rdata_a_fwd))
+  StallNoChangeB: have (data_we_o && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(`ID.rf_rdata_b_fwd))
+
+  BecameDecodeIsInstrStart: have (`IDC.ctrl_fsm_cs == `IDC.DECODE && !$stable(`IDC.ctrl_fsm_cs) |-> ~`ID.instr_valid_i | `CR.instr_new_id)
+  BecameDecodeIsEmptyWbexc: have (`IDC.ctrl_fsm_cs == `IDC.DECODE && !$stable(`IDC.ctrl_fsm_cs) |-> ~wbexc_exists)
+  FetchErrIsErr: have (wbexc_fetch_err & wbexc_exists |-> wbexc_err & `IDC.instr_fetch_err)
+
+  # If control FSM is in `FIRST_FETCH`, then there shouldn't be an instruction that is already fetched by IF but not consumed by ID.
+  # This helps to prove FetchErrRoot.
+  FirstFetchNoInstr: have (`IDC.ctrl_fsm_ns == `IDC.FIRST_FETCH |-> ~`IF.instr_valid_id_q)
+
+  MemOpRequiresValid: have (`LSU.ls_fsm_cs != `LSU.IDLE || `CR.lsu_req |-> `ID.instr_valid_i)
+
+  MultEndState: have (instr_will_progress |=> `MULTG.mult_state_q == `MULTG.ALBL)
+
+  # Assert that only when multiplying the mult_state_q leaves ALBL mode. This assertion helps remove some state space for DivInstrStable.
+  DivInstrNotMult: have (~`MULT.mult_en_internal |-> `MULTG.mult_state_q == `MULTG.ALBL)
+  # When there is an instruction is finished in EX but is blocked from moving to WB then there must be a valid instruction in the WB stage. This is a helper property for DivInstrStable
+  InstrInWbStage: have (wbexc_exists & ~wbexc_finishing -> `WBG.wb_valid_q)
+
+  /
+
+  MemErrKind: have (finishing_executed && wbexc_is_mem_instr && ~wbexc_illegal && wbexc_err |-> `IDC.store_err_q | `IDC.load_err_q)
+  MemErrStructure: have (finishing_executed && wbexc_is_mem_instr && ~wbexc_illegal && wbexc_err |-> $past(instr_will_progress, 2) | $past(data_rvalid_i))
+  MemNoErrStructure: have (finishing_executed && wbexc_is_mem_instr && ~wbexc_illegal && ~wbexc_err |-> data_rvalid_i)
+
+  WbexcMemErrKindLoad: have (`IDC.load_err_q |-> wbexc_exists & wbexc_is_load_instr)
+  WbexcMemErrKindStore: have (`IDC.store_err_q |-> wbexc_exists & wbexc_is_store_instr)
+
+  WbexcNotMemMuteLSU: have (~wbexc_is_mem_instr -> ~`CR.rf_we_lsu & ~`CR.lsu_resp_valid & ~`CR.lsu_load_err & ~`CR.lsu_store_err)
+  WbexcNotMemMuteMemErr: have (~wbexc_is_mem_instr -> ~`IDC.load_err_q & ~`IDC.store_err_q)
+  StallIdFSM2: have (`ID.instr_executing && ~instr_will_progress |=> `ID.instr_executing)
+  NewIdFSM: have (`CR.instr_new_id |-> `ID.id_fsm_q == 0)
+  PreNextPcMatch: have (instr_will_progress & ~ex_has_branched_d & ~`IDC.instr_fetch_err -> pre_nextpc == `CR.pc_if) # Slow!
+  StallNoChangeLsuWData: have ((data_we_o && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(`LSU.lsu_wdata_i)))
+
+  # These properties take some time to prove, but do prove with low proof effort. Just run them with individual Hp instances.
+  SpecStableLoad: have (ex_is_pres_load_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_read))
+  SpecStableLoadSnd: have (ex_is_pres_load_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_read_snd))
+  SpecStableLoadAddr: have (ex_is_pres_load_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_read_fst_addr))
+  SpecStableLoadSndAddr: have (ex_is_pres_load_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_read_snd_addr))
+
+  SpecStableStore: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write))
+  SpecStableStoreSnd: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write_snd))
+  SpecStableStoreAddr: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write_fst_addr))
+  SpecStableStoreSndAddr: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write_snd_addr))
+  SpecStableStoreData: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write_fst_wdata))
+  SpecStableStoreSndData: have (ex_is_pres_store_instr && `LSU.ls_fsm_cs != `LSU.IDLE && ($past(`LSU.ls_fsm_cs) != `LSU.IDLE || $past(`LSU.lsu_req_i)) |-> $stable(spec_mem_write_snd_wdata))
+
+  FetchErrRoot: have (`ID.instr_valid_i && (`IDC.ctrl_fsm_cs == `IDC.FLUSH -> ~$past(`IDC.csr_pipe_flush)) |-> spec_fetch_err == `ID.instr_fetch_err_i)
+
+  LoadNotSpecWrite: have (`ID.instr_valid_i & ex_is_pres_load_instr |-> ~spec_mem_write)
+  StoreNotSpecRead: have (`ID.instr_valid_i & ex_is_pres_store_instr |-> ~spec_mem_read)
+
+  FirstCycleNoGnt: have (`ID.instr_first_cycle |-> ~mem_gnt_fst_q)
+  MemStartFirstCycle: have (`LSU.ls_fsm_cs == `LSU.IDLE && `CR.lsu_req |-> `ID.instr_first_cycle)
+
+  DivInstrStable: have (`MULT.md_state_q != `MULT.MD_IDLE |-> $stable(`CR.instr_rdata_id) && `CR.instr_valid_id && (~`ID.stall_multdiv -> `MULT.md_state_q == `MULT.MD_FINISH) && `MULTG.mult_state_q == `MULTG.ALBL && `MULT.div_en_internal && (~wbexc_exists | wbexc_finishing))
+
+  InstrReqCount: have (
+    (instr_mem_assume.outstanding_reqs_q == 2) == (`IFP.rdata_outstanding_q[1] && `IFP.rdata_outstanding_q[0]) &&
+    (instr_mem_assume.outstanding_reqs_q == 1) == (~`IFP.rdata_outstanding_q[1] && `IFP.rdata_outstanding_q[0]) &&
+    (instr_mem_assume.outstanding_reqs_q == 0) == (~`IFP.rdata_outstanding_q[1] && ~`IFP.rdata_outstanding_q[0])
+  )
+
+  /
+
+  MepcEn: have (`CSR.mepc_en |-> instr_will_progress | wbexc_finishing | wbexc_handling_irq)
+  DivNoKill: have (`MULT.md_state_q != `MULT.MD_IDLE |-> ~ex_kill)
+
+  RTypeFirstCycle: have (`CR.instr_valid_id & ex_is_rtype |-> `ID.instr_first_cycle_id_o)
+
+  DataMemGntMaxDelay: have (data_req_o |-> ##[0:`TIME_LIMIT] data_gnt_i)
+  DataMemRvalidMaxDelay: have (data_gnt_i |=> ##[0:`TIME_LIMIT] data_rvalid_i)
+  InstrMemGntMaxDelay: have (instr_req_o |-> ##[0:`TIME_LIMIT] instr_gnt_i)
+  InstrMemRvalidMaxDelay: have (instr_gnt_i |=> ##[0:`TIME_LIMIT] instr_rvalid_i)
+
+  NormalMainResMatch: have (`ID.instr_valid_i && ~ex_kill && main_mode == MAIN_IDEX |-> spec_api_i.main_result == MAINRES_OK)
+  FetchErrMainResMatch: have (`ID.instr_valid_i && ~ex_kill && main_mode == MAIN_IFERR |-> spec_api_i.main_result == MAINRES_OK)
+  IRQMainResMatch: have (wbexc_handling_irq && main_mode == MAIN_IRQ |-> spec_api_i.main_result == MAINRES_OK)
+
+  /
+  SpecEnUnreach: have (spec_en |-> ~spec_int_err)
+
+# Liveness proofs, currently only work if TIME_LIMIT = 1 and WFI_BOUND = 20.
+# They work by adding up worst case bounds to arrive a weak but finite bound between calls to
+# instr_will_progress.
+lemma live
+  DivMiddleStep: have (`MULT.md_state_q == `MULT.MD_COMP && $stable(`MULT.md_state_q) |-> `MULT.div_counter_q == $past(`MULT.div_counter_q) - 1)
+  IF: have (always (##[0:10] `IF.if_instr_valid))
+  PCSet: have (`CR.pc_set |-> ##[0:10] ~`CR.pc_set)
+  /
+
+  DivStart: have (`CR.instr_new_id & `CR.instr_valid_id & ex_is_div |-> ##[0:7] (`MULT.div_counter_q == 5'd31 && `MULT.md_state_q == `MULT.MD_COMP) | instr_will_progress | (ex_kill & `CR.instr_valid_id))
+  DivMiddle: have (`MULT.div_counter_q == 5'd31 && `MULT.md_state_q == `MULT.MD_COMP |-> ##30 `MULT.div_counter_q == 5'd1 && `MULT.md_state_q == `MULT.MD_COMP)
+  DivEnd: have (`MULT.div_counter_q == 5'd1 && `MULT.md_state_q == `MULT.MD_COMP |-> ##3 instr_will_progress)
+
+  WFIStart: have (instr_will_progress & ex_is_wfi & ~ex_err |-> ##[0:5] `IDC.ctrl_fsm_cs == `IDC.SLEEP)
+  WFIMiddle: have (`IDC.ctrl_fsm_cs == `IDC.SLEEP |-> ##[0:20] `IDC.ctrl_fsm_cs == `IDC.SLEEP && `IDC.ctrl_fsm_ns == `IDC.FIRST_FETCH)
+  WFIEnd: have (`IDC.ctrl_fsm_cs == `IDC.SLEEP && `IDC.ctrl_fsm_ns == `IDC.FIRST_FETCH |-> ##[0:5] `IF.id_in_ready_i)
+
+  NewProgNormal: have (`CR.instr_new_id & `CR.instr_valid_id & ~ex_is_div & ~ex_is_mem_instr |-> ##[0:5] (instr_will_progress | (ex_kill & `CR.instr_valid_id)))
+  NewProgMem: have (`CR.instr_new_id & `CR.instr_valid_id & ex_is_mem_instr |-> ##[0:10] (instr_will_progress | (ex_kill & `CR.instr_valid_id)))
+
+  ProgReadyNormal: have (instr_will_progress & (~ex_is_wfi | ex_err) |-> ##[0:5] `IF.id_in_ready_i)
+  ProgReadyWFI: have (instr_will_progress & ex_is_wfi & ~ex_err |-> ##[0:30] `IF.id_in_ready_i)
+  KillReady: have (ex_kill & `CR.instr_valid_id |-> ##[1:35] `IF.id_in_ready_i && ~wbexc_exists && ~`CR.instr_valid_id)
+
+  ReadyNew: have (`IF.id_in_ready_i |-> ##[1:11] `CR.instr_new_id & `CR.instr_valid_id)
+  Initial: have ($rose(rst_ni) |-> ##[1:15] `CR.instr_new_id & `CR.instr_valid_id)
+  FlushedNoKill: have (`CR.instr_new_id & `CR.instr_valid_id & ~wbexc_exists |-> ~ex_kill until_with instr_will_progress)
+  /
+  ReadyFlushed: have (`IF.id_in_ready_i && ~wbexc_exists && ~`CR.instr_valid_id |-> ##[1:11] `CR.instr_new_id & `CR.instr_valid_id & ~wbexc_exists)
+  /
+  DivNew1: have (`CR.instr_new_id & `CR.instr_valid_id & ex_is_div |-> ##[0:37] ((`MULT.div_counter_q == 5'd1 && `MULT.md_state_q == `MULT.MD_COMP) | instr_will_progress | (ex_kill & `CR.instr_valid_id)))
+  /
+  NewProgDiv: have (`CR.instr_new_id & `CR.instr_valid_id & ex_is_div |-> ##[0:40] (instr_will_progress | (ex_kill & `CR.instr_valid_id)))
+  ProgReady: have (instr_will_progress |-> ##[0:30] `IF.id_in_ready_i)
+  /
+  NewProg: have (`CR.instr_new_id & `CR.instr_valid_id |-> ##[0:40] (instr_will_progress | (ex_kill & `CR.instr_valid_id)))
+  /
+  FlushedProg: have (`CR.instr_new_id & `CR.instr_valid_id & ~wbexc_exists |-> ##[0:40] instr_will_progress)
+  /
+  KillSpecEn: have (ex_kill & `CR.instr_valid_id |-> ##[0:86] spec_en)
+  /
+  NewReady: have (`CR.instr_new_id & `CR.instr_valid_id |-> ##[0:75] `IF.id_in_ready_i)
+  NewSpecEn: have (`CR.instr_new_id & `CR.instr_valid_id |-> ##[0:40+86] spec_en)
+  /
+  NewLoop: have (`CR.instr_new_id & `CR.instr_valid_id |-> ##[1:86] `CR.instr_new_id & `CR.instr_valid_id)
+  /
+  New: have (always (##[1:86] `CR.instr_new_id & `CR.instr_valid_id))

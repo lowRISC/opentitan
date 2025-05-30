@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ibex:ibex_formal:0.1"
+description: "Ibex formal module used to prove equivalence with Sail"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_pkg
+      - lowrisc:ibex:ibex_core
+      - lowrisc:prim:buf
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:secded
+      - lowrisc:prim:assert
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim_generic:buf
+      - lowrisc:prim_generic:clock_gating
+    files:
+      - ../../rtl/ibex_register_file_ff.sv # generic FF-based
+      - ../../rtl/ibex_register_file_fpga.sv # FPGA
+      - ../../rtl/ibex_register_file_latch.sv # ASIC
+      - ../../rtl/ibex_top.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+    toplevel: ibex_top
