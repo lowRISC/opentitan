@@ -43,7 +43,11 @@ module ibex_lockstep import ibex_pkg::*; #(
   parameter int unsigned            DmBaseAddr        = 32'h1A110000,
   parameter int unsigned            DmAddrMask        = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr        = 32'h1A110800,
-  parameter int unsigned            DmExceptionAddr   = 32'h1A110808
+  parameter int unsigned            DmExceptionAddr   = 32'h1A110808,
+  // mvendorid: encoding of manufacturer/provider
+  parameter logic [31:0]            CsrMvendorId      = 32'b0,
+  // marchid: encoding of base microarchitecture
+  parameter logic [31:0]            CsrMimpId         = 32'b0
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -378,7 +382,9 @@ module ibex_lockstep import ibex_pkg::*; #(
     .DmBaseAddr        ( DmBaseAddr        ),
     .DmAddrMask        ( DmAddrMask        ),
     .DmHaltAddr        ( DmHaltAddr        ),
-    .DmExceptionAddr   ( DmExceptionAddr   )
+    .DmExceptionAddr   ( DmExceptionAddr   ),
+    .CsrMvendorId      ( CsrMvendorId      ),
+    .CsrMimpId         ( CsrMimpId         )
   ) u_shadow_core (
     .clk_i               (clk_i),
     .rst_ni              (rst_shadow_n),

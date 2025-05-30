@@ -22,8 +22,7 @@ These extended signals have the prefix ``rvfi_ext``
 Setup and Usage
 ---------------
 
-Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex-cosim-v0.5`` tag.
-Other, later, versions called ``ibex-cosim-v*`` may also work but there's no guarantee of backwards compatibility.
+Clone the `lowRISC fork of Spike <https://github.com/lowRISC/riscv-isa-sim>`_ and check out the ``ibex_cosim`` branch.
 Follow the Spike build instructions to build and install Spike.
 The ``--enable-commitlog`` and ``--enable-misaligned`` options must be passed to ``configure``.
 We recommend using a custom install location (using ``--prefix=<path>`` with ``configure``) to avoid cluttering system directories.

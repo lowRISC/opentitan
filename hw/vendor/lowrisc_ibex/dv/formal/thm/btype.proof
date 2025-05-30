@@ -1,0 +1,48 @@
+# Copyright lowRISC contributors.
+# Copyright 2024 University of Oxford, see also CREDITS.md.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# Original author: Louis-Emile Ploix
+# SPDX-License-Identifier: Apache-2.0
+
+# This file implements two small graph inductions required by btype and jtype instructions to
+# deal with the fact that the PC changes at inconvenient times.
+
+lemma btype
+  in (instr_will_progress & ex_is_pres_btype & ~ex_err)
+    FinishFirstCycle: have (`ID.instr_first_cycle)
+  /
+  BInd:
+  graph_induction +rev
+    cond (`CR.instr_valid_id & ex_is_pres_btype & ~ex_err & ~ex_kill)
+    inv nobranch (~ex_has_branched_d)
+    inv eq (ex_has_branched_d == `CR.branch_decision && post_pc == ex_branch_dst)
+
+    entry (`CR.instr_new_id) -> stall oma progress
+
+    node stall nobranch (`ID.stall_ld_hz) => stall progress
+    node oma eq (`IDG.outstanding_memory_access & ~`ID.stall_ld_hz) => oma progress
+      split_bool (`CR.branch_decision)
+    node progress eq (instr_will_progress)
+  /
+  in (instr_will_progress & ex_is_pres_btype & ~ex_err)
+    NoBranch: have (~`CR.branch_decision |-> spec_post_pc == pre_nextpc)
+    Branch: have (`CR.branch_decision |-> spec_post_pc == `CR.branch_target_ex)
+
+lemma jump
+  in (instr_will_progress & ex_is_pres_jump & ~ex_err)
+    FinishFirstCycle: have (`ID.instr_first_cycle)
+  /
+  JInd:
+  graph_induction +rev
+    cond (`CR.instr_valid_id & ex_is_pres_jump & ~ex_err & ~ex_kill)
+    inv nobranch (~ex_has_branched_d)
+    inv eq (ex_has_branched_d && post_pc[31:1] == `CR.branch_target_ex[31:1])
+
+    entry (`CR.instr_new_id) -> stall oma progress
+
+    node stall nobranch (`ID.stall_ld_hz) => stall progress
+    node oma eq (`IDG.outstanding_memory_access & ~`ID.stall_ld_hz) => oma progress
+    node progress eq (instr_will_progress)
+  /
+  in (instr_will_progress & ex_is_pres_jump & ~ex_err)
+    Branch: have (spec_post_pc[31:1] == `CR.branch_target_ex[31:1])
