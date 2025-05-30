@@ -17,19 +17,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Get whole Git history.
 
       - name: Determine changed files
         run: |
-          git fetch origin "${{ github.head_ref }}"
-          git diff "origin/${{ github.head_ref }}" --name-only | tee "${{ runner.temp }}/changed_files"
+          pr_url="https://github.com/${{ github.repository }}/pull/${{ github.event.number }}"
+          echo $pr_url
+          gh pr diff $pr_url --name-only > $HOME/changed_files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Show files changed
+        run: cat $HOME/changed_files
+
       - name: Check for blocked changes
         run: |
-          ./ci/scripts/check-pr-changes-allowed.py "${{ runner.temp }}/changed_files" \
+          ./ci/scripts/check-pr-changes-allowed.py $HOME/changed_files \
             --gh-repo ${{ github.repository }} \
             --gh-token ${{ secrets.GITHUB_TOKEN }} \
             --pr-number ${{ github.event.number }}
