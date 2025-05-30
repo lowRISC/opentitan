@@ -62,7 +62,7 @@ def _expand_paragraph(s: str, rnames: Set[str]) -> str:
             else:
                 return ('<a href="#' + base + '"><code class=\"reg\">' +
                         match.group(1) + '</code></a>')
-        log.warn('!!' + match.group(1).partition('.')[0] +
+        log.warning('!!' + match.group(1).partition('.')[0] +
                  ' not found in register list.')
         return match.group(0)
 
