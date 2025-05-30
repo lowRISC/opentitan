@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -88,13 +88,12 @@ status_t keygen_then_sign_test(void) {
       .len = kTestMessageLen,
       .data = kTestMessage,
   };
-  uint32_t msg_digest_data[kSha512DigestWords];
+  uint32_t msg_digest_data[512 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, msg_digest));
+  TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa3072NumWords];
   otcrypto_word32_buf_t sig_buf = {
