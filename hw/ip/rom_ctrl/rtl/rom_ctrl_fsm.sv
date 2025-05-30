@@ -350,6 +350,7 @@ module rom_ctrl_fsm
 
   assign alert_o = fsm_alert | checker_alert | unexpected_counter_change;
 
-  `ASSERT(CounterLntImpliesKmacRomVldO_A, counter_lnt -> kmac_rom_vld_o)
+  `ASSERT(CounterLntImpliesKmacRomVldO_A,
+          state_q == ReadingLow && counter_lnt -> kmac_rom_vld_o)
 
 endmodule
