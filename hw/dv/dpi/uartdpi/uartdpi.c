@@ -19,16 +19,22 @@
 #include <string.h>
 #include <unistd.h>
 
+#define EXIT_STRING_MAX_LENGTH (64)
+
 // This keeps the necessary uart state.
 struct uartdpi_ctx {
   char ptyname[64];
+  char exitstring[EXIT_STRING_MAX_LENGTH];
+  int exitlength;
+  int exittracker;
   int host;
   int device;
   char tmp_read;
   FILE *log_file;
 };
 
-void *uartdpi_create(const char *name, const char *log_file_path) {
+void *uartdpi_create(const char *name, const char *log_file_path,
+                     const char *exit_string, int exit_string_length) {
   struct uartdpi_ctx *ctx =
       (struct uartdpi_ctx *)malloc(sizeof(struct uartdpi_ctx));
   assert(ctx);
@@ -84,6 +90,18 @@ void *uartdpi_create(const char *name, const char *log_file_path) {
     }
   }
 
+  ctx->exittracker = 0;
+  if (exit_string_length <= EXIT_STRING_MAX_LENGTH) {
+    strncpy(ctx->exitstring, exit_string, exit_string_length);
+    ctx->exitlength = exit_string_length;
+  } else {
+    fprintf(stderr,
+            "UART: Unable to copy exit string since it's length %d is larger "
+            "than the maximum %d.\n",
+            exit_string_length, EXIT_STRING_MAX_LENGTH);
+    ctx->exitlength = 0;
+  }
+
   return (void *)ctx;
 }
 
@@ -123,11 +141,12 @@ char uartdpi_read(void *ctx_void) {
   return ctx->tmp_read;
 }
 
-void uartdpi_write(void *ctx_void, char c) {
+// Returns non-zero when exit condition has been reached.
+int uartdpi_write(void *ctx_void, char c) {
   int rv;
   struct uartdpi_ctx *ctx = (struct uartdpi_ctx *)ctx_void;
   if (ctx == NULL) {
-    return;
+    return 0;
   }
 
   rv = write(ctx->host, &c, 1);
@@ -137,4 +156,18 @@ void uartdpi_write(void *ctx_void, char c) {
     rv = fwrite(&c, sizeof(char), 1, ctx->log_file);
     assert(rv == 1 && "Write to log file failed.");
   }
+
+  if (c == ctx->exitstring[ctx->exittracker]) {
+    ctx->exittracker++;
+  } else {
+    ctx->exittracker = 0;
+  }
+
+  // Don't require null to be sent at the end.
+  if (ctx->exittracker == (ctx->exitlength - 1)) {
+    // When exit length is negative, zero or one the exit string is disabled.
+    return ctx->exitlength > 1;
+  }
+
+  return 0;
 }

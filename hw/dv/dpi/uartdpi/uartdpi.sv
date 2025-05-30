@@ -5,7 +5,9 @@
 module uartdpi #(
   parameter integer BAUD = 'x,
   parameter integer FREQ = 'x,
-  parameter string NAME = "uart0"
+  parameter string NAME = "uart0",
+  parameter string EXIT_STRING = "",
+  parameter integer EXIT_STRING_LENGTH = 0
 )(
   input  logic clk_i,
   input  logic rst_ni,
@@ -21,7 +23,8 @@ module uartdpi #(
   localparam int CYCLES_PER_SYMBOL = FREQ / BAUD;
 
   import "DPI-C" function
-    chandle uartdpi_create(input string name, input string log_file_path);
+    chandle uartdpi_create(input string name, input string log_file_path, input string exit_string,
+      input int exit_string_length);
 
   import "DPI-C" function
     void uartdpi_close(input chandle ctx);
@@ -33,14 +36,14 @@ module uartdpi #(
     int uartdpi_can_read(input chandle ctx);
 
   import "DPI-C" function
-    void uartdpi_write(input chandle ctx, int data);
+    int uartdpi_write(input chandle ctx, int data);
 
   chandle ctx;
   string log_file_path = DEFAULT_LOG_FILE;
 
   function automatic void initialize();
     $value$plusargs({"UARTDPI_LOG_", NAME, "=%s"}, log_file_path);
-    ctx = uartdpi_create(NAME, log_file_path);
+    ctx = uartdpi_create(NAME, log_file_path, EXIT_STRING, EXIT_STRING_LENGTH);
   endfunction
 
   initial begin
@@ -133,7 +136,10 @@ module uartdpi #(
           if (rxcyccount == CYCLES_PER_SYMBOL - 1) begin
             rxactive <= 0;
             if (rx_i) begin
-              uartdpi_write(ctx, rxsymbol);
+              if(uartdpi_write(ctx, rxsymbol) != 0 && EXIT_STRING_LENGTH != 0) begin
+                $display("Exiting the simulator because the magic UART string was seen.");
+                $finish(0);
+              end
             end
           end
         end
