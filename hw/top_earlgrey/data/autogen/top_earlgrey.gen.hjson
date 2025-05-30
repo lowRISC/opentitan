@@ -2745,7 +2745,35 @@
           index: -1
         }
         {
+          name: lc_hw_debug_clr
+          desc:
+            '''
+            Clear HW debug functionality.
+            This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
+            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_hw_debug_clr
+          index: -1
+        }
+        {
           name: lc_hw_debug_en
+          desc:
+            '''
+            Enable HW debug functionality; see `HW_DEBUG_EN` in the Theory of Operation doc for details.
+
+            This signal is Off while lc_ctrl is in reset.
+            In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
+            Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -4989,6 +5017,19 @@
       inter_signal_list:
       [
         {
+          name: lc_hw_debug_clr
+          desc: Debug clear signal coming from life cycle controller, used for HW strap qualification.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux_aon
+          top_signame: lc_ctrl_lc_hw_debug_clr
+          index: -1
+        }
+        {
           name: lc_hw_debug_en
           desc: Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
           struct: lc_tx
@@ -6667,6 +6708,23 @@
           inst_name: rv_dm
           default: ""
           top_signame: pinmux_aon_rv_jtag
+          index: -1
+        }
+        {
+          name: lc_hw_debug_clr
+          desc:
+            '''
+            Multibit life cycle hardware debug clear signal coming from life cycle controller,
+            asserted when the hardware debug mechanism was enabled and gets disabled.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          top_signame: lc_ctrl_lc_hw_debug_clr
           index: -1
         }
         {
@@ -10406,6 +10464,11 @@
       lc_ctrl.lc_nvm_debug_en:
       [
         flash_ctrl.lc_nvm_debug_en
+      ]
+      lc_ctrl.lc_hw_debug_clr:
+      [
+        pinmux_aon.lc_hw_debug_clr
+        rv_dm.lc_hw_debug_clr
       ]
       lc_ctrl.lc_hw_debug_en:
       [
@@ -19611,7 +19674,35 @@
         index: -1
       }
       {
+        name: lc_hw_debug_clr
+        desc:
+          '''
+          Clear HW debug functionality.
+          This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
+          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_hw_debug_clr
+        index: -1
+      }
+      {
         name: lc_hw_debug_en
+        desc:
+          '''
+          Enable HW debug functionality; see `HW_DEBUG_EN` in the Theory of Operation doc for details.
+
+          This signal is Off while lc_ctrl is in reset.
+          In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
+          Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -21067,6 +21158,19 @@
         index: -1
       }
       {
+        name: lc_hw_debug_clr
+        desc: Debug clear signal coming from life cycle controller, used for HW strap qualification.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux_aon
+        top_signame: lc_ctrl_lc_hw_debug_clr
+        index: -1
+      }
+      {
         name: lc_hw_debug_en
         desc: Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
         struct: lc_tx
@@ -22122,6 +22226,23 @@
         inst_name: rv_dm
         default: ""
         top_signame: pinmux_aon_rv_jtag
+        index: -1
+      }
+      {
+        name: lc_hw_debug_clr
+        desc:
+          '''
+          Multibit life cycle hardware debug clear signal coming from life cycle controller,
+          asserted when the hardware debug mechanism was enabled and gets disabled.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        top_signame: lc_ctrl_lc_hw_debug_clr
         index: -1
       }
       {
@@ -26060,6 +26181,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_nvm_debug_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_hw_debug_clr
         width: 1
         type: uni
         end_idx: -1

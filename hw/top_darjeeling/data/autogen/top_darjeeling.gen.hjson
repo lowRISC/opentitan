@@ -2088,7 +2088,35 @@
           index: -1
         }
         {
+          name: lc_hw_debug_clr
+          desc:
+            '''
+            Clear HW debug functionality.
+            This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
+            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_hw_debug_clr
+          index: -1
+        }
+        {
           name: lc_hw_debug_en
+          desc:
+            '''
+            Enable HW debug functionality; see `HW_DEBUG_EN` in the Theory of Operation doc for details.
+
+            This signal is Off while lc_ctrl is in reset.
+            In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
+            Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -4759,6 +4787,23 @@
           act: rsp
           width: 1
           inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: lc_hw_debug_clr
+          desc:
+            '''
+            Multibit life cycle hardware debug clear signal coming from life cycle controller,
+            asserted when the hardware debug mechanism was enabled and gets disabled.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          top_signame: lc_ctrl_lc_hw_debug_clr
           index: -1
         }
         {
@@ -11433,6 +11478,10 @@
         ast.lc_dft_en
         pwrmgr_aon.lc_dft_en
         soc_dbg_ctrl.lc_dft_en
+      ]
+      lc_ctrl.lc_hw_debug_clr:
+      [
+        rv_dm.lc_hw_debug_clr
       ]
       lc_ctrl.lc_hw_debug_en:
       [
@@ -21296,7 +21345,35 @@
         index: -1
       }
       {
+        name: lc_hw_debug_clr
+        desc:
+          '''
+          Clear HW debug functionality.
+          This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
+          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_hw_debug_clr
+        index: -1
+      }
+      {
         name: lc_hw_debug_en
+        desc:
+          '''
+          Enable HW debug functionality; see `HW_DEBUG_EN` in the Theory of Operation doc for details.
+
+          This signal is Off while lc_ctrl is in reset.
+          In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
+          Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -23002,6 +23079,23 @@
         act: rsp
         width: 1
         inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: lc_hw_debug_clr
+        desc:
+          '''
+          Multibit life cycle hardware debug clear signal coming from life cycle controller,
+          asserted when the hardware debug mechanism was enabled and gets disabled.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        top_signame: lc_ctrl_lc_hw_debug_clr
         index: -1
       }
       {
@@ -29672,6 +29766,17 @@
         package: lc_ctrl_pkg
         struct: lc_tx
         signame: lc_ctrl_lc_dft_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_hw_debug_clr
         width: 1
         type: uni
         end_idx: -1

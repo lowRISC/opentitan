@@ -2402,6 +2402,18 @@
       inter_signal_list:
       [
         {
+          name: lc_hw_debug_clr
+          desc: Debug clear signal coming from life cycle controller, used for HW strap qualification.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux_aon
+          index: -1
+        }
+        {
           name: lc_hw_debug_en
           desc: Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
           struct: lc_tx
@@ -10291,6 +10303,18 @@
         default: ""
         end_idx: -1
         top_signame: clkmgr_aon_tl
+        index: -1
+      }
+      {
+        name: lc_hw_debug_clr
+        desc: Debug clear signal coming from life cycle controller, used for HW strap qualification.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux_aon
         index: -1
       }
       {

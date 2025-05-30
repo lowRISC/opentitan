@@ -969,6 +969,7 @@ module top_englishbreakfast #(
       .alert_rx_i  ( alert_rx[12:12] ),
 
       // Inter-module signals
+      .lc_hw_debug_clr_i(lc_ctrl_pkg::Off),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .lc_dft_en_i(lc_ctrl_pkg::Off),
       .lc_escalate_en_i(lc_ctrl_pkg::Off),
