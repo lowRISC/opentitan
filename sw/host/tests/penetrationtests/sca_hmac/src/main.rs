@@ -42,6 +42,8 @@ struct ScaHmacTestCase {
     input: String,
     #[serde(default)]
     key: String,
+    #[serde(default)]
+    triggers: String,
     expected_output: String,
 }
 
@@ -72,6 +74,12 @@ fn run_sca_hmac_testcase(
     if !test_case.input.is_empty() {
         let input: serde_json::Value = serde_json::from_str(test_case.input.as_str()).unwrap();
         input.send(uart)?;
+    }
+
+    if !test_case.triggers.is_empty() {
+        let triggers: serde_json::Value =
+            serde_json::from_str(test_case.triggers.as_str()).unwrap();
+        triggers.send(uart)?;
     }
 
     // Get test output & filter.

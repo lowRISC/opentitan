@@ -8,6 +8,44 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+enum {
+  /**
+   * Mapping from register name (e.g., x5) to position in register array.
+   */
+  kRegX0 = 0,
+  kRegX1 = 1,
+  kRegX2 = 2,
+  kRegX3 = 3,
+  kRegX4 = 4,
+  kRegX5 = 5,
+  kRegX6 = 6,
+  kRegX7 = 7,
+  kRegX8 = 8,
+  kRegX9 = 9,
+  kRegX10 = 10,
+  kRegX11 = 11,
+  kRegX12 = 12,
+  kRegX13 = 13,
+  kRegX14 = 14,
+  kRegX15 = 15,
+  kRegX16 = 16,
+  kRegX17 = 17,
+  kRegX18 = 18,
+  kRegX19 = 19,
+  kRegX20 = 20,
+  kRegX21 = 21,
+  kRegX22 = 22,
+  kRegX23 = 23,
+  kRegX24 = 24,
+  kRegX25 = 25,
+  kRegX26 = 26,
+  kRegX27 = 27,
+  kRegX28 = 28,
+  kRegX29 = 29,
+  kRegX30 = 30,
+  kRegX31 = 31,
+};
+
 /**
  * ibex.fi.address_translation command handler.
  *
@@ -50,6 +88,108 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj);
+
+/**
+ * ibex.fi.char_addi_single_beq command handler.
+ * Similar to handle_ibex_fi_char_single_beq but replaces nops by addi.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 beq instruction. Without a fault, the branch is taken where two
+ * register values are set to a pattern that can be detected at the host. With a
+ * fault, the branch is not taken and the register values are not set.
+ * - Perform addi operations to indicate where faults happened around the beq
+ * test.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_beq(ujson_t *uj);
+
+/**
+ * ibex.fi.char_addi_single_beq_cm command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute the HARDENED_CHECK_EQ macro. Without a fault, the Ibex will execute
+ * an unimp crashing it. With a fault, the macro could be skipped where the
+ * information is given to the host.
+ * - Perform addi operations to indicate where faults happened around the test.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_beq_cm(ujson_t *uj);
+
+/**
+ * ibex.fi.char_addi_single_beq command handler.
+ * Similar to handle_ibex_fi_char_addi_single_beq but sets input values not
+ * equal to each other.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 beq instruction. Without a fault, the branch is not taken. With a
+ * fault, the branch is taken and two
+ * register values are set to a pattern that can be detected at the host.
+ * - Perform addi operations to indicate where faults happened around the beq
+ * test.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_beq_neg(ujson_t *uj);
+
+/**
+ * ibex.fi.char_addi_single_bne command handler.
+ * Similar to handle_ibex_fi_char_single_bne but replaces nops by addi.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 bne instruction. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybeq where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Perform addi operations to indicate where faults happened around the bne
+ * test.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_bne(ujson_t *uj);
+
+/**
+ * ibex.fi.char_addi_single_bne_neg command handler.
+ * Similar to handle_ibex_fi_char_addi_single_bne but sets input values equal to
+ * each other.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 bne instruction. Without a fault, the branch is taken.
+ *   In the faulty case, a branch redirects the control-flow where two register
+ * values are not set such that the taking of the branch can be detected at the
+ * host.
+ * - Perform addi operations to indicate where faults happened around the bne
+ * test.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj);
 
 /**
  * ibex.fi.char.conditional_branch_beq command handler.
@@ -383,6 +523,41 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj);
+
+/**
+ * ibex.fi.char_single_beq command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 beq instruction. Without a fault, the branch is taken where two
+ * register values are set to a pattern that can be detected at the host. With a
+ * fault, the branch is not taken and the register values are not set.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_single_beq(ujson_t *uj);
+
+/**
+ * ibex.fi.char_single_bne command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 1 bne instruction. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybeq where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_single_bne(ujson_t *uj);
 
 /**
  * ibex.fi.char.sram_read command handler.

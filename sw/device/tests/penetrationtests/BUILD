@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_fi", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -15,7 +15,7 @@ IBEX_FI_TESTVECTOR_ARGS = " ".join([
     for target in IBEX_FI_TESTVECTOR_TARGETS
 ])
 
-pentest_fi(
+pentest_fi_ibex(
     name = "fi_ibex",
     slow_test = False,
     test_args = IBEX_FI_TESTVECTOR_ARGS,
