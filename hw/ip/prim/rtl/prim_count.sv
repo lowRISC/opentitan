@@ -44,7 +44,7 @@ module prim_count
   // To avoid this, we the instantiation to specify the actions which might happen. If this is not
   // '1, we will have an assertion which assert the corresponding action is never triggered. We can
   // then use this to avoid the unreachable assertions.
-  parameter action_mask_t     PossibleActions = {$bits(action_mask_t){1'b1}}
+  parameter action_e          PossibleActions = action_e'({$bits(action_mask_t){1'b1}})
 ) (
   input clk_i,
   input rst_ni,
