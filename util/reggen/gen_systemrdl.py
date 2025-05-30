@@ -6,6 +6,7 @@
 '''Generate a SystemRDL description of the block'''
 
 import os
+from typing import TextIO
 
 from reggen.ip_block import IpBlock
 
@@ -13,9 +14,7 @@ from systemrdl.importer import RDLImporter, RDLCompiler
 from peakrdl_systemrdl import exporter
 
 
-def gen(block: IpBlock, outdir: str) -> int:
-    out_file = os.path.join(outdir or '', 'reg.rdl')
-
+def gen(block: IpBlock, outfile: TextIO) -> int:
     comp = RDLCompiler()
     imp = RDLImporter(comp)
     imp.default_src_ref = None
@@ -27,5 +26,10 @@ def gen(block: IpBlock, outdir: str) -> int:
 
     imp.register_root_component(rdl_addrmap)
 
-    exp.export(comp.elaborate(), out_file)
+    # At this point, we actually have to close outfile and then pass its path
+    # to exp.export (which expects a path rather than a stream).
+    outfile.close()
+
+    exp.export(comp.elaborate(), outfile.name)
+
     return 0

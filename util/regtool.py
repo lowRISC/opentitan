@@ -275,8 +275,6 @@ def main():
             return gen_dv.gen_dv(obj, args.dv_base_names, outdir)
         if fmt == 'fpv':
             return gen_fpv.gen_fpv(obj, outdir)
-        if fmt == 'systemrdl':
-            return gen_systemrdl.gen(obj, outdir)
         src_lic = None
         src_copy = ''
         found_spdx = None
@@ -317,6 +315,8 @@ def main():
             elif fmt == 'trs':
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
                                          src_copy, version_stamp)
+            elif fmt == 'systemrdl':
+                return gen_systemrdl.gen(obj, outfile)
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 
