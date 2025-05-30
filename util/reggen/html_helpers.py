@@ -63,7 +63,7 @@ def _expand_paragraph(s: str, rnames: Set[str]) -> str:
                 return ('<a href="#' + base + '"><code class=\"reg\">' +
                         match.group(1) + '</code></a>')
         log.warning('!!' + match.group(1).partition('.')[0] +
-                 ' not found in register list.')
+                    ' not found in register list.')
         return match.group(0)
 
     # Split out pre-formatted text. Because the call to re.split has a capture
