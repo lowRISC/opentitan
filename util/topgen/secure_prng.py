@@ -61,7 +61,7 @@ class secure_prng():
 
         CTR_DRBG_Update process
         Described in NIST SP 800-90A, page 51
-        For convenience, input provided_data is devided in two 128 bit chunks.
+        For convenience, input provided_data is divided in two 128 bit chunks.
         """
         cipher = AES.new(self.Key.to_bytes(16, 'big'), AES.MODE_ECB)
 
@@ -181,7 +181,7 @@ class secure_prng():
         if seed.bit_length() < 250:
             # Warn, but don't fail, because the DV logic always passes in 32-bit
             # seeds and this can naturally happen about 1% of the time.
-            log.warn(
+            log.warning(
                 f'PRNG seed is only {seed.bit_length()} bits long, which is '
                 'unlikely for a sample from a 256-bit distribution. Please '
                 'double-check the logic.')

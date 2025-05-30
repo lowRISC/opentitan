@@ -267,7 +267,7 @@ def gen_cdefine_multireg(outstr: TextIO, multireg: MultiRegister,
                                    len(multireg.regs), regwidth,
                                    existing_defines)
     else:
-        log.warn("Fieldless multireg " + multireg.reg.name +
+        log.warning("Fieldless multireg " + multireg.reg.name +
                  " skip multireg specific data generation.")
 
     for subreg in multireg.regs:

@@ -101,7 +101,7 @@ def main():
         for filename in args.srcfile:
             if (filename == '-'):
                 if (done_stdin):
-                    log.warn("Ignore stdin after first use\n")
+                    log.warning("Ignore stdin after first use\n")
                     continue
                 done_stdin = True
                 infile = sys.stdin
