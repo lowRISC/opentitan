@@ -243,6 +243,10 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
 
-  // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(
+      RegWeOnehotCheck_A,
+      u_reg,
+      gen_alert_tx[AlertFatalFaultIdx].u_prim_alert_sender.alert_req_i
+  )
+
 endmodule
