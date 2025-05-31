@@ -11,8 +11,6 @@ filesets:
       - lowrisc:systems:top_darjeeling_pkg
       - "!gatelevel ? (lowrisc:systems:chip_darjeeling_asic)"
       - lowrisc:ibex:ibex_tracer
-    files:
-    file_type: systemVerilogSource
 
   files_dv:
     depend:
