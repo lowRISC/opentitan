@@ -47,14 +47,22 @@
     {
       name: ac_range_check_smoke
       uvm_test_seq: ac_range_check_smoke_vseq
+      reseed: 20
     }
     {
       name: ac_range_check_smoke_racl
       uvm_test_seq: ac_range_check_smoke_racl_vseq
+      reseed: 20
     }
     {
       name: ac_range_check_bypass
       uvm_test_seq: ac_range_check_bypass_vseq
+      reseed: 1
+    }
+    {
+      name: ac_range_check_lock_range
+      uvm_test_seq: ac_range_check_lock_range_vseq
+      reseed: 20
     }
 
     // TODO: add more tests here
@@ -68,8 +76,11 @@
     }
     {
       name: normal
-      tests: ["ac_range_check_smoke", "ac_range_check_smoke_racl"]
-      reseed: 1000
+      tests: ["ac_range_check_smoke",
+              "ac_range_check_smoke_racl",
+              "ac_range_check_bypass",
+              "ac_range_check_lock_range"
+             ]
     }
   ]
 }

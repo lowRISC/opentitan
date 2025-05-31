@@ -13,6 +13,8 @@ class ac_range_check_predictor extends uvm_component;
   // coverage is enabled
   ac_range_check_env_cov cov;
 
+  bit bypass_sampled; // This is used for sampling the bypass mode setup
+
   cip_tl_seq_item latest_filtered_item;
   ac_range_check_scb_item exp_tl_filt_a_chan;
   ac_range_check_scb_item exp_tl_unfilt_d_chan;
@@ -51,7 +53,7 @@ endclass : ac_range_check_predictor
 function ac_range_check_predictor::new(string name="", uvm_component parent=null);
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
-
+  bypass_sampled = 0;
 endfunction : new
 
 function void ac_range_check_predictor::build_phase (uvm_phase phase);
@@ -173,9 +175,26 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
 
   tlul_pkg::tl_a_user_t a_user;
 
+  bit  bypass_enable;
+
   ac_range_check_env_pkg::access_type_e access_type; // Type of transaction access (R/W/X)
 
   `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", all_unfilt_a_chan_cnt), UVM_MEDIUM)
+
+  // Check if bypass is enabled
+  bypass_enable = env_cfg.misc_vif.get_range_check_overwrite();
+
+  if (env_cfg.en_cov && !bypass_sampled) begin
+    // bypass_sampled is set so that we only need to sample coverage once per test and not per
+    // transaction
+    bypass_sampled = 1;
+    cov.sample_bypass_cg(bypass_enable);
+  end
+
+  if (bypass_enable) begin
+    return AccessGranted;
+  end
+
 
   // Due to the note above, we should keep this loop starting from index 0
   for (int i = 0; i < NUM_RANGES; i++) begin
