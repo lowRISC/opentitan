@@ -122,12 +122,14 @@ task ac_range_check_base_vseq::send_single_tl_unfilt_tr(bit zero_delays = 0);
     tl_unfilt_host_seq.min_req_delay = 0;
     tl_unfilt_host_seq.max_req_delay = 0;
   end
+
   `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_unfilt_host_seq,
                                  instr_type == mubi4_bool_to_mubi(tl_main_vars.instr_type);
                                  write      == tl_main_vars.write;
                                  addr       == tl_main_vars.addr;
                                  mask       == tl_main_vars.mask;
-                                 data       == tl_main_vars.data;)
+                                 data       == tl_main_vars.data;
+                                 racl_role  == tl_main_vars.role;)
 
   csr_utils_pkg::increment_outstanding_access();
   `uvm_info(`gfn, "Starting tl_unfilt_host_seq", UVM_MEDIUM)

@@ -25,6 +25,9 @@ filesets:
       - seq_lib/ac_range_check_base_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_common_vseq.sv: {is_include_file: true}
       - seq_lib/ac_range_check_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_smoke_racl_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_bypass_vseq.sv: {is_include_file: true}
+      - seq_lib/ac_range_check_lock_range_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

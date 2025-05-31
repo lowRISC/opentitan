@@ -7,6 +7,14 @@ class ac_range_check_predictor extends uvm_component;
 
   // Local objects
   ac_range_check_dut_cfg dut_cfg;
+  ac_range_check_env_cfg env_cfg;
+
+  // TODO: Add check to the coverage object such that it is not null when
+  // coverage is enabled
+  ac_range_check_env_cov cov;
+
+  bit bypass_sampled; // This is used for sampling the bypass mode setup
+
   cip_tl_seq_item latest_filtered_item;
   ac_range_check_scb_item exp_tl_filt_a_chan;
   ac_range_check_scb_item exp_tl_unfilt_d_chan;
@@ -45,6 +53,7 @@ endclass : ac_range_check_predictor
 function ac_range_check_predictor::new(string name="", uvm_component parent=null);
   super.new(name, parent);
   dut_cfg = ac_range_check_dut_cfg::type_id::create("dut_cfg");
+  bypass_sampled = 0;
 endfunction : new
 
 function void ac_range_check_predictor::build_phase (uvm_phase phase);
@@ -159,83 +168,140 @@ endtask : get_tl_filt_d_chan_item
 //       granting or denying the access.
 // TODO: check if RACL policies control is OK as done below
 function access_decision_e ac_range_check_predictor::check_access(tl_seq_item item);
+  bit        attr_ok;
+  bit        racl_ok;
+  int        racl_role;
+  bit [15:0] racl_perm;
+
+  tlul_pkg::tl_a_user_t a_user;
+
+  bit  bypass_enable;
+
+  ac_range_check_env_pkg::access_type_e access_type; // Type of transaction access (R/W/X)
+
   `uvm_info(`gfn, $sformatf("Analyzing unfiltered item #%0d", all_unfilt_a_chan_cnt), UVM_MEDIUM)
 
-  // Due to the note above, we should keep this loop starting from index 0
-  for (int i=0; i<NUM_RANGES; i++) begin
-    // Only consider the enabled ranges, continue when the range is not enabled
-    if (!dut_cfg.range_attr[i].enable) begin
-      continue;  // Jump to the next index of the for loop
-    end else begin
-      // Break and try further if the address is not matching this index range
-      if (!(item.a_addr >= dut_cfg.range_base[i] && item.a_addr < dut_cfg.range_limit[i])) begin
-        `uvm_info(`gfn, $sformatf("Address 0x%0h is not within the configured range for index #%0d",
-                  item.a_addr, i), UVM_HIGH)
-        continue;  // Jump to the next index of the for loop
-      // Range is allowed
-      end else begin
-        if (!item.is_write()) begin
-          // Access is an EXECUTE (a_user contains this information if a_opcode indicates a read)
-          if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
-            if (!dut_cfg.range_attr[i].execute_access) begin
-              `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessDenied;
-            end else begin
-              // RACL policy READ permission should also be set
-              if (!dut_cfg.range_racl_policy[i].read_perm) begin
-                `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is DENIED as ",
-                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-                continue;  // Jump to the next index of the for loop
-              end else begin
-                `uvm_info(`gfn, $sformatf({"EXECUTE access to address 0x%0h is GRANTED as ",
-                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-                return AccessGranted;
-              end
-            end
-          // Access is a READ
-          end else begin
-            if (!dut_cfg.range_attr[i].read_access) begin
-              `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessDenied;
-            end else begin
-              // RACL policy READ permission should also be set
-              if (!dut_cfg.range_racl_policy[i].read_perm) begin
-                `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is DENIED as ",
-                  "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-                continue;  // Jump to the next index of the for loop
-              end else begin
-                `uvm_info(`gfn, $sformatf({"READ access to address 0x%0h is GRANTED as ",
-                  "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-                return AccessGranted;
-              end
-            end
-          end
-        // Access is a WRITE
-        end else begin
-          if (!dut_cfg.range_attr[i].write_access) begin
-            `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-              "configured in range_attr index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-            return AccessDenied;
-          end else begin
-            // RACL policy WRITE permission should also be set
-            if (!dut_cfg.range_racl_policy[i].write_perm) begin
-              `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is DENIED as ",
-                "configured in range_racl_policy index #%0d"}, item.a_addr, i), UVM_HIGH)
-              continue;  // Jump to the next index of the for loop
-            end else begin
-              `uvm_info(`gfn, $sformatf({"WRITE access to address 0x%0h is GRANTED as ",
-                "configured in registers with index #%0d"}, item.a_addr, i), UVM_MEDIUM)
-              return AccessGranted;
-            end
-          end
-        end
-      end
-    end
+  // Check is bypass is enabled
+  bypass_enable = env_cfg.misc_vif.get_range_check_overwrite();
+
+  if (env_cfg.en_cov && !bypass_sampled) begin
+    // bypass_sampled is set so that we only need to sample coverage once
+    // per test and not on a txn level
+    bypass_sampled = 1;
+    cov.sample_bypass_cg(bypass_enable);
   end
+
+  if (bypass_enable) begin
+    return AccessGranted;
+  end
+
+
+  // Due to the note above, we should keep this loop starting from index 0
+  for (int i = 0; i < NUM_RANGES; i++) begin
+    // Start building coverage model right from the begining
+    if (env_cfg.en_cov) begin
+      cov.sample_range_cg(.idx(i), .range_en(dut_cfg.range_attr[i].enable));
+    end
+
+    // Skip disabled ranges
+    if (!dut_cfg.range_attr[i].enable) begin
+      continue;
+    end
+
+    // At this point the range is enabled. We now check if the transaction
+    // address in within the address range specified. If the address is not
+    // in the range, move forward to the next range index
+    if (item.a_addr < dut_cfg.range_base[i] || item.a_addr >= dut_cfg.range_limit[i]) begin
+      `uvm_info(`gfn, $sformatf("Address 0x%0h not in range #%0d", item.a_addr, i), UVM_HIGH)
+      if (env_cfg.en_cov) begin
+        cov.sample_addr_match_cg(.idx(i), .addr_hit(0));
+      end
+      continue;
+    end
+
+    if (env_cfg.en_cov) begin
+      cov.sample_addr_match_cg(.idx(i), .addr_hit(1));
+    end
+
+    // At this point we know the address of the transaction address is within
+    // the values specified by the range index. Now check what kind of
+    // transaction we are observing and fetch the necessary permissions for
+    // the access type
+    if (item.is_write()) begin
+      attr_ok   = dut_cfg.range_attr[i].write_access;
+      racl_perm = dut_cfg.range_racl_policy[i].write_perm;
+      access_type = ac_range_check_env_pkg::Write;
+    end else if (item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True) begin
+      attr_ok   = dut_cfg.range_attr[i].execute_access;
+      racl_perm = dut_cfg.range_racl_policy[i].read_perm; // EXECUTE reuses READ in RACL
+      access_type = ac_range_check_env_pkg::Execute;
+    end else begin
+      attr_ok   = dut_cfg.range_attr[i].read_access;
+      racl_perm = dut_cfg.range_racl_policy[i].read_perm;
+      access_type = ac_range_check_env_pkg::Read;
+    end
+    `uvm_info(`gfn, $sformatf("RACL Permissions: 0x%0h", racl_perm), UVM_MEDIUM)
+
+    // Extract the role bits that are part of the a_user.rsvd field.
+    a_user    = item.a_user;
+    racl_role = top_racl_pkg::tlul_extract_racl_role_bits(a_user.rsvd);
+    `uvm_info(`gfn, $sformatf("a_user: 0x%0h", a_user), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("racl_role: %0d", racl_role), UVM_MEDIUM)
+
+    // Extract the RACL configuration bit for racl_role from the extracted
+    // shadow index register
+    racl_ok = racl_perm[racl_role];
+    `uvm_info(`gfn, $sformatf("racl_ok: %0b", racl_ok), UVM_MEDIUM)
+
+    // ---------------------------------------------------------
+    // Apply policy
+    // ---------------------------------------------------------
+    if (!attr_ok) begin
+      `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *DENIED* by range_attr[%0d]",
+                access_type.name(), item.a_addr, i), UVM_MEDIUM)
+      // Sample coverage data
+      if (env_cfg.en_cov) begin
+        cov.sample_attr_cg(.idx(i), .access_type(access_type),
+                           .read_perm   (dut_cfg.range_attr[i].read_access   ),
+                           .write_perm  (dut_cfg.range_attr[i].write_access  ),
+                           .execute_perm(dut_cfg.range_attr[i].execute_access),
+                           .acc_permit(0));
+      end
+
+      return AccessDenied;
+    end
+
+    if (!racl_ok) begin
+      `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *DENIED* by range_racl_policy[%0d]",
+                access_type.name(), item.a_addr, i), UVM_MEDIUM)
+      if (env_cfg.en_cov) cov.sample_racl_cg(.idx(i), .access_type(access_type),
+                                             .role(racl_role), .racl_check(0));
+      return AccessDenied;
+    end
+
+    // At this point all checks have passed including RACL. So transaction is GRANTED access
+    if (env_cfg.en_cov) begin
+      cov.sample_attr_cg(.idx(i), .access_type(access_type),
+                           .read_perm   (dut_cfg.range_attr[i].read_access   ),
+                           .write_perm  (dut_cfg.range_attr[i].write_access  ),
+                           .execute_perm(dut_cfg.range_attr[i].execute_access),
+                           .acc_permit(1));
+      cov.sample_racl_cg(.idx(i), .access_type(access_type), .role(racl_role), .racl_check(1));
+    end
+
+    `uvm_info(`gfn, $sformatf("%s access to 0x%0h is *GRANTED* by range[%0d]",
+              access_type.name(), item.a_addr, i), UVM_MEDIUM)
+    return AccessGranted;
+  end // end for i<NUM_RANGES
+
+  // If we have reached this point. The transaction address is out of range on
+  // all indexes and hence access is denied
   `uvm_info(`gfn, $sformatf("No matching range found for access #%0d to address 0x%0h",
             all_unfilt_a_chan_cnt, item.a_addr), UVM_MEDIUM)
+
+  if (env_cfg.en_cov) begin
+    cov.sample_all_index_miss_cg();
+  end
   return AccessDenied;
 endfunction : check_access
 
