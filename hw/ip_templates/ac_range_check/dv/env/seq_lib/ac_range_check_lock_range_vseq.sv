@@ -1,23 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// -----------------------------------------------------------------------------
-// Title   : ac_range_check_lock_range_vseq
-// Purpose : Stress‑test RANGE_REGWEN locking for every region of the AC Range
-//           Check IP. Continuous TL‑UL traffic runs until re‑programming of all
-//           ranges finishes, then the test verifies that locked regions retain
-//           their original configuration.
-//
-// Notes   :
-//   * All waits use `cfg.clk_rst_vif.wait_clks()` — **no** `#` delays.
-//   * CSR accesses follow the *base‑sequence* style: program via RAL fields and
-//     commit with `csr_update()`. Positional arguments are never used.
-//   * During the re‑program phase **locked** indices are written with direct
-//     `csr_wr` calls (to prove the lock blocks them) while **unlocked** indices
-//     are updated through `configure_range()`, mirroring functional usage.
-//   * Traffic generation spins until a boolean flag indicates re‑programming is
-//     done, ensuring overlap for the entire critical window.
-// -----------------------------------------------------------------------------
+
 class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
   `uvm_object_utils(ac_range_check_lock_range_vseq)
 
@@ -29,25 +13,25 @@ class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
   rand bit [2:0]           perm  [NUM_RANGES]; // {exec, write, read}
   rand bit                 enable[NUM_RANGES];
 
-  // Second set of values used in the re‑program step
+  // Second set of values used in the re-program step
   rand bit [DataWidth-1:0] base_new  [NUM_RANGES];
   rand bit [DataWidth-1:0] limit_new [NUM_RANGES];
   rand bit [2:0]           perm_new  [NUM_RANGES];
   rand bit                 enable_new[NUM_RANGES];
 
-  // One‑hot mask indicating which indices are locked
+  // One-Hot mask indicating which indices are locked
   rand bit [NUM_RANGES-1:0] lock_mask;
 
-  // Random delay in **clock cycles** before the re‑program phase begins.
+  // Random delay in **clock cycles** before the re-program phase begins.
   rand int unsigned reprogram_delay_clks;
 
 
   // ---------------------------------------------------------------------------
   // Constraints
   // ---------------------------------------------------------------------------
-  constraint c_addr_pairs {
+  constraint addr_pairs_c {
     foreach (base[i]) {
-      // 16‑byte alignment
+      // 16-Byte alignment
       base      [i][3:0] == 0;
       limit     [i][3:0] == 0;
       base_new  [i][3:0] == 0;
@@ -59,11 +43,11 @@ class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
     }
   }
 
-  constraint c_mask {
+  constraint mask_c {
      // at least one lock and one enable
     lock_mask   != 0;
   }
-  constraint c_reprogram_delay_clks { reprogram_delay_clks inside {[20:100]}; }
+  constraint reprogram_delay_clks_c { reprogram_delay_clks inside {[20:100]}; }
 
   // ---------------------------------------------------------------------------
   extern function new(string name = "ac_range_check_lock_range_vseq");
@@ -109,7 +93,7 @@ task ac_range_check_lock_range_vseq::configure_range(
   ral.range_attr[idx].enable.set        (mubi4_bool_to_mubi(en));
   csr_update(.csr(ral.range_attr[idx]));
 
-  // Disable RACL side‑effects for simplicity.
+  // Disable RACL side effects for simplicity.
   ral.range_racl_policy_shadowed[idx].set(32'hFFFF_FFFF);
   csr_update(.csr(ral.range_racl_policy_shadowed[idx]));
 endtask : configure_range
@@ -138,7 +122,7 @@ task ac_range_check_lock_range_vseq::body();
   this.perm_new.rand_mode(0);
   this.enable_new.rand_mode(0);
   this.lock_mask.rand_mode(0);
-  this.reprogram_delay_clks.rand_mode(0);;
+  this.reprogram_delay_clks.rand_mode(0);
 
   //------------------------------------------------------------------
   // Step 1 : Configure every range once with *initial* values.
@@ -161,11 +145,11 @@ task ac_range_check_lock_range_vseq::body();
   end
 
   //------------------------------------------------------------------
-  // Step 3 : Kick off traffic that runs until re‑programming completes. A
+  // Step 3 : Kick off traffic that runs until re-programming completes. A
   // boolean flag `reprogram_done` communicates between the two forked threads.
   //------------------------------------------------------------------
   fork
-    // Traffic thread — keep going until the flag is asserted.
+    // Traffic thread - keep going until the flag is asserted.
     begin : traffic_thread
       while (!reprogram_done) begin
         `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -174,7 +158,7 @@ task ac_range_check_lock_range_vseq::body();
       end
     end
 
-    // Re‑program thread
+    // Re-Program thread
     begin : reprogram_thread
       cfg.clk_rst_vif.wait_clks(reprogram_delay_clks);
       foreach (base_new[i]) begin
@@ -194,7 +178,7 @@ task ac_range_check_lock_range_vseq::body();
           csr_wr(.ptr(ral.range_limit[i]), .value(limit_new[i]));
           csr_wr(.ptr(ral.range_attr [i]), .value(mubi4_attr  ));
         end else begin
-          // Unlocked ranges get a full, legal re‑configuration.
+          // Unlocked ranges get a full, legal re-configuration.
           configure_range(i, base_new[i], limit_new[i], perm_new[i], enable_new[i]);
         end
       end
