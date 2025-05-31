@@ -32,6 +32,9 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   bit  addr_hit_cp;       // State of Address Check at sampling 1 = hit, 0 = miss
   bit  all_index_miss_cp; // 1 = addr miss on all indexes, 0 = addr hit on some index range
 
+  bit  bypass_cp;   // Bypass Mode 1 = enabled, 0 = disabled
+  bit  lock_idx_cp; // Status of lock bit for an index 1 = locked,  0 = unlocked
+
   // Primary covergroup that verifies the operation of AC_RANGE_CHECK module.
   // There are 4 parts to the cross in this covergroup.
   // - Index that had the address match
@@ -160,9 +163,27 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
                                    bins addr_not_matched_in_any_index = {1}; }
   endgroup : all_index_miss_cg
 
+  covergroup bypass_cg;
+    coverpoint bypass_cp { bins disabled = {0}; bins enabled = {1}; }
+  endgroup : bypass_cg
+
+
+  covergroup range_lock_cg;
+    coverpoint idx_cp
+    {
+      bins index[] = {[0:NUM_RANGES-1]};
+    }
+
+    coverpoint range_en_cp   { bins disabled = {0}; bins enabled = {1}; }
+    coverpoint lock_idx_cp { bins unlocked = {0}; bins locked = {1}; }
+
+    idx_X_enable_X_lock : cross idx_cp, range_en_cp, lock_idx_cp;
+  endgroup : range_lock_cg
+
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
   extern function void build_phase(uvm_phase phase);
+
   extern function void sample_attr_cg(int idx,
                                       ac_range_check_env_pkg::access_type_e access_type,
                                       bit read_perm, bit write_perm, bit execute_perm,
@@ -174,6 +195,8 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   extern function void sample_range_cg(int idx, bit range_en);
   extern function void sample_addr_match_cg(int idx, bit addr_hit);
   extern function void sample_all_index_miss_cg();
+  extern function void sample_bypass_cg(bit bypass_en);
+  extern function void sample_range_lock_cg(int idx, bit enable, bit lock);
 endclass : ac_range_check_env_cov
 
 
@@ -184,6 +207,8 @@ function ac_range_check_env_cov::new(string name, uvm_component parent);
   range_cg          = new();
   addr_match_cg     = new();
   all_index_miss_cg = new();
+  bypass_cg         = new();
+  range_lock_cg     = new();
 endfunction : new
 
 function void ac_range_check_env_cov::build_phase(uvm_phase phase);
@@ -241,3 +266,16 @@ function void ac_range_check_env_cov::sample_all_index_miss_cg();
   this.all_index_miss_cp = 1;
   all_index_miss_cg.sample();
 endfunction : sample_all_index_miss_cg
+
+function void ac_range_check_env_cov::sample_bypass_cg(bit bypass_en);
+  this.bypass_cp = bypass_en;
+  bypass_cg.sample();
+endfunction : sample_bypass_cg
+
+function void ac_range_check_env_cov::sample_range_lock_cg(int idx, bit enable, bit lock);
+  this.idx_cp      = idx;
+  this.range_en_cp = enable;
+  this.lock_idx_cp = lock;
+
+  range_lock_cg.sample();
+endfunction : sample_range_lock_cg

@@ -45,7 +45,7 @@
         tests: ["ac_range_check_smoke"]
       }
       {
-        name: ac_range_lock_range
+        name: ac_range_check_lock_range
         desc: '''
               Test the range lock functionality
 
@@ -61,7 +61,7 @@
                 cleared, the reconfigured values should have replaced the original ones.
               '''
         stage: V2
-        tests: ["ac_range_lock_range"]
+        tests: ["ac_range_check_lock_range"]
       }
       {
         name: ac_range_bypass_enable
