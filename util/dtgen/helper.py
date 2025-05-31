@@ -194,7 +194,7 @@ class StructType(BaseType):
         for (name, (field_type, _)) in self.fields.items():
             assert isinstance(name, Name), "StructType can only render mappings with `Name` keys"
             if name not in value:
-                logging.warn("field {} not found in {}".format(name, value))
+                logging.warning("field {} not found in {}".format(name, value))
                 continue
             text += ".{} = {},\n".format(name.as_snake_case(), field_type.render_value(value[name]))
             unused_keys.remove(name)
