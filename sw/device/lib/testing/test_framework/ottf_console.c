@@ -35,12 +35,16 @@ dif_pinmux_t ottf_console_pinmux;
 // Main console.
 static ottf_console_t main_console;
 
+static volatile uint32_t flow_control_irqs;
+
 // Staging buffer for the SPI console implementation.
 static char main_spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
 
 ottf_console_t *ottf_console_get(void) { return &main_console; }
 
 void ottf_console_init(void) {
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
   main_console.type = kOttfTestConfig.console.type;
@@ -54,6 +58,10 @@ void ottf_console_init(void) {
       }
 
       ottf_console_configure_uart(&main_console, base_addr);
+      // Initialize/Configure console flow control (if requested).
+      if (kOttfTestConfig.enable_uart_flow_control) {
+        ottf_console_uart_flow_control_enable(&main_console);
+      }
       break;
     case (kOttfConsoleSpiDevice):
       ottf_console_configure_spi_device(
@@ -72,6 +80,18 @@ void ottf_console_init(void) {
 
   base_set_stdout((buffer_sink_t){.data = (void *)&main_console,
                                   .sink = main_console.sink});
+}
+
+uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }
+
+bool ottf_console_flow_control_isr(uint32_t *exc_info) {
+  flow_control_irqs += 1;
+  return ottf_console_uart_flow_control_isr(exc_info, &main_console);
+}
+
+status_t ottf_console_flow_control(ottf_console_t *console,
+                                   ottf_console_flow_control_t ctrl) {
+  return ottf_console_uart_flow_control(console, ctrl);
 }
 
 void ottf_console_set_buffering(ottf_console_t *console, bool enabled,
