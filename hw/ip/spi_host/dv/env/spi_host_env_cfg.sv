@@ -46,7 +46,7 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
 
 
 
-  `uvm_object_param_utils_begin(spi_host_env_cfg)
+  `uvm_object_utils_begin(spi_host_env_cfg)
     `uvm_field_object(m_spi_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
   `uvm_object_new
