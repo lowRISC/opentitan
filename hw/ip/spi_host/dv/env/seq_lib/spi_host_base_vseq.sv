@@ -118,7 +118,10 @@ class spi_host_base_vseq extends cip_base_vseq #(
       [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : begin
         cfg.csr_spinwait_timeout_ns *= 10;
       end
-      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range"))
+      default : begin
+        `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out of range",
+                                   spi_config_regs.clkdiv))
+      end
     endcase
     `uvm_info(`gfn, $sformatf("%m: CSR_SPINWAIT Timeout set to %0dns", cfg.csr_spinwait_timeout_ns),
               UVM_DEBUG)
