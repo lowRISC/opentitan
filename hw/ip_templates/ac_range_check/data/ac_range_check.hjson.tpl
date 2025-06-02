@@ -105,7 +105,8 @@ import math
   ]
   interrupt_list: [
     { name: "deny_cnt_reached"
-      desc: "Deny counter has reached threshold."
+      desc: "Deny counter has exceeded threshold."
+      type: "status"
     }
   ]
   alert_list: [
@@ -171,7 +172,7 @@ import math
         { bits: "9:2"
           name: "deny_cnt_threshold"
           resval: 0x0
-          desc: "An interrupt is raised (if enabled) when deny_cnt reaches the configured deny_cnt_threshold."
+          desc: "An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold."
         }
         { bits: "1"
           name: "log_clear"
