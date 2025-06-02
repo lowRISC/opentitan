@@ -89,7 +89,12 @@ fn run_sca_sha3_testcase(
 
     if !test_case.status.is_empty() {
         // Get test output & filter.
-        let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+        let output = serde_json::Value::recv(
+            uart,
+            opts.timeout,
+            /*quiet=*/ false,
+            /*skip_crc=*/ false,
+        )?;
         let output_received = filter_response(output.clone());
 
         // Filter expected output.
@@ -112,7 +117,12 @@ fn run_sca_sha3_testcase(
 
     if !test_case.expected_output.is_empty() {
         // Get test output & filter.
-        let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+        let output = serde_json::Value::recv(
+            uart,
+            opts.timeout,
+            /*quiet=*/ false,
+            /*skip_crc=*/ false,
+        )?;
         let output_received = filter_response(output.clone());
 
         // Filter expected output.
