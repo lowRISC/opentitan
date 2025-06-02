@@ -23,9 +23,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                         |
-|:-----------------|:-------|:------------------------------------|
-| deny_cnt_reached | Event  | Deny counter has reached threshold. |
+| Interrupt Name   | Type   | Description                          |
+|:-----------------|:-------|:-------------------------------------|
+| deny_cnt_reached | Status | Deny counter has exceeded threshold. |
 
 ## Security Alerts
 

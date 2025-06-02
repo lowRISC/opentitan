@@ -183,13 +183,13 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "deny_cnt_reached", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "deny_cnt_reached", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                         |
-|:------:|:------:|:-------:|:-----------------|:------------------------------------|
-|  31:1  |        |         |                  | Reserved                            |
-|   0    |  rw1c  |   0x0   | deny_cnt_reached | Deny counter has reached threshold. |
+|  Bits  |  Type  |  Reset  | Name             | Description                          |
+|:------:|:------:|:-------:|:-----------------|:-------------------------------------|
+|  31:1  |        |         |                  | Reserved                             |
+|   0    |   ro   |   0x0   | deny_cnt_reached | Deny counter has exceeded threshold. |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -278,7 +278,7 @@ Status of hardware alerts.
 |  Bits  |  Type  |  Reset  | Name               | Description                                                                                   |
 |:------:|:------:|:-------:|:-------------------|:----------------------------------------------------------------------------------------------|
 | 31:10  |        |         |                    | Reserved                                                                                      |
-|  9:2   |   rw   |   0x0   | deny_cnt_threshold | An interrupt is raised (if enabled) when deny_cnt reaches the configured deny_cnt_threshold.  |
+|  9:2   |   rw   |   0x0   | deny_cnt_threshold | An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold.  |
 |   1    |   rw   |   0x0   | log_clear          | Clears all log information for the first denied access including: - LOG_STATUS - LOG_ADDRESS. |
 |   0    |   rw   |   0x0   | log_enable         | When set, blocked requests are logged by the deny counter.                                    |
 
