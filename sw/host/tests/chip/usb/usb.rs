@@ -35,6 +35,10 @@ pub struct UsbOpts {
     /// Pin to sense VBUS.
     #[arg(long)]
     pub vbus_sense: Option<String>,
+
+    /// Apply some strappings.
+    #[arg(long)]
+    pub strapping: Vec<String>,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -191,6 +195,18 @@ impl UsbOpts {
 
         let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
         vbus_sense_pin.read()
+    }
+
+    pub fn apply_strappings(&self, transport: &TransportWrapper, apply: bool) -> Result<()> {
+        for name in &self.strapping {
+            let pin_strapping = transport.pin_strapping(name)?;
+            if apply {
+                pin_strapping.apply()?;
+            } else {
+                pin_strapping.remove()?;
+            }
+        }
+        Ok(())
     }
 }
 
