@@ -18,6 +18,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"  // Generated.
 
+static dif_gpio_t ottf_console_gpio;
+static dif_pinmux_t ottf_console_pinmux;
+
 enum {
   /* Placeholder used to indicate that no TX GPIO indicator is enabled. */
   kOttfSpiNoTxGpio = UINT32_MAX,
@@ -319,6 +322,11 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
                                        bool tx_ready_enable,
                                        uint32_t tx_ready_gpio,
                                        uint32_t tx_ready_mio) {
+  CHECK_DIF_OK(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
+                             &ottf_console_gpio));
+  CHECK_DIF_OK(
+      dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
+                      &ottf_console_pinmux));
   dif_spi_device_handle_t *spi_device = &console->data.spi.dif;
   // Configure spi_device SPI flash emulation.
   CHECK_DIF_OK(
@@ -406,12 +414,6 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
   // Setup TX GPIO if requested.
   if (tx_ready_enable) {
     console->data.spi.tx_ready_gpio = tx_ready_gpio;
-    CHECK_DIF_OK(
-        dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR),
-                      &ottf_console_gpio));
-    CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
-        &ottf_console_pinmux));
     CHECK_DIF_OK(dif_pinmux_output_select(
         &ottf_console_pinmux, tx_ready_mio,
         kTopEarlgreyPinmuxOutselGpioGpio0 + tx_ready_gpio));
