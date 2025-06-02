@@ -42,165 +42,158 @@ For example, a clock multiplexer for a Xilinx FPGA is implemented differently th
 Not all primitives need to have multiple implementations.
 
 * Primitives with a single, generic, implementation are normal SystemVerilog modules inside the `hw/ip/prim/rtl` directory.
-  We call these primitives "technology-independent primitives".
-* Primitives with multiple implementations have only a FuseSoC core file in the `hw/ip/prim` directory.
-  The actual implementations are in "technology libraries". We call these primitives "technology-dependent primitives".
+  We call these primitives *technology-independent primitives*.
+* Primitives with multiple implementations are called *technology-dependent primitives*.
+  Each implementation has its own directory within `hw/ip/` with the prefix `prim`, e.g. `hw/ip/prim_generic/` or `hw/ip/prim_xilinx/`.
 
-### Abstract primitives
-
-Abstract primitives are wrappers around technology-dependent implementations of primitives, with the ability to select a specific implementation if needed.
-
-In more technical terms, abstract primitives are SystemVerilog modules.
-The example below shows one.
-
-```systemverilog
-`ifndef PRIM_DEFAULT_IMPL
-  `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-`endif
-
-module prim_pad_wrapper
-#(
-  parameter int unsigned AttrDw = 6
-) (
-  inout wire         inout_io, // bidirectional pad
-  output logic       in_o,     // input data
-  input              out_i,    // output data
-  input              oe_i,     // output enable
-  // additional attributes {drive strength, keeper, pull-up, pull-down, open-drain, invert}
-  input [AttrDw-1:0] attr_i
-);
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
-  if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
-    prim_generic_pad_wrapper u_impl_generic (
-      .*
-    );
-  end else if (Impl == prim_pkg::ImplXilinx) begin : gen_xilinx
-    prim_xilinx_pad_wrapper u_impl_xilinx (
-      .*
-    );
-  end else begin : gen_failure
-    // TODO: Find code that works across tools and causes a compile failure
-  end
-
-endmodule
-```
-
-As seen from the source code snippet, abstract primitives have the following properties:
-
-- They have an `Impl` parameter which can be set to choose a specific implementation of the primitive.
-- The `Impl` parameter is set to a system-wide default determined by the `PRIM_DEFAULT_IMPL` define.
-- All ports and parameters of the abstract primitive are forwarded to the implementations.
-
-### Technology libraries
-
-Technology libraries collect implementations of primitives.
-
-At least one technology library must exist: the `generic` technology library, which contains a pure-SystemVerilog implementation of the functionality.
+Collections of technology-dependent primitives are called technology libraries.
+The *generic* technology library contains a pure-SystemVerilog implementation of primitives' functionality.
 This library is commonly used for simulations and as functional reference.
-The `generic` technology library is contained in the `hw/ip/prim_generic` directory.
-
-In addition to the implementation in the `generic` library, primitives may be implemented by as many other libraries as needed.
-
-Technology libraries are referenced by their name.
-
-### Technology library discovery
-
-In many cases, technology libraries contain vendor-specific code which cannot be shared widely or openly.
-Therefore, a FuseSoC looks for available technology libraries at build time, and makes all libraries it finds available.
-
-The discovery is performed based on the agreed-on naming scheme for primitives.
-
-- FuseSoC scans all libraries (e.g. as specified by its `--cores-root` command line argument) for cores.
-- All cores with a name matching `lowrisc:prim_TECHLIBNAME:PRIMNAME` are considered.
-  `TECHLIBNAME` is then added to the list of technology libraries.
-
-After the discovery process has completed, a script (`primgen`) creates
-- an abstract primitive (see above), and
-- an entry in the `prim_pkg` package in the form of `prim_pkg::ImplTechlibname` to identify the technology library by its name.
-
-## User Guide
-
-### Use primitives
-
-Primitives are normal SystemVerilog modules, and can be used as usual:
-* instantiate it like a normal SystemVerilog module, and
-* add a dependency in the FuseSoC core file.
-
-Technology-dependent primitives have an additional parameter called `Impl`.
-Set this parameter to use a specific implementation of the primitive for this specific instance.
-For example:
-
-```systemverilog
-prim_ram_2p #(
-  .Width (TotalWidth),
-  .Depth (Depth),
-  // Force the use of the tsmc40lp technology library for this instance, instead
-  // of using the build-time default.
-  .Impl(prim_pkg::ImplTsmc40lp)
-) u_mem (
-  .clk_a_i    (clk_i),
-  ...
-)
-```
+It also serves as a definition of a technology-dependent primitive's interface.
+However, other technology libraries can be supersets of the generic technology library.
 
 
-### Set the default technology library
+### Virtual primitives
 
-If no specific technology library is chosen for an instantiated primitive the default library is used.
-The SystemVerilog define `PRIM_DEFAULT_IMPL` can be used to set the default for the whole design.
-Set this define to one of the enum values in `prim_pkg.sv` in the form `prim_pkg::ImplTechlibname`.
-`Techlibname` is the capitalized name of the technology library.
+To allow hardware blocks to be generic across implementations of *technology-dependent primitives*, a feature of FuseSoC called *[virtual cores][]* is used.
+Any implementation of a virtual core must provide the same functionality and interface.
+The module name must be the same, and the parameter and port lists must include all the required members of the interface.
+For an analogy, virtual cores can be thought of as similar to virtual methods in C++ or SystemVerilog.
+A hardware block can depend on a virtual core, which can then be substituted for a *concrete* implementation by the user.
 
-In the top-level FuseSoC core file, the default technology library can be chosen like this:
+To find the interface of a given virtual primitive look at its generic implementation in `hw/prim_generic/`.
+Taking `hw/ip/prim_generic/prim_generic_flop_2sync.core` as an example, you'll see the following at the head of the file.
 
 ```yaml
-# my_toplevel.core
-
-# Declare filesets and other things (omitted)
-
-parameters:
-  # Make the parameter known to FuseSoC to enable overrides from the
-  # command line. If not overwritten, use the generic technology library.
-  PRIM_DEFAULT_IMPL:
-    datatype: str
-    paramtype: vlogdefine
-    description: Primitives implementation to use, e.g. "prim_pkg::ImplGeneric".
-    default: prim_pkg::ImplGeneric
-
-targets:
-  fpga_synthesis:
-    filesets:
-      - my_rtl_files
-    parameters:
-      # Use the xilinx technology library for this target by default.
-      - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx
-    toplevel: my_toplevel
+name: "lowrisc:prim_generic:flop_2sync"
+description: "Generic implementation of a flop-based synchronizer"
+virtual:
+  - lowrisc:prim:flop_2sync
 ```
+
+The VLNV (Vendor Library Name Version) of the core is `lowrisc:prim_generic:flop_2sync`, but it also declares itself a provider of the virtual VLNV of `lowrisc:prim:flop_2sync`.
+Hardware blocks should depend on this virtual VLNV, so that the user can change implementations.
+
+If an implementation of a virtual core exists in an invokable core's dependency tree, it will be selected.
+You can't have multiple implementations of a virtual core in a core's dependency tree.
+*An invokable core is the core with its target being run by FuseSoC.*
+
+For this reason, an invokable core may be constructed to have their chosen concrete implementation in their dependency tree.
+To reduce the hassle of pulling in a set of implementations into a dependency tree, technology libraries can provide an `:all` core, e.g. `lowrisc:prim_generic:all`.
+The invokable core `hw/top_earlgrey/chip_earlgrey_cw310.core`, for example, depends on `lowrisc:prim_xilinx:all`.
+However, where it is appropriate to be able to swap prim implementations, it is best to punt this selection to fusesoc mappings, which are described later in this guide.
+
+[virtual cores]: https://fusesoc.readthedocs.io/en/stable/user/build_system/virtual_cores.html
+
+
+### Mappings
+
+Some invokable cores are expected to be used with multiple different implementations.
+To allow users to change primitive implementations, OpenTitan makes use of a FuseSoC feature called *[mappings][]*.
+This can be used to request a substitution of particular virtual cores with the desired implementation.
+An example of their use is in `hw/ip/prim_xilinx/prim_xilinx.core`:
+
+```yaml
+mapping:
+  "lowrisc:prim:and2"         : lowrisc:prim_xilinx:and2
+  "lowrisc:prim:buf"          : lowrisc:prim_xilinx:buf
+  "lowrisc:prim:clock_buf"    : lowrisc:prim_xilinx:clock_buf
+  "lowrisc:prim:clock_div"    : lowrisc:prim_generic:clock_div
+  "lowrisc:prim:clock_gating" : lowrisc:prim_xilinx:clock_gating
+  "lowrisc:prim:clock_inv"    : lowrisc:prim_generic:clock_inv
+  "lowrisc:prim:clock_mux2"   : lowrisc:prim_xilinx:clock_mux2
+  # ...
+```
+
+Notice that there aren't Xilinx specific implementations for all primitives, so the generic implementation is requested.
+
+Beyond primitives, mappings are also used in the top-level core files, e.g. in `hw/top_earlgrey/top_earlgrey.core`, to ask for top specific implementations.
+
+A specific use of mappings is the lints for each block, for example `hw/ip/uart/uart.core`'s lint target.
+None of its dependencies contain concrete primitive implementations.
+Instead mappings are used when dvsim invokes the core.
+This allows the block to be linted for multiple different primitives (and top-level constants).
+
+[mappings]: https://fusesoc.readthedocs.io/en/stable/user/build_system/mappings.html
+
+
+## User Guide
+### Using primitives
+
+Primitives are normal SystemVerilog modules, and can be used as usual:
+1. Instantiate it like a normal SystemVerilog module.
+   ```systemverilog
+   prim_fifo_sync #(
+     .Width   (8),
+     .Pass    (1'b0),
+     .Depth   (TxFifoDepth)
+   ) u_uart_txfifo (
+     .clk_i,
+     // ..
+     .err_o   ()
+   )
+   ```
+2. Add it as a dependency in the FuseSoC core file.
+   ```yaml
+   name: "lowrisc:ip:uart:0.1"
+   description: "uart"
+   filesets:
+     files_rtl:
+       depend:
+         - lowrisc:virtual_constants:top_pkg
+         - lowrisc:prim:prim_fifo_sync
+   ```
+
+
+If you'd like to depend on a specific implementation, you can add the specific implementation's VLNV instead of the virtual VLNV.
+For example, you would depend on `lowrisc:prim_xilinx:prim_fifo_sync` instead of `lowrisc:prim:prim_fifo_sync` if you wanted to forcefully use the Xilinx implementation.
+Because this method can restrict the flexibility to swap compatible cores, **this is not recommended.**
 
 
 ### Create a technology library
 
 To create a technology library follow these steps:
 
-- Choose a name for the new technology library.
-  Names are all lower-case.
-  To ease sharing of technology libraries it is encouraged to pick a very specific name, e.g. `tsmc40lp`, and not `asic`.
-- Copy the `prim_generic` folder into an arbitrary location (can be outside of this repository).
-  Name the folder `prim_YOURLIBRARYNAME`.
-- Replace the word `generic` everywhere with the name of your technology library.
-  This includes
-  - file and directory names (e.g. `prim_generic_ram1p.sv` becomes `prim_tsmc40lp_ram1p.sv`),
-  - module names (e.g. `prim_generic_ram1p` becomes `prim_tsmc40lp_ram1p`), and
-  - all other references (grep for it!).
-- Implement all primitives. Replace the module body of the generic implementation with a technology-specific implementation as needed.
-  Do *not* modify the list of ports or parameters in any way!
+1. Choose a name for the new technology library.
+   Names are all lower-case.
+   To ease sharing of technology libraries it is encouraged to pick a very specific name, rather than a generic name like `asic`.
+   `mytech` will be used as a placeholder name in the examples.
+2. Create a directory in `hw/ip` with the prefix `prim_` followed by the name of your technology library.
+3. Copy `hw/ip/prim_generic/prim_generic.core` into the new directory renaming it to match your primitive library, e.g. `hw/ip/prim_mytech/prim_mytech.core`
+   Change the vendor and name in this file, e.g. `lowrisc:prim_generic` would become `partner:mytech` where your organisation's name can be used in the place of 'partner'.
+   Also, edit the description to better describe the specific implementation.
+4. For every primitive implemented by your library:
+   1. Copy across the generic implementation into your library, e.g. `cp hw/ip/prim_generic/rtl/prim_flop.sv hw/ip/prim_mytech/rtl/prim_flop.sv`.
+   2. Make your changes to the implementation without modifying the module ports or removing parameters.
+   3. Copy the generic primitive's core description into your library, e.g. `cp hw/ip/prim_generic/prim_generic_flop.core hw/ip/prim_mytech/prim_mytech_flop.core`.
+   4. Edit this copied primitive core file so that it has the new primitive library name, e.g. replacing `lowrisc:prim_generic:flop` with `partner:prim_mytech:flop`.
+   5. Then in the libraries main core file, e.g. `hw/ip/prim_mytech/prim_mytech.core`, replace all instances of the generic implementation with your specific implementation, e.g. replacing `lowrisc:prim_generic:flop` with `partner:prim_mytech:flop` again.
 
-## Implementation details
+You don't have to have your own implementation for every primitive.
+You can rely on the generic implementation or even another library's implementation for other primitives.
 
-Technology-dependent primitives are implemented as a FuseSoC generator.
-The core of the primitive (e.g. `lowrisc:prim:rom` in `prim/prim_rom.core`) calls a FuseSoC generator.
-This generator is the script `util/primgen.py`.
-As input, the script receives a list of all cores found by FuseSoC anywhere in its search path.
-The script then looks through the cores FuseSoC discovered and extracts a list of technology libraries out of it.
-It then goes on to create the abstract primitive (copying over the list of parameters and ports from the generic implementation), and an associated core file, which depends on all technology-dependent libraries that were found.
+Technology libraries don't have to live in the OpenTitan repository.
+If they are not in the OpenTitan repository, you need to make sure the path to them is given to FuseSoC with either an additional `--cores-root=` argument or set in `fusesoc.conf`.
+This is useful in cases where technology libraries contain vendor-specific code which cannot be shared widely or openly.
+
+
+### Selecting a technology library
+
+You can select a technology library in one of two ways.
+
+If you have your own invokable core which requires a particular primitive, you should add the technology library's VLNV to its dependencies.
+`hw/top_earlgrey/chip_earlgrey_cw310.core` is an example of an invokable core requiring a particular technology library, namely `lowrisc:prim_xilinx:all`.
+You'll notice this VLNV in its dependencies.
+
+If you are using an invokable core which is generic across different technology libraries, then you should use mappings to select the technology library you'd like to use.
+A default technology library sometimes exists for these invokable cores.
+The default technology library needs to be disabled with a flag.
+`hw/top_earlgrey/chip_earlgrey_asic.core` is an example of one of these invokable cores.
+You provide the `fileset_partner` flag to disable the default implementation as well as your mapping.
+
+```sh
+fusesoc --cores-root=$OT_REPO run \
+    --flag fileset_partner \
+    --mapping partner:prim_mytech:all \
+    lowrisc:systems:chip_earlgrey_asic
+```
