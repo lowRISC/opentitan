@@ -58,6 +58,9 @@ typedef struct ottf_console {
     struct {
       /** DIF handle. */
       dif_uart_t dif;
+      // This variable is shared between the interrupt service handler and user
+      // code.
+      volatile ottf_console_flow_control_t flow_control_state;
     } uart;
     /** SPI device data. */
     struct {
@@ -140,11 +143,19 @@ status_t ottf_console_flow_control(ottf_console_t *console,
  *
  * This function configures UART interrupts at the PLIC and enables interrupts
  * at the CPU.
+ *
+ * WARNING Control requires IRQ dispatching. The main console will automatically
+ * dispatch control IRQs on calls to `ottf_console_flow_control_isr`. If you
+ * want to dispatch control flow IRQs for non-main consoles, you must
+ * manually call `ottf_console_uart_flow_control_isr` on the console from your
+ * IRQ handler.
+ *
+ * @param console Pointer to the console.
  */
-void ottf_console_flow_control_enable(void);
+void ottf_console_uart_flow_control_enable(ottf_console_t *console);
 
 /**
- * Manage console flow control from interrupt context.
+ * Manage console flow control *for the main console* from interrupt context.
  *
  * Call this when a console UART interrupt triggers.
  *
@@ -153,6 +164,19 @@ void ottf_console_flow_control_enable(void);
  * otherwise.
  */
 bool ottf_console_flow_control_isr(uint32_t *exc_info);
+
+/**
+ * Manage console flow control from interrupt context.
+ *
+ * You should only call this function directly for *non-main* consoles.
+ *
+ * @param exc_info The OTTF execution info passed to all ISRs.
+ * @param console Pointer to the console.
+ * @return True if an RX Watermark IRQ was detected and handled. False
+ * otherwise.
+ */
+bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
+                                        ottf_console_t *console);
 
 /**
  * Returns the number of OTTF console flow control interrupts that have

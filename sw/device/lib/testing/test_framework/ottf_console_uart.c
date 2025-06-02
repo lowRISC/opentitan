@@ -33,11 +33,6 @@ enum {
   kPlicTarget = 0,
 };
 
-// The `flow_control_state` and `flow_control_irqs` variables are shared between
-// the interrupt service handler and user code.
-static volatile ottf_console_flow_control_t flow_control_state;
-static volatile uint32_t flow_control_irqs;
-
 static status_t ottf_console_uart_getc(void *io) {
   ottf_console_t *console = io;
   uint8_t byte;
@@ -77,85 +72,83 @@ void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr) {
 
   console->getc = ottf_console_uart_getc;
   console->sink = ottf_console_uart_sink;
-
-  // Initialize/Configure console flow control (if requested).
-  if (kOttfTestConfig.enable_uart_flow_control) {
-    ottf_console_flow_control_enable();
-  }
 }
 
-static uint32_t get_flow_control_watermark_plic_id(void) {
+static uint32_t get_flow_control_watermark_plic_id(ottf_console_t *console) {
   for (size_t i = 0; i < kDtUartCount; i++) {
     dt_uart_t uart = (dt_uart_t)i;
-    if (kOttfTestConfig.console.base_addr == dt_uart_primary_reg_block(uart)) {
+    if (console->data.uart.dif.base_addr.base ==
+        (void *)dt_uart_primary_reg_block(uart)) {
       return dt_uart_irq_to_plic_id(uart, kDtUartIrqRxWatermark);
     }
   }
   return dt_uart_irq_to_plic_id(kDtUart0, kDtUartIrqRxWatermark);
 }
 
-void ottf_console_flow_control_enable(void) {
-  const dif_uart_t *uart = &ottf_console_get()->data.uart.dif;
+void ottf_console_uart_flow_control_enable(ottf_console_t *console) {
+  const dif_uart_t *uart = &console->data.uart.dif;
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
 
   // Set IRQ priorities to MAX
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &ottf_plic, get_flow_control_watermark_plic_id(), kDifRvPlicMaxPriority));
+      &ottf_plic, get_flow_control_watermark_plic_id(console),
+      kDifRvPlicMaxPriority));
   // Set Ibex IRQ priority threshold level
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&ottf_plic, kPlicTarget,
                                                 kDifRvPlicMinPriority));
   // Enable IRQs in PLIC
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&ottf_plic,
-                                           get_flow_control_watermark_plic_id(),
-                                           kPlicTarget, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &ottf_plic, get_flow_control_watermark_plic_id(console), kPlicTarget,
+      kDifToggleEnabled));
 
-  flow_control_state = kOttfConsoleFlowControlAuto;
+  console->data.uart.flow_control_state = kOttfConsoleFlowControlAuto;
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   // Make sure we're in the Resume state and we emit a Resume to the UART.
-  ottf_console_flow_control(ottf_console_get(), kOttfConsoleFlowControlResume);
+  ottf_console_flow_control(console, kOttfConsoleFlowControlResume);
 }
 
 // This version of the function is safe to call from within the ISR.
 static status_t manage_flow_control(ottf_console_t *console,
                                     ottf_console_flow_control_t ctrl) {
   const dif_uart_t *uart = &console->data.uart.dif;
-  if (flow_control_state == kOttfConsoleFlowControlNone) {
-    return OK_STATUS((int32_t)flow_control_state);
+  if (console->data.uart.flow_control_state == kOttfConsoleFlowControlNone) {
+    return OK_STATUS((int32_t)console->data.uart.flow_control_state);
   }
   if (ctrl == kOttfConsoleFlowControlAuto) {
     uint32_t avail;
     TRY(dif_uart_rx_bytes_available(uart, &avail));
     if (avail < kFlowControlLowWatermark &&
-        flow_control_state != kOttfConsoleFlowControlResume) {
+        console->data.uart.flow_control_state !=
+            kOttfConsoleFlowControlResume) {
       // Enable RX watermark interrupt when RX FIFO level is below the
       // watermark.
       CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                             kDifToggleEnabled));
       ctrl = kOttfConsoleFlowControlResume;
     } else if (avail >= kFlowControlHighWatermark &&
-               flow_control_state != kOttfConsoleFlowControlPause) {
+               console->data.uart.flow_control_state !=
+                   kOttfConsoleFlowControlPause) {
       ctrl = kOttfConsoleFlowControlPause;
       // RX watermark interrupt is status type, so disable the interrupt whilst
       // RX FIFO is above the watermark to avoid an inifite loop of ISRs.
       CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                             kDifToggleDisabled));
     } else {
-      return OK_STATUS((int32_t)flow_control_state);
+      return OK_STATUS((int32_t)console->data.uart.flow_control_state);
     }
   }
   uint8_t byte = (uint8_t)ctrl;
   CHECK_DIF_OK(dif_uart_bytes_send(uart, &byte, 1, NULL));
-  flow_control_state = ctrl;
-  return OK_STATUS((int32_t)flow_control_state);
+  console->data.uart.flow_control_state = ctrl;
+  return OK_STATUS((int32_t)console->data.uart.flow_control_state);
 }
 
-bool ottf_console_flow_control_isr(uint32_t *exc_info) {
-  ottf_console_t *console = ottf_console_get();
+bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
+                                        ottf_console_t *console) {
   const dif_uart_t *uart = &console->data.uart.dif;
-  flow_control_irqs += 1;
   bool rx;
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
   if (rx) {
@@ -167,9 +160,9 @@ bool ottf_console_flow_control_isr(uint32_t *exc_info) {
 }
 
 // The public API has to save and restore interrupts to avoid an
-// unexpected write to the global `flow_control_state`.
-status_t ottf_console_flow_control(ottf_console_t *console,
-                                   ottf_console_flow_control_t ctrl) {
+// unexpected write to `console->data.uart.flow_control_state`.
+status_t ottf_console_uart_flow_control(ottf_console_t *console,
+                                        ottf_console_flow_control_t ctrl) {
   const dif_uart_t *uart = &console->data.uart.dif;
   dif_uart_irq_enable_snapshot_t snapshot;
   CHECK_DIF_OK(dif_uart_irq_disable_all(uart, &snapshot));
@@ -177,5 +170,3 @@ status_t ottf_console_flow_control(ottf_console_t *console,
   CHECK_DIF_OK(dif_uart_irq_restore_all(uart, &snapshot));
   return s;
 }
-
-uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }

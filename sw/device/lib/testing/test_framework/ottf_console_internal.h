@@ -33,4 +33,10 @@ enum {
   kSpiDeviceFrameMagicNumber = 0xa5a5beef,
 };
 
+void ottf_console_uart_flow_control_enable(ottf_console_t *console);
+bool ottf_console_uart_flow_control_isr(uint32_t *exc_info,
+                                        ottf_console_t *console);
+status_t ottf_console_uart_flow_control(ottf_console_t *console,
+                                        ottf_console_flow_control_t ctrl);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_CONSOLE_INTERNAL_H_
