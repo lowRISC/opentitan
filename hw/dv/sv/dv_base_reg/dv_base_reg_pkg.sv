@@ -79,8 +79,8 @@ package dv_base_reg_pkg;
       result.shift = fld.get_lsb_pos();
     end
     else begin
-      `uvm_fatal($sformatf("%m"),
-                 $sformatf("ptr %0s is not of type uvm_reg or uvm_reg_field", ptr.get_full_name()))
+      `uvm_fatal($sformatf("%m"), $sformatf("ptr %0s is not of type uvm_reg or uvm_reg_field",
+                                            ptr.get_full_name()))
     end
     return result;
   endfunction : decode_csr_or_field
@@ -97,8 +97,8 @@ package dv_base_reg_pkg;
     end else if ($cast(fld, obj)) begin
       flds.push_back(fld);
     end else begin
-      `uvm_fatal(msg, $sformatf("obj %0s is not of type uvm_reg or uvm_reg_field",
-                      obj.get_full_name()))
+      `uvm_fatal($sformatf("%m"), $sformatf("obj %0s is not of type uvm_reg or uvm_reg_field",
+                                            obj.get_full_name()))
     end
   endfunction : get_flds_from_uvm_object
 
@@ -120,10 +120,10 @@ package dv_base_reg_pkg;
       uint           fshift;
       if (csr == null) csr = fields[i].get_parent();
       else if (csr != fields[i].get_parent()) begin
-        `uvm_fatal($sformatf("%m"),
-                   $sformatf({"The provided fields belong to at least two different CSRs: ",
-                              "%s, %s. All fields must belong to the same CSR"},
-                             fields[i-1].`gfn, fields[i].`gfn))
+        `uvm_fatal($sformatf("%m") , $sformatf({"The provided fields belong to at least two"
+                                                ," different CSRs: ",
+                                                "%s, %s. All fields must belong to the same CSR"},
+                                               fields[i-1].`gfn, fields[i].`gfn))
       end
       fmask = (1 << fields[i].get_n_bits()) - 1;
       fshift = fields[i].get_lsb_pos();
