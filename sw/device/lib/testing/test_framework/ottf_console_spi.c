@@ -17,6 +17,11 @@
 
 #include "spi_device_regs.h"  // Generated.
 
+// The following variables are only initialized if at least one console
+// needs a GPIO.
+static dif_gpio_t ottf_console_gpio;
+static dif_pinmux_t ottf_console_pinmux;
+
 enum {
   /* Placeholder used to indicate that no TX GPIO indicator is enabled. */
   kOttfSpiNoTxGpio = UINT32_MAX,
