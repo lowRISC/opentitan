@@ -81,7 +81,12 @@ fn run_fi_ibex_testcase(
     }
 
     // Get test output & filter.
-    let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+    let output = serde_json::Value::recv(
+        uart,
+        opts.timeout,
+        /*quiet=*/ false,
+        /*skip_crc=*/ false,
+    )?;
     let output_received = filter_response(output.clone());
 
     // Filter expected output.
