@@ -15,10 +15,6 @@
 
 #include "spi_device_regs.h"  // Generated.
 
-// Defined in ottf_console.c
-extern dif_gpio_t ottf_console_gpio;
-extern dif_pinmux_t ottf_console_pinmux;
-
 /**
  * SPI console buffer management constants.
  */
