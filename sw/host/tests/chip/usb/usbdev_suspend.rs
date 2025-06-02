@@ -168,6 +168,7 @@ fn usbdev_suspend(
     // - Fairly arbitrary, may be modified quite freely.
     let time_disconnected: u64 = 1000;
 
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
