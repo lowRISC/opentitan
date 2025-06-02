@@ -50,7 +50,7 @@ class spi_device_driver extends spi_driver;
       rsp.set_id_info(req);
       // The response should read the payload actually consumed, not start with
       // it filled out.
-      rsp.payload_q = '{};
+      rsp.payload_q.delete();
 
       wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork
