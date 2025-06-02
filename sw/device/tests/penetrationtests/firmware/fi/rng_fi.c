@@ -428,6 +428,9 @@ status_t handle_rng_fi_edn_init(ujson_t *uj) {
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   firmware_override_init = false;
 
   return OK_STATUS();
@@ -639,6 +642,9 @@ status_t handle_rng_fi_csrng_init(ujson_t *uj) {
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
+
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
 
   return OK_STATUS();
 }

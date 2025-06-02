@@ -3490,6 +3490,9 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
 
+  // Read different SKU config fields and return to host.
+  TRY(pentest_send_sku_config(uj));
+
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
   flash_data_valid = false;
