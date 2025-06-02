@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-// Set up the UART DPI.
+// Set up the UART DPI and returns a context struct.
 // - name: The name of the UART which will be used for the log file.
 // - log_file_path: Path to where the log file should be stored.
 // - exit_string: When this string is written to UART DPI the simulation will
@@ -18,10 +18,14 @@ extern "C" {
 //                character.
 void *uartdpi_create(const char *name, const char *log_file_path,
                      const char *exit_string);
+// Close all the handles held by the UART DPI and frees the context.
 void uartdpi_close(void *ctx_void);
+// Does a read and returns whether a valid character was read.
 int uartdpi_can_read(void *ctx_void);
+// Returns the last successfully read character.
 char uartdpi_read(void *ctx_void);
-// Returns non-zero when exit condition has been reached.
+// Writes a character (c) to the host and the log file.
+// Returns non-zero when exit string has been seen.
 int uartdpi_write(void *ctx_void, char c);
 
 #ifdef __cplusplus
