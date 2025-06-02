@@ -108,11 +108,11 @@ package csr_utils_pkg;
 
   // wait until current csr op is complete
   task automatic csr_wait(input uvm_reg csr);
-    `uvm_info($sformatf("%m"),
-              $sformatf("%0s: wait_busy: %0b", csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0s: wait_busy: %0b",
+                                         csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
     wait(csr.m_is_busy == 1'b0);
-    `uvm_info($sformatf("%m"),
-              $sformatf("%0s: done wait_busy: %0b", csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
+    `uvm_info($sformatf("%m"), $sformatf("%0s: done wait_busy: %0b",
+                                         csr.get_full_name(), csr.m_is_busy), UVM_HIGH)
   endtask
 
   // Use `csr_wr` to construct `csr_update` to avoid replicated codes to handle nonblocking,
@@ -556,7 +556,7 @@ package csr_utils_pkg;
     // had when this task started, giving the index of *this* call.
     lcount = count;
 
-    `uvm_info($sformatf("%m()"), $sformatf(
+    `uvm_info($sformatf("%m"), $sformatf(
                 "- (call_count=%0d, backdoor=%0d, exp_data=%0d, ptr=%s)",
                 lcount, backdoor, exp_data, ptr.get_name()), verbosity)
     fork
@@ -571,7 +571,7 @@ package csr_utils_pkg;
           // comparison. If it is positive, wait spinwait_delay_ns nanoseconds between reads. If we
           // enter reset, stop immediately (once the current csr_rd call has finished).
           forever begin
-            `uvm_info("csr_utils_pkg", $sformatf("In csr_spinwait - call_count = %0d", lcount),
+            `uvm_info($sformatf("%m"), $sformatf("In csr_spinwait - call_count = %0d", lcount),
                       verbosity)
 
             // Wait spinwait_delay_ns nanoseconds between each read (and before the first one), but
@@ -746,9 +746,8 @@ package csr_utils_pkg;
       foreach (flds[i]) begin
         if (m_csr_excl_item.is_excl(flds[i], csr_excl_type, csr_test_type)) begin
           csr_field_t fld_params = decode_csr_or_field(flds[i]);
-          `uvm_info($sformatf("%m"),
-                    $sformatf("Skipping field %0s due to %0s exclusion",
-                              flds[i].get_full_name(), csr_excl_type.name()), UVM_HIGH)
+          `uvm_info($sformatf("%m"), $sformatf("Skipping field %0s due to %0s exclusion",
+                                    flds[i].get_full_name(), csr_excl_type.name()), UVM_HIGH)
           get_mask_excl_fields &= ~(fld_params.mask << fld_params.shift);
         end
       end
