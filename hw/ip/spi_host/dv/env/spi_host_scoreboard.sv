@@ -410,7 +410,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
               stall_flag = 1;
               `uvm_info(`gfn, { "SPI processing is stalled: ",
                         $sformatf("status.txstall=%0d, status.rxstall=%0d",
-                                  status.txstall || status.rxstall)}, UVM_DEBUG)
+                                  status.txstall, status.rxstall)}, UVM_DEBUG)
             end
 
             if (cfg.m_spi_agent_cfg.vif.csb[0] !== csaat) begin
