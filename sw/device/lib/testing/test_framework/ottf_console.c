@@ -30,10 +30,6 @@
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'c')
 
-// Potential DIF handles for OTTF console communication.
-dif_gpio_t ottf_console_gpio;
-dif_pinmux_t ottf_console_pinmux;
-
 // Main console.
 static ottf_console_t main_console;
 
