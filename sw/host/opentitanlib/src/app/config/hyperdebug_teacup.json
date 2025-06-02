@@ -515,5 +515,17 @@
         }
       ]
     }
+    {
+      "name": "USB_VBUS_SENSE",
+      "pins": [
+        // The IOA2 is set to push-pull low by default to prevent entering SPI rescue mode
+        // But IOA2 is also connected to the USB VBUS SENSE buffer which prevents the OT
+        // device from sensing USB.
+        {
+          "name": "IOA2",
+          "mode": "Input",
+        }
+      ]
+    },
   ]
 }
