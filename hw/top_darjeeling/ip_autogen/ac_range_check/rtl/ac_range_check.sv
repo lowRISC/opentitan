@@ -274,18 +274,18 @@ module ac_range_check
   prim_count #(
     .Width(DenyCountWidth)
   ) u_deny_count (
-    .clk_i              ( clk_i              ),
-    .rst_ni             ( rst_ni             ),
-    .clr_i              ( clear_log          ),
-    .set_i              ( 1'b0               ),
-    .set_cnt_i          ( '0                 ),
-    .incr_en_i          ( deny_cnt_incr      ),
-    .decr_en_i          ( 1'b0               ),
-    .step_i             ( DenyCountWidth'(1) ),
-    .commit_i           ( 1'b1               ),
-    .cnt_o              ( deny_cnt           ),
-    .cnt_after_commit_o (                    ),
-    .err_o              ( deny_cnt_error     )
+    .clk_i              ( clk_i                          ),
+    .rst_ni             ( rst_ni                         ),
+    .clr_i              ( 1'b0                           ),
+    .set_i              ( clear_log                      ),
+    .set_cnt_i          ( DenyCountWidth'(deny_cnt_incr) ),
+    .incr_en_i          ( deny_cnt_incr                  ),
+    .decr_en_i          ( 1'b0                           ),
+    .step_i             ( DenyCountWidth'(1)             ),
+    .commit_i           ( 1'b1                           ),
+    .cnt_o              ( deny_cnt                       ),
+    .cnt_after_commit_o (                                ),
+    .err_o              ( deny_cnt_error                 )
   );
 
   // Log count is transparently mirrored. Clearing happens on the counter.
@@ -333,7 +333,7 @@ module ac_range_check
   // Interrupt Notification Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  // Create the IRQ condition when the deny counter reaches the configured threshold
+  // Create the IRQ condition when the deny counter is above the configured threshold.
   logic deny_cnt_threshold_reached;
   assign deny_cnt_threshold_reached = deny_cnt > reg2hw.log_config.deny_cnt_threshold.q;
 
