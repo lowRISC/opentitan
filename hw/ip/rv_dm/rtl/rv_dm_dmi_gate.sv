@@ -205,6 +205,8 @@ module rv_dm_dmi_gate
   logic dbg_gate_intg_error, dmi_intg_error;
   assign intg_error_o = dbg_gate_intg_error | dmi_intg_error;
 
+  logic tlul_resp_pending;
+
   tlul_pkg::tl_h2d_t dbg_tl_h2d_gated;
   tlul_pkg::tl_d2h_t dbg_tl_d2h_gated;
   tlul_lc_gate #(
@@ -221,7 +223,7 @@ module rv_dm_dmi_gate
     // debugger side of the connection stable during an NDM-reset request.
     .flush_req_i   (1'b0),
     .flush_ack_o   (),
-    .resp_pending_o(),
+    .resp_pending_o(tlul_resp_pending),
     .lc_en_i       (strap_hw_debug_en[StEnDmiTlulLcGate]),
     .err_o         (dbg_gate_intg_error)
   );
@@ -241,8 +243,10 @@ module rv_dm_dmi_gate
     .dmi_resp_i      (dmi_rsp_i)
   );
 
+  // Connect the TL-UL adapter to the DMI handshake if the DMI is enabled. Let responses also
+  // propagate from the DMI to TL-UL if any responses are pending.
   assign dmi_req_ready = dmi_req_ready_i & dmi_en;
-  assign dmi_rsp_valid = dmi_rsp_valid_i & dmi_en;
+  assign dmi_rsp_valid = dmi_rsp_valid_i & (dmi_en | tlul_resp_pending);
 
   ////////////////
   // Assertions //
