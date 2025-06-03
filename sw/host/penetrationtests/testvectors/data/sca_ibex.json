@@ -69,5 +69,107 @@
     "command": "TLWriteBatchFvsrFixAddress",
     "input": "{\"num_iterations\":1,\"fixed_data\":11}",
     "expected_output": ["{\"result\":11}"]
+  },
+  {
+    "test_case_id": 12,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":1,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 13,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":2,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,22,0,0,0,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 14,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":4,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 15,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":8,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,22528,0,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 16,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":16,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,121,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 17,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":32,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,1,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 18,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":64,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,11,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 19,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":128,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,11,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 20,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":256,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,11,0,0,0]}"]
+  },
+  {
+    "test_case_id": 21,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":512,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,11,0,0]}"]
+  },
+  {
+    "test_case_id": 22,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":1024,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,11,0]}"]
+  },
+  {
+    "test_case_id": 23,
+    "command": "CombiOperationsBatchFvsr",
+    "input": "{\"num_iterations\":1, \"trigger\":2048,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,11]}"]
+  },
+  {
+    "test_case_id": 24,
+    "command": "CombiOperationsBatch",
+    "input": "{\"num_iterations\":1, \"trigger\":1,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 25,
+    "command": "CombiOperationsBatch",
+    "input": "{\"num_iterations\":1, \"trigger\":32,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,1,0,0,0,0,0,0]}"]
+  },
+  {
+    "test_case_id": 26,
+    "command": "CombiOperationsBatch",
+    "input": "{\"num_iterations\":1, \"trigger\":256,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,11,0,0,0]}"]
+  },
+  {
+    "test_case_id": 27,
+    "command": "CombiOperationsBatch",
+    "input": "{\"num_iterations\":1, \"trigger\":2048,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,0,0,0,0,0,0,0,0,0,0,11]}"]
+  },
+  {
+    "test_case_id": 28,
+    "command": "CombiOperationsBatch",
+    "input": "{\"num_iterations\":1, \"trigger\":4095,\"fixed_data1\":11,\"fixed_data2\":11}",
+    "expected_output": ["{\"result\":[0,22,0,22528,121,1,11,11,11,11,11,11]}"]
   }
 ]
