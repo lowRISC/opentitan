@@ -10,6 +10,7 @@ filesets:
     files:
       - check_tool_requirements.py : { copyto: check_tool_requirements.py }
       - tool_requirements.py : { copyto: tool_requirements.py }
+    file_type: user
 
 scripts:
   check_tool_requirements_verible:
