@@ -337,7 +337,7 @@ def gen_md(block: IpBlock,
     for entry in rb.entries:
         if isinstance(entry, MultiRegister):
             length = bytew
-            for reg in entry.regs:
+            for reg in entry.cregs:
                 policy_sel = racl_mapping['register_mapping'][reg.name]
                 add_row(reg.name, policy_sel, reg.offset, base_addr, length)
         elif isinstance(entry, Window):

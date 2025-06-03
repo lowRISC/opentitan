@@ -222,19 +222,19 @@ def gen_multireg_field_defines(outstr: TextIO, regname: str, field: Field,
 def gen_const_multireg(outstr: TextIO, multireg: MultiRegister, component: str,
                        regwidth: int, rnames: Set[str],
                        existing_defines: Set[str]) -> None:
-    comment = multireg.reg.desc + " (common parameters)"
+    preg = multireg.pregs[0]
+    comment = preg.desc + " (common parameters)"
     genout(outstr, format_comment(first_line(comment)))
-    if len(multireg.reg.fields) == 1:
-        regname = as_define(component + '_' + multireg.reg.name)
-        gen_multireg_field_defines(outstr, regname, multireg.reg.fields[0],
-                                   len(multireg.regs), regwidth,
+    if len(preg.fields) == 1:
+        regname = as_define(component + '_' + preg.name)
+        gen_multireg_field_defines(outstr, regname, preg.fields[0],
+                                   len(multireg.cregs), regwidth,
                                    existing_defines)
     else:
-        log.warning(
-            f"Non-homogeneous multireg {multireg.reg.name} skip multireg "
-            "specific data generation.")
+        log.warn("Non-homogeneous multireg " + preg.name +
+                 " skip multireg specific data generation.")
 
-    for subreg in multireg.regs:
+    for subreg in multireg.cregs:
         gen_const_register(outstr, subreg, component, regwidth, rnames,
                            existing_defines)
 

@@ -84,7 +84,7 @@ def gen_md_register_summary(output: TextIO,
     for entry in entries:
         if isinstance(entry, MultiRegister):
             is_compact = multireg_is_compact(entry, width)
-            for reg in entry.regs:
+            for reg in entry.cregs:
                 # If multiregisters are compact, each register has it's own section,
                 # so the anchor should link to a section with the individual register name(s).
                 # Otherwise, there is one section for the whole multiregister,
@@ -125,7 +125,7 @@ def gen_md_window(output: TextIO, win: Window, comp: str,
 
 def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
     # Note that validation guarantees that compacted multiregs only ever have one field.
-    return mreg.compact and (mreg.reg.fields[0].bits.msb + 1) <= width // 2
+    return mreg.compact and (mreg.pregs[0].fields[0].bits.msb + 1) <= width // 2
 
 
 def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
@@ -154,12 +154,12 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     # the general definition of the first register as an example for all
     # other instances.
     if multireg_is_compact(mreg, width):
-        for reg in mreg.regs:
+        for reg in mreg.cregs:
             gen_md_register(output, reg, comp, width)
         return
 
     # The general definition of the registers making up this multiregister block.
-    reg_def = mreg.reg
+    reg_def = mreg.pregs[0]
 
     # Information
     describe_reg_hdr(output, reg_def, False)
@@ -169,7 +169,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     output.write(
         table(
             ["Name", "Offset"],
-            [[reg.name, hex(reg.offset)] for reg in mreg.regs],
+            [[reg.name, hex(reg.offset)] for reg in mreg.cregs],
         ))
 
     # Fields
