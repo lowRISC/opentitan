@@ -14,6 +14,6 @@ filegroup(
             "README.md",
         ],
     ) + [
-        "//hw/top_darjeeling/ip/ast/data:all_files",
+        "//hw/top_darjeeling/ip/xbar_mbx/data:all_files",
     ],
 )

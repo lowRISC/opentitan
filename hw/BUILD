@@ -152,6 +152,7 @@ filegroup(
         ["dv/sv/dv_utils/**"],
     ) + [
         "//hw/ip:rtl_files",
+        "//hw/top_darjeeling:rtl_files",
         "//hw/top_earlgrey:rtl_files",
     ],
     visibility = ["//visibility:public"],
@@ -160,6 +161,6 @@ filegroup(
 pkg_files(
     name = "package",
     srcs = ["verilator_bin"],
-    prefix = "earlgrey/verilator",
+    prefix = "darjeeling/verilator",
     visibility = ["//visibility:public"],
 )
