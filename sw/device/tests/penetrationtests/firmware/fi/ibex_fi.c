@@ -1083,6 +1083,295 @@ status_t handle_ibex_fi_char_addi_single_bne_neg(ujson_t *uj)
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
+  //////////// TEST 1
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
+
+  // Init the used registers.
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xaf");
+
+  asm volatile("addi x12, x0, 0xa0");
+  asm volatile("addi x13, x0, 0x0f");
+
+  asm volatile("addi x14, x0, 0x01");
+  asm volatile("addi x15, x0, 0x03");
+
+  asm volatile("addi x16, x0, 0x0a");
+  asm volatile("addi x17, x0, 0x1c");
+
+  asm volatile("addi x28, x0, 0xa2");
+  asm volatile("addi x29, x0, 0x05");
+
+  asm volatile("addi x30, x0, 0xc4");
+  asm volatile("addi x31, x0, 0x07");
+
+  asm volatile("addi x7, x0, 0");
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  asm volatile(
+      "bne x5, x6, endcombifaultybne\n"
+      "bne x5, x6, endcombifaultybne\n"
+      "bne x5, x6, endcombifaultybne\n"
+      "bne x5, x6, endcombifaultybne\n"
+      "bne x5, x6, endcombifaultybne\n"
+      "bne x5, x6, endcombifaultybne\n"
+
+      "beq x12, x13, endcombifaultybeq\n"
+      "beq x12, x13, endcombifaultybeq\n"
+      "beq x12, x13, endcombifaultybeq\n"
+      "beq x12, x13, endcombifaultybeq\n"
+      "beq x12, x13, endcombifaultybeq\n"
+      "beq x12, x13, endcombifaultybeq\n"
+
+      "bge x14, x15, endcombifaultybge\n"
+      "bge x14, x15, endcombifaultybge\n"
+      "bge x14, x15, endcombifaultybge\n"
+      "bge x14, x15, endcombifaultybge\n"
+      "bge x14, x15, endcombifaultybge\n"
+      "bge x14, x15, endcombifaultybge\n"
+
+      "bgeu x16, x17, endcombifaultybgeu\n"
+      "bgeu x16, x17, endcombifaultybgeu\n"
+      "bgeu x16, x17, endcombifaultybgeu\n"
+      "bgeu x16, x17, endcombifaultybgeu\n"
+      "bgeu x16, x17, endcombifaultybgeu\n"
+      "bgeu x16, x17, endcombifaultybgeu\n"
+
+      "blt x28, x29, endcombifaultyblt\n"
+      "blt x28, x29, endcombifaultyblt\n"
+      "blt x28, x29, endcombifaultyblt\n"
+      "blt x28, x29, endcombifaultyblt\n"
+      "blt x28, x29, endcombifaultyblt\n"
+      "blt x28, x29, endcombifaultyblt\n"
+
+      "bltu x30, x31, endcombifaultybltu\n"
+      "bltu x30, x31, endcombifaultybltu\n"
+      "bltu x30, x31, endcombifaultybltu\n"
+      "bltu x30, x31, endcombifaultybltu\n"
+      "bltu x30, x31, endcombifaultybltu\n"
+      "bltu x30, x31, endcombifaultybltu\n"
+
+      NOP100
+
+      "j endcombicorrect\n"
+
+      "endcombifaultybne:\n"
+      "addi x5, x5, 0x1\n"
+      "addi x6, x6, 0x1\n"
+      "j endcombicorrect\n"
+
+      "endcombifaultybeq:\n"
+      "addi x12, x12, 0x1\n"
+      "addi x13, x13, 0x1\n"
+      "j endcombicorrect\n"
+
+      "endcombifaultybge:\n"
+      "addi x14, x14, 0x1\n"
+      "addi x15, x15, 0x1\n"
+      "j endcombicorrect\n"
+
+      "endcombifaultybgeu:\n"
+      "addi x16, x16, 0x1\n"
+      "addi x17, x17, 0x1\n"
+      "j endcombicorrect\n"
+
+      "endcombifaultyblt:\n"
+      "addi x28, x28, 0x1\n"
+      "addi x29, x29, 0x1\n"
+      "j endcombicorrect\n"
+
+      "endcombifaultybltu:\n"
+      "addi x30, x30, 0x1\n"
+      "addi x31, x31, 0x1\n"
+
+      "endcombicorrect:\n");
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Generate the test response.
+  ibex_fi_faulty_data_t uj_test_output_1;
+  // Return errors and alerts.
+  uj_test_output_1.err_status = codes;
+  memcpy(uj_test_output_1.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_test_output_1.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  // Preset buffers to 0.
+  memset(uj_test_output_1.data_faulty, false,
+         sizeof(uj_test_output_1.data_faulty));
+  memset(uj_test_output_1.data, 0, sizeof(uj_test_output_1.data));
+  memset(uj_test_output_1.registers, 0, sizeof(uj_test_output_1.registers));
+  // Return register file dump back to host.
+  memcpy(uj_test_output_1.registers, registers_dumped,
+         sizeof(registers_dumped));
+  // Check the content of x5, x6, x12-x17, x28-x31.
+  size_t compare_regs[12] = {kRegX5,  kRegX6,  kRegX12, kRegX13,
+                             kRegX14, kRegX15, kRegX16, kRegX17,
+                             kRegX28, kRegX29, kRegX30, kRegX31};
+  size_t expected_values[12] = {0xaf, 0xaf, 0xa0, 0x0f, 0x01, 0x03,
+                                0x0a, 0x1c, 0xa2, 0x05, 0xc4, 0x07};
+  for (size_t it = 0; it < 12; it++) {
+    if (registers_dumped[compare_regs[it]] != expected_values[it]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_test_output_1.data_faulty[it] = true;
+      uj_test_output_1.data[it] = registers_dumped[compare_regs[it]];
+    }
+  }
+
+  //////////////// TEST 2
+
+  uint32_t counter = 0;
+
+  asm volatile("addi x5, x0, 0");
+  asm volatile("addi x6, x0, 0");
+  asm volatile("addi x7, x0, 0");
+  asm volatile("addi x12, x0, 0");
+  asm volatile("addi x13, x0, 0");
+  asm volatile("addi x14, x0, 0");
+  asm volatile("addi x15, x0, 0");
+  asm volatile("addi x16, x0, 0");
+  asm volatile("addi x17, x0, 0");
+  asm volatile("addi x28, x0, 0");
+  asm volatile("addi x29, x0, 0");
+  asm volatile("addi x30, x0, 0");
+  asm volatile("addi x31, x0, 0");
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  asm volatile(
+      "lw x5, (%0)\n addi x5, x5, 1\n sw x5, (%0)\n"
+      "lw x6, (%0)\n addi x6, x6, 1\n sw x6, (%0)\n"
+      "lw x7, (%0)\n addi x7, x7, 1\n sw x7, (%0)\n"
+      "lw x12, (%0)\n addi x12, x12, 1\n sw x12, (%0)\n"
+      "lw x13, (%0)\n addi x13, x13, 1\n sw x13, (%0)\n"
+      "lw x14, (%0)\n addi x14, x14, 1\n sw x14, (%0)\n"
+      "lw x15, (%0)\n addi x15, x15, 1\n sw x15, (%0)\n"
+      "lw x16, (%0)\n addi x16, x16, 1\n sw x16, (%0)\n"
+      "lw x17, (%0)\n addi x17, x17, 1\n sw x17, (%0)\n"
+      "lw x28, (%0)\n addi x28, x28, 1\n sw x28, (%0)\n"
+      "lw x29, (%0)\n addi x29, x29, 1\n sw x29, (%0)\n"
+      "lw x30, (%0)\n addi x30, x30, 1\n sw x30, (%0)\n"
+      "lw x31, (%0)\n addi x31, x31, 1\n sw x31, (%0)\n"
+      :
+      : "r"((uint32_t *)&counter));
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  sensor_alerts = pentest_get_sensor_alerts();
+
+  // Read ERR_STATUS register.
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_t uj_test_output_2;
+  memset(uj_test_output_2.registers, 0, sizeof(uj_test_output_2.registers));
+  // Return register file dump back to host.
+  memcpy(uj_test_output_2.registers, registers_dumped,
+         sizeof(registers_dumped));
+  // Return counter back to host.
+  uj_test_output_2.result = counter;
+  // Return errors and alerts.
+  uj_test_output_2.err_status = codes;
+  memcpy(uj_test_output_2.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_test_output_2.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  ////////// TEST 3
+
+  // Init x5 register we are using for the increment.
+  asm volatile(INITX5);
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  // Attack target.
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  asm volatile("jal ra, not_increment_counter");
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  sensor_alerts = pentest_get_sensor_alerts();
+
+  // Read ERR_STATUS register.
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Return result and registers back to host.
+  ibex_fi_test_result_t uj_test_output_3;
+  memset(uj_test_output_3.registers, 0, sizeof(uj_test_output_3.registers));
+  // Return register file dump back to host.
+  memcpy(uj_test_output_3.registers, registers_dumped,
+         sizeof(registers_dumped));
+  // Return x5 back to host.
+  uj_test_output_3.result = registers_dumped[kRegX5];
+
+  // Send loop counters & ERR_STATUS to host.
+  uj_test_output_3.err_status = codes;
+  memcpy(uj_test_output_3.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_test_output_3.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  // Send over all responses
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_test_output_1);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_test_output_2);
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_test_output_3);
+
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
@@ -3579,6 +3868,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_addi_single_bne(uj);
     case kIbexFiSubcommandCharAddiSingleBneNeg:
       return handle_ibex_fi_char_addi_single_bne_neg(uj);
+    case kIbexFiSubcommandCharCombi:
+      return handle_ibex_fi_char_combi(uj);
     case kIbexFiSubcommandCharCondBranchBeq:
       return handle_ibex_fi_char_conditional_branch_beq(uj);
     case kIbexFiSubcommandCharCondBranchBge:

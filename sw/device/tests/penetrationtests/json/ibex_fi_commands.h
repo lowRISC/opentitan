@@ -24,6 +24,7 @@ extern "C" {
     value(_, CharAddiSingleBeqNeg) \
     value(_, CharAddiSingleBne) \
     value(_, CharAddiSingleBneNeg) \
+    value(_, CharCombi) \
     value(_, CharCondBranchBeq) \
     value(_, CharCondBranchBge) \
     value(_, CharCondBranchBgeu) \
