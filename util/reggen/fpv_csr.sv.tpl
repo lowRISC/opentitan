@@ -245,21 +245,24 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
               // Assume FpvWr0c policy only has one field that is wr0c.
               unique case (regwen_types[hro_idx])
                 MuBi4Regwen:
-                  exp_vals[hro_idx] <= mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
-                                                    mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
+                  exp_vals[hro_idx] <=
+                    mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
+                                 mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
                 MuBi8Regwen:
-                  exp_vals[hro_idx] <= mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
-                                                    mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
+                  exp_vals[hro_idx] <=
+                    mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
+                                 mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
                 MuBi12Regwen:
-                  exp_vals[hro_idx] <= mubi12_and_hi(
-                                          mubi12_t'(exp_vals[hro_idx][11:0]),
-                                          mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
+                  exp_vals[hro_idx] <=
+                    mubi12_and_hi(mubi12_t'(exp_vals[hro_idx][11:0]),
+                                  mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
                 MuBi16Regwen:
-                  exp_vals[hro_idx] <= mubi16_and_hi(
-                                          mubi16_t'(exp_vals[hro_idx][15:0]),
-                                          mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
+                  exp_vals[hro_idx] <=
+                    mubi16_and_hi(mubi16_t'(exp_vals[hro_idx][15:0]),
+                                  mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
                 default:
-                  exp_vals[hro_idx] <= exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
+                  exp_vals[hro_idx] <=
+                    exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
               endcase
             end else begin
               exp_vals[hro_idx] <= pend_trans[d_source_idx].wr_data;
@@ -290,11 +293,12 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 %>\
     % if reg_mask != 0:
 <%  reg_mask_hex = format(reg_mask, 'x') %>\
-  `ASSERT(${r_name}_rd_A, d2h.d_valid && pend_trans[d_source_idx].rd_pending &&
-         pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex} |->
-         d2h.d_error ||
-         (d2h.d_data & 'h${reg_mask_hex}) == (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex}))
-
+  `ASSERT(${r_name}_rd_A,
+          (d2h.d_valid && pend_trans[d_source_idx].rd_pending &&
+           pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex}) |->
+          (d2h.d_error ||
+           (d2h.d_data & 'h${reg_mask_hex}) ==
+            (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex})))
     % endif
   % endfor
 % endif
