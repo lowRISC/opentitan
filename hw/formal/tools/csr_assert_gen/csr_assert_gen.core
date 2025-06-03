@@ -5,20 +5,7 @@ CAPI=2:
 
 name: "lowrisc:fpv:csr_assert_gen"
 description: "Generator for CSR assertion check module used in FPV and DV testbenches."
-filesets:
-  files_dv:
-    depend:
-      # TODO(#5027, https://github.com/google/verible/issues/652):
-      # This is a hack to prevent the generated FPV assertion files
-      # being passed into the Verible style linter. The tool currently
-      # does not support certain SVA language constructs, causing it
-      # to throw syntax errors. Fold the contents of
-      # csr_assert_gen_script.core back into this file once the issue
-      # has been addressed upstream.
-      - "! tool_veriblelint ? (lowrisc:fpv:csr_assert_gen_script)"
-      - "tool_veriblelint ? (lowrisc:fpv:csr_assert_gen_dummy)"
-
-targets:
-  default: &default_target
-    filesets:
-      - files_dv
+generators:
+  csr_assert_gen:
+    interpreter: python3
+    command: csr_assert_gen.py
