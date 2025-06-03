@@ -4615,6 +4615,30 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "ottf_dual_console_test",
+    srcs = ["ottf_dual_console_test.c"],
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        EARLGREY_CW340_TEST_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/ottf_dual_console",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:uart_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_no_scramble_test.c"],
     exec_env = dicts.add(
