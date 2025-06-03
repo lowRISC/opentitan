@@ -159,5 +159,14 @@
     "test_case_id": 31,
     "command": "CharAddiSingleBneNeg",
     "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 32,
+    "command": "CharCombi",
+    "expected_output": [
+      "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}",
+      "{\"result\":13,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}",
+      "{\"result\":15,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+    ]
   }
 ]
