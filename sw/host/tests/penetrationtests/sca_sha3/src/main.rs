@@ -45,7 +45,7 @@ struct ScaSha3TestCase {
     #[serde(default)]
     status: String,
     #[serde(default)]
-    expected_output: String,
+    expected_output: Vec<String>,
 }
 
 fn run_sca_sha3_testcase(
@@ -101,26 +101,32 @@ fn run_sca_sha3_testcase(
         }
     }
 
+    // Check test outputs
     if !test_case.expected_output.is_empty() {
-        // Get test output & filter.
-        let output = serde_json::Value::recv(uart, opts.timeout, false)?;
-        let output_received = filter_response_common(output.clone());
+        for exp_output in test_case.expected_output.iter() {
+            // Get test output & filter.
+            let output = serde_json::Value::recv(uart, opts.timeout, false)?;
+            // Only check non empty JSON responses.
+            if output.as_object().is_some() {
+                let output_received = filter_response_common(output.clone());
 
-        // Filter expected output.
-        let exp_output: serde_json::Value =
-            serde_json::from_str(test_case.expected_output.as_str()).unwrap();
-        let output_expected = filter_response_common(exp_output.clone());
+                // Filter expected output.
+                let exp_output: serde_json::Value =
+                    serde_json::from_str(exp_output.as_str()).unwrap();
+                let output_expected = filter_response_common(exp_output.clone());
 
-        // Check received with expected output.
-        if output_expected != output_received {
-            log::info!(
-                "FAILED {} test #{}: expected = '{}', actual = '{}'",
-                test_case.command,
-                test_case.test_case_id,
-                exp_output,
-                output
-            );
-            *fail_counter += 1;
+                // Check received with expected output.
+                if output_expected != output_received {
+                    log::info!(
+                        "FAILED {} test #{}: expected = '{}', actual = '{}'",
+                        test_case.command,
+                        test_case.test_case_id,
+                        exp_output,
+                        output
+                    );
+                    *fail_counter += 1;
+                }
+            }
         }
     }
 
