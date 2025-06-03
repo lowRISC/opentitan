@@ -122,10 +122,10 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   always_comb begin: decode_hro_addr_to_idx
     unique case (pend_trans[d_source_idx].addr)
 % for idx, r in hro_map.values():
-      ${r.offset}: hro_idx <= ${idx};
+      ${r.offset}: hro_idx = ${idx};
 % endfor
       // If the register is not a HRO register, the write data will all update to this default idx.
-      default: hro_idx <= ${num_hro_regs};
+      default: hro_idx = ${num_hro_regs};
     endcase
   end
 
