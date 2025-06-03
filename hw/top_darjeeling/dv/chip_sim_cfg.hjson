@@ -1687,17 +1687,24 @@
     }
     {
       name: smoke
-      tests: ["chip_sw_spi_device_pass_through",
+      tests: [
+              "chip_sw_aes_smoketest"
+              "chip_sw_aon_timer_smoketest",
+              "chip_sw_clkmgr_smoketest",
+              "chip_sw_csrng_smoketest",
               "chip_sw_example_concurrency",
-              // TODO(#26733): fix these tests for Darjeeling or select more appropriate ones.
-              //"xbar_smoke",
-              //"chip_sw_uart_tx_rx",
-              //"chip_sw_spi_host_tx_rx",
-              //"chip_sw_i2c_host_tx_rx",
-              //"chip_sw_i2c_device_tx_rx",
-              //"chip_plic_all_irqs",
-              //"chip_sw_example_rom",
-              //"chip_sw_example_manufacturer",
+              "chip_sw_gpio_smoketest"
+              "chip_sw_hmac_smoketest",
+              "chip_sw_kmac_smoketest",
+              "chip_sw_otbn_smoketest",
+              "chip_sw_otp_ctrl_smoketest",
+              "chip_sw_rstmgr_smoketest",
+              "chip_sw_rv_plic_smoketest",
+              "chip_sw_rv_timer_smoketest",
+              "chip_sw_spi_device_pass_through",
+              "chip_sw_sram_ctrl_smoketest",
+              "chip_sw_uart_smoketest",
+              "xbar_smoke",
               // TODO: add this test after enabling HW verification:
               //"rom_e2e_smoke",
              ]
