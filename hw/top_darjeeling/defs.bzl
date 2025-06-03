@@ -5,6 +5,7 @@
 
 load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING_IPS")
+load("//hw/top_darjeeling/data/otp:defs.bzl", "DARJEELING_STD_OTP_OVERLAYS")
 
 DARJEELING = opentitan_top(
     name = "darjeeling",

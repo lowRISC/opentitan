@@ -5,6 +5,7 @@
 
 load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_IPS")
+load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_STD_OTP_OVERLAYS")
 
 EARLGREY = opentitan_top(
     name = "earlgrey",
