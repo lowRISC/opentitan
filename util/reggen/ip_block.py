@@ -23,7 +23,6 @@ from semantic_version import Version
 
 # Known unique comportable IP names and associated CIP_IDs.
 KNOWN_CIP_IDS = {
-    0: 'trial1',
     1: 'adc_ctrl',
     2: 'aes',
     3: 'aon_timer',

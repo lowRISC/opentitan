@@ -41,7 +41,6 @@ filegroup(
         "//hw/ip/sram_ctrl:rtl_files",
         "//hw/ip/sysrst_ctrl:rtl_files",
         "//hw/ip/tlul:rtl_files",
-        "//hw/ip/trial1:rtl_files",
         "//hw/ip/uart:rtl_files",
         "//hw/ip/usbdev:rtl_files",
     ],
