@@ -78,8 +78,7 @@ void ottf_console_init(void) {
       break;
   }
 
-  base_set_stdout((buffer_sink_t){.data = (void *)&main_console,
-                                  .sink = main_console.sink});
+  base_set_stdout(ottf_console_get_buffer_sink(&main_console));
 }
 
 uint32_t ottf_console_get_flow_control_irqs(void) { return flow_control_irqs; }
@@ -186,4 +185,8 @@ status_t ottf_console_putbuf(void *io, const char *buf, size_t len) {
 status_t ottf_console_getc(void *io) {
   ottf_console_t *console = io;
   return console->getc(io);
+}
+
+buffer_sink_t ottf_console_get_buffer_sink(ottf_console_t *console) {
+  return (buffer_sink_t){.data = (void *)console, .sink = console->sink};
 }
