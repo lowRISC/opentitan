@@ -13,6 +13,7 @@ load(
     "otp_hex",
     "otp_image",
     "otp_json",
+    "otp_json_overlay",
     "otp_partition",
     "otp_per_class_bytes",
     "otp_per_class_ints",
@@ -564,4 +565,30 @@ pkg_files(
 otp_json(
     name = "otp_json_baseline",
     seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+)
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+# This set overlays does not include any of the SECRET[0-2] partitions.
+otp_json_overlay(
+    name = "std_otp_overlays_without_secret_partitions",
+    overlays = [
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
+        ":otp_json_hw_cfg0",
+        ":otp_json_hw_cfg1",
+    ],
+)
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+otp_json_overlay(
+    name = "std_otp_overlay",
+    overlays = [
+        ":std_otp_overlays_without_secret_partitions",
+        ":otp_json_secret0",
+        ":otp_json_secret1",
+        ":otp_json_secret2_unlocked",
+    ],
 )
