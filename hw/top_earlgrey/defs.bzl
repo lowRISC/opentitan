@@ -12,5 +12,6 @@ EARLGREY = opentitan_top(
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     otp_ctrl_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    std_otp_overlay = "//hw/top_earlgrey/data/otp:std_otp_overlay",
     ips = EARLGREY_IPS,
 )

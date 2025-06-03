@@ -58,6 +58,11 @@ opentitan_alias_top_attr(
     attr_name = "otp_ctrl_mmap",
 )
 
+opentitan_alias_top_attr(
+    name = "std_otp_overlay",
+    attr_name = "std_otp_overlay",
+)
+
 # C register headers for all IPs.
 [
     opentitan_ip_c_header(
