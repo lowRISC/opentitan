@@ -45,7 +45,6 @@ IPS ?= aes           \
        spi_host      \
        sram_ctrl     \
        sysrst_ctrl   \
-       trial1        \
        uart          \
        usbdev
 
