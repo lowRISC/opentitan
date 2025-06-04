@@ -83,6 +83,7 @@ _CONFIGS = {
         ],
         exec_env = [
             "//hw/top_earlgrey:fpga_hyper310_rom_ext",
+            "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = position["linker_script"],
         deps = [
@@ -102,6 +103,7 @@ _CONFIGS = {
         name = "rescue_firmware_{}_{}".format(name, protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -160,6 +162,7 @@ genrule(
         name = "rescue_rom_ext_{}_update_{}".format(rxslot, name),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@{rom_ext_offset}",
@@ -199,6 +202,7 @@ genrule(
         name = "next_slot_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
@@ -237,6 +241,7 @@ genrule(
         name = "primary_slot_{}".format(protocol),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
@@ -278,6 +283,7 @@ opentitan_test(
     name = "rescue_rate_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "",
@@ -309,6 +315,7 @@ opentitan_test(
     name = "rescue_firmware_protocol_0",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "",
@@ -381,6 +388,7 @@ opentitan_test(
     ],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         changes_otp = True,

@@ -36,6 +36,7 @@ opentitan_test(
     name = "print_certs_test",
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         binaries = {
