@@ -1059,8 +1059,13 @@ builtin_file!(
     include_str!("../config/hyperdebug_teacup.json5")
 );
 builtin_file!(
-    "hyperdebug_teacup_default.json5",
-    include_str!("../config/hyperdebug_teacup_default.json5")
+    "hyperdebug_teacup_bga69.json5",
+    include_str!("../config/hyperdebug_teacup_bga69.json5")
+);
+define_interface!(
+    "teacup-bga69",
+    HyperdebugBackend<StandardFlavor>,
+    "/__builtin__/hyperdebug_teacup_bga69.json5"
 );
 
 define_interface!("hyperdebug", HyperdebugBackend<StandardFlavor>);
