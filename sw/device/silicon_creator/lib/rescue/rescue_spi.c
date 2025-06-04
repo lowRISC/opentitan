@@ -21,6 +21,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+const uint32_t rescue_type = kRescueProtocolSpiDfu;
+
 enum {
   /**
    * Base address of the spi_device registers.

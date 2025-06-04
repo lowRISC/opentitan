@@ -19,6 +19,8 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+const uint32_t rescue_type = kRescueProtocolUsbDfu;
+
 static const usb_device_descriptor_t device_desc = {
     .length = (uint8_t)sizeof(usb_device_descriptor_t),
     .descriptor_type = kUsbDescTypeDevice,
