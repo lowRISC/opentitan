@@ -11,6 +11,8 @@
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 #include "sw/device/silicon_creator/lib/rescue/xmodem.h"
 
+const uint32_t rescue_type = kRescueProtocolXmodem;
+
 // All of the xmodem functions accept an opaque iohandle pointer.
 // The iohandle is used to facilitate unit tests and doesn't have
 // any function in real firmware.

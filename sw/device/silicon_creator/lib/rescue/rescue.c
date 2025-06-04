@@ -332,13 +332,19 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
   if (rescue_requested == kHardenedBoolTrue) {
     return kHardenedBoolTrue;
   }
+  rescue_protocol_t protocol = kRescueProtocolXmodem;
   rescue_detect_t detect = kRescueDetectBreak;
   uint32_t index = 0;
   uint32_t gpio_val = 0;
   if ((hardened_bool_t)config != kHardenedBoolFalse) {
+    protocol = config->protocol;
     detect = bitfield_field32_read(config->detect, RESCUE_DETECT);
     index = bitfield_field32_read(config->detect, RESCUE_DETECT_INDEX);
     gpio_val = bitfield_bit32_read(config->gpio, RESCUE_GPIO_VALUE_BIT);
+  }
+  dbg_printf("info: rescue protocol %c\r\n", rescue_type);
+  if (protocol != rescue_type) {
+    dbg_printf("warning: rescue configured for protocol %c\r\n", protocol);
   }
   switch (detect) {
     case kRescueDetectNone:
