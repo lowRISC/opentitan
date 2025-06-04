@@ -10,7 +10,7 @@ filesets:
       - lowrisc:englishbreakfast_ip:pwrmgr_pkg
       - lowrisc:earlgrey_ip:alert_handler_pkg
       - lowrisc:systems:top_englishbreakfast_ast_pkg
-      - lowrisc:earlgrey_constants:top_racl_pkg
+      - lowrisc:englishbreakfast_constants:top_racl_pkg
       # Manually instantiated
       - lowrisc:ip:rv_dm
       - lowrisc:ip:tlul
