@@ -76,6 +76,7 @@ py_binary(
     ],
     deps = [
         "//util/dtgen:helper",
+        "//util/dtgen:ipgen_ext",
         "//util/ipgen",
         "//util/reggen:ip_block",
         "//util/reggen:version",
