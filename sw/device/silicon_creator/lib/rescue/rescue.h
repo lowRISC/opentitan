@@ -86,6 +86,8 @@ typedef struct RescueState {
   uint8_t data[2048];
 } rescue_state_t;
 
+extern const uint32_t rescue_type;
+
 /**
  * Handle rescue modes that involve sending data to the host.
  *
