@@ -74,6 +74,7 @@ static BUILTINS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
         "/__builtin__/hyperdebug_cw310.json" => include_str!("hyperdebug_cw310.json"),
         "/__builtin__/hyperdebug_cw340.json" => include_str!("hyperdebug_cw340.json"),
         "/__builtin__/hyperdebug_teacup.json" => include_str!("hyperdebug_teacup.json"),
+        "/__builtin__/hyperdebug_teacup_bga69.json" => include_str!("hyperdebug_teacup_bga69.json"),
         "/__builtin__/hyperdebug_teacup_default.json" => include_str!("hyperdebug_teacup_default.json"),
         "/__builtin__/opentitan_ultradebug.json" => include_str!("opentitan_ultradebug.json"),
         "/__builtin__/opentitan_verilator.json" => include_str!("opentitan_verilator.json"),
