@@ -14,6 +14,7 @@ opentitan_test(
     name = "xmodem_protocol",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "",
@@ -34,6 +35,7 @@ opentitan_test(
     name = "usbdfu_protocol",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "",
