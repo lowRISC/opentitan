@@ -13,6 +13,7 @@
 #include "sw/device/lib/dif/dif_csrng.h"
 
 /**
+ * @file
  * Private code shared between the CSRNG and EDN DIFs.
  */
 
