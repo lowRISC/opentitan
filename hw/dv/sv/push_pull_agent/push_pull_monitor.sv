@@ -24,7 +24,8 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     cfg.in_reset = 0;
     fork
       monitor_reset();
-      collect_trans();
+      // Calling super.run_phase is equivalent to calling collect_trans()
+      super.run_phase(phase);
       // Collect partial pull reqs for the reactive pull device agent.
       collect_pull_req();
       collect_cov();
