@@ -20,5 +20,8 @@ filegroup(
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + ["//hw/ip/edn/data:doc_files"],
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/ip/edn/data:doc_files"],
 )

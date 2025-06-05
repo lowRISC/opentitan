@@ -21,7 +21,11 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + [
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+        "**/*.png",
+    ]) + [
         "//sw/device/silicon_creator/rom/data:rom_e2e_testplan.hjson",
         "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
     ],

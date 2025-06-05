@@ -51,7 +51,10 @@ exports_files(glob([
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + [
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + [
         "//sw/device/tests/closed_source:doc_files",
         "//sw/device/tests/crypto/cryptotest:doc_files",
     ],

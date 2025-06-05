@@ -34,7 +34,11 @@ filegroup(
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + [
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+        "**/*.png",
+    ]) + [
         "//hw/top_earlgrey/data:doc_files",
         "//hw/top_earlgrey/dv:doc_files",
         "//hw/top_earlgrey/ip:doc_files",

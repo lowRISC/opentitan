@@ -20,7 +20,10 @@ filegroup(
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + [
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + [
         "//hw/ip/otbn/dv/otbnsim:doc_files",
     ],
 )
