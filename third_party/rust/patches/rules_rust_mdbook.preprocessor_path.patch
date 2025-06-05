@@ -1,0 +1,33 @@
+diff --git a/extensions/mdbook/private/process_wrapper.rs b/extensions/mdbook/private/process_wrapper.rs
+index 99a8663ca..3e025ae49 100644
+--- a/extensions/mdbook/private/process_wrapper.rs
++++ b/extensions/mdbook/private/process_wrapper.rs
+@@ -5,12 +5,6 @@ use std::path::{Path, PathBuf};
+ use std::process::Command;
+ use std::{env, fs};
+ 
+-#[cfg(target_family = "unix")]
+-const PATH_SEP: &str = ":";
+-
+-#[cfg(target_family = "windows")]
+-const PATH_SEP: &str = ";";
+-
+ struct Args {
+     pub inputs_manifest: BTreeMap<PathBuf, PathBuf>,
+ 
+@@ -94,15 +88,6 @@ fn main() {
+ 
+     let mut command = Command::new(&args.mdbook);
+ 
+-    // Inject plugin paths into PATH
+-    if let Ok(plugin_path) = env::var("MDBOOK_PLUGIN_PATH") {
+-        if !plugin_path.is_empty() {
+-            let path = env::var("PATH").unwrap_or_default();
+-            let plugin_path = plugin_path.replace("${pwd}", &pwd.to_string_lossy());
+-            command.env("PATH", format!("{}{}{}", plugin_path, PATH_SEP, path));
+-        }
+-    }
+-
+     // Flatten all inputs to a runfiles-like directory so generated files correctly appear
+     // relative to other source files.
+     let work_dir = generate_work_dir(&pwd.join(&args.output), &args.inputs_manifest);
