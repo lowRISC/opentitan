@@ -294,7 +294,7 @@ manifest(d = {
     "visibility": ["//visibility:private"],
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
-    "security_version": ROM_EXT_VERSION.SECURITY,
+    "security_version": "0xFFFFFFFF",
 })
 
 [
