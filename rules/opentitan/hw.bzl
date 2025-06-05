@@ -6,7 +6,7 @@
 
 load("//rules:host.bzl", "host_tools_transition")
 
-def opentitan_ip(name, files = {}, **kwargs):
+def opentitan_ip(name, **kwargs):
     """
     Return a structure describing an IP. This can be given to opentitan_top.
 
@@ -14,21 +14,18 @@ def opentitan_ip(name, files = {}, **kwargs):
     ```
     opentitan_ip(
         name = "pwrmgr",
-        files = {
-            'hjson': "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
-            'ipconfig': "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
-        },
+        'hjson' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
+        'ipconfig' = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
     )
     ```
 
     Arguments:
     - name: name of ip in lower case.
-    - files: a map from strings to labels, you MUST NOT use a relative label.
-    - kwargs: for backward compatibility, any key listed here will be treated as a key in `files`
+    - kwargs: arbitrary IP attributes.
     """
     return struct(
         name = name,
-        files = files | kwargs,
+        attrs = kwargs,
     )
 
 def opentitan_top(name, hjson, top_lib, top_ld, ips):
@@ -56,7 +53,7 @@ OpenTitanTopInfo = provider(
     fields = {
         "name": "Name of this top (string)",
         "hjson": "topgen-generated HJSON file for this top (file)",
-        "ip_map": "dictionary of IPs files (dict: {ipname (string): {attr (string): file}})",
+        "ip_map": "dictionary of IPs attrs (dict: {ipname (string): {attr (string): target}})",
     },
 )
 
@@ -87,11 +84,11 @@ def opentitan_top_get_ip_attr(
     """
     if ipname not in top.ip_map:
         fail("top {} does not contain IP {}".format(top.name, ipname))
-    ip_files = top.ip_map[ipname]
-    if required and (attr not in ip_files):
+    ip_attrs = top.ip_map[ipname]
+    if required and (attr not in ip_attrs):
         fail("top {} does not contain attribute '{}' for IP {}".format(top.name, attr, ipname))
 
-    target = ip_files.get(attr, None)
+    target = ip_attrs.get(attr, None)
     if target == None:
         return default
     if output in ["file", "files"]:
@@ -107,13 +104,13 @@ def opentitan_top_get_ip_attr(
 def _describe_top(ctx):
     ip_map = {}
 
-    # We cannot use ctx.files because it is only a list and not a dict.
-    for (encoded, files) in ctx.attr.ip_map.items():
+    # We cannot use ctx.attrs because it is only a list and not a dict.
+    for (encoded, attrs) in ctx.attr.ip_map.items():
         ipname, attr = encoded.split("/", 1)
 
         if ipname not in ip_map:
             ip_map[ipname] = {}
-        ip_map[ipname][attr] = files
+        ip_map[ipname][attr] = attrs
 
     return [
         OpenTitanTopInfo(
@@ -149,7 +146,7 @@ def describe_top(name, all_tops, top):
     """
 
     # Although we already pass the top description to the rule, those are just strings.
-    # We also need to let bazel know that we depend on the hjson files which is why
+    # We also need to let bazel know that we depend on the files in `attrs` which is why
     # we also pass them in a structured way.
     ip_map = {}
     top_hjson = None
@@ -158,8 +155,8 @@ def describe_top(name, all_tops, top):
             continue
         top_hjson = _top.hjson
         for ip in _top.ips:
-            for (attr, files) in ip.files.items():
-                ip_map["{}/{}".format(ip.name, attr)] = files
+            for (attr, value) in ip.attrs.items():
+                ip_map["{}/{}".format(ip.name, attr)] = value
 
     if top_hjson == None:
         fail("top {} not found in the provided list of tops".format(top))
