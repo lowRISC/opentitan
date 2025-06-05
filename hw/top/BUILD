@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("//rules/opentitan:hw.bzl", "describe_top", "select_top_ld", "select_top_lib")
+load("//rules/opentitan:hw.bzl", "describe_top")
 load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
@@ -12,7 +12,15 @@ load(
     "opentitan_ip_rust_header",
     "opentitan_top_dt_api",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_require_ip")
+load(
+    "//hw/top:defs.bzl",
+    "ALL_IP_NAMES",
+    "ALL_TOPS",
+    "ALL_TOP_NAMES",
+    "opentitan_alias_top_attr",
+    "opentitan_if_ip",
+    "opentitan_require_ip",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -57,40 +65,16 @@ alias(
     }),
 )
 
-[
-    select_top_lib(
-        name = "top_{}_lib".format(top),
-        all_tops = ALL_TOPS,
-        top = top,
-    )
-    for top in ALL_TOP_NAMES
-]
-
 # Point to the right top library.
-alias(
+opentitan_alias_top_attr(
     name = "top_lib",
-    actual = select({
-        "is_{}".format(top): ":top_{}_lib".format(top)
-        for top in ALL_TOP_NAMES
-    }),
+    attr_name = "top_lib",
 )
 
-[
-    select_top_ld(
-        name = "top_{}_ld".format(top),
-        all_tops = ALL_TOPS,
-        top = top,
-    )
-    for top in ALL_TOP_NAMES
-]
-
 # Point to the right top library.
-alias(
+opentitan_alias_top_attr(
     name = "top_ld",
-    actual = select({
-        "is_{}".format(top): ":top_{}_ld".format(top)
-        for top in ALL_TOP_NAMES
-    }),
+    attr_name = "top_ld",
 )
 
 # C register headers for all IPs.
