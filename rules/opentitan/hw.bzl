@@ -168,6 +168,98 @@ def describe_top(name, all_tops, top):
         topname = top,
     )
 
+def has_top_attr(top, name):
+    """
+    Check whether a top has an attribute.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - name: name of the attribute
+    """
+    return hasattr(top, name)
+
+def get_top_attr(top, name, required = True, default = None):
+    """
+    Given a top description, extract a top attribute.
+
+    If `required` is set to `True`, this function will fail if the top
+    does not have the requested attribute. Otherwise it will return `default`.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - name: name of the attribute
+    - required: fail if the top does not have the attribute
+    - default: this value will be returned when the top does not have this attribute
+    """
+    if has_top_attr(top, name):
+        return getattr(top, name)
+    else:
+        if required:
+            fail("top {} does not have attribute '{}'".format(top.name, name))
+        return default
+
+def has_ip(top, ipname):
+    """
+    Check whether a top has a particular IP.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - ipname: IP name
+    """
+    return any([ip.name == ipname for ip in top.ips])
+
+def _get_ip(top, ipname, default = None):
+    """
+    Return the requested IP or a default value.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - ip: IP name
+    """
+    for ip in top.ips:
+        if ip.name == ipname:
+            return ip
+    return default
+
+def has_ip_attr(top, ipname, name):
+    """
+    Check whether a top's IP has an attribute. This function will return False if
+    the top does not have the requested IP.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - ipname: IP name
+    - name: name of the attribute
+    """
+    ip = _get_ip(top, ipname, None)
+    return ip != None and name in ip.attrs
+
+def get_ip_attr(top, ipname, name, required = True, default = None):
+    """
+    Given a top description, extract an IP's attribute.
+
+    If `required` is set to `True`, this function will fail if the top
+    does not have the requested IP, or if the IP does not have the requested
+    attribute. Otherwise it will return `default`.
+
+    Parameters:
+    - top: top created by `opentitan_top`
+    - ipname: IP name
+    - name: name of the attribute
+    - required: fail if the IP does not have the attribute
+    - default: this value will be returned when the top does not have this IP or
+               if the IP does not have this attribute
+    """
+    ip = _get_ip(top, ipname, None)
+    if ip == None:
+        if required:
+            fail("top {} does not have IP {}".format(top.name, ipname))
+        return default
+    else:
+        if required and name not in ip.attrs:
+            fail("top {}, IP {} does not have attribute '{}'".format(top.name, ipname, name))
+        return ip.attrs.get(name, default)
+
 def select_top_lib(name, all_tops, top):
     """
     Create an alias to the top library.
