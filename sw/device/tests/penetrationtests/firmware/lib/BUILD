@@ -58,10 +58,6 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
-        "//sw/device/silicon_creator/lib/base:boot_measurements",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/tests/penetrationtests/json:pentest_lib_commands",
     ] + select({
         "//sw/device:is_english_breakfast": [],
@@ -69,6 +65,10 @@ cc_library(
             "//sw/device/lib/crypto/drivers:otbn",
             "//sw/device/lib/testing:entropy_testutils",
             "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/silicon_creator/lib/base:boot_measurements",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/ownership",
         ],
     }),
 )
