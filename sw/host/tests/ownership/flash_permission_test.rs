@@ -105,6 +105,49 @@ impl FlashRegion<'_> {
     }
 }
 
+fn flash_info_check(info: &[FlashRegion<'_>], unlocked: bool) -> Result<()> {
+    // Flash info regions when no OwnerReserved pages are configured:
+    let config = [
+        FlashRegion("info", 0, 0, 0, "uu-uu-uu-uu-uu-uu", "LK"), // factory ID
+        FlashRegion("info", 0, 0, 1, "uu-uu-uu-uu-uu-uu", "LK"), // creator secret
+        FlashRegion("info", 0, 0, 2, "uu-uu-uu-uu-uu-uu", "LK"), // owner secret
+        FlashRegion("info", 0, 0, 3, "uu-uu-uu-uu-uu-uu", "LK"), // wafer auth secret
+        FlashRegion("info", 0, 0, 4, "RD-xx-xx-SC-EC-xx", "LK"), // attestation key seeds
+        FlashRegion("info", 0, 0, 5, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 0, 0, 6, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 0, 0, 7, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 0, 0, 8, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 0, 0, 9, "RD-xx-xx-SC-EC-xx", "LK"), // factory certs
+        FlashRegion("info", 1, 0, 0, "uu-uu-uu-uu-uu-uu", "LK"), // boot data 0
+        FlashRegion("info", 1, 0, 1, "uu-uu-uu-uu-uu-uu", "LK"), // boot data 1
+        FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK"), // owner config 0
+        if unlocked {
+            FlashRegion("info", 1, 0, 3, "RD-WR-ER-SC-EC-xx", "LK") // owner config 1
+        } else {
+            FlashRegion("info", 1, 0, 3, "RD-xx-xx-SC-EC-xx", "LK") // owner config 1
+        },
+        FlashRegion("info", 1, 0, 4, "uu-uu-uu-uu-uu-uu", "LK"), // creator reserved
+        FlashRegion("info", 1, 0, 5, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 1, 0, 6, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 1, 0, 7, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 1, 0, 8, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 1, 0, 9, "RD-xx-xx-SC-EC-xx", "LK"), // dice certs
+    ];
+    assert_eq!(info.len(), config.len());
+    let mut err = 0;
+    for i in 0..config.len() {
+        if info[i] != config[i] {
+            log::error!("INFO entry {i}: {:?} != {:?}", info[i], config[i]);
+            err += 1;
+        }
+    }
+    if err != 0 {
+        Err(anyhow!("INFO lockdown mismatch"))
+    } else {
+        Ok(())
+    }
+}
+
 fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let rescue = RescueSerial::new(Rc::clone(&uart));
@@ -198,17 +241,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             FlashRegion("data", 7, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
         );
 
-        // Bank 1, pages 2-3 are the ownership pages.  In an ownership unlocked
-        // state, OwnerPage0 (bank 1 page 2) should be read-only and OwnerPage1
-        // (bank1 page 3) should be read/write.
-        assert_eq!(
-            region[20],
-            FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK")
-        );
-        assert_eq!(
-            region[21],
-            FlashRegion("info", 1, 0, 3, "RD-WR-ER-SC-EC-xx", "LK")
-        );
+        flash_info_check(&region[8..], /*unlocked=*/ true)?;
     }
 
     log::info!("###### Get Boot Log (2/2) ######");
@@ -306,17 +339,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         FlashRegion("data", 7, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
     );
 
-    // Bank 1, pages 2-3 are the ownership pages.  In an ownership locked
-    // state, both pages should be read-only.
-    assert_eq!(
-        region[20],
-        FlashRegion("info", 1, 0, 2, "RD-xx-xx-SC-EC-xx", "LK")
-    );
-    assert_eq!(
-        region[21],
-        FlashRegion("info", 1, 0, 3, "RD-xx-xx-SC-EC-xx", "LK")
-    );
-
+    flash_info_check(&region[8..], /*unlocked=*/ false)?;
     Ok(())
 }
 
