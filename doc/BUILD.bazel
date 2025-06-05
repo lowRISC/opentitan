@@ -16,7 +16,11 @@ exports_files(glob(["**"]))
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]),
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+        "**/*.png",
+    ]),
 )
 
 doxygen_gather_cc(

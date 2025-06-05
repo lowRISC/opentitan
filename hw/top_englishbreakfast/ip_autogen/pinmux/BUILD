@@ -18,5 +18,8 @@ filegroup(
 
 filegroup(
     name = "doc_files",
-    srcs = glob(["**/*.md"]) + ["//hw/top_englishbreakfast/ip_autogen/pinmux/data:doc_files"],
+    srcs = glob([
+        "**/*.md",
+        "**/*.svg",
+    ]) + ["//hw/top_englishbreakfast/ip_autogen/pinmux/data:doc_files"],
 )
