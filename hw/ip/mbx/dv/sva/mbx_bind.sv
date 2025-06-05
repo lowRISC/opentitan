@@ -5,7 +5,7 @@
 module mbx_bind;
 
   bind mbx tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) mbx_agx_tlul_assert_core (
     .clk_i(hstRegAccL3),
     .rst_ni(hstRegReset),
@@ -14,7 +14,7 @@ module mbx_bind;
   );
 
   bind mbx tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) agx_mbx_tlul_assert_device (
     .clk_i(hstRegAccL3),
     .rst_ni(hstRegReset),
@@ -23,7 +23,7 @@ module mbx_bind;
   );
 
   bind mbx tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) scx_mbx_tlul_assert_device(
     .clk_i(sysRegAccL3),
     .rst_ni(sysRegReset),

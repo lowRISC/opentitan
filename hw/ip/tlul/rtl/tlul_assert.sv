@@ -8,7 +8,7 @@
 `include "prim_assert.sv"
 
 module tlul_assert #(
-  parameter EndpointType = "Device" // can be either "Host" or "Device"
+  parameter tlul_pkg::endpointtype_e EndpointType = tlul_pkg::DEVICE
 ) (
   input clk_i,
   input rst_ni,
@@ -243,7 +243,7 @@ module tlul_assert #(
 
   // note: use negedge clk to avoid possible race conditions
   // in this case all signals coming from the device side have an assumed property
-  if (EndpointType == "Host") begin : gen_host
+  if (EndpointType == tlul_pkg::HOST) begin : gen_host
     // h2d
     `ASSERT(legalAOpcode_A,     h2d_pre_S |-> legalAOpcode_S,     !clk_i, !rst_ni || disable_sva)
     `ASSERT(legalAParam_A,      h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
@@ -262,7 +262,7 @@ module tlul_assert #(
     `ASSUME(dDataKnown_M,       d2h_pre_S and dDataKnown_pre_S |-> dDataKnown_S,
           !clk_i, !rst_ni || disable_sva)
   // in this case all signals coming from the host side have an assumed property
-  end else if (EndpointType == "Device") begin : gen_device
+  end else if (EndpointType == tlul_pkg::DEVICE) begin : gen_device
     // h2d
     `ASSUME(legalAParam_M,       h2d_pre_S |-> legalAParam_S,      !clk_i, !rst_ni)
     `ASSUME(pendingReqPerSrc_M,  h2d_pre_S |-> pendingReqPerSrc_S, !clk_i, !rst_ni)
@@ -376,7 +376,7 @@ module tlul_assert #(
     endsequence \
     `TLUL_COVER(d_``NAME``ChangedNotAccepted)
 
-  if (EndpointType == "Host") begin : gen_host_cov // DUT is host
+  if (EndpointType == HOST) begin : gen_host_cov // DUT is host
     `TLUL_COVER(b2bRsp)
     `TLUL_COVER(dValidNotAccepted)
     `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(data)
@@ -385,7 +385,7 @@ module tlul_assert #(
     `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(source)
     `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(sink)
     `TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(error)
-  end else if (EndpointType == "Device") begin : gen_device_cov // DUT is device
+  end else if (EndpointType == DEVICE) begin : gen_device_cov // DUT is device
     `TLUL_COVER(b2bReq)
     `TLUL_COVER(b2bReqWithSameAddr)
     `TLUL_COVER(aValidNotAccepted)
