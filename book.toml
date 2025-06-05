@@ -63,8 +63,8 @@ command = "./util/mdbook_code_snippet.py"
 
 [preprocessor.doxygen]
 command = "./util/mdbook_doxygen.py"
-out-dir = "doc/doxygen"
-html-out-dir = "gen/doxy"
+out-dir = "bazel-out/k8-fastbuild/bin/doc/doxygen"
+html-out-dir = "bazel-out/k8-fastbuild/bin/doc/doxygen"
 dif-src-py-regex = 'dif_\S*\.h'
 
 [preprocessor.toolversion]
