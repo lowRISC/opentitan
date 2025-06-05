@@ -6,6 +6,13 @@ load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "all_keys",
+    srcs = glob([
+        "*.der",
+    ]),
+)
+
 cc_library(
     name = "includes",
     testonly = True,

@@ -567,3 +567,31 @@ opentitan_test(
     )
     for protocol, config in _CONFIGS.items()
 ]
+
+[
+    opentitan_test(
+        name = "rescue_disability_{}".format(protocol),
+        data = [
+            "//sw/device/silicon_creator/lib/ownership/testdata/rescue_disability/{}:test_owner_bin".format(protocol),
+        ],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "",
+            owner_binary = "//sw/device/silicon_creator/lib/ownership/testdata/rescue_disability/{}:test_owner_bin".format(protocol),
+            params = config["params"],
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_{}_rescue_disability".format(protocol),
+            tags = config["tags"],
+            test_cmd = """
+            --clear-bitstream
+            --bootstrap={rom_ext}
+            --owner-block=$(rootpath {owner_binary})
+            rescue {params} --action=disability
+            """,
+            test_harness = "//sw/host/tests/rescue:rescue_test",
+        ),
+    )
+    for protocol, config in _CONFIGS.items()
+]
