@@ -4,7 +4,15 @@
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo", "opentitan_top_get_ip_attr")
+load("//rules/opentitan:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "DoxygenCcInputInfo")
+load(
+    "//hw/top:defs.bzl",
+    "opentitan_require_ip_attr",
+    "opentitan_require_top_attr",
+    "opentitan_select_ip_attr",
+    "opentitan_select_top_attr",
+)
 
 """Autogeneration rules for OpenTitan.
 
@@ -222,41 +230,34 @@ def _opentitan_top_dt_gen(ctx):
             deps.append(f)
         outputs.extend(deps)
         groups[group] = depset(deps)
-    top = ctx.attr.top[OpenTitanTopInfo]
-
-    inputs = [top.hjson]
-    tools = []
-    ips = []
-    for ipname in top.ip_map:
-        if ctx.attr.gen_top or ipname in ctx.attr.gen_ips:
-            hjson = opentitan_top_get_ip_attr(top, ipname, "hjson")
-            inputs.append(hjson)
-            ips.extend(["-i", hjson.path])
-            ipconfig = opentitan_top_get_ip_attr(top, ipname, "ipconfig", required = False)
-            if ipconfig:
-                inputs.append(ipconfig)
-                ips.extend(["--ipconfig", ipconfig.path])
-            extension = opentitan_top_get_ip_attr(top, ipname, "extension", required = False, output = "target")
-            if extension:
-                ext_files = extension[DefaultInfo].files.to_list()
-                if len(ext_files) > 1:
-                    fail("opentitan_top_dt_gen was given {} as an extension but it contains more one file: {}"
-                        .format(extension, ext_files))
-                tools.append(extension[DefaultInfo].default_runfiles.files)
-                ips.extend(["--extension", ext_files[0].path])
 
     arguments = [
         "--topgencfg",
-        top.hjson.path,
+        ctx.file.top_hjson.path,
         "--outdir",
         outdir,
     ]
-    arguments.append("--gen-top" if ctx.attr.gen_top else "--gen-ip")
-    for ipname in ctx.attr.gen_ips:
-        if ipname not in top.ip_map:
-            fail("Cannot generate IP headers: top {} does not contain IP {}".format(top.name, ipname))
+    inputs = [ctx.file.top_hjson]
+    tools = []
+    ips = []
 
-    arguments.extend(ips)
+    if ctx.attr.gen_top:
+        arguments.append("--gen-top")
+    if ctx.attr.gen_ip:
+        arguments.append("--gen-ip")
+    for hjson in ctx.files.ips_hjson:
+        inputs.append(hjson)
+        arguments.extend(["-i", hjson.path])
+    for ipconfig in ctx.files.ips_config:
+        inputs.append(ipconfig)
+        arguments.extend(["--ipconfig", ipconfig.path])
+    for extension in ctx.attr.extensions:
+        ext_files = extension[DefaultInfo].files.to_list()
+        if len(ext_files) > 1:
+            fail("opentitan_top_dt_gen was given {} as an extension but it contains more one file: {}"
+                .format(extension, ext_files))
+        tools.append(extension[DefaultInfo].default_runfiles.files)
+        arguments.extend(["--extension", ext_files[0].path])
 
     ctx.actions.run(
         outputs = outputs + [_subdir_ignore],
@@ -271,13 +272,16 @@ def _opentitan_top_dt_gen(ctx):
         OutputGroupInfo(**groups),
     ]
 
-opentitan_top_dt_gen = rule(
+opentitan_top_dt_gen_rule = rule(
     implementation = _opentitan_top_dt_gen,
     doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
-        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
         "gen_top": attr.bool(default = False, doc = "If true, generate the toplevel files"),
-        "gen_ips": attr.string_list(doc = "List of IPs for which to generate header files"),
+        "gen_ip": attr.bool(default = False, doc = "If true, generate the IP files"),
+        "top_hjson": attr.label(allow_single_file = True, doc = "Hjson description of the top"),
+        "ips_hjson": attr.label_list(allow_files = True, doc = "List of Hjson descriptions of IPs"),
+        "ips_config": attr.label_list(allow_files = True, doc = "List of Hjson ipconfigs of IPs"),
+        "extensions": attr.label_list(allow_files = True, cfg = "exec", doc = "List of dtgen extensions"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
             doc = """
@@ -293,12 +297,39 @@ opentitan_top_dt_gen = rule(
     },
 )
 
-def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = []):
+def opentitan_top_dt_gen(name, gen_ips = [], gen_top = False, output_groups = {}, target_compatible_with = []):
+    opentitan_top_dt_gen_rule(
+        name = name,
+        gen_top = gen_top,
+        gen_ip = len(gen_ips) > 0,
+        ips_hjson = flatten([
+            # Trick: we wrap the attribute in a list and return the empty list if the attribute (or the IP) is
+            # missing. This way we can simply concatenate all the selects.
+            opentitan_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
+            for ip in gen_ips
+        ]),
+        ips_config = flatten([
+            opentitan_select_ip_attr(ip, "ipconfig", required = False, default = [], fn = lambda x: [x])
+            for ip in gen_ips
+        ]),
+        extensions = flatten([
+            opentitan_select_ip_attr(ip, "extension", required = False, default = [], fn = lambda x: [x])
+            for ip in gen_ips
+        ]),
+        output_groups = output_groups,
+        top_hjson = opentitan_select_top_attr("hjson"),
+        target_compatible_with = target_compatible_with + opentitan_require_top_attr("hjson") + flatten([
+            opentitan_require_ip_attr(ip, "hjson")
+            for ip in gen_ips
+        ]),
+    )
+
+def opentitan_ip_dt_header(name, ip, deps = None, target_compatible_with = []):
     """
-    Generate the C header for an IP block as used in a top. This library is created to the
-    provided top and can have additional dependencies. The top target must export an
-    OpenTitanTopInfo provider, e.g. by created by opentitan_top. If this IP is not included
-    in the top, an error will be thrown.
+    Generate the C header for an IP block as used in the current top.
+    The target will also be marked as compatible only with tops containing this IP.
+    Additionally, a `cc_library` will be created from this header with additional
+    dependencies on `deps`.
     """
     if deps == None:
         deps = []
@@ -307,7 +338,6 @@ def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = 
 
     opentitan_top_dt_gen(
         name = "{}_gen".format(name),
-        top = top,
         gen_ips = [ip],
         output_groups = {
             "hdr": ["dt/dt_{}.h".format(ip)],
@@ -323,18 +353,18 @@ def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = 
             output_group = grp,
         )
 
-def opentitan_top_dt_api(name, top, deps = None):
+def opentitan_top_dt_api(name, deps = None):
     """
-    Create a library that exports the "dt_api.h" header. This library is created to the
-    provided top and can have additional dependencies. The top target must export an
-    OpenTitanTopInfo provider, e.g. by created by opentitan_top.
+    Create a library that exports the "dt_api.h" header.
+    The target will also be marked as compatible only with tops containing this IP.
+    Additionally, a `cc_library` will be created from this header with additional
+    dependencies on `deps`.
     """
     if deps == None:
         deps = []
 
     opentitan_top_dt_gen(
         name = "{}_gen".format(name),
-        top = top,
         gen_top = True,
         output_groups = {
             "hdr": ["dt/dt_api.h"],
