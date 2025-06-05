@@ -96,7 +96,6 @@ opentitan_alias_top_attr(
 
 opentitan_top_dt_api(
     name = "dt_api",
-    top = ":top_desc",
     deps = [":top_lib"],
 )
 
@@ -105,7 +104,6 @@ opentitan_top_dt_api(
         name = "dt_{}".format(ip),
         ip = ip,
         target_compatible_with = opentitan_require_ip(ip),
-        top = ":top_desc",
         deps = [":dt_api"],
     )
     for ip in ALL_IP_NAMES
