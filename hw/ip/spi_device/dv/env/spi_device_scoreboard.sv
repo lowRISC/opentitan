@@ -816,9 +816,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       else begin
         int unsigned dn_item_payload_size = dn_item.payload_q.size;
         // We expect the payload for up_item to be one byte shorter than the payload for dn_item,
-        // unless dn_item had an empty payload or we're in read_pipeline mode.
-        if (dn_item.payload_q.size>0 &&  !(!up_item.read_pipeline_mode ||
-            up_item.payload_q.size == 0))  //Read terminated before any data was returned
+        // in some cases with the read pipeline mode enabled
+        if (up_item.read_pipeline_mode>0 && (dn_item.payload_q.size > up_item.payload_q.size))
           dn_item_payload_size--;
 
         `DV_CHECK_EQ(up_item.payload_q.size, dn_item_payload_size)
@@ -1797,7 +1796,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit [31:0] start_addr, offset, read_buffer_addr;
     event      interrupt_update_ev;
     bit        reading_readbuffer=1;
-
+    bit        predict_interrupts=0;
     item = spi_txn;
 
     if (cfg.spi_host_agent_cfg.spi_func_mode == SpiModeTpm) begin
@@ -1842,7 +1841,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       fork begin
         `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
         wait (interrupt_update_ev.triggered);
-        while (reading_readbuffer) begin
+
+        while (reading_readbuffer || (item.payload_q.size == 0 && predict_interrupts)) begin
           `uvm_info(`gfn,
                     $sformatf("'interrupt_update_ev' event is triggered (buffer_addr=0x%0x)",
                               read_buffer_addr + 1 ), UVM_DEBUG)
@@ -1862,6 +1862,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
           #(cfg.spi_host_agent_cfg.sck_period_ps/2 * 1ps);
 
+          if(item.payload_q.size == 0 && predict_interrupts) begin
+            // Transaction finished exiting:
+            predict_interrupts = 0;
+            `uvm_info(`gfn, "Exiting the readbuf/watermark interrupt prediction loop", UVM_DEBUG)
+            break;
+          end
           `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
           wait (interrupt_update_ev.triggered);
         end
@@ -1916,27 +1922,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       read_pipeline_read_buffer_cmd_last = read_pipeline_ongoing_read_buffer_cmd;
       read_pipeline_ongoing_read_buffer_cmd = 0;
       ongoing_read_buffer_cmd = 0;
+      if (item.payload_q.size == 0 && start_addr == read_buffer_addr)
+        predict_interrupts = 1;
       reading_readbuffer = 0;
       -> interrupt_update_ev;
 
       if(item.payload_q.size == 0) begin
         last_read_cmd_no_payload = 1;
-        if (item.read_pipeline_mode > 0) begin
-          //setting here, in case the CMd doesn't have any payload , the RTL will have already
-          //fetched from memory In some cases, depending on the start_addr that may trigger a
-          // readbufflip/readwatermark interrupt
+        // No payload, hence the start address was never read. Setting to old last_read_addr
+        read_buffer_addr = `gmv(ral.last_read_addr);
+        if (item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD,READ_QUADIO }) begin
+          // setting here, in case the CMd doesn't have any payload , the RTL will have already
+          // fetched from memory In some cases, depending on the start_addr that may trigger a
+          // readbufflip/readwatermark interrupt when the read pipeline is enabled
           last_read_buffer_addr = start_addr;
         end
       end
 
-      // only update when it has payload
-      if ( (payload_idx > 0) ||
-           //Incomplete read command, but RTL has already fetched data and some of it it's in the read pipeline
-           ((item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)
-          ) begin
+      // Only update when it has payload OR
+      // When Incomplete read command, but RTL has already fetched data and some of it it's in
+      // the read pipeline. In addition, start_addr must be different to prior recorded address
+      // otherwise the update won't happen
+      if ((payload_idx > 0) || (start_addr != `gmv(ral.last_read_addr) &&
+         (item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)) begin
         bit updating_last_read_addr=1;
-        if(payload_idx>0 && item.read_pipeline_mode > 0 /*&&
-           item.opcode inside {READ_QUAD,READ_QUADIO }*/) begin
+        if(item.read_pipeline_mode > 0 && item.opcode inside {READ_QUAD, READ_QUADIO }) begin
           string print_str =
                            "Opcode is inside {READ_QUAD, READ_QUADIO} and read_pipeline is enabled";
           print_str = {print_str, ".\n", "The RTL believes the read_addr is 1 unit above because",
@@ -1946,12 +1956,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     UVM_DEBUG)
           read_buffer_addr++;
         end // if (payload_idx>0 && item.read_pipeline_mode > 0...
-        else if(item.terminated_before_read_pipeline) begin
-          // SPI Txn was terminated before the dummy cycles started, hence the RTL didn't even fetch the first address
+        else if (item.terminated_before_read_pipeline) begin
+          // SPI Txn was terminated before the dummy cycles/read_pipeline started, hence the RTL
+          // didn't even fetch the first address
           updating_last_read_addr = 0;
         end
 
-        if(updating_last_read_addr) begin
+        if (updating_last_read_addr) begin
           // Update read_buffer_addr predicted value
           `DV_CHECK_EQ_FATAL( ral.last_read_addr.predict(.value(read_buffer_addr),
                                                          .kind(UVM_PREDICT_READ)), 1,
