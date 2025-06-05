@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//rules/opentitan:hw.bzl", "get_ip_attr", "get_top_attr", "has_ip_attr", "has_top_attr")
 load("//hw/top_earlgrey:defs.bzl", "EARLGREY")
 load("//hw/top_darjeeling:defs.bzl", "DARJEELING")
 load("//hw/top_englishbreakfast:defs.bzl", "ENGLISHBREAKFAST")
@@ -109,3 +109,143 @@ def opentitan_require_top(top):
     ```
     """
     return opentitan_select_top({top: []}, ["@platforms//:incompatible"])
+
+def opentitan_if_top_attr(attr_name, obj, default):
+    """
+    Return a select expression evaluating to `obj` if the top has the requested attribute
+    and to `default` if it does not. Informally, this expression looks:
+    ```py
+    select({
+      <if top has attribute>: obj,
+      <default>: default,
+    })
+    ```
+    """
+    return select({
+        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): obj
+        for top in ALL_TOPS
+        if has_top_attr(top, attr_name)
+    } | {
+        "//conditions:default": default,
+    })
+
+def opentitan_require_top_attr(attr_name):
+    """
+    Return a select expression which can be used together with `target_compatible_with`
+    to express the requirement that the top must have the required attribute.
+    """
+    return opentitan_if_top_attr(attr_name, [], ["@platforms//:incompatible"])
+
+def opentitan_select_top_attr(attr_name, required = True, default = None, to_list = False):
+    """
+    Return a select expression giving access to a given top attribute.
+
+    If `required` is set to `True`, the selection expression will only contain branches
+    for top containing the attribute and an error message will be set in case there is no match.
+    Therefore informally the select will look like:
+    ```py
+    select({
+      <if top A>: <top A attribute>,
+      <if top B>: <top B attribute>,
+      .. and so on for all tops with the given attribute ..
+    }, no_match_error = "this top does not have the requested attribute")
+    ```
+
+    If `required` is set to `False`, the selection expression will contain a default branch
+    whole value is set to `default`.
+    Therefore informally the select will look like:
+    ```py
+    select({
+      <if top A>: <top A attribute>,
+      <if top B>: <top B attribute>,
+      .. and so on for all tops with the given attribute ..
+      <default>: default
+    })
+    ```
+
+    If `to_list` is set to `True`, the attribute's value will be wrapped in a list. This can
+    be useful when manipulating select expression.
+    """
+
+    def maybe_to_list(x):
+        return [x] if to_list else x
+
+    branches = {
+        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): maybe_to_list(get_top_attr(top, attr_name))
+        for top in ALL_TOPS
+        if has_top_attr(top, attr_name)
+    }
+    if not required:
+        branches["//conditions:default"] = default
+        no_match_error = ""
+    else:
+        no_match_error = "the select top does not have attribute '{}'".format(attr_name)
+    return select(branches, no_match_error = no_match_error)
+
+def opentitan_alias_top_attr(name, attr_name, required = True, default = None):
+    """
+    Create an alias to a top specific top attribute, assuming this attribute is a Label
+    or a label string.
+
+    If `required` is set to `True`, the alias will be marked as compatible only with tops
+    containing the requested attribute.
+
+    If `required` is set to `False`, the alias will point to `default` for tops which do
+    not contain the requested attribute.
+    """
+    native.alias(
+        name = name,
+        actual = opentitan_select_top_attr(attr_name, required, default),
+        target_compatible_with = opentitan_require_top_attr(attr_name) if required else [],
+    )
+
+def opentitan_if_ip_attr(ipname, attr_name, obj, default):
+    """
+    Return a select expression evaluating to `obj` if the top has the requested IP and
+    the IP has the requested attribute, and to `default` if it does not.
+    """
+    return select({
+        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): obj
+        for top in ALL_TOPS
+        if has_ip_attr(top, ipname, attr_name)
+    } | {
+        "//conditions:default": default,
+    })
+
+def opentitan_require_ip_attr(ipname, attr_name):
+    """
+    Return a select expression which can be used together with `target_compatible_with`
+    to express the requirement that the top must have the required IP and the IP has
+    the required attribute.
+    """
+    return opentitan_if_ip_attr(ipname, attr_name, [], ["@platforms//:incompatible"])
+
+def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None, to_list = False):
+    """
+    Return a select expression giving access to a given IP attribute.
+
+    If `required` is set to `True`, the selection expression will only contain branches
+    for top containing the (IP and the) IP attribute and an error message will be set in
+    case there is no match.
+
+    If `required` is set to `False`, the selection expression will contain a default branch
+    whole value is set to `default`.
+
+    If `to_list` is set to `True`, the attribute's value will be wrapped in a list. This can
+    be useful when manipulating select expression.
+    """
+
+    def maybe_to_list(x):
+        return [x] if to_list else x
+
+    branches = {
+        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): maybe_to_list(get_ip_attr(top, ipname, attr_name))
+        for top in ALL_TOPS
+        if has_ip_attr(top, ipname, attr_name)
+    }
+    if not required:
+        branches["//conditions:default"] = default
+        no_match_error = ""
+    else:
+        no_match_error = "the select top does not have IP {} or its IP does not have attribute '{}'".format(ipname, attr_name)
+    return select(branches, no_match_error = no_match_error)
