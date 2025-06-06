@@ -60,6 +60,7 @@ module tlul_adapter_reg
 
   logic outstanding_q;    // Indicates current request is pending
   logic a_ack, d_ack;
+  logic d_valid;
 
   logic [RegDw-1:0] rdata, rdata_q;
   logic             error_q, error, err_internal, instr_error, intg_error;
@@ -110,23 +111,27 @@ module tlul_adapter_reg
   end
 
   if (AccessLatency == 1) begin : gen_access_latency1
-    logic wr_req_q, rd_req_q;
+    logic wr_req_q, rd_req_q, d_valid_q;
+
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rdata_q  <= '0;
-        error_q  <= 1'b0;
-        wr_req_q <= 1'b0;
-        rd_req_q <= 1'b0;
+        rdata_q   <= '0;
+        error_q   <= 1'b0;
+        wr_req_q  <= 1'b0;
+        rd_req_q  <= 1'b0;
+        d_valid_q <= 1'b0;
       end else begin
         rd_req_q <= rd_req;
         wr_req_q <= wr_req;
         // Addressing phase
         if (a_ack) begin
           error_q <= err_internal;
+          d_valid_q <= 1'b0;
         // Response phase
         end else begin
-          error_q <= error;
-          rdata_q <= rdata;
+          error_q   <= error;
+          rdata_q   <= rdata;
+          d_valid_q <= outstanding_q & ~d_ack;
         end
       end
     end
@@ -135,6 +140,7 @@ module tlul_adapter_reg
                                                       rdata_q; // backpressure case
     assign error = (rd_req_q || wr_req_q) ? (error_q || error_i) :
                                             error_q; // backpressure case
+    assign d_valid = d_valid_q;
   end else begin : gen_access_latency0
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
@@ -145,14 +151,15 @@ module tlul_adapter_reg
         error_q <= error_i || err_internal;
       end
     end
-    assign rdata = rdata_q;
-    assign error = error_q;
+    assign rdata   = rdata_q;
+    assign error   = error_q;
+    assign d_valid = outstanding_q;
   end
 
   tlul_pkg::tl_d2h_t tl_o_pre;
   assign tl_o_pre = '{
     a_ready:  ~(outstanding_q | busy_i),
-    d_valid:  outstanding_q,
+    d_valid:  d_valid,
     d_opcode: rspop_q,
     d_param:  '0,
     d_size:   reqsz_q,
