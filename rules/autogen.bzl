@@ -158,8 +158,6 @@ def opentitan_ip_rust_header(name, ip, target_compatible_with = [], **kwargs):
 
 def _opentitan_autogen_dif_gen(ctx):
     outputs = []
-    top = ctx.attr.top[OpenTitanTopInfo]
-    ip_hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     groups = {}
     for group, files in ctx.attr.output_groups.items():
@@ -169,11 +167,11 @@ def _opentitan_autogen_dif_gen(ctx):
         outputs.extend(deps)
         groups[group] = depset(deps)
 
-    inputs = [ip_hjson]
+    inputs = [ctx.file.hjson]
 
     arguments = [
         "--ipcfg",
-        ip_hjson.path,
+        ctx.file.hjson.path,
         "--outdir",
         outputs[0].dirname,
     ]
@@ -194,7 +192,7 @@ opentitan_autogen_dif_gen = rule(
     implementation = _opentitan_autogen_dif_gen,
     doc = "Generate the DIFs file for an IP",
     attrs = {
-        "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "ip": attr.string(mandatory = True, doc = "Name of the IP for which to generate the DIF"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
@@ -211,18 +209,25 @@ opentitan_autogen_dif_gen = rule(
     },
 )
 
-# See opentitan_autogen_dif_gen for documentation of parameters.
-def opentitan_autogen_dif(name, top, ip, deps = [], target_compatible_with = []):
+def opentitan_autogen_dif(name, ip, deps = [], target_compatible_with = []):
+    """
+    Macro around `opentitan_autogen_dif_gen` that automatically sets `hjson` for the current top
+    and `output_groups` to the default ones.
+    The target will also be marked as compatible only with tops containing this IP.
+
+    This macro also creates some filegroups to extract the sources, headers and unittests, as
+    well as a `cc_library` for the DIF code which will depend on `deps`.
+    """
     opentitan_autogen_dif_gen(
         name = "{}_gen".format(name),
-        top = top,
+        hjson = opentitan_select_ip_attr(ip, "hjson"),
         ip = ip,
         output_groups = {
             "hdr": ["dif_{}_autogen.h".format(ip)],
             "src": ["dif_{}_autogen.c".format(ip)],
             "unittest": ["dif_{}_autogen_unittest.cc".format(ip)],
         },
-        target_compatible_with = target_compatible_with,
+        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
     )
 
     for grp in ["hdr", "src", "unittest"]:
