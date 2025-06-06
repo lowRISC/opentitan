@@ -16,7 +16,6 @@ set -euo pipefail
 : "${BAZEL_VENDORDIR:=bazel-vendor}"
 : "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
-: "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
 LINE_SEP="====================================================================="
@@ -147,14 +146,11 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_platform//... \
-    @ot_python_wheels//... \
     @python3_toolchains//... \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \
     @cmake-3.23.2-linux-x86_64//...
-  cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
-    ${BAZEL_AIRGAPPED_DIR}/
   ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
