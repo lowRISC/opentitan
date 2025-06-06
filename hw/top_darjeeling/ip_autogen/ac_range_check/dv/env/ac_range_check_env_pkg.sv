@@ -22,6 +22,7 @@ package ac_range_check_env_pkg;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4Width;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_logic_test_true_strict;
   import prim_mubi_pkg::mubi8_t;
