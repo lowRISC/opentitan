@@ -417,7 +417,6 @@ def opentitan_top_dt_api(name, deps = None):
 
 def _opentitan_autogen_testutils_gen(ctx):
     outputs = []
-    top = ctx.attr.top[OpenTitanTopInfo]
     groups = {}
     for group, files in ctx.attr.output_groups.items():
         deps = []
@@ -425,17 +424,16 @@ def _opentitan_autogen_testutils_gen(ctx):
             deps.append(ctx.actions.declare_file(file))
         outputs.extend(deps)
         groups[group] = depset(deps)
-    inputs = [top.hjson]
+    inputs = [ctx.file.top_hjson]
     arguments = [
         "--topcfg",
-        top.hjson.path,
+        ctx.file.top_hjson.path,
         "--outdir",
         outputs[0].dirname,
         "--clang-format",
         ctx.executable._clang_format.path,
     ]
-    for ip in top.ip_map.keys():
-        ip_hjson = opentitan_top_get_ip_attr(top, ip, "hjson")
+    for ip_hjson in ctx.files.ips_hjson:
         inputs.append(ip_hjson)
         arguments.extend(["-i", ip_hjson.path])
 
@@ -457,7 +455,8 @@ opentitan_autogen_testutils_gen = rule(
     implementation = _opentitan_autogen_testutils_gen,
     doc = "Generate the testutils file for a top",
     attrs = {
-        "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "top_hjson": attr.label(allow_single_file = True, doc = "Hjson description of the top"),
+        "ips_hjson": attr.label_list(allow_files = True, doc = "List of Hjson descriptions of IPs"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
             doc = """
@@ -480,15 +479,29 @@ opentitan_autogen_testutils_gen = rule(
     },
 )
 
-# See opentitan_autogen_testutils_gen for documentation of parameters.
-def opentitan_autogen_isr_testutils(name, top, deps = [], target_compatible_with = []):
+def opentitan_autogen_isr_testutils(name, ips = [], deps = [], target_compatible_with = []):
+    """
+    Macro around `opentitan_autogen_testutils_gen` that automatically sets `top_hjson` for the current top,
+    `ips_hjson` to the list of all IPs listed in `ips` for the top and `output_groups` to the expected value for the
+    `irs_testutils`.
+
+    This macro also creates some filegroups to extract the sources, headers and unittests, as
+    well as a `cc_library` for the testutil code which will depend on `deps`.
+    """
     opentitan_autogen_testutils_gen(
         name = "{}_gen".format(name),
-        top = top,
+        ips_hjson = flatten([
+            # Trick: we wrap the attribute in a list and return the empty list of the attribute (or the IP) is
+            # missing. This way we can simply concatenate all the selects.
+            opentitan_select_ip_attr(ip, "hjson", required = False, default = [], fn = lambda x: [x])
+            for ip in ips
+        ]),
+        top_hjson = opentitan_select_top_attr("hjson"),
         output_groups = {
             "hdr": ["isr_testutils.h"],
             "src": ["isr_testutils.c"],
         },
+        target_compatible_with = opentitan_require_top_attr("hjson"),
     )
     for grp in ["hdr", "src"]:
         native.filegroup(
