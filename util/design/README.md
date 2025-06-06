@@ -2,24 +2,18 @@
 
 ## OTP Memory Map Translation Script
 
-The `gen-otp-mmap.py` script is used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
-The memory map definition file for top_earlgrey is currently located at `hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson`.
+The OTP_CTRL is generated via ipgen, and most of the templates depend exclusively on a OTP memory map.
+Each top that uses OTP has a memory map Hjson configuration file located at hw/top_<topname>/data/otp/otp_ctrl_mmap.hjson.
 
-The script can either be invoked via the makefile
-```console
-$ cd ${PROJ_ROOT}
-$ make -C hw otp-mmap
-
-```
-
-or directly using the command
+The `gen-otp-mmap.py` script can also be used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
 
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-mmap.py
+$ ./util/design/gen-otp-mmap.py --topname <mytop>
 ```
 
-The seed value used for generating OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
+The `--topname` switch is mandatory and is used to select the given topname's hjon configuration file.
+The seed value used to generate OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
 ## Life Cycle State Encoding Generator
@@ -227,7 +221,21 @@ $ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_d
 
 ## ECC Generator Tool
 
-TODO
+The `./util/design/secded_gen.py` script is used to create C and SV artifacts related to SECDED.
+It uses the `./util/design/data/secded_cfg.hjson` file to determine the secded type and widths supported.
+It creates artifacts to implement and emulate the encode and decode operations for each supported secded, and to instantiate these modules in parameterized contexts.
+The artifacts are generated for each type and width, and include the following:
+
+- RTL for decoder and encoders for each supported secded type and width
+- Testbench, assertions, bind, and core files to be used in the formal verification flow
+- C code and header files to emulate secded encoding and decoding
+- SV package with relevant types and code to emulate each encoder and decoder
+- SV types and constant functions that can be used in generate blocks
+- Macros to instantiate encode and decode prims driven by parameters using case generates
+
+The functions and macros to be used for parameterized cases have comments that explain their use.
+These functions are in `hw/ip/prim/rtl/prim_secded_pkg.sv`, and the macros in `hw/ip/prim/rtl/prim_secded_inc.svh`.
+An example of how to parameterize secded is in `hw/ip/otp_macro/rtl/otp_macro.sv`.
 
 ## LFSR Coefficient Generator Tool
 
