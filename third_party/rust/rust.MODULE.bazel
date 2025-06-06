@@ -27,6 +27,15 @@ single_version_override(
     version = "0.59.2",
 )
 
+single_version_override(
+    module_name = "rules_rust_mdbook",
+    patches = [
+        "//third_party/rust/patches:rules_rust_mdbook.preprocessor_path.patch",
+    ],
+    patch_strip = 3,
+    version = "0.59.2",
+)
+
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.repository_set(

@@ -69,6 +69,7 @@ filegroup(
 mdbook(
     name = "mdbook",
     srcs = [
+        ":doxygen",
         ":doxygen_xml",
         "//:SUMMARY.md",
         "//:doc_files",

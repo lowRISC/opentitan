@@ -162,7 +162,6 @@ cc_library(
     )
     for preprocessor in [
         "code_snippet",
-        "dashboard",
         "doxygen",
         "otbn",
         "readme2index",
@@ -175,4 +174,13 @@ py_binary(
     name = "mdbook_toolversion",
     srcs = ["mdbook_toolversion.py"],
     deps = ["//hw:check_tool_requirements"],
+)
+
+py_binary(
+    name = "mdbook_dashboard",
+    srcs = [
+        "dashboard/dashboard_validate.py",
+        "dashboard/gen_dashboard_entry.py",
+        "mdbook_dashboard.py",
+    ],
 )
