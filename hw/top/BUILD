@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("//rules/opentitan:hw.bzl", "describe_top")
 load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
