@@ -114,6 +114,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/rescue",
+        "//sw/device/silicon_creator/lib/sigverify:flash_exec",
     ],
 )
 

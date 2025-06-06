@@ -47,6 +47,7 @@
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/flash_exec.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
 #include "sw/device/silicon_creator/rom_ext/imm_section/imm_section_version.h"
@@ -72,11 +73,6 @@ enum {
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
   kRomExtBStart = kFlashBankSize + kRomExtAStart,
   kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
-};
-
-// Parameter to check the ECDSA and SPX signatures with.
-enum {
-  kSigverifySignExec = 0xa26a38f7,
 };
 
 // Declaration for the ROM_EXT manifest start address, populated by the linker
@@ -370,7 +366,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
                                    TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
 
-  HARDENED_CHECK_EQ(*flash_exec, kSigverifySignExec);
+  HARDENED_CHECK_EQ(*flash_exec, kSigverifyFlashExec);
 
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
@@ -395,7 +391,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     if (error != kErrorOk) {
       continue;
     }
-    HARDENED_CHECK_EQ(flash_exec, kSigverifySignExec);
+    HARDENED_CHECK_EQ(flash_exec, kSigverifyFlashExec);
 
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
