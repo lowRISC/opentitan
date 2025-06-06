@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//rules/opentitan:hw.bzl", "opentitan_top_get_ip_attr")
 load("//rules/opentitan:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "DoxygenCcInputInfo")
 load(
