@@ -47,24 +47,6 @@ string_flag(
     for top in ALL_TOP_NAMES
 ]
 
-[
-    describe_top(
-        name = "top_{}_desc".format(top),
-        all_tops = ALL_TOPS,
-        top = top,
-    )
-    for top in ALL_TOP_NAMES
-]
-
-# Point to the right top description.
-alias(
-    name = "top_desc",
-    actual = select({
-        "is_{}".format(top): ":top_{}_desc".format(top)
-        for top in ALL_TOP_NAMES
-    }),
-)
-
 # Point to the right top library.
 opentitan_alias_top_attr(
     name = "top_lib",
