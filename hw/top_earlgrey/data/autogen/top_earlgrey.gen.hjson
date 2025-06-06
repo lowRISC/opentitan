@@ -559,6 +559,10 @@
     ]
   }
   num_cores: "1"
+  interrupts:
+  {
+    default_plic: rv_plic
+  }
   addr_spaces:
   [
     {
@@ -642,6 +646,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -733,6 +738,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -824,6 +830,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -915,6 +922,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1007,6 +1015,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       param_decl:
       {
         GpioAsHwStrapsEn: "0"
@@ -1138,6 +1147,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1308,6 +1318,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1437,6 +1448,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1566,6 +1578,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1695,6 +1708,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
@@ -1746,6 +1760,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
@@ -1830,6 +1845,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       base_addrs:
       {
         core:
@@ -3075,6 +3091,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       param_decl:
       {
         EscNumSeverities: "4"
@@ -3227,6 +3244,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_peri
@@ -3342,6 +3360,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div2_peri
@@ -3461,6 +3480,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       param_decl:
       {
         RcvrWakeTimeUs: "100"
@@ -3810,6 +3830,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -4684,6 +4705,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -4766,6 +4788,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -5393,6 +5416,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -5648,6 +5672,7 @@
           domain: Aon
         }
       }
+      plic: rv_plic
       domain:
       [
         Aon
@@ -6112,6 +6137,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       base_addrs:
       {
         core:
@@ -7277,6 +7303,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_hmac
@@ -7350,6 +7377,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_kmac
@@ -7630,6 +7658,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_otbn
@@ -7908,6 +7937,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -8277,6 +8307,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -8429,6 +8460,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -8601,6 +8633,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -8687,6 +8720,7 @@
           domain: "0"
         }
       }
+      plic: rv_plic
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
