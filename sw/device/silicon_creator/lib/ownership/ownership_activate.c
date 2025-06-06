@@ -14,6 +14,11 @@
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 
+// Parameter to check the ECDSA and SPX signatures with.
+enum {
+  kSigverifySignExec = 0xa26a38f7,
+};
+
 rom_error_t ownership_activate(boot_data_t *bootdata,
                                hardened_bool_t write_both_pages) {
   // Check if page1 parses correctly.
@@ -60,13 +65,19 @@ static rom_error_t activate_handler(boot_svc_msg_t *msg,
     return kErrorOwnershipInvalidInfoPage;
   }
 
+  // Set the variable checking whether the correct signatures have been verified
+  uint32_t flash_exec = 0;
+
   // Check the activation key and the nonce.
   size_t len = (uintptr_t)&msg->ownership_activate_req.signature -
                (uintptr_t)&msg->ownership_activate_req.primary_bl0_slot;
   HARDENED_RETURN_IF_ERROR(ownership_key_validate(
       /*page=*/1, kOwnershipKeyActivate, msg->header.type, &bootdata->nonce,
       &msg->ownership_activate_req.signature,
-      &msg->ownership_activate_req.primary_bl0_slot, len));
+      &msg->ownership_activate_req.primary_bl0_slot, len, &flash_exec));
+
+  // Verify that we passed signature verification for the message
+  HARDENED_CHECK_EQ(flash_exec, kSigverifySignExec);
 
   if (!nonce_equal(&msg->ownership_activate_req.nonce, &bootdata->nonce)) {
     return kErrorOwnershipInvalidNonce;
