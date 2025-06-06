@@ -38,11 +38,11 @@ dif_flash_ctrl_region_properties_t kFlashInfoPage3WritePermissions = {
 /**
  * Access permissions for flash info page 3 (holds wafer_auth_secret).
  *
- * Note: scrambling must be disabled as it is disabled when the page is written
- * during CP.
+ * Note: scrambling and ECC must be disabled as it is disabled when the page is
+ * written during CP.
  */
 dif_flash_ctrl_region_properties_t kFlashInfoPage3ReadPermissions = {
-    .ecc_en = kMultiBitBool4True,
+    .ecc_en = kMultiBitBool4False,
     .high_endurance_en = kMultiBitBool4False,
     .erase_en = kMultiBitBool4False,
     .prog_en = kMultiBitBool4False,
