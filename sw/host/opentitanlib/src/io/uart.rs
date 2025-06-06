@@ -64,6 +64,11 @@ pub trait Uart {
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
     fn set_baudrate(&self, baudrate: u32) -> Result<()>;
 
+    // Returns whether software flow control is enabled for the UART `write`s.
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        unimplemented!();
+    }
+
     /// Enables software flow control for `write`s.
     fn set_flow_control(&self, flow_control: bool) -> Result<()> {
         if flow_control {

@@ -11,7 +11,7 @@ use serialport::Parity;
 
 use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::uart::{Uart, UartError};
+use crate::io::uart::{FlowControl, Uart, UartError};
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::hyperdebug::Inner;
 use crate::transport::TransportError;
@@ -87,6 +87,10 @@ impl Uart for HyperdebugUart {
             &[],
         )?;
         Ok(())
+    }
+
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        self.serial_port.get_flow_control()
     }
 
     fn set_flow_control(&self, flow_control: bool) -> Result<()> {

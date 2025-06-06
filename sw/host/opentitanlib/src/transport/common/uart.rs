@@ -129,10 +129,14 @@ impl Uart for SerialPortUart {
         Ok(())
     }
 
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        Ok(self.flow_control.get())
+    }
+
     fn set_flow_control(&self, flow_control: bool) -> Result<()> {
         self.flow_control.set(match flow_control {
             false => FlowControl::None,
-            // When flow-control is enabled, assume we're haven't
+            // When flow-control is enabled, assume we haven't
             // already been put into a pause state.
             true => FlowControl::Resume,
         });
