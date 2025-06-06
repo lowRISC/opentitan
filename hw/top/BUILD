@@ -82,8 +82,6 @@ opentitan_alias_top_attr(
     opentitan_ip_c_header(
         name = "{}_c_regs".format(ip),
         ip = ip,
-        target_compatible_with = opentitan_require_ip(ip),
-        top = ":top_desc",
     )
     for ip in ALL_IP_NAMES
 ]
@@ -93,8 +91,6 @@ opentitan_alias_top_attr(
     opentitan_ip_rust_header(
         name = "{}_rust_regs".format(ip),
         ip = ip,
-        target_compatible_with = opentitan_require_ip(ip),
-        top = ":top_desc",
     )
     for ip in ALL_IP_NAMES
 ]
