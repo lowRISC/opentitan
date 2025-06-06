@@ -12,7 +12,7 @@ use serialport::Parity;
 
 use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::uart::Uart;
+use crate::io::uart::{Uart, UartError};
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::hyperdebug::Inner;
 use crate::transport::TransportError;
@@ -139,6 +139,7 @@ impl Uart for HyperdebugUart {
     }
 
     fn set_parity(&self, parity: Parity) -> Result<()> {
+        // Parity values taken from https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/main/chip/stm32/usart.c#196
         let parity_code = match parity {
             Parity::None => 0,
             Parity::Odd => 1,
@@ -154,6 +155,25 @@ impl Uart for HyperdebugUart {
             &[],
         )?;
         Ok(())
+    }
+
+    fn get_parity(&self) -> Result<Parity> {
+        let usb_handle = self.inner.usb_device.borrow();
+        let mut data = [0u8, 0u8];
+        usb_handle.read_control(
+            rusb::request_type(Direction::In, RequestType::Vendor, Recipient::Interface),
+            ControlRequest::ReqParity as u8,
+            0,
+            self.usb_interface as u16,
+            &mut data,
+        )?;
+        // Parity values taken from https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/main/chip/stm32/usart.c#180
+        match u16::from_le_bytes(data) {
+            0 => Ok(Parity::None),
+            1 => Ok(Parity::Odd),
+            2 => Ok(Parity::Even),
+            _ => Err(UartError::ReadError("Unknown parity value".to_string()).into()),
+        }
     }
 
     fn supports_nonblocking_read(&self) -> Result<bool> {
