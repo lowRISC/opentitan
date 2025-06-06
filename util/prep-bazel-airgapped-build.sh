@@ -142,26 +142,14 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @remote_java_tools//... \
-    @remote_java_tools_linux//... \
-    @bindgen_clang_linux//... \
-    @rules_rust_bindgen_deps__bindgen-0.71.1//... \
-    @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
-    @local_config_cc_toolchains//... \
     @local_config_platform//... \
-    @local_config_sh//... \
     @ot_python_wheels//... \
     @python3_toolchains//... \
-    @remotejdk11_linux//... \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \
-    @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_host_tools//... \
-    @rust_analyzer_host_tools//... \
-    @rust_host__x86_64-unknown-linux-gnu__nightly_tools//... \
-    @rust_tock__riscv32imc-unknown-none-elf__nightly_tools//...
+    @cmake-3.23.2-linux-x86_64//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
   # We don't need all bitstreams in the cache, we just need the latest one so
