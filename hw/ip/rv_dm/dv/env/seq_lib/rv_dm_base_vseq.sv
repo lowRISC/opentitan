@@ -25,6 +25,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // whether the JTAG interface is connected.
   rand bit pinmux_hw_debug_en;
 
+  // This flag controls whether the lc_hw_debug_clr_i signal is set to On.
+  rand bit lc_hw_debug_clr;
+
   // This flag controls whether the lc_hw_debug_en_i signal is set to On. When late debug mode is
   // enabled (controlled by late_debug_enable), this controls whether debug is enabled.
   rand bit lc_hw_debug_en;
@@ -63,6 +66,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // but they can do so by either disabling it in the middle of the sequence or by overriding this
   // constraint.
   constraint debug_enabled_c {
+    lc_hw_debug_clr == 1'b0;
     lc_hw_debug_en == 1'b1;
   }
 
@@ -389,8 +393,14 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.pinmux_hw_debug_en <= bool_to_lc_tx_t(pinmux_hw_debug_en);
   endfunction
 
-  // Update the lc_hw_debug_en_i pin to match the bit in lc_hw_debug_en
+  // Update the lc_hw_debug_clr_i and lc_hw_debug_en_i pins to match the bit in lc_hw_debug_clr and
+  // lc_hw_debug_en, respectively.
   function void upd_lc_hw_debug_en();
+    // The `bool_to_lc_tx_t` function converts a bit type to a lc_tx_t type by mapping `1` to `On`
+    // and `0` to a random non-`On` value. For `lc_hw_debug_clr`, this is not what we want, though,
+    // because the DUT will interpret a non-`Off` value as `On`. Hence the ternary statement below
+    // instead maps `0` to `Off`.
+    cfg.rv_dm_vif.lc_hw_debug_clr <= lc_hw_debug_clr ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
     cfg.rv_dm_vif.lc_hw_debug_en <= bool_to_lc_tx_t(lc_hw_debug_en);
   endfunction
 
