@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[package]
+name = "cargo_mdbook_deps"
+version = "0.0.0"
+publish = false
+
+[lib]
+path = "empty_file_to_appease_cargo.rs"
+
+[dependencies]
+mdbook = { version = "0.4.43", default-features = false, features = ["search"] }
+# Required by the patched version of mdbook (mdbookignore feature).
+ignore = "0.4.23"
