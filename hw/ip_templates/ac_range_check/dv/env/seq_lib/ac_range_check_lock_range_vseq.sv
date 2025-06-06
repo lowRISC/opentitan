@@ -105,12 +105,12 @@ endfunction
 task ac_range_check_lock_range_vseq::body();
   // Local variable just for the body task
   bit reprogram_done = 0;
-  bit [3:0]  mubi4_execute;
-  bit [3:0]  mubi4_write;
-  bit [3:0]  mubi4_read;
-  bit [3:0]  mubi4_enable;
-  bit [3:0]  mubi4_log_denied;
-  bit [19:0] mubi4_attr;
+  bit [DataWidth-1:0] mubi4_execute;
+  bit [DataWidth-1:0] mubi4_write;
+  bit [DataWidth-1:0] mubi4_read;
+  bit [DataWidth-1:0] mubi4_enable;
+  bit [DataWidth-1:0] mubi4_log_denied;
+  bit [DataWidth-1:0] mubi4_attr;
 
   `uvm_info(`gfn, "Starting ac_range_check_lock_range_seq", UVM_LOW)
 
@@ -177,6 +177,11 @@ task ac_range_check_lock_range_vseq::body();
       foreach (base_new[i]) begin
         `uvm_info(`gfn, $sformatf("Attempting to reprogram Range index: %0d", i), UVM_MEDIUM)
         if (lock_mask[i]) begin
+          int unsigned lsb   ;
+          int unsigned width ;
+
+          bit [DataWidth-1:0] mask;
+
           // When range index is locked, the RTL and the RAL are in sync. Which means the RAL model
           // is also locked for the sepcific index and the set methods for fields such as
           // 'ral.range_attr[i].read_access.set(mubi4_bool_to_mubi(read_perm_new[i]));'
@@ -189,17 +194,47 @@ task ac_range_check_lock_range_vseq::body();
           mubi4_enable     = mubi4_bool_to_mubi(enable_new[i]      );
           mubi4_log_denied = MuBi4True;
 
-          // The attr register consist of 5 fields as described in the spec.
+          // The attr register consist of 5 fields namely:
+          // log_denied, execute, write, read, enable
           // 'mubi4_attr' is used to build this word that will be written.
-          // log_denied [19:16]
-          // execute    [15:12]
-          // write      [11:8 ]
-          // read       [ 7:4 ]
-          // enable     [ 3:0 ]
-          //
-          // If the mapping ever changes for the 'attr' we will need to revisit this and adapt
-          // accordingly
-          mubi4_attr = {mubi4_log_denied, mubi4_execute, mubi4_write, mubi4_read, mubi4_enable};
+
+          // Variable reset before building the word to be written.
+          mubi4_attr = 0;
+
+          // Insert log_denied into correct position
+          lsb   = ral.range_attr[i].log_denied_access.get_lsb_pos();
+          width = ral.range_attr[i].log_denied_access.get_n_bits();
+          mask  = ((1 << width) - 1) << lsb;
+          mubi4_log_denied =  mubi4_log_denied << lsb;
+          mubi4_attr      |= (mubi4_log_denied & mask);
+
+          // Insert Execute into correct position
+          lsb   = ral.range_attr[i].execute_access.get_lsb_pos();
+          width = ral.range_attr[i].execute_access.get_n_bits();
+          mask  = ((1 << width) - 1) << lsb;
+          mubi4_execute =  mubi4_execute << lsb;
+          mubi4_attr   |= (mubi4_execute & mask);
+
+          // Insert Write into correct position
+          lsb   = ral.range_attr[i].write_access.get_lsb_pos();
+          width = ral.range_attr[i].write_access.get_n_bits();
+          mask  = ((1 << width) - 1) << lsb;
+          mubi4_write = mubi4_write << lsb;
+          mubi4_attr |= mubi4_write & mask;
+
+          // Insert Read into correct position
+          lsb   = ral.range_attr[i].read_access.get_lsb_pos();
+          width = ral.range_attr[i].read_access.get_n_bits();
+          mask  = ((1 << width) - 1) << lsb;
+          mubi4_read  =  mubi4_read << lsb;
+          mubi4_attr |= (mubi4_read & mask);
+
+          // Insert enable into correct position
+          lsb   = ral.range_attr[i].enable.get_lsb_pos();
+          width = ral.range_attr[i].enable.get_n_bits();
+          mask  = ((1 << width) - 1) << lsb;
+          mubi4_enable =  mubi4_enable << lsb;
+          mubi4_attr  |= (mubi4_enable & mask);
 
           // Attempt direct writes to a locked range; they should be ignored.
           // Direct access is done here. If we attempt to set ral object
