@@ -69,7 +69,7 @@ It is generally recommended that device code either depends on `//hw/top:dt` if 
 
 ### Top description
 
-A complete description of the top is exposed as `//hw/top:top_desc`. This target provides a single `OpenTitanTopInfo` provider which can used by bazel rules to get access to top-specific information and files, such as Hjson files.
+Each top has a description in Bazel created by `opentitan_top` which can be used to tweak the build graph. See [./top_desc.md] for more details.
 
 ### Compatibility annotations
 
@@ -134,6 +134,8 @@ cc_library(
     target_compatible_with = opentitan_require_top("darjeeling"),
 )
 ```
+
+There more macro available to access the top's description, see [./top_desc.md] for more details.
 
 ## Common operations
 
