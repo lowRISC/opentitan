@@ -108,6 +108,10 @@ pub trait Uart {
         Err(TransportError::UnsupportedOperation.into())
     }
 
+    fn get_parity(&self) -> Result<Parity> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     /// Query if nonblocking mio mode is supported.
     fn supports_nonblocking_read(&self) -> Result<bool> {
         Ok(false)
