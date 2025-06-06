@@ -23,17 +23,15 @@ from hjson register descriptions.
 
 def _opentitan_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
-    top = ctx.attr.top[OpenTitanTopInfo]
-    hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     arguments = [
         "-D",
         "-q",
         "-o",
         header.path,
-        hjson.path,
+        ctx.file.hjson.path,
     ]
-    inputs = [hjson]
+    inputs = [ctx.file.hjson]
 
     # Add path to an alias path if it's needed.
     if ctx.file.alias:
@@ -70,12 +68,12 @@ def _opentitan_ip_c_header_impl(ctx):
         ),
     ]
 
-opentitan_ip_c_header = rule(
+opentitan_ip_c_header_rule = rule(
     implementation = _opentitan_ip_c_header_impl,
     doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
-        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
-        "ip": attr.string(doc = "Name of the IP block"),
+        "ip": attr.string(mandatory = True, doc = "Name of the IP"),
+        "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "alias": attr.label(
             mandatory = False,
             allow_single_file = True,
@@ -90,10 +88,21 @@ opentitan_ip_c_header = rule(
     provides = [CcInfo, DoxygenCcInputInfo],
 )
 
+def opentitan_ip_c_header(name, ip, target_compatible_with = [], **kwargs):
+    """
+    Macro around `opentitan_ip_c_header_rule` that automatically sets `hjson` for the current top.
+    The target will also be marked as compatible only with tops containing this IP.
+    """
+    opentitan_ip_c_header_rule(
+        name = name,
+        ip = ip,
+        hjson = opentitan_select_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
+        **kwargs
+    )
+
 def _opentitan_ip_rust_header_impl(ctx):
     tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
-    top = ctx.attr.top[OpenTitanTopInfo]
-    hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     stamp_args = []
     stamp_files = []
@@ -103,13 +112,13 @@ def _opentitan_ip_rust_header_impl(ctx):
 
     ctx.actions.run(
         outputs = [tock],
-        inputs = [hjson] + stamp_files,
+        inputs = [ctx.file.hjson] + stamp_files,
         arguments = [
             "--tock",
             "-q",
             "-o",
             tock.path,
-        ] + stamp_args + [hjson.path],
+        ] + stamp_args + [ctx.file.hjson.path],
         executable = ctx.executable._regtool,
     )
 
@@ -120,11 +129,11 @@ def _opentitan_ip_rust_header_impl(ctx):
         ),
     ]
 
-opentitan_ip_rust_header = rule(
+opentitan_ip_rust_header_rule = rule(
     implementation = _opentitan_ip_rust_header_impl,
     doc = "Generate the Rust headers for an IP block as used in a top",
     attrs = {
-        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "hjson": attr.label(allow_single_file = True, doc = "Hjson description of the IP"),
         "ip": attr.string(doc = "Name of the IP block"),
         "_regtool": attr.label(
             default = "//util:regtool",
@@ -133,6 +142,19 @@ opentitan_ip_rust_header = rule(
         ),
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
+
+def opentitan_ip_rust_header(name, ip, target_compatible_with = [], **kwargs):
+    """
+    Macro around `opentitan_ip_rust_header_rule` that automatically sets `hjson` for the current top.
+    The target will also be marked as compatible only with tops containing this IP.
+    """
+    opentitan_ip_rust_header_rule(
+        name = name,
+        ip = ip,
+        hjson = opentitan_select_ip_attr(ip, "hjson"),
+        target_compatible_with = target_compatible_with + opentitan_require_ip_attr(ip, "hjson"),
+        **kwargs
+    )
 
 def _opentitan_autogen_dif_gen(ctx):
     outputs = []
