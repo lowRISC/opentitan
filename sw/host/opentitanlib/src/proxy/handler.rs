@@ -261,6 +261,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_break(*enable)?;
                         Ok(Response::Uart(UartResponse::SetBreak))
                     }
+                    UartRequest::GetParity => {
+                        let parity = instance.get_parity()?;
+                        Ok(Response::Uart(UartResponse::GetParity { parity }))
+                    }
                     UartRequest::SetParity(parity) => {
                         instance.set_parity(*parity)?;
                         Ok(Response::Uart(UartResponse::SetParity))

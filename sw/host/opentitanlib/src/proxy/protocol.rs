@@ -177,6 +177,7 @@ pub enum UartRequest {
         rate: u32,
     },
     SetBreak(bool),
+    GetParity,
     SetParity(Parity),
     GetDevicePath,
     Read {
@@ -195,6 +196,7 @@ pub enum UartResponse {
     GetBaudrate { rate: u32 },
     SetBaudrate,
     SetBreak,
+    GetParity { parity: Parity },
     SetParity,
     GetDevicePath { path: String },
     Read { data: Vec<u8> },

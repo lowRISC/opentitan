@@ -87,6 +87,13 @@ impl Uart for ProxyUart {
         }
     }
 
+    fn get_parity(&self) -> Result<Parity> {
+        match self.execute_command(UartRequest::GetParity)? {
+            UartResponse::GetParity { parity } => Ok(parity),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set_parity(&self, parity: Parity) -> Result<()> {
         match self.execute_command(UartRequest::SetParity(parity))? {
             UartResponse::SetParity => Ok(()),
