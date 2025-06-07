@@ -40,8 +40,7 @@ import NcLauncher
 from CfgFactory import make_cfg
 from Deploy import RunTest
 from Timer import Timer
-from utils import (TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path,
-                   run_cmd_with_timeout)
+from utils import TS_FORMAT, TS_FORMAT_LONG, VERBOSE, rm_path
 
 # TODO: add dvsim_cfg.hjson to retrieve this info
 version = 0.1
@@ -50,47 +49,28 @@ version = 0.1
 _LIST_CATEGORIES = ["build_modes", "run_modes", "tests", "regressions"]
 
 
-# Function to resolve the scratch root directory among the available options:
-# If set on the command line, then use that as a preference.
-# Else, check if $SCRATCH_ROOT env variable exists and is a directory.
-# Else use the default (<proj_root>/scratch)
-# Try to create the directory if it does not already exist.
-def resolve_scratch_root(arg_scratch_root, proj_root):
-    default_scratch_root = proj_root + "/scratch"
-    scratch_root = os.environ.get('SCRATCH_ROOT')
-    if not arg_scratch_root:
-        if scratch_root is None:
-            arg_scratch_root = default_scratch_root
+# Pick a scratch root. This might be given as an argument (in which case, it's
+# an argument to the function). Otherwise, select from the following, in
+# decreasing order of preference:
+#
+#    $SCRATCH_ROOT
+#    $BUILD_ROOT/build-scratch
+#    <proj_root>/scratch
+def resolve_scratch_root(scratch_root, proj_root):
+    env = os.environ
+    pairs = [
+        (scratch_root, None),
+        (env.get('SCRATCH_ROOT'), None),
+        (env.get('BUILD_ROOT'), 'build-scratch'),
+        (proj_root, 'scratch')
+    ]
+    for root, subdir in pairs:
+        if not root:
+            continue
+        if subdir:
+            return os.path.join(root, subdir)
         else:
-            # Scratch space could be mounted in a filesystem (such as NFS) on a network drive.
-            # If the network is down, it could cause the access access check to hang. So run a
-            # simple ls command with a timeout to prevent the hang.
-            (out, status) = run_cmd_with_timeout(cmd="ls -d " + scratch_root,
-                                                 timeout=1,
-                                                 exit_on_failure=0)
-            if status == 0 and out != "":
-                arg_scratch_root = scratch_root
-            else:
-                arg_scratch_root = default_scratch_root
-                log.warning(
-                    "Env variable $SCRATCH_ROOT=\"{}\" is not accessible.\n"
-                    "Using \"{}\" instead.".format(scratch_root,
-                                                   arg_scratch_root))
-    else:
-        arg_scratch_root = os.path.realpath(arg_scratch_root)
-
-    try:
-        os.makedirs(arg_scratch_root, exist_ok=True)
-    except PermissionError as e:
-        log.fatal("Failed to create scratch root {}:\n{}.".format(
-            arg_scratch_root, e))
-        sys.exit(1)
-
-    if not os.access(arg_scratch_root, os.W_OK):
-        log.fatal("Scratch root {} is not writable!".format(arg_scratch_root))
-        sys.exit(1)
-
-    return arg_scratch_root
+            return root
 
 
 def read_max_parallel(arg):
@@ -707,6 +687,10 @@ def main():
     args.branch = resolve_branch(args.branch)
     proj_root_src, proj_root = resolve_proj_root(args)
     args.scratch_root = resolve_scratch_root(args.scratch_root, proj_root)
+
+    # Make sure our scratch root actually exists
+    os.makedirs(args.scratch_root, exist_ok=True)
+
     log.info("[proj_root]: %s", proj_root)
 
     # Create an empty FUSESOC_IGNORE file in scratch_root. This ensures that
