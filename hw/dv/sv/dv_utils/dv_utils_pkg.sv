@@ -325,10 +325,9 @@ package dv_utils_pkg;
                       $sformatf("Line \"%s\" in VMEM file %s appears to be malformed",
                                 lines[i], vmem_file), $sformatf("%m"))
       if (!str_utils_pkg::str_starts_with(tokens[0], "@")) begin
-        `uvm_fatal($sformatf("%m"),
-                   $sformatf({"The first word \"%s\" on line \"%s\" in the VMEM file %s ",
-                              " does not appear to be a valid address"},
-                             tokens[0], lines[i], vmem_file))
+        `uvm_fatal($sformatf("%m"), $sformatf({"The first word \"%s\" on line \"%s\" in the VMEM",
+                                               " file %s does not appear to be a valid address"},
+                                              tokens[0], lines[i], vmem_file))
       end
       tokens[0] = tokens[0].substr(1, tokens[0].len() - 1);
       `DV_CHECK_FATAL(tokens[0].len() <= bus_params_pkg::BUS_AW / 8 * 2,
