@@ -67,12 +67,9 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   assign alert[0]  = shadowed_update_err;
   assign alert[1]  = reg_intg_error | shadowed_storage_err;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[0] = reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[1] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                         reg2hw.alert_test.recov_ctrl_update_err.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
