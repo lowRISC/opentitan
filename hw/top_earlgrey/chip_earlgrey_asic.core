@@ -14,8 +14,8 @@ filesets:
       - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
       - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
       - "fileset_partner ? (partner:prim:prim_legacy_pkg)"
-      - "fileset_partner ? (partner:prim_generic:all)"
-      - "fileset_partner ? (partner:prim_generic:flash)"
+      - "fileset_partner ? (partner:prim_tech:all)"
+      - "fileset_partner ? (partner:prim_tech:flash)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
       - "!fileset_partner ? (lowrisc:earlgrey_systems:scan_role_pkg)"
       # TODO(#27347): prim_legacy_pkg is deprecated
