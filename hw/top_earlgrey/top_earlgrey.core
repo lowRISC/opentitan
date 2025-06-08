@@ -28,7 +28,6 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
-      - lowrisc:ip:otp_macro
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:flash
       - lowrisc:ip:sram_ctrl
@@ -63,6 +62,8 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - "fileset_partner  ? (partner:systems:top_earlgrey_ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
+      - "fileset_partner  ? (partner:ip:otp_macro)"
+      - "!fileset_partner ? (lowrisc:ip:otp_macro)"
     files:
       - rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - rtl/autogen/top_earlgrey.sv
