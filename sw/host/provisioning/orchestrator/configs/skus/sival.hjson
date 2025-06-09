@@ -8,6 +8,7 @@
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
+  ast_cfg_version: 14,
   otp: "sv00",
   perso_bin: "sw/device/silicon_creator/manuf/base/binaries/ft_personalize_{sku}_{target}.signed.bin",
   // TODO(cfrantz, ttrippel): This owner_fw isn't signed with the sival owner keys,
