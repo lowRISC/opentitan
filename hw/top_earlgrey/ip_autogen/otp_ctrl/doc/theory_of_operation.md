@@ -41,7 +41,7 @@ Thus the security of both volatile (OTP controller) and non-volatile (OTP IP) st
 
 ### Partition Listing and Description
 
-The OTP controller for OpenTitan contains the seven logical partitions shown below.
+The OTP controller for this OpenTitan top-level contains the logical partitions shown below.
 
 {{#include otp_ctrl_partitions.md}}
 
@@ -236,11 +236,11 @@ For more details on how the software programs the OTP, please refer to the [Prog
 
 ### Block Diagram
 
-The following is a high-level block diagram that illustrates everything that has been discussed.
+The following is a high-level block diagram of the Earlygrey OTP that illustrates everything that has been discussed.
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
+Each of the partitions (e.g. P0-P7 for Earlgrey) has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the OTP macro.
@@ -248,7 +248,7 @@ Note that the access ranges of the DAI and the LCI are mutually exclusive.
 I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
-The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (P0-P7) and the OTP wrapper through a gated TL-UL interface.
+The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (e.g. P0-P7 for Earlgrey) and the OTP wrapper through a gated TL-UL interface.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
@@ -427,14 +427,14 @@ They are therefore not further described in this document.
 
 The generalized open-source interface uses a couple of parameters (defaults set for Earlgrey configuration).
 
-Parameter      | Default | Top Earlgrey  | Description
----------------|---------|---------------|---------------
-`Width`        | 16      | 16            | Native OTP word width.
-`Depth`        | 1024    | 1024          | Depth of OTP macro.
-`CmdWidth`     | 7       | 7             | Width of the OTP command.
-`ErrWidth`     | 3       | 3             | Width of error code output signal.
-`PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
-`SizeWidth`    | 2       | 2             | Width of the size field.
+Parameter      | Default                 | Top Earlgrey            | Description
+---------------|-------------------------|-------------------------|---------------
+`Width`        | 16                      | 16                      | Native OTP word width.
+`Depth`        | 1024                    | 1024                    | Depth of OTP macro.
+`CmdWidth`     | 7                       | 7                       | Width of the OTP command.
+`ErrWidth`     | 3                       | 3                       | Width of error code output signal.
+`PwrSeqWidth`  | 2                       | 2                       | Width of power sequencing signals to/from AST.
+`SizeWidth`    | 2                       | 2                       | Width of the size field.
 `IfWidth`      | 2^`SizeWidth` * `Width` | 2^`SizeWidth` * `Width` | Data interface width.
 
 The generalized open-source interface is a simple command interface with a ready / valid handshake that makes it possible to introduce back pressure if the OTP macro is not able to accept a command due to an ongoing operation.
