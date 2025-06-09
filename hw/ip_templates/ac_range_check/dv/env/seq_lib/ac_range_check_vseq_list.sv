@@ -8,3 +8,4 @@
 `include "ac_range_check_bypass_vseq.sv"
 `include "ac_range_check_lock_range_vseq.sv"
 `include "ac_range_check_common_vseq.sv"
+`include "ac_range_check_stress_all_vseq.sv"
