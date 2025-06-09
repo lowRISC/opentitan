@@ -103,10 +103,13 @@ def _stringify_wildcard_value(value):
     separated by spaces.
 
     '''
-    if type(value) is str:
+    if isinstance(value, str):
         return value
 
-    if type(value) in [bool, int]:
+    if isinstance(value, Path):
+        return str(value)
+
+    if isinstance(value, bool) or isinstance(value, int):
         return str(int(value))
 
     try:
