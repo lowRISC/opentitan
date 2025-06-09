@@ -176,7 +176,7 @@ def opentitan_require_top_attr(attr_name):
     """
     return opentitan_if_top_attr(attr_name, [], ["@platforms//:incompatible"])
 
-def opentitan_alias_top_attr(name, attr_name, required = True, default = None):
+def opentitan_alias_top_attr(name, attr_name, required = True, default = None, fn = None):
     """
     Create an alias to a top specific top attribute.  `fn` will be called for each top that
     has this attribute and the returned value will be interpreted as a label string.
@@ -188,9 +188,13 @@ def opentitan_alias_top_attr(name, attr_name, required = True, default = None):
     If `required` is set to `False`, the alias will point to `default` for tops which do
     not contain the requested attribute.
     """
+
+    def maybe_fn(x):
+        return fn(x) if fn != None else x
+
     native.alias(
         name = name,
-        actual = opentitan_select_top_attr(attr_name, required, default),
+        actual = opentitan_select_top_attr(attr_name, required, default, fn),
         target_compatible_with = opentitan_require_top_attr(attr_name) if required else [],
     )
 
