@@ -83,12 +83,19 @@ class DeviceIdentificationNumber:
 
     @staticmethod
     def from_int(din: int) -> "DeviceIdentificationNumber":
-        year = util.bcd_decode(din & 0xF)
-        week = util.bcd_decode((din >> 4) & 0xFF)
-        lot = util.bcd_decode((din >> 12) & 0xFFF)
-        wafer = util.bcd_decode((din >> 24) & 0xFF)
-        wafer_x_coord = util.bcd_decode((din >> 32) & 0xFFF)
-        wafer_y_coord = util.bcd_decode((din >> 44) & 0xFFF)
+        year = -1
+        week = -1
+        lot = -1
+        wafer = -1
+        wafer_x_coord = -1
+        wafer_y_coord = -1
+        if din != 0xFFFFFFFFFFFFFFFF:
+            year = util.bcd_decode(din & 0xF)
+            week = util.bcd_decode((din >> 4) & 0xFF)
+            lot = util.bcd_decode((din >> 12) & 0xFFF)
+            wafer = util.bcd_decode((din >> 24) & 0xFF)
+            wafer_x_coord = util.bcd_decode((din >> 32) & 0xFFF)
+            wafer_y_coord = util.bcd_decode((din >> 44) & 0xFFF)
         return DeviceIdentificationNumber(year=year,
                                           week=week,
                                           lot=lot,
