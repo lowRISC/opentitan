@@ -10,6 +10,7 @@ filesets:
   ral_dep:
     depend:
       - lowrisc:dv:ralgen
+      - lowrisc:dv:dv_base_reg
 
 generate:
   ral:
