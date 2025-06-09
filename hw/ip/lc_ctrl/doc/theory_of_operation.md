@@ -64,7 +64,7 @@ All 128bit lock and unlock tokens are passed through a cryptographic one way fun
 This mechanism is used to guard against reverse engineering and brute-forcing attempts.
 An attacker able to extract the hashed token values from the scrambled OTP partitions or from the netlist would first have to find a hash collision in order to perform a life cycle transition, since the values supplied to the life cycle controller must be valid hash pre-images.
 
-The employed one way function is a 128bit cSHAKE hash with the function name "" and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv).
+The employed one way function is a 128bit cSHAKE hash with the function name "" (empty string) and customization string "LC_CTRL", see also [kmac documentation](../../kmac/README.md) and AppCfgLcCtrl in [`kmac_pkg.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/kmac_pkg.sv).
 
 ### Post Transition Handling
 
