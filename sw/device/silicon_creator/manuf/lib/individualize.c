@@ -115,13 +115,15 @@ status_t manuf_individualize_device_hw_cfg(
     }
 
     // On non-silicon targets, we expect the CP device ID from flash to be
-    // empty. In this case we set the HW origin portion of the CP device ID to
-    // all 1s to indicate this is an FPGA/Sim generated device ID.
+    // empty. In this case we set the HW origin and DIN portions of the CP
+    // device ID to all 1s to indicate this is an FPGA/Sim generated device ID.
     // Otherwise, we expect the CP device ID to be present and non-zero.
     if (flash_cp_device_id_empty) {
       if (kDeviceType != kDeviceSilicon && kDeviceType != kDeviceSimDV) {
         memset(&cp_device_id, 0, sizeof(cp_device_id));
         cp_device_id[0] = UINT32_MAX;
+        cp_device_id[1] = UINT32_MAX;
+        cp_device_id[2] = UINT32_MAX;
       } else {
         return NOT_FOUND();
       }
