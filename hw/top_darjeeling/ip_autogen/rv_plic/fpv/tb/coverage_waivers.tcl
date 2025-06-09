@@ -20,11 +20,11 @@ assert -name InterruptsLevelTriggered_A {!$rose(dut.u_gateway.le_i)}
 # rv_plic. This would only be connected for a writeable register that has an asynchronous clock
 # (see reg_top.sv.tpl), and rv_plic doesn't have any of these. As such, the code that is waived
 # here (which drives the port) is undetectable.
-check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 64 -end_line 64 -type {branch} -comment {Checker coverage is undetectable as ds is unconnected}
+check_cov -waiver -add -source_file {src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 64 -end_line 64 -type {branch} -comment {Checker coverage is undetectable as ds is unconnected}
 
 # For all the ip registers, de is true and hence wr_en is true. The branch misses the else part and
 # appeared dead.
-check_cov -waiver -add -source_file {../src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else part}
+check_cov -waiver -add -source_file {src/lowrisc_prim_subreg_0/rtl/prim_subreg.sv} -start_line 58 -end_line 58 -type {branch} -comment {wr_en is true and the branch doesn't contain the else part}
 
 # The waivers below are waiving the branch and statement (inside those branches) in mubi(4-16)_and
 # function in prim_mubi_pkg used in rv_plic_csr_assert_fpv. Since, rv_plic registers doesn't have
