@@ -1,0 +1,9 @@
+{
+    "integrity": "sha256-cS13hosxUt1hjE1k+q3e/MWWX5D13m5t0dXdzQvoLUI=",
+    "strip_prefix": "rules_cc-0.1.1",
+    "url": "https://github.com/bazelbuild/rules_cc/releases/download/0.1.1/rules_cc-0.1.1.tar.gz",
+    "patches": {
+        "module_dot_bazel_version.patch": "sha256-2WyM/DEOM/Dj9MQU0Jl79eQ0Ju3QHGsgIuLO1OIwdt4="
+    },
+    "patch_strip": 1
+}
