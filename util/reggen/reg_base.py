@@ -21,20 +21,14 @@ class RegBase:
     '''The offset or address of the register. For a MultiRegister, this gives
     the address of the first concrete register in the expansion.'''
 
-    async_name: str | None
-    '''The name of an asynchronous clock used for the data backing the
+    async_clk: tuple[str, ClockingItem] | None
+    '''An optional asynchronous clock used for the data backing the
     register/multiregister.'''
 
-    async_clk: ClockingItem | None
-    '''The clocking item named by async_name'''
-
-    sync_name: str | None
-    '''The name of a synchronous clock used for the data backing the
+    sync_clk: tuple[str, ClockingItem] | None
+    '''An optional asynchronous clock used for the data backing the
     register/multiregister. Unlike an asynchronous clock, there is no CDC
     needed between the main clock and the clock used by the register.'''
-
-    sync_clk: ClockingItem | None
-    '''The clocking item named by sync_name'''
 
     alias_target: str | None
     '''The name of an analogous register/multiregister that we are going to
