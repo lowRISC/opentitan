@@ -117,7 +117,7 @@
           else:
             fsig_name = '{}.{}'.format(fsig_pfx, fld_name)
 
-        finst_names[field] = (fsig_name, finst_name)
+        finst_names[(sr, field)] = (fsig_name, finst_name)
 
 %>
 `include "prim_assert.sv"
@@ -659,7 +659,7 @@ ${reg_hdr}
       % for fidx, field in enumerate(sr.fields):
 <%
           fld_name = field.name.lower()
-          fsig_name, finst_name = finst_names[field]
+          fsig_name, finst_name = finst_names[(sr, field)]
 %>\
         % if len(sr.fields) > 1:
   //   F[${fld_name}]: ${field.bits.msb}:${field.bits.lsb}
@@ -885,7 +885,7 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 
       for sr in srs:
         for field in sr.fields:
-          _, pfx = finst_names[field]
+          _, pfx = finst_names[(sr, field)]
           shadowed_field_pfxs.append(pfx)
 %>\
   assign shadowed_storage_err_o = |{
