@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
 
 from design.mubi import prim_mubi
 
@@ -61,25 +62,23 @@ OPTIONAL_FIELDS = {
 }
 
 
+@dataclass
 class Field:
+    name: str
+    alias_target: str | None
+    desc: str | None
+    tags: list[str]
+    swaccess: SWAccess
+    hwaccess: HWAccess
+    hwqe: bool
+    bits: Bits
+    resval: int | None
+    enum: list[EnumEntry] | None
+    mubi: bool
+    auto_split: bool
 
-    def __init__(self, name: str, alias_target: Optional[str],
-                 desc: Optional[str], tags: List[str], swaccess: SWAccess,
-                 hwaccess: HWAccess, hwqe: bool, bits: Bits,
-                 resval: Optional[int], enum: Optional[List[EnumEntry]],
-                 mubi: bool, auto_split: bool):
-        self.name = name
-        self.alias_target = alias_target
-        self.desc = desc
-        self.tags = tags
-        self.swaccess = swaccess
-        self.hwaccess = hwaccess
-        self.hwqe = hwqe
-        self.bits = bits
-        self.resval = resval
-        self.enum = enum
-        self.mubi = mubi
-        self.auto_split = auto_split
+    def __hash__(self) -> int:
+        return hash(self.name)
 
     @staticmethod
     def resval_from_raw(field_bits: Bits,
