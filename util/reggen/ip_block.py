@@ -4,7 +4,8 @@
 '''Code representing an IP block for reggen'''
 
 import logging as log
-from typing import Dict, List, Optional, Sequence, Set, Tuple
+from typing import Sequence
+from dataclasses import dataclass
 
 import hjson  # type: ignore
 from reggen.alert import Alert
@@ -78,7 +79,7 @@ REQUIRED_ALIAS_FIELDS = {
 
 # TODO: we may want to support for countermeasure and parameter aliases
 # in the future.
-OPTIONAL_ALIAS_FIELDS: Dict[str, List[str]] = {}
+OPTIONAL_ALIAS_FIELDS: dict[str, list[str]] = {}
 
 REQUIRED_FIELDS = {
     'name': ['s', "name of the component"],
@@ -159,79 +160,56 @@ OPTIONAL_REVISIONS_FIELDS = {
 }
 
 
+@dataclass
 class IpBlock:
+    name: str
+    cip_id: int
+    version: Version
+    regwidth: int
+    params: ReggenParams
+    reg_blocks: dict[str | None, RegBlock]
+    interrupts: Sequence[Interrupt]
+    no_auto_intr: bool
+    alerts: list[Alert]
+    no_auto_alert: bool
+    scan: bool
+    inter_signals: list[InterSignal]
+    bus_interfaces: BusInterfaces
+    clocking: Clocking
+    xputs: tuple[Sequence[Signal], Sequence[Signal], Sequence[Signal]]
+    wakeups: Sequence[Signal]
+    reset_requests: Sequence[Signal]
+    expose_reg_if: bool
+    scan_reset: bool
+    scan_en: bool
+    countermeasures: list[CounterMeasure]
+    features: list[Feature]
+    node: str = ''
+    alias_impl: str | None = None
 
-    def __init__(self,
-                 name: str,
-                 cip_id: int,
-                 version: Version,
-                 regwidth: int,
-                 params: ReggenParams,
-                 reg_blocks: Dict[Optional[str], RegBlock],
-                 alias_impl: Optional[str],
-                 interrupts: Sequence[Interrupt],
-                 no_auto_intr: bool,
-                 alerts: List[Alert],
-                 no_auto_alert: bool,
-                 scan: bool,
-                 inter_signals: List[InterSignal],
-                 bus_interfaces: BusInterfaces,
-                 clocking: Clocking,
-                 xputs: Tuple[Sequence[Signal], Sequence[Signal],
-                              Sequence[Signal]],
-                 wakeups: Sequence[Signal],
-                 reset_requests: Sequence[Signal],
-                 expose_reg_if: bool,
-                 scan_reset: bool,
-                 scan_en: bool,
-                 countermeasures: List[CounterMeasure],
-                 features: List[Feature],
-                 node: str = ''):
-        assert reg_blocks
+    def __post_init__(self) -> None:
+        assert self.reg_blocks
 
         # Filter the interfaces and reg_blocks if request to build only for a
         # specific reg_block node.
-        dev_if_names = []  # type: List[Optional[str]]
-        if node:
+        dev_if_names: list[str | None] = []
+        if self.node:
             dev_if_names += [
-                i for i in bus_interfaces.named_devices if i == node
+                i for i in self.bus_interfaces.named_devices if i == self.node
             ]
-            reg_blocks = {k: v for k, v in reg_blocks.items() if k == node}
+            self.reg_blocks = {k: v for k, v in self.reg_blocks.items()
+                               if k == self.node}
         else:
-            dev_if_names += bus_interfaces.named_devices
+            dev_if_names += self.bus_interfaces.named_devices
 
         # Check that register blocks are in bijection with device interfaces
-        reg_block_names = reg_blocks.keys()
-        if bus_interfaces.has_unnamed_device:
+        reg_block_names = self.reg_blocks.keys()
+        if self.bus_interfaces.has_unnamed_device:
             dev_if_names.append(None)
         assert set(reg_block_names) == set(dev_if_names)
 
-        self.name = name
-        self.cip_id = cip_id
-        self.version = version
-        self.regwidth = regwidth
-        self.reg_blocks = reg_blocks
-        self.alias_impl = alias_impl
-        self.params = params
-        self.interrupts = interrupts
-        self.no_auto_intr = no_auto_intr
-        self.alerts = alerts
-        self.no_auto_alert = no_auto_alert
-        self.scan = scan
-        self.inter_signals = inter_signals
-        self.bus_interfaces = bus_interfaces
-        self.clocking = clocking
-        self.xputs = xputs
-        self.wakeups = wakeups
-        self.reset_requests = reset_requests
-        self.expose_reg_if = expose_reg_if
-        self.scan_reset = scan_reset
-        self.scan_en = scan_en
-        self.countermeasures = countermeasures
-        self.features = features
-
     @staticmethod
-    def from_raw(param_defaults: List[Tuple[str, str]],
+    def from_raw(param_defaults: list[tuple[str, str]],
                  raw: object,
                  where: str,
                  node: str = '') -> 'IpBlock':
@@ -388,7 +366,7 @@ class IpBlock:
 
         # Check that register blocks are in bijection with device interfaces
         reg_block_names = reg_blocks.keys()
-        dev_if_names = []  # type: List[Optional[str]]
+        dev_if_names = []  # type: list[str | None]
         dev_if_names += bus_interfaces.named_devices
         if bus_interfaces.has_unnamed_device:
             dev_if_names.append(None)
@@ -399,14 +377,14 @@ class IpBlock:
                                               list(reg_block_names)))
 
         return IpBlock(name, cip_id, version, regwidth, params, reg_blocks,
-                       None, interrupts, no_auto_intr, alerts, no_auto_alert,
+                       interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, xputs,
                        wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
                        countermeasures, features, node)
 
     @staticmethod
     def from_text(txt: str,
-                  param_defaults: List[Tuple[str, str]],
+                  param_defaults: list[tuple[str, str]],
                   where: str,
                   node: str = '') -> 'IpBlock':
         '''Load an IpBlock from an hjson description in txt'''
@@ -415,8 +393,8 @@ class IpBlock:
                                 node)
 
     @staticmethod
-    def from_path(path: str, param_defaults: List[Tuple[str,
-                                                        str]]) -> 'IpBlock':
+    def from_path(path: str,
+                  param_defaults: list[tuple[str, str]]) -> 'IpBlock':
         '''Load an IpBlock from an hjson description in a file at path'''
         with open(path, 'r', encoding='utf-8') as handle:
             return IpBlock.from_text(handle.read(), param_defaults,
@@ -542,7 +520,7 @@ class IpBlock:
             self.alias_from_text(scrub, handle.read(),
                                  'alias file at {!r}'.format(path))
 
-    def _asdict(self) -> Dict[str, object]:
+    def _asdict(self) -> dict[str, object]:
         ret = {'name': self.name, 'regwidth': self.regwidth}
         if len(self.reg_blocks) == 1 and None in self.reg_blocks:
             ret['registers'] = self.reg_blocks[None].as_dicts()
@@ -583,13 +561,13 @@ class IpBlock:
 
         return ret
 
-    def get_rnames(self) -> Set[str]:
-        ret = set()  # type: Set[str]
+    def get_rnames(self) -> set[str]:
+        ret = set()  # type: set[str]
         for rb in self.reg_blocks.values():
             ret = ret.union(set(rb.name_to_offset.keys()))
         return ret
 
-    def get_signals_as_list_of_dicts(self) -> List[Dict[str, object]]:
+    def get_signals_as_list_of_dicts(self) -> list[dict[str, object]]:
         '''Look up and return signal by name'''
         result = []
         for iodir, xput in zip(('inout', 'input', 'output'), self.xputs):
@@ -597,7 +575,7 @@ class IpBlock:
                 result.append(sig.as_nwt_dict(iodir))
         return result
 
-    def get_signal_by_name_as_dict(self, name: str) -> Dict[str, object]:
+    def get_signal_by_name_as_dict(self, name: str) -> dict[str, object]:
         '''Look up and return signal by name'''
         sig_list = self.get_signals_as_list_of_dicts()
         for sig in sig_list:
@@ -622,7 +600,7 @@ class IpBlock:
 
         return self.clocking.primary
 
-    def check_cm_annotations(self, rtl_names: Dict[str, List[Tuple[str, int]]],
+    def check_cm_annotations(self, rtl_names: dict[str, list[tuple[str, int]]],
                              hjson_path: str) -> bool:
         '''Check RTL annotations against countermeasure list of this block'''
 
@@ -641,10 +619,10 @@ class IpBlock:
         for rb in self.reg_blocks.values():
             rb_name = rb.name if rb.name else "default"
             log.debug(f"Register block: {rb_name}")
-            regwen_names: List[str] = [
+            regwen_names: list[str] = [
                 reg.name for reg in rb.registers if "REGWEN" in reg.name
             ]
-            unused_regwens: List[str] = []
+            unused_regwens: list[str] = []
             for regwen in regwen_names:
                 regwen_users = []
                 for reg in rb.registers:
