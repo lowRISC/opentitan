@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
 
 from design.mubi import prim_mubi
 
@@ -84,39 +85,30 @@ OPTIONAL_FIELDS = {
 }
 
 
+@dataclass
 class Register(RegBase):
     '''Code representing a register for reggen'''
-    def __init__(self,
-                 offset: int,
-                 name: str,
-                 alias_target: Optional[str],
-                 desc: str,
-                 async_clk: tuple[str, ClockingItem] | None,
-                 sync_clk: tuple[str, ClockingItem] | None,
-                 hwext: bool,
-                 hwqe: bool,
-                 hwre: bool,
-                 regwen: Optional[str],
-                 tags: List[str],
-                 resval: Optional[int],
-                 shadowed: bool,
-                 fields: List[Field],
-                 update_err_alert: Optional[str],
-                 storage_err_alert: Optional[str],
-                 writes_ignore_errors: bool):
-        super().__init__(name, offset, async_clk, sync_clk, alias_target)
-        self.desc = desc
-        self.hwext = hwext
-        self.hwqe = hwqe
-        self.hwre = hwre
+    desc: str
+    fields: List[Field]
+    hwext: bool = False
+    hwqe: bool = False
+    hwre: bool = False
+    regwen: str | None = None
+    tags: list[str] = field(default_factory=list)
+    decl_resval: int | None = None
+    shadowed: bool = False
+    update_err_alert: str | None = None
+    storage_err_alert: str | None = None
+    writes_ignore_errors: bool = False
+    resval: int = field(init=False)
+    resmask: int = field(init=False)
+    name_to_field: dict[str, Field] = field(init=False)
+
+    def __post_init__(self) -> None:
         if self.hwre and not self.hwext:
             raise ValueError(
                 f'The {self.name} register specifies hwre but not hwext.')
 
-        self.regwen = regwen
-        self.tags = tags
-
-        self.shadowed = shadowed
         pattern = r'^[a-z0-9_]+_shadowed(?:_[0-9]+)?'
         sounds_shadowy = re.match(pattern, self.name.lower())
         if self.shadowed and not sounds_shadowy:
@@ -129,46 +121,44 @@ class Register(RegBase):
                 "the shadowed flag is not set.")
 
         # Take a copy of fields and then sort by bit index
-        assert fields
-        self.fields = fields.copy()
-        self.fields.sort(key=lambda field: field.bits.lsb)
+        self.fields = sorted(self.fields, key=lambda field: field.bits.lsb)
 
         # Index fields by name and check for duplicates
         self.name_to_field = {}  # type: Dict[str, Field]
-        for field in self.fields:
-            if field.name in self.name_to_field:
+        for fld in self.fields:
+            if fld.name in self.name_to_field:
                 raise ValueError(
                     f'Register {self.name} has duplicate fields called '
-                    f'{field.name}.')
-            self.name_to_field[field.name] = field
+                    f'{fld.name}.')
+            self.name_to_field[fld.name] = fld
 
         # Check that fields have compatible access types if we are hwext
         if self.hwext:
-            for field in self.fields:
-                if field.hwaccess.key == 'hro' and field.sw_readable():
+            for fld in self.fields:
+                if fld.hwaccess.key == 'hro' and fld.sw_readable():
                     raise ValueError(
                         f'The {self.name} register has hwext set, but field '
-                        f'{field.name} has hro hwaccess and the field value '
+                        f'{fld.name} has hro hwaccess and the field value '
                         'is readable by software (mode '
-                        f'{field.swaccess.key}).')
-                if not field.hwqe and field.sw_writable():
+                        f'{fld.swaccess.key}).')
+                if not fld.hwqe and fld.sw_writable():
                     raise ValueError(
                         f'The {self.name} register has hwext set and field '
-                        f'{field.name} is writable by software (mode '
-                        f'{field.swaccess.key}), so the register must also '
+                        f'{fld.name} is writable by software (mode '
+                        f'{fld.swaccess.key}), so the register must also '
                         'enable hwqe.')
 
         # Shadow registers do not support all swaccess types, hence we
         # need to check that here.
         if self.shadowed:
-            for field in self.fields:
-                if field.swaccess.key not in [
+            for fld in self.fields:
+                if fld.swaccess.key not in [
                         'rw', 'ro', 'wo', 'rw1s', 'rw0c'
                 ]:
                     raise ValueError(
                         f"Shadowed register {self.name} has a field "
-                        f"({field.name}) with incompatible type "
-                        f"'{field.swaccess.key}'.")
+                        f"({fld.name}) with incompatible type "
+                        f"'{fld.swaccess.key}'.")
 
         # Check that fields will be updated together. This generally comes "for
         # free", but there's a slight wrinkle with RC fields: these use the
@@ -177,11 +167,11 @@ class Register(RegBase):
         # is RC or that none of them are.
         rc_fields = []
         we_fields = []
-        for field in self.fields:
-            if field.swaccess.key == 'rc':
-                rc_fields.append(field.name)
-            elif field.swaccess.allows_write():
-                we_fields.append(field.name)
+        for fld in self.fields:
+            if fld.swaccess.key == 'rc':
+                rc_fields.append(fld.name)
+            elif fld.swaccess.allows_write():
+                we_fields.append(fld.name)
         if rc_fields and we_fields:
             raise ValueError(
                 f"Register {self.name} has both software writable fields "
@@ -191,34 +181,32 @@ class Register(RegBase):
 
         # Check that field bits are disjoint
         bits_used = 0
-        for field in self.fields:
-            field_mask = field.bits.bitmask()
+        for fld in self.fields:
+            field_mask = fld.bits.bitmask()
             if bits_used & field_mask:
                 raise ValueError(
                     f'Register {self.name} has non-disjoint fields: '
-                    f'{field.name} uses bits {bits_used & field_mask:#x} '
+                    f'{fld.name} uses bits {bits_used & field_mask:#x} '
                     'used by other fields.')
 
-        # Compute a reset value and mask from our constituent fields.
+        # Compute a reset value and mask from our constituent fields
         self.resval = 0
         self.resmask = 0
-        for field in self.fields:
-            self.resval |= (field.resval or 0) << field.bits.lsb
-            self.resmask |= field.bits.bitmask()
+        for fld in self.fields:
+            self.resval |= (fld.resval or 0) << fld.bits.lsb
+            self.resmask |= fld.bits.bitmask()
 
         # If the register defined a reset value, make sure it matches. We've
         # already checked that each field matches, but we still need to make
         # sure there weren't any bits unaccounted for.
-        if resval is not None and self.resval != resval:
+        if self.decl_resval is not None and self.resval != self.decl_resval:
             raise ValueError(
                 f'Register {self.name} specifies a reset value of '
-                f'{resval:#x} but collecting reset values across its fields '
-                f'yields {self.resval:#x}.')
+                f'{self.decl_resval:#x} but collecting reset values '
+                f'across its fields yields {self.resval:#x}.')
 
-        self.update_err_alert = update_err_alert
-        self.storage_err_alert = storage_err_alert
-
-        self.writes_ignore_errors = writes_ignore_errors
+    def __hash__(self) -> int:
+        return super.__hash__(self)
 
     @staticmethod
     def from_raw(reg_width: int,
@@ -254,7 +242,7 @@ class Register(RegBase):
 
         desc = check_str(rd['desc'], f'desc for {name} register')
 
-        async_clk = None  # type: tuple[str, ClockingItem] | None
+        async_clk: tuple[str, ClockingItem] | None = None
 
         async_obj = rd.get('async')
         if async_obj is not None:
@@ -268,7 +256,7 @@ class Register(RegBase):
 
             async_clk = (async_name, clocks.get_by_clock(async_name))
 
-        sync_clk = None  # type: tuple[str, ClockingItem] | None
+        sync_clk: tuple[str, ClockingItem] | None = None
 
         sync_obj = rd.get('sync')
         if sync_obj is not None:
@@ -365,9 +353,9 @@ class Register(RegBase):
                        'writes_ignore_errors flag for {} register'
                        .format(name))
 
-        return Register(offset, name, alias_target, desc, async_clk, sync_clk,
-                        hwext, hwqe, hwre, regwen,
-                        tags, resval, shadowed, fields,
+        return Register(name, offset, async_clk, sync_clk, alias_target,
+                        desc, fields, hwext, hwqe, hwre, regwen,
+                        tags, resval, shadowed,
                         update_err_alert, storage_err_alert,
                         writes_ignore_errors)
 
@@ -520,12 +508,12 @@ class Register(RegBase):
             reg_bit0 = bit_idx
             bit_idx += reg.fields[-1].bits.msb + 1
 
-            for field in reg.fields:
+            for fld in reg.fields:
                 field_name_suff = f'_{reg_idx}'
 
                 # Translate the field to match the copy of the register that
                 # started at reg_bit0
-                field_copy = field.make_translated(reg_bit0)
+                field_copy = fld.make_translated(reg_bit0)
 
                 # The generated field will need a name based on reg_idx (the
                 # index of the register copy that's being used). Similarly, we
@@ -554,10 +542,11 @@ class Register(RegBase):
         # we've replicated fields).
         new_resval = None
 
-        return Register(offset, name, alias_target, reg0.desc,
-                        reg0.async_clk, reg0.sync_clk,
+        return Register(name, offset,
+                        reg0.async_clk, reg0.sync_clk, alias_target,
+                        reg0.desc, fields,
                         reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
-                        reg0.tags, new_resval, reg0.shadowed, fields,
+                        reg0.tags, new_resval, reg0.shadowed,
                         reg0.update_err_alert, reg0.storage_err_alert,
                         reg0.writes_ignore_errors)
 
@@ -696,19 +685,19 @@ class Register(RegBase):
                 f'{alias_reg.name} and register {self.name} in {where}.')
 
         fields = zip(alias_reg.fields, self.fields)
-        for k, (alias_field, field) in enumerate(fields):
+        for k, (alias_field, fld) in enumerate(fields):
             # Infer the aliased field name if it has not been defined.
             if alias_field.alias_target is None:
-                alias_field.alias_target = field.name
+                alias_field.alias_target = fld.name
             # Otherwise the names need to match
-            elif alias_field.alias_target != field.name:
+            elif alias_field.alias_target != fld.name:
                 raise ValueError(
                     'Inconsistent aliased field name '
                     f'{alias_field.alias_target} in alias register '
                     f'{alias_reg.alias_target} in {where}.')
 
             # Validate and override attributes.
-            field.apply_alias(alias_field, where)
+            fld.apply_alias(alias_field, where)
 
     def scrub_alias(self, where: str) -> None:
         '''Replaces sensitive fields in register with generic names
@@ -728,30 +717,30 @@ class Register(RegBase):
         # First check that custom alias_target names are unique and that
         # the numbering is correct if the name is of the form field[0-9]+.
         known_field_names = {}
-        for k, field in enumerate(self.fields):
-            if field.alias_target is not None:
-                m = re.match(r'field[0-9]+', field.alias_target)
-                if m and field.alias_target != f'field{k}':
+        for k, fld in enumerate(self.fields):
+            if fld.alias_target is not None:
+                m = re.match(r'field[0-9]+', fld.alias_target)
+                if m and fld.alias_target != f'field{k}':
                     raise ValueError(
-                        f'Alias field alias_target {field.alias_target} is '
+                        f'Alias field alias_target {fld.alias_target} is '
                         f'incorrectly numbered in alias register {self.name} '
                         f'in {where}.')
-                elif field.alias_target in known_field_names:
+                elif fld.alias_target in known_field_names:
                     raise ValueError(
-                        f'Alias field alias_target {field.alias_target} is '
+                        f'Alias field alias_target {fld.alias_target} is '
                         f'not unique in alias register {self.name} in '
                         f'{where}.')
                 else:
-                    known_field_names.update({field.alias_target: 1})
+                    known_field_names.update({fld.alias_target: 1})
 
         # Then, assign the field names
-        for k, field in enumerate(self.fields):
-            if field.alias_target is not None:
-                field.name = field.alias_target
-                field.alias_target = None
+        for k, fld in enumerate(self.fields):
+            if fld.alias_target is not None:
+                fld.name = fld.alias_target
+                fld.alias_target = None
             # Infer the aliased field name if it has not been defined.
             else:
-                field.name = f'field{k}'
+                fld.name = f'field{k}'
 
             # Scrub field contents.
-            field.scrub_alias(where)
+            fld.scrub_alias(where)
