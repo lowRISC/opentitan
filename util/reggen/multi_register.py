@@ -112,10 +112,10 @@ class MultiRegister(RegBase):
         # This only makes sense if all the pseudo-registers are "compatible".
         # This means:
         #
-        # - They should have the same associated clocks (async_name, async_clk,
-        #   sync_name, sync_clk). We expect that to be checked in the caller
-        #   (probably MultiRegister.from_raw), so can check it with just an
-        #   assertion here.
+        # - They should have the same associated clocks (async and sync). We
+        #   expect that to be checked in the caller (probably
+        #   MultiRegister.from_raw), so can check it with just an assertion
+        #   here.
         #
         # - They should either all have homogeneous fields or none of them
         #   should have them.
@@ -125,16 +125,13 @@ class MultiRegister(RegBase):
         homogeneous = pregs[0].is_homogeneous()
         needs_qe = False
         for preg in pregs[1:]:
-            assert preg.async_name == pregs[0].async_name
             assert preg.async_clk == pregs[0].async_clk
-            assert preg.sync_name == pregs[0].sync_name
             assert preg.sync_clk == pregs[0].sync_clk
             assert preg.is_homogeneous() == homogeneous
             needs_qe |= preg.needs_qe()
 
         super().__init__(name, offset,
-                         pregs[0].async_name, pregs[0].async_clk,
-                         pregs[0].sync_name, pregs[0].sync_clk, alias_target)
+                         pregs[0].async_clk, pregs[0].sync_clk, alias_target)
         self.pregs = pregs
         self.cname = cname
         self.regwen_multi = regwen_multi
@@ -353,8 +350,7 @@ class MultiRegister(RegBase):
         '''
         # Attributes to be crosschecked
         attrs = [
-            'async_name', 'async_clk', 'sync_name', 'sync_clk', 'count',
-            'regwen_multi', 'compact'
+            'async_clk', 'sync_clk', 'count', 'regwen_multi', 'compact'
         ]
         for attr in attrs:
             if getattr(self, attr) != getattr(alias_reg, attr):
