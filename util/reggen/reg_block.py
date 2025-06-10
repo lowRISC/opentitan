@@ -177,7 +177,7 @@ class RegBlock:
 
         handlers[entry_type](entry_where, entry_body, clocks, is_alias)
 
-    def _validate_async(self, name: Optional[str], clk: object) -> None:
+    def _validate_async(self, name_clk: tuple[str, object] | None) -> None:
         '''Check for async definition consistency
 
         If a reg block is marked fully asynchronous through its bus interface,
@@ -186,6 +186,8 @@ class RegBlock:
 
         The two asynchronous regfile schemes are mutually exclusive.
         '''
+
+        name, clk = name_clk if name_clk else (None, None)
 
         if self.name:
             block_name = self.name
@@ -209,9 +211,11 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
-    def _validate_sync(self, name: Optional[str], clk: object) -> None:
+    def _validate_sync(self, name_clk: tuple[str, object] | None) -> None:
         '''Check for sync definition consistency
         '''
+        name, clk = name_clk if name_clk else (None, None)
+
         # If there is a synchronous clock defined, then the clock must be a
         # valid clocking item
         if name:
@@ -223,8 +227,8 @@ class RegBlock:
         reg = Register.from_raw(self._reg_width, self.offset, self._params,
                                 body, clocks, is_alias, None)
 
-        self._validate_async(reg.async_name, reg.async_clk)
-        self._validate_sync(reg.sync_name, reg.sync_clk)
+        self._validate_async(reg.async_clk)
+        self._validate_sync(reg.sync_clk)
 
         self.add_register(reg)
 
@@ -291,8 +295,8 @@ class RegBlock:
             return
 
         # validate async schemes
-        self._validate_async(mr.async_name, mr.async_clk)
-        self._validate_sync(mr.sync_name, mr.sync_clk)
+        self._validate_async(mr.async_clk)
+        self._validate_sync(mr.sync_clk)
 
         for reg in mr.cregs:
             lname = reg.name.lower()
@@ -469,9 +473,7 @@ class RegBlock:
             reg_name,
             None,  # no alias target
             reg_desc,
-            async_name="",
             async_clk=None,
-            sync_name="",
             sync_clk=None,
             hwext=is_testreg,
             hwqe=is_testreg,
@@ -548,9 +550,7 @@ class RegBlock:
                 'INTR_STATE',
                 None,  # no alias target
                 'Interrupt State Register',
-                async_name="",
                 async_clk=None,
-                sync_name="",
                 sync_clk=None,
                 hwext=False,
                 hwqe=False,

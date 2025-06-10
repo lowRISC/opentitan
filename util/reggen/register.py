@@ -91,10 +91,8 @@ class Register(RegBase):
                  name: str,
                  alias_target: Optional[str],
                  desc: str,
-                 async_name: Optional[str],
-                 async_clk: Optional[ClockingItem],
-                 sync_name: Optional[str],
-                 sync_clk: Optional[ClockingItem],
+                 async_clk: tuple[str, ClockingItem] | None,
+                 sync_clk: tuple[str, ClockingItem] | None,
                  hwext: bool,
                  hwqe: bool,
                  hwre: bool,
@@ -106,9 +104,7 @@ class Register(RegBase):
                  update_err_alert: Optional[str],
                  storage_err_alert: Optional[str],
                  writes_ignore_errors: bool):
-        super().__init__(name, offset,
-                         async_name, async_clk, sync_name, sync_clk,
-                         alias_target)
+        super().__init__(name, offset, async_clk, sync_clk, alias_target)
         self.desc = desc
         self.hwext = hwext
         self.hwqe = hwqe
@@ -258,8 +254,7 @@ class Register(RegBase):
 
         desc = check_str(rd['desc'], f'desc for {name} register')
 
-        async_name = None  # type: Optional[str]
-        async_clk = None  # type: Optional[ClockingItem]
+        async_clk = None  # type: tuple[str, ClockingItem] | None
 
         async_obj = rd.get('async')
         if async_obj is not None:
@@ -270,11 +265,10 @@ class Register(RegBase):
                 raise ValueError(
                     f'async clock {async_name} defined for {name} does not '
                     f'exist in valid module clocks {valid_clocks}.')
-            else:
-                async_clk = clocks.get_by_clock(async_name)
 
-        sync_name = None  # type: Optional[str]
-        sync_clk = None  # type: Optional[ClockingItem]
+            async_clk = (async_name, clocks.get_by_clock(async_name))
+
+        sync_clk = None  # type: tuple[str, ClockingItem] | None
 
         sync_obj = rd.get('sync')
         if sync_obj is not None:
@@ -285,8 +279,8 @@ class Register(RegBase):
                 raise ValueError(
                     f'sync clock {sync_name} defined for {name} does not '
                     f'exist in valid module clocks {valid_clocks}.')
-            else:
-                sync_clk = clocks.get_by_clock(sync_name)
+
+            sync_clk = (sync_name, clocks.get_by_clock(sync_name))
 
         swaccess = SWAccess(f'{name} register', rd.get('swaccess', 'none'))
         hwaccess = HWAccess(f'{name} register', rd.get('hwaccess', 'hro'))
@@ -371,9 +365,9 @@ class Register(RegBase):
                        'writes_ignore_errors flag for {} register'
                        .format(name))
 
-        return Register(offset, name, alias_target, desc, async_name,
-                        async_clk, sync_name, sync_clk, hwext, hwqe, hwre,
-                        regwen, tags, resval, shadowed, fields,
+        return Register(offset, name, alias_target, desc, async_clk, sync_clk,
+                        hwext, hwqe, hwre, regwen,
+                        tags, resval, shadowed, fields,
                         update_err_alert, storage_err_alert,
                         writes_ignore_errors)
 
@@ -507,9 +501,7 @@ class Register(RegBase):
         # error in reggen.
         for reg, _ in regs[1:]:
             assert reg.desc == reg0.desc
-            assert reg.async_name == reg0.async_name
             assert reg.async_clk == reg0.async_clk
-            assert reg.sync_name == reg0.sync_name
             assert reg.sync_clk == reg0.sync_clk
             assert reg.hwext == reg0.hwext
             assert reg.hwqe == reg0.hwqe
@@ -563,8 +555,7 @@ class Register(RegBase):
         new_resval = None
 
         return Register(offset, name, alias_target, reg0.desc,
-                        reg0.async_name, reg0.async_clk,
-                        reg0.sync_name, reg0.sync_clk,
+                        reg0.async_clk, reg0.sync_clk,
                         reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
                         reg0.tags, new_resval, reg0.shadowed, fields,
                         reg0.update_err_alert, reg0.storage_err_alert,
@@ -676,7 +667,7 @@ class Register(RegBase):
         '''
         # Attributes to be crosschecked
         attrs = [
-            'async_name', 'async_clk', 'hwext', 'hwqe', 'hwre',
+            'async_clk', 'hwext', 'hwqe', 'hwre',
             'update_err_alert', 'storage_err_alert', 'shadowed'
         ]
         for attr in attrs:
