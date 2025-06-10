@@ -20,11 +20,9 @@ module soc_dbg_ctrl_decode #(
   // Optional Synchronization + Sampling authentication state
   ///////////////////////////////////////////////////////////////////////////////
 
-  prim_mubi_pkg::mubi4_t valid, relocked;
+  prim_mubi_pkg::mubi4_t valid_sync, relocked_sync;
 
   if (SyncDbgPolicy) begin : gen_dbg_policy_sync
-    logic [prim_mubi_pkg::MuBi4Width-1:0] logic_valid, logic_relocked;
-
     prim_flop_2sync #(
       .Width      ( prim_mubi_pkg::MuBi4Width   ),
       .ResetValue ( {prim_mubi_pkg::MuBi4False} )
@@ -32,7 +30,7 @@ module soc_dbg_ctrl_decode #(
       .clk_i  ( clk_i                      ),
       .rst_ni ( rst_ni                     ),
       .d_i    ( soc_dbg_policy_bus_i.valid ),
-      .q_o    ( logic_valid                )
+      .q_o    ( {valid_sync}               )
     );
 
     prim_flop_2sync #(
@@ -42,56 +40,76 @@ module soc_dbg_ctrl_decode #(
       .clk_i  ( clk_i                         ),
       .rst_ni ( rst_ni                        ),
       .d_i    ( soc_dbg_policy_bus_i.relocked ),
-      .q_o    ( logic_relocked                )
+      .q_o    ( {relocked_sync}               )
     );
-
-    // Cast from logic to the actual type to avoid strong SV type linting errors
-    assign valid    = prim_mubi_pkg::mubi4_t'(logic_valid);
-    assign relocked = prim_mubi_pkg::mubi4_t'(logic_relocked);
   end else begin: gen_dbg_policy_async
-    assign valid    = soc_dbg_policy_bus_i.valid;
-    assign relocked = soc_dbg_policy_bus_i.relocked;
+    assign valid_sync    = soc_dbg_policy_bus_i.valid;
+    assign relocked_sync = soc_dbg_policy_bus_i.relocked;
   end
 
-  logic valid_decoded, relocked_decoded;
-  assign valid_decoded    = prim_mubi_pkg::mubi4_test_true_strict(valid);
-  assign relocked_decoded = prim_mubi_pkg::mubi4_test_true_strict(relocked);
+  logic valid_sample;
+  assign valid_sample = prim_mubi_pkg::mubi4_test_true_strict(valid_sync);
 
   logic valid_rising;
   // Determine the rising edge of valid to latch the debug policy
   if (SampleValidOnce) begin : gen_sample_valid_once
     prim_edge_detector u_rising_valid (
-      .clk_i             ( clk_i         ),
-      .rst_ni            ( rst_ni        ),
-      .d_i               ( valid_decoded ),
-      .q_sync_o          (               ),
-      .q_posedge_pulse_o ( valid_rising  ),
-      .q_negedge_pulse_o (               )
+      .clk_i             ( clk_i        ),
+      .rst_ni            ( rst_ni       ),
+      .d_i               ( valid_sample ),
+      .q_sync_o          (              ),
+      .q_posedge_pulse_o ( valid_rising ),
+      .q_negedge_pulse_o (              )
     );
   end else begin : gen_sample_valid_every_cycle
     // Sample valid every cycle that valid is asserted when using a special CDC structure
-    assign valid_rising = valid_decoded;
+    assign valid_rising = valid_sample;
   end
 
   // Sample the debug policy on the rising edge of valid
-  logic [$bits(soc_dbg_ctrl_pkg::dbg_category_e)-1:0] debug_category_logic_q;
+    soc_dbg_ctrl_pkg::dbg_category_e debug_category_q;
 
   prim_flop_en #(
-    .Width($bits(soc_dbg_ctrl_pkg::dbg_category_e)),
-    .ResetValue({soc_dbg_ctrl_pkg::DbgCategoryLocked})
+    .Width       ( $bits(soc_dbg_ctrl_pkg::dbg_category_e) ),
+    .ResetValue  ( {soc_dbg_ctrl_pkg::DbgCategoryLocked}   )
   ) u_sampled_policy (
     .clk_i  ( clk_i                         ),
     .rst_ni ( rst_ni                        ),
     .en_i   ( valid_rising                  ),
     .d_i    ( soc_dbg_policy_bus_i.category ),
-    .q_o    ( debug_category_logic_q        )
+    .q_o    ( {debug_category_q}            )
   );
 
-  soc_dbg_ctrl_pkg::dbg_category_e debug_category_q;
-  assign debug_category_q = soc_dbg_ctrl_pkg::dbg_category_e'(debug_category_logic_q);
+  // Delay sampled Valid/Relocked bits to stay in sync with debug category
+  prim_mubi_pkg::mubi4_t valid_delayed, relocked_delayed;
+
+  prim_flop_en #(
+    .Width      ( prim_mubi_pkg::MuBi4Width   ),
+    .ResetValue ( {prim_mubi_pkg::MuBi4False} )
+  ) u_delay_valid (
+    .clk_i  ( clk_i           ),
+    .rst_ni ( rst_ni          ),
+    .en_i   ( valid_rising    ),
+    .d_i    ( valid_sync      ),
+    .q_o    ( {valid_delayed} )
+  );
+  prim_flop_en #(
+    .Width      ( prim_mubi_pkg::MuBi4Width   ),
+    .ResetValue ( {prim_mubi_pkg::MuBi4False} )
+  ) u_delay_relock (
+    .clk_i  ( clk_i              ),
+    .rst_ni ( rst_ni             ),
+    .en_i   ( valid_rising       ),
+    .d_i    ( relocked_sync      ),
+    .q_o    ( {relocked_delayed} )
+  );
+
+  logic valid_decoded, relocked_decoded;
+  assign valid_decoded    = prim_mubi_pkg::mubi4_test_true_strict(valid_delayed);
+  assign relocked_decoded = prim_mubi_pkg::mubi4_test_true_strict(relocked_delayed);
 
   // Output the decoded logic
-  assign relocked_o = valid_decoded & relocked_decoded;
+  assign relocked_o = relocked_decoded;
   assign cat4_dbg_o = debug_category_q == soc_dbg_ctrl_pkg::DbgCategory4;
   assign cat3_dbg_o = (cat4_dbg_o || debug_category_q == soc_dbg_ctrl_pkg::DbgCategory3) &&
                       !relocked_decoded;
