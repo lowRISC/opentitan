@@ -16,7 +16,7 @@ package rom_ctrl_prim_ral_pkg;
 
     `uvm_object_param_utils(rom_ctrl_prim_mem_rom_mem#(MemDepth))
 
-    extern function new(string           name = "rom_ctrl_prim_mem_rom_mem",
+    extern function new(string           name = "",
                         longint unsigned size = MemDepth,
                         int unsigned     n_bits = 32,
                         string           access = "RO",
@@ -24,7 +24,7 @@ package rom_ctrl_prim_ral_pkg;
 
   endclass : rom_ctrl_prim_mem_rom_mem
 
-  function rom_ctrl_prim_mem_rom_mem::new(string           name = "rom_ctrl_prim_mem_rom_mem",
+  function rom_ctrl_prim_mem_rom_mem::new(string           name = "",
                                           longint unsigned size = MemDepth,
                                           int unsigned     n_bits = 32,
                                           string           access = "RO",
@@ -41,14 +41,14 @@ package rom_ctrl_prim_ral_pkg;
 
     `uvm_object_param_utils(rom_ctrl_prim_reg_block#(AddrWidth))
 
-    extern function new(string name = "rom_ctrl_prim_reg_block",
+    extern function new(string name = "",
                         int has_coverage = UVM_NO_COVERAGE);
 
     extern virtual function void build(uvm_reg_addr_t base_addr, csr_excl_item csr_excl = null);
 
   endclass : rom_ctrl_prim_reg_block
 
-  function rom_ctrl_prim_reg_block::new(string name = "rom_ctrl_prim_reg_block",
+  function rom_ctrl_prim_reg_block::new(string name = "",
                                         int    has_coverage = UVM_NO_COVERAGE);
     super.new(name, has_coverage);
   endfunction : new
