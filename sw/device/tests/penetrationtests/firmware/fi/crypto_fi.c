@@ -504,6 +504,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -514,6 +516,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
   uj_output.err_status = codes;
   memcpy(uj_output.tag, digest.digest, sizeof(uj_output.tag));
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_crypto_fi_hmac_tag_t, uj, &uj_output);
   return OK_STATUS();
 }
