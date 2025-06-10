@@ -1,0 +1,12 @@
+===================================================================
+--- a/MODULE.bazel
++++ b/MODULE.bazel
+@@ -1,7 +1,7 @@
+ module(
+     name = "rules_cc",
+-    version = "0.0.0",
++    version = "0.1.1",
+     compatibility_level = 1,
+ )
+ 
+ bazel_dep(name = "bazel_features", version = "1.19.0")
