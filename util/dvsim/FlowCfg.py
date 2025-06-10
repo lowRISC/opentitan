@@ -255,8 +255,7 @@ class FlowCfg():
             return None
 
         # Check if temp cfg file already exists
-        temp_cfg_file = (self.scratch_root + "/." + self.branch + "__" + name +
-                         "_cfg.hjson")
+        temp_cfg_file = f'{self.scratch_root}/.{self.branch}__{name}_cfg.hjson'
 
         # Create the file and dump the dict as hjson
         log.log(VERBOSE, "Dumping inline cfg \"%s\" in hjson to:\n%s", name,
