@@ -468,25 +468,16 @@ class RegBlock:
                     mubi=False,
                     auto_split=False))
 
-        reg = Register(
-            self.offset,
-            reg_name,
-            None,  # no alias target
-            reg_desc,
-            async_clk=None,
-            sync_clk=None,
-            hwext=is_testreg,
-            hwqe=is_testreg,
-            hwre=False,
-            regwen=None,
-            tags=reg_tags,
-            resval=None,
-            shadowed=False,
-            fields=fields,
-            update_err_alert=None,
-            storage_err_alert=None,
-            writes_ignore_errors=False)
-        self.add_register(reg)
+        self.add_register(Register(reg_name,
+                                   self.offset,
+                                   async_clk=None,
+                                   sync_clk=None,
+                                   alias_target=None,
+                                   desc=reg_desc,
+                                   fields=fields,
+                                   hwext=is_testreg,
+                                   hwqe=is_testreg,
+                                   tags=reg_tags))
 
     def make_intr_regs(self, interrupts: Sequence[Interrupt]) -> None:
         """Create INTR_STATE, INTR_ENABLE, INTR_TEST CSRs.
@@ -546,16 +537,13 @@ class RegBlock:
 
         self.add_register(
             Register(
-                self.offset,
                 'INTR_STATE',
-                None,  # no alias target
-                'Interrupt State Register',
+                self.offset,
                 async_clk=None,
                 sync_clk=None,
-                hwext=False,
-                hwqe=False,
-                hwre=False,
-                regwen=None,
+                alias_target=None,
+                desc='Interrupt State Register',
+                fields=fields,
                 # Some POR routines have the potential to unpredictably set
                 # some `intr_state` fields for various IPs, so we exclude all
                 # `intr_state` accesses from CSR checks to prevent this from
@@ -563,13 +551,7 @@ class RegBlock:
                 #
                 # An example of an `intr_state` mismatch error occurring due to
                 # a POR routine can be seen in issue #6888.
-                tags=["excl:CsrAllTests:CsrExclAll"],
-                resval=None,
-                shadowed=False,
-                fields=fields,
-                update_err_alert=None,
-                storage_err_alert=None,
-                writes_ignore_errors=False))
+                tags=["excl:CsrAllTests:CsrExclAll"]))
 
         self._add_intr_alert_reg(
             interrupts, 'INTR_ENABLE', 'Interrupt Enable Register',
