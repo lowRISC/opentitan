@@ -31,6 +31,7 @@ sudo ip netns exec airgapped sudo -u "$USER" \
   "${PWD}/bazel-airgapped/bazel" build                               \
     --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
     --repository_cache="${PWD}/bazel-airgapped/bazel-cache"          \
+    --vendor_dir="${PWD}/bazel-airgapped/bazel-vendor"               \
     --define DISABLE_VERILATOR_BUILD=true                            \
     //sw/device/silicon_creator/rom:mask_rom
 
