@@ -147,6 +147,7 @@ cc_library(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
