@@ -4,6 +4,7 @@
 //
 // Legacy constants that were used in some IPs
 // These are deprecated and should be removed.
+// DO NOT ADD ANYTHING NEW TO THIS PKG
 
 package prim_pkg;
 
