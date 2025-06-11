@@ -9,8 +9,8 @@ set -e
 REPO_TOP="$(git rev-parse --show-toplevel)"
 cd "$REPO_TOP"
 
-if grep -r --include '*.bzl' git_repository; then
-  echo "Bazel's 'git_repository' rule is insecure and incompatible with OpenTitan's airgapping strategy."
-  echo "Please replace $GIT_REPOS with 'http_archive' rule and set a sha256 so it can be canonically reproducible."
+if grep -r --include '*MODULE.bazel' git_override; then
+  echo "Bazel's 'git_override' method is incompatible with OpenTitan's airgapping strategy." >&2
+  echo "Please replace all instances with 'archive_override' method and set an 'integrity' so it can be canonically reproducible." >&2
   exit 1
 fi
