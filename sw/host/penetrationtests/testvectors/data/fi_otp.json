@@ -13,21 +13,21 @@
   {
     "test_case_id": 2,
     "command": "HwCfg",
-    "expected_output": ["{\"hw_cfg_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"hw_cfg_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 3,
     "command": "LifeCycle",
-    "expected_output": ["{\"life_cycle_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"life_cycle_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
-    "test_case_id": 4,
-    "command": "OwnerSwCfg",
-    "expected_output": ["{\"owner_sw_cfg_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"owner_sw_cfg_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "test_case_id":4,
+    "command": "VendorTest",
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 5,
-    "command": "VendorTest",
-    "expected_output": ["{\"vendor_test_comp\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"vendor_test_fi\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+    "command": "OwnerSwCfg",
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"otp_error_causes\":[0,0,0,0,0,0,0,0,0,0],\"otp_status_codes\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
 ]
