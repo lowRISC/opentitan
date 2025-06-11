@@ -326,6 +326,8 @@ rom_error_t dice_chain_attestation_creator(
   RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
 
   // Check if the current CDI_0 cert is valid.
+  dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
+  dice_chain.subject_pubkey = static_dice_cdi_0.cdi_0_pubkey;
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     // Update the cert page buffer.
