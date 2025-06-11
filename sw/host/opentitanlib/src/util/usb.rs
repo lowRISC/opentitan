@@ -127,7 +127,10 @@ impl UsbBackend {
     pub fn new(usb_vid: u16, usb_pid: u16, usb_serial: Option<&str>) -> Result<Self> {
         let mut devices = UsbBackend::scan(Some((usb_vid, usb_pid)), None, usb_serial)?;
         ensure!(!devices.is_empty(), TransportError::NoDevice);
-        ensure!(devices.len() == 1, TransportError::MultipleDevices);
+        ensure!(
+            devices.len() == 1,
+            TransportError::MultipleDevices(format!("{:?}", devices))
+        );
 
         let (device, serial_number) = devices.remove(0);
         Ok(UsbBackend {
@@ -166,7 +169,10 @@ impl UsbBackend {
                     return Err(TransportError::NoDevice.into());
                 }
             }
-            ensure!(devices.len() == 1, TransportError::MultipleDevices);
+            ensure!(
+                devices.len() == 1,
+                TransportError::MultipleDevices(format!("{:?}", devices))
+            );
 
             let (device, serial_number) = devices.remove(0);
             return Ok(UsbBackend {
