@@ -51,12 +51,11 @@ fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde
     let mut map: serde_json::Map<String, serde_json::Value> = response_common_filtered.clone();
     // Remove these entries as the test just returns the OTP content, which could
     // be different for different configurations.
-    map.remove("hw_cfg_comp");
-    map.remove("hw_cfg_fi");
-    map.remove("owner_sw_cfg_comp");
-    map.remove("owner_sw_cfg_fi");
-    map.remove("vendor_test_comp");
-    map.remove("vendor_test_fi");
+    map.remove("partition_ref");
+    map.remove("partition_fi");
+    // Remove otp_status_codes as there could be an error already without injectin
+    // any faults.
+    map.remove("otp_status_codes");
 
     map
 }

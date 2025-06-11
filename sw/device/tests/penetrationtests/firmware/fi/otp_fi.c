@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
@@ -19,32 +20,48 @@
 
 static dif_otp_ctrl_t otp;
 
-uint32_t
-    otp_read32_result_vendor_test_comp[OTP_CTRL_PARAM_VENDOR_TEST_SIZE / 4];
-uint32_t otp_read32_result_vendor_test_fi[OTP_CTRL_PARAM_VENDOR_TEST_SIZE / 4];
-uint32_t
-    otp_read32_result_owner_sw_cfg_comp[OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / 4];
-uint32_t
-    otp_read32_result_owner_sw_cfg_fi[OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / 4];
-uint32_t otp_read32_result_hw_cfg_comp[OTP_CTRL_PARAM_HW_CFG0_SIZE / 4];
-uint32_t otp_read32_result_hw_cfg_fi[OTP_CTRL_PARAM_HW_CFG0_SIZE / 4];
-uint32_t otp_read32_result_life_cycle_comp[OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / 4];
-uint32_t otp_read32_result_life_cycle_fi[OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / 4];
+enum {
+  /**
+   * OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE in words.
+   */
+  kOtpFiOwnerSwCfgSize = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / sizeof(uint32_t),
+  /**
+   * OTP_CTRL_PARAM_VENDOR_TEST_SIZE in words.
+   */
+  kOtpFiVendorTestSize = OTP_CTRL_PARAM_VENDOR_TEST_SIZE / sizeof(uint32_t),
+  /**
+   * OTP_CTRL_PARAM_HW_CFG0_SIZE in words.
+   */
+  kOtpFiHwCfg0Size = OTP_CTRL_PARAM_HW_CFG0_SIZE / sizeof(uint32_t),
+  /**
+   * OTP_CTRL_PARAM_LIFE_CYCLE_SIZE in words.
+   */
+  kOtpFiLifeCycleSize = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / sizeof(uint32_t),
+};
+
+uint32_t otp_read32_result_vendor_test_comp[kOtpFiVendorTestSize];
+uint32_t otp_read32_result_vendor_test_fi[kOtpFiVendorTestSize];
+uint32_t otp_read32_result_owner_sw_cfg_comp[kOtpFiOwnerSwCfgSize];
+uint32_t otp_read32_result_owner_sw_cfg_fi[kOtpFiOwnerSwCfgSize];
+uint32_t otp_read32_result_hw_cfg_comp[kOtpFiHwCfg0Size];
+uint32_t otp_read32_result_hw_cfg_fi[kOtpFiHwCfg0Size];
+uint32_t otp_read32_result_life_cycle_comp[kOtpFiLifeCycleSize];
+uint32_t otp_read32_result_life_cycle_fi[kOtpFiLifeCycleSize];
 
 void init_otp_mem_dump_buffers(void) {
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_VENDOR_TEST_SIZE / 4; i++) {
+  for (uint32_t i = 0; i < kOtpFiVendorTestSize; i++) {
     otp_read32_result_vendor_test_comp[i] = 0x00000001;
     otp_read32_result_vendor_test_fi[i] = 0x00000001;
   }
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / 4; i++) {
+  for (uint32_t i = 0; i < kOtpFiOwnerSwCfgSize; i++) {
     otp_read32_result_owner_sw_cfg_comp[i] = 0x00000001;
     otp_read32_result_owner_sw_cfg_fi[i] = 0x00000001;
   }
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_HW_CFG0_SIZE / 4; i++) {
+  for (uint32_t i = 0; i < kOtpFiHwCfg0Size; i++) {
     otp_read32_result_hw_cfg_comp[i] = 0x00000001;
     otp_read32_result_hw_cfg_fi[i] = 0x00000001;
   }
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / 4; i++) {
+  for (uint32_t i = 0; i < kOtpFiLifeCycleSize; i++) {
     otp_read32_result_life_cycle_comp[i] = 0x00000001;
     otp_read32_result_life_cycle_fi[i] = 0x00000001;
   }
@@ -53,17 +70,15 @@ void init_otp_mem_dump_buffers(void) {
 status_t otp_vendor_test_dump(uint32_t *buffer) {
   // Read VENDOR_TEST partition
   TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionVendorTest,
-                                          0, buffer,
-                                          OTP_CTRL_PARAM_VENDOR_TEST_SIZE / 4));
+                                          0, buffer, kOtpFiVendorTestSize));
 
   return OK_STATUS();
 }
 
 status_t otp_owner_sw_cfg_dump(uint32_t *buffer) {
   // Read OWNER_SW_CFG partition
-  TRY(otp_ctrl_testutils_dai_read32_array(
-      &otp, kDifOtpCtrlPartitionOwnerSwCfg, 0, buffer,
-      OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / 4));
+  TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionOwnerSwCfg,
+                                          0, buffer, kOtpFiOwnerSwCfgSize));
 
   return OK_STATUS();
 }
@@ -71,8 +86,7 @@ status_t otp_owner_sw_cfg_dump(uint32_t *buffer) {
 status_t otp_hw_cfg_dump(uint32_t *buffer) {
   // Read HW_CFG partition
   TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionHwCfg0, 0,
-                                          buffer,
-                                          OTP_CTRL_PARAM_HW_CFG0_SIZE / 4));
+                                          buffer, kOtpFiHwCfg0Size));
 
   return OK_STATUS();
 }
@@ -80,8 +94,7 @@ status_t otp_hw_cfg_dump(uint32_t *buffer) {
 status_t otp_life_cycle_dump(uint32_t *buffer) {
   // Read LIFE_CYCLE partition
   TRY(otp_ctrl_testutils_dai_read32_array(&otp, kDifOtpCtrlPartitionLifeCycle,
-                                          0, buffer,
-                                          OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / 4));
+                                          0, buffer, kOtpFiLifeCycleSize));
 
   return OK_STATUS();
 }
@@ -120,16 +133,20 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
 
   // Send result & status codes to host.
   otp_fi_hwcfg_partition_t uj_output;
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_HW_CFG0_SIZE / 4; i++) {
-    uj_output.hw_cfg_comp[i] = otp_read32_result_hw_cfg_comp[i];
-    uj_output.hw_cfg_fi[i] = otp_read32_result_hw_cfg_fi[i];
+  memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
+  memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  for (uint32_t i = 0; i < kOtpFiHwCfg0Size; i++) {
+    uj_output.partition_ref[i] = otp_read32_result_hw_cfg_comp[i];
+    uj_output.partition_fi[i] = otp_read32_result_hw_cfg_fi[i];
+    if (uj_output.partition_ref[i] != uj_output.partition_fi[i]) {
+      uj_output.data_faulty[i] = true;
+    }
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
          kDifOtpCtrlStatusCodeHasCauseLast + 1);
-  uj_output.alerts[0] = reg_alerts.alerts[0];
-  uj_output.alerts[1] = reg_alerts.alerts[1];
-  uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_hwcfg_partition_t, uj, &uj_output);
@@ -168,6 +185,12 @@ status_t handle_otp_fi_init(ujson_t *uj) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
 
   init_otp_mem_dump_buffers();
+
+  // Sanity check lengths of uJSON buffers.
+  TRY_CHECK(kOtpFiOwnerSwCfgSize <= OTPFI_MAX_OWNER_SW_CFG_SIZE);
+  TRY_CHECK(kOtpFiVendorTestSize <= OTPFI_MAX_VENDOR_TEST_SIZE);
+  TRY_CHECK(kOtpFiHwCfg0Size <= OTPFI_MAX_HW_CFG0_SIZE);
+  TRY_CHECK(kOtpFiLifeCycleSize <= OTPFI_MAX_LC_SIZE);
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
@@ -213,16 +236,20 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
 
   // Send result & status codes to host.
   otp_fi_lifecycle_partition_t uj_output;
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_LIFE_CYCLE_SIZE / 4; i++) {
-    uj_output.life_cycle_comp[i] = otp_read32_result_life_cycle_comp[i];
-    uj_output.life_cycle_fi[i] = otp_read32_result_life_cycle_fi[i];
+  memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
+  memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  for (uint32_t i = 0; i < kOtpFiLifeCycleSize; i++) {
+    uj_output.partition_ref[i] = otp_read32_result_life_cycle_comp[i];
+    uj_output.partition_fi[i] = otp_read32_result_life_cycle_fi[i];
+    if (uj_output.partition_ref[i] != uj_output.partition_fi[i]) {
+      uj_output.data_faulty[i] = true;
+    }
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
          kDifOtpCtrlStatusCodeHasCauseLast + 1);
-  uj_output.alerts[0] = reg_alerts.alerts[0];
-  uj_output.alerts[1] = reg_alerts.alerts[1];
-  uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_lifecycle_partition_t, uj, &uj_output);
@@ -264,16 +291,20 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
 
   // Send result & status codes to host.
   otp_fi_ownerswcfg_partition_t uj_output;
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE / 4; i++) {
-    uj_output.owner_sw_cfg_comp[i] = otp_read32_result_owner_sw_cfg_comp[i];
-    uj_output.owner_sw_cfg_fi[i] = otp_read32_result_owner_sw_cfg_fi[i];
+  memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
+  memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  for (uint32_t i = 0; i < kOtpFiOwnerSwCfgSize; i++) {
+    uj_output.partition_ref[i] = otp_read32_result_owner_sw_cfg_comp[i];
+    uj_output.partition_fi[i] = otp_read32_result_owner_sw_cfg_fi[i];
+    if (uj_output.partition_ref[i] != uj_output.partition_fi[i]) {
+      uj_output.data_faulty[i] = true;
+    }
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
          kDifOtpCtrlStatusCodeHasCauseLast + 1);
-  uj_output.alerts[0] = reg_alerts.alerts[0];
-  uj_output.alerts[1] = reg_alerts.alerts[1];
-  uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_ownerswcfg_partition_t, uj, &uj_output);
@@ -315,16 +346,20 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
 
   // Send result & status codes to host.
   otp_fi_vendortest_partition_t uj_output;
-  for (uint32_t i = 0; i < OTP_CTRL_PARAM_VENDOR_TEST_SIZE / 4; i++) {
-    uj_output.vendor_test_comp[i] = otp_read32_result_vendor_test_comp[i];
-    uj_output.vendor_test_fi[i] = otp_read32_result_vendor_test_fi[i];
+  memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
+  memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  for (uint32_t i = 0; i < kOtpFiVendorTestSize; i++) {
+    uj_output.partition_ref[i] = otp_read32_result_vendor_test_comp[i];
+    uj_output.partition_fi[i] = otp_read32_result_vendor_test_fi[i];
+    if (uj_output.partition_ref[i] != uj_output.partition_fi[i]) {
+      uj_output.data_faulty[i] = true;
+    }
   }
   uj_output.otp_status_codes = status.codes;
   memcpy(uj_output.otp_error_causes, (uint8_t *)status.causes,
          kDifOtpCtrlStatusCodeHasCauseLast + 1);
-  uj_output.alerts[0] = reg_alerts.alerts[0];
-  uj_output.alerts[1] = reg_alerts.alerts[1];
-  uj_output.alerts[2] = reg_alerts.alerts[2];
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_otp_fi_vendortest_partition_t, uj, &uj_output);
