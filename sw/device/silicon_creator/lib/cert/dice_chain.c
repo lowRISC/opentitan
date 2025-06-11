@@ -376,8 +376,7 @@ static rom_error_t dice_chain_attestation_check_uds(void) {
   return kErrorOk;
 }
 
-// Compare the CDI_0 identity in the static critical section to the CDI_0 cert
-// cached in the flash, and refresh the cache if invalid.
+// Refresh the cache if a new CDI_0 is generated.
 static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Switch page for the device CDI chain.
   RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
@@ -385,22 +384,17 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Seek to skip previous objects.
   RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
 
-  // Refresh cdi 0 if invalid
+  // Set the endorsement key for the next cert.
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
-  dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
-  dice_chain.subject_pubkey = static_dice_cdi_0.cdi_0_pubkey;
-  RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
-  if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
-    // Update the cert page buffer.
-    RETURN_IF_ERROR(dice_chain_push_cert("CDI_0", static_dice_cdi_0.cert_data,
-                                         static_dice_cdi_0.cert_size));
-  } else {
-    // Cert is valid, move to the next one.
-    dice_chain_next_cert_obj();
-  }
 
-  return kErrorOk;
+  // Save cdi 0 to flash if regenerated.
+  if (static_dice_cdi_0.cert_size != 0) {
+    dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
+    return dice_chain_push_cert("CDI_0", static_dice_cdi_0.cert_data,
+                                static_dice_cdi_0.cert_size);
+  } else {
+    return dice_chain_skip_cert_obj("CDI_0", /*name_size=*/6);
+  }
 }
 
 rom_error_t dice_chain_attestation_owner(
