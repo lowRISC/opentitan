@@ -24,7 +24,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts};
+use usb::{UsbHub, UsbHubOp, UsbOpts, get_device_by_port_numbers};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -131,10 +131,32 @@ fn resume(hub: &UsbHub, port: u8) -> Result<()> {
     Ok(())
 }
 
+fn find_device(hub: &UsbHub, port: u8) -> Result<rusb::Device<rusb::Context>> {
+    // Build the port path to the device.
+    let mut ports = hub.device().port_numbers()?.clone();
+    ports.push(port);
+    // Try to find the device
+    get_device_by_port_numbers(&ports)
+}
+
 fn reset(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("resetting device on port {}", port);
-    // Reset Signaling shall be performed for at least 10ms.
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+    let device = find_device(hub, port)?;
+    // Resetting the device is a tricky: if we send a hub operation, the kernel will
+    // not be aware of the reset and it will not try to configure the device afterwards.
+    // On the other hand, since we mess with the suspend/resume state of the device directly
+    // at the hub, this could also confuse the kernel and it might not succeed in sending
+    // a reset. Experimentally, we have observed however that requesting a reset from the
+    // kernel seems to work anyway and it at least trigger a re-enumeration.
+
+    let res = device
+        .open()
+        .context("could not find device under test")
+        .and_then(|dev| dev.reset().context("could not reset device via the kernel"));
+    if res.is_err() {
+        log::info!("Ignoring failed reset via the kernel: {:?}", res);
+    }
+
     delay_millis(TIME_RESETTING);
     log::info!("reset");
     Ok(())
