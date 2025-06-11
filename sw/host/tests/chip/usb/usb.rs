@@ -73,6 +73,15 @@ impl DeviceLoc {
     }
 }
 
+pub fn get_device_by_port_numbers(ports: &Vec<u8>) -> Result<UsbDevice> {
+    for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
+        if &device.port_numbers()? == ports {
+            return Ok(device);
+        }
+    }
+    bail!("could not find device at port path {:?}", ports)
+}
+
 impl UsbOpts {
     // Wait for a device that matches the USB VID/PID. If a device that matches
     // is found, it will try to open it: if that fails, a warning message will
@@ -243,6 +252,10 @@ impl UsbHub {
         Ok(UsbHub {
             handle: dev.open().context("cannot open hub")?,
         })
+    }
+
+    pub fn device(&self) -> UsbDevice {
+        self.handle.device()
     }
 
     // Perform an operation.
