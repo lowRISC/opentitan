@@ -13,6 +13,7 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_VENDORDIR:=bazel-vendor}"
 : "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
 : "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
@@ -159,6 +160,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rust_tock__riscv32imc-unknown-none-elf__nightly_tools//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
+  ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
@@ -183,5 +185,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} <label>"
+  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
 fi
