@@ -64,7 +64,6 @@ OPTIONAL_FIELDS = {
         "register name should be given here. empty-string for no register "
         "write protection"
     ],
-    'resval': ['d', "reset value of full register (default 0)"],
     'tags': [
         's',
         "tags for the register, following the format 'tag_name:item1:item2...'"
@@ -95,7 +94,6 @@ class Register(RegBase):
     hwre: bool = False
     regwen: str | None = None
     tags: list[str] = field(default_factory=list)
-    decl_resval: int | None = None
     shadowed: bool = False
     update_err_alert: str | None = None
     storage_err_alert: str | None = None
@@ -189,21 +187,13 @@ class Register(RegBase):
                     f'{fld.name} uses bits {bits_used & field_mask:#x} '
                     'used by other fields.')
 
-        # Compute a reset value and mask from our constituent fields
+        # Compute a reset value and mask from the reset values of our
+        # constituent fields.
         self.resval = 0
         self.resmask = 0
         for fld in self.fields:
             self.resval |= (fld.resval or 0) << fld.bits.lsb
             self.resmask |= fld.bits.bitmask()
-
-        # If the register defined a reset value, make sure it matches. We've
-        # already checked that each field matches, but we still need to make
-        # sure there weren't any bits unaccounted for.
-        if self.decl_resval is not None and self.resval != self.decl_resval:
-                raise ValueError(
-                    f'Register {self.name} specifies a reset value of '
-                    f'{self.decl_resval:#x} but collecting reset values '
-                    f'across its fields yields {self.resval:#x}.')
 
     def __hash__(self) -> int:
         return super.__hash__(self)
@@ -288,15 +278,6 @@ class Register(RegBase):
         else:
             regwen = check_name(raw_regwen, f'regwen for {name} register')
 
-        raw_resval = rd.get('resval')
-        if raw_resval is None:
-            resval = None
-        else:
-            resval = check_int(raw_resval, f'resval for {name} register')
-            if not 0 <= resval < (1 << reg_width):
-                raise ValueError(f'resval for {name} register is {resval}, '
-                                 f'not an unsigned {reg_width}-bit number.')
-
         tags = check_str_list(rd.get('tags', []), f'tags for {name} register')
 
         shadowed = check_bool(rd.get('shadowed', False),
@@ -315,7 +296,6 @@ class Register(RegBase):
                                     len(raw_fields),
                                     swaccess,
                                     hwaccess,
-                                    resval,
                                     reg_width,
                                     params,
                                     hwext,
@@ -355,8 +335,7 @@ class Register(RegBase):
 
         return Register(name, offset, async_clk, sync_clk, alias_target,
                         desc, fields, hwext, hwqe, hwre, regwen,
-                        tags, resval, shadowed,
-                        update_err_alert, storage_err_alert,
+                        tags, shadowed, update_err_alert, storage_err_alert,
                         writes_ignore_errors)
 
     def next_offset(self, addrsep: int) -> int:
@@ -535,20 +514,12 @@ class Register(RegBase):
 
                 fields.append(field_copy)
 
-        # Don't specify a reset value for the new register. Any reset value
-        # defined for the original register will have propagated to its fields,
-        # so when we combine them here, the Register constructor can compute a
-        # reset value for us (which might well be different from self.resval if
-        # we've replicated fields).
-        new_resval = None
-
         return Register(name, offset,
                         reg0.async_clk, reg0.sync_clk, alias_target,
                         reg0.desc, fields,
                         reg0.hwext, reg0.hwqe, reg0.hwre, regwen,
-                        reg0.tags, new_resval, reg0.shadowed,
-                        reg0.update_err_alert, reg0.storage_err_alert,
-                        reg0.writes_ignore_errors)
+                        reg0.tags, reg0.shadowed, reg0.update_err_alert,
+                        reg0.storage_err_alert, reg0.writes_ignore_errors)
 
     def check_valid_regwen(self) -> None:
         '''Check that this register is valid for use as a REGWEN'''

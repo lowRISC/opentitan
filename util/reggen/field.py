@@ -41,11 +41,10 @@ OPTIONAL_FIELDS = {
         "(Tool adds if not provided.)"
     ],
     'resval': [
-        'x', "reset value, comes from register resval "
-        "if not provided in field. Zero if neither "
-        "are provided and the field is readable, "
-        "x if neither are provided and the field "
-        "is wo. Must match if both are provided."
+        'x',
+        "reset value. If this is not provided then there is an inferred reset "
+        "value. If the field is readable then this is taken to be zero. If "
+        "the field is 'wo', the reset value is taken to be x."
     ],
     'enum': ['l', "list of permitted enumeration groups"],
     'tags': [
@@ -85,7 +84,7 @@ class Field:
                         bindings: dict[str, int],
                         raw_value: Any,
                         is_mubi: bool,
-                        where: str) -> str | int | None:
+                        where: str) -> int | None:
         '''Calculate any specific resval for the field
 
         field_bits is an object giving the (indices of the) bits that make up
@@ -108,17 +107,14 @@ class Field:
            local_bindings dictionary.
 
         If raw_value is 'x' then the reset value is explicitly unknown and this
-        function should return 'x'. Otherwise the result of interpreting this
+        function should return None. Otherwise the result of interpreting this
         string/bool/int will be an integer, which is interpreted as the logical
         reset value for the field.
 
         If is_mubi is true, the field is encoded as a multi-bit boolean with a
-        width that can be calculated from field_bits. This has no effect if
-        raw_value is None (because we are computing the field reset value by
-        extracting bits from reg_resval). If raw_value is neither 'x' nor None,
-        on the other hand, it must have evaluated to an integer that is 0 or 1.
-        This logical reset value will be encoded as the appropriate mubi
-        physical value.
+        width that can be calculated from field_bits. If raw_value is not 'x',
+        it must have evaluated to an integer that is 0 or 1. This logical reset
+        value will be encoded as the appropriate mubi physical value.
 
         The where argument is a string that describes where the reset value is
         being specified (used in error messages).
@@ -128,30 +124,31 @@ class Field:
 
         what = f'resval field for {where}'
 
-        resval = None  # type: Any
+        resval: int | None = None
+        have_resval: bool = False
 
         # Start by checking whether raw_value can be interpreted as a boolean.
-        # If not, it's no problem: just leave resval equal to None.
+        # If not, it's no problem: just leave have_resval false.
         try:
             resval = check_bool(raw_value, what)
+            have_resval = True
         except ValueError:
             pass
 
         # Now check whether raw_value can be interpreted as an integer. Allow
         # 'x', which means there is no resval specifically defined for this
         # field and we return None. Again: this interpretation might not be
-        # possible. That's fine: still leave resval equal to None.
-        if resval is None:
+        # possible. That's fine: still leave have_resval false.
+        if not have_resval:
             try:
                 resval = check_xint(raw_value, what)
-                if resval is None:
-                    return 'x'
+                have_resval = True
             except ValueError:
                 pass
 
         # If we still haven't managed to parse things, we want to evaluate
         # raw_value as Python code.
-        if resval is None:
+        if not have_resval:
             # raw_value should be a string which we can evaluate as Python
             # code.
             if not isinstance(raw_value, str):
@@ -207,7 +204,6 @@ class Field:
                  num_fields: int,
                  default_swaccess: SWAccess,
                  default_hwaccess: HWAccess,
-                 reg_resval: Optional[int],
                  reg_width: int,
                  params: ReggenParams,
                  hwext: bool,
@@ -275,38 +271,11 @@ class Field:
 
         # Make sense of the reset value of the field. First, try to evaluate
         # any 'resval' that has been defined for the field directly.
-        field_resval = Field.resval_from_raw(bits,
-                                             bindings,
-                                             rd.get('resval'),
-                                             is_mubi,
-                                             where)
-        if isinstance(field_resval, str):
-            assert field_resval == 'x'
-
-        # Now interpret the reset value implied by the register reset value.
-        # This defaults to zero if we don't actually have a register reset
-        # value (because the implied default is zero), but is None if the
-        # register is hwext.
-        resval_from_reg = None  # type: Optional[int]
-        if reg_resval is not None:
-            resval_from_reg = bits.extract_field(reg_resval)
-        elif hwext or field_resval == 'x':
-            resval_from_reg = None
-        else:
-            resval_from_reg = 0
-
-        # Resolve the two resvals. If neither is defined (or both are 'x'),
-        # this resolves to None. If only one is defined, it takes precedence.
-        # If both are defined, check that they match.
-        if field_resval is None or isinstance(field_resval, str):
-            merged_resval = resval_from_reg
-        else:
-            merged_resval = field_resval
-            if reg_resval is not None and field_resval != resval_from_reg:
-                raise ValueError(f'resval for {where} is {field_resval}, '
-                                 f'but the register defines a resval as '
-                                 f'well, where the field\'s bits would '
-                                 f'give {resval_from_reg}.')
+        resval = Field.resval_from_raw(bits,
+                                       bindings,
+                                       rd.get('resval'),
+                                       is_mubi,
+                                       where)
 
         raw_enum = rd.get('enum')
         if raw_enum is None:
@@ -327,7 +296,7 @@ class Field:
                 enum_val_to_name[entry.value] = entry.name
 
         return Field(name, alias_target, desc, tags, swaccess, hwaccess,
-                     hwqe, bits, merged_resval, enum, is_mubi, is_auto_split)
+                     hwqe, bits, resval, enum, is_mubi, is_auto_split)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
