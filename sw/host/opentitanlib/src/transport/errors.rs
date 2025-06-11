@@ -17,8 +17,8 @@ pub enum TransportError {
     NoMatch,
     #[error("Found no USB device")]
     NoDevice,
-    #[error("Found multiple USB devices, use --usb-serial")]
-    MultipleDevices,
+    #[error("Found multiple USB devices ({0}), use --usb-serial")]
+    MultipleDevices(String),
     #[error("USB error: {0}")]
     UsbGenericError(String),
     #[error("Error opening USB device: {0}")]
