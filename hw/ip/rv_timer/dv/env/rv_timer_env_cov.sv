@@ -76,7 +76,8 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
     super.new(name, parent);
     //Create cfg coverage for each timer
     foreach (cfg_values_cov_obj[timer]) begin
-      cfg_values_cov_obj[timer] = new($sformatf("rv_timer-%0d", timer));
+      cfg_values_cov_obj[timer] = rv_timer_cfg_cov_obj::type_id::create($sformatf("rv_timer-%0d",
+                                                                                  timer));
       sticky_intr_cov[{"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}] =
             new(.name({"rv_timer_sticky_intr_pin", $sformatf("%0d", timer)}), .toggle_cov_en(0));
     end
@@ -87,7 +88,8 @@ class rv_timer_env_cov extends cip_base_env_cov #(.CFG_T(rv_timer_env_cfg));
     end
     //Create all timers active coverage for each hart
     foreach (ctrl_reg_cov_obj[hart]) begin
-      ctrl_reg_cov_obj[hart] = new($sformatf("hart_%0d_all_timer_active", hart));
+      ctrl_reg_cov_obj[hart] =
+        rv_timer_ctrl_reg_cov_obj::type_id::create($sformatf("hart_%0d_all_timer_active", hart));
     end
   endfunction : new
 
