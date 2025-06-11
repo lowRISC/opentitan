@@ -215,19 +215,27 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
           if (!is_int_err) begin
             class_i = `gmv(ral.alert_class_shadowed[alert_i]);
             void'(ral.alert_cause[alert_i].predict(1));
-            if (cfg.en_cov) cov.alert_cause_cg.sample(alert_i, class_i);
+            if (cfg.en_cov) begin
+              cov.alert_cause_cg.sample(alert_i, class_i);
+            end
           end else begin
             class_i = `gmv(ral.loc_alert_class_shadowed[int'(local_alert_type)]);
             void'(ral.loc_alert_cause[int'(local_alert_type)].predict(
                 .value(1), .kind(UVM_PREDICT_READ)));
-            if (cfg.en_cov) begin
-              if (local_alert_type inside {LocalAlertPingFail, LocalAlertIntFail}) begin
+            if (local_alert_type inside {LocalAlertPingFail, LocalAlertIntFail}) begin
+              if (cfg.en_cov) begin
                 cov.alert_loc_alert_cause_cg.sample(local_alert_type, alert_i, class_i);
-              end else begin
+              end
+            end else begin
+              // Check the local alert type equals to the ones defined in the CG:
+              `DV_CHECK(local_alert_type inside {LocalEscPingFail, LocalEscIntFail})
+              if (cfg.en_cov) begin
                 cov.esc_loc_alert_cause_cg.sample(local_alert_type, alert_i, class_i);
               end
             end
           end
+          // Check to ensure alert_i and class_i is within bounds
+          `DV_CHECK(alert_i < NUM_ALERTS && class_i < NUM_ALERT_CLASSES)
 
           intr_state_field = intr_state_fields[class_i];
           void'(intr_state_field.predict(.value(1), .kind(UVM_PREDICT_READ)));
