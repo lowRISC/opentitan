@@ -370,6 +370,10 @@ impl UsbHub {
         })
     }
 
+    pub fn device(&self) -> rusb::Device<rusb::Context> {
+        self.handle.device()
+    }
+
     // Perform an operation.
     pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
         let (value, set_feature) = match op {
