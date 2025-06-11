@@ -13,7 +13,8 @@ module gpio_bind;
     .d2h  (tl_o)
   );
 
-  bind gpio gpio_csr_assert_fpv gpio_csr_assert (
+  bind gpio gpio_csr_assert_fpv gpio_csr_assert
+  (
     .clk_i,
     .rst_ni,
     .h2d    (tl_i),
