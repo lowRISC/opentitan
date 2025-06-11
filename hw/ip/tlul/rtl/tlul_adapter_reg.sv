@@ -186,31 +186,32 @@ module tlul_adapter_reg
   end
 
   if (AccessLatency == 1) begin : gen_access_latency1
-    logic wr_req_q, rd_req_q;
+    logic a_ack_q, err_internal_q, wr_req_q;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
+        a_ack_q <= 1'b0;
+        err_internal_q <= 1'b0;
+        wr_req_q <= 1'b0;
         rdata_q  <= '0;
         error_q  <= 1'b0;
-        wr_req_q <= 1'b0;
-        rd_req_q <= 1'b0;
       end else begin
-        rd_req_q <= rd_req;
+        a_ack_q <= a_ack;
+        err_internal_q <= err_internal;
         wr_req_q <= wr_req;
-        // Addressing phase
-        if (a_ack) begin
-          error_q <= err_internal;
-        // Response phase
-        end else begin
-          error_q <= error;
-          rdata_q <= rdata;
-        end
+
+        rdata_q  <= rdata;
+        error_q  <= error;
       end
     end
-    assign rdata = (error_i || error_q || wr_req_q) ? '1      :
-                   (rd_req_q)                       ? rdata_i :
-                                                      rdata_q; // backpressure case
-    assign error = (rd_req_q || wr_req_q) ? (error_q || error_i) :
-                                            error_q; // backpressure case
+    always_comb begin
+      if (a_ack_q) begin
+        rdata = (error_i || err_internal_q || wr_req_q) ? '1 : rdata_i;
+        error = error_i || err_internal_q;
+      end else begin
+        rdata = rdata_q;
+        error = error_q;
+      end
+    end
   end else begin : gen_access_latency0
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
