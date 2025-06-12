@@ -81,7 +81,7 @@ class adc_ctrl_env_cov extends cip_base_env_cov #(
       [ADC_CTRL_CHANNELS] [ADC_CTRL_NUM_FILTERS];
 
 
-  function new(string name = "adc_ctrl_env_cov", uvm_component parent = null);
+  function new(string name, uvm_component parent = null);
     super.new(name, parent);
     adc_ctrl_testmode_cg = new();
   endfunction
