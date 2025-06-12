@@ -231,6 +231,18 @@ static rom_error_t dice_chain_load_flash(
   return kErrorOk;
 }
 
+// Add the hash digest to the last of the page.
+static rom_error_t dice_chain_seal_page(void) {
+  // Hash the entire page before the digest.
+  hmac_sha256(dice_chain.page.data, sizeof(dice_chain.page.data),
+              &dice_chain.page.digest);
+
+  // The page is going to be updated.
+  dice_chain.data_dirty = kHardenedBoolTrue;
+
+  return kErrorOk;
+}
+
 // Push the certificate to the tail with TLV header.
 OT_WARN_UNUSED_RESULT
 static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
@@ -448,6 +460,8 @@ rom_error_t dice_chain_attestation_owner(
 rom_error_t dice_chain_flush_flash(void) {
   if (dice_chain.data_dirty == kHardenedBoolTrue &&
       dice_chain.info_page != NULL) {
+    RETURN_IF_ERROR(dice_chain_seal_page());
+
     RETURN_IF_ERROR(
         flash_ctrl_info_erase(dice_chain.info_page, kFlashCtrlEraseTypePage));
     static_assert(sizeof(dice_chain.page) == kFlashPageSize,
