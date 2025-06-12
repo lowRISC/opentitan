@@ -138,3 +138,56 @@ test_suite(
         for tc in _VARIATION_INTEROP_TEST_CASES
     ],
 )
+
+opentitan_binary(
+    name = "modify_digest",
+    testonly = True,
+    srcs = ["modify_digest.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
+    deps = [
+        "//hw/top:flash_ctrl_c_regs",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)
+
+opentitan_test(
+    name = "corrupted_digest_test",
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        binaries = {
+            ":modify_digest": "modify_digest",
+        },
+        test_cmd = """
+            --exec="transport init"
+            --exec="fpga clear-bitstream"
+            --exec="fpga load-bitstream {bitstream}"
+            --exec="no-op --info='##### Prepare CDI cert page'"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
+            --exec="no-op --info='##### Corrupt CDI cert page'"
+            --exec="bootstrap --clear-uart=true {modify_digest}"
+            --exec="console --non-interactive --exit-success='PASS!' --timeout=10s"
+            --exec="bootstrap --clear-uart=true {firmware}"
+            --exec="no-op --info='##### Corruption should be detected and reboot'"
+            --exec="console --non-interactive --exit-success='BFV:03444303' --exit-failure='{exit_success}' --timeout=10s"
+            --exec="no-op --info='##### Corruption fixed in the second boot'"
+            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}' --timeout=10s"
+            no-op
+        """,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
