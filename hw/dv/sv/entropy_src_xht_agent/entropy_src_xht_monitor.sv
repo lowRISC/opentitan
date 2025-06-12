@@ -65,7 +65,7 @@ class entropy_src_xht_monitor extends dv_base_monitor #(
     //
     // To get scoreboard access to all bus samples, set cfg.unfiltered_monitor_traffic to 1. This
     // will allow for simulations in which an xht sequence takes longer than one cycle to respond.
-    event_filter = (cfg.vif.mon_cb.req.entropy_bit_valid ||
+    event_filter = (cfg.vif.mon_cb.entropy_bit_valid ||
                     cfg.vif.mon_cb.req.clear ||
                     cfg.vif.mon_cb.req.window_wrap_pulse ||
                     cfg.vif.mon_cb.entropy_bit_valid_q);
@@ -73,8 +73,11 @@ class entropy_src_xht_monitor extends dv_base_monitor #(
     if (cfg.unfiltered_monitor_traffic || event_filter) begin
       `uvm_info(`gfn, "Sending item", UVM_DEBUG)
       item = entropy_src_xht_item::type_id::create("item");
-      item.rsp = cfg.vif.mon_cb.rsp;
-      item.req = cfg.vif.mon_cb.req;
+      item.rsp               = cfg.vif.mon_cb.rsp;
+      item.req               = cfg.vif.mon_cb.req;
+      item.entropy_bit_valid = cfg.vif.mon_cb.entropy_bit_valid;
+      item.entropy_bit       = cfg.vif.mon_cb.entropy_bit;
+      item.entropy_bit_sel   = cfg.vif.mon_cb.entropy_bit_sel;
       analysis_port.write(item);
       req_analysis_port.write(item);
     end

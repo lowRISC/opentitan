@@ -12,10 +12,12 @@ module entropy_src
   import entropy_src_reg_pkg::*;
   import prim_mubi_pkg::mubi8_t;
 #(
-  parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int EsFifoDepth = 3,
-  parameter int DistrFifoDepth = 2
+  parameter int RngBusWidth                    = 4,
+  parameter int RngBusBitSelWidth              = 2,
+  parameter int EsFifoDepth                    = 3,
+  parameter int DistrFifoDepth                 = 2,
+  parameter bit Stub                           = 1'b0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -38,16 +40,20 @@ module entropy_src
   output entropy_src_hw_if_rsp_t entropy_src_hw_if_o,
 
   // RNG Interface
-  output entropy_src_rng_req_t entropy_src_rng_o,
-  input  entropy_src_rng_rsp_t entropy_src_rng_i,
+  output logic                   entropy_src_rng_enable_o,
+  input  logic                   entropy_src_rng_valid_i,
+  input  logic [RngBusWidth-1:0] entropy_src_rng_bit_i,
 
   // CSRNG Interface
   output cs_aes_halt_req_t cs_aes_halt_o,
   input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
-  output entropy_src_xht_req_t entropy_src_xht_o,
-  input  entropy_src_xht_rsp_t entropy_src_xht_i,
+  output logic                         entropy_src_xht_bit_valid_o,
+  output logic [RngBusWidth-1:0]       entropy_src_xht_bit_o,
+  output logic [RngBusBitSelWidth-1:0] entropy_src_xht_bit_sel_o,
+  output entropy_src_xht_req_t         entropy_src_xht_meta_o,
+  input  entropy_src_xht_rsp_t         entropy_src_xht_meta_i,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -60,8 +66,11 @@ module entropy_src
   output logic    intr_es_fatal_err_o
 );
 
-  localparam int RngBusWidth = 4; // AST RNG bus width
   localparam int NumBins = 2**RngBusWidth; // bucket health test bin count
+
+  `ASSERT_INIT(RngBusBitWidthMaxValue_A, RngBusWidth <= 256)
+  `ASSERT_INIT(RngBusBitSelWidthSameAsComputed_A,
+               RngBusBitSelWidth == prim_util_pkg::vbits(RngBusWidth))
 
   // common signals
   entropy_src_hw2reg_t hw2reg;
@@ -73,9 +82,12 @@ module entropy_src
   logic core_rst_n;
   entropy_src_hw2reg_t core_hw2reg;
   entropy_src_hw_if_rsp_t core_entropy_hw_if;
-  entropy_src_rng_req_t core_rng;
+  logic core_rng_enable;
   cs_aes_halt_req_t core_aes_halt;
-  entropy_src_xht_req_t core_xht;
+  entropy_src_xht_req_t core_xht_meta;
+  logic core_xht_bit_valid;
+  logic [RngBusWidth-1:0] core_xht_bit;
+  logic [RngBusBitSelWidth-1:0] core_xht_bit_sel;
   logic core_intr_es_entropy_valid;
   logic core_intr_es_health_test_failed;
   logic core_intr_es_observe_fifo_ready;
@@ -100,9 +112,12 @@ module entropy_src
   assign hw2reg                       = Stub ? stub_hw2reg        : core_hw2reg;
   assign core_rst_n                   = Stub ? '0                 : rst_ni;
   assign entropy_src_hw_if_o          = Stub ? stub_entropy_hw_if : core_entropy_hw_if;
-  assign entropy_src_rng_o            = Stub ? '1                 : core_rng;
+  assign entropy_src_rng_enable_o     = Stub ? '1                 : core_rng_enable;
   assign cs_aes_halt_o                = Stub ? '0                 : core_aes_halt;
-  assign entropy_src_xht_o            = Stub ? '0                 : core_xht;
+  assign entropy_src_xht_bit_valid_o  = Stub ? '0                 : core_xht_bit_valid;
+  assign entropy_src_xht_bit_o        = Stub ? '0                 : core_xht_bit;
+  assign entropy_src_xht_bit_sel_o    = Stub ? '0                 : core_xht_bit_sel;
+  assign entropy_src_xht_meta_o       = Stub ? '0                 : core_xht_meta;
   assign intr_es_entropy_valid_o      = Stub ? stub_es_valid      : core_intr_es_entropy_valid;
   assign intr_es_health_test_failed_o = Stub ? '0                 : core_intr_es_health_test_failed;
   assign intr_es_observe_fifo_ready_o = Stub ? '0                 : core_intr_es_observe_fifo_ready;
@@ -131,6 +146,7 @@ module entropy_src
   );
 
   entropy_src_core #(
+    .RngBusWidth(RngBusWidth),
     .EsFifoDepth(EsFifoDepth),
     .DistrFifoDepth(DistrFifoDepth)
   ) u_entropy_src_core (
@@ -146,11 +162,15 @@ module entropy_src
     .entropy_src_hw_if_o(core_entropy_hw_if),
     .entropy_src_hw_if_i,
 
-    .entropy_src_xht_o(core_xht),
-    .entropy_src_xht_i,
+    .entropy_src_xht_bit_valid_o(core_xht_bit_valid),
+    .entropy_src_xht_bit_o(core_xht_bit),
+    .entropy_src_xht_bit_sel_o(core_xht_bit_sel),
+    .entropy_src_xht_meta_o(core_xht_meta),
+    .entropy_src_xht_meta_i,
 
-    .entropy_src_rng_o(core_rng),
-    .entropy_src_rng_i,
+    .entropy_src_rng_enable_o(core_rng_enable),
+    .entropy_src_rng_valid_i,
+    .entropy_src_rng_bit_i,
 
     .cs_aes_halt_o(core_aes_halt),
     .cs_aes_halt_i,
@@ -251,17 +271,16 @@ module entropy_src
       entropy_src_hw_if_o.es_ack)
 
   // RNG Interface
-  `ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_o.rng_enable)
+  `ASSERT_KNOWN(EsRngEnableKnownO_A, entropy_src_rng_enable_o)
 
   // External Health Test Interface
-  `ASSERT_KNOWN_IF(EsXhtEntropyBitKnownO_A, entropy_src_xht_o.entropy_bit,
-      entropy_src_xht_o.entropy_bit_valid)
-  `ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_o.entropy_bit_valid)
-  `ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_o.clear)
-  `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_o.active)
-  `ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_o.thresh_hi)
-  `ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_o.thresh_lo)
-  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_o.window_wrap_pulse)
+  `ASSERT_KNOWN_IF(EsXhtEntropyBitKnownO_A, entropy_src_xht_bit_o, entropy_src_xht_bit_valid_o)
+  `ASSERT_KNOWN(EsXhtEntropyBitValidKnownO_A, entropy_src_xht_bit_valid_o)
+  `ASSERT_KNOWN(EsXhtClearKnownO_A, entropy_src_xht_meta_o.clear)
+  `ASSERT_KNOWN(EsXhtActiveKnownO_A, entropy_src_xht_meta_o.active)
+  `ASSERT_KNOWN(EsXhtThreshHiKnownO_A, entropy_src_xht_meta_o.thresh_hi)
+  `ASSERT_KNOWN(EsXhtThreshLoKnownO_A, entropy_src_xht_meta_o.thresh_lo)
+  `ASSERT_KNOWN(EsXhtWindowKnownO_A, entropy_src_xht_meta_o.window_wrap_pulse)
 
   // Alerts
   `ASSERT_KNOWN(AlertTxKnownO_A, alert_tx_o)

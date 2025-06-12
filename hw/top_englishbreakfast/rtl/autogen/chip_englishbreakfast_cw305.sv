@@ -646,9 +646,8 @@ module chip_englishbreakfast_cw305 #(
   ast_pkg::adc_ast_rsp_t adc_rsp;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
-  entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
+  logic es_rng_enable, es_rng_valid;
+  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
   logic es_rng_fips;
 
   // entropy distribution network
@@ -882,10 +881,10 @@ module chip_englishbreakfast_cw305 #(
     .adc_d_o               ( adc_rsp.data ),
     .adc_d_val_o           ( adc_rsp.data_valid ),
     // rng
-    .rng_en_i              ( es_rng_req.rng_enable ),
+    .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips ),
-    .rng_val_o             ( es_rng_rsp.rng_valid ),
-    .rng_b_o               ( es_rng_rsp.rng_b ),
+    .rng_val_o             ( es_rng_valid ),
+    .rng_b_o               ( es_rng_bit ),
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
