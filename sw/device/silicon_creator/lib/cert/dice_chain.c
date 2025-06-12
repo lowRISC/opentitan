@@ -393,14 +393,56 @@ static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   }
 }
 
+// Check the hash digest at the last of the page.
+static rom_error_t dice_chain_seal_page_check(
+    const flash_ctrl_info_page_t *info_page) {
+  RETURN_IF_ERROR(dice_chain_load_flash(info_page));
+  // Hash the entire page before the digest.
+  hmac_digest_t expected_digest;
+  hmac_sha256(dice_chain.page.data, sizeof(dice_chain.page.data),
+              &expected_digest);
+
+  // Compare with the digest stored at the end of the page.
+  if (memcmp(&dice_chain.page.digest, &expected_digest,
+             sizeof(hmac_digest_t)) != 0) {
+    return kErrorDicePageCorrupted;
+  }
+
+  return kErrorOk;
+}
+
+rom_error_t dice_chain_rom_ext_check(void) {
+  if (dice_chain_seal_page_check(&kFlashCtrlInfoPageFactoryCerts) != kErrorOk) {
+    dbg_puts("warning: corrupted FactoryCerts page\r\n");
+  }
+
+  // Retry if the current cache is corrupted.
+  rom_error_t error = dice_chain_seal_page_check(&kFlashCtrlInfoPageDiceCerts);
+  if (error == kErrorDicePageCorrupted) {
+    dbg_puts("warning: corrupted DiceCerts page\r\n");
+    // Clear the corrupted page and reboot.
+    dice_chain.data_dirty = kHardenedBoolTrue;
+    memset(&dice_chain.page, 0, sizeof(dice_chain.page));
+    RETURN_IF_ERROR(dice_chain_flush_flash());
+
+    if (static_dice_cdi_0.cert_size > 0) {
+      // Continue since CDI_0 has been generated
+      error = kErrorOk;
+    }
+  }
+  RETURN_IF_ERROR(error);
+
+  // Handles the certificates from the immutable rom_ext.
+  RETURN_IF_ERROR(dice_chain_attestation_check_uds());
+  RETURN_IF_ERROR(dice_chain_attestation_check_cdi_0());
+
+  return kErrorOk;
+}
+
 rom_error_t dice_chain_attestation_owner(
     const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
     keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain) {
-  // Handles the certificates from the immutable rom_ext first.
-  RETURN_IF_ERROR(dice_chain_attestation_check_uds());
-  RETURN_IF_ERROR(dice_chain_attestation_check_cdi_0());
-
   // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);

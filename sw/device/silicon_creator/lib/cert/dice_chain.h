@@ -86,6 +86,17 @@ rom_error_t dice_chain_attestation_owner(
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_flush_flash(void);
 
+/**
+ * Checks that the factory-provisioned certificates in flash are valid and
+ * updates device-generated certificates if they have been invalidated.
+ *
+ * This function needs to be called after `dice_chain_init()`.
+ *
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_rom_ext_check(void);
+
 #ifdef __cplusplus
 }
 #endif
