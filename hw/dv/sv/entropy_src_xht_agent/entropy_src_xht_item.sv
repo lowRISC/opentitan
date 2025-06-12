@@ -4,8 +4,15 @@
 
 class entropy_src_xht_item extends uvm_sequence_item;
 
-  entropy_src_xht_req_t req;
-  entropy_src_xht_rsp_t rsp;
+  localparam int RngBusWidth = 4; // TODO(#16276)
+  localparam int RngBusBitSelWidth = prim_util_pkg::vbits(RngBusWidth);
+
+  logic                         entropy_valid;
+  logic [RngBusWidth-1:0]       entropy_bits;
+  logic [RngBusBitSelWidth-1:0] entropy_bit_sel;
+
+  entropy_src_xht_meta_req_t req;
+  entropy_src_xht_meta_rsp_t rsp;
 
   `uvm_object_utils(entropy_src_xht_item)
   `uvm_object_new

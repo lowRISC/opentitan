@@ -64,11 +64,15 @@ module tb;
     .cs_aes_halt_o                (aes_halt_if.req),
     .cs_aes_halt_i                (aes_halt_if.ack),
 
-    .entropy_src_xht_o            (xht_if.req),
-    .entropy_src_xht_i            (xht_if.rsp),
+    .entropy_src_xht_valid_o      (xht_if.entropy_valid),
+    .entropy_src_xht_bits_o       (xht_if.entropy_bits),
+    .entropy_src_xht_bit_sel_o    (xht_if.entropy_bit_sel),
+    .entropy_src_xht_meta_o       (xht_if.req),
+    .entropy_src_xht_meta_i       (xht_if.rsp),
 
-    .entropy_src_rng_o            (rng_if.ready),
-    .entropy_src_rng_i            ({rng_if.valid, rng_if.h_data}),
+    .entropy_src_rng_enable_o     (rng_if.ready),
+    .entropy_src_rng_valid_i      (rng_if.valid),
+    .entropy_src_rng_bits_i       (rng_if.h_data),
 
     .alert_rx_i                   (alert_rx),
     .alert_tx_o                   (alert_tx),

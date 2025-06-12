@@ -14,7 +14,7 @@ class entropy_src_xht_device_driver extends dv_base_driver #(
     forever begin
       @(negedge cfg.vif.rst_n);
       `uvm_info(`gfn, "Driver is under reset", UVM_DEBUG)
-      cfg.vif.xht_cb.rsp <= ENTROPY_SRC_XHT_RSP_DEFAULT;
+      cfg.vif.xht_cb.rsp <= ENTROPY_SRC_XHT_META_RSP_DEFAULT;
       @(posedge cfg.vif.rst_n);
       `uvm_info(`gfn, "Driver is out of reset", UVM_DEBUG)
     end

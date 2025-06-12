@@ -8496,6 +8496,29 @@
       param_list:
       [
         {
+          name: RngBusWidth
+          desc:
+            '''
+            Defines the bit-width of the noise source data.
+            Must be between 4 and 256 (inclusive) and divisible by 4.
+            The divisibility by 4 is a prerequisite for the bucket health test.
+            '''
+          type: int
+          default: 4
+          local: "false"
+          expose: "true"
+          name_top: EntropySrcRngBusWidth
+        }
+        {
+          name: RngBusBitSelWidth
+          desc: Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))
+          type: int
+          default: 2
+          local: "false"
+          expose: "true"
+          name_top: EntropySrcRngBusBitSelWidth
+        }
+        {
           name: EsFifoDepth
           desc: Number of 384-bit entries in the esfinal FIFO
           type: int
@@ -8557,22 +8580,151 @@
           index: -1
         }
         {
-          name: entropy_src_rng
-          struct: entropy_src_rng
-          package: entropy_src_pkg
-          type: req_rsp
+          name: entropy_src_rng_enable
+          desc:
+            '''
+            Signal through which entropy_src enables the noise source.
+            entropy_src will keep this signal high as long as it expects the noise source to operate.
+            This is *not* a flow control signal through which entropy_src would exert backpressure on the noise source; rather this signal stays high while entropy_src is enabled.
+            '''
+          struct: logic
+          type: uni
           act: req
           width: 1
           inst_name: entropy_src
           default: ""
+          package: ""
           external: true
-          top_signame: es_rng
+          top_signame: es_rng_enable
           conn_type: false
           index: -1
         }
         {
-          name: entropy_src_xht
-          struct: entropy_src_xht
+          name: entropy_src_rng_valid
+          desc:
+            '''
+            Acknowledgement signal from the noise source.
+            When '1', it indicates that the `entropy_src_rng_bit` data is valid and ready to be consumed.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          package: ""
+          external: true
+          top_signame: es_rng_valid
+          conn_type: false
+          index: -1
+        }
+        {
+          name: entropy_src_rng_bits
+          desc:
+            '''
+            Output data bus carrying the raw entropy bits from the noise source.
+            These bits are valid when `entropy_src_rng_valid` is asserted.
+            The width is determined by `RngBusWidth` parametrization.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width:
+          {
+            name: RngBusWidth
+            desc:
+              '''
+              Defines the bit-width of the noise source data.
+              Must be between 4 and 256 (inclusive) and divisible by 4.
+              The divisibility by 4 is a prerequisite for the bucket health test.
+              '''
+            param_type: int
+            unpacked_dimensions: null
+            default: 4
+            local: false
+            expose: true
+            name_top: EntropySrcRngBusWidth
+          }
+          inst_name: entropy_src
+          default: ""
+          package: ""
+          external: true
+          top_signame: es_rng_bit
+          conn_type: false
+          index: -1
+        }
+        {
+          name: entropy_src_xht_valid
+          desc:
+            '''
+            Valid signal for the external health test interface.
+            When asserted, it indicates that `entropy_src_xht_bits`, `entropy_src_xht_bit_sel`, and `entropy_src_xht_meta` are valid for consumption by the external health test.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: entropy_src_xht_bits
+          desc:
+            '''
+            Carries the raw entropy data from the entropy source to be consumed by the external health test module.
+            The data on this bus is valid when `entropy_src_xht_valid` is asserted.
+            The width is determined by `RngBusWidth` parametrization.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width:
+          {
+            name: RngBusWidth
+            desc:
+              '''
+              Defines the bit-width of the noise source data.
+              Must be between 4 and 256 (inclusive) and divisible by 4.
+              The divisibility by 4 is a prerequisite for the bucket health test.
+              '''
+            param_type: int
+            unpacked_dimensions: null
+            default: 4
+            local: false
+            expose: true
+            name_top: EntropySrcRngBusWidth
+          }
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: entropy_src_xht_bit_sel
+          desc:
+            '''
+            Provides bit selection information for the raw entropy data.
+            It specifies which specific bit or subset of bits from `entropy_src_xht_bit` should be used.
+            The width is determined by `RngBusBitSelWidth` parametrization.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width:
+          {
+            name: RngBusBitSelWidth
+            desc: Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))
+            param_type: int
+            unpacked_dimensions: null
+            default: 2
+            local: false
+            expose: true
+            name_top: EntropySrcRngBusBitSelWidth
+          }
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: entropy_src_xht_meta
+          struct: entropy_src_xht_meta
           package: entropy_src_pkg
           type: req_rsp
           act: req
@@ -10841,7 +10993,9 @@
       flash_ctrl.flash_test_mode_a: flash_test_mode_a
       flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
       flash_ctrl.fla_obs: flash_obs
-      entropy_src.entropy_src_rng: es_rng
+      entropy_src.entropy_src_rng_enable: es_rng_enable
+      entropy_src.entropy_src_rng_valid: es_rng_valid
+      entropy_src.entropy_src_rng_bits: es_rng_bit
       entropy_src.rng_fips: es_rng_fips
       peri.tl_ast: ast_tl
       pinmux_aon.dft_strap_test: dft_strap_test
@@ -23171,22 +23325,151 @@
         index: -1
       }
       {
-        name: entropy_src_rng
-        struct: entropy_src_rng
-        package: entropy_src_pkg
-        type: req_rsp
+        name: entropy_src_rng_enable
+        desc:
+          '''
+          Signal through which entropy_src enables the noise source.
+          entropy_src will keep this signal high as long as it expects the noise source to operate.
+          This is *not* a flow control signal through which entropy_src would exert backpressure on the noise source; rather this signal stays high while entropy_src is enabled.
+          '''
+        struct: logic
+        type: uni
         act: req
         width: 1
         inst_name: entropy_src
         default: ""
+        package: ""
         external: true
-        top_signame: es_rng
+        top_signame: es_rng_enable
         conn_type: false
         index: -1
       }
       {
-        name: entropy_src_xht
-        struct: entropy_src_xht
+        name: entropy_src_rng_valid
+        desc:
+          '''
+          Acknowledgement signal from the noise source.
+          When '1', it indicates that the `entropy_src_rng_bit` data is valid and ready to be consumed.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        package: ""
+        external: true
+        top_signame: es_rng_valid
+        conn_type: false
+        index: -1
+      }
+      {
+        name: entropy_src_rng_bits
+        desc:
+          '''
+          Output data bus carrying the raw entropy bits from the noise source.
+          These bits are valid when `entropy_src_rng_valid` is asserted.
+          The width is determined by `RngBusWidth` parametrization.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width:
+        {
+          name: RngBusWidth
+          desc:
+            '''
+            Defines the bit-width of the noise source data.
+            Must be between 4 and 256 (inclusive) and divisible by 4.
+            The divisibility by 4 is a prerequisite for the bucket health test.
+            '''
+          param_type: int
+          unpacked_dimensions: null
+          default: 4
+          local: false
+          expose: true
+          name_top: EntropySrcRngBusWidth
+        }
+        inst_name: entropy_src
+        default: ""
+        package: ""
+        external: true
+        top_signame: es_rng_bit
+        conn_type: false
+        index: -1
+      }
+      {
+        name: entropy_src_xht_valid
+        desc:
+          '''
+          Valid signal for the external health test interface.
+          When asserted, it indicates that `entropy_src_xht_bits`, `entropy_src_xht_bit_sel`, and `entropy_src_xht_meta` are valid for consumption by the external health test.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: entropy_src_xht_bits
+        desc:
+          '''
+          Carries the raw entropy data from the entropy source to be consumed by the external health test module.
+          The data on this bus is valid when `entropy_src_xht_valid` is asserted.
+          The width is determined by `RngBusWidth` parametrization.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width:
+        {
+          name: RngBusWidth
+          desc:
+            '''
+            Defines the bit-width of the noise source data.
+            Must be between 4 and 256 (inclusive) and divisible by 4.
+            The divisibility by 4 is a prerequisite for the bucket health test.
+            '''
+          param_type: int
+          unpacked_dimensions: null
+          default: 4
+          local: false
+          expose: true
+          name_top: EntropySrcRngBusWidth
+        }
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: entropy_src_xht_bit_sel
+        desc:
+          '''
+          Provides bit selection information for the raw entropy data.
+          It specifies which specific bit or subset of bits from `entropy_src_xht_bit` should be used.
+          The width is determined by `RngBusBitSelWidth` parametrization.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width:
+        {
+          name: RngBusBitSelWidth
+          desc: Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))
+          param_type: int
+          unpacked_dimensions: null
+          default: 2
+          local: false
+          expose: true
+          name_top: EntropySrcRngBusBitSelWidth
+        }
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: entropy_src_xht_meta
+        struct: entropy_src_xht_meta
         package: entropy_src_pkg
         type: req_rsp
         act: req
@@ -24991,28 +25274,55 @@
         netname: flash_obs
       }
       {
-        package: entropy_src_pkg
-        struct: entropy_src_rng_req
-        signame: es_rng_req_o
+        package: ""
+        struct: logic
+        signame: es_rng_enable_o
         width: 1
-        type: req_rsp
+        type: uni
         default: ""
         direction: out
         conn_type: false
         index: -1
-        netname: es_rng_req
+        netname: es_rng_enable
       }
       {
-        package: entropy_src_pkg
-        struct: entropy_src_rng_rsp
-        signame: es_rng_rsp_i
+        package: ""
+        struct: logic
+        signame: es_rng_valid_i
         width: 1
-        type: req_rsp
+        type: uni
         default: ""
         direction: in
         conn_type: false
         index: -1
-        netname: es_rng_rsp
+        netname: es_rng_valid
+      }
+      {
+        package: ""
+        struct: logic
+        signame: es_rng_bit_i
+        width:
+        {
+          name: RngBusWidth
+          desc:
+            '''
+            Defines the bit-width of the noise source data.
+            Must be between 4 and 256 (inclusive) and divisible by 4.
+            The divisibility by 4 is a prerequisite for the bucket health test.
+            '''
+          param_type: int
+          unpacked_dimensions: null
+          default: 4
+          local: false
+          expose: true
+          name_top: EntropySrcRngBusWidth
+        }
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: es_rng_bit
       }
       {
         package: ""

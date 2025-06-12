@@ -9,7 +9,6 @@ package entropy_src_pkg;
   // Entropy Interface
   //-------------------------
 
-  parameter int  RNG_BUS_WIDTH   = 4;
   parameter int  CSRNG_BUS_WIDTH = 384;
   parameter int  FIPS_BUS_WIDTH  = 1;
   parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
@@ -44,25 +43,9 @@ package entropy_src_pkg;
   parameter cs_aes_halt_req_t CS_AES_HALT_REQ_DEFAULT = '{default: '0};
   parameter cs_aes_halt_rsp_t CS_AES_HALT_RSP_DEFAULT = '{default: '0};
 
-  // ast rng i/f
-  typedef struct packed {
-    logic rng_enable;
-  } entropy_src_rng_req_t;
-
-  typedef struct packed {
-    logic rng_valid;
-    logic [RNG_BUS_WIDTH-1:0] rng_b;
-  } entropy_src_rng_rsp_t;
-
-  parameter entropy_src_rng_req_t ENTROPY_SRC_RNG_REQ_DEFAULT = '{default: '0};
-  parameter entropy_src_rng_rsp_t ENTROPY_SRC_RNG_RSP_DEFAULT = '{default: '0};
-
   // external health test i/f
   typedef struct packed {
-    logic [RNG_BUS_WIDTH-1:0] entropy_bit;
-    logic entropy_bit_valid;
     logic rng_bit_en;
-    logic [1:0] rng_bit_sel;
     logic clear;
     logic active;
     logic [15:0] thresh_hi;
@@ -70,7 +53,7 @@ package entropy_src_pkg;
     logic [WINDOW_CNTR_WIDTH-1:0] health_test_window;
     logic window_wrap_pulse;
     logic threshold_scope;
-  } entropy_src_xht_req_t;
+  } entropy_src_xht_meta_req_t;
 
   typedef struct packed {
     logic[15:0] test_cnt_hi;
@@ -78,10 +61,10 @@ package entropy_src_pkg;
     logic continuous_test;
     logic test_fail_hi_pulse;
     logic test_fail_lo_pulse;
-  } entropy_src_xht_rsp_t;
+  } entropy_src_xht_meta_rsp_t;
 
-  parameter entropy_src_xht_req_t ENTROPY_SRC_XHT_REQ_DEFAULT = '{default: '0};
-  parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT =
+  parameter entropy_src_xht_meta_req_t ENTROPY_SRC_XHT_META_REQ_DEFAULT = '{default: '0};
+  parameter entropy_src_xht_meta_rsp_t ENTROPY_SRC_XHT_META_RSP_DEFAULT =
       '{test_cnt_lo: 16'hffff, default: '0};
 
 endpackage : entropy_src_pkg

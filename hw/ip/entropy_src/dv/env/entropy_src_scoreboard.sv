@@ -770,7 +770,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return (fail_hi || fail_lo);
   endfunction
 
-  function void evaluate_external_ht(entropy_src_xht_rsp_t xht_rsp, bit fips_mode);
+  function void evaluate_external_ht(entropy_src_xht_meta_rsp_t xht_rsp, bit fips_mode);
     int value_hi, value_lo;
     bit fail_hi, fail_lo;
     string msg;
@@ -1317,7 +1317,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // If the environment is configured to maintain the default XHT response at all time, ensure
         // that this is really the case.
         `DV_CHECK_EQ(cfg.m_xht_agent_cfg.vif.mon_cb.rsp,
-                     entropy_src_pkg::ENTROPY_SRC_XHT_RSP_DEFAULT)
+                     entropy_src_pkg::ENTROPY_SRC_XHT_META_RSP_DEFAULT)
       end
     end
   endtask
@@ -2696,7 +2696,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             if (!xht_item.req.clear) begin
               evaluate_external_ht(xht_item.rsp, ht_fips_mode);
             end
-            if (xht_item.req.entropy_bit_valid || xht_item.req.window_wrap_pulse) break;
+            if (xht_item.entropy_valid || xht_item.req.window_wrap_pulse) break;
           end : sample_loop
 
           if (disable_detected) break; // No sample events. DUT has shutdown
@@ -2712,17 +2712,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end
           // Check whether the rng_bit_en and the rng_bit_sel match the values in the CONF register.
           `DV_CHECK(xht_item.req.rng_bit_en == rng_bit_en)
-          `DV_CHECK(xht_item.req.rng_bit_sel == rng_bit_sel)
+          `DV_CHECK(xht_item.entropy_bit_sel == rng_bit_sel)
 
           // No shutdown, or window close pulse, must be a sample.
-          `DV_CHECK(xht_item.req.entropy_bit_valid)
+          `DV_CHECK(xht_item.entropy_valid)
 
           // Make sure that RNG data has been received and that it matches the
           // ExtHT data
           `DV_CHECK(health_test_data_q.size() > 0)
           rng_val = health_test_data_q.pop_front();
 
-          `DV_CHECK(xht_item.req.entropy_bit == rng_val)
+          `DV_CHECK(xht_item.entropy_bits == rng_val)
           window.push_back(rng_val);
 
           fmt = "RNG element: %0x, idx: %0d";
