@@ -24,7 +24,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts};
+use usb::{UsbHub, UsbHubOp, UsbOpts, get_device_by_port_numbers};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -131,10 +131,24 @@ fn resume(hub: &UsbHub, port: u8) -> Result<()> {
     Ok(())
 }
 
+fn find_device(hub: &UsbHub, port: u8) -> Result<rusb::Device<rusb::Context>> {
+    // Build the port path to the device.
+    let mut ports = hub.device().port_numbers()?.clone();
+    ports.push(port);
+    // Try to find the device
+    get_device_by_port_numbers(&ports)
+}
+
 fn reset(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("resetting device on port {}", port);
-    // Reset Signaling shall be performed for at least 10ms.
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+    // One option would be send the reset using a port operation by doing:
+    //   hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+    // However, if we do so then the kernel will not be aware of the reset
+    // and it will not try to configure the device afterwards. Therefore
+    // for resets, we need to look for the device, obtain a handle and ask
+    // the kernel to reset it for us.
+    let device = find_device(hub, port)?;
+    device.open().context("could not find device under test")?.reset().context("could not reset device via the kernel")?;
     delay_millis(TIME_RESETTING);
     log::info!("reset");
     Ok(())
@@ -168,6 +182,7 @@ fn usbdev_suspend(
     // - Fairly arbitrary, may be modified quite freely.
     let time_disconnected: u64 = 1000;
 
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
