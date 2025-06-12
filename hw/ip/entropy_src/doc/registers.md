@@ -240,26 +240,29 @@ The modules of the entropy complex may only be enabled and disabled in a specifi
 ## CONF
 Configuration register
 - Offset: `0x24`
-- Reset default: `0x2649999`
-- Reset mask: `0x3ffffff`
+- Reset default: `0x999999`
+- Reset mask: `0xffffffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FLAG", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_FIPS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FLAG", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_FIPS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_SEL", "bits": 8, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                      |
 |:------:|:------:|:-------:|:----------------------------------------------------------|
-| 31:26  |        |         | Reserved                                                  |
-| 25:22  |   rw   |   0x9   | [ENTROPY_DATA_REG_ENABLE](#conf--entropy_data_reg_enable) |
-| 21:18  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope)                 |
-| 17:16  |   rw   |   0x0   | [RNG_BIT_SEL](#conf--rng_bit_sel)                         |
+| 31:24  |   rw   |   0x0   | [RNG_BIT_SEL](#conf--rng_bit_sel)                         |
+| 23:20  |   rw   |   0x9   | [ENTROPY_DATA_REG_ENABLE](#conf--entropy_data_reg_enable) |
+| 19:16  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope)                 |
 | 15:12  |   rw   |   0x9   | [RNG_BIT_ENABLE](#conf--rng_bit_enable)                   |
 |  11:8  |   rw   |   0x9   | [RNG_FIPS](#conf--rng_fips)                               |
 |  7:4   |   rw   |   0x9   | [FIPS_FLAG](#conf--fips_flag)                             |
 |  3:0   |   rw   |   0x9   | [FIPS_ENABLE](#conf--fips_enable)                         |
+
+### CONF . RNG_BIT_SEL
+When [`CONF.RNG_BIT_ENABLE`](#conf) is set, this field selects which bit from the RNG bus will be processed.
+If the IP is parameterized for a bus width less than 256 bits, the upper, unused bits of this register are ignored.
 
 ### CONF . ENTROPY_DATA_REG_ENABLE
 Setting this field to `kMultiBitBool4True` will enable reading entropy values from the [`ENTROPY_DATA`](#entropy_data) register.
@@ -270,14 +273,6 @@ This field controls the scope (either by-line or by-sum) of the health checks.
 If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
 If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
 A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
-
-### CONF . RNG_BIT_SEL
-When [`CONF.RNG_BIT_ENABLE`](#conf) is set, this field selects which bit from the RNG bus will be processed.
-This two bit field selects the RNG bit stream:
-0b00: RNG bit 0
-0b01: RNG bit 1
-0b10: RNG bit 2
-0b11: RNG bit 3
 
 ### CONF . RNG_BIT_ENABLE
 Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.

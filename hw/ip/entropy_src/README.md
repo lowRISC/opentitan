@@ -16,6 +16,7 @@ This module conforms to the [Comportable guideline for peripheral functionality.
 - This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator or PTRNG).
 The PTRNG external source is a physical true random noise source.
 A noise source and its relation to an entropy source are defined by [SP 800-90B.](https://csrc.nist.gov/publications/detail/sp/800-90b/final)
+- Configurable noise source bus width, supporting 4-256 bits.
 - A set of registers is provided for firmware to obtain entropy bits.
 - Interrupts are supported:
   - Entropy bits are available for firmware consumption.

@@ -19,11 +19,11 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
   virtual function void update_item_rsp(entropy_src_xht_item item);
     if (item.req.clear) begin
        window_data_q.delete();
-       test_cnt_hi = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_hi;
-       test_cnt_lo = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_lo;
+       test_cnt_hi = ENTROPY_SRC_XHT_META_RSP_DEFAULT.test_cnt_hi;
+       test_cnt_lo = ENTROPY_SRC_XHT_META_RSP_DEFAULT.test_cnt_lo;
     end else begin
-      if (item.req.active && item.req.entropy_bit_valid) begin
-        window_data_q.push_back(item.req.entropy_bit);
+      if (item.req.active && item.entropy_valid) begin
+        window_data_q.push_back(item.entropy_bits);
         if (window_data_q.size() == item.req.health_test_window) begin
           // Use a hash function to create output values that cover the
           // complete range of test_cnt's, but also depend deterministically
@@ -104,8 +104,8 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
         `DV_SPINWAIT_EXIT(wait(req_q.size());, wait(cfg.in_reset))
         if (cfg.in_reset) begin
           `uvm_info(`gfn, "Reset detected!", UVM_DEBUG)
-          test_cnt_hi = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_hi;
-          test_cnt_lo = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_lo;
+          test_cnt_hi = ENTROPY_SRC_XHT_META_RSP_DEFAULT.test_cnt_hi;
+          test_cnt_lo = ENTROPY_SRC_XHT_META_RSP_DEFAULT.test_cnt_lo;
           wait (!cfg.in_reset)
           req_q.delete();
           window_data_q.delete();

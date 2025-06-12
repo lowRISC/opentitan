@@ -355,10 +355,10 @@ In this example, the RNG lines are scored individually (i.e., [`CONF.THRESHOLD_S
 Vendor-specific tests are supported through an external health test interface (xht).
 This is the same interface that is used for the internal health tests.
 Below is a description of this interface:
-- entropy_bit: 4-bit wide bus of entropy to be tested.
-- entropy_bit_valid: indication of when the entropy is valid.
+- entropy_bit: the 4- to 256-bit wide bus of entropy to be tested.
+- entropy_valid: indication of when the entropy is valid.
 - rng_bit_en: indication whether running in single-channel or multi-channel mode.
-- rng_bit_sel: 2-bit signal to indicate the selected channel when running in single-channel mode.
+- rng_bit_sel: ceil(log2(entropy_bit)) wide signal to indicate the selected channel when running in single-channel mode.
 - clear: signal to clear counters, and is register driven.
 - active: signal to indicate when the test should run, and is register driven.
 - thresh_hi: field to indicate what high threshold the test should use, and is register driven.

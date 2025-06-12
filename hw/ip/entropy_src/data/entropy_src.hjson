@@ -57,15 +57,79 @@
                CSRNG may not drop the acknowledge before Entropy Source drops the request.
                '''
     }
-    { struct:  "entropy_src_rng",
-      type:    "req_rsp",
-      name:    "entropy_src_rng",
-      act:     "req",
-      package: "entropy_src_pkg",
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_enable"
+      act:     "req"
+      width:   1
+      package: ""
+      desc:    '''
+               Signal through which entropy_src enables the noise source.
+               entropy_src will keep this signal high as long as it expects the noise source to operate.
+               This is *not* a flow control signal through which entropy_src would exert backpressure on the noise source; rather this signal stays high while entropy_src is enabled.
+               '''
     }
-    { struct:  "entropy_src_xht",
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_valid"
+      act:     "rcv"
+      width:   1
+      package: ""
+      desc:    '''
+               Acknowledgement signal from the noise source.
+               When '1', it indicates that the `entropy_src_rng_bit` data is valid and ready to be consumed.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_rng_bits"
+      act:     "rcv"
+      width:   RngBusWidth
+      package: ""
+      desc:    '''
+               Output data bus carrying the raw entropy bits from the noise source.
+               These bits are valid when `entropy_src_rng_valid` is asserted.
+               The width is determined by `RngBusWidth` parametrization.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_valid"
+      act:     "req"
+      width:   1
+      package: ""
+      desc:    '''
+               Valid signal for the external health test interface.
+               When asserted, it indicates that `entropy_src_xht_bits`, `entropy_src_xht_bit_sel`, and `entropy_src_xht_meta` are valid for consumption by the external health test.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_bits"
+      act:     "req"
+      width:   RngBusWidth
+      package: ""
+      desc:    '''
+               Carries the raw entropy data from the entropy source to be consumed by the external health test module.
+               The data on this bus is valid when `entropy_src_xht_valid` is asserted.
+               The width is determined by `RngBusWidth` parametrization.
+               '''
+    }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_bit_sel"
+      act:     "req"
+      width:   RngBusBitSelWidth
+      package: ""
+      desc:    '''
+               Provides bit selection information for the raw entropy data.
+               It specifies which specific bit or subset of bits from `entropy_src_xht_bit` should be used.
+               The width is determined by `RngBusBitSelWidth` parametrization.
+               '''
+    }
+    { struct:  "entropy_src_xht_meta",
       type:    "req_rsp",
-      name:    "entropy_src_xht",
+      name:    "entropy_src_xht_meta",
       act:     "req",
       package: "entropy_src_pkg",
     }
@@ -93,6 +157,24 @@
   ],
   param_list: [
     # Regular parameters
+    { name:    "RngBusWidth",
+      type:    "int",
+      default: "4",
+      desc:    '''
+               Defines the bit-width of the noise source data.
+               Must be between 4 and 256 (inclusive) and divisible by 4.
+               The divisibility by 4 is a prerequisite for the bucket health test.
+               '''
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "RngBusBitSelWidth",
+      type:    "int",
+      default: "2",
+      desc:    "Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))"
+      local:   "false",
+      expose:  "true"
+    },
     { name:    "EsFifoDepth",
       type:    "int",
       default: "3",
@@ -417,18 +499,7 @@
                 '''
           resval: false
         },
-        { bits: "17:16",
-          name: "RNG_BIT_SEL",
-          desc: '''
-                When !!CONF.RNG_BIT_ENABLE is set, this field selects which bit from the RNG bus will be processed.
-                This two bit field selects the RNG bit stream:
-                0b00: RNG bit 0
-                0b01: RNG bit 1
-                0b10: RNG bit 2
-                0b11: RNG bit 3
-                '''
-        },
-        { bits: "21:18",
+        { bits: "19:16",
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
@@ -439,7 +510,7 @@
                 '''
           resval: false
         },
-        { bits: "25:22",
+        { bits: "23:20",
           name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
@@ -448,6 +519,13 @@
                 '''
           resval: false
         }
+        { bits: "31:24",
+          name: "RNG_BIT_SEL",
+          desc: '''
+                When !!CONF.RNG_BIT_ENABLE is set, this field selects which bit from the RNG bus will be processed.
+                If the IP is parameterized for a bus width less than 256 bits, the upper, unused bits of this register are ignored.
+                '''
+        },
       ]
     },
     { name: "ENTROPY_CONTROL",

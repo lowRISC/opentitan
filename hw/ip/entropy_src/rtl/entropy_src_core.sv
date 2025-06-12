@@ -6,8 +6,10 @@
 //
 
 module entropy_src_core import entropy_src_pkg::*; #(
-  parameter int EsFifoDepth = 4,
-  parameter int DistrFifoDepth = 2
+  parameter int RngBusWidth       = 4,
+  parameter int RngBusBitSelWidth = 2,
+  parameter int EsFifoDepth       = 4,
+  parameter int DistrFifoDepth    = 2
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -27,16 +29,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   output entropy_src_hw_if_rsp_t entropy_src_hw_if_o,
 
   // RNG Interface
-  output entropy_src_rng_req_t entropy_src_rng_o,
-  input  entropy_src_rng_rsp_t entropy_src_rng_i,
+  output logic                   entropy_src_rng_enable_o,
+  input  logic                   entropy_src_rng_valid_i,
+  input  logic [RngBusWidth-1:0] entropy_src_rng_bits_i,
 
   // CSRNG Interface
   output cs_aes_halt_req_t cs_aes_halt_o,
   input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
-  output entropy_src_xht_req_t entropy_src_xht_o,
-  input  entropy_src_xht_rsp_t entropy_src_xht_i,
+  output logic                      entropy_src_xht_valid_o,
+  output [RngBusWidth-1:0]          entropy_src_xht_bits_o,
+  output [RngBusBitSelWidth-1:0]    entropy_src_xht_bit_sel_o,
+  output entropy_src_xht_meta_req_t entropy_src_xht_meta_o,
+  input  entropy_src_xht_meta_rsp_t entropy_src_xht_meta_i,
 
   output logic           recov_alert_test_o,
   output logic           fatal_alert_test_o,
@@ -58,7 +64,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   localparam int EsFifoDepthW = prim_util_pkg::vbits(EsFifoDepth);
   localparam int PostHTWidth = 32;
-  localparam int RngBusWidth = 4;
   localparam int HalfRegWidth = 16;
   localparam int FullRegWidth = 32;
   localparam int EighthRegWidth = 4;
@@ -108,7 +113,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
   logic       rng_bit_enable_pfa;
-  logic [1:0] rng_bit_sel;
+  logic [RngBusBitSelWidth-1:0] rng_bit_sel;
   logic       rng_enable_q, rng_enable_d;
   logic       entropy_data_reg_en_pfe;
   logic       entropy_data_reg_en_pfa;
@@ -117,8 +122,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       event_es_health_test_failed;
   logic       event_es_observe_fifo_ready;
   logic       event_es_fatal_err;
-  logic       es_rng_src_valid;
-  logic [RngBusWidth-1:0] es_rng_bus;
 
   logic [RngBusWidth-1:0] sfifo_esrng_wdata;
   logic [RngBusWidth-1:0] sfifo_esrng_rdata;
@@ -807,11 +810,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign rng_enable_d = es_enable_fo[1] &&
                         es_delayed_enable;
 
-  assign entropy_src_rng_o.rng_enable = rng_enable_q;
-
-  assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
-  assign es_rng_bus = entropy_src_rng_i.rng_b;
-
+  assign entropy_src_rng_enable_o = rng_enable_q;
 
   //--------------------------------------------
   // instantiate interrupt hardware primitives
@@ -1074,11 +1073,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // fifo controls
   // We can't handle any backpressure at this point. Unless the ENTROPY_SRC block is turned off,
   // the input coming from the noise source / RNG needs to be accepted without dropping samples.
-  assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && es_rng_src_valid &&
+  assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && entropy_src_rng_valid_i &&
                             rng_enable_q;
 
   assign sfifo_esrng_clr   = ~es_delayed_enable;
-  assign sfifo_esrng_wdata = es_rng_bus;
+  assign sfifo_esrng_wdata = entropy_src_rng_bits_i;
   // We can't apply any backpressure at this point. Every sample is presented to the health tests
   // for exactly one clock cycle. If the receiving FIFO is full, the sample is dropped but the
   // health tests are still performed and the results accumulated.
@@ -2033,23 +2032,23 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   // set outputs to external health test
-  assign entropy_src_xht_o.entropy_bit = health_test_esbus;
-  assign entropy_src_xht_o.entropy_bit_valid = health_test_esbus_vld;
-  assign entropy_src_xht_o.rng_bit_en = rng_bit_en;
-  assign entropy_src_xht_o.rng_bit_sel = rng_bit_sel;
-  assign entropy_src_xht_o.clear = health_test_clr;
-  assign entropy_src_xht_o.active = extht_active;
-  assign entropy_src_xht_o.thresh_hi = extht_hi_threshold;
-  assign entropy_src_xht_o.thresh_lo = extht_lo_threshold;
-  assign entropy_src_xht_o.window_wrap_pulse = health_test_done_pulse;
-  assign entropy_src_xht_o.health_test_window = health_test_window_scaled;
-  assign entropy_src_xht_o.threshold_scope = threshold_scope;
+  assign entropy_src_xht_valid_o = health_test_esbus_vld;
+  assign entropy_src_xht_bits_o = health_test_esbus;
+  assign entropy_src_xht_bit_sel_o = rng_bit_sel;
+  assign entropy_src_xht_meta_o.rng_bit_en = rng_bit_en;
+  assign entropy_src_xht_meta_o.clear = health_test_clr;
+  assign entropy_src_xht_meta_o.active = extht_active;
+  assign entropy_src_xht_meta_o.thresh_hi = extht_hi_threshold;
+  assign entropy_src_xht_meta_o.thresh_lo = extht_lo_threshold;
+  assign entropy_src_xht_meta_o.window_wrap_pulse = health_test_done_pulse;
+  assign entropy_src_xht_meta_o.health_test_window = health_test_window_scaled;
+  assign entropy_src_xht_meta_o.threshold_scope = threshold_scope;
   // get inputs from external health test
-  assign extht_event_cnt_hi = entropy_src_xht_i.test_cnt_hi;
-  assign extht_event_cnt_lo = entropy_src_xht_i.test_cnt_lo;
-  assign extht_hi_fail_pulse = entropy_src_xht_i.test_fail_hi_pulse;
-  assign extht_lo_fail_pulse = entropy_src_xht_i.test_fail_lo_pulse;
-  assign extht_cont_test = entropy_src_xht_i.continuous_test;
+  assign extht_event_cnt_hi = entropy_src_xht_meta_i.test_cnt_hi;
+  assign extht_event_cnt_lo = entropy_src_xht_meta_i.test_cnt_lo;
+  assign extht_hi_fail_pulse = entropy_src_xht_meta_i.test_fail_hi_pulse;
+  assign extht_lo_fail_pulse = entropy_src_xht_meta_i.test_fail_lo_pulse;
+  assign extht_cont_test = entropy_src_xht_meta_i.continuous_test;
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
@@ -2418,7 +2417,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   assign rng_bit_en = rng_bit_enable_pfe;
-  assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
+  assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q[RngBusBitSelWidth-1:0];
+
+  // If RngBusWidth is less than 256 (8-bit), we have unused bits to read to avoid linting errors
+  if (RngBusBitSelWidth < 8) begin : gen_read_unused_bits
+    logic unused_rng_bit_sel;
+    assign unused_rng_bit_sel = ^reg2hw.conf.rng_bit_sel.q[7:RngBusBitSelWidth];
+  end
 
   prim_packer_fifo #(
     .InW(1),
@@ -2444,12 +2449,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
   assign pfifo_esbit_clr = ~es_delayed_enable;
   assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
-  assign pfifo_esbit_wdata =
-         (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
-         (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
-         (rng_bit_sel == 2'h2) ? sfifo_esrng_rdata[2] :
-         sfifo_esrng_rdata[3];
 
+  always_comb begin
+    pfifo_esbit_wdata = '0;
+
+    for (int i = 0; i < RngBusWidth; i++) begin
+      if (rng_bit_sel == i) begin
+        pfifo_esbit_wdata = sfifo_esrng_rdata[i];
+      end
+    end
+  end
 
   //--------------------------------------------
   // pack tested entropy into 32 bit packer
@@ -3124,11 +3133,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic es_delayed_enable_d, es_delayed_enable_q;
   assign es_delayed_enable_d = es_delayed_enable;
 
-  // Count number of valid bits from RNG input (RNG_BUS_WIDTH wide) while Entropy Source is enabled.
+  // Count number of valid bits from RNG input (RngBusWidth wide) while Entropy Source is enabled.
   logic [63:0] rng_valid_bit_cnt_d, rng_valid_bit_cnt_q;
-  assign rng_valid_bit_cnt_d = entropy_src_rng_i.rng_valid && es_enable_fo[5] &&
+  assign rng_valid_bit_cnt_d = entropy_src_rng_valid_i && es_enable_fo[5] &&
                                es_delayed_enable_q ?
-                               rng_valid_bit_cnt_q + RNG_BUS_WIDTH :
+                               rng_valid_bit_cnt_q + RngBusWidth :
                                rng_valid_bit_cnt_q;
 
   // Count number of bits pushed into esrng FIFO (RngBusWidth wide).
