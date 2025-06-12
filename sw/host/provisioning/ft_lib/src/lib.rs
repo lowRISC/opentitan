@@ -368,6 +368,7 @@ fn provision_certificates(
     let mut device_was_hmac: Vec<u8> = Vec::new();
     let mut device_id: Vec<u8> = Vec::new();
     let mut host_was_hmac = Hmac::<Sha256>::new_from_slice(wafer_auth_secret.as_slice())?;
+    let mut generic_seed_id: usize = 0;
 
     // Extract CAs.
     let dice_ca_cert = &ca_cfgs["dice"].certificate;
@@ -408,6 +409,18 @@ fn provision_certificates(
                 start += dev_seed_size;
                 response.seeds.number += r.len();
                 response.seeds.seed.extend(r);
+                continue;
+            }
+            ObjType::GenericSeed => {
+                let generic_seed_size = header.obj_size - obj_header_size;
+                let generic_seed = &perso_blob.body[start..start + generic_seed_size];
+                log::info!(
+                    "Generic Seed #{}: {}",
+                    generic_seed_id,
+                    hex::encode(generic_seed)
+                );
+                start += generic_seed_size;
+                generic_seed_id += 1;
                 continue;
             }
         }
@@ -455,7 +468,10 @@ fn provision_certificates(
                     (CertFormat::X509, &mut dice_cert_chain)
                 }
                 ObjType::EndorsedCwtCert => (CertFormat::Cwt, &mut dice_cert_chain_cwt),
-                ObjType::WasTbsHmac | ObjType::DeviceId | ObjType::DevSeed => unreachable!(),
+                ObjType::WasTbsHmac
+                | ObjType::DeviceId
+                | ObjType::DevSeed
+                | ObjType::GenericSeed => unreachable!(),
             };
 
             let ec = EndorsedCert {
