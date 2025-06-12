@@ -168,17 +168,12 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
   if (err != kErrorOk) {
     // Cleanup the stale value if error.
     dice_chain_reset_cert_obj();
-  }
 
-  if (err == kErrorPersoTlvCertObjNotFound) {
-    // If the cert is not found it is because we are running on a sim or FPGA
-    // platform, or the device has not yet been provisioned. Continue, and let
-    // the ROM_EXT generate an identity certificate for the current DICE stage.
-    // The error is not fatal, and the cert obj has been marked as invalid.
+    // If the cert is not found or corrupted, continue and allow the ROM_EXT
+    // to generate an identity certificate for the current DICE stage. The
+    // error is not fatal, and the cert obj has been marked as invalid.
     return kErrorOk;
   }
-
-  RETURN_IF_ERROR(err);
 
   // Check if this cert is what we are looking for. The name and type (X.509 vs
   // CWT) should match.
