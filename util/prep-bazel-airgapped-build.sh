@@ -138,9 +138,6 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}
   # Make bazel forget everything it knows, then download everything.
   ${BAZELISK} clean --expunge
-  ${BAZELISK} fetch \
-    --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
-    //...
   ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
@@ -166,5 +163,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
+  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
 fi
