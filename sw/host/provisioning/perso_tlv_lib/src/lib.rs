@@ -14,6 +14,7 @@ pub enum ObjType {
     EndorsedCwtCert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeCwtCert as isize,
     WasTbsHmac = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeWasTbsHmac as isize,
     DeviceId = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeDeviceId as isize,
+    GenericSeed = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeGenericSeed as isize,
 }
 
 impl ObjType {
@@ -25,6 +26,7 @@ impl ObjType {
             3 => Ok(ObjType::EndorsedCwtCert),
             4 => Ok(ObjType::WasTbsHmac),
             5 => Ok(ObjType::DeviceId),
+            6 => Ok(ObjType::GenericSeed),
             _ => bail!("incorrect input value of {value} for ObjType"),
         }
     }
