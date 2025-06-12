@@ -317,9 +317,6 @@ rom_error_t dice_chain_attestation_creator(
   // Switch page for the device generated CDI_0.
   RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
 
-  // Seek to skip previous objects.
-  RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
-
   // Check if the current CDI_0 cert is valid.
   dice_chain.subject_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
   dice_chain.subject_pubkey = static_dice_cdi_0.cdi_0_pubkey;
@@ -375,9 +372,6 @@ static rom_error_t dice_chain_attestation_check_uds(void) {
 static rom_error_t dice_chain_attestation_check_cdi_0(void) {
   // Switch page for the device CDI chain.
   RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
-
-  // Seek to skip previous objects.
-  RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
 
   // Set the endorsement key for the next cert.
   dice_chain.endorsement_pubkey_id = static_dice_cdi_0.cdi_0_pubkey_id;
