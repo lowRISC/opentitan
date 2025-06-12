@@ -42,6 +42,10 @@ struct FiCryptoTestCase {
     input: String,
     #[serde(default)]
     mode: String,
+    #[serde(default)]
+    sensors: String,
+    #[serde(default)]
+    alerts: String,
     expected_output: Vec<String>,
 }
 
@@ -85,6 +89,18 @@ fn run_fi_crypto_testcase(
     if !test_case.mode.is_empty() {
         let mode: serde_json::Value = serde_json::from_str(test_case.mode.as_str()).unwrap();
         mode.send(uart)?;
+    }
+
+    // Check if we need to send sensor info.
+    if !test_case.sensors.is_empty() {
+        let sensors: serde_json::Value = serde_json::from_str(test_case.sensors.as_str()).unwrap();
+        sensors.send(uart)?;
+    }
+
+    // Check if we need to send alert info.
+    if !test_case.alerts.is_empty() {
+        let alerts: serde_json::Value = serde_json::from_str(test_case.alerts.as_str()).unwrap();
+        alerts.send(uart)?;
     }
 
     // Check test outputs
