@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:racl_error_log_agent"
+description: "UVM agent for RACL error_log signals"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_lib
+      - lowrisc:virtual_constants:top_racl_pkg
+    files:
+      - racl_error_log_if.sv
+      - racl_error_log_agent_pkg.sv
+      - racl_error_log_agent_cfg.sv: {is_include_file: true}
+      - racl_error_log_item.sv: {is_include_file: true}
+      - racl_error_log_vec_item.sv: {is_include_file: true}
+      - racl_error_log_vec_driver_item.sv: {is_include_file: true}
+      - racl_error_log_driver.sv: {is_include_file: true}
+      - racl_error_log_monitor.sv: {is_include_file: true}
+      - racl_error_log_sequencer.sv: {is_include_file: true}
+      - racl_error_log_agent.sv: {is_include_file: true}
+
+      - seq_lib/racl_error_log_sporadic_seq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
