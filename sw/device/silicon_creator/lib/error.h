@@ -260,6 +260,7 @@ enum module_ {
   X(kErrorDiceCwtCoseKeyNotFound,     ERROR_(1, kModuleDice, kNotFound)), \
   X(kErrorDiceCwtCoseKeyBadSize,      ERROR_(1, kModuleDice, kInternal)), \
   X(kErrorDiceCwtKeyCoordsNotFound,   ERROR_(2, kModuleDice, kNotFound)), \
+  X(kErrorDicePageCorrupted,          ERROR_(3, kModuleDice, kInvalidArgument)), \
   \
   X(kErrorPwrmgrUnknownRequestSource, ERROR_(1, kModulePwrmgr, kInvalidArgument)), \
   X(kErrorPwrmgrInvalidRequestType,   ERROR_(2, kModulePwrmgr, kInvalidArgument)), \

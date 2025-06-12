@@ -35,6 +35,7 @@
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
+#include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -157,6 +158,7 @@ static uint8_t all_certs[8192];
 // 1K should be enough for the largest certificate perso LTV object.
 enum { kBufferSize = 1024 };
 static alignas(uint32_t) uint8_t cert_buffer[kBufferSize];
+static alignas(uint32_t) dice_page_t dice_page;
 static size_t uds_offset;
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
@@ -166,12 +168,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
         // post manufacturing. This page should never be erased by ROM_EXT, nor
         // owner firmware.
         .used = true,
+        .need_digest = true,
         .group_name = "FACTORY",
         .info_page = &kFlashCtrlInfoPageFactoryCerts,
         .num_certs = 1,
     },
     {
         .used = true,
+        .need_digest = true,
         .group_name = "DICE",
         .info_page = &kFlashCtrlInfoPageDiceCerts,
         .num_certs = 2,
@@ -180,12 +184,14 @@ static cert_flash_info_layout_t cert_flash_layout[] = {
     // additional certificates SKU owners may desire to provision.
     {
         .used = false,
+        .need_digest = false,
         .group_name = "Ext0",
         .info_page = &kFlashCtrlInfoPageOwnerReserved6,
         .num_certs = 0,
     },
     {
         .used = false,
+        .need_digest = false,
         .group_name = "Ext1",
         .info_page = &kFlashCtrlInfoPageOwnerReserved7,
         .num_certs = 0,
@@ -853,32 +859,32 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   return OK_STATUS();
 }
 
-static status_t write_cert_to_flash_info_page(
-    const cert_flash_info_layout_t *layout, perso_tlv_cert_obj_t *block,
-    uint8_t *cert_data, uint32_t page_offset, uint32_t cert_write_size_bytes,
-    uint32_t cert_write_size_words) {
-  if ((page_offset + cert_write_size_bytes) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+static status_t write_cert_to_dice_page(const cert_flash_info_layout_t *layout,
+                                        perso_tlv_cert_obj_t *block,
+                                        uint8_t *cert_data,
+                                        uint32_t page_offset,
+                                        uint32_t cert_write_size_bytes) {
+  base_printf("Importing %s cert to %s ...\n", block->name, layout->group_name);
+  if ((page_offset + cert_write_size_bytes) > sizeof(dice_page.data)) {
     LOG_ERROR("%s %s certificate did not fit into the info page.",
               layout->group_name, block->name);
     return OUT_OF_RANGE();
   }
-  if (sizeof(cert_buffer) < cert_write_size_bytes) {
-    LOG_ERROR("%s %s certificate did not fit into the buffer.",
-              layout->group_name, block->name);
-    return OUT_OF_RANGE();
-  }
 
-  memset(cert_buffer, 0, cert_write_size_bytes);
+  // The page will be zero-padded between obj_size to cert_write_size_bytes.
+  TRY_CHECK(block->obj_size <= cert_write_size_bytes);
 
   // Copy the actual certificate data into the cert buffer.
-  // This is necessary because flash_ctrl_info_write() requires the
-  // data source pointer to be word-aligned. The input cert_data
-  // pointer might not meet this alignment requirement, whereas
-  // cert_buffer is expected to be world-aligned.
-  memcpy(cert_buffer, cert_data, block->obj_size);
+  memcpy(dice_page.data + page_offset, cert_data, block->obj_size);
 
-  TRY(flash_ctrl_info_write(layout->info_page, page_offset,
-                            cert_write_size_words, cert_buffer));
+  return OK_STATUS();
+}
+
+static status_t write_digest_to_dice_page(
+    const cert_flash_info_layout_t *layout, uint32_t page_offset) {
+  base_printf("Digesting %s page ...\n", layout->group_name);
+
+  hmac_sha256(dice_page.data, sizeof(dice_page.data), &dice_page.digest);
 
   return OK_STATUS();
 }
@@ -973,6 +979,8 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       continue;
     }
 
+    memset(&dice_page, 0, sizeof(dice_page));
+
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
     // endorsed extension certificates received from the host.
@@ -982,15 +990,22 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       // Round up the size to the nearest word boundary.
       uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
-      TRY(write_cert_to_flash_info_page(&curr_layout, &block, next_cert,
-                                        page_offset, cert_size_bytes_ru,
-                                        cert_size_words));
+      TRY(write_cert_to_dice_page(&curr_layout, &block, next_cert, page_offset,
+                                  cert_size_bytes_ru));
       page_offset += cert_size_bytes_ru;
       next_cert += block.obj_size;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);
     }
+
+    if (curr_layout.need_digest) {
+      TRY(write_digest_to_dice_page(&curr_layout, page_offset));
+    }
+
+    TRY(flash_ctrl_info_write(curr_layout.info_page, /*page_offset=*/0,
+                              util_size_to_words(sizeof(dice_page)),
+                              &dice_page));
   }
 
   // DO NOT CHANGE THE BELOW STRING without modifying the host code in

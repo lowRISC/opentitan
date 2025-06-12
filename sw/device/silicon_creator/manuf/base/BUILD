@@ -342,6 +342,7 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/cert",
             "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
             "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+            "//sw/device/silicon_creator/lib/cert:dice_chain",
             "//sw/device/silicon_creator/lib/cert:uds_template_library",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
