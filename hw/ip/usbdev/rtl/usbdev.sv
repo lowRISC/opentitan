@@ -927,7 +927,7 @@ module usbdev
   end
 
   // Interrupts
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_pkt_received (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_hw_pkt_received (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_pkt_received),
@@ -940,7 +940,7 @@ module usbdev
     .intr_o                 (intr_pkt_received_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_pkt_sent (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_hw_pkt_sent (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (sent_event_pending),
@@ -1031,7 +1031,7 @@ module usbdev
     .intr_o                 (intr_link_resume_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_out_empty (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_av_out_empty (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_out_empty),
@@ -1044,7 +1044,7 @@ module usbdev
     .intr_o                 (intr_av_out_empty_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_rx_full (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_rx_full (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_rx_full),
@@ -1148,7 +1148,7 @@ module usbdev
     .intr_o                 (intr_frame_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_setup_empty (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_av_setup_empty (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_setup_empty),
