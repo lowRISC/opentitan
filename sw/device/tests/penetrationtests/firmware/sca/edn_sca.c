@@ -116,26 +116,32 @@ status_t handle_edn_sca_bus_data(ujson_t *uj) {
 }
 
 status_t handle_edn_sca_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  penetrationtest_cpuctrl_t uj_cpuctrl_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
+  penetrationtest_sensor_config_t uj_sensor_data;
+  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
+
+  // Disable the instruction cache and dummy instructions for SCA attacks.
+  penetrationtest_device_info_t uj_output;
+  TRY(pentest_configure_cpu(
+      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
+      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
+      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
+      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
+      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
+      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
+      &uj_output.sram_ret_readback_en));
+
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kPentestTriggerSourceAes is selected as a
   // placeholder.
   pentest_init(kPentestTriggerSourceAes,
                kPentestPeripheralIoDiv4 | kPentestPeripheralEntropy |
-                   kPentestPeripheralCsrng | kPentestPeripheralEdn);
-
-  // Disable the instruction cache and dummy instructions for SCA attacks.
-  penetrationtest_device_info_t uj_output;
-  TRY(pentest_configure_cpu(
-      uj_data.enable_icache, &uj_output.icache_en, uj_data.enable_dummy_instr,
-      &uj_output.dummy_instr_en, uj_data.enable_jittery_clock,
-      uj_data.enable_sram_readback, &uj_output.clock_jitter_locked,
-      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
-      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
-      &uj_output.sram_ret_readback_en));
+                   kPentestPeripheralCsrng | kPentestPeripheralEdn,
+               uj_sensor_data.sensor_ctrl_enable,
+               uj_sensor_data.sensor_ctrl_en_fatal);
 
   // Configure Ibex to allow reading ERR_STATUS register.
   TRY(dif_rv_core_ibex_init(
