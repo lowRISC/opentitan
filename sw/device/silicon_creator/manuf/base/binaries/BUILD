@@ -2,12 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:opentitan.bzl",
-    "bin_to_vmem",
-    "scramble_flash_vmem",
-)
 load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 load("//rules:files.bzl", "copy_files")
 
 package(default_visibility = ["//visibility:public"])
@@ -42,17 +38,17 @@ exec_env_filegroup(
 
 # The below rule sets (bin_to_vmem, scramble_flash_vmem, and filegroup)
 # are needed to run the perso bin in sim.
-bin_to_vmem(
+vmem_file(
     name = "ft_personalize_sival_silicon_creator_vmem64_signed",
     testonly = True,
-    bin = ":ft_personalize_sival_silicon_creator.signed.bin",
+    src = ":ft_personalize_sival_silicon_creator.signed.bin",
     word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
 )
 
 scramble_flash_vmem(
     name = "ft_personalize_sival_silicon_creator_scr_vmem64_signed",
     testonly = True,
-    vmem = ":ft_personalize_sival_silicon_creator_vmem64_signed",
+    src = ":ft_personalize_sival_silicon_creator_vmem64_signed",
 )
 
 filegroup(
