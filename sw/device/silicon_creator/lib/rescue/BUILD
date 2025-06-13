@@ -136,3 +136,11 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:usb",
     ],
 )
+
+cc_library(
+    name = "rescue_null",
+    srcs = ["rescue_null.c"],
+    deps = [
+        ":rescue",
+    ],
+)
