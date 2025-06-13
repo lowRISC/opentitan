@@ -191,7 +191,7 @@ package lc_ctrl_pkg;
   // !act | act  | !act
   // act  | act  | act
   //
-  // Noite: The lc_tx_and() function does not suffer from the strictness problem
+  // Note: The lc_tx_and() function does not suffer from the strictness problem
   // that the lc_tx_or function above does, since only one output value in the
   // truth table is strictly "act". It can hence be used in most scenarios without issues.
   // If however the lc_tx_and() function should be strictly rectifying (i.e., only

@@ -53,6 +53,8 @@ module pinmux
   // LC signals for TAP qualification
   // SEC_CM: LC_DFT_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
+  // SEC_CM: LC_HW_DEBUG_CLR.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_clr_i,
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
   // SEC_CM: LC_CHECK_BYP_EN.INTERSIG.MUBI
@@ -373,6 +375,7 @@ module pinmux
     // Strap and JTAG signals
     .strap_en_i     ( strap_en ),
     .lc_dft_en_i,
+    .lc_hw_debug_clr_i,
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,
     .lc_check_byp_en_i,

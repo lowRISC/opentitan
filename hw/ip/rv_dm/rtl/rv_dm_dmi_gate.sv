@@ -31,6 +31,7 @@ module rv_dm_dmi_gate
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   input                            strap_en_i,
   // LC signals for DMI qualification
+  input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_clr_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
@@ -54,6 +55,15 @@ module rv_dm_dmi_gate
   // Life cycle signal synchronizers //
   /////////////////////////////////////
 
+  lc_tx_t [0:0] lc_hw_debug_clr;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_hw_debug_clr (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_clr_i),
+    .lc_en_o(lc_hw_debug_clr)
+  );
   lc_tx_t [0:0] lc_hw_debug_en;
   prim_lc_sync #(
     .NumCopies(1)
@@ -162,9 +172,17 @@ module rv_dm_dmi_gate
     .lc_en_o  (hw_debug_en_set)
   );
 
-  // Output ON if either lc_check_byp_en or lc_escalate_en is set to OFF.
+  // Output ON if lc_check_byp_en AND lc_escalate_en are strictly OFF; otherwise output a non-ON
+  // value (which may be different from OFF).
+  lc_tx_t neither_check_byp_nor_escalate;
+  assign neither_check_byp_nor_escalate = lc_tx_inv(lc_tx_and_lo(lc_check_byp_en[0],
+                                                                 lc_escalate_en[0]));
+
+  // Output ON if the signal above is strictly ON AND lc_hw_debug_clr is strictly OFF; otherwise
+  // output a non-ON value (which may be different from OFF).
   lc_tx_t hw_debug_en_gating;
-  assign hw_debug_en_gating = lc_tx_inv(lc_tx_and_lo(lc_check_byp_en[0], lc_escalate_en[0]));
+  assign hw_debug_en_gating = lc_tx_and_hi(neither_check_byp_nor_escalate,
+                                           lc_tx_inv(lc_hw_debug_clr[0]));
 
   // Gate the hw_debug_en_set signal and feed it into the latching flop.
   lc_tx_t strap_hw_debug_en_d;
@@ -205,6 +223,8 @@ module rv_dm_dmi_gate
   logic dbg_gate_intg_error, dmi_intg_error;
   assign intg_error_o = dbg_gate_intg_error | dmi_intg_error;
 
+  logic tlul_resp_pending;
+
   tlul_pkg::tl_h2d_t dbg_tl_h2d_gated;
   tlul_pkg::tl_d2h_t dbg_tl_d2h_gated;
   tlul_lc_gate #(
@@ -221,7 +241,7 @@ module rv_dm_dmi_gate
     // debugger side of the connection stable during an NDM-reset request.
     .flush_req_i   (1'b0),
     .flush_ack_o   (),
-    .resp_pending_o(),
+    .resp_pending_o(tlul_resp_pending),
     .lc_en_i       (strap_hw_debug_en[StEnDmiTlulLcGate]),
     .err_o         (dbg_gate_intg_error)
   );
@@ -241,8 +261,10 @@ module rv_dm_dmi_gate
     .dmi_resp_i      (dmi_rsp_i)
   );
 
+  // Connect the TL-UL adapter to the DMI handshake if the DMI is enabled. Let responses also
+  // propagate from the DMI to TL-UL if any responses are pending.
   assign dmi_req_ready = dmi_req_ready_i & dmi_en;
-  assign dmi_rsp_valid = dmi_rsp_valid_i & dmi_en;
+  assign dmi_rsp_valid = dmi_rsp_valid_i & (dmi_en | tlul_resp_pending);
 
   ////////////////
   // Assertions //
@@ -252,6 +274,7 @@ module rv_dm_dmi_gate
   `ASSERT(LcHwDebugEnSet_A,
       (lc_tx_test_true_strict(lc_hw_debug_en[0]) ||
        lc_tx_test_true_strict(strap_hw_debug_en_q)) &&
+      lc_tx_test_false_strict(lc_hw_debug_clr[0]) &&
       lc_tx_test_false_strict(lc_check_byp_en[0]) &&
       lc_tx_test_false_strict(lc_escalate_en[0]) &&
       strap_en_i
@@ -273,7 +296,8 @@ module rv_dm_dmi_gate
   // lc_escalate_en_i clears the latched value.
   `ASSERT(LcHwDebugEnClear_A,
       lc_tx_test_true_loose(lc_check_byp_en[0]) ||
-      lc_tx_test_true_loose(lc_escalate_en[0])
+      lc_tx_test_true_loose(lc_escalate_en[0]) ||
+      lc_tx_test_true_loose(lc_hw_debug_clr[0])
       |=>
       lc_tx_test_false_loose(strap_hw_debug_en_q))
 

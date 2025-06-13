@@ -32,6 +32,8 @@ module rv_dm
   input  logic                rst_lc_ni,  // asynchronous reset active low, connect the lc
                                            // reset here. this is only used for NDM reset tracking.
   input  logic [31:0]         next_dm_addr_i, // static word address of the next debug module.
+  // SEC_CM: LC_HW_DEBUG_CLR.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_clr_i,
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
@@ -470,6 +472,7 @@ module rv_dm
       .rst_ni,
       .strap_en_override_i,
       .strap_en_i,
+      .lc_hw_debug_clr_i,
       .lc_hw_debug_en_i,
       .lc_check_byp_en_i,
       .lc_escalate_en_i,
@@ -594,6 +597,7 @@ module rv_dm
     logic unused_signals;
     assign unused_signals = ^{dbg_tl_d_i,
                               lc_check_byp_en_i,
+                              lc_hw_debug_clr_i,
                               lc_escalate_en_i,
                               strap_en_i,
                               strap_en_override_i};

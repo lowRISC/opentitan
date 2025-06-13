@@ -54,6 +54,17 @@
       tests: ["rv_dm_debug_disabled", "rv_dm_sba_debug_disabled"]
     }
     {
+      name: sec_cm_lc_hw_debug_clr_intersig_mubi
+      desc: '''
+        Verify the countermeasure(s) LC_HW_DEBUG_CLR.INTERSIG.MUBI.
+
+        The lc_hw_debug_clr_i signal is encoded as lc_tx_t. Bad values of this signal should be
+        interpreted as "On", disabling debug access.
+        '''
+      stage: V2S
+      tests: [] # TODO(#27435)
+    }
+    {
       name: sec_cm_lc_dft_en_intersig_mubi
       desc: '''
         Verify the countermeasure(s) LC_DFT_EN.INTERSIG.MUBI.

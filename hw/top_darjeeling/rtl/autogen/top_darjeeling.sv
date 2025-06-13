@@ -576,6 +576,7 @@ module top_darjeeling #(
   logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_raw_test_rma;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_keymgr_en;
@@ -1304,6 +1305,7 @@ module top_darjeeling #(
       .lc_raw_test_rma_o(lc_ctrl_lc_raw_test_rma),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(),
+      .lc_hw_debug_clr_o(lc_ctrl_lc_hw_debug_clr),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
       .lc_cpu_en_o(lc_ctrl_lc_cpu_en),
       .lc_keymgr_en_o(lc_ctrl_lc_keymgr_en),
@@ -1749,6 +1751,7 @@ module top_darjeeling #(
       .next_dm_addr_i(rv_dm_next_dm_addr_i),
       .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
       .jtag_o(),
+      .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_pkg::Off),
       .pinmux_hw_debug_en_i(lc_ctrl_pkg::Off),
