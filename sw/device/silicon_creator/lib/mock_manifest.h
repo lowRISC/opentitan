@@ -21,6 +21,13 @@ class MockManifest : public global_mock::GlobalMock<MockManifest> {
   MOCK_METHOD(manifest_digest_region_t, DigestRegion, (const manifest_t *));
   MOCK_METHOD(epmp_region_t, CodeRegion, (const manifest_t *));
   MOCK_METHOD(uintptr_t, EntryPoint, (const manifest_t *));
+  MOCK_METHOD(rom_error_t, SpxKey,
+              (const manifest_t *, const manifest_ext_spx_key_t **spx_key));
+  MOCK_METHOD(rom_error_t, SpxSignature,
+              (const manifest_t *,
+               const manifest_ext_spx_signature_t **spx_signature));
+  MOCK_METHOD(rom_error_t, Isfb,
+              (const manifest_t *, const manifest_ext_isfb_t **isfb));
 };
 
 }  // namespace internal
