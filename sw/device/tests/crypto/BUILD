@@ -16,7 +16,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
-load("//third_party/python:requirements.bzl", "requirement")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
