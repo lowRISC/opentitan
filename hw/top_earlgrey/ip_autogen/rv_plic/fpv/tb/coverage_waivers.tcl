@@ -77,3 +77,9 @@ check_cov -waiver -add -source_file {../src/lowrisc_prim_diff_decode_0/rtl/prim_
 # parasitic state. If that is no longer the case, this assertion will fail.
 assert -name PrimDiffDecodeNoParasiticState_A\
  {dut.gen_alert_tx[0].u_prim_alert_sender.u_decode_ping.gen_async.state_q < 3}
+
+# Waiving all the alert instances for coverage.
+foreach alert_sender_inst [get_design_info -list instance -filter "prim_alert_sender$" -regexp] {
+  check_cov -waiver -add -instance "$alert_sender_inst"\
+    -comment {FPV for Alerts has already been done elsewhere}
+}
