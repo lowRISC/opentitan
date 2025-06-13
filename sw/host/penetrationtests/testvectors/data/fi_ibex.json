@@ -57,11 +57,13 @@
   {
     "test_case_id": 10,
     "command": "CharFlashRead",
+    "input": "{\"flash_region\": 2}",
     "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {
     "test_case_id": 11,
     "command": "CharFlashWrite",
+    "input": "{\"flash_region\": 2}",
     "expected_output": ["{\"result\":0,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   },
   {

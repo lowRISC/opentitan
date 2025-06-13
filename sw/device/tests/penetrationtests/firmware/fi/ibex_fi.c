@@ -100,6 +100,10 @@ uint32_t
                                     OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
                                    sizeof(uint32_t)];
 
+// CharFlash config parameters.
+static uint32_t flash_region_index;
+static uint32_t flash_test_page_addr;
+
 // Cond. branch macros.
 #define CONDBRANCHBEQ "beq x5, x6, endfitestfaultybeq\n"
 #define CONDBRANCHBNE "bne x5, x6, endfitestfaultybne\n"
@@ -2256,6 +2260,14 @@ status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
 }
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
+  // Set the flash region we want to test.
+  ibex_fi_flash_region_t uj_data;
+  TRY(ujson_deserialize_ibex_fi_flash_region_t(uj, &uj_data));
+  if (uj_data.flash_region != flash_region_index) {
+    flash_region_index = uj_data.flash_region;
+    flash_init = false;
+  }
+
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2277,23 +2289,21 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
         .size = 0x1,
         .properties = region_properties};
 
-    dif_result_t res_prop =
-        dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region);
-
-    dif_result_t res_en =
-        dif_flash_ctrl_set_data_region_enablement(&flash, 2, kDifToggleEnabled);
+    dif_result_t res_prop = dif_flash_ctrl_set_data_region_properties(
+        &flash, flash_region_index, data_region);
+    dif_result_t res_en = dif_flash_ctrl_set_data_region_enablement(
+        &flash, flash_region_index, kDifToggleEnabled);
     if (res_prop == kDifLocked || res_en == kDifLocked) {
-      LOG_INFO("Flash region locked.");
+      LOG_INFO("Flash region locked, aborting!");
       return ABORTED();
     }
 
     flash_init = true;
+    flash_test_page_addr = data_region.base * FLASH_PAGE_SZ;
   }
 
-  ptrdiff_t flash_bank_1_addr =
-      (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
-  mmio_region_t flash_bank_1 = mmio_region_from_addr(
-      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
+  mmio_region_t flash_test_page = mmio_region_from_addr(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
 
   if (!flash_data_valid) {
     // Prepare page and write reference values into it.
@@ -2305,7 +2315,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
     // Erase flash and write page with reference values.
     TRY(flash_ctrl_testutils_erase_and_write_page(
-        &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+        &flash, flash_test_page_addr, /*partition_id=*/0, input_page,
         kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
 
     flash_data_valid = true;
@@ -2316,19 +2326,19 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
-  asm volatile("lw x5, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x6, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x7, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x12, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x13, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x14, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x15, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x16, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x17, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x28, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x29, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x30, (%0)" : : "r"((flash_bank_1.base)));
-  asm volatile("lw x31, (%0)" : : "r"((flash_bank_1.base)));
+  asm volatile("lw x5, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x6, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x7, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x12, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x13, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x14, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x15, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x16, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x17, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x28, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x29, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x30, (%0)" : : "r"((flash_test_page.base)));
+  asm volatile("lw x31, (%0)" : : "r"((flash_test_page.base)));
   PENTEST_ASM_TRIGGER_LOW
 
   // Dump the register file after the FI trigger window.
@@ -2376,6 +2386,14 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) __attribute__((optnone)) {
 }
 
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
+  // Set the flash region we want to test.
+  ibex_fi_flash_region_t uj_data;
+  TRY(ujson_deserialize_ibex_fi_flash_region_t(uj, &uj_data));
+  if (uj_data.flash_region != flash_region_index) {
+    flash_region_index = uj_data.flash_region;
+    flash_init = false;
+  }
+
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear the AST recoverable alerts.
@@ -2397,23 +2415,21 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
         .size = 0x1,
         .properties = region_properties};
 
-    dif_result_t res_prop =
-        dif_flash_ctrl_set_data_region_properties(&flash, 2, data_region);
-
-    dif_result_t res_en =
-        dif_flash_ctrl_set_data_region_enablement(&flash, 2, kDifToggleEnabled);
+    dif_result_t res_prop = dif_flash_ctrl_set_data_region_properties(
+        &flash, flash_region_index, data_region);
+    dif_result_t res_en = dif_flash_ctrl_set_data_region_enablement(
+        &flash, flash_region_index, kDifToggleEnabled);
     if (res_prop == kDifLocked || res_en == kDifLocked) {
       LOG_INFO("Flash region locked, aborting!");
       return ABORTED();
     }
 
     flash_init = true;
+    flash_test_page_addr = data_region.base * FLASH_PAGE_SZ;
   }
 
-  ptrdiff_t flash_bank_1_addr =
-      (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
-  mmio_region_t flash_bank_1 = mmio_region_from_addr(
-      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
+  mmio_region_t flash_test_page = mmio_region_from_addr(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_test_page_addr);
 
   // Prepare page and write reference values into it.
   uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
@@ -2426,7 +2442,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   PENTEST_ASM_TRIGGER_HIGH
   // Erase flash and write page with reference values.
   TRY(flash_ctrl_testutils_erase_and_write_page(
-      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+      &flash, flash_test_page_addr, /*partition_id=*/0, input_page,
       kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   PENTEST_ASM_TRIGGER_LOW
 
@@ -2440,7 +2456,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) __attribute__((optnone)) {
   uint32_t res = 0;
   for (int i = 0; i < kNumRefValues; i++) {
     res_values[i] =
-        mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t));
+        mmio_region_read32(flash_test_page, i * (ptrdiff_t)sizeof(uint32_t));
     if (res_values[i] != ref_values[i]) {
       res |= 1;
     }
