@@ -135,7 +135,7 @@ status_t handle_otp_fi_hw_cfg(ujson_t *uj) {
   otp_fi_hwcfg_partition_t uj_output;
   memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
   memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
-  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   for (uint32_t i = 0; i < kOtpFiHwCfg0Size; i++) {
     uj_output.partition_ref[i] = otp_read32_result_hw_cfg_comp[i];
     uj_output.partition_fi[i] = otp_read32_result_hw_cfg_fi[i];
@@ -239,7 +239,7 @@ status_t handle_otp_fi_life_cycle(ujson_t *uj) {
   otp_fi_lifecycle_partition_t uj_output;
   memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
   memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
-  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   for (uint32_t i = 0; i < kOtpFiLifeCycleSize; i++) {
     uj_output.partition_ref[i] = otp_read32_result_life_cycle_comp[i];
     uj_output.partition_fi[i] = otp_read32_result_life_cycle_fi[i];
@@ -294,7 +294,7 @@ status_t handle_otp_fi_owner_sw_cfg(ujson_t *uj) {
   otp_fi_ownerswcfg_partition_t uj_output;
   memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
   memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
-  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   for (uint32_t i = 0; i < kOtpFiOwnerSwCfgSize; i++) {
     uj_output.partition_ref[i] = otp_read32_result_owner_sw_cfg_comp[i];
     uj_output.partition_fi[i] = otp_read32_result_owner_sw_cfg_fi[i];
@@ -349,7 +349,7 @@ status_t handle_otp_fi_vendor_test(ujson_t *uj) {
   otp_fi_vendortest_partition_t uj_output;
   memset(uj_output.partition_ref, 0, sizeof(uj_output.partition_ref));
   memset(uj_output.partition_fi, 0, sizeof(uj_output.partition_fi));
-  memset(uj_output.data_faulty, false, sizeof(uj_output.partition_fi));
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
   for (uint32_t i = 0; i < kOtpFiVendorTestSize; i++) {
     uj_output.partition_ref[i] = otp_read32_result_vendor_test_comp[i];
     uj_output.partition_fi[i] = otp_read32_result_vendor_test_fi[i];
