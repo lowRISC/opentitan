@@ -99,6 +99,25 @@ cc_test(
 )
 
 cc_library(
+    name = "rom_ext_boot_services",
+    srcs = ["rom_ext_boot_services.c"],
+    hdrs = ["rom_ext_boot_services.h"],
+    deps = [
+        ":rom_ext_boot_policy",
+        ":rom_ext_verify",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/ownership:ownership_activate",
+        "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
+        "//sw/device/silicon_creator/lib/rescue",
+    ],
+)
+
+cc_library(
     name = "rom_ext_isrs",
     srcs = [
         "rom_ext_isrs.c",
@@ -116,6 +135,24 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+cc_library(
+    name = "rom_ext_verify",
+    srcs = ["rom_ext_verify.c"],
+    hdrs = ["rom_ext_verify.h"],
+    deps = [
+        ":rom_ext_boot_policy",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+        "//sw/device/silicon_creator/lib/ownership:isfb",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/lib/ownership:owner_verify",
+        "//sw/device/silicon_creator/lib/sigverify:usage_constraints",
     ],
 )
 
@@ -168,6 +205,7 @@ ld_library(
         deps = [
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
+            ":rom_ext_boot_services",
             ":rom_ext_isrs",
             ":rom_ext_manifest",
             "//hw/top:flash_ctrl_c_regs",
