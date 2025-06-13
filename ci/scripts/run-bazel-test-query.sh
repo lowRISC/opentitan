@@ -52,5 +52,5 @@ targets="${targets/|/ union }"
     --noimplicit_deps \
     --noinclude_aspects \
     --output=label \
-    "attr(\"tags\", \"${positive_regex}\", tests($targets)) except attr(\"tags\", \"${negative_regex}\", tests($targets))" \
+    "filter(\"usbdev\", attr(\"tags\", \"${positive_regex}\", tests($targets)) except attr(\"tags\", \"${negative_regex}\", tests($targets)))" \
     >"${out_file}"
