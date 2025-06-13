@@ -25,11 +25,7 @@
 #include "hw/top/flash_ctrl_regs.h"  // Generated.
 
 enum {
-  /**
-   * The size of the scratch buffer that is large enough for constructing the
-   * CDI certs.
-   */
-  kScratchCertSizeBytes = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
 };
 
 /**
@@ -42,20 +38,20 @@ typedef struct dice_chain {
   /**
    * RAM buffer that mirrors the DICE cert chain in a flash page.
    */
-  uint8_t data[FLASH_CTRL_PARAM_BYTES_PER_PAGE];
+  dice_page_t page;
 
   /**
-   * Indicate whether `data` needs to be written back to flash.
+   * Indicate whether `page` needs to be written back to flash.
    */
   hardened_bool_t data_dirty;
 
   /**
-   * The amount of bytes in `data` that has been processed.
+   * The amount of bytes in `page.data` that has been processed.
    */
   size_t tail_offset;
 
   /**
-   * Indicate the info page currently buffered in `data`.
+   * Indicate the info page currently buffered in `page`.
    * This is used to skip unnecessary read ops.
    */
   const flash_ctrl_info_page_t *info_page;
@@ -83,7 +79,7 @@ typedef struct dice_chain {
   /**
    * Scratch buffer for constructing CDI certs.
    */
-  uint8_t scratch_cert[kScratchCertSizeBytes];
+  uint8_t scratch_cert[kDicePageDataSize];
 
   /**
    * The current tlv cert the builder is processing.
@@ -108,14 +104,14 @@ cert_key_id_pair_t dice_chain_cdi_0_key_ids = (cert_key_id_pair_t){
 OT_WARN_UNUSED_RESULT
 OT_NOINLINE
 static size_t dice_chain_get_tail_size(void) {
-  HARDENED_CHECK_GE(sizeof(dice_chain.data), dice_chain.tail_offset);
-  return sizeof(dice_chain.data) - dice_chain.tail_offset;
+  HARDENED_CHECK_GE(sizeof(dice_chain.page.data), dice_chain.tail_offset);
+  return sizeof(dice_chain.page.data) - dice_chain.tail_offset;
 }
 
 // Get the pointer to the remaining tail space that is not processed yet.
 OT_WARN_UNUSED_RESULT
 static uint8_t *dice_chain_get_tail_buffer(void) {
-  return &dice_chain.data[dice_chain.tail_offset];
+  return &dice_chain.page.data[dice_chain.tail_offset];
 }
 
 // Cleanup stale `cert_obj` data and mark it as invalid.
@@ -141,7 +137,7 @@ static void dice_chain_next_cert_obj(void) {
   dice_chain.tail_offset += cert_size;
 
   // Post-check for the buffer boundary.
-  HARDENED_CHECK_LE(dice_chain.tail_offset, sizeof(dice_chain.data));
+  HARDENED_CHECK_LE(dice_chain.tail_offset, sizeof(dice_chain.page.data));
 
   dice_chain_reset_cert_obj();
 }
@@ -220,12 +216,11 @@ static rom_error_t dice_chain_load_flash(
   RETURN_IF_ERROR(dice_chain_flush_flash());
 
   // Read in a DICE certificate(s) page.
-  static_assert(sizeof(dice_chain.data) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+  static_assert(sizeof(dice_chain.page) == kFlashPageSize,
                 "Invalid dice_chain buffer size");
   RETURN_IF_ERROR(flash_ctrl_info_read_zeros_on_read_error(
       info_page, /*offset=*/0,
-      /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
-      dice_chain.data));
+      /*word_count=*/kFlashPageSize / sizeof(uint32_t), &dice_chain.page));
 
   // Resets the flash page status.
   dice_chain.data_dirty = kHardenedBoolFalse;
@@ -424,7 +419,7 @@ rom_error_t dice_chain_attestation_owner(
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
     dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
-    size_t updated_cert_size = kScratchCertSizeBytes;
+    size_t updated_cert_size = kDicePageDataSize;
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
         (hmac_digest_t *)bl0_measurement, owner_measurement, owner_history_hash,
@@ -455,13 +450,13 @@ rom_error_t dice_chain_flush_flash(void) {
       dice_chain.info_page != NULL) {
     RETURN_IF_ERROR(
         flash_ctrl_info_erase(dice_chain.info_page, kFlashCtrlEraseTypePage));
-    static_assert(sizeof(dice_chain.data) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+    static_assert(sizeof(dice_chain.page) == kFlashPageSize,
                   "Invalid dice_chain buffer size");
     RETURN_IF_ERROR(flash_ctrl_info_write(
         dice_chain.info_page,
         /*offset=*/0,
         /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
-        dice_chain.data));
+        &dice_chain.page));
     dice_chain.data_dirty = kHardenedBoolFalse;
   }
   return kErrorOk;

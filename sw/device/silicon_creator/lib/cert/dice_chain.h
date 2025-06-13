@@ -12,9 +12,26 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
+#include "hw/top/flash_ctrl_regs.h"  // Generated.
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+enum {
+  kDicePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE - sizeof(hmac_digest_t),
+};
+
+/**
+ * The flash page schema for holding DICE certificates.
+ */
+typedef struct dice_page {
+  uint8_t data[kDicePageDataSize];
+  hmac_digest_t digest;
+} dice_page_t;
+
+static_assert(sizeof(dice_page_t) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+              "Invalid dice page size");
 
 /**
  * Initialize the dice chain builder with data from the flash pages.
