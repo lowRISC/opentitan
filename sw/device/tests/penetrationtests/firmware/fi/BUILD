@@ -133,6 +133,7 @@ cc_library(
         "//hw/top:keymgr_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
