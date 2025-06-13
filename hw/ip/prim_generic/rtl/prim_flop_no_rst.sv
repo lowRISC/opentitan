@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_flop_no_rst #(
+module prim_flop_no_rst #(
   parameter int Width = 1
 ) (
   input                    clk_i,
