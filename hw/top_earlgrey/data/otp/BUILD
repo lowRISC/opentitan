@@ -13,13 +13,19 @@ load(
     "otp_hex",
     "otp_image",
     "otp_json",
+    "otp_json_overlay",
     "otp_partition",
     "otp_per_class_bytes",
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
+
+# All otp_json targets are marked as compatible only with Earlgrey to avoid
+# using them on other tops by mistake
+TARGET_COMPATIBLE_WITH = opentitan_require_top("earlgrey")
 
 # This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
 # That is, each OTP image referenced by the macro should have a definition in
@@ -83,6 +89,7 @@ otp_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 # CREATOR_SW_CFG configuration for TEST_UNLOCKED lifecycle device states.
@@ -100,6 +107,7 @@ otp_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -190,6 +198,7 @@ otp_json(
             },
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -203,6 +212,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -222,6 +232,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -236,6 +247,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -255,6 +267,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -270,6 +283,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -285,6 +299,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -300,6 +315,7 @@ otp_json(
             lock = False,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -317,6 +333,7 @@ otp_json(
             lock = True,
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 # OTP LC STATE-SPECIFIC CONFIGS
@@ -330,6 +347,7 @@ otp_json(
         ),
     ],
     seed = "52408960416235844780753299194502148156786072650816676092165912261205302331741",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 [
@@ -343,6 +361,7 @@ otp_json(
             ),
         ],
         seed = "52408960416235844780753299194502148156786072650816676092165912261205302331741",
+        target_compatible_with = TARGET_COMPATIBLE_WITH,
     )
     for i in range(0, 8)
 ]
@@ -358,6 +377,7 @@ otp_json(
             ),
         ],
         seed = "52408960416235844780753299194502148156786072650816676092165912261205302331741",
+        target_compatible_with = TARGET_COMPATIBLE_WITH,
     )
     for i in range(0, 7)
 ]
@@ -372,6 +392,7 @@ otp_json(
         ),
     ],
     seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -384,6 +405,7 @@ otp_json(
         ),
     ],
     seed = "113517944176559405110937879233240229311794601727326023435899657066678782830485",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -396,6 +418,7 @@ otp_json(
         ),
     ],
     seed = "113517944176559405110937879233240229311794601727326023435899657066678782830485",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_json(
@@ -408,6 +431,7 @@ otp_json(
         ),
     ],
     seed = "52408960416235844780753299194502148156786072650816676092165912261205302331741",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 # Create an overlay for the alert_handler digest.
@@ -503,6 +527,7 @@ otp_json(
             items = {"CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0x0)},
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_image(
@@ -520,6 +545,7 @@ otp_json(
             items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_TRUE)},
         ),
     ],
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
 )
 
 otp_image(
@@ -564,4 +590,31 @@ pkg_files(
 otp_json(
     name = "otp_json_baseline",
     seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+    target_compatible_with = TARGET_COMPATIBLE_WITH,
+)
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+# This set overlays does not include any of the SECRET[0-2] partitions.
+otp_json_overlay(
+    name = "std_otp_overlays_without_secret_partitions",
+    overlays = [
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
+        ":otp_json_hw_cfg0",
+        ":otp_json_hw_cfg1",
+    ],
+)
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+otp_json_overlay(
+    name = "std_otp_overlay",
+    overlays = [
+        ":std_otp_overlays_without_secret_partitions",
+        ":otp_json_secret0",
+        ":otp_json_secret1",
+        ":otp_json_secret2_unlocked",
+    ],
 )

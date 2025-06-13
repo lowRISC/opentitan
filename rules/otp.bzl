@@ -189,6 +189,41 @@ otp_json_immutable_rom_ext = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
+OtpJsonOverlay = provider(
+    fields = {"overlays": "List of File containing json overlays"},
+)
+
+def _collect_overlays(overlays):
+    out_overlays = []
+    for target in overlays:
+        if OtpJsonOverlay in target:
+            out_overlays.extend(target[OtpJsonOverlay].overlays)
+        else:
+            files = target[DefaultInfo].files.to_list()
+            if len(files) != 1:
+                fail("expected exactly one Hjson or Json file but got {}".format(files))
+            out_overlays.extend(files)
+    return out_overlays
+
+def _otp_json_overlay(ctx):
+    return [OtpJsonOverlay(overlays = _collect_overlays(ctx.attr.overlays))]
+
+otp_json_overlay = rule(
+    implementation = _otp_json_overlay,
+    attrs = {
+        "overlays": attr.label_list(
+            doc = """Additional image configuration file(s) in Hjson format to override src.
+One can also specify overlays created by otp_json_overlay. Overlays are applied in the order provided.""",
+        ),
+    },
+    provides = [OtpJsonOverlay],
+    doc = """
+Collect one of more OTP json files and remember the order in which they should be applied.
+It is possible to recursively specify overlays produced by `otp_overlay` in the list, in which
+case it will be simply be expanded. Overlay can be specified in `otp_image` along with `otp_json`
+targets.""",
+)
+
 def _otp_alert_digest_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
@@ -245,7 +280,8 @@ def _otp_image(ctx):
     if ctx.attr.data_perm:
         args.add("--data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
-    args.add_all(ctx.files.overlays, before_each = "--add-cfg")
+    overlays = _collect_overlays(ctx.attr.overlays)
+    args.add_all(overlays, before_each = "--add-cfg")
     args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
     ctx.actions.run(
         outputs = [output],
@@ -253,7 +289,7 @@ def _otp_image(ctx):
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
-        ] + ctx.files.overlays,
+        ] + overlays,
         arguments = [args],
         executable = ctx.executable._tool,
     )
@@ -267,8 +303,8 @@ otp_image = rule(
             doc = "Image configuration file in Hjson format.",
         ),
         "overlays": attr.label_list(
-            allow_files = [".json", ".hjson"],
-            doc = "Additional image configuration file(s) in Hjson format to override src. Overlays are applied in the order provided.",
+            doc = """Additional image configuration file(s) in Hjson format to override src.
+One can also specify overlays created by otp_json_overlay. Overlays are applied in the order provided.""",
         ),
         "lc_state_def": attr.label(
             allow_single_file = True,
@@ -277,7 +313,7 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_ctrl_mmap",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -323,7 +359,8 @@ def _otp_image_consts_impl(ctx):
     args.add("--img-cfg", ctx.file.src)
     args.add("--c-template", ctx.file.c_template)
     args.add("--c-out", "{}/{}.c".format(output.dirname, ctx.attr.name))
-    args.add_all(ctx.files.overlays, before_each = "--add-cfg")
+    overlays = _collect_overlays(ctx.attr.overlays)
+    args.add_all(overlays, before_each = "--add-cfg")
     ctx.actions.run(
         outputs = [output],
         inputs = [
@@ -331,7 +368,7 @@ def _otp_image_consts_impl(ctx):
             ctx.file.c_template,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
-        ] + ctx.files.overlays,
+        ] + overlays,
         arguments = [args],
         executable = ctx.executable._tool,
     )
@@ -347,8 +384,8 @@ otp_image_consts = rule(
             doc = "Image configuration file in Hjson format.",
         ),
         "overlays": attr.label_list(
-            allow_files = [".json", ".hjson"],
-            doc = "Additional image configuration file(s) in Hjson format to override src. Overlays are applied in the order provided.",
+            doc = """Additional image configuration file(s) in Hjson format to override src.
+One can also specify overlays created by otp_json_overlay. Overlays are applied in the order provided.""",
         ),
         "lc_state_def": attr.label(
             allow_single_file = True,
@@ -357,7 +394,7 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+            default = "//hw/top:top_otp_ctrl_mmap",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
@@ -396,24 +433,7 @@ OTP_SIGVERIFY_FAKE_KEYS = [
     "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-# This set overlays does not include any of the SECRET[0-2] partitions.
-STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-]
-
-# This is a set of overlays to generate a generic, standard OTP image.
-# Additional overlays can be applied on top to further customize the OTP.
-STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret0",
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
-]
+STD_OTP_OVERLAYS = ["//hw/top:std_otp_overlay"]
 
 def otp_hex(v):
     return hex(v)
