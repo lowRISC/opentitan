@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:const.bzl", "CONST", "hex")
-load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
@@ -114,6 +114,18 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/rescue",
+    ],
+)
+
+cc_test(
+    name = "rom_ext_boot_services_unittest",
+    srcs = ["rom_ext_boot_services_unittest.cc"],
+    deps = [
+        ":rom_ext_boot_services",
+        dual_cc_device_library_of("//sw/device/silicon_creator/lib/boot_svc:boot_svc_header"),
+        "//sw/device/silicon_creator/lib/rescue:rescue_null",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 
