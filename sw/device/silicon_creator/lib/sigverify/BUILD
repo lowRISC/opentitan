@@ -243,10 +243,6 @@ cc_library(
 cc_library(
     name = "flash_exec",
     hdrs = ["flash_exec.h"],
-    deps = [
-        ":rsa_verify",
-        ":spx_verify",
-    ],
 )
 
 cc_test(
@@ -254,6 +250,8 @@ cc_test(
     srcs = ["flash_exec_unittest.cc"],
     deps = [
         ":flash_exec",
+        ":rsa_verify",
+        ":spx_verify",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -265,6 +263,7 @@ cc_library(
     hdrs = ["sigverify.h"],
     deps = [
         ":ecdsa_p256_verify",
+        ":flash_exec",
         ":rsa_verify",
         ":spx_verify",
         ":usage_constraints",
