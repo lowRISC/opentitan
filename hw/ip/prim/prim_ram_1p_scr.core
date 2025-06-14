@@ -17,6 +17,7 @@ filesets:
       - lowrisc:prim:util_get_scramble_params
     files:
       - rtl/prim_ram_1p_scr.sv
+      - rtl/prim_ram_1p_scr_1cyc.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
