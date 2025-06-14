@@ -488,6 +488,7 @@
             otbn
             keymgr_dpe
             csrng
+            entropy_src
             edn0
             edn1
             sram_ctrl_main.regs
@@ -6402,9 +6403,8 @@
           width: 1
           inst_name: csrng
           default: ""
-          external: true
-          top_signame: entropy_src_hw_if
-          conn_type: false
+          end_idx: -1
+          top_signame: csrng_entropy_src_hw_if
           index: -1
         }
         {
@@ -6420,6 +6420,9 @@
           act: rsp
           width: 1
           inst_name: csrng
+          default: ""
+          end_idx: -1
+          top_signame: csrng_cs_aes_halt
           index: -1
         }
         {
@@ -6431,6 +6434,7 @@
           width: 1
           default: prim_mubi_pkg::MuBi8True
           inst_name: csrng
+          top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
         }
         {
@@ -6464,6 +6468,173 @@
         null:
         {
           hart: 0x21150000
+        }
+      }
+      generate_dif: true
+      domain:
+      [
+        "0"
+      ]
+    }
+    {
+      name: entropy_src
+      type: entropy_src
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_secure
+      }
+      param_decl: {}
+      memory: {}
+      param_list:
+      [
+        {
+          name: EsFifoDepth
+          desc: Number of 384-bit entries in the esfinal FIFO
+          type: int
+          default: "3"
+          local: "false"
+          expose: "true"
+          name_top: EntropySrcEsFifoDepth
+        }
+        {
+          name: DistrFifoDepth
+          desc: Number of 32-bit entries in the distr FIFO
+          type: int unsigned
+          default: "2"
+          local: "false"
+          expose: "true"
+          name_top: EntropySrcDistrFifoDepth
+        }
+        {
+          name: Stub
+          desc: Stub out the core of entropy_src logic
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: EntropySrcStub
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: entropy_src_hw_if
+          struct: entropy_src_hw_if
+          package: entropy_src_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          top_signame: csrng_entropy_src_hw_if
+          index: -1
+        }
+        {
+          name: cs_aes_halt
+          desc:
+            '''
+            Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
+            The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
+            While SHA3 runs, Entropy Source keeps the request high.
+            CSRNG may not drop the acknowledge before Entropy Source drops the request.
+            '''
+          struct: cs_aes_halt
+          package: entropy_src_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          top_signame: csrng_cs_aes_halt
+          index: -1
+        }
+        {
+          name: entropy_src_rng
+          struct: entropy_src_rng
+          package: entropy_src_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          external: true
+          top_signame: es_rng
+          conn_type: false
+          index: -1
+        }
+        {
+          name: entropy_src_xht
+          struct: entropy_src_xht
+          package: entropy_src_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: otp_en_entropy_src_fw_read
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8True
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: otp_en_entropy_src_fw_over
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8True
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: rng_fips
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: entropy_src
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: entropy_src
+          default: ""
+          end_idx: -1
+          top_signame: entropy_src_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          hart: 0x21160000
         }
       }
       generate_dif: true
@@ -11274,6 +11445,14 @@
         edn0.csrng_cmd
         edn1.csrng_cmd
       ]
+      csrng.entropy_src_hw_if:
+      [
+        entropy_src.entropy_src_hw_if
+      ]
+      csrng.cs_aes_halt:
+      [
+        entropy_src.cs_aes_halt
+      ]
       otp_ctrl.sram_otp_key:
       [
         sram_ctrl_main.sram_otp_key
@@ -11613,6 +11792,10 @@
       [
         main.tl_aes
       ]
+      entropy_src.tl:
+      [
+        main.tl_entropy_src
+      ]
       csrng.tl:
       [
         main.tl_csrng
@@ -11916,6 +12099,7 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       otp_ctrl.otp_broadcast
+      csrng.otp_en_csrng_sw_app_read
       soc_dbg_ctrl.soc_dbg_state
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
@@ -11960,8 +12144,8 @@
       clkmgr_aon.hi_speed_sel: hi_speed_sel
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
-      csrng.entropy_src_hw_if: entropy_src_hw_if
       dma.sys: dma_sys
+      entropy_src.entropy_src_rng: es_rng
       mbx.tl_mbx: mbx_tl
       mbx0.doe_intr: mbx0_doe_intr
       mbx0.doe_intr_en: mbx0_doe_intr_en
@@ -12090,6 +12274,7 @@
           sram_ctrl_main.ram
           peri
           aes
+          entropy_src
           csrng
           edn0
           edn1
@@ -12127,6 +12312,7 @@
           sram_ctrl_main.ram
           peri
           aes
+          entropy_src
           csrng
           edn0
           edn1
@@ -12502,6 +12688,28 @@
               base_addrs:
               {
                 hart: 0x21100000
+              }
+              size_byte: 0x100
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: entropy_src
+          type: device
+          clock: clk_main_i
+          reset: rst_main_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: entropy_src
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x21160000
               }
               size_byte: 0x100
             }
@@ -13468,6 +13676,18 @@
           width: 1
           default: ""
           top_signame: aes_tl
+          index: -1
+        }
+        {
+          name: tl_entropy_src
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          top_signame: entropy_src_tl
           index: -1
         }
         {
@@ -18479,6 +18699,26 @@
       lpg_idx: 13
     }
     {
+      name: entropy_src_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: entropy_src
+      desc: entropy_src recov_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: entropy_src_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: entropy_src
+      desc: entropy_src fatal_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
       name: edn0_recov_alert
       width: 1
       type: alert
@@ -19453,6 +19693,46 @@
       incoming: false
     }
     {
+      name: entropy_src_es_entropy_valid
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+      desc: entropy_src es_entropy_valid interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+    }
+    {
+      name: entropy_src_es_health_test_failed
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+      desc: entropy_src es_health_test_failed interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+    }
+    {
+      name: entropy_src_es_observe_fifo_ready
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+      desc: entropy_src es_observe_fifo_ready interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+    }
+    {
+      name: entropy_src_es_fatal_err
+      width: 1
+      type: interrupt
+      module_name: entropy_src
+      desc: entropy_src es_fatal_err interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+    }
+    {
       name: edn0_edn_cmd_req_done
       width: 1
       type: interrupt
@@ -19869,6 +20149,7 @@
     otbn
     keymgr_dpe
     csrng
+    entropy_src
     edn0
     edn1
     sram_ctrl_main
@@ -19909,6 +20190,7 @@
     otbn
     keymgr_dpe
     csrng
+    entropy_src
     edn0
     edn1
     dma
@@ -23850,9 +24132,8 @@
         width: 1
         inst_name: csrng
         default: ""
-        external: true
-        top_signame: entropy_src_hw_if
-        conn_type: false
+        end_idx: -1
+        top_signame: csrng_entropy_src_hw_if
         index: -1
       }
       {
@@ -23868,6 +24149,9 @@
         act: rsp
         width: 1
         inst_name: csrng
+        default: ""
+        end_idx: -1
+        top_signame: csrng_cs_aes_halt
         index: -1
       }
       {
@@ -23879,6 +24163,7 @@
         width: 1
         default: prim_mubi_pkg::MuBi8True
         inst_name: csrng
+        top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
       }
       {
@@ -23904,6 +24189,105 @@
         default: ""
         end_idx: -1
         top_signame: csrng_tl
+        index: -1
+      }
+      {
+        name: entropy_src_hw_if
+        struct: entropy_src_hw_if
+        package: entropy_src_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        top_signame: csrng_entropy_src_hw_if
+        index: -1
+      }
+      {
+        name: cs_aes_halt
+        desc:
+          '''
+          Coordinate activity between CSRNG's AES and Entropy Source's SHA3.
+          The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
+          While SHA3 runs, Entropy Source keeps the request high.
+          CSRNG may not drop the acknowledge before Entropy Source drops the request.
+          '''
+        struct: cs_aes_halt
+        package: entropy_src_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        top_signame: csrng_cs_aes_halt
+        index: -1
+      }
+      {
+        name: entropy_src_rng
+        struct: entropy_src_rng
+        package: entropy_src_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        external: true
+        top_signame: es_rng
+        conn_type: false
+        index: -1
+      }
+      {
+        name: entropy_src_xht
+        struct: entropy_src_xht
+        package: entropy_src_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: otp_en_entropy_src_fw_read
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8True
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: otp_en_entropy_src_fw_over
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8True
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: rng_fips
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: entropy_src
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: entropy_src
+        default: ""
+        end_idx: -1
+        top_signame: entropy_src_tl
         index: -1
       }
       {
@@ -26804,6 +27188,18 @@
         index: -1
       }
       {
+        name: tl_entropy_src
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        top_signame: entropy_src_tl
+        index: -1
+      }
+      {
         name: tl_csrng
         struct: tl
         package: tlul_pkg
@@ -28091,30 +28487,6 @@
         netname: calib_rdy
       }
       {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_req
-        signame: entropy_src_hw_if_req_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: entropy_src_hw_if_req
-      }
-      {
-        package: entropy_src_pkg
-        struct: entropy_src_hw_if_rsp
-        signame: entropy_src_hw_if_rsp_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: entropy_src_hw_if_rsp
-      }
-      {
         package: dma_pkg
         struct: sys_req
         signame: dma_sys_req_o
@@ -28137,6 +28509,30 @@
         conn_type: false
         index: -1
         netname: dma_sys_rsp
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_req
+        signame: es_rng_req_o
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: es_rng_req
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_rng_rsp
+        signame: es_rng_rsp_i
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: es_rng_rsp
       }
       {
         package: tlul_pkg
@@ -29158,6 +29554,50 @@
         struct: csrng_rsp
         signame: csrng_csrng_cmd_rsp
         width: 2
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_req
+        signame: csrng_entropy_src_hw_if_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: entropy_src_pkg
+        struct: entropy_src_hw_if_rsp
+        signame: csrng_entropy_src_hw_if_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: entropy_src_pkg::ENTROPY_SRC_HW_IF_RSP_DEFAULT
+      }
+      {
+        package: entropy_src_pkg
+        struct: cs_aes_halt_req
+        signame: csrng_cs_aes_halt_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: entropy_src_pkg::CS_AES_HALT_REQ_DEFAULT
+      }
+      {
+        package: entropy_src_pkg
+        struct: cs_aes_halt_rsp
+        signame: csrng_cs_aes_halt_rsp
+        width: 1
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -30299,6 +30739,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: aes_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: entropy_src_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: entropy_src_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -31861,6 +32323,15 @@
         type: uni
         end_idx: -1
         default: "'0"
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        signame: csrng_otp_en_csrng_sw_app_read
+        width: 1
+        type: uni
+        end_idx: -1
+        default: prim_mubi_pkg::MuBi8True
       }
       {
         package: lc_ctrl_state_pkg
