@@ -17,6 +17,7 @@ load("//hw/top_darjeeling/ip_autogen/clkmgr:defs.bzl", "CLKMGR")
 load("//hw/ip/csrng:defs.bzl", "CSRNG")
 load("//hw/ip/dma:defs.bzl", "DMA")
 load("//hw/ip/edn:defs.bzl", "EDN")
+load("//hw/ip/entropy_src:defs.bzl", "ENTROPY_SRC")
 load("//hw/top_darjeeling/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
@@ -58,6 +59,7 @@ DARJEELING = opentitan_top(
         CSRNG,
         DMA,
         EDN,
+        ENTROPY_SRC,
         GPIO,
         HMAC,
         I2C,

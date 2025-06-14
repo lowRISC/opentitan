@@ -427,6 +427,20 @@ pub const CSRNG_BASE_ADDR: usize = 0x21150000;
 /// `CSRNG_BASE_ADDR + CSRNG_SIZE_BYTES`.
 pub const CSRNG_SIZE_BYTES: usize = 0x80;
 
+/// Peripheral base address for entropy_src in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const ENTROPY_SRC_BASE_ADDR: usize = 0x21160000;
+
+/// Peripheral size for entropy_src in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #ENTROPY_SRC_BASE_ADDR and
+/// `ENTROPY_SRC_BASE_ADDR + ENTROPY_SRC_SIZE_BYTES`.
+pub const ENTROPY_SRC_SIZE_BYTES: usize = 0x100;
+
 /// Peripheral base address for edn0 in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -826,36 +840,38 @@ pub enum PlicPeripheral {
     KeymgrDpe = 15,
     /// csrng
     Csrng = 16,
+    /// entropy_src
+    EntropySrc = 17,
     /// edn0
-    Edn0 = 17,
+    Edn0 = 18,
     /// edn1
-    Edn1 = 18,
+    Edn1 = 19,
     /// dma
-    Dma = 19,
+    Dma = 20,
     /// mbx0
-    Mbx0 = 20,
+    Mbx0 = 21,
     /// mbx1
-    Mbx1 = 21,
+    Mbx1 = 22,
     /// mbx2
-    Mbx2 = 22,
+    Mbx2 = 23,
     /// mbx3
-    Mbx3 = 23,
+    Mbx3 = 24,
     /// mbx4
-    Mbx4 = 24,
+    Mbx4 = 25,
     /// mbx5
-    Mbx5 = 25,
+    Mbx5 = 26,
     /// mbx6
-    Mbx6 = 26,
+    Mbx6 = 27,
     /// mbx_jtag
-    MbxJtag = 27,
+    MbxJtag = 28,
     /// mbx_pcie0
-    MbxPcie0 = 28,
+    MbxPcie0 = 29,
     /// mbx_pcie1
-    MbxPcie1 = 29,
+    MbxPcie1 = 30,
     /// racl_ctrl
-    RaclCtrl = 30,
+    RaclCtrl = 31,
     /// ac_range_check
-    AcRangeCheck = 31,
+    AcRangeCheck = 32,
 }
 
 impl TryFrom<u32> for PlicPeripheral {
@@ -879,21 +895,22 @@ impl TryFrom<u32> for PlicPeripheral {
             14 => Ok(Self::Otbn),
             15 => Ok(Self::KeymgrDpe),
             16 => Ok(Self::Csrng),
-            17 => Ok(Self::Edn0),
-            18 => Ok(Self::Edn1),
-            19 => Ok(Self::Dma),
-            20 => Ok(Self::Mbx0),
-            21 => Ok(Self::Mbx1),
-            22 => Ok(Self::Mbx2),
-            23 => Ok(Self::Mbx3),
-            24 => Ok(Self::Mbx4),
-            25 => Ok(Self::Mbx5),
-            26 => Ok(Self::Mbx6),
-            27 => Ok(Self::MbxJtag),
-            28 => Ok(Self::MbxPcie0),
-            29 => Ok(Self::MbxPcie1),
-            30 => Ok(Self::RaclCtrl),
-            31 => Ok(Self::AcRangeCheck),
+            17 => Ok(Self::EntropySrc),
+            18 => Ok(Self::Edn0),
+            19 => Ok(Self::Edn1),
+            20 => Ok(Self::Dma),
+            21 => Ok(Self::Mbx0),
+            22 => Ok(Self::Mbx1),
+            23 => Ok(Self::Mbx2),
+            24 => Ok(Self::Mbx3),
+            25 => Ok(Self::Mbx4),
+            26 => Ok(Self::Mbx5),
+            27 => Ok(Self::Mbx6),
+            28 => Ok(Self::MbxJtag),
+            29 => Ok(Self::MbxPcie0),
+            30 => Ok(Self::MbxPcie1),
+            31 => Ok(Self::RaclCtrl),
+            32 => Ok(Self::AcRangeCheck),
             _ => Err(val),
         }
     }
@@ -1148,84 +1165,92 @@ pub enum PlicIrqId {
     CsrngCsHwInstExc = 119,
     /// csrng_cs_fatal_err
     CsrngCsFatalErr = 120,
+    /// entropy_src_es_entropy_valid
+    EntropySrcEsEntropyValid = 121,
+    /// entropy_src_es_health_test_failed
+    EntropySrcEsHealthTestFailed = 122,
+    /// entropy_src_es_observe_fifo_ready
+    EntropySrcEsObserveFifoReady = 123,
+    /// entropy_src_es_fatal_err
+    EntropySrcEsFatalErr = 124,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 121,
+    Edn0EdnCmdReqDone = 125,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 122,
+    Edn0EdnFatalErr = 126,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 123,
+    Edn1EdnCmdReqDone = 127,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 124,
+    Edn1EdnFatalErr = 128,
     /// dma_dma_done
-    DmaDmaDone = 125,
+    DmaDmaDone = 129,
     /// dma_dma_chunk_done
-    DmaDmaChunkDone = 126,
+    DmaDmaChunkDone = 130,
     /// dma_dma_error
-    DmaDmaError = 127,
+    DmaDmaError = 131,
     /// mbx0_mbx_ready
-    Mbx0MbxReady = 128,
+    Mbx0MbxReady = 132,
     /// mbx0_mbx_abort
-    Mbx0MbxAbort = 129,
+    Mbx0MbxAbort = 133,
     /// mbx0_mbx_error
-    Mbx0MbxError = 130,
+    Mbx0MbxError = 134,
     /// mbx1_mbx_ready
-    Mbx1MbxReady = 131,
+    Mbx1MbxReady = 135,
     /// mbx1_mbx_abort
-    Mbx1MbxAbort = 132,
+    Mbx1MbxAbort = 136,
     /// mbx1_mbx_error
-    Mbx1MbxError = 133,
+    Mbx1MbxError = 137,
     /// mbx2_mbx_ready
-    Mbx2MbxReady = 134,
+    Mbx2MbxReady = 138,
     /// mbx2_mbx_abort
-    Mbx2MbxAbort = 135,
+    Mbx2MbxAbort = 139,
     /// mbx2_mbx_error
-    Mbx2MbxError = 136,
+    Mbx2MbxError = 140,
     /// mbx3_mbx_ready
-    Mbx3MbxReady = 137,
+    Mbx3MbxReady = 141,
     /// mbx3_mbx_abort
-    Mbx3MbxAbort = 138,
+    Mbx3MbxAbort = 142,
     /// mbx3_mbx_error
-    Mbx3MbxError = 139,
+    Mbx3MbxError = 143,
     /// mbx4_mbx_ready
-    Mbx4MbxReady = 140,
+    Mbx4MbxReady = 144,
     /// mbx4_mbx_abort
-    Mbx4MbxAbort = 141,
+    Mbx4MbxAbort = 145,
     /// mbx4_mbx_error
-    Mbx4MbxError = 142,
+    Mbx4MbxError = 146,
     /// mbx5_mbx_ready
-    Mbx5MbxReady = 143,
+    Mbx5MbxReady = 147,
     /// mbx5_mbx_abort
-    Mbx5MbxAbort = 144,
+    Mbx5MbxAbort = 148,
     /// mbx5_mbx_error
-    Mbx5MbxError = 145,
+    Mbx5MbxError = 149,
     /// mbx6_mbx_ready
-    Mbx6MbxReady = 146,
+    Mbx6MbxReady = 150,
     /// mbx6_mbx_abort
-    Mbx6MbxAbort = 147,
+    Mbx6MbxAbort = 151,
     /// mbx6_mbx_error
-    Mbx6MbxError = 148,
+    Mbx6MbxError = 152,
     /// mbx_jtag_mbx_ready
-    MbxJtagMbxReady = 149,
+    MbxJtagMbxReady = 153,
     /// mbx_jtag_mbx_abort
-    MbxJtagMbxAbort = 150,
+    MbxJtagMbxAbort = 154,
     /// mbx_jtag_mbx_error
-    MbxJtagMbxError = 151,
+    MbxJtagMbxError = 155,
     /// mbx_pcie0_mbx_ready
-    MbxPcie0MbxReady = 152,
+    MbxPcie0MbxReady = 156,
     /// mbx_pcie0_mbx_abort
-    MbxPcie0MbxAbort = 153,
+    MbxPcie0MbxAbort = 157,
     /// mbx_pcie0_mbx_error
-    MbxPcie0MbxError = 154,
+    MbxPcie0MbxError = 158,
     /// mbx_pcie1_mbx_ready
-    MbxPcie1MbxReady = 155,
+    MbxPcie1MbxReady = 159,
     /// mbx_pcie1_mbx_abort
-    MbxPcie1MbxAbort = 156,
+    MbxPcie1MbxAbort = 160,
     /// mbx_pcie1_mbx_error
-    MbxPcie1MbxError = 157,
+    MbxPcie1MbxError = 161,
     /// racl_ctrl_racl_error
-    RaclCtrlRaclError = 158,
+    RaclCtrlRaclError = 162,
     /// ac_range_check_deny_cnt_reached
-    AcRangeCheckDenyCntReached = 159,
+    AcRangeCheckDenyCntReached = 163,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1353,45 +1378,49 @@ impl TryFrom<u32> for PlicIrqId {
             118 => Ok(Self::CsrngCsEntropyReq),
             119 => Ok(Self::CsrngCsHwInstExc),
             120 => Ok(Self::CsrngCsFatalErr),
-            121 => Ok(Self::Edn0EdnCmdReqDone),
-            122 => Ok(Self::Edn0EdnFatalErr),
-            123 => Ok(Self::Edn1EdnCmdReqDone),
-            124 => Ok(Self::Edn1EdnFatalErr),
-            125 => Ok(Self::DmaDmaDone),
-            126 => Ok(Self::DmaDmaChunkDone),
-            127 => Ok(Self::DmaDmaError),
-            128 => Ok(Self::Mbx0MbxReady),
-            129 => Ok(Self::Mbx0MbxAbort),
-            130 => Ok(Self::Mbx0MbxError),
-            131 => Ok(Self::Mbx1MbxReady),
-            132 => Ok(Self::Mbx1MbxAbort),
-            133 => Ok(Self::Mbx1MbxError),
-            134 => Ok(Self::Mbx2MbxReady),
-            135 => Ok(Self::Mbx2MbxAbort),
-            136 => Ok(Self::Mbx2MbxError),
-            137 => Ok(Self::Mbx3MbxReady),
-            138 => Ok(Self::Mbx3MbxAbort),
-            139 => Ok(Self::Mbx3MbxError),
-            140 => Ok(Self::Mbx4MbxReady),
-            141 => Ok(Self::Mbx4MbxAbort),
-            142 => Ok(Self::Mbx4MbxError),
-            143 => Ok(Self::Mbx5MbxReady),
-            144 => Ok(Self::Mbx5MbxAbort),
-            145 => Ok(Self::Mbx5MbxError),
-            146 => Ok(Self::Mbx6MbxReady),
-            147 => Ok(Self::Mbx6MbxAbort),
-            148 => Ok(Self::Mbx6MbxError),
-            149 => Ok(Self::MbxJtagMbxReady),
-            150 => Ok(Self::MbxJtagMbxAbort),
-            151 => Ok(Self::MbxJtagMbxError),
-            152 => Ok(Self::MbxPcie0MbxReady),
-            153 => Ok(Self::MbxPcie0MbxAbort),
-            154 => Ok(Self::MbxPcie0MbxError),
-            155 => Ok(Self::MbxPcie1MbxReady),
-            156 => Ok(Self::MbxPcie1MbxAbort),
-            157 => Ok(Self::MbxPcie1MbxError),
-            158 => Ok(Self::RaclCtrlRaclError),
-            159 => Ok(Self::AcRangeCheckDenyCntReached),
+            121 => Ok(Self::EntropySrcEsEntropyValid),
+            122 => Ok(Self::EntropySrcEsHealthTestFailed),
+            123 => Ok(Self::EntropySrcEsObserveFifoReady),
+            124 => Ok(Self::EntropySrcEsFatalErr),
+            125 => Ok(Self::Edn0EdnCmdReqDone),
+            126 => Ok(Self::Edn0EdnFatalErr),
+            127 => Ok(Self::Edn1EdnCmdReqDone),
+            128 => Ok(Self::Edn1EdnFatalErr),
+            129 => Ok(Self::DmaDmaDone),
+            130 => Ok(Self::DmaDmaChunkDone),
+            131 => Ok(Self::DmaDmaError),
+            132 => Ok(Self::Mbx0MbxReady),
+            133 => Ok(Self::Mbx0MbxAbort),
+            134 => Ok(Self::Mbx0MbxError),
+            135 => Ok(Self::Mbx1MbxReady),
+            136 => Ok(Self::Mbx1MbxAbort),
+            137 => Ok(Self::Mbx1MbxError),
+            138 => Ok(Self::Mbx2MbxReady),
+            139 => Ok(Self::Mbx2MbxAbort),
+            140 => Ok(Self::Mbx2MbxError),
+            141 => Ok(Self::Mbx3MbxReady),
+            142 => Ok(Self::Mbx3MbxAbort),
+            143 => Ok(Self::Mbx3MbxError),
+            144 => Ok(Self::Mbx4MbxReady),
+            145 => Ok(Self::Mbx4MbxAbort),
+            146 => Ok(Self::Mbx4MbxError),
+            147 => Ok(Self::Mbx5MbxReady),
+            148 => Ok(Self::Mbx5MbxAbort),
+            149 => Ok(Self::Mbx5MbxError),
+            150 => Ok(Self::Mbx6MbxReady),
+            151 => Ok(Self::Mbx6MbxAbort),
+            152 => Ok(Self::Mbx6MbxError),
+            153 => Ok(Self::MbxJtagMbxReady),
+            154 => Ok(Self::MbxJtagMbxAbort),
+            155 => Ok(Self::MbxJtagMbxError),
+            156 => Ok(Self::MbxPcie0MbxReady),
+            157 => Ok(Self::MbxPcie0MbxAbort),
+            158 => Ok(Self::MbxPcie0MbxError),
+            159 => Ok(Self::MbxPcie1MbxReady),
+            160 => Ok(Self::MbxPcie1MbxAbort),
+            161 => Ok(Self::MbxPcie1MbxError),
+            162 => Ok(Self::RaclCtrlRaclError),
+            163 => Ok(Self::AcRangeCheckDenyCntReached),
             _ => Err(val),
         }
     }
@@ -1412,7 +1441,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 160] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 164] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1655,6 +1684,14 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 160] = [
     PlicPeripheral::Csrng,
     // CsrngCsFatalErr -> PlicPeripheral::Csrng
     PlicPeripheral::Csrng,
+    // EntropySrcEsEntropyValid -> PlicPeripheral::EntropySrc
+    PlicPeripheral::EntropySrc,
+    // EntropySrcEsHealthTestFailed -> PlicPeripheral::EntropySrc
+    PlicPeripheral::EntropySrc,
+    // EntropySrcEsObserveFifoReady -> PlicPeripheral::EntropySrc
+    PlicPeripheral::EntropySrc,
+    // EntropySrcEsFatalErr -> PlicPeripheral::EntropySrc
+    PlicPeripheral::EntropySrc,
     // Edn0EdnCmdReqDone -> PlicPeripheral::Edn0
     PlicPeripheral::Edn0,
     // Edn0EdnFatalErr -> PlicPeripheral::Edn0
@@ -1790,48 +1827,50 @@ pub enum AlertPeripheral {
     KeymgrDpe = 22,
     /// csrng
     Csrng = 23,
+    /// entropy_src
+    EntropySrc = 24,
     /// edn0
-    Edn0 = 24,
+    Edn0 = 25,
     /// edn1
-    Edn1 = 25,
+    Edn1 = 26,
     /// sram_ctrl_main
-    SramCtrlMain = 26,
+    SramCtrlMain = 27,
     /// sram_ctrl_mbox
-    SramCtrlMbox = 27,
+    SramCtrlMbox = 28,
     /// rom_ctrl0
-    RomCtrl0 = 28,
+    RomCtrl0 = 29,
     /// rom_ctrl1
-    RomCtrl1 = 29,
+    RomCtrl1 = 30,
     /// dma
-    Dma = 30,
+    Dma = 31,
     /// mbx0
-    Mbx0 = 31,
+    Mbx0 = 32,
     /// mbx1
-    Mbx1 = 32,
+    Mbx1 = 33,
     /// mbx2
-    Mbx2 = 33,
+    Mbx2 = 34,
     /// mbx3
-    Mbx3 = 34,
+    Mbx3 = 35,
     /// mbx4
-    Mbx4 = 35,
+    Mbx4 = 36,
     /// mbx5
-    Mbx5 = 36,
+    Mbx5 = 37,
     /// mbx6
-    Mbx6 = 37,
+    Mbx6 = 38,
     /// mbx_jtag
-    MbxJtag = 38,
+    MbxJtag = 39,
     /// mbx_pcie0
-    MbxPcie0 = 39,
+    MbxPcie0 = 40,
     /// mbx_pcie1
-    MbxPcie1 = 40,
+    MbxPcie1 = 41,
     /// soc_dbg_ctrl
-    SocDbgCtrl = 41,
+    SocDbgCtrl = 42,
     /// racl_ctrl
-    RaclCtrl = 42,
+    RaclCtrl = 43,
     /// ac_range_check
-    AcRangeCheck = 43,
+    AcRangeCheck = 44,
     /// rv_core_ibex
-    RvCoreIbex = 44,
+    RvCoreIbex = 45,
 }
 
 /// Alert Handler Alert Source.
@@ -1969,84 +2008,88 @@ pub enum AlertId {
     CsrngRecovAlert = 62,
     /// csrng_fatal_alert
     CsrngFatalAlert = 63,
+    /// entropy_src_recov_alert
+    EntropySrcRecovAlert = 64,
+    /// entropy_src_fatal_alert
+    EntropySrcFatalAlert = 65,
     /// edn0_recov_alert
-    Edn0RecovAlert = 64,
+    Edn0RecovAlert = 66,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 65,
+    Edn0FatalAlert = 67,
     /// edn1_recov_alert
-    Edn1RecovAlert = 66,
+    Edn1RecovAlert = 68,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 67,
+    Edn1FatalAlert = 69,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 68,
+    SramCtrlMainFatalError = 70,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 69,
+    SramCtrlMboxFatalError = 71,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 70,
+    RomCtrl0Fatal = 72,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 71,
+    RomCtrl1Fatal = 73,
     /// dma_fatal_fault
-    DmaFatalFault = 72,
+    DmaFatalFault = 74,
     /// mbx0_fatal_fault
-    Mbx0FatalFault = 73,
+    Mbx0FatalFault = 75,
     /// mbx0_recov_fault
-    Mbx0RecovFault = 74,
+    Mbx0RecovFault = 76,
     /// mbx1_fatal_fault
-    Mbx1FatalFault = 75,
+    Mbx1FatalFault = 77,
     /// mbx1_recov_fault
-    Mbx1RecovFault = 76,
+    Mbx1RecovFault = 78,
     /// mbx2_fatal_fault
-    Mbx2FatalFault = 77,
+    Mbx2FatalFault = 79,
     /// mbx2_recov_fault
-    Mbx2RecovFault = 78,
+    Mbx2RecovFault = 80,
     /// mbx3_fatal_fault
-    Mbx3FatalFault = 79,
+    Mbx3FatalFault = 81,
     /// mbx3_recov_fault
-    Mbx3RecovFault = 80,
+    Mbx3RecovFault = 82,
     /// mbx4_fatal_fault
-    Mbx4FatalFault = 81,
+    Mbx4FatalFault = 83,
     /// mbx4_recov_fault
-    Mbx4RecovFault = 82,
+    Mbx4RecovFault = 84,
     /// mbx5_fatal_fault
-    Mbx5FatalFault = 83,
+    Mbx5FatalFault = 85,
     /// mbx5_recov_fault
-    Mbx5RecovFault = 84,
+    Mbx5RecovFault = 86,
     /// mbx6_fatal_fault
-    Mbx6FatalFault = 85,
+    Mbx6FatalFault = 87,
     /// mbx6_recov_fault
-    Mbx6RecovFault = 86,
+    Mbx6RecovFault = 88,
     /// mbx_jtag_fatal_fault
-    MbxJtagFatalFault = 87,
+    MbxJtagFatalFault = 89,
     /// mbx_jtag_recov_fault
-    MbxJtagRecovFault = 88,
+    MbxJtagRecovFault = 90,
     /// mbx_pcie0_fatal_fault
-    MbxPcie0FatalFault = 89,
+    MbxPcie0FatalFault = 91,
     /// mbx_pcie0_recov_fault
-    MbxPcie0RecovFault = 90,
+    MbxPcie0RecovFault = 92,
     /// mbx_pcie1_fatal_fault
-    MbxPcie1FatalFault = 91,
+    MbxPcie1FatalFault = 93,
     /// mbx_pcie1_recov_fault
-    MbxPcie1RecovFault = 92,
+    MbxPcie1RecovFault = 94,
     /// soc_dbg_ctrl_fatal_fault
-    SocDbgCtrlFatalFault = 93,
+    SocDbgCtrlFatalFault = 95,
     /// soc_dbg_ctrl_recov_ctrl_update_err
-    SocDbgCtrlRecovCtrlUpdateErr = 94,
+    SocDbgCtrlRecovCtrlUpdateErr = 96,
     /// racl_ctrl_fatal_fault
-    RaclCtrlFatalFault = 95,
+    RaclCtrlFatalFault = 97,
     /// racl_ctrl_recov_ctrl_update_err
-    RaclCtrlRecovCtrlUpdateErr = 96,
+    RaclCtrlRecovCtrlUpdateErr = 98,
     /// ac_range_check_recov_ctrl_update_err
-    AcRangeCheckRecovCtrlUpdateErr = 97,
+    AcRangeCheckRecovCtrlUpdateErr = 99,
     /// ac_range_check_fatal_fault
-    AcRangeCheckFatalFault = 98,
+    AcRangeCheckFatalFault = 100,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 99,
+    RvCoreIbexFatalSwErr = 101,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 100,
+    RvCoreIbexRecovSwErr = 102,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 101,
+    RvCoreIbexFatalHwErr = 103,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 102,
+    RvCoreIbexRecovHwErr = 104,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2117,45 +2160,47 @@ impl TryFrom<u32> for AlertId {
             61 => Ok(Self::KeymgrDpeFatalFaultErr),
             62 => Ok(Self::CsrngRecovAlert),
             63 => Ok(Self::CsrngFatalAlert),
-            64 => Ok(Self::Edn0RecovAlert),
-            65 => Ok(Self::Edn0FatalAlert),
-            66 => Ok(Self::Edn1RecovAlert),
-            67 => Ok(Self::Edn1FatalAlert),
-            68 => Ok(Self::SramCtrlMainFatalError),
-            69 => Ok(Self::SramCtrlMboxFatalError),
-            70 => Ok(Self::RomCtrl0Fatal),
-            71 => Ok(Self::RomCtrl1Fatal),
-            72 => Ok(Self::DmaFatalFault),
-            73 => Ok(Self::Mbx0FatalFault),
-            74 => Ok(Self::Mbx0RecovFault),
-            75 => Ok(Self::Mbx1FatalFault),
-            76 => Ok(Self::Mbx1RecovFault),
-            77 => Ok(Self::Mbx2FatalFault),
-            78 => Ok(Self::Mbx2RecovFault),
-            79 => Ok(Self::Mbx3FatalFault),
-            80 => Ok(Self::Mbx3RecovFault),
-            81 => Ok(Self::Mbx4FatalFault),
-            82 => Ok(Self::Mbx4RecovFault),
-            83 => Ok(Self::Mbx5FatalFault),
-            84 => Ok(Self::Mbx5RecovFault),
-            85 => Ok(Self::Mbx6FatalFault),
-            86 => Ok(Self::Mbx6RecovFault),
-            87 => Ok(Self::MbxJtagFatalFault),
-            88 => Ok(Self::MbxJtagRecovFault),
-            89 => Ok(Self::MbxPcie0FatalFault),
-            90 => Ok(Self::MbxPcie0RecovFault),
-            91 => Ok(Self::MbxPcie1FatalFault),
-            92 => Ok(Self::MbxPcie1RecovFault),
-            93 => Ok(Self::SocDbgCtrlFatalFault),
-            94 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            95 => Ok(Self::RaclCtrlFatalFault),
-            96 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
-            97 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
-            98 => Ok(Self::AcRangeCheckFatalFault),
-            99 => Ok(Self::RvCoreIbexFatalSwErr),
-            100 => Ok(Self::RvCoreIbexRecovSwErr),
-            101 => Ok(Self::RvCoreIbexFatalHwErr),
-            102 => Ok(Self::RvCoreIbexRecovHwErr),
+            64 => Ok(Self::EntropySrcRecovAlert),
+            65 => Ok(Self::EntropySrcFatalAlert),
+            66 => Ok(Self::Edn0RecovAlert),
+            67 => Ok(Self::Edn0FatalAlert),
+            68 => Ok(Self::Edn1RecovAlert),
+            69 => Ok(Self::Edn1FatalAlert),
+            70 => Ok(Self::SramCtrlMainFatalError),
+            71 => Ok(Self::SramCtrlMboxFatalError),
+            72 => Ok(Self::RomCtrl0Fatal),
+            73 => Ok(Self::RomCtrl1Fatal),
+            74 => Ok(Self::DmaFatalFault),
+            75 => Ok(Self::Mbx0FatalFault),
+            76 => Ok(Self::Mbx0RecovFault),
+            77 => Ok(Self::Mbx1FatalFault),
+            78 => Ok(Self::Mbx1RecovFault),
+            79 => Ok(Self::Mbx2FatalFault),
+            80 => Ok(Self::Mbx2RecovFault),
+            81 => Ok(Self::Mbx3FatalFault),
+            82 => Ok(Self::Mbx3RecovFault),
+            83 => Ok(Self::Mbx4FatalFault),
+            84 => Ok(Self::Mbx4RecovFault),
+            85 => Ok(Self::Mbx5FatalFault),
+            86 => Ok(Self::Mbx5RecovFault),
+            87 => Ok(Self::Mbx6FatalFault),
+            88 => Ok(Self::Mbx6RecovFault),
+            89 => Ok(Self::MbxJtagFatalFault),
+            90 => Ok(Self::MbxJtagRecovFault),
+            91 => Ok(Self::MbxPcie0FatalFault),
+            92 => Ok(Self::MbxPcie0RecovFault),
+            93 => Ok(Self::MbxPcie1FatalFault),
+            94 => Ok(Self::MbxPcie1RecovFault),
+            95 => Ok(Self::SocDbgCtrlFatalFault),
+            96 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
+            97 => Ok(Self::RaclCtrlFatalFault),
+            98 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
+            99 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
+            100 => Ok(Self::AcRangeCheckFatalFault),
+            101 => Ok(Self::RvCoreIbexFatalSwErr),
+            102 => Ok(Self::RvCoreIbexRecovSwErr),
+            103 => Ok(Self::RvCoreIbexFatalHwErr),
+            104 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2165,7 +2210,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 103] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 105] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2294,6 +2339,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 103] = [
     AlertPeripheral::Csrng,
     // CsrngFatalAlert -> AlertPeripheral::Csrng
     AlertPeripheral::Csrng,
+    // EntropySrcRecovAlert -> AlertPeripheral::EntropySrc
+    AlertPeripheral::EntropySrc,
+    // EntropySrcFatalAlert -> AlertPeripheral::EntropySrc
+    AlertPeripheral::EntropySrc,
     // Edn0RecovAlert -> AlertPeripheral::Edn0
     AlertPeripheral::Edn0,
     // Edn0FatalAlert -> AlertPeripheral::Edn0

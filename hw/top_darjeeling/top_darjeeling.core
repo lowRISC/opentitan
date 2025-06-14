@@ -22,7 +22,7 @@ filesets:
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
       - lowrisc:ip:aes
-      - lowrisc:ip:entropy_src_pkg
+      - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
       - lowrisc:ip:edn
       - lowrisc:ip:dma

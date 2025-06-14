@@ -580,6 +580,23 @@
  */
 #define TOP_DARJEELING_CSRNG_SIZE_BYTES 0x80
 /**
+ * Peripheral base address for entropy_src in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR 0x21160000
+
+/**
+ * Peripheral size for entropy_src in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR and
+ * `TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR + TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_ENTROPY_SRC_SIZE_BYTES 0x100
+/**
  * Peripheral base address for edn0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
