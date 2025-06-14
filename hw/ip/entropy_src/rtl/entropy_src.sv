@@ -66,7 +66,13 @@ module entropy_src
   output logic    intr_es_fatal_err_o
 );
 
-  localparam int NumBins = 2**RngBusWidth; // bucket health test bin count
+  // For a data width of N, there are 2^N buckets in the bucket health test, each with its own
+  // counter. To make this health test scale reasonably well with `RngBusWidth`, we limit the bucket
+  // health test to 4 bit. If `RngBusWidth` is larger than 4, the bucket health test gets
+  // instantiated multiple times, once per 4 bit.
+  localparam int BucketHtDataWidth = bucket_ht_data_width(RngBusWidth);
+  localparam int NumBuckets = 2**BucketHtDataWidth; // bucket health test bin count
+  localparam int unsigned NumBucketHtInst = num_bucket_ht_inst(RngBusWidth);
 
   // Register interface supports up to 256-bit wide noise source bus widths. Ensure the that the
   // parameter does not exceed that limit.
@@ -153,7 +159,9 @@ module entropy_src
   entropy_src_core #(
     .RngBusWidth(RngBusWidth),
     .EsFifoDepth(EsFifoDepth),
-    .DistrFifoDepth(DistrFifoDepth)
+    .DistrFifoDepth(DistrFifoDepth),
+    .BucketHtDataWidth(BucketHtDataWidth),
+    .NumBucketHtInst(NumBucketHtInst)
   ) u_entropy_src_core (
     .clk_i,
     .rst_ni(core_rst_n),
@@ -306,11 +314,13 @@ module entropy_src
       alert_tx_o[1])
   end : gen_bit_cntrs
 
-  for (genvar i = 0; i < NumBins; i = i + 1) begin : gen_symbol_match
-   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
-     u_entropy_src_core.u_entropy_src_bucket_ht.gen_symbol_match[i].u_prim_count_bin_cntr,
-     alert_tx_o[1])
-  end : gen_symbol_match
+  for (genvar j = 0; j < NumBucketHtInst; j = j + 1) begin : gen_symbol_match_inst_loop
+    for (genvar i = 0; i < NumBuckets; i = i + 1) begin : gen_symbol_match
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
+      u_entropy_src_core.gen_health_test[j].u_entropy_src_bucket_ht.gen_symbol_match[i].
+      u_prim_count_bin_cntr, alert_tx_o[1])
+    end : gen_symbol_match
+  end : gen_symbol_match_inst_loop
 
   for (genvar sh = 0; sh < RngBusWidth; sh = sh+1) begin : gen_pair_cntrs
    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,

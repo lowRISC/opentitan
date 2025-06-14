@@ -7,6 +7,8 @@ description: "entropy_src_pkg"
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:util
     files:
       - rtl/entropy_src_pkg.sv
     file_type: systemVerilogSource

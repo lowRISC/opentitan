@@ -16,6 +16,20 @@ package entropy_src_pkg;
   // Internal entropy_src parameters.
   parameter int  WINDOW_CNTR_WIDTH = 18;
 
+  // For a data width of N, there are 2^N buckets in the bucket health test, each with its own
+  // counter. To make this health test scale reasonably well with `RngBusWidth`, we limit the bucket
+  // health test to 4 bit. If `RngBusWidth` is larger than 4, the bucket health test gets
+  // instantiated multiple times, once per 4 bit.
+  parameter int BucketHtDataMaxWidth = 4;
+
+  function automatic integer bucket_ht_data_width(integer rng_bus_width);
+    return rng_bus_width >= BucketHtDataMaxWidth ? BucketHtDataMaxWidth : rng_bus_width;
+  endfunction
+
+  function automatic integer num_bucket_ht_inst(integer rng_bus_width);
+    return prim_util_pkg::ceil_div(rng_bus_width, bucket_ht_data_width(rng_bus_width));
+  endfunction
+
   // es entropy i/f
   typedef struct packed {
     logic es_ack;
