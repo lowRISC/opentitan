@@ -9,7 +9,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusWidth       = 4,
   parameter int RngBusBitSelWidth = 2,
   parameter int EsFifoDepth       = 4,
-  parameter int DistrFifoDepth    = 2
+  parameter int DistrFifoDepth    = 2,
+  parameter int BucketHtDataWidth = 4,
+  parameter int NumBucketHtInst   = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -284,14 +286,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] bucket_bypass_threshold_oneway;
   logic                    bucket_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] bucket_threshold;
-  logic [HalfRegWidth-1:0] bucket_event_cnt;
+  logic [NumBucketHtInst-1:0][HalfRegWidth-1:0] bucket_event_cnt;
+  logic [HalfRegWidth-1:0] bucket_event_cnt_combined;
   logic [HalfRegWidth-1:0] bucket_event_hwm_fips;
   logic [HalfRegWidth-1:0] bucket_event_hwm_bypass;
   logic [FullRegWidth-1:0] bucket_total_fails;
-  logic [EighthRegWidth-1:0] bucket_fail_count;
-  logic                     bucket_fail_pulse;
-  logic                     bucket_fails_cntr_err;
-  logic                     bucket_alert_cntr_err;
+  logic [EighthRegWidth-1:0]  bucket_fail_count;
+  logic [NumBucketHtInst-1:0] bucket_fail_pulse;
+  logic [prim_util_pkg::vbits(NumBucketHtInst)-1:0] bucket_fail_pulse_step;
+  logic                      bucket_fails_cntr_err;
+  logic                      bucket_alert_cntr_err;
 
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold;
   logic [HalfRegWidth-1:0] markov_hi_fips_threshold_oneway;
@@ -445,7 +449,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    repcnt_cntr_err;
   logic                    repcnts_cntr_err;
   logic                    adaptp_cntr_err;
-  logic                    bucket_cntr_err;
+  logic [NumBucketHtInst-1:0] bucket_cntr_err;
   logic                    markov_cntr_err;
   logic                    es_cntr_err;
   logic                    es_cntr_err_sum;
@@ -1198,7 +1202,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bypass or boot-time mode.
   `ASSERT(EsBootTimeHtWindowSizeSupported_A,
       main_sm_enable && es_bypass_mode && !fw_ov_mode_entropy_insert
-      |-> health_test_bypass_window == HalfRegWidth'(SeedLen/4))
+      |-> health_test_bypass_window == HalfRegWidth'(SeedLen/RngBusWidth))
 
   //------------------------------
   // repcnt one-way thresholds
@@ -1595,7 +1599,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
           repcnt_cntr_err ||
           repcnts_cntr_err ||
           adaptp_cntr_err ||
-          bucket_cntr_err ||
+          (|bucket_cntr_err) ||
           markov_cntr_err ||
           repcnt_fails_cntr_err ||
           repcnt_alert_cntr_err ||
@@ -1673,6 +1677,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (repcnt_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (repcnt_total_fails),
     .err_o               (repcnt_fails_cntr_err)
   );
@@ -1734,6 +1739,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (repcnts_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (repcnts_total_fails),
     .err_o               (repcnts_fails_cntr_err)
   );
@@ -1803,6 +1809,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (adaptp_hi_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (adaptp_hi_total_fails),
     .err_o               (adaptp_hi_fails_cntr_err)
   );
@@ -1845,6 +1852,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (adaptp_lo_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (adaptp_lo_total_fails),
     .err_o               (adaptp_lo_fails_cntr_err)
   );
@@ -1858,22 +1866,47 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // bucket test
   //--------------------------------------------
 
-  // SEC_CM: RNG.BKGN_CHK
-  entropy_src_bucket_ht #(
-    .RegWidth(HalfRegWidth),
-    .RngBusWidth(RngBusWidth)
-  ) u_entropy_src_bucket_ht (
+  for (genvar i = 0; i < NumBucketHtInst; i++) begin : gen_health_test
+    // SEC_CM: RNG.BKGN_CHK
+    entropy_src_bucket_ht #(
+      .RegWidth(HalfRegWidth),
+      .RngBusWidth(BucketHtDataWidth)
+    ) u_entropy_src_bucket_ht (
+      .clk_i               (clk_i),
+      .rst_ni              (rst_ni),
+      .entropy_bit_i       (health_test_esbus[i*BucketHtDataWidth+:BucketHtDataWidth]),
+      .entropy_bit_vld_i   (health_test_esbus_vld),
+      .clear_i             (health_test_clr),
+      .active_i            (bucket_active),
+      .thresh_i            (bucket_threshold),
+      .window_wrap_pulse_i (health_test_done_pulse),
+      .test_cnt_o          (bucket_event_cnt[i]),
+      .test_fail_pulse_o   (bucket_fail_pulse[i]),
+      .count_err_o         (bucket_cntr_err[i])
+    );
+  end
+
+  // Add all partial errors to be consumed by the watermark registers
+  always_comb begin
+    bucket_event_cnt_combined = 0;
+    bucket_fail_pulse_step    = 0;
+    for (int i = 0; i < NumBucketHtInst; i++) begin
+      bucket_event_cnt_combined += bucket_event_cnt[i];
+      bucket_fail_pulse_step    += bucket_fail_pulse[i];
+    end
+  end
+
+  // SEC_CM: CTR.REDUN
+  entropy_src_cntr_reg #(
+    .RegWidth(FullRegWidth)
+  ) u_entropy_src_cntr_reg_bucket (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
-    .entropy_bit_i       (health_test_esbus),
-    .entropy_bit_vld_i   (health_test_esbus_vld),
     .clear_i             (health_test_clr),
-    .active_i            (bucket_active),
-    .thresh_i            (bucket_threshold),
-    .window_wrap_pulse_i (health_test_done_pulse),
-    .test_cnt_o          (bucket_event_cnt),
-    .test_fail_pulse_o   (bucket_fail_pulse),
-    .count_err_o         (bucket_cntr_err)
+    .event_i             (|bucket_fail_pulse),
+    .step_i              (FullRegWidth'(bucket_fail_pulse_step)),
+    .value_o             (bucket_total_fails),
+    .err_o               (bucket_fails_cntr_err)
   );
 
   entropy_src_watermark_reg #(
@@ -1884,7 +1917,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (bucket_event_cnt),
+    .value_i             (bucket_event_cnt_combined),
     .value_o             (bucket_event_hwm_fips)
   );
 
@@ -1896,21 +1929,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (bucket_event_cnt),
+    .value_i             (bucket_event_cnt_combined),
     .value_o             (bucket_event_hwm_bypass)
   );
 
-  // SEC_CM: CTR.REDUN
-  entropy_src_cntr_reg #(
-    .RegWidth(FullRegWidth)
-  ) u_entropy_src_cntr_reg_bucket (
-    .clk_i               (clk_i),
-    .rst_ni              (rst_ni),
-    .clear_i             (health_test_clr),
-    .event_i             (bucket_fail_pulse),
-    .value_o             (bucket_total_fails),
-    .err_o               (bucket_fails_cntr_err)
-  );
 
   assign hw2reg.bucket_hi_watermarks.fips_watermark.d = bucket_event_hwm_fips;
   assign hw2reg.bucket_hi_watermarks.bypass_watermark.d = bucket_event_hwm_bypass;
@@ -1977,6 +1999,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (markov_hi_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (markov_hi_total_fails),
     .err_o               (markov_hi_fails_cntr_err)
   );
@@ -2018,6 +2041,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (markov_lo_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (markov_lo_total_fails),
     .err_o               (markov_lo_fails_cntr_err)
   );
@@ -2082,6 +2106,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
     .event_i             (extht_hi_fail_pulse),
+    .step_i              (FullRegWidth'(1)),
     .value_o             (extht_hi_total_fails),
     .err_o               (extht_hi_fails_cntr_err)
   );
@@ -2123,6 +2148,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
+    .step_i              (FullRegWidth'(1)),
     .event_i             (extht_lo_fail_pulse),
     .value_o             (extht_lo_total_fails),
     .err_o               (extht_lo_fails_cntr_err)
@@ -2147,6 +2173,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (any_fail_pulse),
+    .step_i              (HalfRegWidth'(1)),
     .value_o             (any_fail_count),
     .err_o               (any_fails_cntr_err)
   );
@@ -2155,7 +2182,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          repcnt_fail_pulse ||
          repcnts_fail_pulse ||
          adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
-         bucket_fail_pulse ||
+         (|bucket_fail_pulse) ||
          markov_hi_fail_pulse || markov_lo_fail_pulse ||
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
@@ -2240,6 +2267,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (repcnt_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (repcnt_fail_count),
     .err_o               (repcnt_alert_cntr_err)
   );
@@ -2255,6 +2283,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (repcnts_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (repcnts_fail_count),
     .err_o               (repcnts_alert_cntr_err)
   );
@@ -2270,6 +2299,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (adaptp_hi_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (adaptp_hi_fail_count),
     .err_o               (adaptp_hi_alert_cntr_err)
   );
@@ -2284,6 +2314,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (adaptp_lo_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (adaptp_lo_fail_count),
     .err_o               (adaptp_lo_alert_cntr_err)
   );
@@ -2298,7 +2329,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
-    .event_i             (bucket_fail_pulse),
+    .event_i             (|bucket_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (bucket_fail_count),
     .err_o               (bucket_alert_cntr_err)
   );
@@ -2315,6 +2347,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (markov_hi_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (markov_hi_fail_count),
     .err_o               (markov_hi_alert_cntr_err)
   );
@@ -2329,6 +2362,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (markov_lo_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (markov_lo_fail_count),
     .err_o               (markov_lo_alert_cntr_err)
   );
@@ -2344,6 +2378,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (extht_hi_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (extht_hi_fail_count),
     .err_o               (extht_hi_alert_cntr_err)
   );
@@ -2358,6 +2393,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .clear_i             (alert_cntrs_clr),
     .event_i             (extht_lo_fail_pulse),
+    .step_i              (EighthRegWidth'(1)),
     .value_o             (extht_lo_fail_count),
     .err_o               (extht_lo_alert_cntr_err)
   );
