@@ -242,6 +242,7 @@
             "otbn",
             "keymgr_dpe"
             "csrng",
+            "entropy_src",
             "edn0",
             "edn1",
             "sram_ctrl_main.regs",
@@ -784,6 +785,23 @@
         hart: "0x21150000",
       },
     },
+    { name: "entropy_src",
+      type: "entropy_src",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        hart: "0x21160000",
+      },
+      param_decl: {
+        RngBusWidth: "16",
+        RngBusBitSelWidth: "4",
+        HealthTestWindowWidth: "20"
+        // On Darjeeling, in worst case, there is a new 16-bit entropy word from the RNG every 3
+        // cycles. Based on the back pressure formula in the entropy_src, this yields a depth of 26.
+        DistrFifoDepth: "26",
+      },
+    },
     { name: "edn0",
       type: "edn",
       clock_srcs: {clk_i: "main"},
@@ -1207,6 +1225,8 @@
                                    'pwrmgr_aon.esc_rst_tx'],
       'aon_timer_aon.nmi_wdog_timer_bark' : ['rv_core_ibex.nmi_wdog']
       'csrng.csrng_cmd'         : ['edn0.csrng_cmd', 'edn1.csrng_cmd'],
+      'csrng.entropy_src_hw_if' : ['entropy_src.entropy_src_hw_if'],
+      'csrng.cs_aes_halt'       : ['entropy_src.cs_aes_halt'],
       'otp_ctrl.sram_otp_key'   : ['sram_ctrl_main.sram_otp_key',
                                    'sram_ctrl_ret_aon.sram_otp_key',
                                    'sram_ctrl_mbox.sram_otp_key'
@@ -1379,6 +1399,7 @@
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
         'otp_ctrl.otp_broadcast',
+        'csrng.otp_en_csrng_sw_app_read',
         'soc_dbg_ctrl.soc_dbg_state',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
@@ -1425,8 +1446,11 @@
         'clkmgr_aon.hi_speed_sel'              : 'hi_speed_sel',
         'clkmgr_aon.div_step_down_req'         : 'div_step_down_req',
         'clkmgr_aon.calib_rdy'                 : 'calib_rdy',
-        'csrng.entropy_src_hw_if'              : 'entropy_src_hw_if',
         'dma.sys'                              : 'dma_sys',
+        'entropy_src.entropy_src_rng_enable'   : 'es_rng_enable',
+        'entropy_src.entropy_src_rng_valid'    : 'es_rng_valid',
+        'entropy_src.entropy_src_rng_bits'     : 'es_rng_bit',
+        'entropy_src.rng_fips'                 : 'es_rng_fips',
         'mbx.tl_mbx'                           : 'mbx_tl',
         'mbx0.doe_intr'                        : 'mbx0_doe_intr',
         'mbx0.doe_intr_en'                     : 'mbx0_doe_intr_en',

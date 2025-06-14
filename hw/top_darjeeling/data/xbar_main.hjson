@@ -129,6 +129,13 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    { name:      "entropy_src",
+      type:      "device",
+      clock:     "clk_main_i"
+      reset:     "rst_main_ni"
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
+    },
     { name:      "csrng",
       type:      "device",
       clock:     "clk_main_i"
@@ -367,7 +374,7 @@
     rv_core_ibex.cored:  [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
-      "aes", "csrng", "edn0", "edn1", "hmac",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",
@@ -377,7 +384,7 @@
     rv_dm.sba: [
       "rom_ctrl0.rom", "rom_ctrl0.regs", "rom_ctrl1.rom", "rom_ctrl1.regs",
       "rv_dm.mem", "rv_dm.regs", "sram_ctrl_main.ram", "peri",
-      "aes", "csrng", "edn0", "edn1", "hmac",
+      "aes", "entropy_src", "csrng", "edn0", "edn1", "hmac",
       "rv_plic", "otbn", "keymgr_dpe", "kmac", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg", "sram_ctrl_mbox.ram", "sram_ctrl_mbox.regs",
       "soc_proxy.ctn", "soc_proxy.core", "dma", "mbx0.core", "mbx1.core",
