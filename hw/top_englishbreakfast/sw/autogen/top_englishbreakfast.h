@@ -609,9 +609,10 @@ extern const top_englishbreakfast_plic_peripheral_t
  * access for a given interrupt target.
  */
 typedef enum top_englishbreakfast_plic_target {
-  kTopEnglishbreakfastPlicTargetIbex0 = 0, /**< Ibex Core 0 */
+  kTopEnglishbreakfastPlicTargetRvCoreIbex = 0, /**< Ibex rv_core_ibex */
   kTopEnglishbreakfastPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_englishbreakfast_plic_target_t;
+
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
