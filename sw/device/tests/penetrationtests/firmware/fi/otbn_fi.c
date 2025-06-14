@@ -1254,11 +1254,12 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;
   TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
+      uj_data.enable_icache, &uj_output.icache_en, uj_data.enable_dummy_instr,
+      &uj_output.dummy_instr_en, uj_data.enable_jittery_clock,
+      uj_data.enable_sram_readback, &uj_output.clock_jitter_locked,
+      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
+      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
+      &uj_output.sram_ret_readback_en));
 
   // The load integrity, key sideloading, and char_mem tests get initialized at
   // the first run.

@@ -78,7 +78,8 @@ UJSON_SERDE_STRUCT(FiHmacMessage, crypto_fi_hmac_message_t, CRYPTOFI_HMAC_MESSAG
 #define CRYPTOFI_HMAC_TAG(field, string) \
     field(tag, uint32_t, CRYPTOFI_HMAC_CMD_MAX_TAG_WORDS) \
     field(alerts, uint32_t, 3) \
-    field(err_status, uint32_t)
+    field(err_status, uint32_t) \
+    field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(FiHmacTag, crypto_fi_hmac_tag_t, CRYPTOFI_HMAC_TAG);
 
 #define CRYPTOFI_HMAC_MODE(field, string) \

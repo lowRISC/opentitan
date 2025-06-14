@@ -254,11 +254,12 @@ status_t handle_crypto_fi_init(ujson_t *uj) {
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;
   TRY(pentest_configure_cpu(
-      uj_data.icache_disable, uj_data.dummy_instr_disable,
-      uj_data.enable_jittery_clock, uj_data.enable_sram_readback,
-      &uj_output.clock_jitter_locked, &uj_output.clock_jitter_en,
-      &uj_output.sram_main_readback_locked, &uj_output.sram_ret_readback_locked,
-      &uj_output.sram_main_readback_en, &uj_output.sram_ret_readback_en));
+      uj_data.enable_icache, &uj_output.icache_en, uj_data.enable_dummy_instr,
+      &uj_output.dummy_instr_en, uj_data.enable_jittery_clock,
+      uj_data.enable_sram_readback, &uj_output.clock_jitter_locked,
+      &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
+      &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
+      &uj_output.sram_ret_readback_en));
 
   // Init the AES block.
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
@@ -504,6 +505,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
 
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -514,6 +517,8 @@ status_t handle_crypto_fi_sha256(ujson_t *uj) {
   uj_output.err_status = codes;
   memcpy(uj_output.tag, digest.digest, sizeof(uj_output.tag));
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_crypto_fi_hmac_tag_t, uj, &uj_output);
   return OK_STATUS();
 }
