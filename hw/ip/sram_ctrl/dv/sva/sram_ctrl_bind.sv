@@ -5,7 +5,7 @@
 module sram_ctrl_bind;
 
   bind sram_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device_regs (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module sram_ctrl_bind;
   );
 
   bind sram_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device_ram (
     .clk_i,
     .rst_ni,

@@ -5,7 +5,7 @@
 module ${module_instance_name}_bind;
 
   bind ${module_instance_name} tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) tlul_assert_host_instr (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module ${module_instance_name}_bind;
   );
 
   bind ${module_instance_name} tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) tlul_assert_host_data (
     .clk_i,
     .rst_ni,

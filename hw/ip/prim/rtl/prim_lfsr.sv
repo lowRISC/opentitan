@@ -26,9 +26,9 @@
 
 `include "prim_assert.sv"
 
-module prim_lfsr #(
+module prim_lfsr import prim_lfsr_pkg::*; #(
   // Lfsr Type, can be FIB_XNOR or GAL_XOR
-  parameter                    LfsrType     = "GAL_XOR",
+  parameter lfsr_type_e        LfsrType     = GAL_XOR,
   // Lfsr width
   parameter int unsigned       LfsrDw       = 32,
   // Derived parameter, do not override
@@ -280,7 +280,7 @@ module prim_lfsr #(
   ////////////////
   // Galois XOR //
   ////////////////
-  if (64'(LfsrType) == 64'("GAL_XOR")) begin : gen_gal_xor
+  if (LfsrType == GAL_XOR) begin : gen_gal_xor
 
     // if custom polynomial is provided
     if (CustomCoeffs > 0) begin : gen_custom
@@ -305,7 +305,7 @@ module prim_lfsr #(
   ////////////////////
   // Fibonacci XNOR //
   ////////////////////
-  end else if (64'(LfsrType) == "FIB_XNOR") begin : gen_fib_xnor
+  end else if (LfsrType == FIB_XNOR) begin : gen_fib_xnor
 
     // if custom polynomial is provided
     if (CustomCoeffs > 0) begin : gen_custom
@@ -509,7 +509,7 @@ module prim_lfsr #(
     next_state = current_state;
 
     // Galois XOR
-    if (64'(LfsrType) == 64'("GAL_XOR")) begin
+    if (LfsrType == GAL_XOR) begin
       if (next_state == 0) begin
         next_state = DefaultSeedLocal;
       end else begin
@@ -519,7 +519,7 @@ module prim_lfsr #(
         next_state ^= LfsrDw'(entropy);
       end
     // Fibonacci XNOR
-    end else if (64'(LfsrType) == "FIB_XNOR") begin
+    end else if (LfsrType == FIB_XNOR) begin
       if (&next_state) begin
         next_state = DefaultSeedLocal;
       end else begin

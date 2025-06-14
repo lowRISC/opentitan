@@ -1163,7 +1163,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT (prim_intr_hw_pkg::STATUS)
   ) u_intr_prog_empty (
     .clk_i,
     .rst_ni,
@@ -1179,7 +1179,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT (prim_intr_hw_pkg::STATUS)
   ) u_intr_prog_lvl (
     .clk_i,
     .rst_ni,
@@ -1195,7 +1195,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT (prim_intr_hw_pkg::STATUS)
   ) u_intr_rd_full (
     .clk_i,
     .rst_ni,
@@ -1211,7 +1211,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT (prim_intr_hw_pkg::STATUS)
   ) u_intr_rd_lvl (
     .clk_i,
     .rst_ni,
@@ -1227,7 +1227,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Event")
+    .IntrT (prim_intr_hw_pkg::EVENT)
   ) u_intr_op_done (
     .clk_i,
     .rst_ni,
@@ -1243,7 +1243,7 @@ module flash_ctrl
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Event")
+    .IntrT (prim_intr_hw_pkg::EVENT)
   ) u_intr_corr_err (
     .clk_i,
     .rst_ni,

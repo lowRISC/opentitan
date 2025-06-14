@@ -178,7 +178,7 @@ module sysrst_ctrl_intr
   // instantiate interrupt hardware primitive
   prim_intr_hw #(
    .Width(1),
-   .IntrT("Status")
+   .IntrT(prim_intr_hw_pkg::STATUS)
   ) u_sysrst_ctrl_intr_o (
     .clk_i,
     .rst_ni,

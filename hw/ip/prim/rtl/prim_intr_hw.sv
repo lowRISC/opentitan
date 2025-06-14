@@ -14,10 +14,10 @@
 // - INTR_STATE  : the current state of the interrupt (may be RO or W1C depending on "IntrT")
 // - INTR_TEST   : sw-access-only register which asserts the interrupt for testing purposes
 
-module prim_intr_hw # (
+module prim_intr_hw import prim_intr_hw_pkg::*; #(
   // This module can be instantiated once per interrupt field (Width == 1), or
   // "bussified" with all fields of the interrupt vector (Width == $width(vec)).
-  parameter int unsigned Width = 1,
+  parameter int unsigned Width      = 1,
   parameter bit          FlopOutput = 1,
 
   // As the wired interrupt signal intr_o is a level-triggered interrupt, the upstream consumer sw
@@ -36,7 +36,7 @@ module prim_intr_hw # (
   //   - INTR_STATE for *status* interrupts is RO (it simply presents the raw HW input signal).
   //   - If the root_cause is cleared, INTR_STATE/intr_o also clears automatically.
   // More details about the interrupt type distinctions can be found in the comportability docs.
-  parameter              IntrT = "Event" // Event or Status
+  parameter intr_type_e  IntrT      = EVENT
 ) (
   // event
   input  clk_i,
@@ -57,7 +57,7 @@ module prim_intr_hw # (
 
   logic [Width-1:0] status; // incl. test
 
-  if (IntrT == "Event") begin : g_intr_event
+  if (IntrT == EVENT) begin : g_intr_event
     logic  [Width-1:0]    new_event;
     assign new_event =
                (({Width{reg2hw_intr_test_qe_i}} & reg2hw_intr_test_q_i) | event_intr_i);
@@ -68,7 +68,7 @@ module prim_intr_hw # (
 
     assign status = reg2hw_intr_state_q_i ;
   end : g_intr_event
-  else if (IntrT == "Status") begin : g_intr_status
+  else if (IntrT == STATUS) begin : g_intr_status
     logic [Width-1:0] test_q; // Storing test. Cleared by SW
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -106,7 +106,4 @@ module prim_intr_hw # (
     assign unused_rst_n = rst_ni;
     assign intr_o = reg2hw_intr_state_q_i & reg2hw_intr_enable_q_i;
   end
-
-  `ASSERT_INIT(IntrTKind_A, IntrT inside {"Event", "Status"})
-
 endmodule

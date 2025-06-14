@@ -4,9 +4,7 @@
 
 module rv_timer_bind;
 
-  bind rv_timer tlul_assert #(
-    .EndpointType("Device")
-  ) tlul_assert_device (
+  bind rv_timer tlul_assert #(.EndpointType(tlul_pkg::DEVICE)) tlul_assert_device (
     .clk_i,
     .rst_ni,
     .h2d  (tl_i),
