@@ -66,7 +66,8 @@ module entropy_src
   output logic    intr_es_fatal_err_o
 );
 
-  localparam int NumBins = 2**RngBusWidth; // bucket health test bin count
+  localparam int BucketHtDataWidth = 4;
+  localparam int NumBins = 2**BucketHtDataWidth; // bucket health test bin count
 
   `ASSERT_INIT(RngBusBitWidthMaxValue_A, RngBusWidth <= 256)
   `ASSERT_INIT(RngBusBitSelWidthSameAsComputed_A,
@@ -148,7 +149,8 @@ module entropy_src
   entropy_src_core #(
     .RngBusWidth(RngBusWidth),
     .EsFifoDepth(EsFifoDepth),
-    .DistrFifoDepth(DistrFifoDepth)
+    .DistrFifoDepth(DistrFifoDepth),
+    .BucketHtDataWidth(BucketHtDataWidth)
   ) u_entropy_src_core (
     .clk_i,
     .rst_ni(core_rst_n),

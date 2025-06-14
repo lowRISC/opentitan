@@ -9,7 +9,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusWidth       = 4,
   parameter int RngBusBitSelWidth = 2,
   parameter int EsFifoDepth       = 4,
-  parameter int DistrFifoDepth    = 2
+  parameter int DistrFifoDepth    = 2,
+  parameter int BucketHtDataWidth = 4
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -1861,11 +1862,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SEC_CM: RNG.BKGN_CHK
   entropy_src_bucket_ht #(
     .RegWidth(HalfRegWidth),
-    .RngBusWidth(RngBusWidth)
+    .RngBusWidth(BucketHtDataWidth)
   ) u_entropy_src_bucket_ht (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
-    .entropy_bit_i       (health_test_esbus),
+    .entropy_bit_i       (health_test_esbus[BucketHtDataWidth-1:0]),
     .entropy_bit_vld_i   (health_test_esbus_vld),
     .clear_i             (health_test_clr),
     .active_i            (bucket_active),
