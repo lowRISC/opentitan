@@ -90,14 +90,14 @@ package entropy_src_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [7:0]  q;
+    } rng_bit_sel;
+    struct packed {
       logic [3:0]  q;
     } entropy_data_reg_enable;
     struct packed {
       logic [3:0]  q;
     } threshold_scope;
-    struct packed {
-      logic [1:0]  q;
-    } rng_bit_sel;
     struct packed {
       logic [3:0]  q;
     } rng_bit_enable;
@@ -715,13 +715,13 @@ package entropy_src_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    entropy_src_reg2hw_intr_state_reg_t intr_state; // [551:548]
-    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [547:544]
-    entropy_src_reg2hw_intr_test_reg_t intr_test; // [543:536]
-    entropy_src_reg2hw_alert_test_reg_t alert_test; // [535:532]
-    entropy_src_reg2hw_sw_regupd_reg_t sw_regupd; // [531:531]
-    entropy_src_reg2hw_module_enable_reg_t module_enable; // [530:527]
-    entropy_src_reg2hw_conf_reg_t conf; // [526:501]
+    entropy_src_reg2hw_intr_state_reg_t intr_state; // [557:554]
+    entropy_src_reg2hw_intr_enable_reg_t intr_enable; // [553:550]
+    entropy_src_reg2hw_intr_test_reg_t intr_test; // [549:542]
+    entropy_src_reg2hw_alert_test_reg_t alert_test; // [541:538]
+    entropy_src_reg2hw_sw_regupd_reg_t sw_regupd; // [537:537]
+    entropy_src_reg2hw_module_enable_reg_t module_enable; // [536:533]
+    entropy_src_reg2hw_conf_reg_t conf; // [532:501]
     entropy_src_reg2hw_entropy_control_reg_t entropy_control; // [500:493]
     entropy_src_reg2hw_entropy_data_reg_t entropy_data; // [492:460]
     entropy_src_reg2hw_health_test_windows_reg_t health_test_windows; // [459:428]

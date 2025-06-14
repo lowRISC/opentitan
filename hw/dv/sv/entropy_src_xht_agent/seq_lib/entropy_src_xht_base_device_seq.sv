@@ -22,8 +22,8 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
        test_cnt_hi = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_hi;
        test_cnt_lo = ENTROPY_SRC_XHT_RSP_DEFAULT.test_cnt_lo;
     end else begin
-      if (item.req.active && item.req.entropy_bit_valid) begin
-        window_data_q.push_back(item.req.entropy_bit);
+      if (item.req.active && item.entropy_bit_valid) begin
+        window_data_q.push_back(item.entropy_bit);
         if (window_data_q.size() == item.req.health_test_window) begin
           // Use a hash function to create output values that cover the
           // complete range of test_cnt's, but also depend deterministically

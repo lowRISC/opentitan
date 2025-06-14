@@ -169,12 +169,12 @@ module entropy_src_reg_top (
   logic [3:0] conf_rng_fips_wd;
   logic [3:0] conf_rng_bit_enable_qs;
   logic [3:0] conf_rng_bit_enable_wd;
-  logic [1:0] conf_rng_bit_sel_qs;
-  logic [1:0] conf_rng_bit_sel_wd;
   logic [3:0] conf_threshold_scope_qs;
   logic [3:0] conf_threshold_scope_wd;
   logic [3:0] conf_entropy_data_reg_enable_qs;
   logic [3:0] conf_entropy_data_reg_enable_wd;
+  logic [7:0] conf_rng_bit_sel_qs;
+  logic [7:0] conf_rng_bit_sel_wd;
   logic entropy_control_we;
   logic [3:0] entropy_control_es_route_qs;
   logic [3:0] entropy_control_es_route_wd;
@@ -955,34 +955,7 @@ module entropy_src_reg_top (
     .qs     (conf_rng_bit_enable_qs)
   );
 
-  //   F[rng_bit_sel]: 17:16
-  prim_subreg #(
-    .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h0),
-    .Mubi    (1'b0)
-  ) u_conf_rng_bit_sel (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (conf_gated_we),
-    .wd     (conf_rng_bit_sel_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.conf.rng_bit_sel.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (conf_rng_bit_sel_qs)
-  );
-
-  //   F[threshold_scope]: 21:18
+  //   F[threshold_scope]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1009,7 +982,7 @@ module entropy_src_reg_top (
     .qs     (conf_threshold_scope_qs)
   );
 
-  //   F[entropy_data_reg_enable]: 25:22
+  //   F[entropy_data_reg_enable]: 23:20
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1034,6 +1007,33 @@ module entropy_src_reg_top (
 
     // to register interface (read)
     .qs     (conf_entropy_data_reg_enable_qs)
+  );
+
+  //   F[rng_bit_sel]: 31:24
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_conf_rng_bit_sel (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (conf_gated_we),
+    .wd     (conf_rng_bit_sel_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.conf.rng_bit_sel.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (conf_rng_bit_sel_qs)
   );
 
 
@@ -3573,11 +3573,11 @@ module entropy_src_reg_top (
 
   assign conf_rng_bit_enable_wd = reg_wdata[15:12];
 
-  assign conf_rng_bit_sel_wd = reg_wdata[17:16];
+  assign conf_threshold_scope_wd = reg_wdata[19:16];
 
-  assign conf_threshold_scope_wd = reg_wdata[21:18];
+  assign conf_entropy_data_reg_enable_wd = reg_wdata[23:20];
 
-  assign conf_entropy_data_reg_enable_wd = reg_wdata[25:22];
+  assign conf_rng_bit_sel_wd = reg_wdata[31:24];
   assign entropy_control_we = addr_hit[10] & reg_we & !reg_error;
 
   assign entropy_control_es_route_wd = reg_wdata[3:0];
@@ -3846,9 +3846,9 @@ module entropy_src_reg_top (
         reg_rdata_next[7:4] = conf_fips_flag_qs;
         reg_rdata_next[11:8] = conf_rng_fips_qs;
         reg_rdata_next[15:12] = conf_rng_bit_enable_qs;
-        reg_rdata_next[17:16] = conf_rng_bit_sel_qs;
-        reg_rdata_next[21:18] = conf_threshold_scope_qs;
-        reg_rdata_next[25:22] = conf_entropy_data_reg_enable_qs;
+        reg_rdata_next[19:16] = conf_threshold_scope_qs;
+        reg_rdata_next[23:20] = conf_entropy_data_reg_enable_qs;
+        reg_rdata_next[31:24] = conf_rng_bit_sel_qs;
       end
 
       addr_hit[10]: begin

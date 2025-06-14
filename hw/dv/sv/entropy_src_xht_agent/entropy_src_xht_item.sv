@@ -4,6 +4,13 @@
 
 class entropy_src_xht_item extends uvm_sequence_item;
 
+  localparam int RngBusWidth = 4;
+  localparam int RngBusBitSelWidth = prim_util_pkg::vbits(RngBusWidth);
+
+  logic                         entropy_bit_valid;
+  logic [RngBusWidth-1:0]       entropy_bit;
+  logic [RngBusBitSelWidth-1:0] entropy_bit_sel;
+
   entropy_src_xht_req_t req;
   entropy_src_xht_rsp_t rsp;
 
