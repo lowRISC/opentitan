@@ -13,7 +13,6 @@ filesets:
       - lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top
       - "fileset_partner ? (partner:systems:top_earlgrey_ast)"
       - "fileset_partner ? (partner:systems:top_earlgrey_scan_role_pkg)"
-      - "fileset_partner ? (partner:prim:prim_legacy_pkg)"
       - "fileset_partner ? (partner:prim_tech:all)"
       - "fileset_partner ? (partner:prim_tech:flash)"
       - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast)"
