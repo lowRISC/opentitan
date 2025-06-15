@@ -408,7 +408,6 @@ impl TryFrom<u32> for PlicPeripheral {
         }
     }
 }
-
 /// PLIC Interrupt Source.
 ///
 /// Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
@@ -690,7 +689,6 @@ impl TryFrom<u32> for PlicIrqId {
         }
     }
 }
-
 /// PLIC Interrupt Target.
 ///
 /// Enumeration used to determine which set of IE, CC, threshold registers to
@@ -698,10 +696,9 @@ impl TryFrom<u32> for PlicIrqId {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PlicTarget {
-    /// Ibex Core 0
-    Ibex0 = 0,
+    /// Ibex rv_core_ibex
+    RvCoreIbex = 0,
 }
-
 /// PLIC Interrupt Source to Peripheral Map
 ///
 /// This array is a mapping from `PlicIrqId` to

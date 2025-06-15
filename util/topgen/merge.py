@@ -1075,6 +1075,11 @@ def amend_interrupt(top: ConfigT,
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
+    # Careful, "interrupt*s*"
+    default_plic = None
+    if "interrupts" in top and "default_plic" in top["interrupts"]:
+        default_plic = top["interrupts"]["default_plic"]
+
     interrupts = []
     outgoing_interrupts = defaultdict(list)
     for m in modules + list(chain(*outgoing_modules.values())):
@@ -1096,6 +1101,9 @@ def amend_interrupt(top: ConfigT,
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual["incoming"] = False
+            plic = ip.get("plic", default_plic)
+            if plic is not None:
+                qual["plic"] = plic
             if "outgoing_interrupt" in ip:
                 outgoing_interrupts[ip["outgoing_interrupt"]].append(qual)
             else:
@@ -1110,6 +1118,8 @@ def amend_interrupt(top: ConfigT,
                                 "incoming interrupt")
             qual_irq["incoming"] = True
             qual_irq["width"] = 1
+            # Incoming interrupts are assigned to the default PLIC
+            qual_irq["plic"] = default_plic  # May still be None
             interrupts.append(qual_irq)
 
     top["interrupt"] = interrupts

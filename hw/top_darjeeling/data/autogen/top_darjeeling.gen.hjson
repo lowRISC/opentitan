@@ -447,6 +447,10 @@
     ]
   }
   num_cores: "1"
+  interrupts:
+  {
+    default_plic: rv_plic
+  }
   addr_spaces:
   [
     {
@@ -5053,6 +5057,10 @@
         }
       }
       attr: ipgen
+      targets:
+      [
+        rv_core_ibex
+      ]
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
@@ -18881,6 +18889,7 @@
       intr_type: IntrType.Status
       default_val: true
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_watermark
@@ -18891,6 +18900,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_tx_done
@@ -18901,6 +18911,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_overflow
@@ -18911,6 +18922,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_frame_err
@@ -18921,6 +18933,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_break_err
@@ -18931,6 +18944,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_timeout
@@ -18941,6 +18955,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_rx_parity_err
@@ -18951,6 +18966,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: uart0_tx_empty
@@ -18961,6 +18977,7 @@
       intr_type: IntrType.Status
       default_val: true
       incoming: false
+      plic: rv_plic
     }
     {
       name: gpio_gpio
@@ -18971,6 +18988,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_upload_cmdfifo_not_empty
@@ -18981,6 +18999,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_upload_payload_not_empty
@@ -18991,6 +19010,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_upload_payload_overflow
@@ -19001,6 +19021,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_readbuf_watermark
@@ -19011,6 +19032,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_readbuf_flip
@@ -19021,6 +19043,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_tpm_header_not_empty
@@ -19031,6 +19054,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_tpm_rdfifo_cmd_end
@@ -19041,6 +19065,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_device_tpm_rdfifo_drop
@@ -19051,6 +19076,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_fmt_threshold
@@ -19061,6 +19087,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_rx_threshold
@@ -19071,6 +19098,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_acq_threshold
@@ -19081,6 +19109,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_rx_overflow
@@ -19091,6 +19120,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_controller_halt
@@ -19101,6 +19131,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_scl_interference
@@ -19111,6 +19142,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_sda_interference
@@ -19121,6 +19153,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_stretch_timeout
@@ -19131,6 +19164,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_sda_unstable
@@ -19141,6 +19175,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_cmd_complete
@@ -19151,6 +19186,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_tx_stretch
@@ -19161,6 +19197,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_tx_threshold
@@ -19171,6 +19208,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_acq_stretch
@@ -19181,6 +19219,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_unexp_stop
@@ -19191,6 +19230,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: i2c0_host_timeout
@@ -19201,6 +19241,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: rv_timer_timer_expired_hart0_timer0
@@ -19211,6 +19252,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: otp_ctrl_otp_operation_done
@@ -19221,6 +19263,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: otp_ctrl_otp_error
@@ -19231,6 +19274,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: alert_handler_classa
@@ -19241,6 +19285,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: alert_handler_classb
@@ -19251,6 +19296,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: alert_handler_classc
@@ -19261,6 +19307,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: alert_handler_classd
@@ -19271,6 +19318,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_host0_error
@@ -19281,6 +19329,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: spi_host0_spi_event
@@ -19291,6 +19340,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: pwrmgr_aon_wakeup
@@ -19301,6 +19351,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: aon_timer_aon_wkup_timer_expired
@@ -19311,6 +19362,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: aon_timer_aon_wdog_timer_bark
@@ -19321,6 +19373,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: soc_proxy_external
@@ -19331,6 +19384,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: hmac_hmac_done
@@ -19341,6 +19395,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: hmac_fifo_empty
@@ -19351,6 +19406,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: hmac_hmac_err
@@ -19361,6 +19417,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: kmac_kmac_done
@@ -19371,6 +19428,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: kmac_fifo_empty
@@ -19381,6 +19439,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: kmac_kmac_err
@@ -19391,6 +19450,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: otbn_done
@@ -19401,6 +19461,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: keymgr_dpe_op_done
@@ -19411,6 +19472,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: csrng_cs_cmd_req_done
@@ -19421,6 +19483,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: csrng_cs_entropy_req
@@ -19431,6 +19494,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: csrng_cs_hw_inst_exc
@@ -19441,6 +19505,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: csrng_cs_fatal_err
@@ -19451,6 +19516,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: edn0_edn_cmd_req_done
@@ -19461,6 +19527,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: edn0_edn_fatal_err
@@ -19471,6 +19538,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: edn1_edn_cmd_req_done
@@ -19481,6 +19549,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: edn1_edn_fatal_err
@@ -19491,6 +19560,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: dma_dma_done
@@ -19501,6 +19571,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: dma_dma_chunk_done
@@ -19511,6 +19582,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: dma_dma_error
@@ -19521,6 +19593,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx0_mbx_ready
@@ -19531,6 +19604,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx0_mbx_abort
@@ -19541,6 +19615,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx0_mbx_error
@@ -19551,6 +19626,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx1_mbx_ready
@@ -19561,6 +19637,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx1_mbx_abort
@@ -19571,6 +19648,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx1_mbx_error
@@ -19581,6 +19659,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx2_mbx_ready
@@ -19591,6 +19670,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx2_mbx_abort
@@ -19601,6 +19681,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx2_mbx_error
@@ -19611,6 +19692,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx3_mbx_ready
@@ -19621,6 +19703,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx3_mbx_abort
@@ -19631,6 +19714,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx3_mbx_error
@@ -19641,6 +19725,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx4_mbx_ready
@@ -19651,6 +19736,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx4_mbx_abort
@@ -19661,6 +19747,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx4_mbx_error
@@ -19671,6 +19758,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx5_mbx_ready
@@ -19681,6 +19769,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx5_mbx_abort
@@ -19691,6 +19780,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx5_mbx_error
@@ -19701,6 +19791,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx6_mbx_ready
@@ -19711,6 +19802,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx6_mbx_abort
@@ -19721,6 +19813,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx6_mbx_error
@@ -19731,6 +19824,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_jtag_mbx_ready
@@ -19741,6 +19835,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_jtag_mbx_abort
@@ -19751,6 +19846,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_jtag_mbx_error
@@ -19761,6 +19857,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie0_mbx_ready
@@ -19771,6 +19868,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie0_mbx_abort
@@ -19781,6 +19879,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie0_mbx_error
@@ -19791,6 +19890,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie1_mbx_ready
@@ -19801,6 +19901,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie1_mbx_abort
@@ -19811,6 +19912,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: mbx_pcie1_mbx_error
@@ -19821,6 +19923,7 @@
       intr_type: IntrType.Event
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: racl_ctrl_racl_error
@@ -19831,6 +19934,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
     {
       name: ac_range_check_deny_cnt_reached
@@ -19841,6 +19945,7 @@
       intr_type: IntrType.Status
       default_val: false
       incoming: false
+      plic: rv_plic
     }
   ]
   outgoing_interrupt: {}

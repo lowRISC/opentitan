@@ -38,11 +38,9 @@ if rstmgr is not None:
 else:
     has_rstmgr = False
 
-plic = lib.find_module(top['module'], 'rv_plic')
-if plic is not None:
-    has_plic = addr_space in plic['base_addrs'][None]
-else:
-    has_plic = False
+plics = lib.find_modules(top['module'], 'rv_plic')
+has_plic = any(addr_space in plic['base_addrs'][None] for plic in plics)
+plics = [x["name"] for x in plics]
 
 addr_space_obj = lib.get_addr_space(top, addr_space)
 addr_space_suffix = lib.get_addr_space_suffix(addr_space_obj)
@@ -138,31 +136,40 @@ extern "C" {
  * Enumeration used to determine which peripheral asserted the corresponding
  * interrupt.
  */
-${helper.plic_sources.render()}
+%   for plic in plics:
+${helper.plic_sources[plic].render()}
 
+%   endfor
 /**
  * PLIC Interrupt Source.
  *
  * Enumeration of all PLIC interrupt sources. The interrupt sources belonging to
  * the same peripheral are guaranteed to be consecutive.
  */
-${helper.plic_interrupts.render()}
+%   for plic in plics:
+${helper.plic_interrupts[plic].render()}
 
+%   endfor
 /**
  * PLIC Interrupt Source to Peripheral Map
  *
- * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
- * `${helper.plic_sources.name.as_c_type()}`.
+ * This array is a mapping from `${helper.plic_interrupts[plic].name.as_c_type()}` to
+ * `${helper.plic_sources[plic].name.as_c_type()}`.
  */
-${helper.plic_mapping.render_declaration()}
+%   for plic in plics:
+${helper.plic_mapping[plic].render_declaration()}
 
+%   endfor
 /**
  * PLIC Interrupt Target.
  *
  * Enumeration used to determine which set of IE, CC, threshold registers to
  * access for a given interrupt target.
  */
-${helper.plic_targets.render()}
+%   for plic in plics:
+${helper.plic_targets[plic].render()}
+
+%   endfor
 % endif
 % if has_alert_handler:
 
