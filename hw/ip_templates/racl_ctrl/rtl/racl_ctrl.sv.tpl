@@ -73,10 +73,13 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   logic [NumAlerts-1:0] alert_test, alert;
 
 % if enable_shadow_reg:
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
+  localparam logic [NumAlerts-1:0] IsFatal = {
+    1'b0, // [1] recov_ctrl_update_err
+    1'b1  // [0] fatal_fault
+  };
 
-  assign alert[0]  = shadowed_update_err;
-  assign alert[1]  = reg_intg_error | shadowed_storage_err;
+  assign alert[0]  = reg_intg_error | shadowed_storage_err; // fatal_fault
+  assign alert[1]  = shadowed_update_err;                   // recov_ctrl_update_err
 
   assign alert_test[0] = reg2hw.alert_test.fatal_fault.q & reg2hw.alert_test.fatal_fault.qe;
   assign alert_test[1] = reg2hw.alert_test.recov_ctrl_update_err.q &
