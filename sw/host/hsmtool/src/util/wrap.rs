@@ -30,6 +30,7 @@ pub enum Wrap {
     AesKeyWrapPad,
     RsaPkcs,
     RsaPkcsOaep,
+    VendorThalesAesKw,
     VendorThalesAesKwp,
 }
 
@@ -41,6 +42,7 @@ pub enum Wrap {
 pub enum WrapPrivateKey {
     AesKeyWrap,
     AesKeyWrapPad,
+    VendorThalesAesKw,
     VendorThalesAesKwp,
 }
 
@@ -49,13 +51,15 @@ impl From<WrapPrivateKey> for Wrap {
         match wrap {
             WrapPrivateKey::AesKeyWrap => Wrap::AesKeyWrap,
             WrapPrivateKey::AesKeyWrapPad => Wrap::AesKeyWrapPad,
+            WrapPrivateKey::VendorThalesAesKw => Wrap::VendorThalesAesKw,
             WrapPrivateKey::VendorThalesAesKwp => Wrap::VendorThalesAesKwp,
         }
     }
 }
 
 impl Wrap {
-    // Vendor defined mechanism for Thales AES key wrap.
+    // Vendor defined mechanisms for Thales AES key wrap.
+    const CKM_THALES_AES_KW: u64 = CKM_VENDOR_DEFINED | 0x00000170;
     const CKM_THALES_AES_KWP: u64 = CKM_VENDOR_DEFINED | 0x00000171;
 
     pub fn mechanism(&self) -> Result<Mechanism<'_>> {
@@ -68,6 +72,12 @@ impl Wrap {
                 PkcsMgfType::MGF1_SHA256,
                 PkcsOaepSource::empty(),
             ))),
+            Wrap::VendorThalesAesKw => {
+                Ok(Mechanism::VendorDefined(VendorDefinedMechanism::new::<()>(
+                    MechanismType::new_vendor_defined(Wrap::CKM_THALES_AES_KW)?,
+                    None,
+                )))
+            }
             Wrap::VendorThalesAesKwp => {
                 Ok(Mechanism::VendorDefined(VendorDefinedMechanism::new::<()>(
                     MechanismType::new_vendor_defined(Wrap::CKM_THALES_AES_KWP)?,
@@ -81,7 +91,10 @@ impl Wrap {
         let mut attrs = helper::search_spec(None, label)?;
         attrs.push(Attribute::Wrap(true));
         match self {
-            Wrap::AesKeyWrap | Wrap::AesKeyWrapPad | Wrap::VendorThalesAesKwp => {
+            Wrap::AesKeyWrap
+            | Wrap::AesKeyWrapPad
+            | Wrap::VendorThalesAesKw
+            | Wrap::VendorThalesAesKwp => {
                 attrs.push(Attribute::KeyType(KeyType::Aes.try_into()?));
                 attrs.push(Attribute::Class(ObjectClass::SecretKey.try_into()?));
                 helper::find_one_object(session, &attrs)
@@ -98,7 +111,10 @@ impl Wrap {
         let mut attrs = helper::search_spec(None, label)?;
         attrs.push(Attribute::Unwrap(true));
         match self {
-            Wrap::AesKeyWrap | Wrap::AesKeyWrapPad | Wrap::VendorThalesAesKwp => {
+            Wrap::AesKeyWrap
+            | Wrap::AesKeyWrapPad
+            | Wrap::VendorThalesAesKw
+            | Wrap::VendorThalesAesKwp => {
                 attrs.push(Attribute::KeyType(KeyType::Aes.try_into()?));
                 attrs.push(Attribute::Class(ObjectClass::SecretKey.try_into()?));
                 helper::find_one_object(session, &attrs)
