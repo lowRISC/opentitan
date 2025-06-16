@@ -214,10 +214,20 @@ exitproc:
 }
 
 rom_error_t rescue_send_handler(rescue_state_t *state) {
-  if (state->mode == kRescueModeNoOp) {
-    // The No-Op mode is always allowed and does nothing.
-    return kErrorOk;
+  // The following commands are always allowed and are not subject to
+  // the "command allowed" check.
+  switch (state->mode) {
+    case kRescueModeReboot:
+      // If a reboot was requested, return an error and go through the normal
+      // shutdown process.
+      return kErrorRescueReboot;
+    case kRescueModeNoOp:
+      // The No-Op mode is always allowed and does nothing.
+      return kErrorOk;
+    default:
+        /* do nothing */;
   }
+
   hardened_bool_t allow =
       owner_rescue_command_allowed(state->config, state->mode);
   if (allow != kHardenedBoolTrue) {
@@ -255,10 +265,6 @@ rom_error_t rescue_send_handler(rescue_state_t *state) {
     case kRescueModeFirmwareSlotB:
       // Nothing to do for receive modes.
       return kErrorOk;
-    case kRescueModeReboot:
-      // If a reboot was requested, return an error and go through the normal
-      // shutdown process.
-      return kErrorRescueReboot;
     default:
       // This state should be impossible.
       return kErrorRescueBadMode;
