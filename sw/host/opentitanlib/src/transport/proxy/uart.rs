@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use super::ProxyError;
 use crate::io::nonblocking_help::NonblockingHelp;
-use crate::io::uart::{Parity, Uart};
+use crate::io::uart::{FlowControl, Parity, Uart};
 use crate::proxy::protocol::{Request, Response, UartRequest, UartResponse};
 use crate::transport::proxy::{Inner, Proxy};
 
@@ -97,6 +97,20 @@ impl Uart for ProxyUart {
     fn set_parity(&self, parity: Parity) -> Result<()> {
         match self.execute_command(UartRequest::SetParity(parity))? {
             UartResponse::SetParity => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn get_flow_control(&self) -> Result<FlowControl> {
+        match self.execute_command(UartRequest::GetFlowControl)? {
+            UartResponse::GetFlowControl { flow_control } => Ok(flow_control),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn set_flow_control(&self, flow_control: bool) -> Result<()> {
+        match self.execute_command(UartRequest::SetFlowControl(flow_control))? {
+            UartResponse::SetFlowControl => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
         }
     }
