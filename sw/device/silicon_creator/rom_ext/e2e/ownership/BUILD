@@ -107,6 +107,26 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "bad_unlock_signature_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --unlock-sig=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:all_zero_sig)
+            --expected-error=OwnershipSignatureNotFound
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+)
+
+ownership_transfer_test(
     name = "bad_appkey_constraint_test",
     fpga = fpga_params(
         changes_otp = True,
