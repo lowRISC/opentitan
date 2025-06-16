@@ -28,6 +28,7 @@ def ownership_transfer_test(
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx_pub",
             "//sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key_spx",
+            "//sw/device/silicon_creator/lib/ownership/keys/dummy:all_zero_sig",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:activate_key",
             "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key",
