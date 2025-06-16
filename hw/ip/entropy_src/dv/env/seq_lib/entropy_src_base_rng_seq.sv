@@ -27,7 +27,7 @@
 // performance mode.
 
 class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
-    .HostDataWidth (entropy_src_pkg::RNG_BUS_WIDTH)
+    .HostDataWidth (`RNG_BUS_WIDTH)
   );
 
   realtime hard_mtbf;
@@ -43,13 +43,13 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
    bit is_initialized;
 
   // Failure bit control: Controls which lines will fail in the next hard failure event
-  rand bit [RNG_BUS_WIDTH - 1:0] hard_fail_bit_ctrl;
+  rand bit [`RNG_BUS_WIDTH - 1:0] hard_fail_bit_ctrl;
 
   // In hard failure, at least one bit must be stuck
-  constraint hard_fail_bit_ctrl_c { hard_fail_bit_ctrl != {RNG_BUS_WIDTH{1'b0}};}
+  constraint hard_fail_bit_ctrl_c { hard_fail_bit_ctrl != {`RNG_BUS_WIDTH{1'b0}};}
 
   // Failure bit control: Controls the state of any failed RNG lines
-  rand bit [RNG_BUS_WIDTH - 1:0] hard_fail_state;
+  rand bit [`RNG_BUS_WIDTH - 1:0] hard_fail_state;
 
   realtime hard_fail_time, soft_fail_time;
   bit      is_hard_failed, is_soft_failed;
@@ -121,12 +121,12 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
     return next_rng_val;
   endfunction
 
-  virtual function bit [RNG_BUS_WIDTH - 1:0] random_data_soft_fail();
+  virtual function bit [`RNG_BUS_WIDTH - 1:0] random_data_soft_fail();
     // For this base class, soft failure is identical
     return random_data_typical();
   endfunction
 
-  virtual function void randomize_item(push_pull_item#(RNG_BUS_WIDTH) item);
+  virtual function void randomize_item(push_pull_item#(`RNG_BUS_WIDTH) item);
     super.randomize_item(item);
     if(check_soft_failure()) begin
       item.h_data = random_data_soft_fail();

@@ -25,7 +25,7 @@
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/edn/dv/edn_sim_cfg.hjson",
-             "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
+             "{proj_root}/hw/ip/entropy_src/dv/entropy_src_rng4bits_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
              "{proj_root}/hw/ip/keymgr/dv/keymgr_sim_cfg.hjson",

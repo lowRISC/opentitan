@@ -701,11 +701,11 @@ interface entropy_src_cov_if
   // test_type: Can be repcnt_ht, or repcnts_ht
   // "Score": This is an abstraction of the number of repeated bits that allows us to
   //          compare coverage of the REPCNTS & REPCNT health tests with the same CG.
-  //          REPCNTS test values are scaled up by a factor of RNG_BUS_WIDTH to
+  //          REPCNTS test values are scaled up by a factor of `RNG_BUS_WIDTH to
   //          allow for meaningful comparison in the same set of bins.
   //
   //          Since each _symbol_ repetition is about as coincidentally likely as
-  //          RNG_BUS_WIDTH individual line repetitions, the range thresholds for the
+  //          `RNG_BUS_WIDTH individual line repetitions, the range thresholds for the
   //          symbols the _symbol_ test are lower by the same fraction.  This means
   //          that counting pass/fail-cross-count events is hard to compare between
   //          the two tests unless the repcnts test scores is scaled to use the same
@@ -1094,8 +1094,8 @@ interface entropy_src_cov_if
     bit [15:0] score;
     bit [31:0] symbol_score;
 
-    symbol_score = (32'(raw_score) * RNG_BUS_WIDTH > 32'hffff) ?
-                   32'hffff : 32'(raw_score) * RNG_BUS_WIDTH;
+    symbol_score = (32'(raw_score) * `RNG_BUS_WIDTH > 32'hffff) ?
+                   32'hffff : 32'(raw_score) * `RNG_BUS_WIDTH;
     score = (test_type == repcnts_ht) ? symbol_score[15:0] : raw_score;
 
     cont_ht_cg_inst.sample(test_type, fips_mode, rng_bit_enable, rng_bit_select, score, fail);

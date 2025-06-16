@@ -10,7 +10,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   );
   `uvm_object_utils(entropy_src_base_vseq)
 
-  rand bit [3:0]                     rng_val;
+  rand bit [`RNG_BUS_WIDTH-1:0]      rng_val;
   rand bit [NumEntropySrcIntr - 1:0] en_intr;
   rand bit  do_check_ht_diag;
 
@@ -156,8 +156,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.entropy_control));
     #(pause);
 
-    ral.health_test_windows.fips_window.set(newcfg.fips_window_size/RNG_BUS_WIDTH);
-    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size/RNG_BUS_WIDTH);
+    ral.health_test_windows.fips_window.set(newcfg.fips_window_size/`RNG_BUS_WIDTH);
+    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size/`RNG_BUS_WIDTH);
     csr_update(.csr(ral.health_test_windows));
     #(pause);
 
@@ -442,7 +442,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     $sformatf("Timeout encountered while reading %s", source.name()), 250us/1ns)
   endtask
 
-  task run_rng_host_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq);
+  task run_rng_host_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq);
     for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
       rng_val =  i % 16;
       cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
@@ -450,7 +450,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
   endtask // run_rng_host_seq
 
-  task repcnt_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnt_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           int num_trans = m_rng_push_seq.num_trans);
     // Set rng_val
     // Use randomly generated but fixed rng_val through the test to cause the repcnt health test
@@ -461,7 +461,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask // repcnt_ht_fail_seq
 
-  task adaptp_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task adaptp_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
@@ -481,7 +481,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask // adaptp_ht_fail_seq
 
-  task bucket_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task bucket_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_thresh, bit[15:0] bypass_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
     ral.bucket_thresholds.fips_thresh.set(fips_thresh);
@@ -496,7 +496,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
   endtask // bucket_ht_fail_seq
 
-  task markov_ht_fail_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task markov_ht_fail_seq(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                           bit[15:0] fips_lo_thresh, bit[15:0] fips_hi_thresh,
                           bit[15:0] bypass_lo_thresh, bit[15:0] bypass_hi_thresh,
                           int num_trans = m_rng_push_seq.num_trans);
@@ -579,7 +579,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     force_path_err(path, path_err_val, reg_field, 1'b1);
   endtask // window_cntr_err_test
 
-  task repcnt_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnt_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
@@ -601,7 +601,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.repcnt_thresholds));
   endtask // repcnt_ht_cntr_test
 
-  task repcnts_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task repcnts_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                             uvm_reg_field reg_field);
     string path;
     `DV_CHECK_STD_RANDOMIZE_FATAL(path_err_val)
@@ -623,7 +623,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.repcnts_thresholds));
   endtask // repcnts_ht_cntr_test
 
-  task adaptp_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task adaptp_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;
@@ -647,7 +647,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.adaptp_lo_thresholds));
   endtask // adaptp_ht_cntr_test
 
-  task bucket_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task bucket_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;
@@ -659,7 +659,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
     cfg.clk_rst_vif.wait_clks(100);
     // Force bucket ht counter err
-    path = cfg.entropy_src_path_vif.cntr_err_path("bucket_ht", cfg.which_bin);
+    path = cfg.entropy_src_path_vif.cntr_err_path("bucket_ht", cfg.which_bin, cfg.which_ht_inst);
     // Force the path (cnt_q[1]) to stuck at a different value from cnt_q[0] to trigger
     // the counter error
     force_path_err(path, path_err_val, reg_field, 1'b1);
@@ -669,7 +669,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.bucket_thresholds));
   endtask // bucket_ht_cntr_test
 
-  task markov_ht_cntr_test(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq,
+  task markov_ht_cntr_test(push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq,
                            uvm_reg_field reg_field);
     string path;
     bit [15:0] fips_thresh = 16'h0008;

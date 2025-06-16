@@ -8,7 +8,7 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
   .SEQUENCER_T (entropy_src_xht_sequencer)
 );
 
-  bit [RNG_BUS_WIDTH - 1:0] window_data_q[$];
+  bit [`RNG_BUS_WIDTH - 1:0] window_data_q[$];
   bit [15:0]                test_cnt_hi;
   bit [15:0]                test_cnt_lo;
 
@@ -52,36 +52,66 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
   // data, and extracts the lowest 32 bits of the digest to create two synthetic test_cnt outputs.
   function void test_cnt_hash(output bit [15:0] hi, output bit [15:0] lo);
     localparam int ShaWidth = 384;
-    localparam int RngWordsPerByte = 8/RNG_BUS_WIDTH;
+
+    // RngBytesPerWord indicates how many full bytes are in each RNG_BUS_WIDTH chunk,
+    // and RngBitsRemainder is the number of remaining bits if RNG_BUS_WIDTH is not a multiple of 8.
+    localparam int RngBytesPerWord   = `RNG_BUS_WIDTH / 8;
+    localparam int RngBitsRemainder  = `RNG_BUS_WIDTH % 8;
 
     bit [7:0]  sha_msg[];
-    int        msg_size;
-    int        msg_idx = 0;
+    int        msg_idx = 0; // Use msg_idx consistently for adding to sha_msg
     bit [7:0]  sha_digest[ShaWidth / 8];
-    int        rng_cntr = 0;
-    bit        whole_byte;
-    bit [7:0]  sha_byte = '0;
+    bit [7:0]  sha_byte_accumulator = '0; // Used to accumulate bits for partial bytes
+    int        bits_in_accumulator = 0;   // Count of bits in sha_byte_accumulator
     bit [15:0] output_a, output_b;
 
-    // The "message" will be equal to the number of bytes in the window
-    // rounding up to include any partial bytes.
-    msg_size = (window_data_q.size() + RngWordsPerByte - 1) / RngWordsPerByte;
+    // The "message" will be equal to the number of bytes in the window.
+    // This calculation needs to account for partial bytes at the end.
+    // Total bits = window_data_q.size() * `RNG_BUS_WIDTH
+    // Total bytes = ceil(Total bits / 8)
+    int msg_size = (window_data_q.size() * `RNG_BUS_WIDTH + 7) / 8;
     sha_msg = new[msg_size];
 
     for (int i = 0; i < window_data_q.size(); i++) begin
-      sha_byte = {sha_byte[(8 - RNG_BUS_WIDTH - 1):0], window_data_q[i]};
-      rng_cntr++;
-      whole_byte = (rng_cntr == RngWordsPerByte);
-      // Add data to the message whenever we have a whole byte,
-      // or if there is ever a dangling nibble.
-      if (whole_byte || (i == (window_data_q.size() - 1)) ) begin
-        sha_msg[msg_idx] = sha_byte;
-        msg_idx++;
-        rng_cntr = 0;
+      bit [`RNG_BUS_WIDTH-1:0] current_rng_word = window_data_q[i];
+
+      // Case 1: RNG_BUS_WIDTH is a multiple of 8
+      // Directly extract full bytes. No bit accumulation needed.
+      if (RngBitsRemainder == 0) begin
+        for (int j = 0; j < RngBytesPerWord; j++) begin
+          sha_msg[msg_idx] = current_rng_word[j*8 +: 8];
+          msg_idx++;
+        end
+      end
+      // Case 2: RNG_BUS_WIDTH is not a multiple of 8
+      // We need to accumulate bits to form full bytes.
+      else begin
+        // Add the current RNG word's bits to the accumulator.
+        // This handles both `RNG_BUS_WIDTH < 8` and `RNG_BUS_WIDTH > 8` (with remainder) cases.
+        sha_byte_accumulator = (sha_byte_accumulator >> `RNG_BUS_WIDTH) |
+                                // Shift old accumulator bits to make room and add new
+                               (current_rng_word << bits_in_accumulator);
+        bits_in_accumulator += `RNG_BUS_WIDTH;
+
+        // Extract full bytes as long as there are 8 or more bits in the accumulator
+        while (bits_in_accumulator >= 8) begin
+          sha_msg[msg_idx] = sha_byte_accumulator[7:0];
+          sha_byte_accumulator = sha_byte_accumulator >> 8;
+          bits_in_accumulator -= 8;
+          msg_idx++;
+        end
       end
     end
 
+    // After the loop, if there are any remaining bits in the accumulator
+    // (only if RngBitsRemainder != 0),they form the last (partial) byte of the message.
+    if (bits_in_accumulator > 0) begin
+      sha_msg[msg_idx] = sha_byte_accumulator;
+      msg_idx++;
+    end
+
     digestpp_dpi_pkg::c_dpi_sha3_384(sha_msg, msg_idx, sha_digest);
+
     // Arbitrarily capture the lowest 4 bytes as a pair of outputs.
     output_a = {sha_digest[3], sha_digest[2]};
     output_b = {sha_digest[1], sha_digest[0]};
