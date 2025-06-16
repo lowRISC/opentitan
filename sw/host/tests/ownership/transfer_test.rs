@@ -38,6 +38,8 @@ struct Opts {
     unlock_key_spx: Option<PathBuf>,
     #[arg(long, help = "Activate private key (SPX)")]
     activate_key_spx: Option<PathBuf>,
+    #[arg(long, help = "Unlock signature")]
+    unlock_sig: Option<PathBuf>,
 
     #[arg(long, default_value_t = OwnershipKeyAlg::EcdsaP256, help = "Current Owner key algorithm")]
     next_key_alg: OwnershipKeyAlg,
@@ -145,6 +147,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         } else {
             None
         },
+        opts.unlock_sig.clone(),
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");

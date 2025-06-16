@@ -61,7 +61,7 @@ impl OwnershipUnlockParams {
             let mut f = File::open(signature)?;
             unlock.signature = EcdsaRawSignature::read(&mut f)?;
         }
-        if self.ecdsa_key.is_some() || self.spx_key.is_some() {
+        if self.signature.is_none() && (self.ecdsa_key.is_some() || self.spx_key.is_some()) {
             let ecdsa_key = self
                 .ecdsa_key
                 .as_ref()

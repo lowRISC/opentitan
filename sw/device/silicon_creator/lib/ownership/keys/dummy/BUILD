@@ -26,6 +26,11 @@ filegroup(
 )
 
 filegroup(
+    name = "all_zero_sig",
+    srcs = ["all_zero_sig.bin"],
+)
+
+filegroup(
     name = "owner_key_spx",
     srcs = ["owner_spx.pem"],
 )
