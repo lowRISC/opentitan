@@ -28,14 +28,25 @@ endfunction : new
 
 function void ac_range_check_base_test::build_phase(uvm_phase phase);
   string test_seq_s;
+  string common_seq_type;
 
   super.build_phase(phase);
 
   // Disable some scoreboard checks for the CSR tests (unfortunately we cannot simply avoid the
   // scoreboard to be created by setting this config flag, which should be the case)
   void'($value$plusargs("UVM_TEST_SEQ=%0s", test_seq_s));
-  $display("test_seq_s = %s", test_seq_s);
-  if (test_seq_s == "ac_range_check_common_vseq") begin
+  void'($value$plusargs("run_%0s", common_seq_type));
+  `uvm_info(`gfn, $sformatf("test_seq_s = %s", test_seq_s), UVM_LOW)
+
+  if (common_seq_type != "") begin
+    `uvm_info(`gfn, $sformatf("common_seq_type = %s", common_seq_type), UVM_LOW)
+  end
+
+  if (test_seq_s == "ac_range_check_common_vseq" && common_seq_type != "intr_test") begin
+    `uvm_info(`gfn, "Disabling scoreboard for common cip tests", UVM_LOW)
     cfg.en_scb = 0;
+  end else if (test_seq_s == "ac_range_check_common_vseq" && common_seq_type == "intr_test") begin
+    `uvm_info(`gfn, "Running Interrupt Test - Downgrading error in scoreboard check_phase", UVM_LOW)
+    cfg.en_scb_err_downgrade = 1;
   end
 endfunction : build_phase
