@@ -11,8 +11,14 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 #include "sw/device/silicon_creator/lib/mock_boot_data.h"
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
+#include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/ownership/mock_owner_verify.h"
+#include "sw/device/silicon_creator/lib/ownership/mock_ownership_key.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
+#include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
+#include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace boot_services_unittest {
@@ -23,6 +29,12 @@ using ::testing::DoAll;
 using ::testing::Each;
 using ::testing::Return;
 using ::testing::SetArgPointee;
+
+constexpr uint32_t kActivate =
+    static_cast<uint32_t>(kBootSvcOwnershipActivateReqType);
+
+constexpr uint32_t kUnlock =
+    static_cast<uint32_t>(kBootSvcOwnershipUnlockReqType);
 
 class RomExtBootServicesTest : public rom_test::RomTest {
  protected:
@@ -42,7 +54,49 @@ class RomExtBootServicesTest : public rom_test::RomTest {
   rom_test::MockRnd mock_rnd_;
   rom_test::MockLifecycle mock_lifecycle_;
   rom_test::MockOtp mock_otp_;
+  rom_test::MockFlashCtrl mock_flash_ctrl_;
   rom_test::MockOwnerVerify mock_owner_verify_;
+  rom_test::MockOwnershipKey mock_ownership_key_;
+  rom_test::MockBootSvcHeader boot_svc_header_;
+
+  void MakePage1StructValid() {
+    owner_page[1].header.tag = kTlvTagOwner;
+    owner_page[1].header.length = sizeof(owner_page[1]);
+    owner_page[1].header.version = (struct_version_t){0, 0};
+    owner_page[1].config_version = 0;
+    owner_page[1].min_security_version_bl0 = UINT32_MAX;
+    owner_page[1].lock_constraint = 0;
+    memset(owner_page[1].device_id, 0x7e, sizeof(owner_page[1].device_id));
+    memset(owner_page[1].data, 0x5a, sizeof(owner_page[1].data));
+  }
+
+  void MakePage1Valid(bool valid) {
+    MakePage1StructValid();
+    ownership_state_t state =
+        static_cast<ownership_state_t>(boot_data.ownership_state);
+    owner_page_valid[1] = kOwnerPageStatusSigned;
+    uint32_t modifier = valid ? 0 : 1;
+
+    switch (state) {
+      case kOwnershipStateUnlockedEndorsed:
+        // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
+        // to the value stored in boot_data.
+      case kOwnershipStateUnlockedSelf:
+
+        owner_page[1].owner_key = owner_page[0].owner_key;
+        owner_page[1].owner_key.raw[0] += modifier;
+        break;
+      case kOwnershipStateUnlockedAny:
+        // In UnlockedAny, there are no conditions that page1 must meet.
+        break;
+      case kOwnershipStateLockedOwner:
+        owner_page_valid[1] = kOwnerPageStatusSealed;
+        break;
+      case kOwnershipStateRecovery:
+        owner_page_valid[1] = kOwnerPageStatusInvalid;
+        break;
+    }
+  }
 };
 
 TEST_F(RomExtBootServicesTest, BootSvcDefault) {
@@ -78,7 +132,16 @@ TEST_F(RomExtBootServicesTest, BootSvcEmpty) {
 }
 
 TEST_F(RomExtBootServicesTest, BootSvcEnterRescue) {
+  boot_svc_msg.header.identifier = kBootSvcIdentifier;
   boot_svc_msg.header.type = kBootSvcEnterRescueReqType;
+  boot_svc_msg.header.length = sizeof(boot_svc_enter_rescue_req_t);
+  boot_svc_msg.header.digest = hmac_digest_t{0x1234};
+  
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
   EXPECT_EQ(
       boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,
@@ -237,26 +300,124 @@ TEST_F(RomExtBootServicesTest, BootSvcMinBl0SecVer) {
 }
 
 TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
+  boot_svc_msg.header.identifier = kBootSvcIdentifier;
   boot_svc_msg.header.type = kBootSvcOwnershipUnlockReqType;
+  boot_svc_msg.header.digest = hmac_digest_t{0x1234};
+  boot_svc_msg.header.length = sizeof(boot_svc_ownership_unlock_req_t);
+
+  boot_svc_msg.ownership_unlock_req.unlock_mode = kBootSvcUnlockAbort;
+ 
+  boot_data.ownership_state = kOwnershipStateUnlockedAny;
+  boot_data.nonce = {0x55555555, 0xAAAAAAAA};
+  boot_svc_msg.ownership_unlock_req.nonce = boot_data.nonce;
+  boot_svc_msg.ownership_unlock_req.signature = {{100, 101, 102, 103, 104, 105,
+                                            106, 107, 108, 109, 110, 111, 112, 113,
+                                            114, 115}};
+  
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(mock_ownership_key_,
+              validate(0, static_cast<ownership_key_t>(kOwnershipKeyUnlock),
+                       kUnlock, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
+  EXPECT_CALL(mock_lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+
+  EXPECT_CALL(mock_rnd_, Uint32()).WillRepeatedly(Return(5));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
   EXPECT_EQ(
       boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,
                       &verify_key, &owner_config, &isfb_check_count),
-      kErrorOk);
+      kErrorWriteBootdataThenReboot);
 
   EXPECT_EQ(boot_svc_msg.ownership_unlock_res.status, kErrorOk);
 }
 
 TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
+  boot_svc_msg.header.identifier = kBootSvcIdentifier;
   boot_svc_msg.header.type = kBootSvcOwnershipActivateReqType;
+  boot_svc_msg.header.digest = hmac_digest_t{0x1234};
+  boot_svc_msg.header.length = sizeof(boot_svc_ownership_activate_req_t);
+
+  boot_svc_msg.ownership_activate_req.erase_previous = 1;
+  boot_svc_msg.ownership_activate_req.primary_bl0_slot = 0;
+  boot_svc_msg.ownership_activate_req.nonce = {0x55555555, 0xAAAAAAAA};
+  boot_svc_msg.ownership_activate_req.signature = {{100, 101, 102, 103, 104, 105, 106,
+                                            107, 108, 109, 110, 111, 112, 113,
+                                            114, 115}};
+
+
+  boot_data.ownership_state = kOwnershipStateUnlockedEndorsed;
+  boot_data.nonce = {0x55555555, 0xAAAAAAAA};
+
+  owner_page[0].owner_key = {{1}};
+  memset(boot_data.next_owner, 0, sizeof(boot_data.next_owner));
+  boot_data.next_owner[0] = 0x1234;
+
+  MakePage1Valid(true);
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
+
+  EXPECT_CALL(mock_ownership_key_,
+              validate(1, kOwnershipKeyActivate, kActivate, _, _, _, _))
+      .WillOnce(Return(kErrorOk));
+
+   EXPECT_CALL(mock_lifecycle_, DeviceId(_))
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+
+    // Once the new owner page is determined to be valid, the page will be sealed.
+  EXPECT_CALL(mock_ownership_key_, seal_page(1));
+
+    // The sealed page will be written into flash owner slot 1 first.
+  EXPECT_CALL(mock_flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot1, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+
+  EXPECT_CALL(mock_flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot1, 0,
+                                           sizeof(owner_page[1]) / sizeof(uint32_t),
+                                           &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+
+   EXPECT_CALL(mock_flash_ctrl_,
+              InfoErase(&kFlashCtrlInfoPageOwnerSlot0, kFlashCtrlEraseTypePage))
+      .WillOnce(Return(kErrorOk));
+
+  EXPECT_CALL(mock_flash_ctrl_, InfoWrite(&kFlashCtrlInfoPageOwnerSlot0, 0,
+                                           sizeof(owner_page[1]) / sizeof(uint32_t),
+                                           &owner_page[1]))
+      .WillOnce(Return(kErrorOk));
+
+    if (boot_data.ownership_state != kOwnershipStateUnlockedSelf) {
+    EXPECT_CALL(mock_ownership_key_, secret_new(_, _)).WillOnce(Return(kErrorOk));
+  }
+
+  EXPECT_CALL(mock_rnd_, Uint32()).WillRepeatedly(Return(99));
+
+  EXPECT_CALL(mock_hmac_, sha256)
+      .WillOnce(SetArgPointee<2>(hmac_digest_t{0x1234}));
 
   EXPECT_EQ(
       boot_svc_handler(&boot_svc_msg, &boot_data, &boot_log, lc_state, &keyring,
                       &verify_key, &owner_config, &isfb_check_count),
-      kErrorOk);
+      kErrorWriteBootdataThenReboot);
 
   EXPECT_EQ(boot_svc_msg.ownership_activate_res.status, kErrorOk);
+
 }
 
 }  // namespace
 }  // namespace boot_services_unittest
+
+/*
+
+
+*/
