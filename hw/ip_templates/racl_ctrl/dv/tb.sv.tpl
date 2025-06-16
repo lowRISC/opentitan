@@ -16,12 +16,21 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // NOTE: These values come from the top-level instantiation. For now, we're fixing them to
+  // something reasonable, but we don't intend the testing to have an opinion about their values
+  //
+  // *These* values get passed through to the environment through the config db.
+  localparam int unsigned NumSubscribingIps = 5;
+  localparam int unsigned NumExternalSubscribingIps = 5;
+
   wire clk, rst_n, rst_shadowed_n;
 
   clk_rst_if            clk_rst_if  (.clk(clk), .rst_n(rst_n));
   rst_shadowed_if       rst_shad_if (.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   tl_if                 tl_if       (.clk(clk), .rst_n(rst_n));
   racl_ctrl_policies_if policies_if ();
+  racl_error_log_if     int_err_if  (.clk_i(clk), .rst_ni(rst_n));
+  racl_error_log_if     ext_err_if  (.clk_i(clk), .rst_ni(rst_n));
 
   // Information about the names of alerts and their indices (used by DV_ALERT_IF_CONNECT to attach
   // interfaces to the ports and register them with the config db)
@@ -30,20 +39,23 @@ module tb;
 
   `DV_ALERT_IF_CONNECT()
 
-  ${module_instance_name} dut (
-    .clk_i                 (clk                                                     ),
-    .rst_ni                (rst_n                                                   ),
-    .rst_shadowed_ni       (rst_shadowed_n                                          ),
+  ${module_instance_name} #(
+    .NumSubscribingIps(NumSubscribingIps),
+    .NumExternalSubscribingIps(NumExternalSubscribingIps)
+  ) dut (
+    .clk_i                 (clk                                             ),
+    .rst_ni                (rst_n                                           ),
+    .rst_shadowed_ni       (rst_shadowed_n                                  ),
 
-    .tl_i                  (tl_if.h2d                                               ),
-    .tl_o                  (tl_if.d2h                                               ),
+    .tl_i                  (tl_if.h2d                                       ),
+    .tl_o                  (tl_if.d2h                                       ),
 
-    .alert_rx_i            (alert_rx                                                ),
-    .alert_tx_o            (alert_tx                                                ),
+    .alert_rx_i            (alert_rx                                        ),
+    .alert_tx_o            (alert_tx                                        ),
 
-    .racl_policies_o       (policies_if.policies                                    ),
-    .racl_error_i          ( /* TODO: Not yet connecting error input */ '0          ),
-    .racl_error_external_i ( /* TODO: Not yet connecting external error input */ '0 )
+    .racl_policies_o       (policies_if.policies                            ),
+    .racl_error_i          (int_err_if.errors[NumSubscribingIps-1:0]        ),
+    .racl_error_external_i (ext_err_if.errors[NumExternalSubscribingIps-1:0])
   );
 
   initial begin
@@ -51,8 +63,20 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual racl_ctrl_policies_if)::set(null, "*.env", "policies_if", policies_if);
+    uvm_config_db#(int unsigned)::set(null, "*.env",
+                                      "num_subscribing_ips", NumSubscribingIps);
+    uvm_config_db#(int unsigned)::set(null, "*.env",
+                                      "num_external_subscribing_ips", NumExternalSubscribingIps);
+
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+
+    uvm_config_db#(virtual racl_error_log_if)::set(null,
+                                                   "*.env.internal_error_agent",
+                                                   "vif", int_err_if);
+    uvm_config_db#(virtual racl_error_log_if)::set(null,
+                                                   "*.env.external_error_agent",
+                                                   "vif", ext_err_if);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
