@@ -351,6 +351,8 @@ opentitan_test(
             --exec="rescue get-device-id --reboot=false"
             # Try the `RESQ` mode and make sure we get an error message.
             --exec="console --non-interactive --send='RESQ\r' --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+            # Try the `REBO` mode and make sure we reboot without crash.
+            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
             no-op
         """,
     ),
