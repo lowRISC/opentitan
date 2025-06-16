@@ -7,7 +7,7 @@ interface entropy_src_xht_if import entropy_src_pkg::*;
   input wire clk,
   input wire rst_n
 );
-  localparam int RngBusWidth = 4; // TODO(#16276)
+  localparam int RngBusWidth = `RNG_BUS_WIDTH;
   localparam int RngBusBitSelWidth = prim_util_pkg::vbits(RngBusWidth);
 
   logic                         entropy_valid;

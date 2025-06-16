@@ -10,7 +10,7 @@ class entropy_src_env extends cip_base_env #(
   );
   `uvm_component_utils(entropy_src_env)
 
-  push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         m_rng_agent;
+  push_pull_agent#(.HostDataWidth(`RNG_BUS_WIDTH))                         m_rng_agent;
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent;
   push_pull_agent#(.HostDataWidth(0))                                      m_aes_halt_agent;
   entropy_src_xht_agent                                                    m_xht_agent;
@@ -26,9 +26,9 @@ class entropy_src_env extends cip_base_env #(
         `uvm_fatal(`gfn, "failed to get csrng_rst_if from uvm_config_db")
       end
 
-    m_rng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))::type_id::
+    m_rng_agent = push_pull_agent#(.HostDataWidth(`RNG_BUS_WIDTH))::type_id::
                   create("m_rng_agent", this);
-    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))::set
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(`RNG_BUS_WIDTH)))::set
                   (this, "m_rng_agent*", "cfg", cfg.m_rng_agent_cfg);
     cfg.m_rng_agent_cfg.agent_type = push_pull_agent_pkg::PushAgent;
     cfg.m_rng_agent_cfg.if_mode    = dv_utils_pkg::Host;

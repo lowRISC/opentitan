@@ -4,7 +4,7 @@
 
 class entropy_src_xht_item extends uvm_sequence_item;
 
-  localparam int RngBusWidth = 4; // TODO(#16276)
+  localparam int RngBusWidth = `RNG_BUS_WIDTH;
   localparam int RngBusBitSelWidth = prim_util_pkg::vbits(RngBusWidth);
 
   logic                         entropy_valid;

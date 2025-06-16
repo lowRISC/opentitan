@@ -153,7 +153,7 @@ package entropy_src_env_pkg;
 
 
   typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED, ERROR } entropy_phase_e;
-  typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
+  typedef bit [`RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef bit [TL_DW-1:0]         tl_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];
   typedef tl_val_t  queue_of_tl_val_t[$];
@@ -316,15 +316,15 @@ package entropy_src_env_pkg;
     case(test)
       adaptp_ht: begin
         // number of trials is equal to number of bits, either in the whole window or per line
-        n = per_line ? (window_size / RNG_BUS_WIDTH) : window_size;
+        n = per_line ? (window_size / `RNG_BUS_WIDTH) : window_size;
         p = 0.5;
       end
       bucket_ht: begin
-        n = (window_size / RNG_BUS_WIDTH);
-        p = 1.0/real'(1 << RNG_BUS_WIDTH);
+        n = (window_size / `RNG_BUS_WIDTH);
+        p = 1.0/real'(1 << `RNG_BUS_WIDTH);
       end
       markov_ht: begin
-        n = per_line ? (window_size / RNG_BUS_WIDTH / 2) : window_size / 2;
+        n = per_line ? (window_size / `RNG_BUS_WIDTH / 2) : window_size / 2;
         p = 0.5;
       end
       default: begin
@@ -378,15 +378,15 @@ package entropy_src_env_pkg;
     case(test)
       adaptp_ht: begin
         // number of trials is equal to number of bits, either in the whole window or per line
-        n = per_line ? (window_size / RNG_BUS_WIDTH) : window_size;
+        n = per_line ? (window_size / `RNG_BUS_WIDTH) : window_size;
         p = 0.5;
       end
       bucket_ht: begin
-        n = (window_size / RNG_BUS_WIDTH);
-        p = 1.0/real'(1 << RNG_BUS_WIDTH);
+        n = (window_size / `RNG_BUS_WIDTH);
+        p = 1.0/real'(1 << `RNG_BUS_WIDTH);
       end
       markov_ht: begin
-        n = per_line ? (window_size / RNG_BUS_WIDTH / 2) : window_size / 2;
+        n = per_line ? (window_size / `RNG_BUS_WIDTH / 2) : window_size / 2;
         p = 0.5;
       end
       default: begin

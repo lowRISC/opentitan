@@ -38,7 +38,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-   push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
+   push_pull_host_seq#(`RNG_BUS_WIDTH) m_rng_push_seq;
 
   task body();
     bit [5:0]        err_code_test_bit;
@@ -67,9 +67,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
 
     // Create and start rng host sequence
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
-    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     run_rng_host_seq(m_rng_push_seq);
 
     cfg.clk_rst_vif.wait_clks(100);

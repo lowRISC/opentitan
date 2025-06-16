@@ -9,7 +9,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
 
   `uvm_object_new
 
-  push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)          m_rng_push_seq;
+  push_pull_host_seq#(`RNG_BUS_WIDTH)          m_rng_push_seq;
   push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)   m_csrng_pull_seq;
 
   bit [15:0]  fips_thresh, bypass_thresh;
@@ -32,9 +32,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     enable_dut();
 
     // Create and start rng host sequence.
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
-    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     run_rng_host_seq(m_rng_push_seq);
 
     // Wait for the entropy_valid interrupt.
@@ -56,9 +56,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     enable_dut();
 
     // Create and start rng host sequence.
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
-    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/entropy_src_pkg::RNG_BUS_WIDTH;
+    m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     run_rng_host_seq(m_rng_push_seq);
 
     // Wait for the observe_fifo_ready interrupt.
@@ -97,7 +97,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     state_e alert_state = entropy_src_main_sm_pkg::AlertHang;
 
     // Create the RNG and CSRNG host sequences.
-    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
     m_csrng_pull_seq = push_pull_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
          type_id::create("m_csrng_pull_seq");
@@ -130,9 +130,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         // that the ES stops producing entropy.
         m_csrng_pull_seq.num_trans = 1;
         // Set num_invalid_rng_trans to add invalid h_user_data to the RNG agent.
-        num_invalid_rng_trans = cfg.dut_cfg.bypass_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_invalid_rng_trans = cfg.dut_cfg.bypass_window_size/`RNG_BUS_WIDTH;
         // For 1 CSRNG transaction we need 384/4 RNG transactions.
-        m_rng_push_seq.num_trans = cfg.dut_cfg.bypass_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        m_rng_push_seq.num_trans = cfg.dut_cfg.bypass_window_size/`RNG_BUS_WIDTH;
       end
       BootPhaseDone : begin
         // To enter BootPhaseDone, we need a valid transaction before failing the HT.
@@ -140,11 +140,11 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         // BootPhaseDone and the second one is needed to check that the ES stops producing entropy.
         m_csrng_pull_seq.num_trans = 2;
         // Set num_valid_rng_trans to add valid h_user_data to the RNG agent.
-        num_valid_rng_trans = cfg.dut_cfg.bypass_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_valid_rng_trans = cfg.dut_cfg.bypass_window_size/`RNG_BUS_WIDTH;
         // Set num_invalid_rng_trans to add invalid h_user_data to the RNG agent.
-        num_invalid_rng_trans = cfg.dut_cfg.bypass_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_invalid_rng_trans = cfg.dut_cfg.bypass_window_size/`RNG_BUS_WIDTH;
         // For 2 CSRNG transactions we need 2*384/4 RNG transactions.
-        m_rng_push_seq.num_trans = 2*cfg.dut_cfg.bypass_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        m_rng_push_seq.num_trans = 2*cfg.dut_cfg.bypass_window_size/`RNG_BUS_WIDTH;
       end
       StartupFail1  : begin
         // To enter StartupFail1, we need a failing transaction before failing the HT again.
@@ -152,9 +152,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         // ES stops producing entropy.
         m_csrng_pull_seq.num_trans = 1;
         // Set num_invalid_rng_trans to add invalid h_user_data to the RNG agent.
-        num_invalid_rng_trans = 2*cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_invalid_rng_trans = 2*cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
         // For 2 CSRNG transactions we need 2*2048/4 RNG transactions.
-        m_rng_push_seq.num_trans = 2*cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        m_rng_push_seq.num_trans = 2*cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
       end
       ContHTRunning : begin
         // To enter ContHTRunning, we need one valid transaction before failing the HT.
@@ -162,11 +162,11 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
         m_csrng_pull_seq.num_trans = 2;
         // Set num_valid_rng_trans to add valid h_user_data to the RNG agent. We need twice the
         // amount of entropy to provide for 1 CSRNG transaction in the continuous mode.
-        num_valid_rng_trans = 2*cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_valid_rng_trans = 2*cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
         // Set num_invalid_rng_trans to add invalid h_user_data to the RNG agent.
-        num_invalid_rng_trans = cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        num_invalid_rng_trans = cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
         // For the 2 CSRNG transactions we need 3*2048/4 RNG transactions.
-        m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+        m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid fail state! (bug in environment)")
@@ -280,7 +280,7 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
       cfg.m_rng_agent_cfg.clear_h_user_data();
       // Provide two windows worth of entropy to make sure m_csrng_pull_seq can finish no
       // matter what the configuration is.
-      m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size/entropy_src_pkg::RNG_BUS_WIDTH;
+      m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size/`RNG_BUS_WIDTH;
       for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
         rng_val = rng_arr[i%16];
         cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
