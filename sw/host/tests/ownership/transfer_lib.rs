@@ -46,12 +46,14 @@ pub fn ownership_unlock(
     ecdsa_key: Option<PathBuf>,
     spx_key: Option<PathBuf>,
     next_owner: Option<&Path>,
+    signature: Option<PathBuf>,
 ) -> Result<()> {
     let (unlock, detached_sig) = OwnershipUnlockParams {
         mode: Some(mode),
         nonce: Some(nonce),
         din: Some(din),
         next_owner: next_owner.map(|p| p.into()),
+        signature,
         algorithm,
         ecdsa_key,
         spx_key,
@@ -68,7 +70,11 @@ pub fn ownership_unlock(
     rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match result.message {
-        Message::OwnershipUnlockResponse(r) => r.status.into(),
+        Message::OwnershipUnlockResponse(r) => {
+            #[cfg(feature = "ot_coverage_enabled")]
+            let _ = rescue.enter(transport, EntryMode::Reboot);
+            r.status.into()
+        }
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
@@ -92,6 +98,7 @@ pub fn ownership_unlock_any(
         algorithm,
         ecdsa_key,
         spx_key,
+        None,
         None,
     )
 }
@@ -125,7 +132,11 @@ pub fn ownership_activate(
     rescue.enter(transport, EntryMode::Reboot)?;
     let result = rescue.get_boot_svc()?;
     match &result.message {
-        Message::OwnershipActivateResponse(r) => r.status.into(),
+        Message::OwnershipActivateResponse(r) => {
+            #[cfg(feature = "ot_coverage_enabled")]
+            let _ = rescue.enter(transport, EntryMode::Reboot);
+            r.status.into()
+        }
         _ => Err(anyhow!("Unexpected response: {result:x?}")),
     }
 }
