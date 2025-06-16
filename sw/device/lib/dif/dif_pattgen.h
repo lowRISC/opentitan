@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pattgen/doc/">Pattern Generator</a> Device Interface
+ * @brief <a href="/book/hw/ip/pattgen/">Pattern Generator</a> Device Interface
  * Functions
  */
 

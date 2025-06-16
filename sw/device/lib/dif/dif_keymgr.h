@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/keymgr/doc/">Key Manager</a> Device Interface
+ * @brief <a href="/book/hw/ip/keymgr/">Key Manager</a> Device Interface
  * Functions
  */
 

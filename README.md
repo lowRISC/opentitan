@@ -1,6 +1,6 @@
 # OpenTitan
 
-![OpenTitan logo](https://docs.opentitan.org/doc/opentitan-logo.png)
+![OpenTitan logo](https://opentitan.org/book/doc/opentitan-logo.png)
 
 ## About the project
 
@@ -10,8 +10,8 @@ more transparent, trustworthy, and secure for enterprises, platform providers,
 and chip manufacturers.  OpenTitan is administered by [lowRISC
 CIC](https://www.lowrisc.org) as a collaborative project to produce high
 quality, open IP for instantiation as a full-featured product. See the
-[OpenTitan site](https://opentitan.org/) and [OpenTitan
-docs](https://opentitan.org/book) for more information about the project.
+[OpenTitan site](https://opentitan.org) and [OpenTitan
+docs](https://opentitan.org/book/) for more information about the project.
 
 ## About this repository
 
@@ -23,7 +23,7 @@ across partners participating in the OpenTitan project.
 ## Documentation
 
 The project contains comprehensive documentation of all IPs and tools. You can
-access it [online at docs.opentitan.org](https://docs.opentitan.org/).
+access it [online at opentitan.org/book/](https://opentitan.org/book/).
 
 ## How to contribute
 

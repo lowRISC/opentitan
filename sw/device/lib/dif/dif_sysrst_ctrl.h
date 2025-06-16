@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sysrst_ctrl/doc/">System Reset Controller</a> Device
+ * @brief <a href="/book/hw/ip/sysrst_ctrl/">System Reset Controller</a> Device
  * Interface Functions
  */
 

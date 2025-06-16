@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/sram_ctrl/doc/">SRAM Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/sram_ctrl/">SRAM Controller</a> Device Interface
  * Functions
  */
 

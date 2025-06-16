@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/spi_device/doc/">SPI Device</a> Device Interface
+ * @brief <a href="/book/hw/ip/spi_device/">SPI Device</a> Device Interface
  * Functions
  */
 

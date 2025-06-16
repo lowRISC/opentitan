@@ -32,7 +32,7 @@ The [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=overview-lsf
 EDA tool flows are run at various levels of the design:
 - **Primitives**:
   The most basic building blocks used to create hardware designs
-  OpenTitan provides a library of reusble [primitives](https://docs.opentitan.org/hw/ip/prim/index.html).
+  OpenTitan provides a library of reusble [primitives](https://opentitan.org/book/hw/ip/prim/).
 
 - **Modules**:
   A discrete entity that implements a specific feature of a larger design

@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/adc_ctrl/doc/">ADC Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/adc_ctrl/">ADC Controller</a> Device Interface
  * Functions
  */
 

@@ -6,7 +6,8 @@
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_SPI_HOST_H_
 /**
  * @file
- * @brief <a href="/hw/ip/spi_host/doc/">SPI Host</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/spi_host/">SPI Host</a> Device Interface
+ * Functions
  */
 
 #include <stdint.h>

@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/entropy_src/doc/">Entropy Source</a> Device Interface
+ * @brief <a href="/book/hw/ip/entropy_src/">Entropy Source</a> Device Interface
  * Functions
  */
 

@@ -12,7 +12,7 @@
 #include "aes_regs.h"  // Generated.
 
 /*
- * From: https://docs.opentitan.org/hw/ip/aes/doc/index.html#register-table,
+ * From: https://opentitan.org/book/hw/ip/aes/doc/registers.html,
  * aes.CTRL.
  */
 

@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/uart/doc/">UART</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/uart/">UART</a> Device Interface Functions
  */
 
 #include <stdint.h>
