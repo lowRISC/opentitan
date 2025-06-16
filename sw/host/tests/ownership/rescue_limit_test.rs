@@ -84,6 +84,7 @@ fn flash_limit_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         } else {
             None
         },
+        None,
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");
