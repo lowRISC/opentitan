@@ -597,6 +597,6 @@ the factory image.
 
 ## Notes
 
-[^1]: https://docs.opentitan.org/doc/security/logical_security_model/#silicon-owner
+[^1]: https://opentitan.org/book/doc/security/logical_security_model/#silicon-owner
 
 [^2]: Automatic Test Equipment used at package level testing.

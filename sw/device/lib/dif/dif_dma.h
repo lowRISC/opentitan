@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/dma/doc/">DMA Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/dma/">DMA Controller</a> Device Interface
  * Functions
  */
 

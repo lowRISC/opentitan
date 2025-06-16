@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pwm/doc/">PWM</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/pwm/">PWM</a> Device Interface Functions
  *
  * The PWM block contains a 16-bit "phase counter" that controls each channel's
  * output signal. The "phase counter" acts as a point of reference for a single

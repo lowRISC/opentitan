@@ -26,8 +26,9 @@ enum {
 
 /**
  * Supported CSRNG application commands.
- * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
- * details.
+ * See
+ * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
+ * for details.
  */
 typedef enum csrng_app_cmd_id {
   kCsrngAppCmdInstantiate = 1,

@@ -383,7 +383,7 @@ other SoC components.
 
 | Reference title         | Link and description |
 |-------------------------|----------------------|
-| OpenTitan Documentation | [docs.opentitan.org](https://docs.opentitan.org/) |
+| OpenTitan Documentation | [opentitan.org/book](https://opentitan.org/book/) |
 | CXL Specification       | [Compute Express Link](https://www.computeexpresslink.org/download-the-specification) |
 | SPDM                    | [CMA requires SPDM Version 1.0 or above](https://www.dmtf.org/dsp/DSP0274) |
 | SPDM-MCTP               | [dmtf.org/dsp/DSP0275](https://www.dmtf.org/dsp/DSP0275) |

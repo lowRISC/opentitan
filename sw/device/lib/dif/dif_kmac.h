@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/kmac/doc/">KMAC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/kmac/">KMAC</a> Device Interface Functions
  */
 
 #include <stdint.h>
@@ -57,7 +57,7 @@ extern "C" {
  *
  * Please see the following documentation for more information about the KMAC
  * hardware:
- * https://docs.opentitan.org/hw/ip/kmac/doc/
+ * https://opentitan.org/book/hw/ip/kmac/
  *
  * References:
  * [1] - NIST FIPS 202

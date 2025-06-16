@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/aon_timer/doc/">Always-On Timer</a> Device Interface
+ * @brief <a href="/book/hw/ip/aon_timer/">Always-On Timer</a> Device Interface
  * Functions
  */
 

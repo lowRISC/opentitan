@@ -353,7 +353,7 @@ dif_result_t dif_csrng_get_internal_state(
       mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
 
   // The following bit indexes are defined in
-  // https://docs.opentitan.org/hw/ip/csrng/doc/#working-state-values
+  // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
 

@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rom_ctrl/doc/">ROM Controller</a> Device Interface
+ * @brief <a href="/book/hw/ip/rom_ctrl/">ROM Controller</a> Device Interface
  * Functions
  */
 

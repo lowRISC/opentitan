@@ -38,8 +38,9 @@ enum {
 
 /**
  * Supported CSRNG application commands.
- * See https://docs.opentitan.org/hw/ip/csrng/doc/#command-header for
- * details.
+ * See
+ * https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-header
+ * for details.
  */
 // TODO(#14542): Harden csrng/edn command fields.
 typedef enum entropy_csrng_op {
