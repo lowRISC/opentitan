@@ -28,7 +28,7 @@ environment.
     (DUT) software and trigger unit tests as well as tests requiring an
     OpenTitan target. FPGA, Verilator and Silicon targets are supported. DV test
     targets are integrated using
-    [dvsim](https://opentitan.org/book/util/dvsim/index.html).
+    [dvsim](../../../../../util/dvsim/README.md).
 *   **[hsmtool](https://github.com/lowRISC/opentitan/tree/master/sw/host/hsmtool)**:
     utility used to interface with hardware used to manage signing keys. The
     tool uses PKCS#11 to access HSM and USB tokens. Only NitroKey HSM2 is
@@ -59,7 +59,7 @@ environment.
     required to support signature verification and execution of DUT test
     programs.
 *   **OpenTitan Test Framework (OTTF)**:
-    [On-Device Test Framework](https://opentitan.org/book/sw/device/lib/testing/test_framework/index.html)
+    [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
     used to instrument test programs.
 
 #### Additional Components
@@ -69,8 +69,8 @@ environment.
 
 #### Relevant references
 
-1.  [On-Device Test Framework](https://opentitan.org/book/sw/device/lib/testing/test_framework/index.html)
-2.  [ROM E2E Regression Setup](https://opentitan.org/book/sw/device/silicon_creator/rom/doc/e2e_tests.html)
+1.  [On-Device Test Framework](../../../lib/testing/test_framework/README.md)
+2.  [ROM E2E Regression Setup](../../../silicon_creator/rom/doc/e2e_tests.md)
 
 ### Test Environments
 

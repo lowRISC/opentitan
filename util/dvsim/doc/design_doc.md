@@ -30,7 +30,7 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
     - Batch / GUI / interactive mode
     - With / without wave dumps
     - Enable wave dump format choices
-    - With / without [coverage](https://opentitan.org/book/doc/contributing/dv/methodology/#coverage-collection) instrumentation
+    - With / without [coverage](../../../doc/contributing/dv/methodology/README.md#coverage-collection) instrumentation
     - Run the same tests in RTL, gate level and power aware simulations
     - Varying levels of EDA tool logging (to debug EDA tool issues)
     - Varying levels of EDA tool flow logging (to debug design / verification code)

@@ -145,4 +145,4 @@ Some fields like `signature` and `public_key` depend on the version of the manif
 *   `extensions`: Extensions.
 
 [rsassa_pkcs1_v1_5]: https://datatracker.ietf.org/doc/html/rfc8017#section-8.2
-[key_manager]: https://opentitan.org/book/hw/ip/keymgr
+[key_manager]: ../../../../../hw/ip/keymgr

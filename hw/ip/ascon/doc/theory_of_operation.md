@@ -189,7 +189,7 @@ Padding is done in hardware.
 By default, the Ascon unit is controlled entirely by the processor.
 The processor writes both input data as well as the initial key to dedicated registers via the system bus interconnect.
 
-Alternatively, the processor can configure the Ascon unit to use an initial key provided by the [key manager](https://opentitan.org/book/hw/ip/keymgr/index.html) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
+Alternatively, the processor can configure the Ascon unit to use an initial key provided by the [key manager](../../keymgr/README.md) via key sideload interface without exposing the key to the processor or other hosts attached to the system bus interconnect.
 To this end, the processor has to set the CTRL.sideload_key bit to 1.
 Any write operations of the processor to the Initial Key registers KEY_SHARE0 and KEY_SHARE1 are then ignored.
 In normal/automatic mode, the Ascon unit only starts encryption/decryption if the sideload key is marked as valid.

@@ -1,6 +1,6 @@
 # OpenTitan
 
-![OpenTitan logo](https://opentitan.org/book/doc/opentitan-logo.png)
+![OpenTitan logo](./doc/opentitan-logo.png)
 
 ## About the project
 
