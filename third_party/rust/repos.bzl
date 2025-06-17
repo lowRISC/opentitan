@@ -97,7 +97,10 @@ def rust_repos(rules_rust = None, serde_annotate = None, rules_rust_bindgen = No
         local = rules_rust,
         integrity = "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
         urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz"],
-        patches = ["//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch"],
+        patches = [
+            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
+            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.experimental.patch",
+        ],
     )
 
     http_archive_or_local(
@@ -106,7 +109,10 @@ def rust_repos(rules_rust = None, serde_annotate = None, rules_rust_bindgen = No
         integrity = "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
         strip_prefix = "extensions/bindgen",
         urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz"],
-        patches = ["//third_party/rust/patches:rules_rust.bindgen_static_lib.patch"],
+        patches = [
+            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.transition.patch",
+        ],
     )
 
     http_archive_or_local(
