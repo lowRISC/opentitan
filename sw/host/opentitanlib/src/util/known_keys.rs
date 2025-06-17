@@ -27,7 +27,6 @@ pub static KNOWN_KEYS: Lazy<HashMap<u32, &'static str>> = Lazy::new(|| {
         0x537f2f94 => "gb00-earlgrey-a1-root-ecdsa-prod-0 (ECDSA P256)",
         0x068e5abd => "gb00-earlgrey-a1-root-ecdsa-prod-2 (ECDSA P256)",
         0x80800406 => "gb00-earlgrey-a1-root-ecdsa-test-0 (ECDSA P256)",
-        0x7b214e67 => "gb00-earlgrey-a1-ca-pixel-sku-0 (ECDSA P256)",
         0xbcf347ae => "gb00-earlgrey-a1-root-ecdsa-prod-1 (ECDSA P256)",
         0x3cb98bb9 => "gb00-ownership-unlock-0 (ECDSA P256)",
         0xe68fa35b => "gb00-app-key-test-0 (ECDSA P256)",
