@@ -451,11 +451,11 @@ module sram_ctrl
   // Initialization LFSR //
   /////////////////////////
 
-  logic [LfsrWidth-1:0] lfsr_out;
+  logic [LfsrOutWidth-1:0] lfsr_out;
   prim_lfsr #(
     .LfsrDw      ( LfsrWidth       ),
     .EntropyDw   ( LfsrWidth       ),
-    .StateOutDw  ( LfsrWidth       ),
+    .StateOutDw  ( LfsrOutWidth    ),
     .DefaultSeed ( RndCnstLfsrSeed ),
     .StatePermEn ( 1'b1            ),
     .StatePerm   ( RndCnstLfsrPerm )
