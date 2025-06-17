@@ -32,7 +32,7 @@ The [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=overview-lsf
 EDA tool flows are run at various levels of the design:
 - **Primitives**:
   The most basic building blocks used to create hardware designs
-  OpenTitan provides a library of reusble [primitives](https://opentitan.org/book/hw/ip/prim/).
+  OpenTitan provides a library of reusble [primitives](../../../hw/ip/prim/).
 
 - **Modules**:
   A discrete entity that implements a specific feature of a larger design
@@ -127,7 +127,7 @@ Sometimes, the complete verification environment for a DUT (which includes the S
 
 A testplan describes a list of tests and functional coverage planned to be developed and written towards DV closure for a DUT.
 Please see the [testplanner](./testplanner.md) tool for additional details.
-The [DV methodology](https://opentitan.org/book/doc/contributing/dv/methodology/#testplan) also provides some additional context on testplans and testpoints.
+The [DV methodology](../../../doc/contributing/dv/methodology/#testplan) also provides some additional context on testplans and testpoints.
 
 ## Testpoint
 

@@ -109,7 +109,7 @@ Linting errors and warnings can be closed by fixing the code in question (prefer
 These waivers have to be reviewed as part of the pull request review process.
 
 Note that our continuous integration infrastructure does not currently run AscentLint on each pull request as it does with Verilator lint.
-However, all designs with enabled AscentLint targets on the master branch will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://opentitan.org/book/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
+However, all designs with enabled AscentLint targets on the master branch will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](../../../hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
 Goals for sign-off linting closure per design development stage are given in the [OpenTitan Development Stages](../../project_governance/development_stages.md) document.
 
