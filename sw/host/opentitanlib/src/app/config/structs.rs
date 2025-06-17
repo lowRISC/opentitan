@@ -75,7 +75,7 @@ pub struct StrappingConfiguration {
 }
 
 /// Parity configuration for UART communication.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum UartParity {
     None,
     Even,
@@ -85,7 +85,7 @@ pub enum UartParity {
 }
 
 /// Stop bits configuration for UART communication.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Deserialize, Clone, Copy, Debug, PartialEq)]
 pub enum UartStopBits {
     Stop1,
     Stop1_5,
@@ -93,7 +93,7 @@ pub enum UartStopBits {
 }
 
 /// Configuration of a particular UART port.
-#[derive(Deserialize, Clone, Debug)]
+#[derive(Default, Deserialize, Clone, Debug)]
 pub struct UartConfiguration {
     /// The user-visible name of the UART.
     pub name: String,
