@@ -60,14 +60,13 @@ sh_test(
     srcs = ["e2e.sh"],
     data = [
         ":orchestrator_zip",
-        "@rules_python//python:current_py_toolchain",
+        "@python3",
     ],
     env = {
-        "PYTHON": "$(PYTHON3)",
+        "PYTHON": "$(location @python3//:python3)",
     },
     tags = [
         "hyper310",
         "manuf",
     ],
-    toolchains = ["@rules_python//python:current_py_toolchain"],
 )
