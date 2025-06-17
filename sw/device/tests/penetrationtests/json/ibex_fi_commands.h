@@ -52,6 +52,7 @@ extern "C" {
     value(_, CharSramStatic) \
     value(_, CharSramWrite) \
     value(_, CharSramWriteRead) \
+    value(_, CharSramWriteReadAlt) \
     value(_, CharSramWriteStaticUnrolled) \
     value(_, CharUncondBranch) \
     value(_, CharUncondBranchNop) \
