@@ -23,14 +23,19 @@ package sram_ctrl_pkg;
       128'h22f296f8f95efb84a75cd435a5541e9f;
 
   // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 32 --seed 3296833456 --prefix ""
-  parameter int LfsrWidth = 32;
+  // $ ./util/design/gen-lfsr-seed.py --width 64 --seed 3296833456 --prefix ""
+  parameter int LfsrWidth = 64;
   typedef logic [LfsrWidth-1:0] lfsr_seed_t;
   typedef logic [LfsrWidth-1:0][$clog2(LfsrWidth)-1:0] lfsr_perm_t;
-  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 32'h10a81ea5;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = 64'hb496209a_10a81ea5;
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
-    160'h438131ae2cb71ffdd2e4c29a1f412231747cd7b2
+    128'hf7963515_f8af8e60_fbfec4c0_f1edd9e2,
+    256'h41e1c6d4_273d5046_2da7165d_1c1db882_693146c2_a33aa048_43762bed_0ecabea5
   };
+
+  // The LFSR has an internal state width of 64 bits but we just use the lowest 32 bits of the
+  // permuted state for initializing the RAM.
+  parameter int LfsrOutWidth = 32;
 
   //////////////////////
   // Type definitions //
