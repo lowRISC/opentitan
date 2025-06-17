@@ -1,0 +1,15 @@
+diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
+--- a/rust/private/rustc.bzl
++++ b/rust/private/rustc.bzl
+@@ -1518,11 +1518,6 @@ def rustc_compile_action(
+         "source_attributes": ["srcs"],
+     }
+ 
+-    if experimental_use_coverage_metadata_files:
+-        instrumented_files_kwargs.update({
+-            "metadata_files": coverage_runfiles + [executable] if executable else [],
+-        })
+-
+     providers = [
+         DefaultInfo(
+             # nb. This field is required for cc_library to depend on our output.
