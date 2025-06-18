@@ -18,6 +18,7 @@ cmake
 curl
 dfu-util
 doxygen
+file
 flex
 g++
 git
@@ -51,6 +52,7 @@ srecord
 tree
 xmlstarlet
 xsltproc
-zlib1g-dev
 xxd
 xz-utils
+zip
+zlib1g-dev

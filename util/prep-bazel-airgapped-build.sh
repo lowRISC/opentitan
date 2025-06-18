@@ -13,9 +13,9 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
+: "${BAZEL_VENDORDIR:=bazel-vendor}"
 : "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
 : "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
-: "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
 LINE_SEP="====================================================================="
@@ -116,14 +116,13 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     --output bazel
   chmod +x bazel
 
-  # Make Bazel sync its own dependencies to the repository cache:
+  # Make Bazel fetch its own dependencies to the repository cache:
   # https://bazel.build/run/build#repository_cache_with_bazel_7_or_later
   mkdir -p "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
   pushd "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
     touch MODULE.bazel
-    touch WORKSPACE
     cp "${REPO_TOP}/.bazelversion" .
-    bazel sync --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
+    bazel fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
   popd
   rm -rf "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
 fi
@@ -139,31 +138,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}
   # Make bazel forget everything it knows, then download everything.
   ${BAZELISK} clean --expunge
-  ${BAZELISK} fetch \
-    --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
-    //... \
-    @remote_java_tools//... \
-    @remote_java_tools_linux//... \
-    @bindgen_clang_linux//... \
-    @rules_rust_bindgen_deps__bindgen-0.71.1//... \
-    @go_sdk//... \
-    @lowrisc_rv32imcb_files//... \
-    @local_config_cc_toolchains//... \
-    @local_config_platform//... \
-    @local_config_sh//... \
-    @ot_python_wheels//... \
-    @python3_toolchains//... \
-    @remotejdk11_linux//... \
-    @riscv-compliance//... \
-    @rules_foreign_cc//toolchains/... \
-    @ninja_1.11.0_linux//... \
-    @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_host_tools//... \
-    @rust_analyzer_host_tools//... \
-    @rust_host__x86_64-unknown-linux-gnu__nightly_tools//... \
-    @rust_tock__riscv32imc-unknown-none-elf__nightly_tools//...
-  cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
-    ${BAZEL_AIRGAPPED_DIR}/
+  ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
@@ -188,5 +163,5 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" ]]; then
   echo $LINE_SEP
   echo "To perform an airgapped build, ship the contents of ${BAZEL_AIRGAPPED_DIR} to your airgapped environment and then:"
   echo ""
-  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} <label>"
+  echo "bazel build --distdir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_DISTDIR} --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} <label>"
 fi

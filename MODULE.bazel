@@ -1,0 +1,154 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+module(name = "lowrisc_opentitan")
+
+# Dependencies:
+bazel_dep(name = "abseil-cpp", version = "20240116.1")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
+bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "rules_cc", version = "0.1.2")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+
+# Dev dependencies:
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.4.0",
+    dev_dependency = True,
+)
+bazel_dep(
+    name = "lowrisc_misc_linters",
+    dev_dependency = True,
+)
+archive_override(
+    module_name = "lowrisc_misc_linters",
+    integrity = "sha256-Nl/mfYFo/uGg/DrqS7gFiL9yHcT8g7QEY7CetQiXzaM=",
+    strip_prefix = "misc-linters-20240823_01",
+    urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20240823_01.tar.gz"],
+)
+
+# Includes:
+include("//third_party/rust:rust.MODULE.bazel")
+
+include("//third_party/python:python.MODULE.bazel")
+
+# Repository rules:
+bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
+
+bitstreams_repo(name = "bitstreams")
+
+nonhermetic_repo = use_repo_rule("//rules:nonhermetic.bzl", "nonhermetic_repo")
+
+nonhermetic_repo(name = "nonhermetic")
+
+# Source repositories (not Bazel-aware):
+github_tools = use_extension("//third_party/github:extensions.bzl", "github_tools")
+use_repo(github_tools, "com_github_gh")
+
+lychee = use_extension("//third_party/lychee:extensions.bzl", "lychee")
+use_repo(lychee, "lychee")
+
+serde_annotate = use_extension("//third_party/rust:extensions.bzl", "serde_annotate")
+use_repo(serde_annotate, "lowrisc_serde_annotate")
+
+shellcheck = use_extension("//third_party/shellcheck:extensions.bzl", "shellcheck")
+use_repo(shellcheck, "shellcheck")
+
+tock = use_extension("//third_party/tock:extensions.bzl", "tock")
+use_repo(tock, "elf2tab", "libtock", "tock")
+
+openocd = use_extension("//third_party/openocd:extensions.bzl", "openocd")
+use_repo(openocd, "openocd")
+
+freertos = use_extension("//third_party/freertos:extensions.bzl", "freertos")
+use_repo(freertos, "freertos")
+
+llvm_compiler_rt = use_extension("//third_party/llvm_compiler_rt:extensions.bzl", "llvm_compiler_rt")
+use_repo(llvm_compiler_rt, "llvm_compiler_rt")
+
+riscv_compliance = use_extension("//third_party/riscv-compliance:extensions.bzl", "riscv_compliance")
+use_repo(riscv_compliance, "riscv-compliance")
+
+coremark = use_extension("//third_party/coremark:extensions.bzl", "coremark")
+use_repo(coremark, "coremark")
+
+xkcp = use_extension("//third_party/xkcp:extensions.bzl", "xkcp")
+use_repo(xkcp, "xkcp")
+
+hsm = use_extension("//third_party/hsm:extensions.bzl", "hsm")
+use_repo(hsm, "cloud_kms_hsm", "opensc", "sc_hsm", "softhsm2")
+
+nist_cavp = use_extension("//third_party/nist_cavp_testvectors:extensions.bzl", "nist_cavp")
+use_repo(
+    nist_cavp,
+    "nist_cavp_aes_gcm",
+    "nist_cavp_aes_kat",
+    "nist_cavp_aes_kw_sp_800_38f",
+    "nist_cavp_drbg_sp_800_90a_root",
+    "nist_cavp_ecdh_sp_800_56a",
+    "nist_cavp_ecdsa_fips_186_4",
+    "nist_cavp_hmac_fips_198_1",
+    "nist_cavp_rsa_fips_186_3",
+    "nist_cavp_sha2_fips_180_4",
+    "nist_cavp_sha3_fips_202",
+    "nist_cavp_shake_fips_202",
+)
+
+wycheproof = use_extension("//third_party/wycheproof:extensions.bzl", "wycheproof")
+use_repo(wycheproof, "wycheproof")
+
+sphincsplus = use_extension("//third_party/sphincsplus:extensions.bzl", "sphincsplus")
+use_repo(
+    sphincsplus,
+    "sphincsplus_fips205_ipd",
+    "sphincsplus_sha256_kat",
+    "sphincsplus_shake256_kat",
+)
+
+open_dice = use_extension("//third_party/open-dice:extensions.bzl", "open_dice")
+use_repo(open_dice, "open-dice")
+
+hyperdebug = use_extension("//third_party/hyperdebug:extensions.bzl", "hyperdebug")
+use_repo(hyperdebug, "hyperdebug_firmware")
+
+hwtrust = use_extension("//third_party/hwtrust:extensions.bzl", "hwtrust")
+use_repo(hwtrust, "hwtrust")
+
+qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
+use_repo(qemu, "qemu_opentitan")
+
+lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl", "lowrisc_rv32imcb_toolchain")
+use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
+
+# Extension for linking in externally managed test and provisioning customizations
+# for both secure/non-secure manufacturer domains.
+hooks = use_extension("//rules:extensions.bzl", "hooks")
+hooks.repo(
+    name = "manufacturer_test_hooks",
+    dummy = "sw/device/tests/closed_source",
+    env = "MANUFACTURER_HOOKS_DIR",
+)
+hooks.repo(
+    name = "secure_manufacturer_test_hooks",
+    dummy = "sw/device/tests/closed_source",
+    env = "SECURE_MANUFACTURER_HOOKS_DIR",
+)
+hooks.repo(
+    name = "provisioning_exts",
+    dummy = "sw/device/silicon_creator/manuf/extensions",
+    env = "PROV_EXTS_DIR",
+)
+use_repo(
+    hooks,
+    "manufacturer_test_hooks",
+    "provisioning_exts",
+    "secure_manufacturer_test_hooks",
+)
+
+register_toolchains("//rules/opentitan:localtools")
+
+register_toolchains("//toolchain:cc_toolchain_opentitan")
