@@ -5,7 +5,7 @@
 module rv_dm_bind;
 
   bind rv_dm tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device_dmi (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module rv_dm_bind;
   );
 
   bind rv_dm tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device_regs (
     .clk_i,
     .rst_ni,
@@ -23,7 +23,7 @@ module rv_dm_bind;
   );
 
   bind rv_dm tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device_mem (
     .clk_i,
     .rst_ni,
@@ -32,7 +32,7 @@ module rv_dm_bind;
   );
 
   bind rv_dm tlul_assert #(
-    .EndpointType("Host")
+    .EndpointType(tlul_pkg::HOST)
   ) tlul_assert_host_sba (
     .clk_i,
     .rst_ni,

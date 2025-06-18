@@ -5,7 +5,7 @@
 module rom_ctrl_bind;
 
   bind rom_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) rom_tlul_assert_device (
     .clk_i,
     .rst_ni,
@@ -14,7 +14,7 @@ module rom_ctrl_bind;
   );
 
   bind rom_ctrl tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) regs_tlul_assert_device (
     .clk_i,
     .rst_ni,

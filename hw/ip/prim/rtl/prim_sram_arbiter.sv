@@ -12,11 +12,11 @@
 `include "prim_assert.sv"
 
 module prim_sram_arbiter #(
-  parameter int unsigned N  = 4,
-  parameter int unsigned SramDw = 32,
-  parameter int unsigned SramAw = 12,
-  parameter ArbiterImpl = "PPC",
-  parameter bit EnMask = 1'b 0 // Disable wmask if 0
+  parameter int unsigned           N           = 4,
+  parameter int unsigned           SramDw      = 32,
+  parameter int unsigned           SramAw      = 12,
+  parameter tlul_pkg::arbiterimp_e ArbiterImpl = tlul_pkg::PPC,
+  parameter bit                    EnMask      = 1'b 0 // Disable wmask if 0
 ) (
   input clk_i,
   input rst_ni,
@@ -81,8 +81,7 @@ module prim_sram_arbiter #(
     end
   end
 
-
-  if (ArbiterImpl == "PPC") begin : gen_arb_ppc
+  if (ArbiterImpl == tlul_pkg::PPC) begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N (N),
       .DW(ARB_DW)
@@ -98,7 +97,7 @@ module prim_sram_arbiter #(
       .data_o    ( sram_packed ),
       .ready_i   ( 1'b1        )
     );
-  end else if (ArbiterImpl == "BINTREE") begin : gen_tree_arb
+  end else if (ArbiterImpl == tlul_pkg::BINTREE) begin : gen_tree_arb
     prim_arbiter_tree #(
       .N (N),
       .DW(ARB_DW)

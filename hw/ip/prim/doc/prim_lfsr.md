@@ -17,7 +17,7 @@ the Galois type.
 
 Name         | type   | Description
 -------------|--------|----------------------------------------------------------
-LfsrType     | string | LFSR form, can be `"GAL_XOR"` or `"FIB_XNOR"`
+LfsrType     | enum   | LFSR form, can be `GAL_XOR` or `FIB_XNOR`
 LfsrDw       | int    | Width of the LFSR
 EntropyDw    | int    | Width of the entropy input
 StateOutDw   | int    | Width of the LFSR state to be output (`lfsr_q[StateOutDw-1:0]`)

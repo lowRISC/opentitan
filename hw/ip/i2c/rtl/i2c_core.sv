@@ -637,7 +637,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_fmt_threshold (
     .clk_i,
     .rst_ni,
@@ -653,7 +653,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_rx_threshold (
     .clk_i,
     .rst_ni,
@@ -669,7 +669,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_acq_threshold (
     .clk_i,
     .rst_ni,
@@ -698,7 +698,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_controller_halt (
     .clk_i,
     .rst_ni,
@@ -779,7 +779,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_tx_stretch (
     .clk_i,
     .rst_ni,
@@ -795,7 +795,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_tx_threshold (
     .clk_i,
     .rst_ni,
@@ -811,7 +811,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_acq_overflow (
     .clk_i,
     .rst_ni,

@@ -5,7 +5,7 @@
 module keymgr_dpe_bind;
 
   bind keymgr_dpe tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,

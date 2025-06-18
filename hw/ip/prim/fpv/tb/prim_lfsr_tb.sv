@@ -32,9 +32,11 @@ module prim_lfsr_tb #(
   output logic [NumDuts-1:0][StateOutDw-1:0] state_o
 );
 
+  import prim_lfsr_pkg::*;
+
   for (genvar k = GalXorMinLfsrDw; k <= GalXorMaxLfsrDw; k++) begin : gen_gal_xor_duts
     localparam int unsigned Idx = k - GalXorMinLfsrDw;
-    prim_lfsr #(.LfsrType("GAL_XOR"),
+    prim_lfsr #(.LfsrType(GAL_XOR),
       .LfsrDw      ( k          ),
       .EntropyDw   ( EntropyDw  ),
       .StateOutDw  ( StateOutDw ),
@@ -57,7 +59,7 @@ module prim_lfsr_tb #(
   for (genvar k = 16; k <= GalXorMaxLfsrDw; k = k*2)
   begin : gen_gal_xor_duts_nonlinear
     localparam int unsigned Idx = k - GalXorMinLfsrDw;
-    prim_lfsr #(.LfsrType("GAL_XOR"),
+    prim_lfsr #(.LfsrType(GAL_XOR),
       .LfsrDw      ( k          ),
       .EntropyDw   ( EntropyDw  ),
       .StateOutDw  ( StateOutDw ),
@@ -78,7 +80,7 @@ module prim_lfsr_tb #(
 
   for (genvar k = FibXnorMinLfsrDw; k <= FibXnorMaxLfsrDw; k++) begin : gen_fib_xnor_duts
     localparam int unsigned Idx = k - FibXnorMinLfsrDw + GalXorMaxLfsrDw - GalXorMinLfsrDw + 1;
-    prim_lfsr #(.LfsrType("FIB_XNOR"),
+    prim_lfsr #(.LfsrType(FIB_XNOR),
       .LfsrDw      ( k          ),
       .EntropyDw   ( EntropyDw  ),
       .StateOutDw  ( StateOutDw ),
@@ -101,7 +103,7 @@ module prim_lfsr_tb #(
   for (genvar k = 16; k <= FibXnorMaxLfsrDw; k = k*2)
   begin : gen_fib_xnor_duts_nonlinear
     localparam int unsigned Idx = k - FibXnorMinLfsrDw + GalXorMaxLfsrDw - GalXorMinLfsrDw + 1;
-    prim_lfsr #(.LfsrType("FIB_XNOR"),
+    prim_lfsr #(.LfsrType(FIB_XNOR),
       .LfsrDw      ( k          ),
       .EntropyDw   ( EntropyDw  ),
       .StateOutDw  ( StateOutDw ),

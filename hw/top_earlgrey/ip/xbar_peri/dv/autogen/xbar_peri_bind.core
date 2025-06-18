@@ -8,6 +8,8 @@ name: "lowrisc:dv:top_earlgrey_xbar_peri_bind:0.1"
 description: "XBAR peri assertion bind"
 filesets:
   files_dv:
+    depend:
+      - lowrisc:tlul:common
     files:
       - xbar_peri_bind.sv
     file_type: systemVerilogSource

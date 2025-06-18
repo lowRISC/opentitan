@@ -5,13 +5,16 @@
 
 package tlul_pkg;
 
+  typedef enum bit {DEVICE, HOST} endpointtype_e;
+
   // this can be either PPC or BINTREE
   // there is no functional difference, but timing and area behavior is different
   // between the two instances. PPC can result in smaller implementations when timing
   // is not critical, whereas BINTREE is favorable when timing pressure is high (but this
   // may also result in a larger implementation). on FPGA targets, BINTREE is favorable
   // both in terms of area and timing.
-  parameter ArbiterImpl = "PPC";
+  typedef enum bit {PPC, BINTREE} arbiterimp_e;
+  parameter arbiterimp_e ArbiterImpl = PPC;
 
   typedef enum logic [2:0] {
     PutFullData    = 3'h 0,

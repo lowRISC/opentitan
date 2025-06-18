@@ -8,6 +8,8 @@ name: "lowrisc:dv:top_darjeeling_xbar_mbx_bind:0.1"
 description: "XBAR mbx assertion bind"
 filesets:
   files_dv:
+    depend:
+      - lowrisc:tlul:common
     files:
       - xbar_mbx_bind.sv
     file_type: systemVerilogSource

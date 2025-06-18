@@ -616,7 +616,7 @@ module spi_host
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT("Status")
+    .IntrT(prim_intr_hw_pkg::STATUS)
   ) intr_hw_spi_event (
     .clk_i,
     .rst_ni,

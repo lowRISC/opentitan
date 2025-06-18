@@ -117,13 +117,13 @@ module aes_prng_clearing import aes_pkg::*;
 
   // LFSR instance
   prim_lfsr #(
-    .LfsrType     ( "GAL_XOR"       ),
-    .LfsrDw       ( Width           ),
-    .StateOutDw   ( Width           ),
-    .DefaultSeed  ( RndCnstLfsrSeed ),
-    .StatePermEn  ( 1'b1            ),
-    .StatePerm    ( RndCnstLfsrPerm ),
-    .NonLinearOut ( 1'b1            )
+    .LfsrType     ( prim_lfsr_pkg::GAL_XOR ),
+    .LfsrDw       ( Width                  ),
+    .StateOutDw   ( Width                  ),
+    .DefaultSeed  ( RndCnstLfsrSeed        ),
+    .StatePermEn  ( 1'b1                   ),
+    .StatePerm    ( RndCnstLfsrPerm        ),
+    .NonLinearOut ( 1'b1                   )
   ) u_lfsr (
     .clk_i     ( clk_i      ),
     .rst_ni    ( rst_ni     ),

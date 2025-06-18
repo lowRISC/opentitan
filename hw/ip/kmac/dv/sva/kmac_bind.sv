@@ -5,7 +5,7 @@
 module kmac_bind;
 
   bind kmac tlul_assert #(
-    .EndpointType("Device")
+    .EndpointType(tlul_pkg::DEVICE)
   ) tlul_assert_device (
     .clk_i,
     .rst_ni,

@@ -399,7 +399,7 @@ module uart_core (
 
   // instantiate interrupt hardware primitives
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_tx_watermark (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_hw_tx_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_watermark),
@@ -412,7 +412,7 @@ module uart_core (
     .intr_o                 (intr_tx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_tx_empty (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_hw_tx_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_empty),
@@ -425,7 +425,7 @@ module uart_core (
     .intr_o                 (intr_tx_empty_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_rx_watermark (
+  prim_intr_hw #(.Width(1), .IntrT(prim_intr_hw_pkg::STATUS)) intr_hw_rx_watermark (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_rx_watermark),

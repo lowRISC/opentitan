@@ -210,7 +210,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
   prim_intr_hw #(
     .Width ( 1        ),
-    .IntrT ( "Status" )
+    .IntrT ( prim_intr_hw_pkg::STATUS )
   ) u_intr_racl_error (
     .clk_i                  ( clk_i                    ),
     .rst_ni                 ( rst_ni                   ),
