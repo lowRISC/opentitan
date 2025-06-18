@@ -223,7 +223,11 @@ fn send_rma_unlock_token_hash(
     )?;
     ujson_payloads.dut_in.insert(
         "FT_PERSO_RMA_TOKEN_HASH".to_string(),
-        rma_token_hash.send_with_padding(spi_console, LC_TOKEN_HASH_SERIALIZED_MAX_SIZE)?,
+        rma_token_hash.send_with_padding_and_crc(
+            spi_console,
+            LC_TOKEN_HASH_SERIALIZED_MAX_SIZE,
+            /*quiet=*/ true,
+        )?,
     );
     Ok(())
 }

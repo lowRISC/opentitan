@@ -23,6 +23,8 @@ where
     fn send(&self, device: &T) -> Result<String>;
     fn send_with_crc(&self, device: &T) -> Result<String>;
     fn send_with_padding(&self, device: &T, max_size: usize) -> Result<String>;
+    fn send_with_padding_and_crc(&self, device: &T, max_size: usize, quiet: bool)
+        -> Result<String>;
 }
 
 impl<T, U> ConsoleSend<T> for U
@@ -55,6 +57,35 @@ where
         s.insert_str(s.len() - 1, &pad_str);
         device.console_write(s.as_bytes())?;
         Ok(s)
+    }
+
+    fn send_with_padding_and_crc(
+        &self,
+        device: &T,
+        max_size: usize,
+        quiet: bool,
+    ) -> Result<String> {
+        // Craft the UJSON string and pad with whitespace.
+        let mut s = serde_json::to_string(self)?;
+        let pad_len = max_size - s.len();
+        let pad_str = ' '.to_string().repeat(pad_len);
+        s.insert_str(s.len() - 1, &pad_str);
+        // Craft the CRC and pad with whitespace.
+        let actual_crc = OttfCrc {
+            crc: Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(s.as_bytes()),
+        };
+        let max_crc = OttfCrc { crc: u32::MAX };
+        let mut crc_s = serde_json::to_string(&actual_crc)?;
+        let max_crc_s = serde_json::to_string(&max_crc)?;
+        let crc_pad_str = ' '.to_string().repeat(max_crc_s.len() - crc_s.len());
+        crc_s.insert_str(crc_s.len() - 1, &crc_pad_str);
+        // Send bytes to the DUT.
+        if !quiet {
+            log::info!("Sending: {}", s.clone() + &crc_s);
+        }
+        device.console_write(s.as_bytes())?;
+        device.console_write(crc_s.as_bytes())?;
+        Ok(s + &crc_s)
     }
 }
 

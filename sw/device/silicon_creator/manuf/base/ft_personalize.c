@@ -378,7 +378,7 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
     // Wait for the host to send the RMA unlock token hash over the console.
     base_printf("Waiting For RMA Unlock Token Hash ...\n");
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, true));
-    TRY(ujson_deserialize_lc_token_hash_t(uj, &token_hash));
+    TRY(UJSON_WITH_CRC(ujson_deserialize_lc_token_hash_t, uj, &token_hash));
     TRY(dif_gpio_write(&gpio, kGpioPinSpiConsoleRxReady, false));
 
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
