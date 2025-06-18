@@ -810,6 +810,41 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "transfer_spx_pure_to_spx_prehash_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = fpga_params(
+        binaries = {
+            ":boot_test": "boot_test",
+        },
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_spx_pure_owner_keys",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --key-alg=SpxPure
+            --unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key_spx)
+            --next-key-alg=SpxPrehash
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_spx)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --dual-owner-boot-check=false
+            --rescue-after-activate={boot_test}
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
     name = "newversion_pq_to_pq_update_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
