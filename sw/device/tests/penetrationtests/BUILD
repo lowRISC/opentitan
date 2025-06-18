@@ -17,7 +17,6 @@ IBEX_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi_ibex(
     name = "fi_ibex",
-    slow_test = False,
     test_args = IBEX_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_ibex:harness",
     test_vectors = IBEX_FI_TESTVECTOR_TARGETS,
@@ -34,7 +33,6 @@ CRYPTO_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi(
     name = "fi_crypto",
-    slow_test = True,
     test_args = CRYPTO_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_crypto:harness",
     test_vectors = CRYPTO_FI_TESTVECTOR_TARGETS,
@@ -51,7 +49,6 @@ LCCTRL_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi(
     name = "fi_lc_ctrl",
-    slow_test = True,
     test_args = LCCTRL_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_lc_ctrl:harness",
     test_vectors = LCCTRL_FI_TESTVECTOR_TARGETS,
@@ -68,7 +65,6 @@ OTP_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi(
     name = "fi_otp",
-    slow_test = True,
     test_args = OTP_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_otp:harness",
     test_vectors = OTP_FI_TESTVECTOR_TARGETS,
@@ -85,7 +81,6 @@ RNG_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi(
     name = "fi_rng",
-    slow_test = True,
     test_args = RNG_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_rng:harness",
     test_vectors = RNG_FI_TESTVECTOR_TARGETS,
@@ -102,7 +97,6 @@ ROM_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi(
     name = "fi_rom",
-    slow_test = True,
     test_args = ROM_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_rom:harness",
     test_vectors = ROM_FI_TESTVECTOR_TARGETS,
@@ -119,7 +113,6 @@ OTBN_FI_TESTVECTOR_ARGS = " ".join([
 
 pentest_fi_otbn(
     name = "fi_otbn",
-    slow_test = True,
     test_args = OTBN_FI_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/fi_otbn:harness",
     test_vectors = OTBN_FI_TESTVECTOR_TARGETS,
@@ -136,7 +129,6 @@ AES_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_aes",
-    slow_test = True,
     test_args = AES_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_aes:harness",
     test_vectors = AES_SCA_TESTVECTOR_TARGETS,
@@ -153,7 +145,6 @@ EDN_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_edn",
-    slow_test = True,
     test_args = EDN_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_edn:harness",
     test_vectors = EDN_SCA_TESTVECTOR_TARGETS,
@@ -170,7 +161,6 @@ HMAC_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_hmac",
-    slow_test = True,
     test_args = HMAC_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_hmac:harness",
     test_vectors = HMAC_SCA_TESTVECTOR_TARGETS,
@@ -187,7 +177,6 @@ IBEX_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_ibex",
-    slow_test = True,
     test_args = IBEX_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_ibex:harness",
     test_vectors = IBEX_SCA_TESTVECTOR_TARGETS,
@@ -204,7 +193,6 @@ KMAC_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_kmac",
-    slow_test = True,
     test_args = KMAC_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_kmac:harness",
     test_vectors = KMAC_SCA_TESTVECTOR_TARGETS,
@@ -221,7 +209,6 @@ OTBN_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_otbn",
-    slow_test = True,
     test_args = OTBN_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_otbn:harness",
     test_vectors = OTBN_SCA_TESTVECTOR_TARGETS,
@@ -238,7 +225,6 @@ SHA3_SCA_TESTVECTOR_ARGS = " ".join([
 
 pentest_sca(
     name = "sca_sha3",
-    slow_test = True,
     test_args = SHA3_SCA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/penetrationtests/sca_sha3:harness",
     test_vectors = SHA3_SCA_TESTVECTOR_TARGETS,
