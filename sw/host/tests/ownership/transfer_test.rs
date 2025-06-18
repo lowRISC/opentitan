@@ -92,6 +92,8 @@ struct Opts {
     non_transfer_update: bool,
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the sealing keys")]
     keygen_check: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Enable detached sig for ownership unlock request")]
+    enable_detached_sig: bool,
 
     #[arg(long, default_value = "Any", help = "Mode of the unlock operation")]
     unlock_mode: UnlockMode,
@@ -148,6 +150,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             None
         },
         opts.unlock_sig.clone(),
+        opts.enable_detached_sig,
     )?;
 
     log::info!("###### Get Boot Log (2/2) ######");
