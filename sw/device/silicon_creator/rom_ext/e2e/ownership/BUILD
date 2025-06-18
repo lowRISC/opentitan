@@ -158,6 +158,69 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "bad_ownership_key_alg_test",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod"},
+    fpga = fpga_params(
+        binaries = {
+            ":boot_test": "boot_test",
+        },
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_corrupted_owner_key_alg",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --expected-error=OwnershipInvalidAlgorithm
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
+    name = "bad_ownership_key_alg_with_detached_sig_test",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "app_prod"},
+    fpga = fpga_params(
+        binaries = {
+            ":boot_test": "boot_test",
+        },
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_corrupted_owner_key_alg",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --key-alg=HybridSpxPure
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key_spx)
+            --next-key-alg=SpxPrehash
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_spx)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --expected-error=OwnershipInvalidAlgorithm
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
     name = "bad_appkey_constraint_test",
     fpga = fpga_params(
         changes_otp = True,
