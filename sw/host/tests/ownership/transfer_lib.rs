@@ -47,6 +47,7 @@ pub fn ownership_unlock(
     spx_key: Option<PathBuf>,
     next_owner: Option<&Path>,
     signature: Option<PathBuf>,
+    enable_detached_sig: bool,
 ) -> Result<()> {
     let (unlock, detached_sig) = OwnershipUnlockParams {
         mode: Some(mode),
@@ -57,12 +58,12 @@ pub fn ownership_unlock(
         algorithm,
         ecdsa_key,
         spx_key,
-        ..Default::default()
+        enable_detached_sig,
     }
     .apply_to(Option::<&mut std::fs::File>::None)?;
 
     rescue.enter(transport, EntryMode::Reset)?;
-    if algorithm.is_detached() {
+    if enable_detached_sig || algorithm.is_detached() {
         let sig = detached_sig.expect("algorithm is detached");
         rescue.update_firmware(BootSlot::SlotA, sig.to_vec()?.as_slice())?;
     }
@@ -100,6 +101,7 @@ pub fn ownership_unlock_any(
         spx_key,
         None,
         None,
+        false,
     )
 }
 
