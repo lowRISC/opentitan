@@ -196,6 +196,13 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
+  // Alert information for the design
+  alerts: {
+    // Any module with alerts that doesn't specify alert_handler
+    // will have its alerts sent here
+    default_handler: "alert_handler"
+  },
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every
@@ -286,6 +293,8 @@
       // the ip.hjson will declare the reset port names
       // If none are defined at ip.hjson, rst_ni is used by default
       reset_connections: {rst_ni: "lc_io_div4"},
+      // This module's alerts go to this handler
+      alert_handler: "alert_handler",
       base_addr: {
         hart: "0x30010000",
       },
