@@ -241,6 +241,24 @@ cc_library(
 )
 
 cc_library(
+    name = "ottf_alerts",
+    srcs = ["ottf_alerts.c"],
+    hdrs = ["ottf_alerts.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/arch:boot_stage",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+    ],
+)
+
+cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
     hdrs = ["ottf_main.h"],
