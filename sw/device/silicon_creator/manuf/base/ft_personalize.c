@@ -201,18 +201,22 @@ OT_WEAK rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   return kErrorOk;
 }
 
-static void log_self_hash(void) {
-  // clang-format off
-  base_printf("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x\n",
-           boot_measurements.rom_ext.data[7],
-           boot_measurements.rom_ext.data[6],
-           boot_measurements.rom_ext.data[5],
-           boot_measurements.rom_ext.data[4],
-           boot_measurements.rom_ext.data[3],
-           boot_measurements.rom_ext.data[2],
-           boot_measurements.rom_ext.data[1],
-           boot_measurements.rom_ext.data[0]);
-  // clang-format on
+/**
+ * Pushes the hash of the personalization firmware to the perso blob.
+ */
+static status_t log_self_hash(perso_blob_t *perso_blob_to_host) {
+  perso_tlv_object_header_t tlv_header = 0;
+  PERSO_TLV_SET_FIELD(Objh, Type, tlv_header, kPersoObjectTypePersoSha256Hash);
+  PERSO_TLV_SET_FIELD(
+      Objh, Size, tlv_header,
+      sizeof(perso_tlv_object_header_t) + sizeof(keymgr_binding_value_t));
+  TRY(perso_tlv_push_to_perso_blob(
+      &tlv_header, sizeof(perso_tlv_object_header_t), perso_blob_to_host));
+  TRY(perso_tlv_push_to_perso_blob(boot_measurements.rom_ext.data,
+                                   sizeof(keymgr_binding_value_t),
+                                   perso_blob_to_host));
+  perso_blob_to_host->num_objs++;
+  return OK_STATUS();
 }
 
 /*
@@ -376,7 +380,6 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   // Provision OTP Secret2 partition and flash info pages 1, 2, and 4 (keymgr
   // and DICE keygen seeds).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
-    log_self_hash();
     lc_token_hash_t token_hash;
     // Wait for the host to send the RMA unlock token hash over the console.
     base_printf("Waiting For RMA Unlock Token Hash ...\n");
@@ -1123,6 +1126,7 @@ static status_t provision(ujson_t *uj) {
           &otp_rot_creator_auth_state_measurement};
   TRY(personalize_extension_pre_cert_endorse(&pre_endorse));
   TRY(compute_tbs_was_hmac(pre_endorse.perso_blob_to_host));
+  TRY(log_self_hash(pre_endorse.perso_blob_to_host));
 
   // Endorse TBS certs and install in flash.
   TRY(personalize_endorse_certificates(uj));

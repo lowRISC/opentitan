@@ -56,9 +56,13 @@ typedef enum perso_tlv_object_type {
    */
   kPersoObjectTypeDeviceId = 5,
   /**
-   * Generic purpose seed
+   * Generic seed.
    */
   kPersoObjectTypeGenericSeed = 6,
+  /**
+   * Personalization firmware SHA256 Hash.
+   */
+  kPersoObjectTypePersoSha256Hash = 7,
 } perso_tlv_object_type_t;
 
 typedef uint16_t perso_tlv_object_header_t;
