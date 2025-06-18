@@ -47,6 +47,11 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "spx_pure_owner_keys": {
+        # Enable SPX+ ownership.
+        "owner_defines": ["TEST_OWNER_KEY_ALG_SPX_PURE=1"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "owner_update_newversion": {
         # Enable the NewVersion update mode of ownership.
         "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion"],
