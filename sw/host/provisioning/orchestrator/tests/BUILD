@@ -12,7 +12,7 @@ load(
     "orchestrator_cw340_test_settings_transition",
     "orchestrator_hyper310_test_settings_transition",
 )
-load("//third_party/python:requirements.bzl", "requirement")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
