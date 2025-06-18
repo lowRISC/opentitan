@@ -28,6 +28,10 @@ load(
     _fpga_params = "fpga_params",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:hw.bzl",
+    "get_top_attr",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
     _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
@@ -212,9 +216,10 @@ def _exec_env_to_top_map(exec_env):
     for top in ALL_TOPS:
         # Extract the top's package from the hjson path.
         suffix = "/data/autogen:top_{}.gen.hjson".format(top.name)
-        if not top.hjson.endswith(suffix):
+        hjson = get_top_attr(top, "hjson")
+        if not hjson.endswith(suffix):
             fail("top {}'s hjson does not end with the expected suffix".format(top.name))
-        pkg = top.hjson.removesuffix(suffix)
+        pkg = hjson.removesuffix(suffix)
         top_map[pkg] = top.name
 
     ev_map = {}
