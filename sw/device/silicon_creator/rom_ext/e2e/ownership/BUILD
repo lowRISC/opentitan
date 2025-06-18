@@ -107,6 +107,37 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "unlock_detached_sig_test",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa": "app_prod"},
+    fpga = fpga_params(
+        binaries = {
+            ":boot_test": "boot_test",
+        },
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --enable-detached-sig=true
+            --dual-owner-boot-check=false
+            --rescue-after-activate={boot_test}
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
     name = "bad_unlock_signature_test",
     fpga = fpga_params(
         changes_otp = True,
