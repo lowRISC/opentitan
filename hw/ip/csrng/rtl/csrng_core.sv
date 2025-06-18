@@ -864,7 +864,7 @@ module csrng_core import csrng_pkg::*; #(
   // application interface
   //------------------------------------------
   // Each application port has its own
-  // csrng_cmd_stage block to recieve the
+  // csrng_cmd_stage block to receive the
   // command, track the state of its completion,
   // and return any genbits if the command
   // is a generate command.
