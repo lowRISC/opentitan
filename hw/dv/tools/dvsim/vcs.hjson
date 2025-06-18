@@ -38,6 +38,12 @@
                // and final value of the selection input at the end of a simulation timestep.
                // See https://github.com/lowRISC/ibex/issues/845.
                "-xlrm uniq_prior_final",
+               // Newer compiler versions have escalated this warning into an error by default, and
+               // VCS generates code to build the simulation executable which fails this check.
+               // De-escalate the error (only when building the simv itself.)
+               // > rmapats.c:20:9: error: implicit declaration of function 'vcs_simpSetEBlkEvtID'
+               // >  [-Wimplicit-function-declaration]
+               "-Xcflags='-Wno-error=implicit-function-declaration'",
                // Force DPI-C compilation in C99 mode. The -fno-extended-identifiers flag tells g++
                // not to worry about unicode. For some bizarre reason, the VCS DPI code contains
                // preprocessor macros with smart quotes, which causes GCC 10.2 and later to choke
