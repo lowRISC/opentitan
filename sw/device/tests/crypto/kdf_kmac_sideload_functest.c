@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
@@ -336,6 +337,8 @@ static status_t run_test_vector(void) {
   size_t km_key_len = current_test_vector->keying_material.config.key_length;
   size_t km_keyblob_len =
       keyblob_num_words(current_test_vector->keying_material.config);
+  size_t km_keyblob_share_len =
+      keyblob_share_num_words(current_test_vector->keying_material.config);
   uint32_t km_buffer1[km_keyblob_len];
   uint32_t km_buffer2[km_keyblob_len];
 
@@ -349,7 +352,7 @@ static status_t run_test_vector(void) {
       .key_length = km_key_len,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelHigh,
-      .exportable = kHardenedBoolFalse,
+      .exportable = kHardenedBoolTrue,
   };
 
   otcrypto_blinded_key_t keying_material1 = {
@@ -380,6 +383,20 @@ static status_t run_test_vector(void) {
                         current_test_vector->label,
                         current_test_vector->context, &keying_material1));
 
+  // Export the derived blinded key
+  uint32_t km_share0[km_keyblob_share_len];
+  uint32_t km_share1[km_keyblob_share_len];
+  TRY(otcrypto_export_blinded_key(
+      keying_material1,
+      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
+      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+
+  // Unmask the derived key
+  uint32_t first_key[km_key_len];
+  for (size_t i = 0; i < ARRAYSIZE(first_key); i++) {
+    first_key[i] = km_share0[i] ^ km_share1[i];
+  }
+
   // Run a SHA-3 operation in between the two KMAC operations.
   LOG_INFO("Running the intermediate SHA3 operation.");
   TRY(get_sha3_mode(sha3_test_vector.security_strength, &digest_buf.mode));
@@ -390,8 +407,20 @@ static status_t run_test_vector(void) {
                         current_test_vector->label,
                         current_test_vector->context, &keying_material2));
 
-  TRY_CHECK_ARRAYS_EQ((unsigned char *)keying_material1.keyblob,
-                      (unsigned char *)keying_material2.keyblob, km_key_len);
+  // Export the second derived blinded key
+  TRY(otcrypto_export_blinded_key(
+      keying_material2,
+      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
+      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+
+  // Unmask the second derived key
+  uint32_t second_key[km_key_len];
+  for (size_t i = 0; i < ARRAYSIZE(second_key); i++) {
+    second_key[i] = km_share0[i] ^ km_share1[i];
+  }
+
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)first_key, (unsigned char *)second_key,
+                      km_key_len);
   return OTCRYPTO_OK;
 }
 

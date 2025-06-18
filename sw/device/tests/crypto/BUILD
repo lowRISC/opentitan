@@ -519,6 +519,7 @@ opentitan_test(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/dif:kmac",
