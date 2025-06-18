@@ -423,6 +423,16 @@ fn provision_certificates(
                 generic_seed_id += 1;
                 continue;
             }
+            ObjType::PersoSha256Hash => {
+                let hash_size = header.obj_size - obj_header_size;
+                let hash = &perso_blob.body[start..start + hash_size];
+                log::info!(
+                    "Personalization firmware SHA256 hash: {}",
+                    hex::encode(hash)
+                );
+                start += hash_size;
+                continue;
+            }
         }
 
         // The next object is a cert, let's retrieve its properties (name, needs
@@ -471,7 +481,8 @@ fn provision_certificates(
                 ObjType::WasTbsHmac
                 | ObjType::DeviceId
                 | ObjType::DevSeed
-                | ObjType::GenericSeed => unreachable!(),
+                | ObjType::GenericSeed
+                | ObjType::PersoSha256Hash => unreachable!(),
             };
 
             let ec = EndorsedCert {
@@ -615,8 +626,6 @@ pub fn run_ft_personalize(
     init.bootstrap.load(transport, &second_bootstrap)?;
     spi_console.reset_frame_counter();
     response.stats.log_elapsed_time("second-bootstrap", t0);
-
-    let _ = UartConsole::wait_for(spi_console, r"Personalization Firmware Hash:", timeout)?;
 
     // Send RMA unlock token digest to device.
     let second_t0 = Instant::now();
