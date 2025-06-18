@@ -77,6 +77,18 @@
   (owner_keydata_t) { .spx = UNLOCK_SPX }
 #endif
 
+#if defined(TEST_OWNER_KEY_ALG_CORRUPTED)
+#ifdef TEST_OWNER_KEY_ALG_CORRUPTED
+#define TEST_OWNER_KEY_ALG 0x0
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .ecdsa = OWNER_ECDSA_P256 }
+#define ACTIVATE_KEYDATA \
+  (owner_keydata_t) { .ecdsa = ACTIVATE_ECDSA_P256 }
+#define UNLOCK_KEYDATA \
+  (owner_keydata_t) { .ecdsa = UNLOCK_ECDSA_P256 }
+#endif
+#endif
+
 #ifndef TEST_OWNER_KEY_ALG
 #define TEST_OWNER_KEY_ALG kOwnershipKeyAlgEcdsaP256
 #define OWNER_KEYDATA \
