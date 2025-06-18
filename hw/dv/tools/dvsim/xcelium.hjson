@@ -184,6 +184,7 @@
                      "-jg_coverage {cov_metrics}",
                      "-64bit",
                      "-xmlibdirname {build_db_dir}",
+                     "-jgargs '-allow_unsupported_OS'",
                      // overwrite previous results
                      "-covoverwrite",
                      "-inst_top {dut_instance}",
