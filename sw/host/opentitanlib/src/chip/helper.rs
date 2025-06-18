@@ -35,6 +35,8 @@ pub struct OwnershipUnlockParams {
     pub ecdsa_key: Option<PathBuf>,
     #[arg(long, help = "A path to a private SPX key to sign the request")]
     pub spx_key: Option<PathBuf>,
+    #[arg(long, help = "Enable detached signature")]
+    pub enable_detached_sig: bool,
 }
 
 impl OwnershipUnlockParams {
@@ -96,6 +98,10 @@ impl OwnershipUnlockParams {
             OwnershipUnlockRequest::default()
         };
         let signature = self.apply(&mut unlock)?;
+        if self.enable_detached_sig {
+            // Overwrite the signature to support the detached signature.
+            unlock.signature = EcdsaRawSignature::default();
+        }
         Ok((unlock, signature))
     }
 }
