@@ -61,6 +61,22 @@
   }
 #endif
 
+#if defined(TEST_OWNER_KEY_ALG_SPX_PURE) || \
+    defined(TEST_OWNER_KEY_ALG_SPX_PREHASH)
+#ifdef TEST_OWNER_KEY_ALG_SPX_PURE
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgSpxPure
+#endif
+#ifdef TEST_OWNER_KEY_ALG_HYBRID_SPX_PREHASH
+#define TEST_OWNER_KEY_ALG kOwnershipKeyAlgSpxPrehash
+#endif
+#define OWNER_KEYDATA \
+  (owner_keydata_t) { .spx = OWNER_SPX }
+#define ACTIVATE_KEYDATA \
+  (owner_keydata_t) { .spx = ACTIVATE_SPX }
+#define UNLOCK_KEYDATA \
+  (owner_keydata_t) { .spx = UNLOCK_SPX }
+#endif
+
 #ifndef TEST_OWNER_KEY_ALG
 #define TEST_OWNER_KEY_ALG kOwnershipKeyAlgEcdsaP256
 #define OWNER_KEYDATA \
