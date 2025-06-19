@@ -144,7 +144,7 @@ pub struct ManifestUpdateCommand {
     /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
-    /// The signature algorithm (Shake128sSimple, Sha2128sSimple)
+    /// The signature algorithm (SLH-DSA-SHA2-128s, SLH-DSA-SHAKE-128s)
     #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple)]
     spx_algorithm: SphincsPlus,
     /// Set to true if the firmware uses a byte-reversed representation of the hash.
