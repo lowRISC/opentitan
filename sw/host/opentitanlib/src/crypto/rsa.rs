@@ -244,7 +244,7 @@ impl Deref for RsaPrivateKey {
     }
 }
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct RsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
