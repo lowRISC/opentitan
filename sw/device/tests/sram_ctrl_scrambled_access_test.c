@@ -25,7 +25,7 @@
 #include "hw/top/rstmgr_regs.h"     // Generated.
 #include "hw/top/sram_ctrl_regs.h"  // Generated.
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 enum {
 /**

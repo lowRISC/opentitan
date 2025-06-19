@@ -20,7 +20,7 @@ static_assert(kDtRvCoreIbexCount >= 1,
 static dt_otbn_t kTestOtbn = (dt_otbn_t)0;
 static dt_rv_core_ibex_t kTestRvCoreIbex = (dt_rv_core_ibex_t)0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 typedef dif_result_t (*otbn_read_t)(const dif_otbn_t *otbn,
                                     uint32_t offset_bytes, void *dest,

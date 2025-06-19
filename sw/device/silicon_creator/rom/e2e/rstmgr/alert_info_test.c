@@ -14,7 +14,7 @@
 #include "hw/top/uart_regs.h"
 
 // Test handles alerts directly, disable OTTF catcher.
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = false);
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 static const dt_uart_t kUartDt = kDtUart0;
 

@@ -19,7 +19,7 @@
 // The test is considered passing if we abort with `Alert 3 is asserted` and
 // failing if the test ends naturally.
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kAlertTimeoutMicros = 1000,

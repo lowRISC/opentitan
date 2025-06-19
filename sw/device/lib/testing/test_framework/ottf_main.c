@@ -177,7 +177,7 @@ void _ottf_main(void) {
   }
 
 #if OPENTITAN_HAS_ALERT_HANDLER
-  if (kOttfTestConfig.catch_alerts) {
+  if (!kOttfTestConfig.ignore_alerts) {
     if (!kOttfTestConfig.silence_console_prints) {
       LOG_INFO("Enabling OTTF alert catcher");
     }
