@@ -23,7 +23,7 @@ static dif_keymgr_t keymgr;
 
 static const dt_kmac_t kKmacDt = (dt_kmac_t)0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * KMAC test description.

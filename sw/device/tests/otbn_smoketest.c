@@ -35,7 +35,7 @@ static_assert(kDtOtbnCount >= 1,
 
 static dt_otbn_t kTestOtbn = (dt_otbn_t)0;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Gets the OTBN instruction count, checks that it matches expectations.

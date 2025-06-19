@@ -36,7 +36,7 @@
 
 #define TIMEOUT (1000 * 1000)
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 // Module handles
 static dif_entropy_src_t entropy_src;
