@@ -51,7 +51,7 @@ dif_entropy_src_config_t entropy_src_config = {
     .alert_threshold = 2,
 };
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
