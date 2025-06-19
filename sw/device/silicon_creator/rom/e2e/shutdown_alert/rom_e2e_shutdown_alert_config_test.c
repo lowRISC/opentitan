@@ -11,7 +11,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "uart_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 enum {
   /**
