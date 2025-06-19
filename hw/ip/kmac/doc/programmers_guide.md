@@ -76,7 +76,7 @@ If the error occurred while the KMAC HW IP was being used from SW (i.e., not via
 
 ## KMAC/SHA3 context switching
 
-This version of KMAC/SHA3 HWIP _does not_ support the software context switching.
+This version of KMAC/SHA3 HWIP _does not_ support context switching.
 A context switching scheme would allow software to save the current hashing engine state and initiate a new high priority hashing operation.
 It could restore the previous hashing state later and continue the operation.
 
