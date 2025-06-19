@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi", "pentest_cryptolib_sca", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -253,7 +253,7 @@ CRYPTOLIB_FI_TESTVECTOR_ARGS = " ".join([
     for target in CRYPTOLIB_FI_TESTVECTOR_TARGETS
 ])
 
-pentest_cryptolib(
+pentest_cryptolib_fi(
     name = "fi_cryptolib",
     slow_test = False,
     test_args = CRYPTOLIB_FI_TESTVECTOR_ARGS,
@@ -270,7 +270,7 @@ CRYPTOLIB_SCA_TESTVECTOR_ARGS = " ".join([
     for target in CRYPTOLIB_SCA_TESTVECTOR_TARGETS
 ])
 
-pentest_cryptolib(
+pentest_cryptolib_sca(
     name = "sca_cryptolib",
     slow_test = False,
     test_args = CRYPTOLIB_SCA_TESTVECTOR_ARGS,
