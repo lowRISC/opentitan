@@ -26,6 +26,12 @@ status_t ottf_alerts_enable_all(void) {
   for (dif_alert_handler_alert_t i = 0; i < ARRAYSIZE(alerts); i++) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassD;
+
+    // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs at the owner
+    // stage since flash will not be provisioned with expected data (#23038).
+    if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
+      alerts[i] = 0;
+    }
   }
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
@@ -54,7 +60,6 @@ status_t ottf_alerts_enable_all(void) {
   };
   TRY(alert_handler_testutils_configure_all(&alert_handler, config,
                                             kDifToggleDisabled));
-
   TRY(dif_alert_handler_irq_set_enabled(
       &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 
