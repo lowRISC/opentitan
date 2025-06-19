@@ -125,32 +125,43 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "boot_svc_next_test",
-    srcs = ["boot_svc_next_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-    },
-    fpga = fpga_params(
-        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
-        exit_failure = "BFV:.*|PASS|FAIL",
-        exit_success = "FinalBootLog: 3:ABA\r\n",
-    ),
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    deps = [
-        ":boot_svc_test_lib",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-)
+NEXT_TEST_SEQUENCES = [
+    "AAB",
+    "ABA",
+    "ABB",
+]
+
+[
+    opentitan_test(
+        name = "boot_svc_next_{}_test".format(test_sequence.lower()),
+        srcs = ["boot_svc_next_test.c"],
+        defines = ["TEST_SEQUENCE_{}=1".format(test_sequence)],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
+            changes_otp = True,  # Clear the primary slot settings
+            exit_failure = "BFV:.*|PASS|FAIL",
+            exit_success = "FinalBootLog: 3:{}\r\n".format(test_sequence),
+        ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        deps = [
+            ":boot_svc_test_lib",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        ],
+    )
+    for test_sequence in NEXT_TEST_SEQUENCES
+]
 
 opentitan_test(
     name = "boot_svc_primary_test",
