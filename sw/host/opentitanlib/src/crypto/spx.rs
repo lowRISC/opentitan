@@ -11,7 +11,7 @@ use std::str::FromStr;
 use super::Error;
 use sphincsplus::{DecodeKey, SpxPublicKey};
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct SpxRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]

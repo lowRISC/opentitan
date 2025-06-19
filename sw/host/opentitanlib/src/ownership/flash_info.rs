@@ -13,7 +13,7 @@ use super::misc::{TlvHeader, TlvTag};
 use super::GlobalFlags;
 
 /// Describes an INFO page to which a set of flags apply.
-#[derive(Debug, Default, Deserialize, Serialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Serialize, Annotate, PartialEq)]
 pub struct OwnerInfoPage {
     /// The bank in which the info page resides.
     pub bank: u8,
@@ -57,7 +57,7 @@ impl OwnerInfoPage {
 }
 
 /// Describes the overall flash configuration for owner-accesssable INFO pages.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerFlashInfoConfig {
     /// Header identifying this struct.
     #[serde(

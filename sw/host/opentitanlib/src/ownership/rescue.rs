@@ -53,7 +53,7 @@ with_unknown! {
 }
 
 /// Describes the configuration of the rescue feature of the ROM_EXT.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerRescueConfig {
     /// Header identifying this struct.
     #[serde(
