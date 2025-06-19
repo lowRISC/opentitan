@@ -73,7 +73,7 @@ static const otbn_addr_t kOtbnVarEncU =
 static const otbn_addr_t kOtbnVarEncResult =
     OTBN_ADDR_T_INIT(x25519_sideload, enc_result);
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * Initialize the dif handles required for this test.
