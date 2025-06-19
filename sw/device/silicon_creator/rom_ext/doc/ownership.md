@@ -402,7 +402,9 @@ typedef struct boot_svc_ownership_unlock_req {
   /** The 64-bit DIN subfield of the full 256-bit device ID.  */
   uint32_t din[2];
   /** Reserved for future use.  */
-  uint32_t reserved[8];
+  uint32_t reserved[7];
+  /** Algorithm identifier of the next owner (for endorsed mode).  */
+  owner_key_t next_owner_key;
   /** The current ownership nonce.  */
   nonce_t nonce;
   /** The public key of the next owner (for endorsed mode).  */
