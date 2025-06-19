@@ -242,7 +242,7 @@ void ottf_external_isr(uint32_t *exc_info) {
     return;
 #if !OT_IS_ENGLISH_BREAKFAST
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler &&
-             kOttfTestConfig.catch_alerts) {
+             !kOttfTestConfig.ignore_alerts) {
     ottf_alert_isr(exc_info);
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(

@@ -26,6 +26,13 @@ status_t ottf_alerts_enable_all(void) {
   for (dif_alert_handler_alert_t i = 0; i < ARRAYSIZE(alerts); i++) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassD;
+
+    // Temporarily skip alert 37 (`flash_ctrl_fatal_err`) on FPGAs and sims at
+    // the owner stage since flash will not be provisioned with expected data.
+    // See #23038.
+    if (kDeviceType != kDeviceSilicon) {
+      alerts[i] = 0;
+    }
   }
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
