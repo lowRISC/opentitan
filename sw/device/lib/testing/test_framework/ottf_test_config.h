@@ -136,7 +136,7 @@ typedef struct ottf_test_config {
    * The alert handler configuration is not locked and can be modified further
    * by the test.
    */
-  bool catch_alerts;
+  bool ignore_alerts;
 } ottf_test_config_t;
 
 /**

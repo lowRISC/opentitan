@@ -111,7 +111,7 @@ const dif_edn_seed_material_t kEdnAlertTestSeedMaterialReseed = {
              0x73040c38, 0x6596739e},
 };
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {

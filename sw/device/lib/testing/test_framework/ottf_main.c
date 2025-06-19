@@ -177,7 +177,7 @@ void _ottf_main(void) {
   }
 
 #if !OPENTITAN_IS_ENGLISHBREAKFAST
-  if (kOttfTestConfig.catch_alerts) {
+  if (!kOttfTestConfig.ignore_alerts) {
     LOG_INFO("Enabling OTTF alert catcher");
     CHECK_STATUS_OK(ottf_alerts_enable_all());
   }

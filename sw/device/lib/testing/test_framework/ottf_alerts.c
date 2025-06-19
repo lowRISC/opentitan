@@ -111,7 +111,7 @@ status_t ottf_alerts_ignore_alert(dif_alert_handler_alert_t alert) {
 
 bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
                                    dif_rv_plic_irq_id_t plic_irq_id) {
-  return kOttfTestConfig.catch_alerts &&
+  return !kOttfTestConfig.ignore_alerts &&
          devid == dt_alert_handler_instance_id(kDtAlertHandler) &&
          plic_irq_id == dt_alert_handler_irq_to_plic_id(
                             kDtAlertHandler, kDtAlertHandlerIrqClassd);
