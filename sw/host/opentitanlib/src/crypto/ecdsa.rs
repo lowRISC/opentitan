@@ -79,7 +79,7 @@ impl EcdsaPrivateKey {
     }
 }
 
-#[derive(Debug, Clone, Deserialize, Annotate)]
+#[derive(Debug, Clone, Deserialize, Annotate, PartialEq)]
 pub struct EcdsaRawSignature {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -255,7 +255,7 @@ impl TryFrom<&EcdsaRawPublicKey> for EcdsaPublicKey {
     }
 }
 
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct EcdsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
