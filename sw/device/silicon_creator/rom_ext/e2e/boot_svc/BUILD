@@ -290,40 +290,50 @@ opentitan_binary(
     ],
 )
 
-opentitan_test(
-    name = "boot_svc_min_sec_ver_test",
-    srcs = ["boot_svc_min_sec_ver_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-    },
-    fpga = fpga_params(
-        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {min_sec_ver_5:signed_bin}@{owner_slot_b}",
-        binaries = {
-            ":min_sec_ver_5": "min_sec_ver_5",
+MIN_SEC_VER_SLOTS = [
+    "ab",
+    "ba",
+]
+
+[
+    opentitan_test(
+        name = "boot_svc_min_sec_ver_{}_test".format(slots[1]),
+        srcs = ["boot_svc_min_sec_ver_test.c"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
-        test_cmd = """
-            --exec="transport init"
-            --exec="fpga clear-bitstream"
-            --exec="fpga load-bitstream {bitstream}"
-            --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
-            --exec="fpga clear-bitstream"
-            no-op
-        """,
-    ),
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
-    manifest = ":manifest_version_4",
-    deps = [
-        ":boot_svc_test_lib",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_min_bl0_sec_ver",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-)
+        fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{v0_slot} {min_sec_ver_5:signed_bin}@{v5_slot}",
+            binaries = {
+                ":min_sec_ver_5": "min_sec_ver_5",
+            },
+            test_cmd = """
+                --exec="transport init"
+                --exec="fpga clear-bitstream"
+                --exec="fpga load-bitstream {bitstream}"
+                --exec="bootstrap --clear-uart=true {firmware}"
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                --exec="fpga clear-bitstream"
+                no-op
+            """,
+            v0_slot = "{{owner_slot_{}}}".format(slots[0]),
+            v5_slot = "{{owner_slot_{}}}".format(slots[1]),
+        ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        manifest = ":manifest_version_4",
+        deps = [
+            ":boot_svc_test_lib",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_min_bl0_sec_ver",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        ],
+    )
+    for slots in MIN_SEC_VER_SLOTS
+]
