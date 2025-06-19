@@ -43,7 +43,7 @@ static dt_edn_t kTestEdn = (dt_edn_t)0;
 dif_edn_t edn;
 dif_csrng_t csrng;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 status_t execute_test(const dif_csrng_t *csrng, const dif_edn_t *edn0) {
   // Perform the known-answer testing on the CSRNG SW application interface.
