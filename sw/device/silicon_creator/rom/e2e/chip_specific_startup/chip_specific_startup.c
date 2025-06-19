@@ -27,7 +27,7 @@
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.ignore_alerts = true);
 
 enum {
   kAstInitEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET -

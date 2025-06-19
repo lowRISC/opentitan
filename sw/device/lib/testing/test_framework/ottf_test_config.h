@@ -135,7 +135,7 @@ typedef struct ottf_test_config {
    * by the test. The ISR for class D can also be overridden by defining the
    * symbol `ottf_alert_isr` in the test.
    */
-  bool catch_alerts;
+  bool ignore_alerts;
 } ottf_test_config_t;
 
 /**
