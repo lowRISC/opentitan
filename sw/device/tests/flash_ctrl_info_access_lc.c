@@ -21,7 +21,7 @@
 #include "hw/top/lc_ctrl_regs.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_lc_ctrl_t lc_ctrl;
 static dif_rv_plic_t plic0;

@@ -20,7 +20,7 @@
 static dif_kmac_t kmac;
 static dif_keymgr_t keymgr;
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * KMAC test description.
