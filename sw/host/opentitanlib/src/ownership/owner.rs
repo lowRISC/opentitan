@@ -40,7 +40,7 @@ with_unknown! {
 }
 
 /// Describes the owner configuration and key material.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerBlock {
     /// Header identifying this struct.
     #[serde(
@@ -265,7 +265,7 @@ impl OwnerBlock {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub enum OwnerConfigItem {
     #[serde(alias = "application_key")]
     ApplicationKey(OwnerApplicationKey),

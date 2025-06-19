@@ -14,7 +14,7 @@ use super::GlobalFlags;
 
 /// The owner Integration Specific Firmware Binding (ISFB) configuration
 /// describes the configuration parameters for the ISFB region.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerIsfbConfig {
     /// Header identifying this struct.
     #[serde(

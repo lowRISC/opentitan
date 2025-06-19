@@ -13,7 +13,7 @@ use super::GlobalFlags;
 use crate::chip::boolean::MultiBitBool4;
 
 /// Describes the proprerties of a flash region.
-#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct FlashFlags {
     /// Read operations are allowed in this region.
     #[serde(default)]
@@ -146,7 +146,7 @@ impl From<FlashFlags> for u64 {
 }
 
 /// Describes a region to which a set of flags apply.
-#[derive(Debug, Default, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Default, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerFlashRegion {
     /// The start of the region (in pages).
     pub start: u16,
@@ -176,7 +176,7 @@ impl OwnerFlashRegion {
 }
 
 /// Describes the overall flash configuration for data pages.
-#[derive(Debug, Serialize, Deserialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate, PartialEq)]
 pub struct OwnerFlashConfig {
     /// Header identifying this struct.
     #[serde(
