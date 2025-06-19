@@ -225,6 +225,33 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "boot_svc_bad_primary_test",
+    srcs = ["boot_svc_bad_primary_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
+        exit_failure = "BFV:.*|PASS|FAIL",
+        exit_success = "FinalBootLog: 3:ABA\r\n",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    deps = [
+        ":boot_svc_test_lib",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_next_boot_bl0_slot",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
 manifest({
     "name": "manifest_version_4",
     "address_translation": hex(CONST.HARDENED_TRUE),
