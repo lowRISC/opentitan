@@ -14,7 +14,7 @@ use super::misc::{TlvHeader, TlvTag};
 
 /// The owner Integration Specific Firmware Binding (ISFB) configuration
 /// describes the configuration parameters for the ISFB region.
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct OwnerIsfbConfig {
     /// Header identifying this struct.
     #[serde(

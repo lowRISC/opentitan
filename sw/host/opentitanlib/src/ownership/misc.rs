@@ -74,7 +74,7 @@ impl OwnershipKeyAlg {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize, PartialEq)]
 #[serde(try_from = "String", into = "String")]
 pub struct StructVersion {
     pub major: u8,
@@ -126,7 +126,7 @@ impl StructVersion {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Annotate)]
+#[derive(Debug, Default, Deserialize, Annotate, PartialEq)]
 pub struct TlvHeader {
     #[serde(default)]
     pub identifier: TlvTag,
@@ -168,7 +168,7 @@ impl TlvHeader {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct HybridRawPublicKey {
     #[serde(deserialize_with = "string_or_struct")]
     pub ecdsa: EcdsaRawPublicKey,
@@ -194,7 +194,7 @@ impl HybridRawPublicKey {
 }
 
 /// Low-level key material (ie: bit representation).
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[allow(clippy::len_without_is_empty)]
 pub enum KeyMaterial {
     #[serde(alias = "unknown")]

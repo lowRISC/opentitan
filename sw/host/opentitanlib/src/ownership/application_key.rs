@@ -23,7 +23,7 @@ with_unknown! {
 }
 
 /// The OwnerApplicationKey is used to verify the owner's firmware payload.
-#[derive(Debug, Deserialize, Annotate)]
+#[derive(Debug, Deserialize, Annotate, PartialEq)]
 pub struct OwnerApplicationKey {
     /// Header identifying this struct.
     #[serde(
