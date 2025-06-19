@@ -289,7 +289,7 @@ static void test_memory_protection(void) {
   }
 }
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
