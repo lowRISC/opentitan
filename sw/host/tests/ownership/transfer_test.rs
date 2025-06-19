@@ -40,6 +40,8 @@ struct Opts {
     activate_key_spx: Option<PathBuf>,
     #[arg(long, help = "Unlock signature")]
     unlock_sig: Option<PathBuf>,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Skip the ownership unlock request")]
+    skip_unlock: bool,
 
     #[arg(long, default_value_t = OwnershipKeyAlg::EcdsaP256, help = "Current Owner key algorithm")]
     next_key_alg: OwnershipKeyAlg,
@@ -134,24 +136,26 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("###### Get Boot Log (1/2) ######");
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
-    log::info!("###### Ownership Unlock ######");
-    transfer_lib::ownership_unlock(
-        transport,
-        &rescue,
-        opts.unlock_mode,
-        data.rom_ext_nonce,
-        devid.din,
-        opts.key_alg,
-        opts.unlock_key.clone(),
-        opts.unlock_key_spx.clone(),
-        if opts.unlock_mode == UnlockMode::Endorsed {
-            opts.next_owner_key_pub.as_deref()
-        } else {
-            None
-        },
-        opts.unlock_sig.clone(),
-        opts.enable_detached_sig,
-    )?;
+    if !opts.skip_unlock {
+        log::info!("###### Ownership Unlock ######");
+        transfer_lib::ownership_unlock(
+            transport,
+            &rescue,
+            opts.unlock_mode,
+            data.rom_ext_nonce,
+            devid.din,
+            opts.key_alg,
+            opts.unlock_key.clone(),
+            opts.unlock_key_spx.clone(),
+            if opts.unlock_mode == UnlockMode::Endorsed {
+                opts.next_owner_key_pub.as_deref()
+            } else {
+                None
+            },
+            opts.unlock_sig.clone(),
+            opts.enable_detached_sig,
+        )?;
+    }
 
     log::info!("###### Get Boot Log (2/2) ######");
     let (data, _) = transfer_lib::get_device_info(transport, &rescue)?;
