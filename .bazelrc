@@ -6,6 +6,9 @@
 common --enable_bzlmod
 common --enable_workspace=no
 
+# Use custom registry for overrides and default to BCR for the others.
+common --registry=file:///%workspace%/registry --registry=https://bcr.bazel.build
+
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
 build --cxxopt='-std=gnu++14'
