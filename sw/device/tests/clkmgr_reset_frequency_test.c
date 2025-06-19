@@ -15,7 +15,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * This test measure clock counts with clkmgr frequency measurements, performing

@@ -36,7 +36,7 @@
  * Test programs Region 7, 3 and 0 in order and checks
  * write and read back based on each region's attribute.
  */
-OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
+OTTF_DEFINE_TEST_CONFIG();
 
 static dif_flash_ctrl_state_t flash;
 
