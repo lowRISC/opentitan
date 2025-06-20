@@ -651,7 +651,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          logic insn_addr_err,
                          logic scramble_state_err,
                          otbn_pkg::predec_err_t predec_err,
-                         otbn_pkg::missed_gnt_t missed_gnt,
                          otbn_pkg::controller_bad_int_t controller_bad_int,
                          otbn_pkg::start_stop_bad_int_t start_stop_bad_int,
                          logic rf_base_spurious_we_err,
@@ -678,9 +677,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(spr_secwipe_acks_cp, controller_bad_int.spr_secwipe_acks)
     `DEF_SEEN_CP(controller_state_err_cp, controller_bad_int.state_err)
     `DEF_SEEN_CP(controller_mubi_err_cp, controller_bad_int.controller_mubi_err)
-
-    `DEF_SEEN_CP(imem_gnt_missed_err_cp, missed_gnt.imem_gnt_missed_err)
-    `DEF_SEEN_CP(dmem_gnt_missed_err_cp, missed_gnt.dmem_gnt_missed_err)
 
     `DEF_SEEN_CP(urnd_all_zero_cp, urnd_all_zero)
     `DEF_SEEN_CP(insn_addr_err_cp, insn_addr_err)
@@ -2270,7 +2266,6 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                  cfg.trace_vif.insn_addr_err_q,
                                  cfg.trace_vif.scramble_state_err_q,
                                  cfg.trace_vif.predec_err_q,
-                                 cfg.trace_vif.missed_gnt_q,
                                  cfg.trace_vif.controller_bad_int_q,
                                  cfg.trace_vif.start_stop_bad_int_q,
                                  cfg.trace_vif.rf_base_spurious_we_err_q,
