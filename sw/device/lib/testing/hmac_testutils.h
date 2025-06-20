@@ -21,7 +21,7 @@
  *
  * All timeouts are calculated against the `kClockFreqCpuHz`, in order
  * to cover a range of targets. Please see:
- * https://docs.opentitan.org/hw/ip/hmac/doc/
+ * https://opentitan.org/book/hw/ip/hmac/
  *
  * 10 cycles are added to the length of the corresponding operation as
  * described in the documentation. This is to cover any potential

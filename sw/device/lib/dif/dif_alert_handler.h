@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/alert_handler/doc/">Alert handler</a> Device Interface
- * Functions
+ * @brief <a href="/book/hw/ip/alert_handler/">Alert handler</a> Device
+ * Interface Functions
  */
 
 #include <stdint.h>

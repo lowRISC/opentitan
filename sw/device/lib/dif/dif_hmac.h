@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/hmac/doc/">HMAC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/hmac/">HMAC</a> Device Interface Functions
  */
 
 #include <stddef.h>

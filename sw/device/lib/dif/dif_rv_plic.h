@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rv_plic/doc/">PLIC</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/rv_plic/">PLIC</a> Device Interface Functions
  *
  * The PLIC should be largely compatible with the (currently draft) [RISC-V PLIC
  * specification][plic], but tailored for the OpenTitan rv_plic register

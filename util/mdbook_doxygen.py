@@ -11,7 +11,7 @@ import io
 import json
 import re
 import sys
-from pathlib import Path, PurePath
+from pathlib import Path
 
 from mdbook import difgen
 from mdbook import utils as md_utils
@@ -25,11 +25,6 @@ def main() -> None:
     # load both the context and the book from stdin
     context, book = json.load(sys.stdin)
     book_root = Path(context["root"])
-
-    try:
-        site_url = PurePath(context["config"]["output"]["html"]["site-url"])
-    except KeyError:
-        site_url = PurePath("/")
 
     try:
         preproc_cfg = context["config"]["preprocessor"]["doxygen"]
@@ -60,7 +55,7 @@ def main() -> None:
         buffer.write(
             "\n<details><summary>\nGenerated from <a href=\"{}\">{}</a></summary>\n"
             .format(
-                site_url / src_path,
+                file_name,
                 file_name,
             ),
         )

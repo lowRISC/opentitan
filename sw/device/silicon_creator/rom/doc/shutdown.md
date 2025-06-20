@@ -8,7 +8,7 @@ A secure shutdown should result in a system end-state where a chip reset is the 
 ## Dependencies
 
 Hardware:
-*   [Alert Handler](https://docs.opentitan.org/hw/ip/alert_handler/doc/)
+*   [Alert Handler (Earlgrey)](../../../../../hw/top_earlgrey/ip_autogen/alert_handler/)
 *   OTP Controller & Shutdown OTP policy words defined.
 *   Lifecycle controller
 

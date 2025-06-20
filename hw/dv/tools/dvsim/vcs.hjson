@@ -47,7 +47,8 @@
                "-CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers",
                // C++11 standard is enforced for all sources, including the DPI-C constructs.
                // TODO, may need to update to c++14 to meet our requirements
-               // Refer to https://docs.opentitan.org/doc/ug/install_instructions
+               // Refer to
+               // https://opentitan.org/book/doc/contributing/style_guides/c_cpp_coding_style.html#c-style-guide
                "-CFLAGS --std=c++11",
                // Without this magic LDFLAGS argument below, we get compile time errors with
                // VCS on Google Linux machines that look like this:

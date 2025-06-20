@@ -90,7 +90,7 @@ The `purge` option ensures that the scratch directory is fully erased before sta
 Depending on the number of AscentLint licenses that can be checked out at a time, you may also want to set the number of parallel workers to one using `--max-parallel <number>`.
 
 Batch regressions for all three tools are regularly run on the `master` branch at eight-hour intervals, and the results are published on a public dashboard such that everybody can inspect the current lint status of all IPs on the project website.
-The dashboard can be found by following the appropriate link on the [hardware IP overview page](https://docs.opentitan.org/hw).
+The dashboard can be found by following the appropriate link on the [hardware IP overview page](../).
 
 # CDC Linting
 

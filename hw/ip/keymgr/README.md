@@ -20,6 +20,6 @@ This document specifies the functionality of the OpenTitan key manager.
 
 ## Description
 
-The key manager implements the hardware component of the [identities and root keys](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/) strategy of OpenTitan.
+The key manager implements the hardware component of the [identities and root keys](../../../doc/security/specs/identities_and_root_keys/) strategy of OpenTitan.
 
 It enables the system to shield critical assets from software directly and provides a simple model for software to use derived key and identity outputs.

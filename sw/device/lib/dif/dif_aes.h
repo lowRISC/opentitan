@@ -21,7 +21,7 @@ extern "C" {
 /**
  *
  * @file
- * @brief <a href="/hw/ip/aes/doc/">AES</a> Device Interface Functions
+ * @brief <a href="/book/hw/ip/aes/">AES</a> Device Interface Functions
  *
  * This API assumes transactional nature of work, where the peripheral is
  * configured once per message (data consisting of 1..N 128-bit blocks), and
@@ -43,7 +43,7 @@ extern "C" {
  * AES registers must be securely cleared, by calling `dif_aes_end`.
  *
  * Please see the following documentation for further information:
- * https://docs.opentitan.org/hw/ip/aes/doc/
+ * https://opentitan.org/book/hw/ip/aes/
  * https://csrc.nist.gov/csrc/media/publications/fips/197/final/documents/fips-197.pdf
  * https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf
  */

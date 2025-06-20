@@ -459,7 +459,7 @@ Once the operation is complete, it falls back to the sideload key state, which i
 
 ### Software Binding
 
-The identities flow employs an idea called [software binding](https://docs.opentitan.org/doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
+The identities flow employs an idea called [software binding](../../../../doc/security/specs/identities_and_root_keys/#software-binding) to ensure that a particular key derivation scheme is only reproducible for a given software configuration.
 The binding is created through the secure boot flow, where each stage sets the binding used for the next verified stage before advancing to it.
 The software binding is used during the following state transitions only:
 -  `Initialized` to `CreatorRootKey`

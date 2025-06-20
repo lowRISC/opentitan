@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/edn/doc/">Entropy Distribution Network</a> Device
+ * @brief <a href="/book/hw/ip/edn/">Entropy Distribution Network</a> Device
  * Interface Functions
  *
  * This API implements the interface for the Entropy Distribution Network (EDN)
