@@ -148,3 +148,8 @@ build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/
 
 # cquery output option.
 cquery --output=files
+
+# Allow the host's `/tmp` directory to be accessed by rules.
+# From Bazel 7 onwards, the sandbox mounts over the top of `/tmp` causing it to not be visible.
+# Some contributors mount EDA tools in `/tmp` which can cause `PATH` problems.
+build --sandbox_add_mount_pair=/tmp
