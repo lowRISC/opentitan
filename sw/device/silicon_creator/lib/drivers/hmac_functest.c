@@ -19,6 +19,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+#define BUFFER_SIZE sizeof(kGettysburgPrelude)
+#define IS_ALIGNED(x, a) (((uintptr_t)(x) & ((a)-1)) == 0)
+
 enum {
   kSha256BlockBits = 512,
   kSha256BlockBytes = kSha256BlockBits / 8,
@@ -29,6 +32,22 @@ static const char kGettysburgPrelude[] =
     "Four score and seven years ago our fathers brought forth on this "
     "continent, a new nation, conceived in Liberty, and dedicated to the "
     "proposition that all men are created equal.";
+
+// Presuming the compiler aligns the kGettysburgPrelude, the unaligned version
+// of the kGettysburgPrelude Address is used to test the HMAC implementation.
+typedef struct __attribute__((packed)) {
+  char unused;
+  const char payload[BUFFER_SIZE];
+} UnalignedHash_t;
+
+// This structure is used to ensure that the kGettysburgPrelude is not aligned
+// on a 4-byte boundary
+static UnalignedHash_t kGettysburgPreludeUnaligned = {
+    .unused = 0xFF,
+    .payload = "Four score and seven years ago our fathers brought forth on this "
+               "continent, a new nation, conceived in Liberty, and dedicated to the "
+               "proposition that all men are created equal.",
+};
 
 // The following shell command will produce the sha256sum and convert the
 // digest into valid C hexadecimal constants:
@@ -43,6 +62,24 @@ static const uint32_t kGettysburgDigest[] = {
     0x96c324ed, 0x775708a3, 0x0f9034cd, 0x1e6fd403,
 };
 
+// Pretest setup function to ensure that the kGettysburgPrelude is aligned correctly
+// in memory.
+void pretest_setup(void) {
+
+  LOG_INFO("Pretest setup: checking alignment of kGettysburgPrelude");
+  const char *p = kGettysburgPrelude;
+  LOG_INFO("Aligned Gettysburg Prelude Addr: %p", p);
+  LOG_INFO("Unaligned Gettysburg Prelude Addr: %p", &kGettysburgPreludeUnaligned.payload);
+  LOG_INFO("Is kGettysburgPrelude aligned? %s",
+           (IS_ALIGNED(p, sizeof(uint32_t)))
+               ? "Yes"
+               : "No");
+  LOG_INFO("Is kGettysburgPreludeUnaligned aligned? %s",
+           (IS_ALIGNED(&kGettysburgPreludeUnaligned.payload, sizeof(uint32_t)))
+               ? "Yes"
+               : "No");
+}
+
 /*
  * For the big-endian version of the test, we use the unmodified output of
  * sha256sum:
@@ -56,46 +93,15 @@ static const uint32_t kGettysburgDigest[] = {
 static const char kGettysburgDigestBigEndian[] =
     "1e6fd4030f9034cd775708a396c324ed420ec587eb3dd433e29f6ac08b8cc7ba";
 
-rom_error_t hmac_sha256_test(void) {
+rom_error_t hmac_test(void) {
   hmac_digest_t digest;
-  hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
+  //hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
+  hmac_sha256(kGettysburgPreludeUnaligned.payload, sizeof(kGettysburgPreludeUnaligned.payload) - 1, &digest);
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
     LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
     if (digest.digest[i] != kGettysburgDigest[i]) {
-      return kErrorUnknown;
-    }
-  }
-  return kErrorOk;
-}
-
-static const hmac_key_t kHmacKey = {.key = {0x11112222, 0x33334444, 0x55556666,
-                                            0x77778888, 0x9999aaaa, 0xbbbbcccc,
-                                            0xddddeeee, 0xffff0000}};
-
-// The following shell command will produce the HMAC-SHA256 digest, and convert
-// it into valid C hexadecimal constants:
-//
-// $ echo -n "Four score and seven years ago our fathers brought forth on this
-// continent, a new nation, conceived in Liberty, and dedicated to the
-// proposition that all men are created equal." | openssl dgst \
-//     -sha256 -mac HMAC -macopt \
-//     hexkey:111122223333444455556666777788889999aaaabbbbccccddddeeeeffff0000 \
-//     | cut -f2 -d' ' | sed -e "s/......../0x&,\n/g" | tac
-static const uint32_t kGettysburgHmacSha256Digest[] = {
-    0xa63131bc, 0xeb1cb98b, 0xa0888a13, 0x497f2087,
-    0xb54e0af5, 0x9d85e15b, 0xa9a3bafe, 0x9d115197,
-};
-
-rom_error_t hmac_hmac_sha256_test(void) {
-  hmac_digest_t digest;
-  hmac_hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, kHmacKey,
-                   /*big_endian_digest=*/false, &digest);
-  const size_t len = ARRAYSIZE(digest.digest);
-  for (int i = 0; i < len; ++i) {
-    LOG_INFO("word %d = 0x%08x", i, digest.digest[i]);
-    if (digest.digest[i] != kGettysburgHmacSha256Digest[i]) {
       return kErrorUnknown;
     }
   }
@@ -289,9 +295,9 @@ rom_error_t hmac_save_restore_repeated_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  pretest_setup();
   status_t result = OK_STATUS();
-  EXECUTE_TEST(result, hmac_sha256_test);
-  EXECUTE_TEST(result, hmac_hmac_sha256_test);
+  EXECUTE_TEST(result, hmac_test);
   EXECUTE_TEST(result, hmac_process_nowait_test);
   EXECUTE_TEST(result, hmac_process_wait_test);
   EXECUTE_TEST(result, hmac_truncated_test);

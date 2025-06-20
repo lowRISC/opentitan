@@ -16,6 +16,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "EARLGREY_CW340_TEST_ENVS",
     "fpga_params",
     "opentitan_test",
     "qemu_params",
@@ -230,7 +231,10 @@ cc_test(
 opentitan_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -369,7 +373,10 @@ cc_test(
 opentitan_test(
     name = "kmac_functest",
     srcs = ["kmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
