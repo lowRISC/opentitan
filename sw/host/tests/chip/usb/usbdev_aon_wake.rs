@@ -68,6 +68,7 @@ fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Con
 }
 
 fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
