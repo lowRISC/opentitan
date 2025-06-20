@@ -80,3 +80,24 @@ proc tree {NumSrc} {
 }
 
 tree {186}
+
+# Preconditions of OnehotCheck_A and Enable_A cannot happen without applying stopat.
+#
+# Below, we disable the assertions inside the embedded task and enable them inside the task where
+# the stopat on reg_we_check lives.
+proc move_to_task {task_name assert_list} {
+  foreach assert_name $assert_list {
+    task -edit ${task_name} -copy "${assert_name}.*" -regexp
+    assert -disable -regexp "\<embedded\>\::${assert_name}"
+  }
+}
+
+task -create notOnehotInpt
+
+move_to_task notOnehotInpt {\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A\
+  .*\.FpvSecCmRegWeOnehotCheck_A\
+}
+
+stopat -task notOnehotInpt dut.u_reg.reg_we_check
