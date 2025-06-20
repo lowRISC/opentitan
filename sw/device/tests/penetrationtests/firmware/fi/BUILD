@@ -40,6 +40,29 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_impl",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:cryptolib_fi_commands",
+    ],
+)
+
+cc_library(
+    name = "cryptolib_fi_impl",
+    srcs = ["cryptolib_fi_impl.c"],
+    hdrs = [
+        "cryptolib_fi_impl.h",
+        "//sw/device/tests/penetrationtests/firmware/lib:cryptolib.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_fi_commands",
     ],
