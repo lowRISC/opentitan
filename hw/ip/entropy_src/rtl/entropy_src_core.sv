@@ -1629,6 +1629,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SEC_CM: RNG.BKGN_CHK
   entropy_src_repcnt_ht #(
     .RegWidth(HalfRegWidth),
+    .RngBusBitSelWidth(RngBusBitSelWidth),
     .RngBusWidth(RngBusWidth)
   ) u_entropy_src_repcnt_ht (
     .clk_i               (clk_i),
@@ -1755,7 +1756,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SEC_CM: RNG.BKGN_CHK
   entropy_src_adaptp_ht #(
     .RegWidth(HalfRegWidth),
-    .RngBusWidth(RngBusWidth)
+    .RngBusWidth(RngBusWidth),
+    .RngBusBitSelWidth(RngBusBitSelWidth)
   ) u_entropy_src_adaptp_ht (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
@@ -1946,7 +1948,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // SEC_CM: RNG.BKGN_CHK
   entropy_src_markov_ht #(
     .RegWidth(HalfRegWidth),
-    .RngBusWidth(RngBusWidth)
+    .RngBusWidth(RngBusWidth),
+    .RngBusBitSelWidth(RngBusBitSelWidth)
   ) u_entropy_src_markov_ht (
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
