@@ -12,6 +12,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_impl.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -30,10 +31,12 @@ static status_t trigger_cryptolib_aes(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   // Adjust the mode of operation and the padding mode.
   // The total size of this test can be large due to all these options.
   // Triggers are over the API calls.
-
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   *data_out_len = AES_CMD_MAX_MSG_BYTES;
   *cfg_out = 0;
+  cryptolib_sca_aes_impl(data_in, data_in_len, key, key_len, iv, data_out,
+                         data_out_len, padding, mode, op_enc, cfg_in, cfg_out,
+                         trigger);
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -886,10 +889,10 @@ status_t handle_cryptolib_sca_p256_sign(ujson_t *uj) {
 }
 
 status_t trigger_cryptolib_sca_p384_base_mul(uint8_t scalar[P384_CMD_BYTES],
-                                            uint8_t x[P384_CMD_BYTES],
-                                            uint8_t y[P384_CMD_BYTES],
-                                            size_t cfg_in, size_t *cfg_out,
-                                            size_t trigger) {
+                                             uint8_t x[P384_CMD_BYTES],
+                                             uint8_t y[P384_CMD_BYTES],
+                                             size_t cfg_in, size_t *cfg_out,
+                                             size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in p384.
   // Trigger are over the API calls.
@@ -1074,11 +1077,11 @@ status_t handle_cryptolib_sca_secp256k1_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t trigger_cryptolib_sca_x25519_base_mul(
-    uint8_t scalar[X25519_CMD_BYTES], uint8_t x[X25519_CMD_BYTES],
-    uint8_t y[X25519_CMD_BYTES], size_t cfg_in, size_t *cfg_out,
-    size_t trigger) {
-
+status_t trigger_cryptolib_sca_x25519_base_mul(uint8_t scalar[X25519_CMD_BYTES],
+                                               uint8_t x[X25519_CMD_BYTES],
+                                               uint8_t y[X25519_CMD_BYTES],
+                                               size_t cfg_in, size_t *cfg_out,
+                                               size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in X25519.
   // Trigger are over the API calls.
@@ -1124,8 +1127,7 @@ status_t handle_cryptolib_sca_x25519_base_mul_fvsr(ujson_t *uj) {
   memcpy(uj_output.x, x, X25519_CMD_BYTES);
   memcpy(uj_output.y, y, X25519_CMD_BYTES);
   uj_output.cfg = cfg_out;
-  RESP_OK(ujson_serialize_cryptolib_sca_x25519_base_mul_out_t, uj,
-          &uj_output);
+  RESP_OK(ujson_serialize_cryptolib_sca_x25519_base_mul_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
