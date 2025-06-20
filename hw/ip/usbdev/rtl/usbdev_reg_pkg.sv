@@ -269,8 +269,15 @@ package usbdev_reg_pkg;
   } usbdev_reg2hw_rxenable_setup_mreg_t;
 
   typedef struct packed {
-    logic        q;
-  } usbdev_reg2hw_rxenable_out_mreg_t;
+    struct packed {
+      logic [11:0] q;
+      logic        qe;
+    } preserve;
+    struct packed {
+      logic [11:0] q;
+      logic        qe;
+    } out;
+  } usbdev_reg2hw_rxenable_out_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -625,9 +632,10 @@ package usbdev_reg_pkg;
   } usbdev_hw2reg_rxfifo_reg_t;
 
   typedef struct packed {
-    logic        d;
-    logic        de;
-  } usbdev_hw2reg_rxenable_out_mreg_t;
+    struct packed {
+      logic [11:0] d;
+    } out;
+  } usbdev_hw2reg_rxenable_out_reg_t;
 
   typedef struct packed {
     logic        d;
@@ -794,18 +802,18 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [550:533]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [532:515]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [514:479]
-    usbdev_reg2hw_alert_test_reg_t alert_test; // [478:477]
-    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [476:467]
-    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [466:455]
-    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [454:443]
-    usbdev_reg2hw_avoutbuffer_reg_t avoutbuffer; // [442:437]
-    usbdev_reg2hw_avsetupbuffer_reg_t avsetupbuffer; // [436:431]
-    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [430:410]
-    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [409:398]
-    usbdev_reg2hw_rxenable_out_mreg_t [11:0] rxenable_out; // [397:386]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [564:547]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [546:529]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [528:493]
+    usbdev_reg2hw_alert_test_reg_t alert_test; // [492:491]
+    usbdev_reg2hw_usbctrl_reg_t usbctrl; // [490:481]
+    usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [480:469]
+    usbdev_reg2hw_ep_in_enable_mreg_t [11:0] ep_in_enable; // [468:457]
+    usbdev_reg2hw_avoutbuffer_reg_t avoutbuffer; // [456:451]
+    usbdev_reg2hw_avsetupbuffer_reg_t avsetupbuffer; // [450:445]
+    usbdev_reg2hw_rxfifo_reg_t rxfifo; // [444:424]
+    usbdev_reg2hw_rxenable_setup_mreg_t [11:0] rxenable_setup; // [423:412]
+    usbdev_reg2hw_rxenable_out_reg_t rxenable_out; // [411:386]
     usbdev_reg2hw_set_nak_out_mreg_t [11:0] set_nak_out; // [385:374]
     usbdev_reg2hw_in_sent_mreg_t [11:0] in_sent; // [373:362]
     usbdev_reg2hw_out_stall_mreg_t [11:0] out_stall; // [361:350]
@@ -827,11 +835,11 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [402:367]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [366:359]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [358:329]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [328:312]
-    usbdev_hw2reg_rxenable_out_mreg_t [11:0] rxenable_out; // [311:288]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [390:355]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [354:347]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [346:317]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [316:300]
+    usbdev_hw2reg_rxenable_out_reg_t rxenable_out; // [299:288]
     usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [287:264]
     usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [263:240]
     usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [239:216]
@@ -918,6 +926,7 @@ package usbdev_reg_pkg;
   parameter logic [4:0] USBDEV_AVOUTBUFFER_RESVAL = 5'h 0;
   parameter logic [4:0] USBDEV_AVSETUPBUFFER_RESVAL = 5'h 0;
   parameter logic [23:0] USBDEV_RXFIFO_RESVAL = 24'h 0;
+  parameter logic [27:0] USBDEV_RXENABLE_OUT_RESVAL = 28'h 0;
   parameter logic [27:0] USBDEV_OUT_DATA_TOGGLE_RESVAL = 28'h 0;
   parameter logic [27:0] USBDEV_IN_DATA_TOGGLE_RESVAL = 28'h 0;
   parameter logic [16:0] USBDEV_PHY_PINS_SENSE_RESVAL = 17'h 0;
@@ -1017,7 +1026,7 @@ package usbdev_reg_pkg;
     4'b 0001, // index[ 9] USBDEV_AVSETUPBUFFER
     4'b 0111, // index[10] USBDEV_RXFIFO
     4'b 0011, // index[11] USBDEV_RXENABLE_SETUP
-    4'b 0011, // index[12] USBDEV_RXENABLE_OUT
+    4'b 1111, // index[12] USBDEV_RXENABLE_OUT
     4'b 0011, // index[13] USBDEV_SET_NAK_OUT
     4'b 0011, // index[14] USBDEV_IN_SENT
     4'b 0011, // index[15] USBDEV_OUT_STALL

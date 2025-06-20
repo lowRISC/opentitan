@@ -996,16 +996,17 @@ endtask
     // Enable OUT endpoints
     csr_wr(.ptr(ral.ep_out_enable[0]), .value({NEndpoints{1'b1}}));
     // Enable rx out
-    csr_wr(.ptr(ral.rxenable_out[0]), .value({NEndpoints{1'b1}}));
+    csr_wr(.ptr(ral.rxenable_out), .value({NEndpoints{1'b1}}));
   endtask
 
   virtual task configure_out_trans(bit [3:0] ep);
+    uvm_reg_data_t out = 1 << ep;
+    uvm_reg_data_t preserve = ~out;
     // Enable endpoint for OUT packet reception.
     csr_wr(.ptr(ral.ep_out_enable[0].enable[ep]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
-    // Enable rx out
-    ral.rxenable_out[0].out[ep].set(1'b1);
-    csr_update(ral.rxenable_out[0]);
+    // Enable rx out, leaving all other endpoints unaltered.
+    csr_wr(.ptr(ral.rxenable_out), .value((preserve << 16) | out));
     // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
     csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
   endtask

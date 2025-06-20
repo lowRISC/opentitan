@@ -722,27 +722,38 @@
         ]
       }
     }
-    { multireg: {
-        name: "rxenable_out",
-        count: "NEndpoints"
-        cname: "Endpoint"
-        desc: "Receive OUT transaction enable",
-        swaccess: "rw",
-        hwaccess: "hrw",
-        fields: [
-          {
-            bits: "0",
-            name: "out",
-            desc: '''
-                  This bit must be set to enable OUT transactions to be received on the endpoint.
-                  If the bit is clear then an OUT request will be responded to with a NAK, if the endpoint is enabled.
-                  If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
-                  Software must set this bit again to receive the next OUT transaction.
-                  Until that happens, hardware will continue to NAK any OUT transaction to this endpoint.
-                  '''
-          }
-        ]
-      }
+    { name: "rxenable_out",
+      desc: "Receive OUT transaction enable",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "NEndpoints-1:0",
+          name: "out",
+          desc: '''
+                This bit must be set to enable OUT transactions to be received on the endpoint.
+                If the bit is clear but the endpoint is enabled, then an OUT request will receive a NAK in response.
+                If set_nak_out for this endpoint is set, hardware will clear this bit whenever an OUT transaction is received on this endpoint.
+                Software must set this bit again to receive the next OUT transaction.
+                Until that happens, hardware will continue to NAK any OUT transactions to this endpoint.
+                '''
+          swaccess: "rw",
+          hwaccess: "hrw"
+        }
+        {
+          bits: "NEndpoints+15:16",
+          name: "preserve",
+          desc: '''
+                When writing to this register, only those 'out' bits with a corresponding 'preserve' bit of 0 are updated.
+                The 'preserve' field should therefore normally be set to all '1s', except for those bits that the software wishes to modify.
+                This conditional update facility avoids a race with the hardware when it is clearing the 'out' bit for another enabled endpoint.
+                '''
+          swaccess: "wo",
+          hwaccess: "hro"
+        }
+      ]
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { multireg: {
         name: "set_nak_out",

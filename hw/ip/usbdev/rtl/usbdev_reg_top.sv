@@ -363,31 +363,11 @@ module usbdev_reg_top (
   logic rxenable_setup_setup_10_wd;
   logic rxenable_setup_setup_11_qs;
   logic rxenable_setup_setup_11_wd;
+  logic rxenable_out_re;
   logic rxenable_out_we;
-  logic rxenable_out_out_0_qs;
-  logic rxenable_out_out_0_wd;
-  logic rxenable_out_out_1_qs;
-  logic rxenable_out_out_1_wd;
-  logic rxenable_out_out_2_qs;
-  logic rxenable_out_out_2_wd;
-  logic rxenable_out_out_3_qs;
-  logic rxenable_out_out_3_wd;
-  logic rxenable_out_out_4_qs;
-  logic rxenable_out_out_4_wd;
-  logic rxenable_out_out_5_qs;
-  logic rxenable_out_out_5_wd;
-  logic rxenable_out_out_6_qs;
-  logic rxenable_out_out_6_wd;
-  logic rxenable_out_out_7_qs;
-  logic rxenable_out_out_7_wd;
-  logic rxenable_out_out_8_qs;
-  logic rxenable_out_out_8_wd;
-  logic rxenable_out_out_9_qs;
-  logic rxenable_out_out_9_wd;
-  logic rxenable_out_out_10_qs;
-  logic rxenable_out_out_10_wd;
-  logic rxenable_out_out_11_qs;
-  logic rxenable_out_out_11_wd;
+  logic [11:0] rxenable_out_out_qs;
+  logic [11:0] rxenable_out_out_wd;
+  logic [11:0] rxenable_out_preserve_wd;
   logic set_nak_out_we;
   logic set_nak_out_enable_0_qs;
   logic set_nak_out_enable_0_wd;
@@ -3486,331 +3466,41 @@ module usbdev_reg_top (
   );
 
 
-  // Subregister 0 of Multireg rxenable_out
-  // R[rxenable_out]: V(False)
-  //   F[out_0]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_0 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+  // R[rxenable_out]: V(True)
+  logic rxenable_out_qe;
+  logic [1:0] rxenable_out_flds_we;
+  assign rxenable_out_qe = &rxenable_out_flds_we;
+  //   F[out]: 11:0
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_rxenable_out_out (
+    .re     (rxenable_out_re),
     .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_0_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[0].de),
-    .d      (hw2reg.rxenable_out[0].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[0].q),
+    .wd     (rxenable_out_out_wd),
+    .d      (hw2reg.rxenable_out.out.d),
+    .qre    (),
+    .qe     (rxenable_out_flds_we[0]),
+    .q      (reg2hw.rxenable_out.out.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_0_qs)
+    .qs     (rxenable_out_out_qs)
   );
+  assign reg2hw.rxenable_out.out.qe = rxenable_out_qe;
 
-  //   F[out_1]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_1 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+  //   F[preserve]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_rxenable_out_preserve (
+    .re     (1'b0),
     .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_1_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[1].de),
-    .d      (hw2reg.rxenable_out[1].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[1].q),
+    .wd     (rxenable_out_preserve_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (rxenable_out_flds_we[1]),
+    .q      (reg2hw.rxenable_out.preserve.q),
     .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_1_qs)
+    .qs     ()
   );
-
-  //   F[out_2]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_2 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_2_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[2].de),
-    .d      (hw2reg.rxenable_out[2].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[2].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_2_qs)
-  );
-
-  //   F[out_3]: 3:3
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_3 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_3_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[3].de),
-    .d      (hw2reg.rxenable_out[3].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[3].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_3_qs)
-  );
-
-  //   F[out_4]: 4:4
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_4 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_4_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[4].de),
-    .d      (hw2reg.rxenable_out[4].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[4].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_4_qs)
-  );
-
-  //   F[out_5]: 5:5
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_5 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_5_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[5].de),
-    .d      (hw2reg.rxenable_out[5].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[5].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_5_qs)
-  );
-
-  //   F[out_6]: 6:6
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_6 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_6_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[6].de),
-    .d      (hw2reg.rxenable_out[6].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[6].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_6_qs)
-  );
-
-  //   F[out_7]: 7:7
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_7_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[7].de),
-    .d      (hw2reg.rxenable_out[7].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[7].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_7_qs)
-  );
-
-  //   F[out_8]: 8:8
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_8 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_8_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[8].de),
-    .d      (hw2reg.rxenable_out[8].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[8].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_8_qs)
-  );
-
-  //   F[out_9]: 9:9
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_9 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_9_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[9].de),
-    .d      (hw2reg.rxenable_out[9].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[9].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_9_qs)
-  );
-
-  //   F[out_10]: 10:10
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_10 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_10_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[10].de),
-    .d      (hw2reg.rxenable_out[10].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[10].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_10_qs)
-  );
-
-  //   F[out_11]: 11:11
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_rxenable_out_out_11 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (rxenable_out_we),
-    .wd     (rxenable_out_out_11_wd),
-
-    // from internal hardware
-    .de     (hw2reg.rxenable_out[11].de),
-    .d      (hw2reg.rxenable_out[11].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.rxenable_out[11].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (rxenable_out_out_11_qs)
-  );
+  assign reg2hw.rxenable_out.preserve.qe = rxenable_out_qe;
 
 
   // Subregister 0 of Multireg set_nak_out
@@ -8970,31 +8660,12 @@ module usbdev_reg_top (
   assign rxenable_setup_setup_10_wd = reg_wdata[10];
 
   assign rxenable_setup_setup_11_wd = reg_wdata[11];
+  assign rxenable_out_re = addr_hit[12] & reg_re & !reg_error;
   assign rxenable_out_we = addr_hit[12] & reg_we & !reg_error;
 
-  assign rxenable_out_out_0_wd = reg_wdata[0];
+  assign rxenable_out_out_wd = reg_wdata[11:0];
 
-  assign rxenable_out_out_1_wd = reg_wdata[1];
-
-  assign rxenable_out_out_2_wd = reg_wdata[2];
-
-  assign rxenable_out_out_3_wd = reg_wdata[3];
-
-  assign rxenable_out_out_4_wd = reg_wdata[4];
-
-  assign rxenable_out_out_5_wd = reg_wdata[5];
-
-  assign rxenable_out_out_6_wd = reg_wdata[6];
-
-  assign rxenable_out_out_7_wd = reg_wdata[7];
-
-  assign rxenable_out_out_8_wd = reg_wdata[8];
-
-  assign rxenable_out_out_9_wd = reg_wdata[9];
-
-  assign rxenable_out_out_10_wd = reg_wdata[10];
-
-  assign rxenable_out_out_11_wd = reg_wdata[11];
+  assign rxenable_out_preserve_wd = reg_wdata[27:16];
   assign set_nak_out_we = addr_hit[13] & reg_we & !reg_error;
 
   assign set_nak_out_enable_0_wd = reg_wdata[0];
@@ -9575,18 +9246,8 @@ module usbdev_reg_top (
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[0] = rxenable_out_out_0_qs;
-        reg_rdata_next[1] = rxenable_out_out_1_qs;
-        reg_rdata_next[2] = rxenable_out_out_2_qs;
-        reg_rdata_next[3] = rxenable_out_out_3_qs;
-        reg_rdata_next[4] = rxenable_out_out_4_qs;
-        reg_rdata_next[5] = rxenable_out_out_5_qs;
-        reg_rdata_next[6] = rxenable_out_out_6_qs;
-        reg_rdata_next[7] = rxenable_out_out_7_qs;
-        reg_rdata_next[8] = rxenable_out_out_8_qs;
-        reg_rdata_next[9] = rxenable_out_out_9_qs;
-        reg_rdata_next[10] = rxenable_out_out_10_qs;
-        reg_rdata_next[11] = rxenable_out_out_11_qs;
+        reg_rdata_next[11:0] = rxenable_out_out_qs;
+        reg_rdata_next[27:16] = '0;
       end
 
       addr_hit[13]: begin
