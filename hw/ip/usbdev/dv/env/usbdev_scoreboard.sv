@@ -714,12 +714,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "ep_out_enable":  bfm.ep_out_enable  = NEndpoints'(wdata);
       "ep_in_enable":   bfm.ep_in_enable   = NEndpoints'(wdata);
       "rxenable_setup": bfm.rxenable_setup = NEndpoints'(wdata);
-      "rxenable_out":   bfm.rxenable_out   = NEndpoints'(wdata);
       "set_nak_out":    bfm.set_nak_out    = NEndpoints'(wdata);
       "out_stall":      bfm.out_stall      = NEndpoints'(wdata);
       "in_stall":       bfm.in_stall       = NEndpoints'(wdata);
       "out_iso":        bfm.out_iso        = NEndpoints'(wdata);
       "in_iso":         bfm.in_iso         = NEndpoints'(wdata);
+      // This one is a little more involved; it offers a conditional update facility to avoid a
+      // software-hardware race when the `set_nak_out` feature is in use.
+      "rxenable_out": begin
+        uvm_reg_data_t preserve = get_field_val(ral.rxenable_out.preserve, wdata);
+        bfm.rxenable_out = (NEndpoints'(bfm.rxenable_out) & preserve) |
+                           (NEndpoints'(wdata) & ~preserve);
+      end
 
       // configin_ registers (of which are there many), specifying IN packets for collection, are
       // more involved.

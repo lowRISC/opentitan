@@ -31,7 +31,7 @@ class usbdev_link_out_err_vseq extends usbdev_base_vseq;
 
     // Enable an endpoint for testing, and ensure that there is no buffer available initially.
     csr_wr(.ptr(ral.ep_out_enable[0]), .value(ep_mask));
-    csr_wr(.ptr(ral.rxenable_out[0]), .value(ep_mask));
+    csr_wr(.ptr(ral.rxenable_out), .value(ep_mask));
 
     // This interrupt is heavily overloaded and there are many events that may cause it to be
     // asserted; it is only informative/diagnostic for software, indicating only that an issue
