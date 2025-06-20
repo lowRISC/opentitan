@@ -613,6 +613,7 @@ typedef enum top_englishbreakfast_plic_target {
   kTopEnglishbreakfastPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_englishbreakfast_plic_target_t;
 
+
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
