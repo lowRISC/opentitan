@@ -171,6 +171,12 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_entropy_src"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_csrng"
       act:    "req"
       package: "tlul_pkg"

@@ -158,6 +158,7 @@ module entropy_src
 
   entropy_src_core #(
     .RngBusWidth(RngBusWidth),
+    .RngBusBitSelWidth(RngBusBitSelWidth),
     .EsFifoDepth(EsFifoDepth),
     .DistrFifoDepth(DistrFifoDepth),
     .BucketHtDataWidth(BucketHtDataWidth),
