@@ -58,3 +58,29 @@ foreach alert_sender_inst [get_design_info -list instance -filter "prim_alert_se
   check_cov -waiver -add -instance "$alert_sender_inst"\
     -comment {FPV for Alerts has already been done elsewhere}
 }
+
+# Preconditions of OnehotCheck_A and Enable_A cannot happen without apply stopat.
+#
+# Below, we disable the assertions inside the embedded task and enable them inside the task where
+# the stopat on reg_we_cheeck lives.
+proc move_to_task {task_name assert_list precond_list} {
+  set list [concat $assert_list $precond_list]
+  task -create ${task_name} -copy "${list}" -regexp
+  foreach assert_name $assert_list precond_name $precond_list {
+    assert -disable -regexp "\<embedded\>\::${assert_name}"
+    cover -disable -regexp "\<embedded\>\::${precond_name}"
+  }
+}
+
+move_to_task notOnehotInpt {\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A\
+  .*\.FpvSecCmRegWeOnehotCheck_A\
+}\
+{\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1\
+  .*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A:precondition1\
+  .*\.FpvSecCmRegWeOnehotCheck_A:precondition1\
+}
+
+stopat -task notOnehotInpt dut.u_reg.reg_we_check
