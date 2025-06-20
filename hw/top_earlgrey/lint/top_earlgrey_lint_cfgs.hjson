@@ -32,12 +32,6 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: aon_timer
                   fusesoc_core: lowrisc:ip:aon_timer
@@ -56,12 +50,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip/ast/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: entropy_src
                   fusesoc_core: lowrisc:ip:entropy_src
@@ -74,12 +62,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: csrng
                   fusesoc_core: lowrisc:ip:csrng
@@ -104,24 +86,12 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: gpio
                   fusesoc_core: lowrisc:earlgrey_ip:gpio
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/gpio/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: hmac
                   fusesoc_core: lowrisc:ip:hmac
@@ -146,12 +116,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/lc_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pattgen
                   fusesoc_core: lowrisc:ip:pattgen
@@ -176,48 +140,24 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/otp_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pinmux
                   fusesoc_core: lowrisc:earlgrey_ip:pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/pinmux/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pwm
                   fusesoc_core: lowrisc:earlgrey_ip:pwm
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/pwm/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:earlgrey_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rom_ctrl
                   fusesoc_core: lowrisc:ip:rom_ctrl
@@ -230,24 +170,12 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rv_core_ibex
                   fusesoc_core: lowrisc:earlgrey_ip:rv_core_ibex
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip_autogen/rv_core_ibex/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
@@ -284,12 +212,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/sram_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: sysrst_ctrl
                   fusesoc_core: lowrisc:ip:sysrst_ctrl
@@ -350,12 +272,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
             ]
 
