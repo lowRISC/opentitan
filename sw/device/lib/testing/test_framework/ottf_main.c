@@ -23,6 +23,7 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -168,6 +169,10 @@ void _ottf_main(void) {
     if (!kOttfTestConfig.silence_console_prints) {
       LOG_INFO("Running %s", kOttfTestConfig.file);
     }
+  }
+
+  if (kOttfTestConfig.catch_alerts) {
+    CHECK_STATUS_OK(ottf_alerts_enable_all());
   }
 
   // Initialize a global random number generator testutil context to provide
