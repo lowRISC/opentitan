@@ -25,6 +25,9 @@ if {$env(COV) == 1} {
   -exclude_bind_hierarchies
 }
 
+if {$env(DUT_TOP) == "rv_plic_tb"} {
+  check_cov -init -exclude_instance .*u_prim_alert_sender -regexp
+}
 #-------------------------------------------------------------------------
 # read design
 #-------------------------------------------------------------------------
