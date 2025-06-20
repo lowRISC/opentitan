@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_impl.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_commands.h"
 
@@ -24,12 +25,10 @@ status_t handle_cryptolib_fi_aes(ujson_t *uj) {
   // Adjust the mode of operation and the padding mode.
   // The total size of this test can be large due to all these options.
   // Triggers are over the API calls.
-
   cryptolib_fi_aes_out_t uj_output;
-  memset(uj_output.data, 0, AES_CMD_MAX_MSG_BYTES);
-  uj_output.data_len = AES_CMD_MAX_MSG_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_aes_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
+
   RESP_OK(ujson_serialize_cryptolib_fi_aes_out_t, uj, &uj_output);
 
   return OK_STATUS();

@@ -38,6 +38,29 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_impl",
+        "//sw/device/tests/penetrationtests/json:cryptolib_sca_commands",
+    ],
+)
+
+cc_library(
+    name = "cryptolib_sca_impl",
+    srcs = ["cryptolib_sca_impl.c"],
+    hdrs = [
+        "cryptolib_sca_impl.h",
+        "//sw/device/tests/penetrationtests/firmware/lib:cryptolib.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:crypto_hdrs",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:cryptolib_sca_commands",
     ],
 )
