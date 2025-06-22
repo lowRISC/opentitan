@@ -6,3 +6,6 @@
 
 waive -rules RESET_MUX    -location {entropy_src.sv} -regexp {Asynchronous reset .*_rst_n' is driven by a multiplexer.*} \
       -comment "The MUX is needed to control stub mode or not"
+
+waive -rules ARITH_CONTEXT -location {entropy_src_core.sv} -regexp {Bitlength of arithmetic operation 'health_test_fips_window \* RngBusWidth' is self-determined in this context} \
+      -comment "Vector is wide enough to store the result of the multiplication"

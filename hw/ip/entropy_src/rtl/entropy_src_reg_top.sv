@@ -1130,7 +1130,7 @@ module entropy_src_reg_top (
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h60),
+    .RESVAL  (16'h180),
     .Mubi    (1'b0)
   ) u_health_test_windows_bypass_window (
     .clk_i   (clk_i),

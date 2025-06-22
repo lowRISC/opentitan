@@ -73,11 +73,12 @@ class entropy_src_xht_monitor extends dv_base_monitor #(
     if (cfg.unfiltered_monitor_traffic || event_filter) begin
       `uvm_info(`gfn, "Sending item", UVM_DEBUG)
       item = entropy_src_xht_item::type_id::create("item");
-      item.rsp             = cfg.vif.mon_cb.rsp;
-      item.req             = cfg.vif.mon_cb.req;
-      item.entropy_valid   = cfg.vif.mon_cb.entropy_valid;
-      item.entropy_bits    = cfg.vif.mon_cb.entropy_bits;
-      item.entropy_bit_sel = cfg.vif.mon_cb.entropy_bit_sel;
+      item.rsp                = cfg.vif.mon_cb.rsp;
+      item.req                = cfg.vif.mon_cb.req;
+      item.entropy_valid      = cfg.vif.mon_cb.entropy_valid;
+      item.entropy_bits       = cfg.vif.mon_cb.entropy_bits;
+      item.entropy_bit_sel    = cfg.vif.mon_cb.entropy_bit_sel;
+      item.health_test_window = cfg.vif.mon_cb.health_test_window;
       analysis_port.write(item);
       req_analysis_port.write(item);
     end

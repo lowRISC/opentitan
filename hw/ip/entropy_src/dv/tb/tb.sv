@@ -47,7 +47,8 @@ module tb;
   // dut
   entropy_src #(
     .RngBusWidth(`RNG_BUS_WIDTH),
-    .RngBusBitSelWidth(`RNG_BUS_BIT_SEL_WIDTH)
+    .RngBusBitSelWidth(`RNG_BUS_BIT_SEL_WIDTH),
+    .HealthTestWindowWidth(16 + `RNG_BUS_BIT_SEL_WIDTH)
   ) dut (
     .clk_i                        (clk        ),
     .rst_ni                       (rst_n      ),
@@ -67,11 +68,12 @@ module tb;
     .cs_aes_halt_o                (aes_halt_if.req),
     .cs_aes_halt_i                (aes_halt_if.ack),
 
-    .entropy_src_xht_valid_o      (xht_if.entropy_valid),
-    .entropy_src_xht_bits_o       (xht_if.entropy_bits),
-    .entropy_src_xht_bit_sel_o    (xht_if.entropy_bit_sel),
-    .entropy_src_xht_meta_o       (xht_if.req),
-    .entropy_src_xht_meta_i       (xht_if.rsp),
+    .entropy_src_xht_valid_o              (xht_if.entropy_valid),
+    .entropy_src_xht_bits_o               (xht_if.entropy_bits),
+    .entropy_src_xht_bit_sel_o            (xht_if.entropy_bit_sel),
+    .entropy_src_xht_health_test_window_o (xht_if.health_test_window),
+    .entropy_src_xht_meta_o               (xht_if.req),
+    .entropy_src_xht_meta_i               (xht_if.rsp),
 
     .entropy_src_rng_enable_o     (rng_if.ready),
     .entropy_src_rng_valid_i      (rng_if.valid),

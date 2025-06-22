@@ -24,7 +24,7 @@ class entropy_src_xht_base_device_seq extends dv_base_seq #(
     end else begin
       if (item.req.active && item.entropy_valid) begin
         window_data_q.push_back(item.entropy_bits);
-        if (window_data_q.size() == item.req.health_test_window) begin
+        if (window_data_q.size() == item.health_test_window) begin
           // Use a hash function to create output values that cover the
           // complete range of test_cnt's, but also depend deterministically
           // on the window data.

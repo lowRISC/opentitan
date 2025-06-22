@@ -15,6 +15,7 @@ module entropy_src
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter int RngBusWidth                    = 4,
   parameter int RngBusBitSelWidth              = 2,
+  parameter int HealthTestWindowWidth          = 18,
   parameter int EsFifoDepth                    = 3,
   parameter int DistrFifoDepth                 = 2,
   parameter bit Stub                           = 1'b0
@@ -49,11 +50,12 @@ module entropy_src
   input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
-  output logic                         entropy_src_xht_valid_o,
-  output logic [RngBusWidth-1:0]       entropy_src_xht_bits_o,
-  output logic [RngBusBitSelWidth-1:0] entropy_src_xht_bit_sel_o,
-  output entropy_src_xht_meta_req_t    entropy_src_xht_meta_o,
-  input  entropy_src_xht_meta_rsp_t    entropy_src_xht_meta_i,
+  output logic                             entropy_src_xht_valid_o,
+  output logic [RngBusWidth-1:0]           entropy_src_xht_bits_o,
+  output logic [RngBusBitSelWidth-1:0]     entropy_src_xht_bit_sel_o,
+  output logic [HealthTestWindowWidth-1:0] entropy_src_xht_health_test_window_o,
+  output entropy_src_xht_meta_req_t        entropy_src_xht_meta_o,
+  input  entropy_src_xht_meta_rsp_t        entropy_src_xht_meta_i,
 
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
@@ -77,11 +79,13 @@ module entropy_src
   // Register interface supports up to 256-bit wide noise source bus widths. Ensure the that the
   // parameter does not exceed that limit.
   `ASSERT_INIT(RngBusBitWidthMaxValue_A, RngBusWidth <= 256)
-  // The IP needs to define both RngBusWidth and RngBusBitSelWidth, although the second is derived
-  // from the first. This is needed to allow topgen to pick up the widths for interfaces IP-level
-  // interfaces based on these parameters.
+  // The IP needs to define both RngBusWidth, RngBusBitSelWidth, and HealthTestWindowWidth, although
+  // the last two are derived from the first. This is needed to allow topgen to pick up the widths
+  // for interfaces IP-level interfaces based on these parameters.
   `ASSERT_INIT(RngBusBitSelWidthSameAsComputed_A,
                RngBusBitSelWidth == prim_util_pkg::vbits(RngBusWidth))
+  `ASSERT_INIT(HealthTestWindowWidthSameAsComputed_A,
+               HealthTestWindowWidth == 16 + prim_util_pkg::vbits(RngBusWidth))
 
   // common signals
   entropy_src_hw2reg_t hw2reg;
@@ -99,6 +103,7 @@ module entropy_src
   logic core_xht_valid;
   logic [RngBusWidth-1:0] core_xht_bits;
   logic [RngBusBitSelWidth-1:0] core_xht_bit_sel;
+  logic [HealthTestWindowWidth-1:0] core_xht_health_test_window;
   logic core_intr_es_entropy_valid;
   logic core_intr_es_health_test_failed;
   logic core_intr_es_observe_fifo_ready;
@@ -120,21 +125,26 @@ module entropy_src
   // Selecting between core and stub
   ///////////////////////////
 
-  assign hw2reg                       = Stub ? stub_hw2reg        : core_hw2reg;
-  assign core_rst_n                   = Stub ? '0                 : rst_ni;
-  assign entropy_src_hw_if_o          = Stub ? stub_entropy_hw_if : core_entropy_hw_if;
-  assign entropy_src_rng_enable_o     = Stub ? '1                 : core_rng_enable;
-  assign cs_aes_halt_o                = Stub ? '0                 : core_aes_halt;
-  assign entropy_src_xht_valid_o      = Stub ? '0                 : core_xht_valid;
-  assign entropy_src_xht_bits_o       = Stub ? '0                 : core_xht_bits;
-  assign entropy_src_xht_bit_sel_o    = Stub ? '0                 : core_xht_bit_sel;
-  assign entropy_src_xht_meta_o       = Stub ? '0                 : core_xht_meta;
-  assign intr_es_entropy_valid_o      = Stub ? stub_es_valid      : core_intr_es_entropy_valid;
-  assign intr_es_health_test_failed_o = Stub ? '0                 : core_intr_es_health_test_failed;
-  assign intr_es_observe_fifo_ready_o = Stub ? '0                 : core_intr_es_observe_fifo_ready;
-  assign intr_es_fatal_err_o          = Stub ? '0                 : core_intr_es_fatal_err;
-  assign alert_test                   = Stub ? stub_alert_test    : core_alert_test;
-  assign alert                        = Stub ? stub_alert         : core_alert;
+  assign hw2reg                               = Stub ? stub_hw2reg        : core_hw2reg;
+  assign core_rst_n                           = Stub ? '0                 : rst_ni;
+  assign entropy_src_hw_if_o                  = Stub ? stub_entropy_hw_if : core_entropy_hw_if;
+  assign entropy_src_rng_enable_o             = Stub ? '1                 : core_rng_enable;
+  assign cs_aes_halt_o                        = Stub ? '0                 : core_aes_halt;
+  assign entropy_src_xht_valid_o              = Stub ? '0                 : core_xht_valid;
+  assign entropy_src_xht_bits_o               = Stub ? '0                 : core_xht_bits;
+  assign entropy_src_xht_bit_sel_o            = Stub ? '0                 : core_xht_bit_sel;
+  assign entropy_src_xht_health_test_window_o = Stub ? '0                 :
+                                                       core_xht_health_test_window;
+  assign entropy_src_xht_meta_o               = Stub ? '0                 : core_xht_meta;
+  assign intr_es_entropy_valid_o              = Stub ? stub_es_valid      :
+                                                       core_intr_es_entropy_valid;
+  assign intr_es_health_test_failed_o         = Stub ? '0                 :
+                                                       core_intr_es_health_test_failed;
+  assign intr_es_observe_fifo_ready_o         = Stub ? '0                 :
+                                                       core_intr_es_observe_fifo_ready;
+  assign intr_es_fatal_err_o                  = Stub ? '0                 : core_intr_es_fatal_err;
+  assign alert_test                           = Stub ? stub_alert_test    : core_alert_test;
+  assign alert                                = Stub ? stub_alert         : core_alert;
 
   ///////////////////////////
   // core entropy operation
@@ -159,6 +169,7 @@ module entropy_src
   entropy_src_core #(
     .RngBusWidth(RngBusWidth),
     .RngBusBitSelWidth(RngBusBitSelWidth),
+    .HealthTestWindowWidth(HealthTestWindowWidth),
     .EsFifoDepth(EsFifoDepth),
     .DistrFifoDepth(DistrFifoDepth),
     .BucketHtDataWidth(BucketHtDataWidth),
@@ -180,6 +191,7 @@ module entropy_src
     .entropy_src_xht_bits_o(core_xht_bits),
     .entropy_src_xht_bit_sel_o(core_xht_bit_sel),
     .entropy_src_xht_meta_o(core_xht_meta),
+    .entropy_src_xht_health_test_window_o(core_xht_health_test_window),
     .entropy_src_xht_meta_i,
 
     .entropy_src_rng_enable_o(core_rng_enable),

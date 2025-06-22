@@ -19,7 +19,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kEntropySrcHealthTestWindowSize = 0x200,
+  kEntropySrcHealthTestWindowSize = 512,
   /**
    * Observe FIFO threshold: half of the FIFO size.
    */
