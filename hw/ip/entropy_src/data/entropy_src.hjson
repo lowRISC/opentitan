@@ -127,6 +127,16 @@
                The width is determined by `RngBusBitSelWidth` parametrization.
                '''
     }
+    { struct:  "logic"
+      type:    "uni"
+      name:    "entropy_src_xht_health_test_window"
+      act:     "req"
+      width:   HealthTestWindowWidth
+      package: ""
+      desc:    '''
+               Provides the window size of the health in bits.
+               '''
+    }
     { struct:  "entropy_src_xht_meta",
       type:    "req_rsp",
       name:    "entropy_src_xht_meta",
@@ -172,6 +182,13 @@
       type:    "int",
       default: "2",
       desc:    "Explicit parameter defining the width of the RNG bit selection vector (log2(RngBusWidth))"
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "HealthTestWindowWidth",
+      type:    "int",
+      default: "18",
+      desc:    "Explicit parameter defining the width of the health test window (16 + log2(RngBusWidth))"
       local:   "false",
       expose:  "true"
     },
@@ -564,31 +581,30 @@
         { bits: "15:0",
           name: "FIPS_WINDOW",
           desc: '''
-                This is the window size for all health tests.
+                This is the window size in samples for all health tests.
                 This value is used when entropy is being tested in FIPS/CC compliance mode (for simplicity referred to as FIPS mode).
-                The default value is (2048 bits * 1 clock/4 bits);
+                Note that the value defined in this register applies both to single-channel and multi-channel mode (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
 
-                Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x 4.
-                The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x 4 tested bits.
-                The factor of 4 relates to the number of noise source channels (i.e. symbol size) and applies both in single-channel and multi-channel mode (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x symbol size, where the symbol size is 1 in single-channel mode.
+                The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x symbol tested bits.
 
                 Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see !!ENTROPY_SRC.RNG_BIT_ENABLE).
                 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.
                 The use of window sizes below 512 samples is thus not recommended as this may not comply with NIST SP 800-90B.
                 '''
-          resval: "0x0200"
+          resval: "512"
         }
         { bits: "31:16",
           name: "BYPASS_WINDOW",
           desc: '''
-                This is the window size for all health tests when running in bypass mode.
+                This is the window size in bits for all health tests when running in bypass mode.
                 This mode is active after reset for the first and only test run, or when this mode is programmed by firmware by setting !!CONF.FIPS_ENABLE to `kMultiBitBool4False`.
-                The default value is (384 bits * 1 clock/4 bits);
+                The default value is 384 bits;
 
-                Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 0x60).
+                Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 384).
                 Do not use any other values, unless you know what you are doing.
                 '''
-          resval: "0x0060"
+          resval: "384"
         }
       ]
     },

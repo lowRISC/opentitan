@@ -13,9 +13,6 @@ package entropy_src_pkg;
   parameter int  FIPS_BUS_WIDTH  = 1;
   parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
 
-  // Internal entropy_src parameters.
-  parameter int  WINDOW_CNTR_WIDTH = 18;
-
   // For a data width of N, there are 2^N buckets in the bucket health test, each with its own
   // counter. To make this health test scale reasonably well with `RngBusWidth`, we limit the bucket
   // health test to 4 bit. If `RngBusWidth` is larger than 4, the bucket health test gets
@@ -64,7 +61,6 @@ package entropy_src_pkg;
     logic active;
     logic [15:0] thresh_hi;
     logic [15:0] thresh_lo;
-    logic [WINDOW_CNTR_WIDTH-1:0] health_test_window;
     logic window_wrap_pulse;
     logic threshold_scope;
   } entropy_src_xht_meta_req_t;

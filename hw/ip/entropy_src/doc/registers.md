@@ -331,7 +331,7 @@ In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitB
 ## HEALTH_TEST_WINDOWS
 Health test windows register
 - Offset: `0x2c`
-- Reset default: `0x600200`
+- Reset default: `0x1800200`
 - Reset mask: `0xffffffff`
 - Register enable: [`REGWEN`](#regwen)
 
@@ -343,25 +343,24 @@ Health test windows register
 
 |  Bits  |  Type  |  Reset  | Name                                                 |
 |:------:|:------:|:-------:|:-----------------------------------------------------|
-| 31:16  |   rw   |  0x60   | [BYPASS_WINDOW](#health_test_windows--bypass_window) |
+| 31:16  |   rw   |  0x180  | [BYPASS_WINDOW](#health_test_windows--bypass_window) |
 |  15:0  |   rw   |  0x200  | [FIPS_WINDOW](#health_test_windows--fips_window)     |
 
 ### HEALTH_TEST_WINDOWS . BYPASS_WINDOW
-This is the window size for all health tests when running in bypass mode.
+This is the window size in bits for all health tests when running in bypass mode.
 This mode is active after reset for the first and only test run, or when this mode is programmed by firmware by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False`.
-The default value is (384 bits * 1 clock/4 bits);
+The default value is 384 bits;
 
-Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 0x60).
+Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 384).
 Do not use any other values, unless you know what you are doing.
 
 ### HEALTH_TEST_WINDOWS . FIPS_WINDOW
-This is the window size for all health tests.
+This is the window size in samples for all health tests.
 This value is used when entropy is being tested in FIPS/CC compliance mode (for simplicity referred to as FIPS mode).
-The default value is (2048 bits * 1 clock/4 bits);
+Note that the value defined in this register applies both to single-channel and multi-channel mode (see [`ENTROPY_SRC.RNG_BIT_ENABLE`](#entropy_src)).
 
-Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x 4.
-The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x 4 tested bits.
-The factor of 4 relates to the number of noise source channels (i.e. symbol size) and applies both in single-channel and multi-channel mode (see [`ENTROPY_SRC.RNG_BIT_ENABLE`](#entropy_src)).
+Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x symbol size, where the symbol size is 1 in single-channel mode.
+The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x symbol tested bits.
 
 Note that NIST SP 800-90B (Table 2) requires the adaptive proportion test to be run on 1024 or 512 samples in single-channel or multi-channel mode, respectively (see [`ENTROPY_SRC.RNG_BIT_ENABLE`](#entropy_src)).
 The startup tests must be run on at least 1024 consecutive samples (see Section 4.3 Requirements for Health Tests of NIST SP 800-90B) and this block always uses two subsequent windows for startup health testing.

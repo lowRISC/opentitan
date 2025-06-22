@@ -6,12 +6,13 @@
 //
 
 module entropy_src_core import entropy_src_pkg::*; #(
-  parameter int RngBusWidth       = 4,
-  parameter int RngBusBitSelWidth = 2,
-  parameter int EsFifoDepth       = 4,
-  parameter int DistrFifoDepth    = 2,
-  parameter int BucketHtDataWidth = 4,
-  parameter int NumBucketHtInst   = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
+  parameter int RngBusWidth           = 4,
+  parameter int RngBusBitSelWidth     = 2,
+  parameter int HealthTestWindowWidth = 18,
+  parameter int EsFifoDepth           = 4,
+  parameter int DistrFifoDepth        = 2,
+  parameter int BucketHtDataWidth     = 4,
+  parameter int NumBucketHtInst       = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -40,11 +41,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   input  cs_aes_halt_rsp_t cs_aes_halt_i,
 
   // External Health Test Interface
-  output logic                      entropy_src_xht_valid_o,
-  output [RngBusWidth-1:0]          entropy_src_xht_bits_o,
-  output [RngBusBitSelWidth-1:0]    entropy_src_xht_bit_sel_o,
-  output entropy_src_xht_meta_req_t entropy_src_xht_meta_o,
-  input  entropy_src_xht_meta_rsp_t entropy_src_xht_meta_i,
+  output logic                             entropy_src_xht_valid_o,
+  output logic [RngBusWidth-1:0]           entropy_src_xht_bits_o,
+  output logic[RngBusBitSelWidth-1:0]      entropy_src_xht_bit_sel_o,
+  output logic [HealthTestWindowWidth-1:0] entropy_src_xht_health_test_window_o,
+  output entropy_src_xht_meta_req_t        entropy_src_xht_meta_o,
+  input  entropy_src_xht_meta_rsp_t        entropy_src_xht_meta_i,
 
   output logic           recov_alert_test_o,
   output logic           fatal_alert_test_o,
@@ -213,8 +215,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic [HalfRegWidth-1:0] health_test_fips_window;
   logic [HalfRegWidth-1:0] health_test_bypass_window;
-  logic [HalfRegWidth-1:0] health_test_window;
-  logic [WINDOW_CNTR_WIDTH-1:0] health_test_window_scaled;
+  logic [HealthTestWindowWidth-1:0] health_test_window;
+  logic [HealthTestWindowWidth-1:0] window_cntr_step;
 
   logic [HalfRegWidth-1:0] repcnt_fips_threshold;
   logic [HalfRegWidth-1:0] repcnt_fips_threshold_oneway;
@@ -439,7 +441,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [2:0]                   sha3_fsm;
   logic [32:0]                  sha3_err;
   logic                         cs_aes_halt_req;
-  logic [WINDOW_CNTR_WIDTH-1:0] window_cntr;
+  logic [HealthTestWindowWidth-1:0] window_cntr;
   logic                         window_cntr_incr_en;
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
@@ -1191,18 +1193,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign extht_lo_bypass_threshold_wr = reg2hw.extht_lo_thresholds.bypass_thresh.qe;
   assign hw2reg.extht_lo_thresholds.bypass_thresh.d = extht_lo_bypass_threshold_oneway;
 
-
-  assign health_test_window = es_bypass_mode ? health_test_bypass_window : health_test_fips_window;
-  // Multiply the health test window by four if we are using the single lane mode.
-  // In single lane mode 4 times as many symbols are tested for the same amount of entropy.
-  assign health_test_window_scaled = rng_bit_en ? {health_test_window, 2'b0} :
-                                                  {2'b0, health_test_window};
+  // The bypass window size is given in bits. The FIPS window is given in samples. If we are using
+  // the single lane mode, the number of samples is equivalent to the number of bits. If we are
+  // using the multi-channel mode, we need to multiply with the noise source width.
+  assign health_test_window =
+    es_bypass_mode ? HealthTestWindowWidth'(health_test_bypass_window) :
+    rng_bit_en     ? HealthTestWindowWidth'(health_test_fips_window)   :
+                     HealthTestWindowWidth'(health_test_fips_window * RngBusWidth);
 
   // Window sizes other than 384 bits (the seed length) are currently not tested nor supported in
   // bypass or boot-time mode.
   `ASSERT(EsBootTimeHtWindowSizeSupported_A,
       main_sm_enable && es_bypass_mode && !fw_ov_mode_entropy_insert
-      |-> health_test_bypass_window == HalfRegWidth'(SeedLen/RngBusWidth))
+      |-> health_test_bypass_window == HalfRegWidth'(SeedLen))
 
   //------------------------------
   // repcnt one-way thresholds
@@ -1573,17 +1576,21 @@ module entropy_src_core import entropy_src_pkg::*; #(
       rng_bit_en ? pfifo_esbit_push  && pfifo_esbit_not_full  && !pfifo_esbit_clr :
                    pfifo_postht_push && pfifo_postht_not_full && !pfifo_postht_clr;
 
+  // When in single lane mode, only increment with 1-bit, otherwise use the full noise source width
+  assign window_cntr_step = unsigned'(rng_bit_en ? HealthTestWindowWidth'(1) :
+                                                   HealthTestWindowWidth'(RngBusWidth));
+
   prim_count #(
-    .Width(WINDOW_CNTR_WIDTH)
+    .Width(HealthTestWindowWidth)
   ) u_prim_count_window_cntr (
     .clk_i,
     .rst_ni,
     .clr_i(!es_delayed_enable),
     .set_i(health_test_done_pulse),
-    .set_cnt_i(WINDOW_CNTR_WIDTH'(0)),
+    .set_cnt_i(HealthTestWindowWidth'(0)),
     .incr_en_i(window_cntr_incr_en),
     .decr_en_i(1'b0),
-    .step_i(WINDOW_CNTR_WIDTH'(1)),
+    .step_i(window_cntr_step),
     .commit_i(1'b1),
     .cnt_o(window_cntr),
     .cnt_after_commit_o(),
@@ -1591,7 +1598,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // Window wrap condition
-  assign health_test_done_pulse = (window_cntr >= health_test_window_scaled);
+  assign health_test_done_pulse = (window_cntr >= health_test_window);
 
   // Summary of counter errors
   assign es_cntr_err =
@@ -2062,13 +2069,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign entropy_src_xht_valid_o = health_test_esbus_vld;
   assign entropy_src_xht_bits_o = health_test_esbus;
   assign entropy_src_xht_bit_sel_o = rng_bit_sel;
+  assign entropy_src_xht_health_test_window_o = health_test_window;
   assign entropy_src_xht_meta_o.rng_bit_en = rng_bit_en;
   assign entropy_src_xht_meta_o.clear = health_test_clr;
   assign entropy_src_xht_meta_o.active = extht_active;
   assign entropy_src_xht_meta_o.thresh_hi = extht_hi_threshold;
   assign entropy_src_xht_meta_o.thresh_lo = extht_lo_threshold;
   assign entropy_src_xht_meta_o.window_wrap_pulse = health_test_done_pulse;
-  assign entropy_src_xht_meta_o.health_test_window = health_test_window_scaled;
   assign entropy_src_xht_meta_o.threshold_scope = threshold_scope;
   // get inputs from external health test
   assign extht_event_cnt_hi = entropy_src_xht_meta_i.test_cnt_hi;
@@ -3411,9 +3418,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
       esfinal_post_startup_exp_push_bit_cnt_d += SeedLen;
     end
     if (bsc_state_q != BscStIncomplete && health_test_done_pulse) begin
-      // Once boot and startup checks have completed, (4 * health_test_window) bits are expected to
-      // have gotten pushed into the precon FIFO.
-      precon_post_startup_exp_push_bit_cnt_d += 4 * health_test_window;
+      // Once boot and startup checks have completed, health_test_window bits are
+      // expected to have gotten pushed into the precon FIFO.
+      precon_post_startup_exp_push_bit_cnt_d += health_test_window;
     end
     if (ht_state_q == HtStPassed && main_stage_push_raw && sfifo_esfinal_not_full) begin
       // If none of the health tests failed and the alert threshold has not been exceeded, SeedLen
@@ -3433,7 +3440,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                     precon_post_startup_exp_push_bit_cnt_q))
       // Assert that the difference is smaller than the number of bits that would have sufficed to
       // get pushed into the conditioner.
-      `ASSERT_I(PreconPostStartupDiffSmall_A, rst_ni !== 1'b1 || diff_ < (4 * health_test_window))
+      `ASSERT_I(PreconPostStartupDiffSmall_A, rst_ni !== 1'b1 || diff_ < health_test_window)
       precon_post_startup_exp_push_bit_cnt_d += diff_;
     end
   end
@@ -3452,7 +3459,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // startup checks.  Add a margin (allowed more) as the simulation may end when bits in the precon
   // FIFO have not resulted in conditioner output and Entropy Source has not been disabled.
   logic [63:0] ppspb_allowed_more;
-  assign ppspb_allowed_more = bsc_state_q != BscStIncomplete ? 4 * health_test_window : '0;
+  assign ppspb_allowed_more = bsc_state_q != BscStIncomplete ? health_test_window : '0;
   `ASSERT_AT_RESET_AND_FINAL(PreconFifoPushedPostStartup_A,
                              `WITHIN_MARGIN(precon_post_startup_push_bit_cnt_q,     // actual
                                             precon_post_startup_exp_push_bit_cnt_q, // expected

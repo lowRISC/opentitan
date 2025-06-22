@@ -27,9 +27,9 @@ Health testing will still be performed on boot-time mode entropy, but the window
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
-The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits into 384 full-entropy bits.
-By default, 2048 tested bits are used.
-Note that a seed is only produced if the last [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits have passed the health tests.
+The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols into 384 full-entropy bits.
+By default, 512 tested symbols are used.
+Note that a seed is only produced if the last [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols have passed the health tests.
 If a health test fails, the conditioner block continues absorbing the next window unless [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) reaches the configured [`ALERT_THRESHOLD`](registers.md#alert_threshold).
 Once the threshold is reached, the ENTROPY_SRC block stops serving entropy and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation.
@@ -40,8 +40,8 @@ When `RNG_FIPS` field in the [`CONF`](registers.md#conf) register is set to `kMu
 
 ### Startup Health Testing
 
-Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits (startup health testing).
-By default, 1024 samples of 4 bits (4096 1-bit samples when running in single-channel mode), i.e., 4096 tested bits, are used for producing the startup seed.
+Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) tested symbols (startup health testing).
+By default, 1024 tested symbols of RngBusWidth bits (1024 1-bit symbols when running in single-channel mode) are used for producing the startup seed.
 If a health test fails, the startup health testing starts over and the conditioner block continues absorbing the next window.
 If the health tests don't pass for two subsequent windows, the ENTROPY_SRC block stops operating and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation including the startup health testing.
@@ -363,7 +363,7 @@ Below is a description of this interface:
 - active: signal to indicate when the test should run, and is register driven.
 - thresh_hi: field to indicate what high threshold the test should use, and is register driven.
 - thresh_lo: field to indicate what low threshold the test should use, and is register driven.
-- health_test_window: 18-bit signal indicating the length of the health test window in symbols.
+- health_test_window: 16 + ceil(log2(entropy_bit)) -bit signal indicating the length of the health test window in symbols.
 - window_wrap_pulse: field to indicate the end of the current window.
 - threshold_scope: field to indicate whether the thresholds are intended to be applied to all entropy lines collectively or on a line-by-line basis, to be read from a register.
 - test_cnt_hi: 16-bit generic test count high result, to be read from a register.
