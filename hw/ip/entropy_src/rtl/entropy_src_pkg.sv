@@ -14,7 +14,7 @@ package entropy_src_pkg;
   parameter int  FIPS_CSRNG_BUS_WIDTH = FIPS_BUS_WIDTH + CSRNG_BUS_WIDTH;
 
   // Internal entropy_src parameters.
-  parameter int  WINDOW_CNTR_WIDTH = 18;
+  parameter int WINDOW_CNTR_WIDTH = 16;
 
   // For a data width of N, there are 2^N buckets in the bucket health test, each with its own
   // counter. To make this health test scale reasonably well with `RngBusWidth`, we limit the bucket
