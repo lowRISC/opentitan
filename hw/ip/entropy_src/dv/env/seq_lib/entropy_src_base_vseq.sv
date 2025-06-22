@@ -156,8 +156,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.entropy_control));
     #(pause);
 
-    ral.health_test_windows.fips_window.set(newcfg.fips_window_size/`RNG_BUS_WIDTH);
-    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size/`RNG_BUS_WIDTH);
+    ral.health_test_windows.fips_window.set(newcfg.fips_window_size);
+    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size);
     csr_update(.csr(ral.health_test_windows));
     #(pause);
 

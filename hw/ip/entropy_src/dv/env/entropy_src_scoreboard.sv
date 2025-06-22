@@ -656,10 +656,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
                                   `gmv(ral.health_test_windows.bypass_window);
 
-    // If rng_bit_enable is set to MuBi4True, the window size is 4 times as large.
+    // If rng_bit_enable is set to MuBi4True, the window size is `RNG_BUS_WIDTH times as large.
     // We need the same number of bits but only have a single lane.
-    int window_size_scaled = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? 4*window_size :
-                                                                            window_size;
+    int window_size_scaled
+      = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
+                                                       window_size;
 
     threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
                                `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
@@ -709,10 +710,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
                                   `gmv(ral.health_test_windows.bypass_window);
 
-    // If rng_bit_enable is set to MuBi4True, the window size is 4 times as large.
+    // If rng_bit_enable is set to MuBi4True, the window size is RNG_BUS_WIDTH times as large.
     // We need the same number of bits but only have a single lane.
-    int window_size_scaled = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? 4*window_size :
-                                                                            window_size;
+    int window_size_scaled
+      = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
+                                                       window_size;
 
     threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
                             `gmv(ral.bucket_thresholds.bypass_thresh);
@@ -746,10 +748,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
                                   `gmv(ral.health_test_windows.bypass_window);
 
-    // If rng_bit_enable is set to MuBi4True, the window size is 4 times as large.
+    // If rng_bit_enable is set to MuBi4True, the window size is `RNG_BUS_WIDTH times as large.
     // We need the same number of bits but only have a single lane.
-    int window_size_scaled = (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? 4*window_size :
-                                                                            window_size;
+    int window_size_scaled =
+      (`gmv(ral.conf.rng_bit_enable) == MuBi4True) ? `RNG_BUS_WIDTH*window_size :
+                                                     window_size;
 
     threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
                                `gmv(ral.markov_hi_thresholds.bypass_thresh);
@@ -2680,7 +2683,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
         window_size = rng_window_size(seed_idx, is_fips_mode, fw_ov_insert,
-                                      `gmv(ral.health_test_windows.fips_window) * `RNG_BUS_WIDTH);
+                                      `gmv(ral.health_test_windows.fips_window));
 
         `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
 
@@ -2689,7 +2692,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // the selected bit fills a whole frame.
         // This mirrors the DUT's behavior of repacking the data before the health checks
         //
-        // Thus the number of window frames 4 times as large when the bit select is enabled.
+        // Thus the number of window frames RNG_BUS_WIDTH times as large when the bit select is
+        // enabled.
 
         window_rng_frames = rng_bit_en ? window_size : (window_size / `RNG_BUS_WIDTH);
 
