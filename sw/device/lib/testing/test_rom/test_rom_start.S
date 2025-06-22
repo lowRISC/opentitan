@@ -43,10 +43,10 @@
 #define AST_BASE_ADDR                       TOP_DARJEELING_AST_BASE_ADDR
 #define CLKMGR_AON_BASE_ADDR                TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
 #define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR
 #define CSRNG_BASE_ADDR                     TOP_DARJEELING_CSRNG_BASE_ADDR
 #define EDN0_BASE_ADDR                      TOP_DARJEELING_EDN0_BASE_ADDR
 #undef SENSOR_CTRL_BASE_ADDR                /* No sensor control */
-#undef ENTROPY_SRC_BASE_ADDR                /* No entropy source */
 
 #else
 #error unsupported top
