@@ -19,6 +19,7 @@ module sram_ctrl
   parameter logic [NumAlerts-1:0] AlertAsyncOn             = {NumAlerts{1'b1}},
   parameter bit                   FlopRamOutput            = 1'b0,
   parameter bit                   FlopWdataScramble        = 1'b0,
+  parameter bit                   FlopReadAddrScramble     = 1'b0,
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                                  = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
@@ -675,6 +676,7 @@ module sram_ctrl
     .Depth(Depth),
     .InstDepth(InstDepth),
     .EnableParity(0),
+    .EnableAddrScrPipeline(FlopReadAddrScramble),
     .EnableWdataScrPipeline(FlopWdataScramble),
     .EnableOutputPipeline(FlopRamOutput),
     .DataBitsPerMask(DataWidth),
