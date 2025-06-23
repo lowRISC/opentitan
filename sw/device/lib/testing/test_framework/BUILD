@@ -182,6 +182,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":check",
+        ":ottf_test_config",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
@@ -287,7 +288,10 @@ cc_library(
         "//sw/device/lib/testing:rand_testutils",
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
-    ],
+    ] + select({
+        "//sw/device:is_english_breakfast": [],
+        "//conditions:default": [":ottf_alerts"],
+    }),
     # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function
     # from `:ottf`. Thus we need to include all of the objects in `:ottf`
     # unconditionally so that the linker can find the symbol later.
