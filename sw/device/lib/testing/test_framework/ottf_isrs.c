@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -193,6 +194,15 @@ OT_WEAK
 bool ottf_console_flow_control_isr(uint32_t *exc_info) { return false; }
 
 OT_WEAK
+bool ottf_alert_isr(uint32_t *exc_info) {
+  ottf_generic_fault_print(exc_info, "Alert IRQ", ibex_mcause_read());
+  abort();
+#else
+  return;
+#endif  // !OT_IS_ENGLISH_BREAKFAST
+}
+
+OT_WEAK
 void ottf_external_isr(uint32_t *exc_info) {
   const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id;
@@ -207,6 +217,15 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
     return;
+#if !OT_IS_ENGLISH_BREAKFAST
+  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler &&
+             kOttfTestConfig.catch_alerts) {
+    ottf_alert_isr(exc_info);
+    // Complete the IRQ at PLIC.
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+    return;
+#endif  // OT_IS_ENGLISH_BREAKFAST
   }
 
   ottf_generic_fault_print(exc_info, "External IRQ", ibex_mcause_read());
