@@ -2,15 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:const.bzl",
-    "CONST",
-    "get_lc_items",
-)
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_SPX_KEY_STRUCTS",
-)
+load("//rules:const.bzl", "CONST", "get_lc_items")
+load("//rules/opentitan:keyutils.bzl", "ECDSA_SPX_KEY_STRUCTS")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -25,14 +18,8 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:rom_e2e.bzl",
-    "maybe_skip_in_ci",
-)
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load(
     ":key_type.bzl",
     "ecdsa_exit_failure",

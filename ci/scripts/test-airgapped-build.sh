@@ -26,11 +26,11 @@ sudo ip netns exec airgapped ip link set dev lo up
 sudo ip netns exec airgapped sudo -u "$USER" \
   env \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
-    BAZEL_PYTHON_WHEELS_REPO="${PWD}/bazel-airgapped/ot_python_wheels" \
+    OT_AIRGAPPED="true"                                              \
     BITSTREAM="--offline latest"                                     \
   "${PWD}/bazel-airgapped/bazel" build                               \
     --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
-    --repository_cache="${PWD}/bazel-airgapped/bazel-cache"          \
+    --vendor_dir="${PWD}/bazel-airgapped/bazel-vendor"               \
     --define DISABLE_VERILATOR_BUILD=true                            \
     //sw/device/silicon_creator/rom:mask_rom
 

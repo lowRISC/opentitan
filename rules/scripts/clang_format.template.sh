@@ -16,7 +16,7 @@ elif [[ ! -z "${BUILD_WORKSPACE_DIRECTORY+is_set}" ]]; then
     cd ${BUILD_WORKSPACE_DIRECTORY} || exit 1
 else
     echo "Neither WORKSPACE nor BUILD_WORKSPACE_DIRECTORY were set."
-    echo "If this is a test rule, add 'workspace = \"//:WORKSPACE\"' to your rule."
+    echo "If this is a test rule, add 'workspace = \"//:MODULE.bazel\"' to your rule."
     exit 1
 fi
 

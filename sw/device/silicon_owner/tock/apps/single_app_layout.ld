@@ -12,6 +12,4 @@ FLASH_LENGTH = 32M;
 RAM_START = 0x10005000;
 RAM_LENGTH = 512K;
 
-/* TODO(cfrantz): Fix the ld_library rule to allow include paths and avoid  */
-/* having to specify an `external` path here */
-INCLUDE external/libtock/build_scripts/libtock_layout.ld
+INCLUDE libtock_layout.ld
