@@ -1238,6 +1238,25 @@
       tests: ["usbdev_fifo_levels"]
     }
     {
+      name: rxenable_out_conditional
+      desc: '''
+            Test the conditional update functionality of the `rxenable_out` register. This register
+            has been modified to accept changes conditionally, based upon corresponding 'preserve'
+            bits being set in the upper half of the word written, in order to avoid a potential
+            race hazard when the hardware is clearing the enable bit of another output endpoint
+            because the `set_nak_out` functionality is in use.
+
+            - Perform the following steps a number of times:
+             - Read the current `rxenable_out` state.
+             - Choose a random set of OUT endpoints to enable/disable.
+             - Choose randomly for each such endpoint whether to enable/disable it.
+             - Write the new enable state, using a `preserve` bit of 0 for only those endpoints
+               that shall be reconfigured, and a value of 1 for all other endpoints.
+            '''
+      stage: V2
+      tests: ["usbdev_rxenable_out"]
+    }
+    {
       name: dpi_config_host
       desc: '''
             Using the DPI model run the DUT through a typical configuration sequence consisting of
