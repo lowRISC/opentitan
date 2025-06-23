@@ -125,7 +125,7 @@ impl OwnerBlock {
     const NO_CONSTRAINT: u32 = 0x7e7e7e7e;
 
     pub fn default_header() -> TlvHeader {
-        TlvHeader::new(TlvTag::Owner, 0, "0.0")
+        TlvHeader::new(TlvTag::Owner, Self::SIZE, "0.0")
     }
     pub fn basic() -> Self {
         Self {
@@ -140,8 +140,7 @@ impl OwnerBlock {
     }
 
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        let header = TlvHeader::new(TlvTag::Owner, Self::SIZE, "0.0");
-        header.write(dest)?;
+        self.header.write(dest)?;
         dest.write_u32::<LittleEndian>(self.config_version)?;
         dest.write_u32::<LittleEndian>(u32::from(self.sram_exec))?;
         dest.write_u32::<LittleEndian>(u32::from(self.ownership_key_alg))?;
