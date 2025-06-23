@@ -2142,6 +2142,13 @@
           domain: "0"
         }
       }
+      base_addrs:
+      {
+        prim:
+        {
+          hart: 0x40138000
+        }
+      }
       param_decl:
       {
         Width: otp_ctrl_macro_pkg::OtpWidth
@@ -2352,7 +2359,7 @@
           index: -1
         }
         {
-          name: tl
+          name: prim_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -2361,17 +2368,10 @@
           inst_name: otp_macro
           default: ""
           end_idx: -1
-          top_signame: otp_macro_tl
+          top_signame: otp_macro_prim_tl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x40138000
-        }
-      }
       generate_dif: true
       domain:
       [
@@ -10912,9 +10912,9 @@
       [
         peri.tl_otp_ctrl__core
       ]
-      otp_macro.tl:
+      otp_macro.prim_tl:
       [
-        peri.tl_otp_macro
+        peri.tl_otp_macro__prim
       ]
       lc_ctrl.regs_tl:
       [
@@ -12100,7 +12100,7 @@
           clkmgr_aon
           pinmux_aon
           otp_ctrl.core
-          otp_macro
+          otp_macro.prim
           lc_ctrl.regs
           sensor_ctrl_aon
           alert_handler
@@ -12486,7 +12486,7 @@
           req_fifo_pass: true
         }
         {
-          name: otp_macro
+          name: otp_macro.prim
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -12921,7 +12921,7 @@
           index: -1
         }
         {
-          name: tl_otp_macro
+          name: tl_otp_macro__prim
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -12929,7 +12929,7 @@
           inst_name: peri
           width: 1
           default: ""
-          top_signame: otp_macro_tl
+          top_signame: otp_macro_prim_tl
           index: -1
         }
         {
@@ -19654,7 +19654,7 @@
         index: -1
       }
       {
-        name: tl
+        name: prim_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -19663,7 +19663,7 @@
         inst_name: otp_macro
         default: ""
         end_idx: -1
-        top_signame: otp_macro_tl
+        top_signame: otp_macro_prim_tl
         index: -1
       }
       {
@@ -24709,7 +24709,7 @@
         index: -1
       }
       {
-        name: tl_otp_macro
+        name: tl_otp_macro__prim
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -24717,7 +24717,7 @@
         inst_name: peri
         width: 1
         default: ""
-        top_signame: otp_macro_tl
+        top_signame: otp_macro_prim_tl
         index: -1
       }
       {
@@ -27755,7 +27755,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: otp_macro_tl_req
+        signame: otp_macro_prim_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -27766,7 +27766,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: otp_macro_tl_rsp
+        signame: otp_macro_prim_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -7,14 +7,14 @@
 package otp_macro_reg_pkg;
 
   // Address widths within the block
-  parameter int BlockAw = 5;
+  parameter int PrimAw = 5;
 
   // Number of registers for every interface
-  parameter int NumRegs = 8;
+  parameter int NumRegsPrim = 8;
 
-  ////////////////////////////
-  // Typedefs for registers //
-  ////////////////////////////
+  ///////////////////////////////////////////////
+  // Typedefs for registers for prim interface //
+  ///////////////////////////////////////////////
 
   typedef struct packed {
     struct packed {
@@ -244,7 +244,7 @@ package otp_macro_reg_pkg;
     } field0;
   } otp_macro_hw2reg_csr7_reg_t;
 
-  // Register -> HW type
+  // Register -> HW type for prim interface
   typedef struct packed {
     otp_macro_reg2hw_csr0_reg_t csr0; // [158:135]
     otp_macro_reg2hw_csr1_reg_t csr1; // [134:103]
@@ -254,26 +254,26 @@ package otp_macro_reg_pkg;
     otp_macro_reg2hw_csr5_reg_t csr5; // [68:39]
     otp_macro_reg2hw_csr6_reg_t csr6; // [38:11]
     otp_macro_reg2hw_csr7_reg_t csr7; // [10:0]
-  } otp_macro_reg2hw_t;
+  } otp_macro_prim_reg2hw_t;
 
-  // HW -> register type
+  // HW -> register type for prim interface
   typedef struct packed {
     otp_macro_hw2reg_csr3_reg_t csr3; // [80:52]
     otp_macro_hw2reg_csr5_reg_t csr5; // [51:15]
     otp_macro_hw2reg_csr7_reg_t csr7; // [14:0]
-  } otp_macro_hw2reg_t;
+  } otp_macro_prim_hw2reg_t;
 
-  // Register offsets
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR0_OFFSET = 5'h 0;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR1_OFFSET = 5'h 4;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR2_OFFSET = 5'h 8;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR3_OFFSET = 5'h c;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR4_OFFSET = 5'h 10;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR5_OFFSET = 5'h 14;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR6_OFFSET = 5'h 18;
-  parameter logic [BlockAw-1:0] OTP_MACRO_CSR7_OFFSET = 5'h 1c;
+  // Register offsets for prim interface
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR0_OFFSET = 5'h 0;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR1_OFFSET = 5'h 4;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR2_OFFSET = 5'h 8;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR3_OFFSET = 5'h c;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR4_OFFSET = 5'h 10;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR5_OFFSET = 5'h 14;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR6_OFFSET = 5'h 18;
+  parameter logic [PrimAw-1:0] OTP_MACRO_CSR7_OFFSET = 5'h 1c;
 
-  // Register index
+  // Register index for prim interface
   typedef enum int {
     OTP_MACRO_CSR0,
     OTP_MACRO_CSR1,
@@ -283,10 +283,10 @@ package otp_macro_reg_pkg;
     OTP_MACRO_CSR5,
     OTP_MACRO_CSR6,
     OTP_MACRO_CSR7
-  } otp_macro_id_e;
+  } otp_macro_prim_id_e;
 
-  // Register width information to check illegal writes
-  parameter logic [3:0] OTP_MACRO_PERMIT [8] = '{
+  // Register width information to check illegal writes for prim interface
+  parameter logic [3:0] OTP_MACRO_PRIM_PERMIT [8] = '{
     4'b 1111, // index[0] OTP_MACRO_CSR0
     4'b 1111, // index[1] OTP_MACRO_CSR1
     4'b 0001, // index[2] OTP_MACRO_CSR2

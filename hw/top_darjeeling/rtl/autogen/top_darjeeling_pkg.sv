@@ -72,14 +72,14 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES = 32'h8000;
 
   /**
-   * Peripheral base address for otp_macro in top darjeeling.
+   * Peripheral base address for prim device on otp_macro in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTP_MACRO_BASE_ADDR = 32'h30140000;
+  parameter int unsigned TOP_DARJEELING_OTP_MACRO_PRIM_BASE_ADDR = 32'h30140000;
 
   /**
-   * Peripheral size in bytes for otp_macro in top darjeeling.
+   * Peripheral size in bytes for prim device on otp_macro in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_OTP_MACRO_SIZE_BYTES = 32'h20;
+  parameter int unsigned TOP_DARJEELING_OTP_MACRO_PRIM_SIZE_BYTES = 32'h20;
 
   /**
    * Peripheral base address for regs device on lc_ctrl in top darjeeling.

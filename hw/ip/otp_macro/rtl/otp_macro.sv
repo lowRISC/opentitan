@@ -24,8 +24,8 @@ module otp_macro
   input                          clk_i,
   input                          rst_ni,
   // Bus interface
-  input                          tlul_pkg::tl_h2d_t tl_i,
-  output                         tlul_pkg::tl_d2h_t tl_o,
+  input                          tlul_pkg::tl_h2d_t prim_tl_i,
+  output                         tlul_pkg::tl_d2h_t prim_tl_o,
 
   // Lifecycle broadcast inputs
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -132,8 +132,8 @@ module otp_macro
   ) u_tlul_lc_gate (
     .clk_i,
     .rst_ni,
-    .tl_h2d_i(tl_i),
-    .tl_d2h_o(tl_o),
+    .tl_h2d_i(prim_tl_i),
+    .tl_d2h_o(prim_tl_o),
     .tl_h2d_o(tl_h2d_gated),
     .tl_d2h_i(tl_d2h_gated),
     .lc_en_i (lc_dft_en[0]),
@@ -143,9 +143,9 @@ module otp_macro
     .err_o   (lc_fsm_err)
   );
 
-  otp_macro_reg_pkg::otp_macro_reg2hw_t reg2hw;
-  otp_macro_reg_pkg::otp_macro_hw2reg_t hw2reg;
-  otp_macro_reg_top u_reg_top (
+  otp_macro_reg_pkg::otp_macro_prim_reg2hw_t reg2hw;
+  otp_macro_reg_pkg::otp_macro_prim_hw2reg_t hw2reg;
+  otp_macro_prim_reg_top u_reg_top (
     .clk_i,
     .rst_ni,
     .tl_i      (tl_h2d_gated ),
@@ -483,7 +483,7 @@ module otp_macro
   `ASSERT_INIT(VendorTestSizeMatches_A, VendorTestSize == otp_ctrl_reg_pkg::VendorTestSize)
 
   `ASSERT_KNOWN(OtpAstPwrSeqKnown_A, pwr_seq_o)
-  `ASSERT_KNOWN(OtpMacroTlOutKnown_A, tl_o)
+  `ASSERT_KNOWN(OtpMacroTlOutKnown_A, prim_tl_o)
 
   // Assertions for countermeasures inside otp_macro are done in three parts
   // - Assert invalid conditions propagate to otp_o.fatal_alert

@@ -683,15 +683,15 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         bit test_access_en;
         bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
         bit [TL_AW-1:0] tlul_addr =
-            cfg.ral_models["otp_macro_reg_block"].get_addr_from_offset(rand_addr);
+            cfg.ral_models["otp_macro_prim_reg_block"].get_addr_from_offset(rand_addr);
         if (cfg.stop_transaction_generators()) break;
         rand_drive_dft_en();
         `DV_CHECK_STD_RANDOMIZE_FATAL(data)
         test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;
         tl_access(.addr(tlul_addr), .write(1), .data(data), .exp_err_rsp(~test_access_en),
-                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_reg_block"]));
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_prim_reg_block"]));
         tl_access(.addr(tlul_addr), .write(0), .data(data), .exp_err_rsp(~test_access_en),
-                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_reg_block"]));
+                  .tl_sequencer_h(p_sequencer.tl_sequencer_hs["otp_macro_prim_reg_block"]));
        end
      end
   endtask

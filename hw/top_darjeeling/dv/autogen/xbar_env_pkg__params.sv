@@ -139,7 +139,7 @@ tl_device_t xbar_devices[$] = '{
     '{"otp_ctrl__core", '{
         '{32'h30130000, 32'h30137fff}
     }},
-    '{"otp_macro", '{
+    '{"otp_macro__prim", '{
         '{32'h30140000, 32'h3014001f}
     }},
     '{"lc_ctrl__regs", '{
@@ -237,7 +237,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_macro",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",
@@ -291,7 +291,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_macro",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",
@@ -346,7 +346,7 @@ tl_host_t xbar_hosts[$] = '{
         "clkmgr_aon",
         "pinmux_aon",
         "otp_ctrl__core",
-        "otp_macro",
+        "otp_macro__prim",
         "lc_ctrl__regs",
         "alert_handler",
         "ast",

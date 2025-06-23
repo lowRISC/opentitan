@@ -20,7 +20,7 @@ package otp_ctrl_env_pkg;
   import csr_utils_pkg::*;
   import push_pull_agent_pkg::*;
   import otp_ctrl_core_ral_pkg::*;
-  import otp_macro_ral_pkg::*;
+  import otp_macro_prim_ral_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;

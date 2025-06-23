@@ -15,7 +15,7 @@ filesets:
       - lowrisc:virtual_ip:otp_ctrl_macro_pkg
     files:
       - rtl/otp_macro_reg_pkg.sv
-      - rtl/otp_macro_reg_top.sv
+      - rtl/otp_macro_prim_reg_top.sv
       - rtl/otp_macro.sv
     file_type: systemVerilogSource
 

@@ -722,8 +722,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       pinmux_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       otp_macro_tl_req;
-  tlul_pkg::tl_d2h_t       otp_macro_tl_rsp;
+  tlul_pkg::tl_h2d_t       otp_macro_prim_tl_req;
+  tlul_pkg::tl_d2h_t       otp_macro_prim_tl_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_regs_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
@@ -1252,8 +1252,8 @@ module top_darjeeling #(
       .otp_o(otp_ctrl_otp_macro_rsp),
       .cfg_i(otp_cfg_i),
       .cfg_rsp_o(otp_cfg_rsp_o),
-      .tl_i(otp_macro_tl_req),
-      .tl_o(otp_macro_tl_rsp),
+      .prim_tl_i(otp_macro_prim_tl_req),
+      .prim_tl_o(otp_macro_prim_tl_rsp),
       .scanmode_i,
       .scan_rst_ni,
       .scan_en_i,
@@ -3134,9 +3134,9 @@ module top_darjeeling #(
     .tl_otp_ctrl__core_o(otp_ctrl_core_tl_req),
     .tl_otp_ctrl__core_i(otp_ctrl_core_tl_rsp),
 
-    // port: tl_otp_macro
-    .tl_otp_macro_o(otp_macro_tl_req),
-    .tl_otp_macro_i(otp_macro_tl_rsp),
+    // port: tl_otp_macro__prim
+    .tl_otp_macro__prim_o(otp_macro_prim_tl_req),
+    .tl_otp_macro__prim_i(otp_macro_prim_tl_rsp),
 
     // port: tl_lc_ctrl__regs
     .tl_lc_ctrl__regs_o(lc_ctrl_regs_tl_req),
