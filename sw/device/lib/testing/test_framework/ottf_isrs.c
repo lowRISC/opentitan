@@ -15,6 +15,10 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#if !OPENTITAN_IS_ENGLISHBREAKFAST
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // !OPENTITAN_IS_ENGLISHBREAKFAST
+
 dif_rv_plic_t ottf_plic;
 
 // Fault reasons from
@@ -211,6 +215,14 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
     return;
+#if !OPENTITAN_IS_ENGLISHBREAKFAST
+  } else if (ottf_alerts_should_handle_irq(devid, plic_irq_id)) {
+    ottf_alert_isr(exc_info);
+    // Complete the IRQ at PLIC.
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+    return;
+#endif  // !OPENTITAN_IS_ENGLISHBREAKFAST
   }
 
   LOG_ERROR("unhandled IRQ: plic_id=%d, instance ID=%d", plic_irq_id, devid);
