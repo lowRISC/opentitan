@@ -466,6 +466,11 @@
       reseed: 20
     }
     {
+      name: usbdev_rxenable_out
+      uvm_test_seq: usbdev_rxenable_out_vseq
+      reseed: 5
+    }
+    {
       name: usbdev_rx_crc_err
       uvm_test_seq: usbdev_rx_crc_err_vseq
     }
