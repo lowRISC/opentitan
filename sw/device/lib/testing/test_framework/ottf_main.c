@@ -32,6 +32,10 @@
 
 #define MODULE_ID MAKE_MODULE_ID('o', 't', 'm')
 
+#if !OPENTITAN_IS_ENGLISHBREAKFAST
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#endif  // !OPENTITAN_IS_ENGLISHBREAKFAST
+
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.
 OT_ASSERT_MEMBER_OFFSET(ottf_test_config_t, enable_concurrency, 0);
@@ -168,6 +172,13 @@ void _ottf_main(void) {
       LOG_INFO("Running %s", kOttfTestConfig.file);
     }
   }
+
+#if !OPENTITAN_IS_ENGLISHBREAKFAST
+  if (kOttfTestConfig.catch_alerts) {
+    LOG_INFO("Enabling OTTF alert catcher");
+    CHECK_STATUS_OK(ottf_alerts_enable_all());
+  }
+#endif  // !OPENTITAN_IS_ENGLISHBREAKFAST
 
   // Initialize a global random number generator testutil context to provide
   // tests with a source of entropy for randomizing test behaviors.
