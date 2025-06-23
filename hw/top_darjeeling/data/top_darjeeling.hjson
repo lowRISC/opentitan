@@ -652,6 +652,7 @@
         InstSize: 4096,
         FlopRamOutput: 1,
         FlopWdataScramble: 1,
+        FlopReadAddrScramble: 1,
       }
       base_addrs: {
         regs: {hart: "0x30500000"},
@@ -808,6 +809,7 @@
         InstSize: 65536,
         FlopRamOutput: 1,
         FlopWdataScramble: 1,
+        FlopReadAddrScramble: 1,
       }
       base_addrs: {
         regs: {hart: "0x211c0000"},
@@ -836,6 +838,7 @@
         InstSize: 4096,
         FlopRamOutput: 1,
         FlopWdataScramble: 1,
+        FlopReadAddrScramble: 1,
       }
       base_addrs: {
         regs: {hart: "0x211d0000"},
