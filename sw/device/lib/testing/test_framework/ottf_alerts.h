@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
 
 /**
  * Configure and enable all alerts.
@@ -21,5 +22,22 @@
  */
 OT_WARN_UNUSED_RESULT
 status_t ottf_alerts_enable_all(void);
+
+/**
+ * Check whether the OTTF alert catcher should handle a given IRQ.
+ *
+ * @param devid Device ID of the instance that triggered the IRQ.
+ * @param plic_irq_id ID of the IRQ at the PLIC.
+ * @return Whether the OTTF alert catcher should handle an IRQ.
+ */
+bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
+                                   dif_rv_plic_irq_id_t plic_irq_id);
+
+/**
+ * OTTF alert ISR handler.
+ *
+ * Called when an alert fires on class D when OTTF alert catching is enabled.
+ */
+void ottf_alert_isr(uint32_t *exc_info);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ALERTS_H_
