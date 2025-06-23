@@ -4,11 +4,19 @@
 
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/device/lib/testing/test_framework/ottf_alerts.h"
+#include "sw/device/lib/testing/test_framework/ottf_test_config.h"
+
+#if OPENTITAN_HAS_FLASH_CTRL
+#include "hw/top/dt/flash_ctrl.h"
+#endif  // OPENTITAN_HAS_FLASH_CTRL
 
 static dif_alert_handler_t ottf_alert_handler;
 
@@ -62,11 +70,11 @@ status_t ottf_alerts_enable_all(void) {
       .classes_len = ARRAYSIZE(class_configs),
       .ping_timeout = UINT16_MAX,
   };
-  TRY(alert_handler_testutils_configure_all(&alert_handler, config,
+  TRY(alert_handler_testutils_configure_all(&ottf_alert_handler, config,
                                             kDifToggleDisabled));
 
   TRY(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
+      &ottf_alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 
   dif_rv_plic_t rv_plic;
   TRY(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
@@ -85,3 +93,13 @@ status_t ottf_alerts_enable_all(void) {
 
   return OK_STATUS();
 }
+
+bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
+                                   dif_rv_plic_irq_id_t plic_irq_id) {
+  return kOttfTestConfig.catch_alerts &&
+         devid == dt_alert_handler_instance_id(kDtAlertHandler) &&
+         plic_irq_id == dt_alert_handler_irq_to_plic_id(
+                            kDtAlertHandler, kDtAlertHandlerIrqClassd);
+}
+
+void ottf_alert_isr(uint32_t *exc_info) { abort(); }
