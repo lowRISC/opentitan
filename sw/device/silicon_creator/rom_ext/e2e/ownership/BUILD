@@ -695,6 +695,31 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "newversion_noupdate_with_bad_owner_block_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_newversion",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa_pub)
+            --config-version=2
+            --config-kind=invalid
+            # We expect to see the version unchanged.
+            --expect "config_version = 1"
+            --expect "owner_key = 8e3dcb50"
+        """,
+        test_harness = "//sw/host/tests/ownership:newversion_test",
+    ),
+)
+
+ownership_transfer_test(
     name = "newversion_noupdate_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",

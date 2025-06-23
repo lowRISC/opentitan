@@ -162,6 +162,8 @@ const CFG_RESCUE_RESTRICT: u32 = 0x0000_0010;
 const CFG_APP_CONSTRAINT: u32 = 0x0000_0020;
 // Request a bad ROM_EXT flash config region.
 const CFG_FLASH_ERROR: u32 = 0x0000_0040;
+// Request an invalid owner config with a correct signature.
+const CFG_INVALID: u32 = 0x000_0080;
 
 #[repr(u32)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -169,6 +171,7 @@ pub enum OwnerConfigKind {
     #[default]
     Basic = 0,
     Corrupt = CFG_CORRUPT,
+    Invalid = CFG_INVALID,
     WithFlash = CFG_FLASH1 | CFG_RESCUE1,
     WithFlashLocked = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK,
     WithFlashError = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK | CFG_FLASH_ERROR,
@@ -306,6 +309,11 @@ where
         })],
         ..Default::default()
     };
+
+    if cfg & CFG_INVALID != 0 {
+        owner.header.length = 0;
+    }
+
     if cfg & CFG_FLASH1 != 0 {
         let flash_config = if cfg & CFG_FLASH_ERROR != 0 {
             // It is an error set have a flash config that overlaps the ROM_EXT
