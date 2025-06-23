@@ -36,10 +36,6 @@
   // Flash references pwrmgr directly, need to reference the top version
   overrides: [
     {
-      name: design_level
-      value: "top"
-    }
-    {
       name: "timescale"
       value: "1ns/100ps"
     }

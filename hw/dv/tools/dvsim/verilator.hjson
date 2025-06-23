@@ -51,8 +51,7 @@
   // TODO: Verilator has a few useful build switches. Need to figure out how to
   // pass them via FuseSoC.
 
-  build_opts: ["--flag=fileset_{design_level}",
-               "--target=sim",
+  build_opts: ["--target=sim",
                "--build-root={build_dir}",
                "--setup",
                "--build",

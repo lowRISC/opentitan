@@ -11,13 +11,6 @@
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"]
 
-  overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
-
   // Timing constraints for this module
   sdc_file: "{proj_root}/hw/top_${topname}/ip_autogen/{name}/syn/constraints.sdc"
 

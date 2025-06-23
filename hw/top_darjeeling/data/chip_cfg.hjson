@@ -15,9 +15,5 @@
               "--cores-root {proj_root}/hw/vendor",
               "--cores-root {proj_root}/hw/top_darjeeling"]
     }
-    {
-      name: design_level
-      value: "top"
-    }
   ]
 }

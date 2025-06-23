@@ -82,12 +82,6 @@
                fusesoc_core: lowrisc:dv:top_darjeeling_flash_ctrl_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/flash_ctrl/{sub_flow}/{tool}"
-               overrides: [
-                 {
-                   name:  design_level
-                   value: "top"
-                 }
-               ]
                stopats: ["*u_state_regs.state_o", "*u_rma_state_regs.state_o"]
                task: "FpvSecCm"
              }
@@ -145,12 +139,6 @@
                fusesoc_core: lowrisc:dv:top_darjeeling_pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
-               overrides: [
-                 {
-                   name:  design_level
-                   value: "top"
-                 }
-               ]
                stopats: ["*u_state_regs.state_o"]
                task: "FpvSecCm"
              }
@@ -169,12 +157,6 @@
                fusesoc_core: lowrisc:dv:top_darjeeling_rstmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/rstmgr/{sub_flow}/{tool}"
-               overrides: [
-                 {
-                   name:  design_level
-                   value: "top"
-                 }
-               ]
                stopats: ["*u_state_regs.state_o"]
                task: "FpvSecCm"
              }
@@ -210,12 +192,6 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_chip}/ip/pinmux/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
-               overrides: [
-                 {
-                    name:  design_level
-                    value: "top"
-                 }
-               ]
               }
               {
                name: rv_plic_sec_cm
@@ -224,12 +200,6 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_chip}/ip/rv_plic/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
-               overrides: [
-                  {
-                    name:  design_level
-                    value: "top"
-                  }
-               ]
               }
 
              // Other non-standard countermeasure checks.
@@ -273,12 +243,6 @@
                fusesoc_core: lowrisc:dv:top_darjeeling_pwrmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
-               overrides: [
-                 {
-                   name:  design_level
-                   value: "top"
-                 }
-               ]
                task: "PwrmgrSecCmEsc"
              }
             ]

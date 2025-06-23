@@ -13,8 +13,7 @@
                      "{dv_root}/tools/dvsim/bazel.hjson",
                      "{dv_root}/tools/dvsim/{tool}.hjson"]
 
-  sv_flist_gen_flags: ["--flag=fileset_{design_level}",
-                       "--mapping=lowrisc:prim_generic:all:0.1"]
+  sv_flist_gen_flags: ["--mapping=lowrisc:prim_generic:all:0.1"]
 
   // Default directory structure for the output
   build_dir:          "{scratch_path}/{build_mode}"

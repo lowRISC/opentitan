@@ -13,14 +13,6 @@
 
   tool: meridiancdc
 
-  // Overrides
-  overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
-
   // Timing constraints for this module
   sdc_file: [
     "{proj_root}/hw/top_earlgrey/syn/ot.sdc_setup.tcl",

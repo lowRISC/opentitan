@@ -41,7 +41,6 @@
                        "{fusesoc_core}"]
   sv_flist_gen_dir:   "{build_dir}/syn-icarus"
   sv_flist:           "{sv_flist_gen_dir}/{fusesoc_core_}.scr"
-  sv_flist_gen_flags: ["--flag=fileset_{design_level}"]
 
   // Can be used to hook in an additional post elab scripting step.
   post_elab_script: ""
