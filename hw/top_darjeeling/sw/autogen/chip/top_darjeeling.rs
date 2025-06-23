@@ -105,19 +105,19 @@ pub const OTP_CTRL_CORE_BASE_ADDR: usize = 0x30130000;
 /// `OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_CORE_SIZE_BYTES`.
 pub const OTP_CTRL_CORE_SIZE_BYTES: usize = 0x8000;
 
-/// Peripheral base address for otp_macro in top darjeeling.
+/// Peripheral base address for prim device on otp_macro in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const OTP_MACRO_BASE_ADDR: usize = 0x30140000;
+pub const OTP_MACRO_PRIM_BASE_ADDR: usize = 0x30140000;
 
-/// Peripheral size for otp_macro in top darjeeling.
+/// Peripheral size for prim device on otp_macro in top darjeeling.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #OTP_MACRO_BASE_ADDR and
-/// `OTP_MACRO_BASE_ADDR + OTP_MACRO_SIZE_BYTES`.
-pub const OTP_MACRO_SIZE_BYTES: usize = 0x20;
+/// address between #OTP_MACRO_PRIM_BASE_ADDR and
+/// `OTP_MACRO_PRIM_BASE_ADDR + OTP_MACRO_PRIM_SIZE_BYTES`.
+pub const OTP_MACRO_PRIM_SIZE_BYTES: usize = 0x20;
 
 /// Peripheral base address for regs device on lc_ctrl in top darjeeling.
 ///

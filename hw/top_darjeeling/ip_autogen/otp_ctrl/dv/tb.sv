@@ -158,8 +158,8 @@ module tb;
       .otp_o(otp_ctrl_macro_rsp),
       .cfg_i('0),
       .cfg_rsp_o(),
-      .tl_i(prim_tl_if.h2d),
-      .tl_o(prim_tl_if.d2h),
+      .prim_tl_i(prim_tl_if.h2d),
+      .prim_tl_o(prim_tl_if.d2h),
       .scanmode_i (otp_ctrl_if.scanmode_i),
       .scan_rst_ni (otp_ctrl_if.scan_rst_ni),
       .scan_en_i (otp_ctrl_if.scan_en_i),
@@ -226,10 +226,10 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_rst_vif_otp_macro_reg_block", clk_rst_if);
+                                            "clk_rst_vif_otp_macro_prim_reg_block", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_ctrl_core_reg_block*",
                                        "vif", tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_macro_reg_block",
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_otp_macro_prim_reg_block",
                                        "vif", prim_tl_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(OTBN_DATA_SIZE)))::set(null,
                    "*env.m_otbn_pull_agent*", "vif", otbn_if);

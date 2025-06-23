@@ -84,7 +84,7 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
       if ($urandom_range(0, 1)) begin
         `uvm_info(`gfn, "Check OTP prim_tl access", UVM_HIGH)
-        ral.otp_macro.get_registers(otp_prim_regs);
+        ral.otp_macro_prim.get_registers(otp_prim_regs);
         rand_rw_prim_regs(otp_prim_regs, ~allow_otp_prim_tl_access());
       end
     end
