@@ -35,6 +35,10 @@ pub struct UsbOpts {
     /// Pin to sense VBUS.
     #[arg(long)]
     pub vbus_sense: Option<String>,
+
+    /// Apply some strappings.
+    #[arg(long)]
+    pub strapping: Vec<String>,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -67,6 +71,15 @@ impl DeviceLoc {
             port_numbers: dev.port_numbers()?,
         })
     }
+}
+
+pub fn get_device_by_port_numbers(ports: &Vec<u8>) -> Result<UsbDevice> {
+    for device in rusb::Context::new()?.devices().context("USB error")?.iter() {
+        if &device.port_numbers()? == ports {
+            return Ok(device)
+        }
+    }
+    bail!("could not find device at port path {:?}", ports)
 }
 
 impl UsbOpts {
@@ -190,6 +203,19 @@ impl UsbOpts {
         let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
         vbus_sense_pin.read()
     }
+
+    pub fn apply_strappings(&self, transport: &TransportWrapper, apply: bool) -> Result<()> {
+        for name in &self.strapping {
+            let pin_strapping = transport.pin_strapping(name)?;
+            if apply {
+                pin_strapping.apply()?;
+            }
+            else {
+                pin_strapping.remove()?;
+            }
+        }
+        Ok(())
+    }
 }
 
 // Structure representing a USB hub. The device needs to have sufficient permission
@@ -225,6 +251,10 @@ impl UsbHub {
         Ok(UsbHub {
             handle: dev.open().context("cannot open hub")?,
         })
+    }
+
+    pub fn device(&self) -> UsbDevice {
+        self.handle.device()
     }
 
     // Perform an operation.
