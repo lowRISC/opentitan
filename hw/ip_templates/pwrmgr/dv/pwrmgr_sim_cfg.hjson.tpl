@@ -35,10 +35,6 @@
 
   // Overrides
   overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
     // Handle generated coverage exclusion.
     {
       name: default_vcs_cov_cfg_file

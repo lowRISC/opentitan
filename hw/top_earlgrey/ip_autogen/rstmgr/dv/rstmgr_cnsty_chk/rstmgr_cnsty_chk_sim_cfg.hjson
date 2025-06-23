@@ -47,11 +47,4 @@
       tests: ["rstmgr_cnsty_chk_test"]
     }
   ]
-  overrides: [
-    // This override is in order to pick the autogen rstmgr packages.
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
 }

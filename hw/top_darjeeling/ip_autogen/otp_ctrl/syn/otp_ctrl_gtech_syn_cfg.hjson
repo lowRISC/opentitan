@@ -12,10 +12,6 @@
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
 
   overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
     { // Deletes black-boxed hierarchies before writing out the unmapped netlist
       name: post_elab_script
       value: "{proj_root}/hw/top_darjeeling/ip_autogen/{name}/syn/post_elab_gtech.tcl"

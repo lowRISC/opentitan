@@ -22,45 +22,21 @@
                   fusesoc_core: lowrisc:englishbreakfast_ip:flash_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/flash_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: otp_ctrl
                   fusesoc_core: lowrisc:englishbreakfast_ip:otp_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otp_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:englishbreakfast_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/pwrmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: rstmgr
                   fusesoc_core: lowrisc:englishbreakfast_ip:rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/rstmgr/lint/{tool}",
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
              {    name: sensor_ctrl
                   fusesoc_core: lowrisc:systems:top_earlgrey_sensor_ctrl
@@ -71,12 +47,6 @@
                   fusesoc_core: lowrisc:systems:top_englishbreakfast
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_englishbreakfast/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
              },
             ]
 }

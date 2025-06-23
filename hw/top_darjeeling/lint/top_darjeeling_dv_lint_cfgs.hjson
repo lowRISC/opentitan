@@ -214,12 +214,6 @@
           //         fusesoc_core: lowrisc:dv:top_darjeeling_chip_sim
           //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
           //         rel_path: "hw/top_darjeeling/dv/lint/{tool}"
-          //         overrides: [
-          //           {
-          //             name: design_level
-          //             value: "top"
-          //           }
-          //         ]
           //    },
             ]
 }

@@ -104,11 +104,6 @@
       name: vcs_xprop_cfg_file
       value: "{top_dv_path}/vcs_xprop.cfg"
     }
-    // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
-    {
-      name: design_level
-      value: "top"
-    }
     // The jtag agent requires the data and bytenable widths to be increased.
     {
       name: tl_dw
