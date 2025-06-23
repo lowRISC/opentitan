@@ -135,6 +135,14 @@
       expose:    "true",
       default:   "0"
     },
+    {
+      name:     "FlopReadAddrScramble",
+      desc:     "Add a flop stage after the address scrambler for reads.",
+      type:     "bit",
+      local:    "false",
+      expose:   "true",
+      default:  "0"
+    },
   ]
 
   features: [

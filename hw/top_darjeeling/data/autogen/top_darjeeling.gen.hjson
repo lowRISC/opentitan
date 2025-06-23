@@ -4519,6 +4519,15 @@
           expose: "true"
           name_top: SramCtrlRetAonFlopWdataScramble
         }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopReadAddrScramble
+        }
       ]
       inter_signal_list:
       [
@@ -6887,6 +6896,15 @@
           expose: "true"
           name_top: SramCtrlMainFlopWdataScramble
         }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopReadAddrScramble
+        }
       ]
       inter_signal_list:
       [
@@ -7233,6 +7251,15 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxFlopWdataScramble
+        }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopReadAddrScramble
         }
       ]
       inter_signal_list:
