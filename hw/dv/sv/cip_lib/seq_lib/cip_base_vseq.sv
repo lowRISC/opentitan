@@ -566,7 +566,7 @@ class cip_base_vseq #(
       fork begin : isolation_fork
         fork
           wait(!cfg.clk_rst_vif.rst_n);
-          begin
+          fork begin : isolation_fork2
             foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
               automatic string local_alert_name = alert_name;
               automatic alert_esc_agent_cfg local_alert_agent_cfg =
@@ -598,7 +598,7 @@ class cip_base_vseq #(
               join_none
             end
             wait fork;
-          end
+          end join : isolation_fork2
         join_any
         disable fork;
       end join
