@@ -25,24 +25,28 @@ class rv_timer_disabled_vseq extends rv_timer_random_vseq;
 
       fork
         begin
-          for (int i = 0; i < NUM_HARTS; i++) begin
-            for (int j = 0; j < NUM_TIMERS; j++) begin
-              automatic int a_i = i;
-              automatic int a_j = j;
-              fork
-                begin
-                  // wait for num clks required to expect interrupt
-                  int    intr_pin_idx = a_i * NUM_TIMERS + a_j;
-                  uint64 mtime_diff   = compare_val[a_i][a_j] - timer_val[a_i];
-                  int    num_clks     = ((mtime_diff / step[a_i]) + 1) * (prescale[a_i] +1) + 1;
-                  cfg.clk_rst_vif.wait_clks_or_rst(num_clks);
-                  if (cfg.under_reset == 0)
-                    `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
+          fork
+            begin : isolation_fork
+              for (int i = 0; i < NUM_HARTS; i++) begin
+                for (int j = 0; j < NUM_TIMERS; j++) begin
+                  automatic int a_i = i;
+                  automatic int a_j = j;
+                  fork
+                    begin
+                      // wait for num clks required to expect interrupt
+                      int    intr_pin_idx = a_i * NUM_TIMERS + a_j;
+                      uint64 mtime_diff   = compare_val[a_i][a_j] - timer_val[a_i];
+                      int    num_clks     = ((mtime_diff / step[a_i]) + 1) * (prescale[a_i] +1) + 1;
+                      cfg.clk_rst_vif.wait_clks_or_rst(num_clks);
+                      if (cfg.under_reset == 0)
+                        `DV_CHECK_CASE_EQ(cfg.intr_vif.sample_pin(.idx(intr_pin_idx)), 1'b0)
+                    end
+                  join_none
                 end
-              join_none
+              end
+              wait fork;
             end
-          end
-          wait fork;
+          join
           stop_reading = 1'b1;
         end
         begin
