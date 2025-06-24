@@ -55,7 +55,7 @@ ila_0 u_ila_0 (
 
 The `clk` input of the ILA needs to be assigned to a free-running clock; i.e., it cannot be clock-gated.
 This clock must also be sufficiently fast to sample all signals that will be connected to the `probe0` input.
-If the `clk_i` input of the module in which you are inserting the ILA does not fulfill these requirements, wire an additional, suitable clock from the top-level design through the hierarchy into that module.
+If the `clk_i` input of the module in which you are inserting the ILA does not fulfil these requirements, wire an additional, suitable clock from the top-level design through the hierarchy into that module.
 
 The `probe0` input of the ILA takes the signals identified for debugging.
 Ideally, these signals are all in the same clock domain as the ILA.

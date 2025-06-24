@@ -332,7 +332,7 @@ If a compiler intrinsic can achieve the same effect, such as `__builtin_clz()`, 
 Inline assembly statements must conform to the following formatting requirements, which are chosen to closely resemble how Google's clang-format rules format function calls.
 - Neither the `asm` or `__asm__` keyword is specified in C; the former must be used, and should be `#define`d into existence if not supported by the compiler.
   C++ specifies `asm` to be part of the grammar, and should be used exclusively.
-- There should not be a space after the `asm` qualfiers and the opening parentheses:
+- There should not be a space after the `asm` qualifiers and the opening parentheses:
   ```c
   asm(...);
   asm volatile(...);

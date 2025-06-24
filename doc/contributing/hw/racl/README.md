@@ -2,7 +2,7 @@
 
 ## Introduction
 A System-on-Chip (SOC) must provide differentiated security on access to registers in the SOC and the CPU.
-RACL is a lightweight, fine-grained access control mechanism to restrict CSR access to specific originators, which fulfills this need.
+RACL is a lightweight, fine-grained access control mechanism to restrict CSR access to specific originators, which fulfils this need.
 
 ### Definitions
 Each processing element in the SOC, i.e. each component that can actively generate a register read and/or write request, is a _subject_.
@@ -184,10 +184,10 @@ The following shows an example top-level configuration with a single RACL contro
 {
   // error_response controls whether to return TLUL error on RACL errors
   error_response: true
-  // The CTN UID is transfered via the TLUL reserved user bits: rsvd[ctn_uid_bit_msb:ctn_uid_bit_lsb]
+  // The CTN UID is transferred via the TLUL reserved user bits: rsvd[ctn_uid_bit_msb:ctn_uid_bit_lsb]
   ctn_uid_bit_lsb: 0
   ctn_uid_bit_msb: 4
-  // The RACL role is transfered via the TLUL reserved user bits: rsvd[role_bit_msb:role_bit_lsb]
+  // The RACL role is transferred via the TLUL reserved user bits: rsvd[role_bit_msb:role_bit_lsb]
   role_bit_lsb: 5
   role_bit_msb: 8
   roles: {
@@ -223,7 +223,7 @@ The following shows an example top-level configuration with a single RACL contro
 
 RACL policies apply on a per-instance basis, meaning that different instances of the same IP can be protected using different RACL policies, or different RACL groups.
 To do so, the integrator defines a mapping of each register or window of an instance to one of the policies defined in `racl.hjson`.
-As a short-hand, `*` may be used as a catch-all in case a register is not explicitly named in the configration file.
+As a short-hand, `*` may be used as a catch-all in case a register is not explicitly named in the configuration file.
 The following shows a few different examples of an instance-level policy mapping:
 
 1. This minimal configuration specifies that for the RACL controller group `Null`, all registers shall be protected using the `SOC_ROT` policy.
