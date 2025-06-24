@@ -74,7 +74,7 @@
       desc: '''Verify the integrity errors from the prim_alert_sender and prim_alert_receiver pair.
 
             1). `Ack_p/n` integrity error:
-                - Send an alert reqeust by driving `alert_req` pin to 1.
+                - Send an alert request by driving `alert_req` pin to 1.
                 - Force `ack_p` signal to stay low to trigger an integrity error.
                 - Verify that prim_alert_receiver can identify the integrity error by setting
                   `integ_fail_o` output to 1.

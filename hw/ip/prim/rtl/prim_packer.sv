@@ -102,7 +102,7 @@ module prim_packer #(
     // incr_en: Increase the pos by cnt_step. ack_in && !ack_out
     // decr_en: Decrease the pos by cnt_step. !ack_in && ack_out
     // set_en:  Set to specific value in case of ack_in && ack_out.
-    //          This case, the value could be increased or descreased based on
+    //          This case, the value could be increased or decreased based on
     //          the input size (inmask_ones)
     logic            cnt_incr_en, cnt_decr_en, cnt_set_en;
     logic [PtrW-1:0] cnt_step, cnt_set;

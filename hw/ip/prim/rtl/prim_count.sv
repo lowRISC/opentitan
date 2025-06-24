@@ -166,7 +166,7 @@ module prim_count
 
   // We need to disable most assertions in that case using a helper signal.
   // We can't rely on err_o since some error patterns cannot be detected (e.g. all error
-  // patterns that still fullfill the sum constraint).
+  // patterns that still fulfil the sum constraint).
   logic fpv_err_present;
   assign fpv_err_present = |fpv_force;
 

@@ -5,7 +5,7 @@
 // N:1 SRAM arbiter
 //
 // Parameter
-//  N:  Number of requst port
+//  N:  Number of request ports
 //  DW: Data width (SECDED is not included)
 //  Aw: Address width
 //  ArbiterImpl: can be either PPC or BINTREE.

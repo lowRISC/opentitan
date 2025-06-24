@@ -58,7 +58,7 @@ module prim_alert_rxtx_async_assert_fpv
   assign alert_from_sender = prim_alert_rxtx_async_tb.alert_tx_out.alert_p &&
                              !prim_alert_rxtx_async_tb.alert_tx_out.alert_n;
 
-  // used to check that an error has never occured so far
+  // used to check that an error has never occurred so far
   // this is used to check the handshake below. the handshake can lock up
   // the protocol FSMs causing the handshake to never complete.
   // note that this will block any ping messages and hence it can be

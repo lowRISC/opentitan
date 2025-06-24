@@ -17,7 +17,7 @@
 // each node of the arbiter tree. This means that the data can propagate through the tree
 // simultaneously with the requests, instead of waiting for the arbitration to determine the winner
 // index first. As a result, this design has a shorter critical path than other implementations,
-// leading to better ovberall timing.
+// leading to better overall timing.
 //
 // Note that the currently winning request is held if the data sink is not ready. This behavior is
 // required by some interconnect protocols (AXI, TL). The module contains an assertion that checks
@@ -156,7 +156,7 @@ module prim_arbiter_tree #(
           assign data_tree[Pa] = (sel) ? data_tree[C1] : data_tree[C0];
 
           // backward path (grants and prefix sum)
-          // this propagates the selction index back and computes a hot one mask
+          // this propagates the selection index back and computes a hot one mask
           assign sel_tree[C0] = sel_tree[Pa] & ~sel;
           assign sel_tree[C1] = sel_tree[Pa] &  sel;
           // this performs a prefix sum for masking the input requests in the next cycle
@@ -211,7 +211,7 @@ module prim_arbiter_tree #(
       ##1 valid_o && ready_i && $past(ready_i) && $past(valid_o) &&
       |(req_i & ~((N'(1) << $past(idx_o)+1) - 1)) |->
       idx_o > $past(idx_o))
-  // we can only grant one requestor at a time
+  // we can only grant one requester at a time
   `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
   `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)
@@ -251,7 +251,7 @@ end
   `ASSUME(KStable_M, ##1 $stable(k))
   `ASSUME(KRange_M, k < N)
   // this is used enable checking for stable and unstable ready_i and req_i signals in the same run.
-  // the symbolic variables act like a switch that the solver can trun on and off.
+  // the symbolic variables act like a switch that the solver can turn on and off.
   `ASSUME(ReadyIsStable_M, ##1 $stable(ReadyIsStable))
   `ASSUME(ReqsAreStable_M, ##1 $stable(ReqsAreStable))
   `ASSUME(ReadyStable_M, ##1 !ReadyIsStable || $stable(ready_i))

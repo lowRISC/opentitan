@@ -104,7 +104,7 @@ module tlul_request_loopback
   assign tl_razwi_rsp_pre_intg.d_user  = '0;
   assign tl_razwi_rsp_pre_intg.d_error = ErrorRsp;
 
-  // Compute integrity bits from the manually assembled RAZWI reponse
+  // Compute integrity bits from the manually assembled RAZWI response
   tlul_rsp_intg_gen gen_intg_razwi_rsp (
     .tl_i ( tl_razwi_rsp_pre_intg ),
     .tl_o ( tl_error_d2h          )

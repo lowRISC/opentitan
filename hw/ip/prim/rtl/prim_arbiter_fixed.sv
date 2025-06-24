@@ -145,7 +145,7 @@ module prim_arbiter_fixed #(
   // Make sure no higher prio req is asserted
   `ASSERT(Priority_A, |req_i |-> req_i[idx_o] && (((N'(1'b1) << idx_o) - 1'b1) & req_i) == '0)
 
-  // we can only grant one requestor at a time
+  // we can only grant one requester at a time
   `ASSERT(CheckHotOne_A, $onehot0(gnt_o))
   // A grant implies that the sink is ready
   `ASSERT(GntImpliesReady_A, |gnt_o |-> ready_i)

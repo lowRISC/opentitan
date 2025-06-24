@@ -162,7 +162,7 @@ module prim_alert_receiver
     integ_fail_o = 1'b0;
     alert_o      = 1'b0;
     send_init    = 1'b0;
-    // by default, a ping request leads to a toogle on the differential ping pair
+    // by default, a ping request leads to a toggle on the differential ping pair
     send_ping    = ping_rise;
 
     unique case (state_q)

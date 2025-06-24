@@ -19,7 +19,7 @@ module prim_fifo_sync_tb #(
   parameter int unsigned NumDuts = 11,
   // fifo params
   parameter int unsigned Width = 4,
-  parameter int unsigned MaxDepth = 16, // max depth used in this destbench
+  parameter int unsigned MaxDepth = 16, // max depth used in this testbench
   localparam int unsigned DepthW = ($clog2(MaxDepth+1) == 0) ? 1 : $clog2(MaxDepth+1)
 ) (
   input               clk_i,

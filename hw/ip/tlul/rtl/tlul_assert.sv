@@ -358,7 +358,7 @@ module tlul_assert #(
         ##0 pre_source == h2d.a_source;
   endsequence
 
-  // a channal content is changed without being accepted
+  // a channel content is changed without being accepted
   `define TLUL_A_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
     sequence a_``NAME``ChangedNotAccepted_S; \
       int pre; \
@@ -367,7 +367,7 @@ module tlul_assert #(
     endsequence \
     `TLUL_COVER(a_``NAME``ChangedNotAccepted)
 
-  // d channal content is changed without being accepted
+  // d channel content is changed without being accepted
   `define TLUL_D_CHAN_CONTENT_CHANGED_WO_ACCEPTED(NAME) \
     sequence d_``NAME``ChangedNotAccepted_S; \
       int pre; \
