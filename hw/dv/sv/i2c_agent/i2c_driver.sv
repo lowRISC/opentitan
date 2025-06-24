@@ -62,7 +62,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
             end
             begin
               // Agent hot reset. It only resets I2C agent.
-              // The DUT funtions normally without reset.
+              // The DUT functions normally without reset.
               // This event only happens in directed test case so cannot set the timeout.
               // It will be killed by disable fork when 'drive_*_item' is finished.
               wait(cfg.driver_rst);
@@ -206,7 +206,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     // in which TIMEOUT_CTRL.EN is always set.
 
     // If Stretch value is greater than 2*tTimeOut, it will create 2 interrupt events.
-    // Which can cause faluse error in 'host_stretch_testmode'.
+    // Which can cause false error in 'host_stretch_testmode'.
     // So, this value should be associated with tTimeout in host stretch testmode
     int random_stretch = $urandom_range(tc.tClockPulse,
                                         tc.tClockPulse + 2*tc.tTimeOut);
@@ -228,7 +228,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
-    // This timeout is extremely long since read trasnactions will stretch
+    // This timeout is extremely long since read transactions will stretch
     // whenever there are unhanded write commands or format bytes.
     int scl_spinwait_timeout_ns = 100_000_000; // 100ms
     forever begin

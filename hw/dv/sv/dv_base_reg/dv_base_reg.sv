@@ -157,7 +157,7 @@ class dv_base_reg extends uvm_reg;
     end
   endfunction
 
-  // Wen reg/fld can lock specific groups of fields' write acces. The lockable fields are called
+  // Wen reg/fld can lock specific groups of fields' write access. The lockable fields are called
   // lockable flds.
   function void add_lockable_reg_or_fld(uvm_object lockable_obj);
     dv_base_reg_field wen_fld;

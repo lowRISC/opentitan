@@ -59,7 +59,7 @@ class entropy_src_xht_monitor extends dv_base_monitor #(
     // All other req fields are data or parameters (unchanging except with a clear pulse)
     //
     // Meanwhile the entropy_src_rsp_t data is continuously monitored.
-    // Creating a new item at every clock however has a noticible performance impact on simulations
+    // Creating a new item at every clock however has a noticeable performance impact on simulations
     // therefore we typically assume that the xht_sequence only outputs updates in the cycle after
     // entropy_valid, and so we add entropy_valid_q to our event filter.
     //

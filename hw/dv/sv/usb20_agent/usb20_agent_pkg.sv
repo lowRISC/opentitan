@@ -74,7 +74,7 @@ package usb20_agent_pkg;
   typedef class usb20_item;
   typedef class usb20_agent_cfg;
 
-  // reuse dv_base_seqeuencer as is with the right parameter set
+  // reuse dv_base_sequencer as is with the right parameter set
   typedef dv_base_sequencer #(.ITEM_T     (usb20_item),
     .CFG_T      (usb20_agent_cfg)) usb20_sequencer;
 

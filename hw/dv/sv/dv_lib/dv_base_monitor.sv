@@ -45,7 +45,7 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
 
   // collect transactions forever
   virtual protected task collect_trans();
-    // Empty - to be overriden in the child class
+    // Empty - to be overridden in the child class
   endtask
 
   // UVM callback which is invoked during phase sequencing.

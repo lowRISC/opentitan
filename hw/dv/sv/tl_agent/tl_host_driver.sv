@@ -50,7 +50,7 @@ class tl_host_driver extends tl_base_driver;
   //
   // req_done [out]  This is set to 1'b1 if a_ready has gone high on the host clock.
   //
-  // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiever
+  // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiver
   //                 hasn't responded with a_ready.
   extern protected task send_a_request_body(tl_seq_item req, int a_valid_len,
                                             output bit req_done, output bit req_abort);

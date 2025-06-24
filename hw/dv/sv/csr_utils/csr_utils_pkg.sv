@@ -782,7 +782,7 @@ package csr_utils_pkg;
   //
   // If an exclusion item for the immediate block (parent of the CSR if ptr is a CSR or a field) is
   // not found, it recurses through the block's ancestors to find an available exclusion item.
-  // arg ptr: An extention of one of dv_base_reg{, _block or _field} classes.
+  // arg ptr: An extension of one of dv_base_reg{, _block or _field} classes.
   function automatic csr_excl_item get_excl_item(uvm_object ptr);
     dv_base_reg_block blk;
 

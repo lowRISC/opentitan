@@ -16,7 +16,7 @@ interface clk_if(input logic clk);
   clocking cbn @(negedge clk);
   endclocking
 
-  // Wait for 'n' clocks based of postive clock edge
+  // Wait for 'n' clocks based of positive clock edge
   task automatic wait_clks(int num_clks);
     repeat (num_clks) @cb;
   endtask

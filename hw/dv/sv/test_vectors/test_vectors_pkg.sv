@@ -337,7 +337,7 @@ package test_vectors_pkg;
           "Msg": begin
             // The input message.
             // If an empty message is desired, we need to manually clear the message array,
-            // as NIST defines an empty message as 8'h00 (which will produce an incorect digest).
+            // as NIST defines an empty message as 8'h00 (which will produce an incorrect digest).
             if (vector.msg_length_byte == 0) begin
               vector.msg.delete();
             end else begin

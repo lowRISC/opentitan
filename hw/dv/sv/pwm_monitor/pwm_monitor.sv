@@ -12,7 +12,7 @@ class pwm_monitor extends dv_base_monitor #(
   // output signal.
   //
   // (This relies upon the internal details of the DUT because we're checking the phase
-  //  delay exactly; alernatively we could just check the relative phases of the PWM
+  //  delay exactly; alternatively we could just check the relative phases of the PWM
   //  output transitions, or allow a margin of error.)
   uint output_delay = 2;
 

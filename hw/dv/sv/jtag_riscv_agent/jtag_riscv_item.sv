@@ -17,7 +17,7 @@ class jtag_riscv_item extends uvm_sequence_item;
   rand logic [DMI_DATAW-1:0] addr;  // csr/bus address, may not be DMI_ADDR in rv_dm mode
   logic      [  DMI_OPW-1:0] status;  // status of DMI operation
 
-  rand bit activate_rv_dm; // Special sequqnce to activate RV_DM.
+  rand bit activate_rv_dm; // Special sequence to activate RV_DM.
 
   constraint ir_len_c {ir_len <= JTAG_IRW;}
 

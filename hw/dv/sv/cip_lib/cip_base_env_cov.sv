@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// put these covergoups outside the class in order to create them anywhere after get cfg object
+// put these covergroups outside the class in order to create them anywhere after get cfg object
 // if more than one interrupt/alert registers, these can be reused
 // in extended cov class, better to have the covergroup inside the class and create in new function
 covergroup intr_cg (uint num_interrupts) with function sample(uint intr,

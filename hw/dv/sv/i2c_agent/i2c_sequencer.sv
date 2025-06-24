@@ -7,7 +7,7 @@ class i2c_sequencer extends dv_base_sequencer#(i2c_item, i2c_agent_cfg);
   `uvm_component_new
 
   // These ports capture in-progress transfer items published by the i2c_monitor.
-  // Agent sequences can then monitor these transfers by accessing the fifos via 'p_sequencer'.
+  // Agent sequences can then monitor these transfers by accessing the FIFOs via 'p_sequencer'.
   // Note. that as these items represent in-progress transfers, they are valid and expected to
   // be continuously updated by the monitor until the state variable reaches "StStopped | StAborted"
   // Consumers of these items should not modify them.
