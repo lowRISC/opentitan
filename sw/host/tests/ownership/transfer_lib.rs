@@ -106,6 +106,7 @@ pub fn ownership_unlock_any(
 }
 
 /// Prepares an OwnershipActivate command, sends it to the chip and gets the response.
+#[allow(clippy::too_many_arguments)]
 pub fn ownership_activate(
     transport: &TransportWrapper,
     rescue: &RescueSerial,
@@ -114,10 +115,12 @@ pub fn ownership_activate(
     algorithm: OwnershipKeyAlg,
     ecdsa_key: Option<PathBuf>,
     spx_key: Option<PathBuf>,
+    bl0_slot: BootSlot,
 ) -> Result<()> {
     let (activate, detached_sig) = OwnershipActivateParams {
         nonce: Some(nonce),
         din: Some(din),
+        primary_bl0_slot: bl0_slot,
         algorithm,
         ecdsa_key,
         spx_key,
