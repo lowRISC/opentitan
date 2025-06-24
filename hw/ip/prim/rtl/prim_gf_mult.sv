@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // This module performs a the multiplication of two operands in Galois field GF(2^Width) modulo the
-// provided irreducible polynomial using a parallel Mastrovito multipler [3]. To cut long paths
+// provided irreducible polynomial using a parallel Mastrovito multiplier [3]. To cut long paths
 // potentially occurring for large data widths, the implementation provides a parameter
 // StagesPerCycle to decompose the multiplication into Width/StagesPerCycle iterative steps
 // (Digit-Serial/Parallel Multiplier [4]).

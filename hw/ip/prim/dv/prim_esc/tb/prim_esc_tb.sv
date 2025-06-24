@@ -4,7 +4,7 @@
 //
 // Testbench module for prim_esc_sender and prim_esc_receiver_pair.
 //
-// This test has five sequnces:
+// This test has five sequences:
 // 1). Random reset during escalation handshake sequence.
 // 2). Escalation request sequence.
 // 3). Ping request interrupted by escalation request sequence.

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Register slice conforming to Comportibility guide.
+// Register slice conforming to Comportability guide.
 
 module prim_subreg_ext #(
   parameter int unsigned DW = 32

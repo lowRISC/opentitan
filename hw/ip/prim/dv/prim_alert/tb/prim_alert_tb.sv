@@ -22,7 +22,7 @@ module prim_alert_tb;
   // config
   //////////////////////////////////////////////////////
 
-  // this can be overriden on the command line
+  // this can be overridden on the command line
   `ifdef IS_SYNC
     localparam bit IsAsync = 0;
   `else
@@ -215,7 +215,7 @@ module prim_alert_tb;
     end
 
     // Sequence 4) `Ack_p/n` integrity check sequence.
-    // Note that alert_tx signal interigy errors are verified in alert_handler testbench.
+    // Note that alert_tx signal integrity errors are verified in alert_handler testbench.
     main_clk.wait_clks($urandom_range(MinHandshakeWait, 10));
     alert_req = 1;
 

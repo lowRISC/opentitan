@@ -52,7 +52,7 @@ module prim_lc_sender #(
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
     // or nothing at all.
-    // This logic will be removed for sythesis since it is unloaded.
+    // This logic will be removed for synthesis since it is unloaded.
     lc_ctrl_pkg::lc_tx_t unused_logic;
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin

@@ -14,7 +14,7 @@
 //
 // In case the alert sender parameter IsFatal is set to 1, an incoming alert
 // alert_req_i is latched in a local register until the next reset, causing the
-// alert sender to behave as if alert_req_i were continously asserted.
+// alert sender to behave as if alert_req_i were continuously asserted.
 // The alert_state_o output reflects the state of this internal latching register.
 //
 // The alert sender also exposes an alert test input, which can be used to trigger
@@ -383,7 +383,7 @@ module prim_alert_sender
 `endif
 
 `ifdef FPV_ALERT_NO_SIGINT_ERR
-  // Assumptions for FPV security countermeasures to ensure the alert protocol functions collectly.
+  // Assumptions for FPV security countermeasures to ensure the alert protocol functions correctly.
   `ASSUME_FPV(AckPFollowsAlertP_S, alert_rx_i.ack_p == $past(alert_tx_o.alert_p))
   `ASSUME_FPV(AckNFollowsAlertN_S, alert_rx_i.ack_n == $past(alert_tx_o.alert_n))
   `ASSUME_FPV(TriggerAlertInit_S, $stable(rst_ni) == 0 |=> alert_rx_i.ping_p == alert_rx_i.ping_n)
