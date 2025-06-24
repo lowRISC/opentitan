@@ -9,7 +9,7 @@ use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
 
-use crate::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode};
+use crate::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode, BootSlot};
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::ownership::{DetachedSignature, OwnershipKeyAlg};
 use crate::util::parse_int::ParseInt;
@@ -123,6 +123,8 @@ pub struct OwnershipActivateParams {
     pub ecdsa_key: Option<PathBuf>,
     #[arg(long, help = "A path to a private SPX key to sign the request")]
     pub spx_key: Option<PathBuf>,
+    #[arg(long, default_value = "SlotA", help = "Which bl0 slot to activate")]
+    pub primary_bl0_slot: BootSlot,
 }
 
 impl OwnershipActivateParams {
@@ -143,6 +145,7 @@ impl OwnershipActivateParams {
             let mut f = File::open(signature)?;
             activate.signature = EcdsaRawSignature::read(&mut f)?;
         }
+        activate.primary_bl0_slot = self.primary_bl0_slot;
         if self.ecdsa_key.is_some() || self.spx_key.is_some() {
             let ecdsa_key = self
                 .ecdsa_key
