@@ -118,7 +118,7 @@ class pattgen_monitor extends dv_base_monitor #(
     end
   endtask : monitor_ready_to_end
 
-  // collect bits alligned by polarized clock
+  // collect bits aligned by polarized clock
   virtual task get_pattgen_bit(uint channel, output bit bit_o);
     bit stop_thread = 1'b0;
 

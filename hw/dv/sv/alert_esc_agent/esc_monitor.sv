@@ -83,7 +83,7 @@ task esc_monitor::esc_thread();
           alert_esc_port.write(req_clone);
           // alignment for prim_esc_sender design. Design does not know ping timeout cycles, only
           // way to exit FSM is when state is IDLE or PingComplete.
-          // for detailed dicussion please refer to issue #3034
+          // for detailed discussion please refer to issue #3034
           while (!cfg.get_esc_en() &&
                  !(req.esc_handshake_sta inside {EscIntFail, EscRespComplete, EscReceived})) begin
             @(cfg.vif.monitor_cb);

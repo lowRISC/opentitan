@@ -149,7 +149,7 @@ Examples of useful functions in this class are:
   csr_excl.add_excl({scope, ".", "key?"}, CsrExclWrite);
   ```
 
-* `has_excl`: Check if the CSR has a match in the existing exclusions loopup,
+* `has_excl`: Check if the CSR has a match in the existing exclusions lookup,
   and is not intended to use externally
 
 ### CSR sequence framework

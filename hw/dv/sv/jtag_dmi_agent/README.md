@@ -117,7 +117,7 @@ RISCV debug specification for more details. These registers are already
 a part of the `jtag_dmi_reg_block` model.
 
 This class models an external debugger by providing methods to perform debug
-activies such as issuing CPU halt request, non-debug domain reset request,
+activities such as issuing CPU halt request, non-debug domain reset request,
 run abstract commands to access CPU registers and the system memory, inserting
 breakpoints, single-stepping, injecting programs into SRAM and having the
 CPU starting fetching instructions from arbitrary memory locations. It also

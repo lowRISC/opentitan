@@ -111,7 +111,7 @@ interface push_pull_if #(parameter int HostDataWidth = 32,
   // Whenever valid is asserted, h_data must have a known value.
   `ASSERT_KNOWN_IF(H_DataKnownWhenValid_A, h_data, valid && is_push_agent, clk, !rst_n)
 
-  // Whenver ready is asserted and the agent is in bidirectional mode,
+  // Whenever ready is asserted and the agent is in bidirectional mode,
   // d_data must have a known value.
   `ASSERT_KNOWN_IF(D_DataKnownWhenReady_A, d_data,
                    ready && is_push_agent && in_bidirectional_mode, clk, !rst_n)

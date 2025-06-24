@@ -70,7 +70,7 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
 
   // knob to create m_outstanding_item_w_same_addr_cov_obj, even design supports more than
   // 1 outstanding items, but may not support they use the same address
-  // TODO(#16840): may need to disable it for spi_device and hmac even they support 2 oustanding
+  // TODO(#16840): may need to disable it for spi_device and hmac even they support 2 outstanding
   // items
   bit en_cov_outstanding_item_w_same_addr = 1;
 

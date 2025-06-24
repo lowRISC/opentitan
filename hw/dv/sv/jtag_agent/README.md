@@ -39,7 +39,7 @@ verification logic.
 ## jtag_dtm_reg_adapter
 
 This object extends from the standard `uvm_reg_adapter` class, to implement the
-underlying mechanics of accessing the modeled JTAG DTM registers in
+underlying mechanics of accessing the modelled JTAG DTM registers in
 `jtag_dtm_reg_block` using the JTAG sequencer. An instance of this class is
 created in the `jtag_agent`, and hooked up to the `default_map` of
 `jtag_reg_block` to facilitate the CSR accesses via the RAL model.

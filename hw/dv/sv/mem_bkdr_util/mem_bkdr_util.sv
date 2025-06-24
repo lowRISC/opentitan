@@ -691,7 +691,7 @@ endclass
 // memory with the contents of the file and `write_mem_to_file()` methods, to read the contents of
 // the memory into the file.
 //
-// inst is the mem_bkdr_util instance created in the tesbench module.
+// inst is the mem_bkdr_util instance created in the testbench module.
 // path is the raw path to the memory element in the design.
 `define MEM_BKDR_UTIL_FILE_OP(inst, path) \
   fork \

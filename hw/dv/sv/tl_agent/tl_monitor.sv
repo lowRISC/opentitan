@@ -23,7 +23,7 @@ class tl_monitor extends dv_base_monitor#(
   // appear at the same time.
   //
   // Otherwise, wait on a_chan_port and d_chan_port with two concurrent processes. A and D
-  // transactions that happen at the same time will be popped from the fifos in an indeterminate
+  // transactions that happen at the same time will be popped from the FIFOs in an indeterminate
   // order.
   uvm_analysis_port #(tl_channels_e) channel_dir_port;
   uvm_analysis_port #(tl_seq_item)   a_chan_port;

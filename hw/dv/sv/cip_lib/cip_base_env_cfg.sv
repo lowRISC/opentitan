@@ -35,7 +35,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // Format: tl_intg_alert_fields[ral.a_reg.a_field] = value
   uvm_reg_data_t      tl_intg_alert_fields[dv_base_reg_field];
 
-  // Flag to indicate tl mem acess are gated due to local or global escalation.
+  // Flag to indicate tl mem access are gated due to local or global escalation.
   bit                 tl_mem_access_gated;
 
   // Flag to indicate if it is an IP or chip level testbench.

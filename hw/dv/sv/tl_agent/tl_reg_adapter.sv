@@ -31,7 +31,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     // randomize CSR partial or full read
     // for partial read DUT (except memory) always return the entire 4 bytes bus data
     // if CSR full read (all bytes are enabled) & !MEM, randomly select full or partial read
-    // if CSR field read, will do a partial read if protocal allows by setting a_mask to byte_en
+    // if CSR field read, will do a partial read if protocol allows by setting a_mask to byte_en
     if (rw.kind == UVM_READ) begin
       if (rw.byte_en == '1 && item.element_kind == UVM_REG) begin // csr full read
         `DV_CHECK_RANDOMIZE_WITH_FATAL(bus_req,

@@ -65,11 +65,11 @@ interface prim_sparse_fsm_flop_if #(
 
     virtual task automatic restore_fault();
       // Don't invoke restore_fault if CustomForceName is set, so as to avoid some complication,
-      // becasue restore_fault may cause misaligment on signal_forced and custom_signal_forced
+      // because restore_fault may cause misaligment on signal_forced and custom_signal_forced
       // signal_forced is net, while custom_signal_forced is a flop.
       // For example, if the state_d stays at error_state, we restore the net (signal_forced) and
       // the flop (custom_signal_forced) to an idle_state. signal_forced won't be changed to
-      // idle_state as state_d has no change, while custom_signal_forced will become idile_state as
+      // idle_state as state_d has no change, while custom_signal_forced will become idle_state as
       // it's updated in every cycle.
       // Another approach is to deposit the value in the flop but we will have different
       // implementation in the prim and the path is different in the close source

@@ -137,7 +137,7 @@ task esc_receiver_driver::drive_esc_resp(alert_esc_seq_item req);
     // drives escalation ping request response according to the above scenarios:
     // if no sig_int_err: the driver will toggle resp_p/n as design required
     // if there is sig_int_err: the driver will randomly toggle resp_p/n until ping timeout
-    // if ping is interrupted by real esclation signal: the ping response is aborted
+    // if ping is interrupted by real escalation signal: the ping response is aborted
     // immediately and response to the real escalation signal without sig_int_err
     if (is_ping) begin
       // `ping_timeout_cycle` is divided by 2 because `toggle_resp_signal` task contains two cycles

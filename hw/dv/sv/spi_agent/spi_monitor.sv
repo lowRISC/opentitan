@@ -58,10 +58,10 @@ class spi_monitor extends dv_base_monitor#(
     cfg.ongoing_flash_cmd = null;
 
     // Currently only used in spi_host where the SPI bus is sampled without
-    // any segement order expectation
+    // any segment order expectation
     plain_sampling_analysis_port.write(plain_item);
     if (cfg.enable_plain_sampling) begin
-      // Currently used in the spi_device scoreboard. It triggeres SV events on a per-byte basis and
+      // Currently used in the spi_device scoreboard. It triggers SV events on a per-byte basis and
       // when the transaction finishes.
       csb_active_analysis_port.write(host_item);
     end
@@ -278,7 +278,7 @@ class spi_monitor extends dv_base_monitor#(
                                      // output
                                      num_addr_bytes, item.write_command, item.num_lanes,
                                      item.dummy_cycles, item.read_pipeline_mode);
-    // Assigned right after op-code is recieved
+    // Assigned right after op-code is received
     cfg.ongoing_flash_cmd = item;
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
     item.terminated_before_dummy_cycles = 1;

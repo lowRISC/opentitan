@@ -16,7 +16,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit host_bit_dir;               // 0 - msb -> lsb, 1 - lsb -> msb
   bit device_bit_dir;             // 0 - msb -> lsb, 1 - lsb -> msb
   bit sck_on;                     // keep sck on
-  bit partial_byte;       // Transfering less than byte
+  bit partial_byte;       // Transferring less than byte
   bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit decode_commands;  // Used in monitor if decoding of commands needed
   bit [2:0] cmd_addr_size = 4; // Address size for command

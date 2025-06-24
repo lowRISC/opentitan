@@ -13,7 +13,7 @@ class dv_base_agent_cfg extends uvm_object;
   // if this is a high-level agent, we may just call lower-level agent to send item in seq, then
   // driver isn't needed
   bit         has_driver = 1'b1;
-  // indicate if these fifo and ports exist or not
+  // indicate if these FIFO and ports exist or not
   bit         has_req_fifo = 1'b0;
   bit         has_rsp_fifo = 1'b0;
 

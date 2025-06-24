@@ -20,7 +20,7 @@
 // is vendored into our repo. Please see hw/vendor/pulp_riscv_dbg/src/dm_pkg.sv and other relevant
 // sources in that area for more details.
 //
-// This file enables the RAL model generation, which makes the DV testing a bit more effecive. The
+// This file enables the RAL model generation, which makes the DV testing a bit more effective. The
 // generated source is further hand-edited and checked-in alongside this file as
 // jtag_dmi_ral_pkg.sv.
 { name: "jtag_dmi",

@@ -64,7 +64,7 @@ interface sw_logger_if #(
   // Holds the log data structure.
   typedef struct {
     string             name;         // Name of the SW image.
-    log_severity_e     severity;     // There are 4 - info, warining, error and fatal.
+    log_severity_e     severity;     // There are 4 - info, warning, error and fatal.
     log_verbosity_e    verbosity;    // Verbosity of info logs - currently unsupported.
     string             file;         // Name of the C file invoking the log.
     int                line;         // Line no in the C file from where the log originated.
@@ -146,7 +146,7 @@ interface sw_logger_if #(
   /* helper methods */
   /******************/
   // function that parses the log data file
-  // returns 1 if log data is avaiable, else false
+  // returns 1 if log data is available, else false
   function automatic bit parse_sw_log_file();
     bit result;
 
@@ -242,7 +242,7 @@ interface sw_logger_if #(
   endfunction
 
   // Get the sw log fields by parsing line-by-line.
-  // The ref arg value is used to return the retrived field.
+  // The ref arg value is used to return the retrieved field.
   // Function returns the successfulness of the operation.
   function automatic bit get_sw_log_field(int fd, string field, ref string value);
     byte   lf    = 8'ha;

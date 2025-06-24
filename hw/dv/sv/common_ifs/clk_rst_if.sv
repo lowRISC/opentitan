@@ -73,7 +73,7 @@ interface clk_rst_if #(
   // Maximum jitter applied to each period of the clock - this is expected to be about 20% or less
   // than the clock period.
   // The jitter is divided to two values - plus-jitter and minus-jitter.
-  // Plus jitter is the possible time can be added to the clock period, while the minus jittter is
+  // Plus jitter is the possible time can be added to the clock period, while the minus jitter is
   // the possible time can be subtracted from the clock period.
   //         _________
   // _____:_| :     : |_:_______

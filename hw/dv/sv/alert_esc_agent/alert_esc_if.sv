@@ -97,7 +97,7 @@ interface alert_esc_if(input clk, input rst_n);
     end
   end
 
-  // Used by the monitor for "symetrical" sampling with equal delay from both sides
+  // Used by the monitor for "symmetrical" sampling with equal delay from both sides
   // This ensures correct sampling. Otherwise there can be race conditions where the monitor misses
   // a ping due to a delay.
   assign alert_tx_final = alert_tx_sync_dly2;
