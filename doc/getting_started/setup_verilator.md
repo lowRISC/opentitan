@@ -226,7 +226,7 @@ The output consists of a textual "waveform" representing the SPI signals.
 
 ## Generating waveforms (optional)
 
-With the `--trace` argument the simulation generates a FST signal trace which can be viewed with Gtkwave (only).
+With the `--trace` argument the simulation generates a FST signal trace which can be viewed with GTKWave (only).
 An argument may be provided to `--trace` to specify where the trace file will be saved.
 Note that for automated tests, `opentitantool` interfaces with the simulator, and verilator arguments must be passed via `--verilator-args=<arg>`.
 

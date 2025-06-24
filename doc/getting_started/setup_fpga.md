@@ -26,7 +26,7 @@ export BOARD=cw340
 ```
 ### Download a Pre-built Bitstream
 
-If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bistream cache GCS bucket.
+If you are using the ChipWhisperer CW340 board with the Xilinx XCKU095-1FFVA1156C Kintex UltraScale or the CW310 board with the Xilinx Kintex 7 XC7K410T FPGA, you can download the latest passing [pre-built bitstream](https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz) from our public bitstream cache GCS bucket.
 
 For example, to download and unpack the bitstream, run the following:
 
@@ -539,7 +539,7 @@ To actually debug through OpenOCD, it must either be connected through telnet or
 The following is an example for using telnet
 
 ```console
-telnet localhost 4444 // or whatever port that is specificed by the openocd command above
+telnet localhost 4444 // or whatever port that is specified by the openocd command above
 mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 ```
 
@@ -560,7 +560,7 @@ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
-The above will print out the contents of the registers upon successs.
+The above will print out the contents of the registers upon success.
 Note that you should have the RISC-V toolchain installed and on your `PATH`.
 For example, if you followed the [Getting Started](README.md#step-4-install-the-lowrisc-risc-v-toolchain) instructions, then make sure `/tools/riscv/bin` is on your `PATH`.
 

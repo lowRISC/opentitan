@@ -472,7 +472,7 @@ Where possible (exceptions for inherited IP that is too tricky to convert) all i
 ### Conventions
 
 Currently, all wired CIP interrupts in OpenTitan use active-high level-triggering.
-(An alternate standard is the use of edge-triggered interupts, which are not described here, but may be supported in a future release.)
+(An alternate standard is the use of edge-triggered interrupts, which are not described here, but may be supported in a future release.)
 
 ![OpenTitan System Interrupt Architecture](ot_interrupt_arch.svg)
 
@@ -532,10 +532,10 @@ When creating an interrupt in a peripheral, we can identify two distinct behavio
 > The names *Event* and *Status* are OpenTitan terminology.
 > Generic hardware `prim_intr_hw` is defined which generates interrupt requests for each type by using a parameter at the time of instantiation.
 
-An instantaneous *Event* could be an error occuring, a counter value crossing a threshold, or a particular transition between two abstract states inside the peripheral.
-A persistant *Status* might be any conditional expression evaluating truthfully, such as a counter value currently exceeds a threshold, or the system being in a particular abstract state, such as an error state it cannot recover from on its own.
+An instantaneous *Event* could be an error occurring, a counter value crossing a threshold, or a particular transition between two abstract states inside the peripheral.
+A persistent *Status* might be any conditional expression evaluating truthfully, such as a counter value currently exceeds a threshold, or the system being in a particular abstract state, such as an error state it cannot recover from on its own.
 
-Choosing to generate interrupts based on instantaneous events or persistant status signals can make it easier to write SW handlers that are simple and race-free.
+Choosing to generate interrupts based on instantaneous events or persistent status signals can make it easier to write SW handlers that are simple and race-free.
 For example, an event interrupt request implies that "the event happened at some point in the past (since we last acknowledged this interrupt)".
 A status interrupt request means that "the condition is currently true".
 
@@ -579,7 +579,7 @@ Status type interrupts create a wired level-triggered interrupt signal directly 
 If the input signal is asserted, then the wired interrupt is constantly asserted, effectively issuing interrupt requests continuously.
 With this interrupt type, the acknowledgement part of the req/ack handshake is an intervention from sw which causes the input signal from hardware to return to an inactive state.
 This means that the wired interrupt does not deassert until the root cause of the hardware input signal is addressed.
-Software cannot acknowledge this interrupt request using the `INTR_STATE` register, which has (`ro`) acccess permissions in this context.
+Software cannot acknowledge this interrupt request using the `INTR_STATE` register, which has (`ro`) access permissions in this context.
 
 > The generic component `prim_intr_hw` can generate the correct hardware when parameterized with `.IntrT("Status")`.
 

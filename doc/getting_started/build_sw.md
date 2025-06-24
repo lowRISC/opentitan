@@ -325,7 +325,7 @@ If your system is close to that limit, you may want to exit web browsers or othe
 
 If the `//hw:verilator` build failed pretty much immediately, try running `util/check_tool_requirements.py` to make sure you meet the tool requirements.
 
-If the `//hw:verilator` build succeeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
+If the `//hw:verilator` build succeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
 If that works, then it may be a problem with the specific test you're running.
 See if you can build, but not run, the test with `./bazelisk.sh build` instead of `./bazelisk.sh test`.
 If the test fails to build, that indicates some issue with the source code or possibly the RISC-V toolchain installation.

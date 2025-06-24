@@ -342,7 +342,7 @@ To apply patches on top of vendored code, do the following:
 3. When running `util/vendor`, patches are applied on top of the imported code according to the following rules.
 
    - Patches are applied alphabetical order according to the filename.
-     Name patches like `0001-do-someting.patch` to apply them in a deterministic order.
+     Name patches like `0001-do-something.patch` to apply them in a deterministic order.
    - Patches are applied relative to the base directory of the imported code.
    - The first directory component of the filename in a patch is stripped, i.e. they are applied with the `-p1` argument of `patch`.
    - Patches are applied with `git apply`, making all extended features of Git patches available (e.g. renames).
