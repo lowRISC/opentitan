@@ -604,13 +604,13 @@ This bit will stay set until the next reset.
 ### ERR_CODE . FIFO_READ_ERR
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
 this register) are asserted as a result of an error pulse generated from
-any empty FIFO that has recieved a read pulse.
+any empty FIFO that has received a read pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_WRITE_ERR
 This bit will be set to one when any of the source bits (bits 0 through 15 of this
 this register) are asserted as a result of an error pulse generated from
-any full FIFO that has been recieved a write pulse.
+any full FIFO that has been received a write pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . CMD_GEN_CNT_ERR
