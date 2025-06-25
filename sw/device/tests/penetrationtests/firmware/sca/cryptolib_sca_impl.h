@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/tests/penetrationtests/json/cryptolib_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/cryptolib_sca_sym_commands.h"
 
 /**
  * Wrapper to AES cryptolib implementation.

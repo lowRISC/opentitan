@@ -14,10 +14,10 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/cryptolib.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
-#include "sw/device/tests/penetrationtests/json/cryptolib_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 
-status_t cryptolib_fi_aes_impl(cryptolib_fi_aes_in_t uj_input,
-                               cryptolib_fi_aes_out_t *uj_output) {
+status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
+                               cryptolib_fi_sym_aes_out_t *uj_output) {
   // Set the AES mode.
   otcrypto_aes_mode_t mode;
   otcrypto_key_mode_t key_mode;

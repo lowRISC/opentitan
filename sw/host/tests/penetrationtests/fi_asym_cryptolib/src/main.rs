@@ -11,7 +11,7 @@ use clap::Parser;
 use serde::Deserialize;
 
 use pentest_commands::commands::PenetrationtestCommand;
-use pentest_commands::fi_cryptolib_commands::CryptoLibFiSubcommand;
+use pentest_commands::fi_asym_cryptolib_commands::CryptoLibFiAsymSubcommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -31,7 +31,7 @@ struct Opts {
     timeout: Duration,
 
     #[arg(long, num_args = 1..)]
-    fi_cryptolib_json: Vec<String>,
+    fi_asym_cryptolib_json: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -48,7 +48,7 @@ struct FiCryptoLibTestCase {
     expected_output: Vec<String>,
 }
 
-fn run_fi_cryptolib_testcase(
+fn run_fi_asym_cryptolib_testcase(
     test_case: &FiCryptoLibTestCase,
     opts: &Opts,
     uart: &dyn Uart,
@@ -59,10 +59,10 @@ fn run_fi_cryptolib_testcase(
         test_case.test_case_id,
         test_case.command
     );
-    PenetrationtestCommand::CryptoLibFi.send(uart)?;
+    PenetrationtestCommand::CryptoLibFiAsym.send(uart)?;
 
     // Send test subcommand.
-    CryptoLibFiSubcommand::from_str(test_case.command.as_str())
+    CryptoLibFiAsymSubcommand::from_str(test_case.command.as_str())
         .context("unsupported CryptoLib FI subcommand")?
         .send(uart)?;
 
@@ -121,21 +121,26 @@ fn run_fi_cryptolib_testcase(
     Ok(())
 }
 
-fn test_fi_cryptolib(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_fi_asym_cryptolib(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
-    let test_vector_files = &opts.fi_cryptolib_json;
+    let test_vector_files = &opts.fi_asym_cryptolib_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
-        let fi_cryptolib_tests: Vec<FiCryptoLibTestCase> = serde_json::from_str(&raw_json)?;
-        for fi_cryptolib_test in &fi_cryptolib_tests {
+        let fi_asym_cryptolib_tests: Vec<FiCryptoLibTestCase> = serde_json::from_str(&raw_json)?;
+        for fi_asym_cryptolib_test in &fi_asym_cryptolib_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_fi_cryptolib_testcase(fi_cryptolib_test, opts, &*uart, &mut fail_counter)?;
+            run_fi_asym_cryptolib_testcase(
+                fi_asym_cryptolib_test,
+                opts,
+                &*uart,
+                &mut fail_counter,
+            )?;
         }
     }
     assert_eq!(
@@ -151,6 +156,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    execute_test!(test_fi_cryptolib, &opts, &transport);
+    execute_test!(test_fi_asym_cryptolib, &opts, &transport);
     Ok(())
 }

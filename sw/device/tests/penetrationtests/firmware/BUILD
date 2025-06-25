@@ -101,9 +101,9 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/json:commands",
 ]
 
-FIRMWARE_DEPS_CRYPTOLIB_FI = [
+FIRMWARE_DEPS_CRYPTOLIB_FI_SYM = [
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
-    "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi",
+    "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_sym",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/base:csr",
@@ -118,8 +118,42 @@ FIRMWARE_DEPS_CRYPTOLIB_FI = [
     "//sw/device/tests/penetrationtests/json:commands",
 ]
 
-FIRMWARE_DEPS_CRYPTOLIB_SCA = [
-    "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca",
+FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM = [
+    "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
+    "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_asym",
+    "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/penetrationtests/json:commands",
+]
+
+FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM = [
+    "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_sym",
+    "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
+    "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/penetrationtests/json:commands",
+]
+
+FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM = [
+    "//sw/device/tests/penetrationtests/firmware/sca:cryptolib_sca_asym",
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
@@ -136,27 +170,51 @@ FIRMWARE_DEPS_CRYPTOLIB_SCA = [
 ]
 
 opentitan_binary(
-    name = "firmware_cryptolib_fi",
+    name = "firmware_cryptolib_fi_sym",
     testonly = True,
-    srcs = [":firmware_cryptolib_fi.c"],
+    srcs = [":firmware_cryptolib_fi_sym.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_FI,
+    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_SYM,
 )
 
 opentitan_binary(
-    name = "firmware_cryptolib_sca",
+    name = "firmware_cryptolib_fi_asym",
     testonly = True,
-    srcs = [":firmware_cryptolib_sca.c"],
+    srcs = [":firmware_cryptolib_fi_asym.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
-    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA,
+    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM,
+)
+
+opentitan_binary(
+    name = "firmware_cryptolib_sca_sym",
+    testonly = True,
+    srcs = [":firmware_cryptolib_sca_sym.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM,
+)
+
+opentitan_binary(
+    name = "firmware_cryptolib_sca_asym",
+    testonly = True,
+    srcs = [":firmware_cryptolib_sca_asym.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM,
 )
 
 opentitan_test(
@@ -216,8 +274,8 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "pen_test_cryptolib_fi",
-    srcs = [":firmware_cryptolib_fi.c"],
+    name = "pen_test_cryptolib_fi_sym",
+    srcs = [":firmware_cryptolib_fi_sym.c"],
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
@@ -226,12 +284,12 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
-    deps = FIRMWARE_DEPS_CRYPTOLIB_FI,
+    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_SYM,
 )
 
 opentitan_test(
-    name = "pen_test_cryptolib_sca",
-    srcs = [":firmware_cryptolib_sca.c"],
+    name = "pen_test_cryptolib_fi_asym",
+    srcs = [":firmware_cryptolib_fi_asym.c"],
     exec_env = PENTEST_EXEC_ENVS,
     fpga = fpga_params(tags = ["skip_in_ci"]),
     silicon = silicon_params(
@@ -240,5 +298,33 @@ opentitan_test(
             "skip_in_ci",
         ],
     ),
-    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA,
+    deps = FIRMWARE_DEPS_CRYPTOLIB_FI_ASYM,
+)
+
+opentitan_test(
+    name = "pen_test_cryptolib_sca_sym",
+    srcs = [":firmware_cryptolib_sca_sym.c"],
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_SYM,
+)
+
+opentitan_test(
+    name = "pen_test_cryptolib_sca_asym",
+    srcs = [":firmware_cryptolib_sca_asym.c"],
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_CRYPTOLIB_SCA_ASYM,
 )

@@ -11,7 +11,7 @@ use clap::Parser;
 use serde::Deserialize;
 
 use pentest_commands::commands::PenetrationtestCommand;
-use pentest_commands::sca_cryptolib_commands::CryptoLibScaSubcommand;
+use pentest_commands::sca_sym_cryptolib_commands::CryptoLibScaSymSubcommand;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
@@ -31,11 +31,11 @@ struct Opts {
     timeout: Duration,
 
     #[arg(long, num_args = 1..)]
-    sca_cryptolib_json: Vec<String>,
+    sca_sym_cryptolib_json: Vec<String>,
 }
 
 #[derive(Debug, Deserialize)]
-struct ScaCryptoLibTestCase {
+struct ScaSymCryptoLibTestCase {
     test_case_id: usize,
     command: String,
     // Input only needed for the "Init" subcommand.
@@ -48,8 +48,8 @@ struct ScaCryptoLibTestCase {
     expected_output: Vec<String>,
 }
 
-fn run_sca_cryptolib_testcase(
-    test_case: &ScaCryptoLibTestCase,
+fn run_sca_sym_cryptolib_testcase(
+    test_case: &ScaSymCryptoLibTestCase,
     opts: &Opts,
     uart: &dyn Uart,
     fail_counter: &mut u32,
@@ -59,11 +59,11 @@ fn run_sca_cryptolib_testcase(
         test_case.test_case_id,
         test_case.command
     );
-    PenetrationtestCommand::CryptoLibSca.send(uart)?;
+    PenetrationtestCommand::CryptoLibScaSym.send(uart)?;
 
     // Send test subcommand.
-    CryptoLibScaSubcommand::from_str(test_case.command.as_str())
-        .context("unsupported CryptoLib SCA subcommand")?
+    CryptoLibScaSymSubcommand::from_str(test_case.command.as_str())
+        .context("unsupported CryptoLib SYM SCA subcommand")?
         .send(uart)?;
 
     // Check if we need to send an input.
@@ -121,21 +121,27 @@ fn run_sca_cryptolib_testcase(
     Ok(())
 }
 
-fn test_sca_cryptolib(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+fn test_sca_sym_cryptolib(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
-    let test_vector_files = &opts.sca_cryptolib_json;
+    let test_vector_files = &opts.sca_sym_cryptolib_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
-        let sca_cryptolib_tests: Vec<ScaCryptoLibTestCase> = serde_json::from_str(&raw_json)?;
-        for sca_cryptolib_test in &sca_cryptolib_tests {
+        let sca_sym_cryptolib_tests: Vec<ScaSymCryptoLibTestCase> =
+            serde_json::from_str(&raw_json)?;
+        for sca_sym_cryptolib_test in &sca_sym_cryptolib_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_sca_cryptolib_testcase(sca_cryptolib_test, opts, &*uart, &mut fail_counter)?;
+            run_sca_sym_cryptolib_testcase(
+                sca_sym_cryptolib_test,
+                opts,
+                &*uart,
+                &mut fail_counter,
+            )?;
         }
     }
     assert_eq!(
@@ -151,6 +157,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    execute_test!(test_sca_cryptolib, &opts, &transport);
+    execute_test!(test_sca_sym_cryptolib, &opts, &transport);
     Ok(())
 }
