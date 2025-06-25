@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_impl.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_sym_impl.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 

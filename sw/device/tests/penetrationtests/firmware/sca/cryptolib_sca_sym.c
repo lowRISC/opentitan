@@ -12,7 +12,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
-#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_impl.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_sym_impl.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_sym_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

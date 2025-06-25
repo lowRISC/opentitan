@@ -51,6 +51,7 @@ RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibFiAsymSubcommand, cryptolib_fi_asym_subcomma
 #define CRYPTOLIBFIASYM_RSA_ENC_IN(field, string) \
     field(data, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
     field(data_len, size_t) \
+    field(mode, size_t) \
     field(e, uint32_t) \
     field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
     field(d, uint8_t, RSA_CMD_MAX_N_BYTES) \

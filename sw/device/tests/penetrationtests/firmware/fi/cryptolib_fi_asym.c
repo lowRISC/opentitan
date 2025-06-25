@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_impl.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/cryptolib_fi_asym_impl.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_fi_asym_commands.h"
 
@@ -24,17 +24,11 @@ status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj) {
   // Perform an RSA encryption with hashing and padding options.
   // You can give cfg a value such that the RSA generates its own private key.
   // Trigger are over the API calls.
-
   cryptolib_fi_asym_rsa_enc_out_t uj_output;
-  memset(uj_output.data, 0, RSA_CMD_MAX_MESSAGE_BYTES);
-  uj_output.data_len = RSA_CMD_MAX_MESSAGE_BYTES;
-  memset(uj_output.n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output.d, 0, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = RSA_CMD_MAX_N_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_rsa_enc_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_enc_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_enc_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
