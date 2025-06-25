@@ -106,7 +106,7 @@ module tb;
   end
 
   // Push pull agents
-  // Need to use generate loop as idx must be an elaborataion time constant
+  // Need to use generate loop as idx must be an elaboration time constant
   for (genvar idx = 0; idx < ADC_CTRL_CHANNELS; idx++) begin : g_adc_if_connections
     initial begin
       uvm_config_db#(adc_push_pull_vif_t)::set(null, $sformatf("*env.m_adc_push_pull_agent_%0d", idx
@@ -126,7 +126,7 @@ module tb;
 
   // Output decode
   // We assert an adc_if request if:
-  // 1. The coresponding channel is selected
+  // 1. The corresponding channel is selected
   // 2. Power Down is not asserted
   // 3. No other channel has an acknowledge
   always_comb begin : adc_o_decode
