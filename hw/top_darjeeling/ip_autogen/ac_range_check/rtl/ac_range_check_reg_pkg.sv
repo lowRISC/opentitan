@@ -119,6 +119,13 @@ package ac_range_check_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        d;
+      logic        de;
+    } log_clear;
+  } ac_range_check_hw2reg_log_config_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic [4:0]  d;
       logic        de;
     } deny_range_index;
@@ -181,8 +188,9 @@ package ac_range_check_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [80:79]
-    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [78:71]
+    ac_range_check_hw2reg_intr_state_reg_t intr_state; // [82:81]
+    ac_range_check_hw2reg_alert_status_reg_t alert_status; // [80:73]
+    ac_range_check_hw2reg_log_config_reg_t log_config; // [72:71]
     ac_range_check_hw2reg_log_status_reg_t log_status; // [70:33]
     ac_range_check_hw2reg_log_address_reg_t log_address; // [32:0]
   } ac_range_check_hw2reg_t;
