@@ -1399,12 +1399,12 @@ The upper field must be the exact inverse of the lower field.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_BUS_CMP_ALERT
-This bit is set when the interal entropy bus value is equal to the prior
+This bit is set when the internal entropy bus value is equal to the prior
 valid value on the bus, indicating a possible attack.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_MAIN_SM_ALERT
-This bit is set when the main state machine detects a threshhold failure state.
+This bit is set when the main state machine detects a threshold failure state.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_TYPE_FIELD_ALERT

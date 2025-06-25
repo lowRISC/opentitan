@@ -44,7 +44,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   // This scoreboard is not capable of anticipating with single-cycle accuracy whether the observe
   // and entropy data FIFOs are empty.  However, we can note when they have been explicitly cleared
-  // and use that to anticipate any alerts that may come about background diable events
+  // and use that to anticipate any alerts that may come about background disable events
   bit fifos_cleared = 1;
 
   // Queue of RNG data for health testing
@@ -71,7 +71,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   // The most recent candidate seed from entropy_data_q
   // At each TL read the TL data item is compared to the appropriate
-  // 32-bit segment of this seed (as determented by seed_tl_read_cnt)
+  // 32-bit segment of this seed (as determined by seed_tl_read_cnt)
   bit [CSRNG_BUS_WIDTH - 1:0]      tl_best_seed_candidate;
 
   // The previous output seed (+ fips bit)  We need to track this to determine whether to expect
@@ -124,7 +124,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   // Interrupt Management Variables
 
-  // To track interrupt events we need to identify interupts have
+  // To track interrupt events we need to identify interrupts have
   // been previously observed to be high.
   //
   // An interrupt that was previously high is ignored until
@@ -196,7 +196,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   } pad_st_e;
 
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
-  // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
+  // Due to subtleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
     HardReset,
     Disable,
@@ -1392,7 +1392,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   //
   // Performs several scoreboarding functions:
   // It checks that the recently written (mirrored) value is valid. If invalid, the function:
-  // - Expects a recovereable alert
+  // - Expects a recoverable alert
   // - Updates the prediction for the RECOV_ALERT_STS register
   // - Samples the relevant coverpoint for recoverable alert events.
   //
@@ -1409,7 +1409,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Check the currently predicted value for the desired register and field
     //
     // Almost all of the redundant values are isolated MultiBit Booleans except for
-    // ALERT_THRESHOLD in which the threhold field must equal the inverse of the
+    // ALERT_THRESHOLD in which the threshold field must equal the inverse of the
     // inverse threshold field.
     if (reg_name != "alert_threshold") begin
       bad_redundancy = mubi4_test_invalid(

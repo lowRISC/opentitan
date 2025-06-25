@@ -35,7 +35,7 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_rng_agent_cfg.en_cov     = cfg.en_cov;
 
     // To correctly model ast/rng behavior, back-to-back entropy is not allowed
-    // The actual AST/RNG ingores ready-signal backpressure, but this can be inconvenient for
+    // The actual AST/RNG ignores ready-signal backpressure, but this can be inconvenient for
     // tests which use a fixed (non-random) RNG sequence.  So the backpressure support is done
     // on a test by test basis.
     cfg.m_rng_agent_cfg.zero_delays = 0;
