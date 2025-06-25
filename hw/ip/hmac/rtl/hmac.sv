@@ -434,7 +434,7 @@ module hmac
   //   The FIFO is then managed entirely by the hardware.
   // - The FIFO is currently not writeable by software.
   // - Software has already written the Process command. The HMAC block will now empty the
-  //   FIFO and load its content into the SHA2 core, add the padding and then perfom
+  //   FIFO and load its content into the SHA2 core, add the padding and then perform
   //   the final hashing operation. Software cannot append the message further.
   // - Software has written the Stop command. The HMAC block will not wait for further input from
   //   software after finishing the current block.
