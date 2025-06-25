@@ -163,7 +163,7 @@ def scramble_flash(ctx, **kwargs):
       kwargs: Overrides of values normally retrived from the context object.
         output: The name of the output file.  Constructed from `name` and `suffix`
                  if not specified.
-        suffix: The suffix to give the file if the ouput isn't specified.
+        suffix: The suffix to give the file if the output isn't specified.
         src: The src File object.
         otp: The OTP settings.
         otp_mmap: The OTP memory mapping file.
