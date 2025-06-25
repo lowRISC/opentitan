@@ -96,7 +96,7 @@ task hmac_scoreboard::run_phase(uvm_phase phase);
           fork
             begin
               cfg.clk_rst_vif.wait_clks(1);   // Wait one clk cycle to be sure IDLE state is set
-              check_idle(1'b1);               // Check IDLE after a reset has occured
+              check_idle(1'b1);               // Check IDLE after a reset has occurred
             end
             hmac_process_fifo_status();
             hmac_process_fifo_wr();
@@ -461,7 +461,7 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
           // For the NIST, don't swap the read digest value
           nist_act_digest[digest_idx] = item.d_data;
           // Compare digest only when hmac_done_seen. This is needed as
-          // we are performing reads from the sequences even when the disgest is not supposed to be
+          // we are performing reads from the sequences even when the digest is not supposed to be
           // ready from the DUT.
           if ((digest_idx == NUM_DIGESTS-1) && hmac_done_seen) begin
             compare_nist_digest(nist_act_digest, expected_digest_size);
@@ -708,7 +708,7 @@ task hmac_scoreboard::hmac_process_fifo_status();
       // Reset full flag when emptiness has been reached
       if (hmac_fifo_empty) begin
         fifo_full_detected = 0;
-      // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
+      // Check whether FIFO full has been detected for the ongoing message but the restrictions cases
       // have the priority in case full is set at the same moment. Use the posedge to be sure that
       // it is high because of the current message and check also that it's still high at that time.
       end else if (hmac_fifo_full_posedge && hmac_fifo_full) begin

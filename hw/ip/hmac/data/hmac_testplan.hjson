@@ -13,10 +13,10 @@
     {
       name: smoke
       desc: '''HMAC smoke test performs a few round of HMAC or SHA256-ONLY transactions with the
-      prodecures below:
+      procedures below:
             - Set configuration register to randomly enable SHA256, hmac, endian_swap, and digest_swap
             - Set interrupt enable register to randomly enable fifo_full, hmac_done, and err_code
-              interupts
+              interrupts
             - Randomly read previous digest result
             - Write key
             - Trigger HMAC hash_start
