@@ -73,6 +73,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:aes",
+        "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:crypto_hdrs",

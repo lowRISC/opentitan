@@ -120,10 +120,9 @@ static status_t trigger_cryptolib_hmac(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
-
-  memset(data_out, 0, HMAC_CMD_MAX_TAG_BYTES);
-  *data_out_len = HMAC_CMD_MAX_TAG_BYTES;
-  *cfg_out = 0;
+  cryptolib_sca_hmac_impl(data_in, data_in_len, key, key_len, data_out,
+                          data_out_len, padding, mode, cfg_in, cfg_out,
+                          trigger);
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
