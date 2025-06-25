@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi", "pentest_cryptolib_sca", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_sca")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -244,36 +244,70 @@ pentest_sca(
     test_vectors = SHA3_SCA_TESTVECTOR_TARGETS,
 )
 
-CRYPTOLIB_FI_TESTVECTOR_TARGETS = [
-    "//sw/host/penetrationtests/testvectors/data:fi_cryptolib",
+CRYPTOLIB_FI_SYM_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_sym_cryptolib",
 ]
 
-CRYPTOLIB_FI_TESTVECTOR_ARGS = " ".join([
-    "--fi-cryptolib-json=\"$(rootpath {})\"".format(target)
-    for target in CRYPTOLIB_FI_TESTVECTOR_TARGETS
+CRYPTOLIB_FI_ASYM_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:fi_asym_cryptolib",
+]
+
+CRYPTOLIB_FI_SYM_TESTVECTOR_ARGS = " ".join([
+    "--fi-sym-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_FI_SYM_TESTVECTOR_TARGETS
 ])
 
-pentest_cryptolib_fi(
-    name = "fi_cryptolib",
+CRYPTOLIB_FI_ASYM_TESTVECTOR_ARGS = " ".join([
+    "--fi-asym-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_FI_ASYM_TESTVECTOR_TARGETS
+])
+
+pentest_cryptolib_fi_sym(
+    name = "fi_sym_cryptolib",
     slow_test = False,
-    test_args = CRYPTOLIB_FI_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/penetrationtests/fi_cryptolib:harness",
-    test_vectors = CRYPTOLIB_FI_TESTVECTOR_TARGETS,
+    test_args = CRYPTOLIB_FI_SYM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_sym_cryptolib:harness",
+    test_vectors = CRYPTOLIB_FI_SYM_TESTVECTOR_TARGETS,
 )
 
-CRYPTOLIB_SCA_TESTVECTOR_TARGETS = [
-    "//sw/host/penetrationtests/testvectors/data:sca_cryptolib",
+pentest_cryptolib_fi_asym(
+    name = "fi_asym_cryptolib",
+    slow_test = False,
+    test_args = CRYPTOLIB_FI_ASYM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/fi_asym_cryptolib:harness",
+    test_vectors = CRYPTOLIB_FI_ASYM_TESTVECTOR_TARGETS,
+)
+
+CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_sym_cryptolib",
 ]
 
-CRYPTOLIB_SCA_TESTVECTOR_ARGS = " ".join([
-    "--sca-cryptolib-json=\"$(rootpath {})\"".format(target)
-    for target in CRYPTOLIB_SCA_TESTVECTOR_TARGETS
+CRYPTOLIB_SCA_ASYM_TESTVECTOR_TARGETS = [
+    "//sw/host/penetrationtests/testvectors/data:sca_asym_cryptolib",
+]
+
+CRYPTOLIB_SCA_SYM_TESTVECTOR_ARGS = " ".join([
+    "--sca-sym-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS
 ])
 
-pentest_cryptolib_sca(
-    name = "sca_cryptolib",
+CRYPTOLIB_SCA_ASYM_TESTVECTOR_ARGS = " ".join([
+    "--sca-asym-cryptolib-json=\"$(rootpath {})\"".format(target)
+    for target in CRYPTOLIB_SCA_ASYM_TESTVECTOR_TARGETS
+])
+
+pentest_cryptolib_sca_sym(
+    name = "sca_sym_cryptolib",
     slow_test = False,
-    test_args = CRYPTOLIB_SCA_TESTVECTOR_ARGS,
-    test_harness = "//sw/host/tests/penetrationtests/sca_cryptolib:harness",
-    test_vectors = CRYPTOLIB_SCA_TESTVECTOR_TARGETS,
+    test_args = CRYPTOLIB_SCA_SYM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_sym_cryptolib:harness",
+    test_vectors = CRYPTOLIB_SCA_SYM_TESTVECTOR_TARGETS,
+)
+
+pentest_cryptolib_sca_asym(
+    name = "sca_asym_cryptolib",
+    slow_test = False,
+    test_args = CRYPTOLIB_SCA_ASYM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/penetrationtests/sca_asym_cryptolib:harness",
+    test_vectors = CRYPTOLIB_SCA_ASYM_TESTVECTOR_TARGETS,
 )

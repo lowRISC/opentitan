@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/tests/penetrationtests/json/cryptolib_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/cryptolib_fi_sym_commands.h"
 
 /**
  * Wrapper to AES cryptolib implementation.
@@ -16,7 +16,7 @@
  * @param uj_output An initialized uJSON context.
  * @return OK or error.
  */
-status_t cryptolib_fi_aes_impl(cryptolib_fi_aes_in_t uj_input,
-                               cryptolib_fi_aes_out_t *uj_output);
+status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
+                               cryptolib_fi_sym_aes_out_t *uj_output);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_CRYPTOLIB_FI_IMPL_H_

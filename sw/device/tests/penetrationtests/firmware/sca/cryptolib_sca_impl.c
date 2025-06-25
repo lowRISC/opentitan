@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/cryptolib.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
-#include "sw/device/tests/penetrationtests/json/cryptolib_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/cryptolib_sca_sym_commands.h"
 
 status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
                                 size_t data_in_len,

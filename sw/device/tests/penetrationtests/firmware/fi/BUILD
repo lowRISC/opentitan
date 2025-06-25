@@ -29,9 +29,9 @@ cc_library(
 )
 
 cc_library(
-    name = "cryptolib_fi",
-    srcs = ["cryptolib_fi.c"],
-    hdrs = ["cryptolib_fi.h"],
+    name = "cryptolib_fi_sym",
+    srcs = ["cryptolib_fi_sym.c"],
+    hdrs = ["cryptolib_fi_sym.h"],
     deps = [
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -42,7 +42,25 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_impl",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/device/tests/penetrationtests/json:cryptolib_fi_commands",
+        "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
+    ],
+)
+
+cc_library(
+    name = "cryptolib_fi_asym",
+    srcs = ["cryptolib_fi_asym.c"],
+    hdrs = ["cryptolib_fi_asym.h"],
+    deps = [
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/firmware/fi:cryptolib_fi_impl",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:cryptolib_fi_asym_commands",
     ],
 )
 
@@ -64,7 +82,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
-        "//sw/device/tests/penetrationtests/json:cryptolib_fi_commands",
+        "//sw/device/tests/penetrationtests/json:cryptolib_fi_sym_commands",
     ],
 )
 
