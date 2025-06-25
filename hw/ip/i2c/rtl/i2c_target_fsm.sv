@@ -255,7 +255,7 @@ module i2c_target_fsm import i2c_pkg::*;
   end
 
   // An artificial acq_fifo_wready is used here to ensure we always have
-  // space to asborb a stop / repeat start format byte.  Without guaranteeing
+  // space to absorb a stop / repeat start format byte.  Without guaranteeing
   // space for this entry, the target module would need to stretch the
   // repeat start / stop indication.  If a system does not support stretching,
   // there's no good way for a stop to be NACK'd.

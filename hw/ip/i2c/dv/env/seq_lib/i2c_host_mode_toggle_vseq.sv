@@ -103,7 +103,7 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
       cfg.scoreboard.target_mode_wr_obs_fifo.flush();
 
     end
-    // Re-enable scorebaord
+    // Re-enable scoreboard
     cfg.en_scb = 1;
 
     // Re-enable host mode

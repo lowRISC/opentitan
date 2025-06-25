@@ -5,7 +5,7 @@
 // This test checks the TX_STRETCH_CTRL feature. (CSR.CTRL.TX_STRETCH_CTRL_EN)
 //
 // This test stimulates read transfers from the Agent after filling the TXFIFO
-// with data. It then awaits the tx_strech interrupt to be asserted, and checks
+// with data. It then awaits the tx_stretch interrupt to be asserted, and checks
 // that 'TARGET_EVENTS.TX_PENDING' is set. It then clears the pending state to
 // allow the transfer to complete, and upon completion checks the pending
 // interrupt has not been asserted again.

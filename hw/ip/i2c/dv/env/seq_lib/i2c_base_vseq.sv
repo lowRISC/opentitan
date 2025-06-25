@@ -223,7 +223,7 @@ class i2c_base_vseq extends cip_base_vseq #(
                                 1 :/ cfg.seq_cfg.i2c_prob_scl_interference};
   }
 
-  // contraints for fifo access delay
+  // constraints for fifo access delay
   constraint clear_intr_dly_c {
     clear_intr_dly inside {[cfg.seq_cfg.i2c_min_dly : cfg.seq_cfg.i2c_max_dly]};
   }
@@ -361,7 +361,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.ctrl.enabletarget.set(1'b0);
       ral.ctrl.llpbk.set(1'b0);
       csr_update(ral.ctrl);
-      // diable override
+      // disable override
       ral.ovrd.txovrden.set(1'b0);
       csr_update(ral.ovrd);
     end else begin
@@ -708,12 +708,12 @@ class i2c_base_vseq extends cip_base_vseq #(
   // Polling-based ACQFIFO handler
   //
   // This routine waits until the sequence (via cfg.exp_num_acqfifo_reads) indicates it has created
-  // stimulus that will generate ACQFIFO entires. It then calls read_acq_fifo() until the expected
+  // stimulus that will generate ACQFIFO entries. It then calls read_acq_fifo() until the expected
   // number of ACQFIFO reads have been performed (and checked by the scoreboard).
   //
   virtual task process_acq();
 
-    // Wait until at least some stimulus has been created, that will produce ACQFIFO entires.
+    // Wait until at least some stimulus has been created, that will produce ACQFIFO entries.
     `DV_WAIT(cfg.exp_num_acqfifo_reads > 0,, cfg.spinwait_timeout_ns)
 
     while (!`ALL_ACQFIFO_READS_OCCURRED || (sent_txn_cnt < num_trans)) begin
@@ -833,7 +833,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     int unsigned num_data_total;
     // A temporary, used to randomize the total number of transfers in the transaction.
     int num_transfers;
-    // A temporary used to succintly randomize the structure of the transaction.
+    // A temporary used to succinctly randomize the structure of the transaction.
     // Each element in the array will represent the number of data bytes in each transfer that
     // makes up the larger created transaction.
     int unsigned transfer_lengths[];
@@ -1240,7 +1240,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           data = 1;
           // If tx_stretch interrupt is set,
           // interrupt handler in tb routine is to fill up tx fifo and empty acq fifo.
-          // if tx fifo is alreay full, this routine can block 'read_acq_fifo'
+          // if tx fifo is already full, this routine can block 'read_acq_fifo'
           // and causes deadlock by waiting txempty forever.
           // So if interrupt handler is used, make each task not block the other
           while (data) begin
@@ -1347,7 +1347,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
 
     // For the ack-then-stop test mode, we stimulate an extra final transaction which ends with
-    // the test stimulus we expect to trigger the associated interupt (This routine sets
+    // the test stimulus we expect to trigger the associated interrupt (This routine sets
     // force_ack = 1 and cfg.wr_pct = 0 to guarantee this).
     if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
 

@@ -62,7 +62,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
           rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
                    ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
-          // program address for folowing transaction types
+          // program address for following transaction types
           chained_read = fmt_item.read && fmt_item.rcont;
           if ((cur_tran == 1'b1) ||  // first read transaction
               (!fmt_item.read)   ||  // write transactions

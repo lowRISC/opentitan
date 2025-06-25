@@ -154,7 +154,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
   function void create_write_glitch(ref i2c_item driver_q[$]);
     `uvm_info(`gfn, $sformatf("Introducing %s glitch", glitch.name()), UVM_LOW)
 
-    // First drive a START condition to begin the transactiona.
+    // First drive a START condition to begin the transaction.
     begin
       i2c_item start_txn;
       `uvm_create_obj(i2c_item, start_txn)
