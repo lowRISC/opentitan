@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Binds OTP_CTRL functional coverage interaface to the top level OTP_CTRL module.
+// Binds OTP_CTRL functional coverage interface to the top level OTP_CTRL module.
 //
 `define PART_MUBI_COV(__part_name, __index)                                           \
   bind otp_ctrl cip_mubi_cov_if #(.Width(8)) ``__part_name``_read_lock_mubi_cov_if (  \
