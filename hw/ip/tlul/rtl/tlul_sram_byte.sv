@@ -216,7 +216,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
     // If the readback feature is enabled, we assume that the write phase takes one extra cycle
     // due to the underlying scrambling mechanism. If this additional cycle is not needed anymore
-    // in the future (e.g. due to the removable of the scrambling mechanism), the readback does not
+    // in the future (e.g. due to the removal of the scrambling mechanism), the readback does not
     // need to be delayed by once cylce in the FSM below.
     `ASSERT(NoPendingWriteAfterWrite_A, wr_phase & mubi4_test_true_loose(rdback_en_q)
         |=> write_pending_i)
