@@ -19,4 +19,14 @@
 status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
                                cryptolib_fi_sym_aes_out_t *uj_output);
 
+/**
+ * Wrapper to HMAC cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
+                                cryptolib_fi_sym_hmac_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_CRYPTOLIB_FI_IMPL_H_
