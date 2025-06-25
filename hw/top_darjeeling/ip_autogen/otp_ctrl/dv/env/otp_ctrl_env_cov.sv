@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 /**
- * Covergoups that are dependent on run-time parameters that may be available
+ * Covergroups that are dependent on run-time parameters that may be available
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
