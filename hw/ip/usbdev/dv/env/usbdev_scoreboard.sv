@@ -993,7 +993,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // Reset local fifos queues and variables
+    // reset local fifos queues and variables
     req_usb20_fifo.flush();
     rsp_usb20_fifo.flush();
     expected_rsp_q.delete();

@@ -193,7 +193,7 @@ return;
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (ral_name)
       RAL_T::type_name : begin
         process_tl_mbx_core_access(item, channel);

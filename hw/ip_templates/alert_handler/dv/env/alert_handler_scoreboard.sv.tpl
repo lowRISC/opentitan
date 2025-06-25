@@ -459,7 +459,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
     end
 
     // process the csr req
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
 
     if (!write) begin
       // On reads, if do_read_check, is set, then check mirrored_value against item.d_data

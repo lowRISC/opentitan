@@ -150,7 +150,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       "regwen": begin
         regwen = regwen & item.a_data[0];

@@ -680,7 +680,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr_name)
       // add individual case item for each csr
       "intr_state": begin

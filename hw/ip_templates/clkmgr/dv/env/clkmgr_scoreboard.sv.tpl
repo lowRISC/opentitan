@@ -262,7 +262,7 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
 
     // Process the csr req:
     // - For write, update local variable and fifo at address phase.
-    // - For read, update predication at address phase and compare at data phase.
+    // - For read, update prediction at address phase and compare at data phase.
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin

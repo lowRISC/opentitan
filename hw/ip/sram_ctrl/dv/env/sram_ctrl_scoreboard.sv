@@ -549,7 +549,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr_name)
       // add individual case item for each csr
       "alert_test": begin

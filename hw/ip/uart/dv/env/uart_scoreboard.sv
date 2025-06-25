@@ -187,7 +187,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
     // process the csr req
     // for write, update local variable and fifo at address phase
-    // for read, update predication at address phase and compare at data phase
+    // for read, update prediction at address phase and compare at data phase
     case (csr.get_name())
       "ctrl": begin
         if (write && channel == AddrChannel) begin
