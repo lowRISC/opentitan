@@ -107,7 +107,7 @@ typedef struct dif_i2c_timing_config {
  */
 typedef struct dif_i2c_id {
   /**
-   * Mask the recieved I2C address before checking for a match. Received Address
+   * Mask the received I2C address before checking for a match. Received Address
    * & mask must equal the programmed address to activate I2C Device. If Address
    * & ~mask != 0, this will not match any addresses. A mask of 0x7f will cause
    * device to only respond to an exact match. The mask is 7 bits and LSB

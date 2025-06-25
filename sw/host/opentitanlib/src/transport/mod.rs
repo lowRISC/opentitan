@@ -159,7 +159,7 @@ pub trait Transport {
 
     /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
     /// assume that no other `opentitantool` processes attempt to access the same debugger device.
-    /// This allows for optimzations such as keeping USB handles open across function invocations.
+    /// This allows for optimizations such as keeping USB handles open across function invocations.
     fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
         // For implementations that have not implemented any optimizations, return a no-op object.
         Ok(Rc::new(()))
@@ -175,7 +175,7 @@ pub trait Transport {
 
 /// As long as this object is kept alive, the `Transport` driver may assume that no other
 /// `opentitantool` processes attempt to access the same debugger device.  This allows for
-/// optimzations such as keeping USB handles open across function invocations.
+/// optimizations such as keeping USB handles open across function invocations.
 pub trait MaintainConnection {}
 
 /// No-op implmentation of the trait, for use by `Transport` implementations that do not do

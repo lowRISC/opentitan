@@ -234,7 +234,7 @@ static uint16_t alert_handler_num_fired_loc_alerts(void) {
   // Indicates if any of the alerts or local alerts is fired.
   uint16_t accumulator = 0;
   // Loop over all loc_alert_cause regs
-  // Keep the result for kDifAlertHandlerLocalAlertAlertPingFail in a seperate
+  // Keep the result for kDifAlertHandlerLocalAlertAlertPingFail in a separate
   // variable
   for (dif_alert_handler_local_alert_t i = 0; i < 7; i++) {
     CHECK_DIF_OK(

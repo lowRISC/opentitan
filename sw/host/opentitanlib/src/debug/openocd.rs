@@ -276,7 +276,7 @@ impl JtagChain for OpenOcdJtagChain {
         };
         self.openocd.execute(target)?;
 
-        // Capture outputs during initialization to see if error has occured during the process.
+        // Capture outputs during initialization to see if error has occurred during the process.
         let resp = self.openocd.execute("capture init")?;
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));

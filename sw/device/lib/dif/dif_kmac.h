@@ -364,7 +364,7 @@ typedef struct dif_kmac_function_name {
  */
 typedef enum dif_kmac_error {
   /**
-   * No error has occured.
+   * No error has occurred.
    */
   kDifErrorNone = 0,
 

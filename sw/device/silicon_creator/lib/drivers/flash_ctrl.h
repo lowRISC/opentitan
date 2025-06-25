@@ -239,7 +239,7 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status);
  */
 typedef struct flash_ctrl_error_code {
   /**
-   * Flash macro error occured.
+   * Flash macro error occurred.
    */
   bool macro_err;
   /**
