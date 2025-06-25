@@ -200,7 +200,7 @@ class edn_alert_vseq extends edn_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
       cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
     end
-    // Disable the boot mode to trigger the uninstaniate command if needed.
+    // Disable the boot mode to trigger the uninstantiate command if needed.
     if (exp_state inside {BootLoadUni, BootUniAckWait}) begin
       ral.ctrl.boot_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
