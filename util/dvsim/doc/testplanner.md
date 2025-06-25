@@ -4,7 +4,7 @@
 * Expanding the testplan inline within the DV document as a table;
 * Annotating the simulation results with testplan entries for a document driven DV execution;
 
-Please see [DV methodology](../../../doc/contributing/dv/methodology/README.md#documentation) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
+Please see [DV methodology](../../../doc/contributing/dv/methodology/README.md#testplan) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
 This document will focus on the anatomy of an Hjson testplan, the list of features supported and some of the ways of using the tool.
 
 ## Hjson testplan
@@ -54,59 +54,59 @@ The following attributes are used to define each testpoint, at minimum:
     At the moment, tags are not strictly defined - users are free to come up with their own set of tags.
     The following examples of tags illustrate the usage:
 
-```hjson
-  // Run this testpoint on verilator and fpga as well.
-  tags: ["verilator", "fpga_cw310"]
+    ```hjson
+      // Run this testpoint on verilator and fpga as well.
+      tags: ["verilator", "fpga_cw310"]
 
-  // Run this testpoint in gate level and with poweraware.
-  tags: ["gls", "pa"]
+      // Run this testpoint in gate level and with power aware.
+      tags: ["gls", "pa"]
 
-  // Run this testpoint with ROM (will use test ROM by default).
-  tags: ["rom"]
+      // Run this testpoint with ROM (will use test ROM by default).
+      tags: ["rom"]
 
-  // Run this testpoint as a post-Si test vector on the tester.
-  tags: ["vector"]
-```
+      // Run this testpoint as a post-Si test vector on the tester.
+      tags: ["vector"]
+    ```
 
     The testplan from the documentation point of view, can be filtered by a tag (or a set of tags), so that the generated testplan table only includes (or excludes) those testpoints.
 
-If the need arises, more attributes may be added relatively easily.
+    If the need arises, more attributes may be added relatively easily.
 
-Testpoints are added to the testplan using the `testpoints` key.
-Here's an example:
-```hjson
-  testpoints: [
-    {
-      name: feature1
-      stage: V1
-      desc: '''**Goal**: High level goal of this test.
+    Testpoints are added to the testplan using the `testpoints` key.
+    Here's an example:
+    ```hjson
+      testpoints: [
+        {
+          name: feature1
+          stage: V1
+          desc: '''**Goal**: High level goal of this test.
 
-            **Stimulus**: Describe the stimulus procedure.
+                **Stimulus**: Describe the stimulus procedure.
 
-            **Check**: Describe the checking procedure.'''
-      tests: ["foo_feature1"]
-    }
-    {
-      name: feature2
-      stage: V2
-      desc: '''**Goal**: High level goal of this test.
+                **Check**: Describe the checking procedure.'''
+          tests: ["foo_feature1"]
+        }
+        {
+          name: feature2
+          stage: V2
+          desc: '''**Goal**: High level goal of this test.
 
-            **Stimulus**: Describe the stimulus procedure.
+                **Stimulus**: Describe the stimulus procedure.
 
-            **Check**: Describe the checking procedure.'''
+                **Check**: Describe the checking procedure.'''
 
-      // Below is the list of written (runnable) tests that maps to `feature2`.
-      // To satisfactorilly test `feature2`, three tests are written. There
-      // could be various reasons to split the written test, the most common
-      // being unacceptably long runtime.
-      tests: ["foo_feature2_test1",
-              "foo_feature2_test2",
-              "foo_feature2_test3"]
-      tags: ["gls"]
-    }
-    ...
-  ]
-```
+          // Below is the list of written (runnable) tests that maps to `feature2`.
+          // To satisfactorily test `feature2`, three tests are written. There
+          // could be various reasons to split the written test, the most common
+          // being unacceptably long runtime.
+          tests: ["foo_feature2_test1",
+                  "foo_feature2_test2",
+                  "foo_feature2_test3"]
+          tags: ["gls"]
+        }
+        ...
+      ]
+    ```
 
 ### Covergroups
 
@@ -249,8 +249,9 @@ Filter the testplan by tags "foo" and "bar":
 $ ./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson:foo:bar \
     -s util/dvsim/examples/testplanner/foo_sim_results.hjson
+```
 
-Filter the testplan by excluding the testspoints tagged "foo":
+Filter the testplan by excluding the testpoints tagged "foo":
 ```console
 $ ./util/dvsim/testplanner.py \
     util/dvsim/examples/testplanner/foo_testplan.hjson:-foo \
@@ -279,11 +280,11 @@ This is done by invoking:
 ./util/site/build-docs.sh serve
 ```
 
-The `util/mdbook_testplan.py` preprocessor renders any testplan present the `SUMMARY.md` into the documenation.
+The `util/mdbook_testplan.py` preprocessor renders any testplan present the `SUMMARY.md` into the documentation.
 The complete OpenTitan documentation is rendered locally at `https://0.0.0.0:9000`.
 
 ## Future work
 * Allow DUT and its imported testplans to have the same testpoint name as long as they are in separate files.
   * The list of written tests are appended from both files.
-  * The descriptions are merged - its upto the user to ensure that it is still meaningful after the merge.
+  * The descriptions are merged - it's up to the user to ensure that it is still meaningful after the merge.
   * Conflicting verification stages are flagged as an error.
