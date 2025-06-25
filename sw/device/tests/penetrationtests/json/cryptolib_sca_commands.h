@@ -51,21 +51,21 @@ extern "C" {
     value(_, HmacFvsrPlaintext) \
     value(_, HmacFvsrKey) \
     value(_, DrbgFvsr) \
-    value(_, RsaDec) \
-    value(_, RsaSign) \
+    value(_, RsaDecFvsr) \
+    value(_, RsaSignFvsr) \
     value(_, Prime) \
-    value(_, P256BaseMul) \
+    value(_, P256BaseMulFvsr) \
     value(_, P256PointMul) \
     value(_, P256Sign) \
-    value(_, P384BaseMul) \
+    value(_, P384BaseMulFvsr) \
     value(_, P384PointMul) \
     value(_, P384Sign) \
-    value(_, Secp256k1BaseMul) \
+    value(_, Secp256k1BaseMulFvsr) \
     value(_, Secp256k1PointMul) \
     value(_, Secp256k1Sign) \
-    value(_, X25519BaseMul) \
+    value(_, X25519BaseMulFvsr) \
     value(_, X25519PointMul) \
-    value(_, Ed25519BaseMul) \
+    value(_, Ed25519BaseMulFvsr) \
     value(_, Ed25519Sign) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSubcommand, cryptolib_sca_subcommand_t, CRYPTOLIBSCA_SUBCOMMAND));
@@ -253,6 +253,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaDrbgOut, cryptolib_sca_drbg_out_t, CRYPTOLIBSCA_D
     field(hashing, size_t) \
     field(padding, size_t) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaRsaDecIn, cryptolib_sca_rsa_dec_in_t, CRYPTOLIBSCA_RSA_DEC_IN);
 
@@ -275,6 +276,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaRsaDecOut, cryptolib_sca_rsa_dec_out_t, CRYPTOLIB
     field(hashing, size_t) \
     field(padding, size_t) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaRsaSignIn, cryptolib_sca_rsa_sign_in_t, CRYPTOLIBSCA_RSA_SIGN_IN);
 
@@ -302,6 +304,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaPrimeOut, cryptolib_sca_prime_out_t, CRYPTOLIBSCA
 #define CRYPTOLIBSCA_P256_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, P256_CMD_BYTES) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaP256BaseMulIn, cryptolib_sca_p256_base_mul_in_t, CRYPTOLIBSCA_P256_BASE_MUL_IN);
 
@@ -342,6 +345,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaP256SignOut, cryptolib_sca_p256_sign_out_t, CRYPT
 #define CRYPTOLIBSCA_P384_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, P384_CMD_BYTES) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaP384BaseMulIn, cryptolib_sca_p384_base_mul_in_t, CRYPTOLIBSCA_P384_BASE_MUL_IN);
 
@@ -382,6 +386,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaP384SignOut, cryptolib_sca_p384_sign_out_t, CRYPT
 #define CRYPTOLIBSCA_SECP256K1_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, SECP256K1_CMD_BYTES) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSECP256K1BaseMulIn, cryptolib_sca_secp256k1_base_mul_in_t, CRYPTOLIBSCA_SECP256K1_BASE_MUL_IN);
 
@@ -422,6 +427,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSECP256K1SignOut, cryptolib_sca_secp256k1_sign_ou
 #define CRYPTOLIBSCA_X25519_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, X25519_CMD_BYTES) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaX25519BaseMulIn, cryptolib_sca_x25519_base_mul_in_t, CRYPTOLIBSCA_X25519_BASE_MUL_IN);
 
@@ -447,6 +453,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaX25519PointMulOut, cryptolib_sca_x25519_point_mul
 #define CRYPTOLIBSCA_ED25519_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, ED25519_CMD_SCALAR_BYTES) \
     field(cfg, size_t) \
+    field(num_iterations, size_t) \
     field(trigger, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaED25519BaseMulIn, cryptolib_sca_ed25519_base_mul_in_t, CRYPTOLIBSCA_ED25519_BASE_MUL_IN);
 

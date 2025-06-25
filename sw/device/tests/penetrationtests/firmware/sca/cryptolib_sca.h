@@ -172,7 +172,7 @@ status_t handle_cryptolib_sca_drbg_fvsr(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_rsa_dec(ujson_t *uj);
+status_t handle_cryptolib_sca_rsa_dec_fvsr(ujson_t *uj);
 
 /**
  * cryptolib rsa sca sign test
@@ -184,7 +184,7 @@ status_t handle_cryptolib_sca_rsa_dec(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_rsa_sign(ujson_t *uj);
+status_t handle_cryptolib_sca_rsa_sign_fvsr(ujson_t *uj);
 
 /**
  * cryptolib rsa sca dec test
@@ -210,7 +210,7 @@ status_t handle_cryptolib_sca_prime(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_p256_base_mul(ujson_t *uj);
+status_t handle_cryptolib_sca_p256_base_mul_fsvr(ujson_t *uj);
 
 /**
  * The cryptolib sca p256 point mul handler.
@@ -252,7 +252,7 @@ status_t handle_cryptolib_sca_p256_sign(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_p384_base_mul(ujson_t *uj);
+status_t handle_cryptolib_sca_p384_base_mul_fvsr(ujson_t *uj);
 
 /**
  * The cryptolib sca p384 point mul handler.
@@ -294,7 +294,7 @@ status_t handle_cryptolib_sca_p384_sign(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_secp256k1_base_mul(ujson_t *uj);
+status_t handle_cryptolib_sca_secp256k1_base_mul_fvsr(ujson_t *uj);
 
 /**
  * The cryptolib sca secp256k1 point mul handler.
@@ -336,7 +336,7 @@ status_t handle_cryptolib_sca_secp256k1_sign(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_x25519_base_mul(ujson_t *uj);
+status_t handle_cryptolib_sca_x25519_base_mul_fvsr(ujson_t *uj);
 
 /**
  * The cryptolib sca x25519 point mul handler.
@@ -365,7 +365,7 @@ status_t handle_cryptolib_sca_x25519_point_mul(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_ed25519_base_mul(ujson_t *uj);
+status_t handle_cryptolib_sca_ed25519_base_mul_fsvr(ujson_t *uj);
 
 /**
  * The cryptolib sca ed25519 sign handler.
