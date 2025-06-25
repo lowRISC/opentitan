@@ -187,7 +187,7 @@ class i2c_reference_model extends uvm_component;
                                  string ral_name,
                                  uvm_reg csr);
 
-    // The 'do_read_check' bit enables a check analagous to using 'reg.mirror(.check(UVM_CHECK))',
+    // The 'do_read_check' bit enables a check analogous to using 'reg.mirror(.check(UVM_CHECK))',
     // or if reg.set_check_on_read(1) was set for the RAL model. These settings would cause the
     // UVM RAL routines to hook do_check() upon reading from the DUT, and setting this bit will
     // cause an equivalent check to be performed at the end of the read access handler below.
@@ -473,7 +473,7 @@ class i2c_reference_model extends uvm_component;
             // or a stop-indicator to end the transfer.
             rd_pending_item = temp_item;
           end else begin
-            // If 'rdata_cnt' is non_zero, then we have already recevied at least one item from
+            // If 'rdata_cnt' is non_zero, then we have already received at least one item from
             // the FMTFIFO, therefore we are in a chain read (RCONT).
             // Update the expected number of bytes (so we keep capturing new bytes into the existing
             // item), and the stop bit if the end of the read has been marked.
