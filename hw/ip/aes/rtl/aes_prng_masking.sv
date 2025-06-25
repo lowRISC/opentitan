@@ -129,7 +129,7 @@ module aes_prng_masking import aes_pkg::*;
   assign unused_prng_err = prng_err;
 
   /////////////////
-  // Asssertions //
+  // Assertions //
   /////////////////
 
 // the code below is not meant to be synthesized,

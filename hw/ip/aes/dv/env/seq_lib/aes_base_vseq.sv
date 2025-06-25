@@ -252,7 +252,7 @@ class aes_base_vseq extends cip_base_vseq #(
     // Any successful update to the shadowed control register marks the start of a new message. If
     // sideload is enabled and a valid sideload key is available, it may be latched upon the second
     // write and - depending on KEY_TOUCH_FORCES_RESEED - trigger a reseed operation which prevents
-    // further updates to the control register untile AES becomes idle again. For simplicity, we
+    // further updates to the control register until AES becomes idle again. For simplicity, we
     // just disable sideload here and then update the sideload bit last.
     ral.ctrl_shadowed.sideload.set(0);
     if (!setup_mode) begin
@@ -310,7 +310,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
       // Make sure the update went through and there wasn't an update error. It's possible that DV
       // inserted a fatal error condition before the second write could go through. In this case,
-      // the recoverable alert condition may still be visilbe together with the fatal alert. The
+      // the recoverable alert condition may still be visible together with the fatal alert. The
       // fatal alert is handled separately.
       csr_rd(.ptr(ral.status), .value(status), .blocking(1));
       `DV_CHECK_FATAL(status.alert_recov_ctrl_update_err == 1'b0 ||
@@ -366,7 +366,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task write_data_key_iv(
-    aes_seq_item item,         // sequence item with configuraton
+    aes_seq_item item,         // sequence item with configuration
     aes_seq_item data_item,        // sequence item with data to process
     bit          new_msg,          // is this a new msg -> do dut config
     bit          manual_operation, // use manual operation
@@ -432,7 +432,7 @@ class aes_base_vseq extends cip_base_vseq #(
         (csr_name == "clear_reg"): begin
           clear_regs(item.clear_reg);
           csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
-          // manual mode requries all to be written again
+          // manual mode requires all to be written again
           if (manual_operation) begin
             //remove clear from queue
             interleave_queue.delete(i);
@@ -509,9 +509,9 @@ class aes_base_vseq extends cip_base_vseq #(
 
   virtual task send_msg (
      bit manual_operation,                   // use manual operation
-     bit sideload_en,                        // use sideoad key
+     bit sideload_en,                        // use sideload key
      bit unbalanced,                         // randomize if we read or write
-     int read_prob,                          // chance of reading an availabout output
+     int read_prob,                          // chance of reading an available output
      int write_prob,                         // chance of writing input data to a ready DUT
      ref bit rst_set                         // reset was forced - restart message
      );
@@ -531,7 +531,7 @@ class aes_base_vseq extends cip_base_vseq #(
     cfg_item = aes_item_queue.pop_back();
 
     // Make sure the DUT is idle before setting it up. Writes to the main control register are only
-    // accpeted when idle.
+    // accepted when idle.
     status_fsm(cfg_item, data_item, new_msg, manual_operation, sideload_en, 1, 0, status, rst_set);
     // Configure the main control register.
     setup_dut(cfg_item);
@@ -602,7 +602,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   ////////////////////////////////////////////////////////////////////////////////////////////
-  // this task will handle setup and transmition
+  // this task will handle setup and transmission
   // of a message on a block level.
   // it will send one block then return to the caller for the next item.
   // if read output is enabled it will call the status fsm for get the
@@ -614,7 +614,7 @@ class aes_base_vseq extends cip_base_vseq #(
   ////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task config_and_transmit (
-      aes_seq_item cfg_item,         // sequence item with configuraton
+      aes_seq_item cfg_item,         // sequence item with configuration
       aes_seq_item data_item,        // sequence item with data to process
       bit          new_msg,          // is this a new msg -> do dut config
       bit          manual_operation, // use manual operation
@@ -681,7 +681,7 @@ class aes_base_vseq extends cip_base_vseq #(
   ////////////////////////////////////////////////////////////////////////////////////////////
 
   virtual task status_fsm (
-      aes_seq_item        cfg_item,         // sequence item with configuraton
+      aes_seq_item        cfg_item,         // sequence item with configuration
       aes_seq_item        data_item,        // sequence item with data to process
       bit                 new_msg,          // is this a new msg -> do dut config
       bit                 manual_operation, // use manual operation
@@ -819,7 +819,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task try_recover(
-    aes_seq_item        cfg_item,         // sequence item with configuraton
+    aes_seq_item        cfg_item,         // sequence item with configuration
     aes_seq_item        data_item,        // sequence item with data to process
     bit                 manual_operation,
     bit                 sideload_en
@@ -874,8 +874,8 @@ class aes_base_vseq extends cip_base_vseq #(
 
 
   virtual task send_msg_queue (
-     bit unbalanced, // uses the probablilites to randomize if we read or write
-     int read_prob,  // chance of reading an availabout output
+     bit unbalanced, // uses the probabilities to randomize if we read or write
+     int read_prob,  // chance of reading an available output
      int write_prob  // chance of writing input data to a ready DUT
      );
     // variables
@@ -941,7 +941,7 @@ class aes_base_vseq extends cip_base_vseq #(
       // AES indicates when it's done with processing individual blocks but not when it's done
       // with processing an entire message. To detect the end of a message, the DV environment
       // does the following:
-      // - It tracks writes to the main control register. If two successfull writes to this
+      // - It tracks writes to the main control register. If two successful writes to this
       //   shadowed register are observed, this marks the start of a new message.
       // - DV then knows that the last output data retrieved marks the end of the previous
       //   message.

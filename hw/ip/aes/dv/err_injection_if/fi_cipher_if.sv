@@ -66,7 +66,7 @@ interface fi_cipher_if
     return intf_array.size() + intf_mul_array.size();
   endfunction // get_if_size
 
-  // check which array we need to access and force or releae
+  // check which array we need to access and force or release
   function automatic void force_signal(int target, bit rel, bit [31:0] value);
     if (!rel) aes_cipher_fsm_cg_inst.sample(target);
     if (target < intf_array.size()) begin
@@ -101,7 +101,7 @@ interface fi_cipher_if
       // Similarly, faulting sub_bytes_out_req_i and key_expand_out_req_i to 1 doesn't suffice to
       // make the cipher core advance faster (also depends on cyc_ctr_q).
       //
-      // Therefore, this test only attemps to stall the cipher core by forcing these signals to 0.
+      // Therefore, this test only attempts to stall the cipher core by forcing these signals to 0.
       // For reference, see https://github.com/lowRISC/opentitan/issues/13572 .
       value = 0;
     end else begin
@@ -213,7 +213,7 @@ interface fi_cipher_if
 
   covergroup aes_cipher_fsm_cg (int num_bins) with function sample(int target);
     // We want to see coverage per instance,
-    // but as the code are copies of eachother
+    // but as the code are copies of each other
     // we don't need every instance to achieve 100% coverage
     // a total of 100% is enough so we set the option
     // to merge the coverage of the instances

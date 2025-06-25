@@ -78,7 +78,7 @@ class aes_base_test extends cip_base_test #(
 
   //    1: error type enabled, 0: error type disabled
   //  001: configuration errors
-  //  010: malicous injection
+  //  010: malicious injection
   //  100: random resets
   // 1000: pull lc_escalate
     cfg.error_types                 = 4'b1111;

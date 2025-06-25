@@ -59,7 +59,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   int                key_192b_weight            = 10;
   int                key_256b_weight            = 10;
 
-  // reseed weigth
+  // reseed weight
   int                per1_weight                = 60;
   int                per64_weight               = 30;
   int                per8k_weight               = 10;
@@ -154,7 +154,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   // number of messages to encrypt/decrypt
   rand int           num_messages;
 
-  // TL UL contraints //
+  // TL UL constraints //
   rand tl_ul_access_e host_resp_speed;
 
   rand bit           do_reseed;

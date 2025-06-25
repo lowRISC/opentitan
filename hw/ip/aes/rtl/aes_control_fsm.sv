@@ -182,7 +182,7 @@ module aes_control_fsm
                   iv_qe_i[1], iv_qe_i[1], iv_qe_i[0], iv_qe_i[0]};
 
   // The cipher core is only ever allowed to start or finish if the control register holds a valid
-  // configuration and if no fatal alert condition occured.
+  // configuration and if no fatal alert condition occurred.
   assign cfg_valid = ~((mode_i == AES_NONE) | ctrl_err_storage_i);
   assign no_alert  = ~alert_fatal_i;
 
@@ -393,7 +393,7 @@ module aes_control_fsm
                                doing_ofb     ? SI_ZERO :
                                doing_ctr     ? SI_ZERO : SI_DATA;
 
-          // State input additon mux control
+          // State input addition mux control
           add_state_in_sel_o = doing_cbc_enc ? ADD_SI_IV :
                                doing_cfb_enc ? ADD_SI_IV :
                                doing_cfb_dec ? ADD_SI_IV :
@@ -648,7 +648,7 @@ module aes_control_fsm
   // point we don't update the key anymore, as we don't have a notion of when it actually changes.
   // This would be required to trigger decryption key generation for ECB/CBC decryption.
   // To update the sideload key, software has to:
-  // 1) wait unitl AES is idle,
+  // 1) wait until AES is idle,
   // 2) wait for the key manager to provide the new key,
   // 3) start a new message by writing the control register and providing the IV (if needed).
   assign key_sideload = sideload_i & key_sideload_valid_i & ctrl_we_q & ~ctrl_phase_i;
@@ -714,7 +714,7 @@ module aes_control_fsm
 
   // Collect reads of data output registers. data_out_read is high for one clock cycle only and
   // clears output_valid_q unless new output is written in the exact same cycle. Cleared if:
-  // - clearing data ouput registers with random data,
+  // - clearing data output registers with random data,
   // - clearing the status tracking.
   assign data_out_read_d = &data_out_read_q || clear_in_out_status ? '0 :
       data_out_read_q | data_out_re_i;
@@ -740,7 +740,7 @@ module aes_control_fsm
 
   // Cleared if:
   // - all data output registers have been read (unless new output is written in the same cycle),
-  // - clearing data ouput registers with random data,
+  // - clearing data output registers with random data,
   // - clearing the status tracking.
   assign output_valid    = data_out_we_o & ~data_out_clear_we;
   assign output_valid_we = data_out_we_o | data_out_read | data_out_clear_we |
