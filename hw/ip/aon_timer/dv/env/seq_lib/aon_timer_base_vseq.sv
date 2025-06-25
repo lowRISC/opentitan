@@ -67,7 +67,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
 endclass : aon_timer_base_vseq
 
 // The aim of this constraint is to generate wkup and wdogs interrupts easily. In order to
-// do that, this constraints starts by stablishing the threshold and a gap between the count and the
+// do that, this constraints starts by establishing the threshold and a gap between the count and the
 // threshold.
 // If the threshold is 0, the count is forced to be 0.
 // Otherwise, the count will be randomised in the range [threshold-gap:threshold].
@@ -254,7 +254,7 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
       csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
     end
 
-    // If we are getting an interrupt, let's asssume sleep signal immediately goes low.
+    // If we are getting an interrupt, let's assume sleep signal immediately goes low.
     if (cfg.aon_intr_vif.pins) begin
       cfg.sleep_vif.drive(0);
     end
