@@ -16,13 +16,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-enum {
-  /**
-   * Max number of traces per batch.
-   */
-  kNumBatchOpsMax = 256,
-};
-
 static status_t trigger_cryptolib_aes(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
                                       size_t data_in_len,
                                       uint8_t key[AES_CMD_MAX_KEY_BYTES],
@@ -156,8 +149,8 @@ status_t handle_cryptolib_sca_aes_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_aes_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_aes_in_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -200,8 +193,8 @@ status_t handle_cryptolib_sca_aes_fvsr_key(ujson_t *uj) {
   cryptolib_sca_aes_in_fvsr_key_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_aes_in_fvsr_key_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -244,8 +237,8 @@ status_t handle_cryptolib_sca_cmac_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_cmac_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_cmac_in_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -287,8 +280,8 @@ status_t handle_cryptolib_sca_cmac_fvsr_key(ujson_t *uj) {
   cryptolib_sca_cmac_in_fvsr_key_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_cmac_in_fvsr_key_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -330,8 +323,8 @@ status_t handle_cryptolib_sca_gcm_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_gcm_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_gcm_in_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -378,8 +371,8 @@ status_t handle_cryptolib_sca_gcm_fvsr_key(ujson_t *uj) {
   cryptolib_sca_gcm_in_fvsr_key_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_gcm_in_fvsr_key_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][AES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][AES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][AES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -426,8 +419,8 @@ status_t handle_cryptolib_sca_tdes_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_tdes_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_tdes_in_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][TDES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][TDES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][TDES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][TDES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -470,8 +463,8 @@ status_t handle_cryptolib_sca_tdes_fvsr_key(ujson_t *uj) {
   cryptolib_sca_tdes_in_fvsr_key_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_tdes_in_fvsr_key_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][TDES_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][TDES_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][TDES_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][TDES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -514,8 +507,8 @@ status_t handle_cryptolib_sca_hmac_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_hmac_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_hmac_in_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][HMAC_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][HMAC_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][HMAC_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][HMAC_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -557,8 +550,8 @@ status_t handle_cryptolib_sca_hmac_fvsr_key(ujson_t *uj) {
   cryptolib_sca_hmac_in_fvsr_key_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_hmac_in_fvsr_key_t(uj, &uj_input));
 
-  uint8_t batch_data_in[kNumBatchOpsMax][HMAC_CMD_MAX_MSG_BYTES];
-  uint8_t batch_keys[kNumBatchOpsMax][HMAC_CMD_MAX_KEY_BYTES];
+  uint8_t batch_data_in[uj_input.num_iterations][HMAC_CMD_MAX_MSG_BYTES];
+  uint8_t batch_keys[uj_input.num_iterations][HMAC_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided key is used and the message is random. When
@@ -600,8 +593,8 @@ status_t handle_cryptolib_sca_drbg_fvsr(ujson_t *uj) {
   cryptolib_sca_drbg_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_drbg_in_t(uj, &uj_input));
 
-  uint8_t batch_entropy[kNumBatchOpsMax][DRBG_CMD_MAX_ENTROPY_BYTES];
-  uint8_t batch_nonce[kNumBatchOpsMax][DRBG_CMD_MAX_NONCE_BYTES];
+  uint8_t batch_entropy[uj_input.num_iterations][DRBG_CMD_MAX_ENTROPY_BYTES];
+  uint8_t batch_nonce[uj_input.num_iterations][DRBG_CMD_MAX_NONCE_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
   // the provided entropy is used and the nonce is random. When
@@ -640,45 +633,141 @@ status_t handle_cryptolib_sca_drbg_fvsr(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_rsa_dec(ujson_t *uj) {
-  cryptolib_sca_rsa_dec_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_rsa_dec_in_t(uj, &uj_input));
-
+status_t trigger_cryptolib_sca_rsa_dec(
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
+    size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
+    size_t *cfg_out, size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform an RSA decryption.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
 
-  cryptolib_sca_rsa_dec_out_t uj_output;
-  memset(uj_output.n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output.d, 0, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = RSA_CMD_MAX_N_BYTES;
-  memset(uj_output.data, 0, RSA_CMD_MAX_MESSAGE_BYTES);
-  uj_output.data_len = RSA_CMD_MAX_MESSAGE_BYTES;
-  uj_output.cfg = 0;
+  memset(n, 0, RSA_CMD_MAX_N_BYTES);
+  memset(d, 0, RSA_CMD_MAX_N_BYTES);
+  *n_len = RSA_CMD_MAX_N_BYTES;
+  memset(data_out, 0, RSA_CMD_MAX_MESSAGE_BYTES);
+  *data_out_len = RSA_CMD_MAX_MESSAGE_BYTES;
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_rsa_dec_fvsr(ujson_t *uj) {
+  cryptolib_sca_rsa_dec_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_rsa_dec_in_t(uj, &uj_input));
+
+  uint8_t batch_data[uj_input.num_iterations][RSA_CMD_MAX_MESSAGE_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_data[it], uj_input.data, uj_input.data_len);
+    } else {
+      prng_rand_bytes(batch_data[it], uj_input.data_len);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke RSA for each data set.
+  uint8_t data_out_buf[RSA_CMD_MAX_MESSAGE_BYTES];
+  size_t data_out_len;
+  size_t cfg_out;
+  uint8_t n[RSA_CMD_MAX_N_BYTES];
+  uint8_t d[RSA_CMD_MAX_N_BYTES];
+  memcpy(n, uj_input.n, RSA_CMD_MAX_N_BYTES);
+  memcpy(d, uj_input.d, RSA_CMD_MAX_N_BYTES);
+  size_t n_len = uj_input.n_len;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_rsa_dec(
+        batch_data[it], uj_input.data_len, uj_input.e, n, d, &n_len,
+        data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
+        uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_rsa_dec_out_t uj_output;
+  memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
+  memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
+  uj_output.n_len = n_len;
+  memcpy(uj_output.data, data_out_buf, RSA_CMD_MAX_MESSAGE_BYTES);
+  uj_output.data_len = data_out_len;
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_rsa_dec_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_rsa_sign(ujson_t *uj) {
-  cryptolib_sca_rsa_sign_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_rsa_sign_in_t(uj, &uj_input));
-
+status_t handle_cryptolib_sca_rsa_sign(
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
+    size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
+    size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform an RSA sign.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
 
-  cryptolib_sca_rsa_sign_out_t uj_output;
-  memset(uj_output.n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output.d, 0, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = RSA_CMD_MAX_N_BYTES;
-  memset(uj_output.sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  uj_output.sig_len = RSA_CMD_MAX_SIGNATURE_BYTES;
-  uj_output.cfg = 0;
+  memset(n, 0, RSA_CMD_MAX_N_BYTES);
+  memset(d, 0, RSA_CMD_MAX_N_BYTES);
+  *n_len = RSA_CMD_MAX_N_BYTES;
+  memset(sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
+  *sig_len = RSA_CMD_MAX_SIGNATURE_BYTES;
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_rsa_sign_fvsr(ujson_t *uj) {
+  cryptolib_sca_rsa_sign_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_rsa_sign_in_t(uj, &uj_input));
+
+  uint8_t batch_data[uj_input.num_iterations][RSA_CMD_MAX_MESSAGE_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_data[it], uj_input.data, uj_input.data_len);
+    } else {
+      prng_rand_bytes(batch_data[it], uj_input.data_len);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke RSA for each data set.
+  uint8_t sig_buf[RSA_CMD_MAX_SIGNATURE_BYTES];
+  size_t sig_len;
+  uint8_t n[RSA_CMD_MAX_N_BYTES];
+  uint8_t d[RSA_CMD_MAX_N_BYTES];
+  memcpy(n, uj_input.n, RSA_CMD_MAX_N_BYTES);
+  memcpy(d, uj_input.d, RSA_CMD_MAX_N_BYTES);
+  size_t n_len = uj_input.n_len;
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(handle_cryptolib_sca_rsa_sign(
+        batch_data[it], uj_input.data_len, uj_input.e, n, d, &n_len, sig_buf,
+        &sig_len, uj_input.hashing, uj_input.padding, uj_input.cfg, &cfg_out,
+        uj_input.trigger));
+  }
+
+  // Send the last signature to host via UART.
+  cryptolib_sca_rsa_sign_out_t uj_output;
+  memcpy(uj_output.n, n, RSA_CMD_MAX_N_BYTES);
+  memcpy(uj_output.d, d, RSA_CMD_MAX_N_BYTES);
+  uj_output.n_len = n_len;
+  memcpy(uj_output.sig, sig_buf, RSA_CMD_MAX_SIGNATURE_BYTES);
+  uj_output.sig_len = sig_len;
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_rsa_sign_out_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -702,19 +791,56 @@ status_t handle_cryptolib_sca_prime(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_p256_base_mul(ujson_t *uj) {
-  cryptolib_sca_p256_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_p256_base_mul_in_t(uj, &uj_input));
-
+status_t trigger_cryptolib_sca_p256_base_mul(uint8_t scalar[P256_CMD_BYTES],
+                                             uint8_t x[P256_CMD_BYTES],
+                                             uint8_t y[P256_CMD_BYTES],
+                                             size_t cfg_in, size_t *cfg_out,
+                                             size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in P256.
   // Trigger are over the API calls.
 
-  cryptolib_sca_p256_base_mul_out_t uj_output;
-  memset(uj_output.x, 0, P256_CMD_BYTES);
-  memset(uj_output.y, 0, P256_CMD_BYTES);
-  uj_output.cfg = 0;
+  memset(x, 0, P256_CMD_BYTES);
+  memset(y, 0, P256_CMD_BYTES);
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_p256_base_mul_fvsr(ujson_t *uj) {
+  cryptolib_sca_p256_base_mul_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_p256_base_mul_in_t(uj, &uj_input));
+
+  uint8_t batch_scalar[uj_input.num_iterations][P256_CMD_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_scalar[it], uj_input.scalar, P256_CMD_BYTES);
+    } else {
+      prng_rand_bytes(batch_scalar[it], P256_CMD_BYTES);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke point mul for each data set.
+  uint8_t x[P256_CMD_BYTES];
+  uint8_t y[P256_CMD_BYTES];
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_p256_base_mul(
+        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last coordinates to host via UART.
+  cryptolib_sca_p256_base_mul_out_t uj_output;
+  memcpy(uj_output.x, x, P256_CMD_BYTES);
+  memcpy(uj_output.y, y, P256_CMD_BYTES);
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_p256_base_mul_out_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -759,19 +885,56 @@ status_t handle_cryptolib_sca_p256_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_p384_base_mul(ujson_t *uj) {
-  cryptolib_sca_p384_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_p384_base_mul_in_t(uj, &uj_input));
-
+status_t trigger_cryptolib_sca_p384_base_mul(uint8_t scalar[P384_CMD_BYTES],
+                                            uint8_t x[P384_CMD_BYTES],
+                                            uint8_t y[P384_CMD_BYTES],
+                                            size_t cfg_in, size_t *cfg_out,
+                                            size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in p384.
   // Trigger are over the API calls.
 
-  cryptolib_sca_p384_base_mul_out_t uj_output;
-  memset(uj_output.x, 0, P384_CMD_BYTES);
-  memset(uj_output.y, 0, P384_CMD_BYTES);
-  uj_output.cfg = 0;
+  memset(x, 0, P384_CMD_BYTES);
+  memset(y, 0, P384_CMD_BYTES);
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_p384_base_mul_fvsr(ujson_t *uj) {
+  cryptolib_sca_p384_base_mul_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_p384_base_mul_in_t(uj, &uj_input));
+
+  uint8_t batch_scalar[uj_input.num_iterations][P384_CMD_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_scalar[it], uj_input.scalar, P384_CMD_BYTES);
+    } else {
+      prng_rand_bytes(batch_scalar[it], P384_CMD_BYTES);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke point mul for each data set.
+  uint8_t x[P384_CMD_BYTES];
+  uint8_t y[P384_CMD_BYTES];
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_p384_base_mul(
+        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last coordinates to host via UART.
+  cryptolib_sca_p384_base_mul_out_t uj_output;
+  memcpy(uj_output.x, x, P384_CMD_BYTES);
+  memcpy(uj_output.y, y, P384_CMD_BYTES);
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_p384_base_mul_out_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -816,19 +979,55 @@ status_t handle_cryptolib_sca_p384_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_secp256k1_base_mul(ujson_t *uj) {
-  cryptolib_sca_secp256k1_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_secp256k1_base_mul_in_t(uj, &uj_input));
-
+status_t trigger_cryptolib_sca_secp256k1_base_mul(
+    uint8_t scalar[SECP256K1_CMD_BYTES], uint8_t x[SECP256K1_CMD_BYTES],
+    uint8_t y[SECP256K1_CMD_BYTES], size_t cfg_in, size_t *cfg_out,
+    size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in secp256k1.
   // Trigger are over the API calls.
 
-  cryptolib_sca_secp256k1_base_mul_out_t uj_output;
-  memset(uj_output.x, 0, SECP256K1_CMD_BYTES);
-  memset(uj_output.y, 0, SECP256K1_CMD_BYTES);
-  uj_output.cfg = 0;
+  memset(x, 0, SECP256K1_CMD_BYTES);
+  memset(y, 0, SECP256K1_CMD_BYTES);
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_secp256k1_base_mul_fvsr(ujson_t *uj) {
+  cryptolib_sca_secp256k1_base_mul_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_secp256k1_base_mul_in_t(uj, &uj_input));
+
+  uint8_t batch_scalar[uj_input.num_iterations][SECP256K1_CMD_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_scalar[it], uj_input.scalar, SECP256K1_CMD_BYTES);
+    } else {
+      prng_rand_bytes(batch_scalar[it], SECP256K1_CMD_BYTES);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke point mul for each data set.
+  uint8_t x[SECP256K1_CMD_BYTES];
+  uint8_t y[SECP256K1_CMD_BYTES];
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_secp256k1_base_mul(
+        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last coordinates to host via UART.
+  cryptolib_sca_secp256k1_base_mul_out_t uj_output;
+  memcpy(uj_output.x, x, SECP256K1_CMD_BYTES);
+  memcpy(uj_output.y, y, SECP256K1_CMD_BYTES);
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_secp256k1_base_mul_out_t, uj,
           &uj_output);
 
@@ -875,20 +1074,58 @@ status_t handle_cryptolib_sca_secp256k1_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_x25519_base_mul(ujson_t *uj) {
-  cryptolib_sca_x25519_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_x25519_base_mul_in_t(uj, &uj_input));
+status_t trigger_cryptolib_sca_x25519_base_mul(
+    uint8_t scalar[X25519_CMD_BYTES], uint8_t x[X25519_CMD_BYTES],
+    uint8_t y[X25519_CMD_BYTES], size_t cfg_in, size_t *cfg_out,
+    size_t trigger) {
 
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in X25519.
   // Trigger are over the API calls.
 
-  cryptolib_sca_x25519_base_mul_out_t uj_output;
-  memset(uj_output.x, 0, X25519_CMD_BYTES);
-  memset(uj_output.y, 0, X25519_CMD_BYTES);
-  uj_output.cfg = 0;
+  memset(x, 0, X25519_CMD_BYTES);
+  memset(y, 0, X25519_CMD_BYTES);
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_x25519_base_mul_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_x25519_base_mul_fvsr(ujson_t *uj) {
+  cryptolib_sca_x25519_base_mul_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_x25519_base_mul_in_t(uj, &uj_input));
+
+  uint8_t batch_scalar[uj_input.num_iterations][X25519_CMD_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_scalar[it], uj_input.scalar, X25519_CMD_BYTES);
+    } else {
+      prng_rand_bytes(batch_scalar[it], X25519_CMD_BYTES);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke point mul for each data set.
+  uint8_t x[X25519_CMD_BYTES];
+  uint8_t y[X25519_CMD_BYTES];
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_x25519_base_mul(
+        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last coordinates to host via UART.
+  cryptolib_sca_x25519_base_mul_out_t uj_output;
+  memcpy(uj_output.x, x, X25519_CMD_BYTES);
+  memcpy(uj_output.y, y, X25519_CMD_BYTES);
+  uj_output.cfg = cfg_out;
+  RESP_OK(ujson_serialize_cryptolib_sca_x25519_base_mul_out_t, uj,
+          &uj_output);
 
   return OK_STATUS();
 }
@@ -912,19 +1149,55 @@ status_t handle_cryptolib_sca_x25519_point_mul(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_ed25519_base_mul(ujson_t *uj) {
-  cryptolib_sca_ed25519_base_mul_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_ed25519_base_mul_in_t(uj, &uj_input));
-
+status_t trigger_cryptolib_sca_ed25519_base_mul(
+    uint8_t scalar[ED25519_CMD_SCALAR_BYTES],
+    uint8_t x[ED25519_CMD_SCALAR_BYTES], uint8_t y[ED25519_CMD_SCALAR_BYTES],
+    size_t cfg_in, size_t *cfg_out, size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a base point multiplication in ED25519.
   // Trigger are over the API calls.
 
-  cryptolib_sca_ed25519_base_mul_out_t uj_output;
-  memset(uj_output.x, 0, ED25519_CMD_SCALAR_BYTES);
-  memset(uj_output.y, 0, ED25519_CMD_SCALAR_BYTES);
-  uj_output.cfg = 0;
+  memset(x, 0, ED25519_CMD_SCALAR_BYTES);
+  memset(y, 0, ED25519_CMD_SCALAR_BYTES);
+  *cfg_out = 0;
   /////////////// STUB END ///////////////
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_ed25519_base_mul_fvsr(ujson_t *uj) {
+  cryptolib_sca_ed25519_base_mul_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_ed25519_base_mul_in_t(uj, &uj_input));
+
+  uint8_t batch_scalar[uj_input.num_iterations][ED25519_CMD_SCALAR_BYTES];
+
+  // First generate all FvsR data sets. When sample_fixed,
+  // the provided data is used. When
+  // not sample_fixed, random data is generated.
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    if (sample_fixed) {
+      memcpy(batch_scalar[it], uj_input.scalar, ED25519_CMD_SCALAR_BYTES);
+    } else {
+      prng_rand_bytes(batch_scalar[it], ED25519_CMD_SCALAR_BYTES);
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  // Invoke point mul for each data set.
+  uint8_t x[ED25519_CMD_SCALAR_BYTES];
+  uint8_t y[ED25519_CMD_SCALAR_BYTES];
+  size_t cfg_out;
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_sca_ed25519_base_mul(
+        batch_scalar[it], x, y, uj_input.cfg, &cfg_out, uj_input.trigger));
+  }
+
+  // Send the last coordinates to host via UART.
+  cryptolib_sca_ed25519_base_mul_out_t uj_output;
+  memcpy(uj_output.x, x, ED25519_CMD_SCALAR_BYTES);
+  memcpy(uj_output.y, y, ED25519_CMD_SCALAR_BYTES);
+  uj_output.cfg = cfg_out;
   RESP_OK(ujson_serialize_cryptolib_sca_ed25519_base_mul_out_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -1035,36 +1308,36 @@ status_t handle_cryptolib_sca(ujson_t *uj) {
       return handle_cryptolib_sca_hmac_fvsr_key(uj);
     case kCryptoLibScaSubcommandDrbgFvsr:
       return handle_cryptolib_sca_drbg_fvsr(uj);
-    case kCryptoLibScaSubcommandRsaDec:
-      return handle_cryptolib_sca_rsa_dec(uj);
-    case kCryptoLibScaSubcommandRsaSign:
-      return handle_cryptolib_sca_rsa_sign(uj);
+    case kCryptoLibScaSubcommandRsaDecFvsr:
+      return handle_cryptolib_sca_rsa_dec_fvsr(uj);
+    case kCryptoLibScaSubcommandRsaSignFvsr:
+      return handle_cryptolib_sca_rsa_sign_fvsr(uj);
     case kCryptoLibScaSubcommandPrime:
       return handle_cryptolib_sca_prime(uj);
-    case kCryptoLibScaSubcommandP256BaseMul:
-      return handle_cryptolib_sca_p256_base_mul(uj);
+    case kCryptoLibScaSubcommandP256BaseMulFvsr:
+      return handle_cryptolib_sca_p256_base_mul_fvsr(uj);
     case kCryptoLibScaSubcommandP256PointMul:
       return handle_cryptolib_sca_p256_point_mul(uj);
     case kCryptoLibScaSubcommandP256Sign:
       return handle_cryptolib_sca_p256_sign(uj);
-    case kCryptoLibScaSubcommandP384BaseMul:
-      return handle_cryptolib_sca_p384_base_mul(uj);
+    case kCryptoLibScaSubcommandP384BaseMulFvsr:
+      return handle_cryptolib_sca_p384_base_mul_fvsr(uj);
     case kCryptoLibScaSubcommandP384PointMul:
       return handle_cryptolib_sca_p384_point_mul(uj);
     case kCryptoLibScaSubcommandP384Sign:
       return handle_cryptolib_sca_p384_sign(uj);
-    case kCryptoLibScaSubcommandSecp256k1BaseMul:
-      return handle_cryptolib_sca_secp256k1_base_mul(uj);
+    case kCryptoLibScaSubcommandSecp256k1BaseMulFvsr:
+      return handle_cryptolib_sca_secp256k1_base_mul_fvsr(uj);
     case kCryptoLibScaSubcommandSecp256k1PointMul:
       return handle_cryptolib_sca_secp256k1_point_mul(uj);
     case kCryptoLibScaSubcommandSecp256k1Sign:
       return handle_cryptolib_sca_secp256k1_sign(uj);
-    case kCryptoLibScaSubcommandX25519BaseMul:
-      return handle_cryptolib_sca_x25519_base_mul(uj);
+    case kCryptoLibScaSubcommandX25519BaseMulFvsr:
+      return handle_cryptolib_sca_x25519_base_mul_fvsr(uj);
     case kCryptoLibScaSubcommandX25519PointMul:
       return handle_cryptolib_sca_x25519_point_mul(uj);
-    case kCryptoLibScaSubcommandEd25519BaseMul:
-      return handle_cryptolib_sca_ed25519_base_mul(uj);
+    case kCryptoLibScaSubcommandEd25519BaseMulFvsr:
+      return handle_cryptolib_sca_ed25519_base_mul_fvsr(uj);
     case kCryptoLibScaSubcommandEd25519Sign:
       return handle_cryptolib_sca_ed25519_sign(uj);
     case kCryptoLibScaSubcommandInit:
