@@ -12,14 +12,14 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
-#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_impl.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/cryptolib_sca_asym_impl.h"
 #include "sw/device/tests/penetrationtests/json/cryptolib_sca_asym_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 status_t trigger_cryptolib_sca_asym_rsa_dec(
-    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
-    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, size_t mode,
+    uint32_t e, uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
     size_t *cfg_out, size_t trigger) {
@@ -27,13 +27,9 @@ status_t trigger_cryptolib_sca_asym_rsa_dec(
   // Perform an RSA decryption.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
-
-  memset(n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(d, 0, RSA_CMD_MAX_N_BYTES);
-  *n_len = RSA_CMD_MAX_N_BYTES;
-  memset(data_out, 0, RSA_CMD_MAX_MESSAGE_BYTES);
-  *data_out_len = RSA_CMD_MAX_MESSAGE_BYTES;
-  *cfg_out = 0;
+  TRY(cryptolib_sca_rsa_dec_impl(data, data_len, mode, e, n, d, n_len, data_out,
+                                 data_out_len, hashing, padding, cfg_in,
+                                 cfg_out, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -69,8 +65,8 @@ status_t handle_cryptolib_sca_asym_rsa_dec_fvsr(ujson_t *uj) {
   size_t n_len = uj_input.n_len;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_sca_asym_rsa_dec(
-        batch_data[it], uj_input.data_len, uj_input.e, n, d, &n_len,
-        data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
+        batch_data[it], uj_input.data_len, uj_input.mode, uj_input.e, n, d,
+        &n_len, data_out_buf, &data_out_len, uj_input.hashing, uj_input.padding,
         uj_input.cfg, &cfg_out, uj_input.trigger));
   }
 
