@@ -15,8 +15,10 @@ extern "C" {
     value(_, AesSca) \
     value(_, AlertInfo) \
     value(_, CryptoFi) \
-    value(_, CryptoLibFi) \
-    value(_, CryptoLibSca) \
+    value(_, CryptoLibFiAsym) \
+    value(_, CryptoLibFiSym) \
+    value(_, CryptoLibScaSym) \
+    value(_, CryptoLibScaAsym) \
     value(_, EdnSca) \
     value(_, ExtClkScaFi) \
     value(_, HmacSca) \

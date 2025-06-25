@@ -12,12 +12,12 @@
 
 // Include commands
 #include "sw/device/tests/penetrationtests/json/commands.h"
-#include "sw/device/tests/penetrationtests/json/cryptolib_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/cryptolib_sca_asym_commands.h"
 
 // Include handlers
-#include "fi/cryptolib_fi.h"
 #include "lib/extclk_sca_fi.h"
 #include "lib/pentest_lib.h"
+#include "sca/cryptolib_sca_asym.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -26,8 +26,8 @@ status_t process_cmd(ujson_t *uj) {
     penetrationtest_cmd_t cmd;
     TRY(ujson_deserialize_penetrationtest_cmd_t(uj, &cmd));
     switch (cmd) {
-      case kPenetrationtestCommandCryptoLibFi:
-        RESP_ERR(uj, handle_cryptolib_fi(uj));
+      case kPenetrationtestCommandCryptoLibScaAsym:
+        RESP_ERR(uj, handle_cryptolib_sca_asym(uj));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", cmd);
