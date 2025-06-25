@@ -16,7 +16,7 @@ Whenever commands are directly forwarded from firmware to the CSRNG through the 
 Each command consists of a command header, which is represented by a single word.
 Furthermore, a command can have up to 12 words of additional data.
 To check whether a command has been acknowledged by the CSRNG, the `CMD_ACK` bit of the [`SW_CMD_STS`](registers.md#sw_cmd_sts) register can be polled.
-Whenever `CMD_ACK` is high, the `CMD_STS` bit can be checked to find out if an error occured.
+Whenever `CMD_ACK` is high, the `CMD_STS` bit can be checked to find out if an error occurred.
 
 Note that CSRNG commands are to be written into the [`SW_CMD_REQ`](registers.md#sw_cmd_req), [`RESEED_CMD`](registers.md#reseed_cmd), and [`GENERATE_CMD`](registers.md#generate_cmd) registers.
 CSRNG command format details can be found in [CSRNG](../../csrng/README.md).
