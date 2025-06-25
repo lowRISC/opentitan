@@ -265,7 +265,7 @@ task ac_range_check_scoreboard::process_tl_access(tl_seq_item item,
 
   // Process the CSR req:
   //  - for write, update local variable and FIFO at AChanWrite phase
-  //  - for read, update predication at AChanRead phase and compare at DChanRead phase
+  //  - for read, update prediction at AChanRead phase and compare at DChanRead phase
   case (csr_name)
     // Add individual case item for each csr
     "intr_state": begin

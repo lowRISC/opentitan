@@ -337,7 +337,7 @@ class flash_ctrl_scoreboard #(
           `DV_CHECK_NE_FATAL(csr, null)
           // process the csr req
           // for write, update local variable and fifo at address phase
-          // for read, update predication at address phase and compare at data phase
+          // for read, update prediction at address phase and compare at data phase
           if(!uvm_re_match("err_code*",csr.get_name())) begin
             if (cfg.en_cov) begin
               cov.sw_error_cg.sample(item.d_data);

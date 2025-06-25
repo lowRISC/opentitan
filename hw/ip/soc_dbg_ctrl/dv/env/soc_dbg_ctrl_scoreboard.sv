@@ -112,7 +112,7 @@ task soc_dbg_ctrl_scoreboard::process_tl_core_access(
 
   // Process the CRS req:
   //  - for write, update local variable and fifo at address phase
-  //  - for read, update predication at address phase and compare at data phase
+  //  - for read, update prediction at address phase and compare at data phase
   case (csr.get_name())
     // Add individual case item for each csr
     "intr_state": begin

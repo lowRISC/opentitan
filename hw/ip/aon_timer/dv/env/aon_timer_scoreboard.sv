@@ -710,7 +710,7 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
 
   // process the csr req
   // for write, update local variable and fifo at address phase
-  // for read, update predication at address phase and compare at data phase
+  // for read, update prediction at address phase and compare at data phase
   case (csr.get_name())
     // add individual case item for each csr
     "intr_state": begin
