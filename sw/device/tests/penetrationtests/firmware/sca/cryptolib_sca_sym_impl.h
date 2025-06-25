@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_IMPL_H_
-#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_IMPL_H_
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_SYM_IMPL_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_SYM_IMPL_H_
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -62,4 +62,4 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
                                  size_t trigger);
 
-#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_IMPL_H_
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_SYM_IMPL_H_
