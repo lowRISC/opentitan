@@ -539,9 +539,9 @@ module ascon_core
   assign msg_out_we = msg_out_valid & msg_out_ready;
 
   assign tag_out_ready = tag_out_read | track_reset_tag_q;
-  // atm there is no backpreassure logic inside the duplex module for the tag register, as
+  // atm there is no backpressure logic inside the duplex module for the tag register, as
   // it is assumed that a new run is only started after the previous run has been completed.
-  // Nevertheless, we need the not tag_out_ready signal for the tag comparision.
+  // Nevertheless, we need the not tag_out_ready signal for the tag comparison.
   assign tag_out_we = tag_out_valid & tag_out_ready;
 
 
@@ -552,7 +552,7 @@ module ascon_core
   assign tag_match = (tag_in_q == tag_out_q) ? prim_mubi_pkg::MuBi4True :
                                                prim_mubi_pkg::MuBi4False;
 
-  // There is a valid tag comparision if there is
+  // There is a valid tag comparison if there is
   // 1) a (new) tag in the input register
   // 2) a (new) tag in the output register. This equivalent to the output register not being
   //    ready. The output register is not ready, if there is a tag in the register.

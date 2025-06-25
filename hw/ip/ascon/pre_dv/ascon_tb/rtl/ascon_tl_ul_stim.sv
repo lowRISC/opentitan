@@ -33,7 +33,7 @@ module ascon_tl_ul_stim
 
   initial begin
     // The idea of this test case is to have human readable (DEADBEEF, CAFEF00D, etc) test vectors,
-    // that are easy to trace troughout the design to catch logical errors (endianness,
+    // that are easy to trace throughout the design to catch logical errors (endianness,
     // clock delays, etc.) during development.
     stimulus = '{
       // NONCE
@@ -66,7 +66,7 @@ module ascon_tl_ul_stim
       put_full_data(32'h00009909, ASCON_CTRL_SHADOWED_OFFSET),
 
       // BLock Info
-      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bist start (ignored)
+      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bits start (ignored)
       // Full 64 bit block AD, last
       put_full_data(32'h08969000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
       put_full_data(32'h08969000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
@@ -86,7 +86,7 @@ module ascon_tl_ul_stim
       put_full_data(32'h00000001, ASCON_TRIGGER_OFFSET),
 
       // BLock Info
-      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bist start (ignored)
+      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bits start (ignored)
       // Full 64 bit block msg, last
       put_full_data(32'h08999000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
       put_full_data(32'h08999000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
@@ -115,7 +115,7 @@ module ascon_tl_ul_stim
       get_full_data(ASCON_MSG_OUT_3_OFFSET),
 
       // BLock Info
-      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bist start (ignored)
+      // 3 bits reserved, 5 bits valid_bytes, 12 bits last, 12 bits start (ignored)
       // Full 64 bit block msg, last
       put_full_data(32'h02699000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
       put_full_data(32'h02699000, ASCON_BLOCK_CTRL_SHADOWED_OFFSET),
