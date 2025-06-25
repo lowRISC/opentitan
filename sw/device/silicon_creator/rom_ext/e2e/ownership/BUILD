@@ -165,6 +165,36 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "invalid_nonce_request_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = fpga_params(
+        changes_otp = True,
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_default_ownership_state_unlock_any",
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Abort
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --invalid-nonce=true
+            --expected-error=OwnershipInvalidNonce
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
     name = "invalid_key_alg_activate_request_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
