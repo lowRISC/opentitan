@@ -135,7 +135,7 @@ module aes_prng_clearing import aes_pkg::*;
   );
   assign data_o[0] = lfsr_state;
 
-  // A seperate permutation is applied to obtain the pseudo-random data for clearing the second
+  // A separate permutation is applied to obtain the pseudo-random data for clearing the second
   // share of registers (e.g. key registers or state registers in case masking is enabled).
   for (genvar i = 0; i < Width; i++) begin : gen_share_perm
     assign data_o[1][i] = lfsr_state[RndCnstSharePerm[i]];

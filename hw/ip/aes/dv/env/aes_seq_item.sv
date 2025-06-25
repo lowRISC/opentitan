@@ -19,7 +19,7 @@ class aes_seq_item extends uvm_sequence_item;
   bit             manual_op;
   // 0: output data cannot be overwritten
 
-  // lenth of plaintext / cypher (max is 128b/16b per block)
+  // length of plaintext / cypher (max is 128b/16b per block)
   // used to mask bits that are not part of the data vector
   bit [3:0]       data_len            = 0;
   // key len 0: 128, 1: 192, 2: 256 3: NOT VALID
@@ -203,7 +203,7 @@ class aes_seq_item extends uvm_sequence_item;
 
   // if ret_clean = 0
   // return 1 only of all registers have been written
-  // if ret_celan = 1
+  // if ret_clean = 1
   // return 1 if all or none of the registers have been written
   function bit iv_clean(bit ret_clean, bit clear);
     `uvm_info(`gfn, $sformatf("\n\t ----| IV status %b ", iv_vld), UVM_MEDIUM)

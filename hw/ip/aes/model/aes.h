@@ -8,7 +8,7 @@
 /**
  * Encrypt one data block (16 Bytes) in ECB mode.
  *
- * @param  plain_text  Input block to enrypt
+ * @param  plain_text  Input block to encrypt
  * @param  key         Initial encryption key
  * @param  key_len     Key length in bytes (16, 24, 32)
  * @param  cipher_text Encrypted output block
@@ -130,7 +130,7 @@ void aes_rcon_next(unsigned char *rcon);
 /**
  * Update Rcon value for next round during decryption.
  * If the input value is 0, rcon is initialized to the start value
- * depening on key length.
+ * depending on key length.
  *
  * @param  rcon    Rcon value
  * @param  key_len Key length in bytes (16, 24, 32)

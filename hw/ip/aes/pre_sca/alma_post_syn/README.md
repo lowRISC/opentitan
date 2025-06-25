@@ -36,7 +36,7 @@ This is a manual effort and these definitions are provided through a patch file.
 1. Construct a technology library simulation verilog file, by applying the manual patches from the patch file of the previous step.
 At the end, we obtain a verilog file that has Yosys-friendly definition for all required cells.
 1. Use Yosys to flatten the original netlist.
-This replaces each cell instantion in the netlist with their logical equivalents defined in the previous step.
+This replaces each cell instantiation in the netlist with their logical equivalents defined in the previous step.
 1. Pass the flattened circuit `circuit.v` to CocoAlma for verification.
 
 ![CocoAlma verification flow](./alma_verification_flow.svg)
@@ -95,8 +95,8 @@ This flow does not address how to synthesize a netlist, it rather assumes that t
 
 ## Running the flow
 
-Before running the flow, envrionment variables that define necessary paths must be loaded.
-Based on the local insallation, a few variables might require fixing:
+Before running the flow, environment variables that define necessary paths must be loaded.
+Based on the local installation, a few variables might require fixing:
   * `REPO_TOP` should refer to the top directory of opentitan-discrete.
   * `ASIC_TOP` should refer to the shared ASIC technology library repo (with limited access).
   * `ALMA_TOP` should refer to the top directory of CocoAlma.
@@ -162,7 +162,7 @@ When AES S-box is synthesized again with other parameters, leading to a fresh ne
 Hence these new complex cell definitions need to be incrementally added to the patch file, so that Yosys flow can use them without an issue.
 
 The first simple thing to do with a fresh netlist is to try to run the flow, in order to understand whether new complex cells are introduced into the flow.
-If this is the case, an error like following appers, indicating that Yosys is not able to process the raw definition of a cell coming from techlib:
+If this is the case, an error like following appears, indicating that Yosys is not able to process the raw definition of a cell coming from techlib:
 
 ```
 Starting yosys synthesis...
@@ -197,4 +197,4 @@ endmodule
 This process can be incrementally repeated until all the complex cells are defined in the patch file.
 As the patch file grows, this issue should be encountered less frequently.
 
-As a final note, if it is feasible, it is recommmended to run a functional verification on the netlist produced after the Yosys-flow, in order to check that manually defined cells do not introduce functional bugs into the design.
+As a final note, if it is feasible, it is recommended to run a functional verification on the netlist produced after the Yosys-flow, in order to check that manually defined cells do not introduce functional bugs into the design.

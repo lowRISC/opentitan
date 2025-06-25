@@ -33,7 +33,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   mailbox      #(aes_seq_item)      item_fifo;
   // completed message item ready for scoring
   mailbox      #(aes_message_item)  msg_fifo;
-  // once an operation is started the item is put here to wait for the resuting output
+  // once an operation is started the item is put here to wait for the resulting output
   aes_seq_item                      rcv_item_q[$];
 
   function void build_phase(uvm_phase phase);
@@ -403,7 +403,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       endcase // case (csr.get_name())
 
       if (output_item.data_out_valid() || output_item.data_was_cleared) begin
-        // if data_out is read multipletimes in a row we should not pop input more than once
+        // if data_out is read multiple times in a row we should not pop input more than once
         if (rcv_item_q.size() == 0) begin
           output_item                    = new();
         end else begin
@@ -528,7 +528,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // AES indicates when it's done with processing individual blocks but not when it's done
           // with processing an entire message. To detect the end of a message, the DV environment
           // does the following:
-          // - It tracks writes to the main control register. If two successfull writes to this
+          // - It tracks writes to the main control register. If two successful writes to this
           //   shadowed register are observed, this marks the start of a new message.
           // - DV then knows that the last output data retrieved marks the end of the previous
           //   message.
@@ -583,7 +583,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       if (msg.aes_mode != AES_NONE && !msg.skip_msg) begin
         msg.alloc_predicted_msg();
 
-        //ref-model     / opration     / chipher mode /    IV   / key_len   / key /data i /data o //
+        //ref-model     / operation     / cipher mode /    IV   / key_len   / key /data i /data o //
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,

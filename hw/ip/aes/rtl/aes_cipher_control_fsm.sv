@@ -411,7 +411,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
           key_dec_we_o   = 1'b1;
         end
         if (data_out_clear_q_i) begin
-          // Forward the state (previously cleared with psuedo-random data).
+          // Forward the state (previously cleared with pseudo-random data).
           // SEC_CM: DATA_REG.SEC_WIPE
           add_rk_sel_o    = ADD_RK_INIT;
           key_words_sel_o = KEY_WORDS_ZERO;

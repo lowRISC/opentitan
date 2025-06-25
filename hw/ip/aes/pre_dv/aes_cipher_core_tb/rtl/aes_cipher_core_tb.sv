@@ -10,7 +10,7 @@
 //
 // The testbench instantiates the AES cipher core only. It performs mainly three things:
 // 1. The internal masking PRNG is reseeded.
-// 2. A couple of random plaintexts are encrypted with different key lenghts and random keys.
+// 2. A couple of random plaintexts are encrypted with different key lengths and random keys.
 // 3. The ciphertexts produced during Step 2 are again decrypted and then compared against the
 //    original plaintext values.
 // While doing the encryptions and decryptions in Step 2 and Step 3, the masking PRNG is reseeded
@@ -147,7 +147,7 @@ module aes_cipher_core_tb #(
     end
   end
   // The cipher core uses multiple packed dimensions internally but the number of bits remain the
-  // same. Since some tools fail to peform the `conversion` on input ports, we do it here.
+  // same. Since some tools fail to perform the `conversion` on input ports, we do it here.
   assign prd_clearing_state = prd_clearing_128;
   assign prd_clearing_key   = prd_clearing_256;
 
@@ -218,7 +218,7 @@ module aes_cipher_core_tb #(
     unique case (aes_cipher_core_tb_state_q)
 
       IDLE: begin
-        // Just wait for the ciphre core to become ready.
+        // Just wait for the cipher core to become ready.
         if (in_ready == SP2V_HIGH) begin
           aes_cipher_core_tb_state_d = SecMasking ? INIT_RESEED : ECB_ENCRYPT;
         end

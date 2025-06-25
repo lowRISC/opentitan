@@ -96,7 +96,7 @@ void c_dpi_aes_mix_columns(const unsigned char op_i, const svBitVecVal *data_i,
  * Generate full key for next round for forward/inverse cipher operation.
  *
  * @param  op_i      Cipher operation: 0 = forward, 1 = inverse
- * @param  rcon_old  Previous rcon (updates intenally before being used)
+ * @param  rcon_old  Previous rcon (updates internally before being used)
  * @param  round_i   Round index
  * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
  * @param  key_i     Full input key
