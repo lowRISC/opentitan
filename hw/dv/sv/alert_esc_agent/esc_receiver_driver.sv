@@ -72,20 +72,24 @@ task esc_receiver_driver::esc_ping_detector();
     int cnt ;
     wait(under_reset == 0);
     fork
-      begin
-        wait_esc();
-        @(cfg.vif.receiver_cb);
-        while (get_esc() == 1) begin
-          cnt++;
-          @(cfg.vif.receiver_cb);
-        end
-        if (cnt == 1) is_ping = 1;
-      end
-      begin
-        wait(under_reset);
-      end
-    join_any
-    disable fork;
+      begin: isolation_fork
+        fork
+          begin
+            wait_esc();
+            @(cfg.vif.receiver_cb);
+            while (get_esc() == 1) begin
+              cnt++;
+              @(cfg.vif.receiver_cb);
+            end
+            if (cnt == 1) is_ping = 1;
+          end
+          begin
+            wait(under_reset);
+          end
+        join_any
+        disable fork;
+      end: isolation_fork
+    join
   end
 endtask : esc_ping_detector
 
