@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Tests any alerts not acheivable by the entropy_src_rng test
+// Tests any alerts not achievable by the entropy_src_rng test
 // At this time this is just the es_bus_cmp_alert.
 //
 // Please see previous revisions of this test to find routines for
@@ -33,7 +33,7 @@ class entropy_src_alert_vseq extends entropy_src_base_vseq;
     m_rng_push_seq = push_pull_host_seq#(`RNG_BUS_WIDTH)::type_id::
          create("m_rng_push_seq");
 
-    // Rememeber that the startup seed requires twice as many samples
+    // Remember that the startup seed requires twice as many samples
     m_rng_push_seq.num_trans = (num_reqs + 1) * window_size/`RNG_BUS_WIDTH;
 
     // Use a randomly generated but fixed rng_val through this test to make the entropy bus

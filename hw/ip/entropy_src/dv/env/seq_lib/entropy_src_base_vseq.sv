@@ -128,7 +128,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
-    // Clear all interupts here
+    // Clear all interrupts here
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
 
     // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
@@ -245,7 +245,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // If disable==1, explicitly clear module_enable before configuring
   // to remove the write_lock
   //
-  // Outputs REGWEN = 0, if the device coniguration was attempted when most registers
+  // Outputs REGWEN = 0, if the device configuration was attempted when most registers
   // were locked. (Likely intentionally)
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
                                 realtime pause=cfg.configuration_pause_time,
@@ -361,7 +361,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
 
-  // Read all data in ENTROPY_DATA or FW_OV_RD_DATA up to a certain ammount
+  // Read all data in ENTROPY_DATA or FW_OV_RD_DATA up to a certain amount
   //
   // Data is read in bundles, where the size of a bundle depends on the data
   // source.
@@ -379,7 +379,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // If max_bundles < 0, simply reads all available bundles.
   //
   // If source is TlSrcObserveFIFO and check_overflow is set to 1, this task checks whether
-  // overflows occured or not. This is done to make sure that the data read from the observe
+  // overflows occurred or not. This is done to make sure that the data read from the observe
   // FIFO is contiguous.
   task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
                             int max_bundles = -1,
@@ -427,7 +427,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
             csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
           end
           if (check_overflow && (source == TlSrcObserveFIFO)) begin
-            // Check whether no overflow occured while reading the observe FIFO and we are
+            // Check whether no overflow occurred while reading the observe FIFO and we are
             // still reading out contiguous data.
             csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
                         .compare_value('0));

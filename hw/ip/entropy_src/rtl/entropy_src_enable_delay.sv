@@ -13,7 +13,7 @@
 // tests. The SHA3 conditioner is also assumed to successfully absorb every 64-bits that enters the
 // module.
 //
-// To acheive this consistency goal the entropy_src delays the clearing of internal data buffers
+// To achieve this consistency goal the entropy_src delays the clearing of internal data buffers
 // and the state machine until:
 // 1. Any unprocessed data has been counted at the health checks (regardless of the mode)
 // 2. Any RNG data bound for the SHA conditioner has been received at the conditioner.
