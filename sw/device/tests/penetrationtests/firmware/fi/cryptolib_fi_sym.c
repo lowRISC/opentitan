@@ -100,14 +100,11 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj) {
   /////////////// STUB START ///////////////
   // Perform an HMAC call.
   // Trigger are over the API calls.
-
   cryptolib_fi_sym_hmac_out_t uj_output;
-  memset(uj_output.data, 0, HMAC_CMD_MAX_MSG_BYTES);
-  uj_output.data_len = HMAC_CMD_MAX_MSG_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_hmac_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_sym_hmac_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_hmac_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 

@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/cryptolib.h"
@@ -132,6 +133,81 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   uj_output->cfg = 0;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, output_buf, uj_output->data_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
+                                cryptolib_fi_sym_hmac_out_t *uj_output) {
+  // Set the HMAC mode.
+  otcrypto_key_mode_t key_mode;
+  unsigned int tag_bytes;
+  switch (uj_input.mode) {
+    case kPentestHmacHashAlgSha256:
+      key_mode = kOtcryptoKeyModeHmacSha256;
+      tag_bytes = kPentestHmacTagBytesSha256;
+      break;
+    case kPentestHmacHashAlgSha384:
+      key_mode = kOtcryptoKeyModeHmacSha384;
+      tag_bytes = kPentestHmacTagBytesSha384;
+      break;
+    case kPentestHmacHashAlgSha512:
+      key_mode = kOtcryptoKeyModeHmacSha512;
+      tag_bytes = kPentestHmacTagBytesSha512;
+      break;
+    default:
+      LOG_ERROR("Unsupported HMAC key mode: %d", uj_input.mode);
+      return INVALID_ARGUMENT();
+  }
+
+  // Build the key configuration.
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = key_mode,
+      .key_length = uj_input.key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Create buffer to store key.
+  uint32_t key_buf[uj_input.key_len];
+  memcpy(key_buf, uj_input.key, uj_input.key_len);
+  // Create keyblob.
+  uint32_t keyblob[keyblob_num_words(config)];
+  // Create blinded key.
+  TRY(keyblob_from_key_and_mask(key_buf, kHmacMask, config, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = integrity_blinded_checksum(&key);
+
+  // Create input message.
+  uint8_t msg_buf[uj_input.data_len];
+  memcpy(msg_buf, uj_input.data, uj_input.data_len);
+  otcrypto_const_byte_buf_t input_message = {
+      .len = uj_input.data_len,
+      .data = msg_buf,
+  };
+
+  // Create tag.
+  uint32_t tag_buf[kPentestHmacMaxTagWords];
+  otcrypto_word32_buf_t tag = {
+      .len = tag_bytes / sizeof(uint32_t),
+      .data = tag_buf,
+  };
+
+  // Trigger window.
+  pentest_set_trigger_high();
+  TRY(otcrypto_hmac(&key, input_message, tag));
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->data_len = tag_bytes;
+  uj_output->cfg = 0;
+  memset(uj_output->data, 0, HMAC_CMD_MAX_TAG_BYTES);
+  memcpy(uj_output->data, tag_buf, uj_output->data_len);
 
   return OK_STATUS();
 }

@@ -37,4 +37,29 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
                                 size_t mode, bool op_enc, size_t cfg_in,
                                 size_t *cfg_out, size_t trigger);
 
+/**
+ * Wrapper to HMAC cryptolib implementation.
+ *
+ * @param data_in Input data.
+ * @param data_in_len Input data length.
+ * @param key Key.
+ * @param key_len  Key length.
+ * @param data_out Output data.
+ * @param data_out_len Output data length.
+ * @param padding Padding.
+ * @param mode Mode.
+ * @param cfg_in Input config.
+ * @param cfg_out Output config.
+ * @param trigger Trigger config.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
+                                 size_t data_in_len,
+                                 uint8_t key[HMAC_CMD_MAX_KEY_BYTES],
+                                 size_t key_len,
+                                 uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES],
+                                 size_t *data_out_len, size_t padding,
+                                 size_t mode, size_t cfg_in, size_t *cfg_out,
+                                 size_t trigger);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_IMPL_H_
