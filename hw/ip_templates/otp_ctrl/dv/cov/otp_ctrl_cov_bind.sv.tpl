@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Binds OTP_CTRL functional coverage interaface to the top level OTP_CTRL module.
+// Binds OTP_CTRL functional coverage interface to the top level OTP_CTRL module.
 //
 <%
 from topgen.lib import Name
