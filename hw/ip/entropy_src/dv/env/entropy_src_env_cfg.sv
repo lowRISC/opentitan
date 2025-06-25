@@ -92,9 +92,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   uint          otp_en_es_fw_read_pct, otp_en_es_fw_read_inval_pct,
                 otp_en_es_fw_over_pct, otp_en_es_fw_over_inval_pct;
 
-  // Behavioral constrint knob: dictates how often each sequence
+  // Behavioral constraint knob: dictates how often each sequence
   // performs a survey of the health test diagnostics.
-  // (100% corresponds to a full diagnostic chack after every HT alert,
+  // (100% corresponds to a full diagnostic check after every HT alert,
   // If less than 100%, this full-diagnostic is skipped after some alerts)
   uint          do_check_ht_diag_pct;
 

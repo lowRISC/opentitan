@@ -196,7 +196,7 @@ package entropy_src_env_pkg;
   // Like like the phase helper function above, this function is required for both scoreboarding and
   // sequence generation.
   //
-  // The window size also dictates the ammount of data needed to create a single seed.
+  // The window size also dictates the amount of data needed to create a single seed.
   //
   function automatic int rng_window_size(int seed_idx, bit fips_enable, bit fw_ov_insert,
                                          int fips_window_size);
@@ -268,7 +268,7 @@ package entropy_src_env_pkg;
   //
   // Output:
   // An threshold with the desired certainty of test passing, rounded up for high thresholds,
-  // rounded down for low threholds
+  // rounded down for low thresholds
   //
   // The function computes the mean and standard deviation of the test result, assuming a binomial
   // distribution (or multinomial distribution in the case of the Bucket test).  Then the min/max
@@ -302,7 +302,7 @@ package entropy_src_env_pkg;
   // sigma value.
   //
   // The table above does not account for rounding error. Furthermore, since the approximation to a
-  // normal distribution ignores any skew or other higher moments, this leads additional devations
+  // normal distribution ignores any skew or other higher moments, this leads additional deviations
   // from the tabled values particularly for smaller window sizes and at higher sigma values.
 
   function automatic int ideal_threshold_recommendation(int window_size, health_test_e test,
