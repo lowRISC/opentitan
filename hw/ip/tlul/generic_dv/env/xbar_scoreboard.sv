@@ -18,7 +18,7 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
   // Customize the get_queue_name function
   // port_name is {"a/d_chan_", host/device name}
   // tl_channel is "a/d_chan_"
-  // tl_port is host/devcie name
+  // tl_port is host/device name
   virtual function string get_queue_name(tl_seq_item tr, string port_name);
     string queue_name;
     string tl_channel;
