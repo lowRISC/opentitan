@@ -133,7 +133,7 @@
     },
     { name: "AON_TIMER.WATCHDOG.BARK",
       desc: '''
-            The AON_TIMER watchdog barks if not petted in the programed time. A bark triggers an interrup and a wakeup.
+            The AON_TIMER watchdog barks if not petted in the programmed time. A bark triggers an interrupt and a wakeup.
             ''',
     },
     { name: "AON_TIMER.WATCHDOG.BITE",
