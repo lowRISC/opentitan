@@ -178,6 +178,8 @@ import math
           name: "log_clear"
           resval: 0x0
           hwqe: "true"
+          swaccess: "r0w1c"
+          hwaccess: "hrw"
           desc: '''Clears all log information for the first denied access including:
                     - LOG_STATUS
                     - LOG_ADDRESS.

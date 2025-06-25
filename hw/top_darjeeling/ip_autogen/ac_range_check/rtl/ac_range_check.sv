@@ -257,19 +257,25 @@ module ac_range_check
   logic [DenyCountWidth-1:0] deny_cnt;
   logic deny_cnt_incr;
 
-  // Only increment the deny counter if logging is globally enabled and for the particular range
+  // Clear log information when clearing the log manually via the writing of a 1 to the
+  // log_clear bit.
+  logic clear_log;
+  assign clear_log = (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
+
+  // Always clear the log_clear bit from hardware
+  assign hw2reg.log_config.log_clear.de = 1'b1;
+  assign hw2reg.log_config.log_clear.d  = 1'b0;
+
+  // Only increment the deny counter if logging is globally enabled and for the particular range,
+  // we are not clearing the counter in this cycle, and see a failing range check
   assign deny_cnt_incr = reg2hw.log_config.log_enable.q &
                          log_enable_mask[deny_index]    &
+                         ~clear_log                     &
                          range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
   logic log_first_deny;
   assign log_first_deny = deny_cnt_incr & (deny_cnt == 0);
-
-  // Clear log information when clearing the log manually via the writing of a 1 to the
-  // log_clear bit.
-  logic clear_log;
-  assign clear_log = (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
 
   prim_count #(
     .Width(DenyCountWidth)
