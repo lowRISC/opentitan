@@ -398,7 +398,7 @@ class dma_seq_item extends uvm_sequence_item;
         // Choose a 4B-aligned address; TL-UL accesses discard [1:0] on 32-bit bus.
         bit [31:0] cand = $urandom & ~3;
         const uint gap = 'h10;
-        // Here are we treating all interrupt sourcers and buffers as if they belonged to a single
+        // Here are we treating all interrupt sources and buffers as if they belonged to a single
         // memory space, to avoid further complicating the code
         //
         // Check against the memory buffers, again leaving a small gap to reduce confusion

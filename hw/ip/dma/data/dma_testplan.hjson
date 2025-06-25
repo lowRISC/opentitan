@@ -124,7 +124,7 @@
               Stimulus:
               - Configure DMA to perform a copy operation with different source and destination parameters in 'memory-to-memory' mode
               - Start DMA operation by setting DMAC.GO bit
-              - Respond with an error on either source or destination TLUL interface reqeust
+              - Respond with an error on either source or destination TLUL interface request
               - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for DMAC.ABORTED bit
 
               Checking:

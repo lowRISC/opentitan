@@ -4,7 +4,7 @@
 
 package dma_pkg;
   // Create a type to be exposed for the inter_signal_list in the HJSON definition
-  // This type is needed since regtool cannot evaluate paramters defined in the HJSON
+  // This type is needed since regtool cannot evaluate parameters defined in the HJSON
   typedef logic [dma_reg_pkg::NumIntClearSources-1:0] lsio_trigger_t;
 
   // Possible error bits the DMA can raise
