@@ -11,7 +11,7 @@ class dma_handshake_vseq extends dma_generic_vseq;
   virtual function void randomize_item(ref dma_seq_item dma_config);
     // Limit all parameters to 4B alignment
     `DV_CHECK_RANDOMIZE_WITH_FATAL(dma_config,
-      handshake == 1'b1;) // Enable hardware handhake mode
+      handshake == 1'b1;) // Enable hardware handshake mode
     `uvm_info(`gfn, $sformatf("DMA: Randomized a new transaction:%s",
                               dma_config.convert2string()), UVM_HIGH)
   endfunction

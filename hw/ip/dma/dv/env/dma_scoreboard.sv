@@ -729,7 +729,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         forever begin
           uvm_reg_data_t handshake_en;
           uvm_reg_data_t handshake_intr_en;
-          // Wait for at least one LSIoO trigger to be active and it is eanbled
+          // Wait for at least one LSIO trigger to be active and it is enabled
           @(posedge cfg.dma_vif.handshake_i);
           handshake_en = `gmv(ral.control.hardware_handshake_enable);
           handshake_intr_en = `gmv(ral.handshake_intr_enable);
