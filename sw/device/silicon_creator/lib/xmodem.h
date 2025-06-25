@@ -35,7 +35,7 @@ void xmodem_cancel(void *iohandle);
  * @param iohandle An opaque user point associated with the io device.
  * @param frame The frame number expected (start at 1).
  * @param data Buffer to receive the data into.
- * @param rxlen The length of data recieved.
+ * @param rxlen The length of data received.
  * @param unknown_rx The byte received when the error is kErrorXmodemUnknown.
  * @return Error value.
  */

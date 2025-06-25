@@ -141,11 +141,11 @@ typedef enum dif_csrng_error {
    */
   kDifCsrngErrorGenerateCmdCounter,
   /**
-   * Indicates a write to a full FIFO occured.
+   * Indicates a write to a full FIFO occurred.
    */
   kDifCsrngErrorFifoWrite,
   /**
-   * Indicates a read from an empty FIFO occured.
+   * Indicates a read from an empty FIFO occurred.
    */
   kDifCsrngErrorFifoRead,
   /**

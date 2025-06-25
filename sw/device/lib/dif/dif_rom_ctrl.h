@@ -27,7 +27,7 @@ extern "C" {
  */
 typedef enum dif_rom_ctrl_fatal_alert_cause {
   /**
-   * No error has occured.
+   * No error has occurred.
    */
   kDifRomCtrlFatalAlertCauseNoError = 0,
   /**

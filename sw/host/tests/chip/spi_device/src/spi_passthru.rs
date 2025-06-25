@@ -183,7 +183,7 @@ fn test_read_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(buf, sfdp.data.as_slice());
 
     // Test a read that would go beyond the length of the SFDP data.
-    // The observed behavior should be that the buffer recieved from
+    // The observed behavior should be that the buffer received from
     // the device should wrap around.
     let buf = read_sfdp(&*spi, 0x30)?;
     let data = sfdp.data.as_slice();

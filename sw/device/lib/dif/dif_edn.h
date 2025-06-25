@@ -137,7 +137,7 @@ typedef enum dif_edn_status {
    */
   kDifEdnStatusCsrngStatus,
   /**
-   * Device has recieved an ACK from the CSRNG block.
+   * Device has received an ACK from the CSRNG block.
    */
   kDifEdnStatusCsrngAck,
 } dif_edn_status_t;
@@ -254,11 +254,11 @@ typedef enum dif_edn_error {
    */
   kDifEdnErrorCounterFault,
   /**
-   * Indicates a write to a full FIFO occured.
+   * Indicates a write to a full FIFO occurred.
    */
   kDifEdnErrorFifoWrite,
   /**
-   * Indicates a read from an empty FIFO occured.
+   * Indicates a read from an empty FIFO occurred.
    */
   kDifEdnErrorFifoRead,
   /**

@@ -77,7 +77,7 @@ static dif_uart_t uart;
 
 /**
  * Callbacks for processing USB reciept. The latter increments the
- * recieved character by one, to make them distinct.
+ * received character by one, to make them distinct.
  */
 static void usb_receipt_callback_0(uint8_t c) {
   c = make_printable(c, '?');

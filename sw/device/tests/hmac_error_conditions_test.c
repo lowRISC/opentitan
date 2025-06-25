@@ -22,7 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
 typedef enum hmac_err {
 
   /**
-   * No error has occured.
+   * No error has occurred.
    */
   kErrorNone = 0x0,
 

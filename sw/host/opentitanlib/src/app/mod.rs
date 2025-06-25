@@ -1003,7 +1003,7 @@ impl TransportWrapper {
 
     /// As long as the returned `MaintainConnection` object is kept by the caller, this driver may
     /// assume that no other `opentitantool` processes attempt to access the same debugger device.
-    /// This allows for optimzations such as keeping USB handles open across function invocations.
+    /// This allows for optimizations such as keeping USB handles open across function invocations.
     pub fn maintain_connection(&self) -> Result<Rc<dyn MaintainConnection>> {
         self.transport.maintain_connection()
     }
