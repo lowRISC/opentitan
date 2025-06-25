@@ -333,7 +333,7 @@ class csrng_base_vseq extends cip_base_vseq #(
       `DV_CHECK(uvm_hdl_read(path, tmp_cnt));
       // Randomize bit flip vector
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_flip_mask, $onehot(bit_flip_mask);)
-      // Make sure the random bit is within the ctr_width (this has a slight prefernce for lower
+      // Make sure the random bit is within the ctr_width (this has a slight preference for lower
       // bits in case 32 is not divisible by ctr_width)
       while (bit_flip_mask > (32'h1 << (ctr_width-1))) begin
         bit_flip_mask = bit_flip_mask >> ctr_width;
