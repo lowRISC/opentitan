@@ -296,7 +296,7 @@ class dma_generic_vseq extends dma_base_vseq;
           status[StatusChunkDone] = 1'b0;
         end
         if (status[StatusError]) begin
-          // Clear STATUS.error condition and associcated interrupt.
+          // Clear STATUS.error condition and associated interrupt.
           clear_errors(dma_config);
           status[StatusError] = 1'b0;
         end

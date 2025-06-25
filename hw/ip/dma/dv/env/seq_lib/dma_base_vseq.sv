@@ -145,7 +145,7 @@ class dma_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("Populating ASID 0x%x address range [0x%0x,0x%0x)",
                               asid, addr, end_addr), UVM_MEDIUM)
 
-    // Alas we must ensure that the first bus word is fully-defined because TL-UL host adapater
+    // Alas we must ensure that the first bus word is fully-defined because TL-UL host adapter
     // fetches only complete bus words and there are assertion checks on the TL-UL bus.
     while (addr < end_addr) begin
       // Ideally we would use 'X' instead of a defined pattern.

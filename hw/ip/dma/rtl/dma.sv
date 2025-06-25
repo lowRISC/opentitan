@@ -1157,9 +1157,9 @@ module dma
                             transfer_remaining_bytes : chunk_remaining_bytes;
 
   always_comb begin
-    // Because of using the primitves for interrupt handling, the hw2reg registers cannot get a
+    // Because of using the primitives for interrupt handling, the hw2reg registers cannot get a
     // common default value since would create a second driver to to the interrupt registers. Thus
-    // it must ensured that all registers are initialized mannually to avoid creating latches.
+    // it must ensured that all registers are initialized manually to avoid creating latches.
 
     // Clear the go bit if we are in a single transfer and finished the DMA operation,
     // hardware handshake mode when we finished all transfers, or when aborting the transfer.

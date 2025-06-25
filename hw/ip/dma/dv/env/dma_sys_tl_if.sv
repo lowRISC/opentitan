@@ -50,7 +50,7 @@ interface dma_sys_tl_if
     h2d_address = 'b0;
     h2d_mask    = 'b0;
 
-    // Writes take predecence over reads.
+    // Writes take precedence over reads.
     //
     // Not expected to handle simultaneous write and read requests with the current DMA
     // implementation and the behavior in this case has not been publicly specified.
@@ -66,13 +66,13 @@ interface dma_sys_tl_if
     end
   end
 
-  // Check that the upper address bits (not visibile to the TL-UL agent) are driven to the correct
+  // Check that the upper address bits (not visible to the TL-UL agent) are driven to the correct
   // values by the host.
   // Address mismatches are reported immediately to the host and the request is not forwarded to
   // the TL-UL agent.
   wire addr_matches = (h2d_address >> TLAddrWidth) === (base_addr >> TLAddrWidth);
   wire h2d_a_valid  = addr_matches & |sys_h2d.vld_vec;
-  // Writes take predecence over reads.
+  // Writes take precedence over reads.
   wire write_mismatch =  sys_h2d.vld_vec[SysCmdWrite] & !addr_matches;
   wire read_mismatch  = !sys_h2d.vld_vec[SysCmdWrite] & sys_h2d.vld_vec[SysCmdRead] &
                         !addr_matches;
