@@ -90,6 +90,8 @@ struct Opts {
 
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Use an invalid device id to trigger ownership unlock request")]
     invalid_device_id: bool,
+    #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Use an invalid nonce to trigger ownership unlock request")]
+    invalid_nonce: bool,
     #[arg(long, default_value_t = false, action = clap::ArgAction::Set, help = "Check the firmware boots prior to ownership transfer")]
     pre_transfer_boot_check: bool,
     #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
@@ -139,9 +141,12 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     log::info!("###### Get Boot Log (1/2) ######");
-    let (data, mut devid) = transfer_lib::get_device_info(transport, &rescue)?;
+    let (mut data, mut devid) = transfer_lib::get_device_info(transport, &rescue)?;
     if opts.invalid_device_id {
         devid.din += 1;
+    }
+    if opts.invalid_nonce {
+        data.rom_ext_nonce += 1;
     }
     if !opts.skip_unlock {
         log::info!("###### Ownership Unlock ######");
