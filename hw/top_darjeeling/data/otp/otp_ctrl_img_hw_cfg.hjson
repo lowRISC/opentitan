@@ -21,5 +21,19 @@
                 },
             ],
         }
+        {
+            name:  "HW_CFG1",
+            // If set to true, this computes the HW digest value
+            // and locks the partition.
+            lock:  "True",
+            items: [
+                {
+                    // Cryptolib and chip-level tests require access to the
+                    // CSRNG software interfaces.
+                    name:  "EN_CSRNG_SW_APP_READ",
+                    value: true,
+                },
+            ],
+        }
     ]
 }
