@@ -6,8 +6,8 @@
 common --noenable_bzlmod
 
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
-build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
-build --cxxopt='-std=gnu++14'
+build --action_env=BAZEL_CXXOPTS="-std=gnu++17"
+build --cxxopt='-std=gnu++17'
 build --conlyopt='-std=gnu11'
 
 # Never strip debugging information so that we can produce annotated
