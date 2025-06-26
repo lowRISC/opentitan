@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <stdalign.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -19,12 +20,32 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+enum {
+  kShortDigestLen = 8,
+  kLongDigestLen = 75,
+  kShortMsgLen = 13,
+  kLongMsgLen = 26 * 4,
+};
+
+typedef struct unalignedhash {
+  char unused;
+  char short_payload[kShortMsgLen];
+  char long_payload[kLongMsgLen];
+} unalignedhash_t;
+
+static const alignas(uint32_t) unalignedhash_t kKmacTestData = {
+    .short_payload = "Test message!",
+    .long_payload =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqr"
+        "stuv"
+        "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+};
+
 /**
  * Test data: short message with short output.
  */
 static const char short_msg[] = "Test message!";
-static const size_t short_msg_len = 13;
-static const uint32_t short_msg_digest[8] = {
+static const uint32_t short_msg_digest[kShortDigestLen] = {
     0x84f1c984, 0x7a0316bb, 0xe404cfed, 0x83f9078a,
     0x21491adc, 0xd6c30988, 0xc6822ff6, 0x20b73405,
 };
@@ -35,8 +56,7 @@ static const uint32_t short_msg_digest[8] = {
 static const char long_msg[] =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuv"
     "wxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static const size_t long_msg_len = 26 * 4;
-static const uint32_t long_msg_digest[75] = {
+static const uint32_t long_msg_digest[kLongDigestLen] = {
     0x262992ca, 0xe4790cf1, 0x7681c77f, 0xa5366b52, 0x86490a2f, 0xf072d4c9,
     0xd4ea499a, 0x7a192fd2, 0xe1156b59, 0xb8f00ad5, 0x2ff4ba7c, 0xdec27032,
     0x33624f74, 0x88836d86, 0x4c3c6982, 0xb9e841e1, 0x78acb95a, 0x0bdbc7bc,
@@ -80,14 +100,33 @@ rom_error_t kmac_shake256_test(void) {
   RETURN_IF_ERROR(kmac_shake256_configure());
 
   // Simple test.
-  RETURN_IF_ERROR(shake256_test(short_msg_len, short_msg,
+  RETURN_IF_ERROR(shake256_test(kShortMsgLen, short_msg,
                                 ARRAYSIZE(short_msg_digest), short_msg_digest));
 
   // Test with long input, short output.
-  RETURN_IF_ERROR(shake256_test(long_msg_len, long_msg, 1, long_msg_digest));
+  RETURN_IF_ERROR(shake256_test(kLongMsgLen, long_msg, 1, long_msg_digest));
 
   // Test with long input, long output.
-  RETURN_IF_ERROR(shake256_test(long_msg_len, long_msg,
+  RETURN_IF_ERROR(shake256_test(kLongMsgLen, long_msg,
+                                ARRAYSIZE(long_msg_digest), long_msg_digest));
+
+  return kErrorOk;
+}
+
+rom_error_t kmac_shake256_unalign_test(void) {
+  // Configure KMAC to run SHAKE-256.
+  RETURN_IF_ERROR(kmac_shake256_configure());
+
+  // Simple test for unalign.
+  RETURN_IF_ERROR(shake256_test(kShortMsgLen, kKmacTestData.short_payload,
+                                ARRAYSIZE(short_msg_digest), short_msg_digest));
+
+  // Test with unalign long input, short output.
+  RETURN_IF_ERROR(shake256_test(kLongMsgLen, kKmacTestData.long_payload, 1,
+                                long_msg_digest));
+
+  // Test with unalign long input, long output.
+  RETURN_IF_ERROR(shake256_test(kLongMsgLen, kKmacTestData.long_payload,
                                 ARRAYSIZE(long_msg_digest), long_msg_digest));
 
   return kErrorOk;
@@ -176,6 +215,7 @@ bool test_main(void) {
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, kmac_shake256_test);
+  EXECUTE_TEST(result, kmac_shake256_unalign_test);
   EXECUTE_TEST(result, kmac_kmac256_kat_1);
   EXECUTE_TEST(result, kmac_kmac256_kat_2);
   EXECUTE_TEST(result, kmac_kmac256_kat_3);
