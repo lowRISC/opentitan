@@ -28,7 +28,7 @@ if { $lr_synth_top_module == "keccak_2share" || $lr_synth_top_module == "keccak_
 # Remap Xilinx Vivado "dont_touch" attributes to Yosys "keep" attributes.
 yosys "attrmap -tocase keep -imap dont_touch=\"yes\" keep=1 -imap dont_touch=\"no\" keep=0 -remove keep=0"
 
-# Place keep_hierarchy contraints on relevant modules to prevent aggressive synthesis optimzations
+# Place keep_hierarchy constraints on relevant modules to prevent aggressive synthesis optimizations
 # across the boundaries of these modules.
 yosys "hierarchy -check -top $lr_synth_top_module"
 yosys "setattr -mod -set keep_hierarchy 1 *prim_xilinx*"

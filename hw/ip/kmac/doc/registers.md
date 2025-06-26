@@ -411,12 +411,12 @@ KMAC/SHA3 Status register.
 |   0    |   ro   |   0x1   | [sha3_idle](#status--sha3_idle)                                     |
 
 ### STATUS . ALERT_RECOV_CTRL_UPDATE_ERR
-An update error has not occurred (0) or has occured (1) in the shadowed Control Register.
+An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
 KMAC operation needs to be restarted by re-writing the Control Register.
 
 ### STATUS . ALERT_FATAL_FAULT
 No fatal fault has occurred inside the KMAC unit (0).
-A fatal fault has occured and the KMAC unit needs to be reset (1),
+A fatal fault has occurred and the KMAC unit needs to be reset (1),
 Examples for such faults include
 i) TL-UL bus integrity fault
 ii) storage errors in the shadow registers

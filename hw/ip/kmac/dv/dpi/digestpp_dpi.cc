@@ -48,7 +48,7 @@ static void write_array_to_simulator(const svOpenArrayHandle arr,
  * Helper function to calculate generic length SHA3 algorithm.
  *
  * Note that `sha_len` can only be in {224, 256, 384, 512} for KMAC HWIP, these
- * lengths are explicitly passsed in from SV code, so no need to use an
+ * lengths are explicitly passed in from SV code, so no need to use an
  * assertion here.
  */
 static void get_sha3_digest(uint64_t sha_len, const svOpenArrayHandle msg,

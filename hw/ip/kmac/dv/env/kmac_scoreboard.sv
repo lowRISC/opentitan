@@ -886,8 +886,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   unchecked_kmac_cmd = CmdManualRun;
 
                   req_manual_squeeze = 1;
-                  // Mask out status sequeeze check because it requires cycle accurate prediction.
-                  // Use sequence to backdoor check if sequeeze is reset to 0 after each squeeze
+                  // Mask out status squeeze check because it requires cycle accurate prediction.
+                  // Use sequence to backdoor check if squeeze is reset to 0 after each squeeze
                   // command.
                   status_mask[KmacStatusSha3Squeeze] = 1;
                   `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
@@ -1244,7 +1244,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // Reads FIFO empty/full status from the DUT registers to know the current level of the FIFOs as
   // it has been decided to not predict this here.
-  // Then, it could be decided wether the FIFO empty interrupt could be raised. This should only be
+  // Then, it could be decided whether the FIFO empty interrupt could be raised. This should only be
   // the case when the FIFO is actually empty, but also if all of the following conditions are met:
   //   1- The KMAC block is not exercised by a hardware application interface.
   //   2- The SHA3 block is in the Absorb state.

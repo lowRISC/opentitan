@@ -122,7 +122,7 @@ module sha3
   logic squeezing;
 
   // If process_i is received, the logic initiates the final absorbing process.
-  // While absorbing, the processing inticator is turned on. This signal is used
+  // While absorbing, the processing indicator is turned on. This signal is used
   // to check if multiple process_i is received or not.
   logic processing;
 

@@ -23,7 +23,7 @@ module kmac
 
   // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
   // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
-  // two commands subsquently and then go to sleep. The second command is buffered internally and
+  // two commands subsequently and then go to sleep. The second command is buffered internally and
   // will be presented to the hardware SecCmdDelay number of cycles after the first one.
   parameter int SecCmdDelay = 0,
 
@@ -286,7 +286,7 @@ module kmac
   //   Invalid command is filtered out in the module.
   // kmac_cmd is generated in KeyMgr interface.
   // If SW initiates the KMAC/SHA3, kmac_cmd represents SW command,
-  // if KeyMgr drives the data, kmac_cmd is controled in the state machine
+  // if KeyMgr drives the data, kmac_cmd is controlled in the state machine
   // in KeyMgr interface logic.
   kmac_cmd_e sw_cmd, checked_sw_cmd, kmac_cmd, cmd_q;
   logic      cmd_update;
@@ -613,7 +613,7 @@ module kmac
   // - The SHA3 core is not in the Absorb state. Only in this state, the FIFO is writeable by
   //   software anyway.
   // - Software has already written the Process command. The KMAC block will now empty the
-  //   message FIFO and load its content into the SHA3 core, add the padding and then perfom
+  //   message FIFO and load its content into the SHA3 core, add the padding and then perform
   //   the final absorption. Software cannot append the message further.
   //
   // The message FIFO empty interrupt can be **useful** for software in particular if:

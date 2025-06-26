@@ -123,7 +123,7 @@ endgroup
 // We do this so that we can create an array of these covergroups for each app interface
 // present in the testbench environment.
 class app_cg_wrap;
-  // done signal is sent while kecak rounds are running
+  // done signal is sent while Keccak rounds are running
   covergroup app_cg(string name) with function sample(bit single_beat,
                                                       bit [keymgr_pkg::KmacDataIfWidth/8-1:0] strb,
                                                       bit err,
