@@ -237,9 +237,9 @@ dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Proce
 # The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata / integrity.
 for {set bank 0} {$bank < 2} {incr bank} {
   for {set partition 0} {$partition < 3} {incr partition} {
-    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[0].*"] " "]
+    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_macro_wrapper*gen_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[0].*"] " "]
     dict set memInfo "flash${bank}_info${partition}_data" [apply $gen_mem_info $flash_info_brams $mem_type_regex 0 1 "MemoryArray"]
-    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[64].*"] " "]
+    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_macro_wrapper*gen_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[64].*"] " "]
     dict set memInfo "flash${bank}_info${partition}_intg" [apply $gen_mem_info $flash_info_brams $mem_type_regex 0 1 "MemoryArray"]
   }
 }
