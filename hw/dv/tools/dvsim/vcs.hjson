@@ -45,10 +45,9 @@
                // that gets passed to Make (stripping one level of quotes), and then needs to
                // result in an argument with an embedded space (the other one).
                "-CFLAGS --std=c99 -CFLAGS -fno-extended-identifiers",
-               // C++11 standard is enforced for all sources, including the DPI-C constructs.
-               // TODO, may need to update to c++14 to meet our requirements
+               // C++17 standard is enforced for all sources, including the DPI-C constructs.
                // Refer to https://docs.opentitan.org/doc/ug/install_instructions
-               "-CFLAGS --std=c++11",
+               "-CFLAGS --std=c++17",
                // Without this magic LDFLAGS argument below, we get compile time errors with
                // VCS on Google Linux machines that look like this:
                // .../libvcsnew.so: undefined reference to `snpsReallocFunc'

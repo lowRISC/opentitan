@@ -106,7 +106,7 @@ targets:
           - '--trace-params'
           - '--trace-max-array 1024'
           - '--unroll-count 512'
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_englishbreakfast_verilator"'
+          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DVL_USER_STOP -DTOPLEVEL_NAME=chip_englishbreakfast_verilator"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - '-Wall'
           # Execute simulation with four threads by default, which works best
