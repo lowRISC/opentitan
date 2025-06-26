@@ -44,7 +44,7 @@ targets:
 # -O
 #   Optimization levels have a large impact on the runtime performance of the
 #   simulation model. -O2 and -O3 are pretty similar, -Os is slower than -O2/-O3
-          - '-CFLAGS "-std=c++11 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=kmac_reduced_tb -g -O0"'
+          - '-CFLAGS "-std=c++17 -Wall -DVM_TRACE_FMT_FST -DTOPLEVEL_NAME=kmac_reduced_tb -g -O0"'
           - '-LDFLAGS "-pthread -lutil -lelf"'
           - "-Wall"
           # This TB is mainly used for developing and prototyping security
