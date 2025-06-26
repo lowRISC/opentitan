@@ -272,7 +272,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           key_policy.exportable;
         current_internal_key[current_key_slot.dst_slot].key_policy.retain_parent =
           key_policy.retain_parent;
-        // max verssion should also be set from the max_version signal that was populated
+        // max version should also be set from the max_version signal that was populated
         // from the last max_key_ver_shadowed csr write before the "start" operation was enabled
         current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
 
@@ -425,7 +425,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           default: `uvm_fatal(`gfn, $sformatf("Unexpected operation: %0s", op.name))
         endcase
       end
-      // StWorkDpeReset would be an unexpected state becuase no KMAC data request should occur.
+      // StWorkDpeReset would be an unexpected state because no KMAC data request should occur.
       default: `uvm_fatal(`gfn, $sformatf("Unexpected current_state: %0s", current_state.name))
     endcase // current_state
     return update_result;
@@ -583,7 +583,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable", "sw_binding_regwen": begin
-        // no speical handle is needed
+        // no special handle is needed
       end
       "err_code": begin
         // Check in this block

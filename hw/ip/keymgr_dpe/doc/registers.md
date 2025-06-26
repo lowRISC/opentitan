@@ -206,7 +206,7 @@ The source key slot to be used for the invoked operation.
 When the OPERATION field is programmed to generate output, this field selects
 the target cryptograhic use of the key.
 
-This field should be programmed for both HW / SW generation, as this helps diverisify the output.
+This field should be programmed for both HW / SW generation, as this helps diversify the output.
 
 | Value   | Name   | Description                                                                                                                                                                                                                                                                                                                                   |
 |:--------|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -468,9 +468,9 @@ Max key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specified in this register is valid. |
 
 ## SW_SHARE0_OUTPUT
 Key manager software output.

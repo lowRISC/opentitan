@@ -236,7 +236,7 @@ module keymgr_ctrl
   ///////////////////////////
 
   // Upon entering StCtrlDisabled or StCtrlInvalid, the PRNG is kept advancing until it has been
-  // reseeded twice (through the reseeding mechansism inside keymgr_reseed_ctrl.sv).
+  // reseeded twice (through the reseeding mechanism inside keymgr_reseed_ctrl.sv).
   logic [1:0] prng_en_dis_inv_d, prng_en_dis_inv_q;
   logic prng_en_dis_inv_set;
 
@@ -446,7 +446,7 @@ module keymgr_ctrl
 
   // SEC_CM: CTRL.FSM.LOCAL_ESC
   // begin invalidation when faults are observed.
-  // sync faults only invalidate on transaction boudaries
+  // sync faults only invalidate on transaction boundaries
   // async faults begin invalidating immediately
   assign inv_state = |fault_o;
 
@@ -527,7 +527,7 @@ module keymgr_ctrl
         random_req = 1'b1;
 
         // when mask population is complete, xor the root_key into the zero share
-        // if in the future the root key is updated to 2 shares, it will direclty overwrite
+        // if in the future the root key is updated to 2 shares, it will directly overwrite
         // the values here
         if (int'(cnt) == EntropyRounds-1) begin
           random_ack = 1'b1;
@@ -622,7 +622,7 @@ module keymgr_ctrl
 
       // The wipe state immediately clears out the key state, but waits for any ongoing
       // transaction to finish before going to disabled state.
-      // Unlike the random state, this is an immedaite shutdown request, so all parts of the
+      // Unlike the random state, this is an immediate shutdown request, so all parts of the
       // key are wiped.
       StCtrlWipe: begin
         wipe_req = 1'b1;
@@ -735,7 +735,7 @@ module keymgr_ctrl
 
 
   /////////////////////////
-  // Operateion state, handle advance and generate
+  // Operation state, handle advance and generate
   /////////////////////////
 
   logic op_fsm_err;

@@ -19,7 +19,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   bit do_wait_for_init_done = 1'b1;
   bit seq_check_en = 1'b1;
 
-  // avoid multiple thread accessign this CSR at the same time, which causes UVM_WARNING
+  // avoid multiple thread accessing this CSR at the same time, which causes UVM_WARNING
   semaphore sema_update_control_csr;
 
   // do operations at StWorkDpeReset
