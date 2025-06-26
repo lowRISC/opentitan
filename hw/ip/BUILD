@@ -20,6 +20,7 @@ filegroup(
         "//hw/ip/csrng:rtl_files",
         "//hw/ip/edn:rtl_files",
         "//hw/ip/entropy_src:rtl_files",
+        "//hw/ip/flash_macro_wrapper:rtl_files",
         "//hw/ip/hmac:rtl_files",
         "//hw/ip/i2c:rtl_files",
         "//hw/ip/keymgr:rtl_files",

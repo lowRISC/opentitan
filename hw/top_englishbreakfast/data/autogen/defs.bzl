@@ -12,6 +12,7 @@ load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
 load("//hw/top_englishbreakfast/ip/ast:defs.bzl", "AST")
 load("//hw/top_englishbreakfast/ip_autogen/clkmgr:defs.bzl", "CLKMGR")
 load("//hw/top_englishbreakfast/ip_autogen/flash_ctrl:defs.bzl", "FLASH_CTRL")
+load("//hw/ip/flash_macro_wrapper:defs.bzl", "FLASH_MACRO_WRAPPER")
 load("//hw/top_englishbreakfast/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/top_englishbreakfast/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_englishbreakfast/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
@@ -32,6 +33,7 @@ ENGLISHBREAKFAST_IPS = [
     AST,
     CLKMGR,
     FLASH_CTRL,
+    FLASH_MACRO_WRAPPER,
     GPIO,
     PINMUX,
     PWRMGR,

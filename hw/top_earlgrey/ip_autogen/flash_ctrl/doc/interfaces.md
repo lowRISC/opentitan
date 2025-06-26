@@ -4,45 +4,30 @@
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`flash_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_otp_i`**
-- Bus Device Interfaces (TL-UL): **`core_tl`**, **`prim_tl`**, **`mem_tl`**
+- Bus Device Interfaces (TL-UL): **`core_tl`**, **`mem_tl`**
 - Bus Host Interfaces (TL-UL): *none*
-
-## Peripheral Pins for Chip IO
-
-| Pin name   | Direction   | Description   |
-|:-----------|:------------|:--------------|
-| tck        | input       | jtag clock    |
-| tms        | input       | jtag tms      |
-| tdi        | input       | jtag input    |
-| tdo        | output      | jtag output   |
+- Peripheral Pins for Chip IO: *none*
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                | Package::Struct                | Type    | Act   |   Width | Description   |
-|:-------------------------|:-------------------------------|:--------|:------|--------:|:--------------|
-| otp                      | otp_ctrl_pkg::flash_otp_key    | req_rsp | req   |       1 |               |
-| lc_nvm_debug_en          | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| flash_bist_enable        | prim_mubi_pkg::mubi4           | uni     | rcv   |       1 |               |
-| flash_power_down_h       | logic                          | uni     | rcv   |       1 |               |
-| flash_power_ready_h      | logic                          | uni     | rcv   |       1 |               |
-| flash_test_mode_a        |                                | io      | none  |       2 |               |
-| flash_test_voltage_h     |                                | io      | none  |       1 |               |
-| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| lc_iso_part_sw_rd_en     | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| lc_iso_part_sw_wr_en     | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| lc_escalate_en           | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| rma_req                  | lc_ctrl_pkg::lc_tx             | uni     | rcv   |       1 |               |
-| rma_ack                  | lc_ctrl_pkg::lc_tx             | uni     | req   |       1 |               |
-| rma_seed                 | lc_ctrl_pkg::lc_flash_rma_seed | uni     | rcv   |       1 |               |
-| pwrmgr                   | pwrmgr_pkg::pwr_flash          | uni     | req   |       1 |               |
-| keymgr                   | flash_ctrl_pkg::keymgr_flash   | uni     | req   |       1 |               |
-| obs_ctrl                 | ast_pkg::ast_obs_ctrl          | uni     | rcv   |       1 |               |
-| fla_obs                  | logic                          | uni     | req   |       8 |               |
-| core_tl                  | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
-| prim_tl                  | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
-| mem_tl                   | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
+| Port Name                | Package::Struct                         | Type    | Act   |   Width | Description                                   |
+|:-------------------------|:----------------------------------------|:--------|:------|--------:|:----------------------------------------------|
+| otp                      | otp_ctrl_pkg::flash_otp_key             | req_rsp | req   |       1 |                                               |
+| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| lc_iso_part_sw_rd_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| lc_iso_part_sw_wr_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| lc_escalate_en           | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| rma_req                  | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                               |
+| rma_ack                  | lc_ctrl_pkg::lc_tx                      | uni     | req   |       1 |                                               |
+| rma_seed                 | lc_ctrl_pkg::lc_flash_rma_seed          | uni     | rcv   |       1 |                                               |
+| pwrmgr                   | pwrmgr_pkg::pwr_flash                   | uni     | req   |       1 |                                               |
+| keymgr                   | flash_ctrl_pkg::keymgr_flash            | uni     | req   |       1 |                                               |
+| flash_macro              | flash_phy_macro_pkg::flash_phy_macro    | req_rsp | req   |       1 | Data interface to the flash macro wrapper     |
+| flash_macro_status       | flash_phy_macro_pkg::flash_macro_status | uni     | rcv   |       1 | Status interface from the flash macro wrapper |
+| core_tl                  | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                               |
+| mem_tl                   | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                               |
 
 ## Interrupts
 

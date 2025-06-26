@@ -7,10 +7,14 @@ module tb;
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
+  import flash_ctrl_pkg::*;
   import flash_ctrl_top_specific_pkg::*;
   import flash_ctrl_env_pkg::*;
   import flash_ctrl_test_pkg::*;
   import flash_ctrl_bkdr_util_pkg::flash_ctrl_bkdr_util;
+  import flash_phy_macro_pkg::flash_phy_macro_req_t;
+  import flash_phy_macro_pkg::flash_phy_macro_rsp_t;
+  import flash_phy_macro_pkg::flash_macro_status_t;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -39,6 +43,9 @@ module tb;
   wire intr_op_done;
   wire intr_err;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  flash_phy_macro_req_t flash_macro_req;
+  flash_phy_macro_rsp_t flash_macro_rsp;
+  flash_macro_status_t flash_macro_status;
 
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
 
@@ -73,9 +80,9 @@ module tb;
     .rst_n(rst_n)
   );
 
-  `define FLASH_DEVICE_HIER tb.dut.u_eflash.u_flash
-  assign fpp_if.req = `FLASH_DEVICE_HIER.flash_req_i;
-  assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_rsp_o;
+  `define FLASH_DEVICE_HIER tb.flash_macro_wrapper
+  assign fpp_if.req = `FLASH_DEVICE_HIER.flash_i;
+  assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_o;
   for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_bank_loop
     assign fpp_if.rreq[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.req_i;
     assign fpp_if.rdy[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.rdy_o;
@@ -142,11 +149,9 @@ module tb;
     .clk_otp_i      (clk),
     .rst_otp_ni     (rst_n),
 
-    // various tlul interfaces
+    // tlul interfaces
     .core_tl_i(tl_if.h2d),
     .core_tl_o(tl_if.d2h),
-    .prim_tl_i(prim_tl_if.h2d),
-    .prim_tl_o(prim_tl_if.d2h),
     .mem_tl_i (eflash_tl_if.h2d),
     .mem_tl_o (eflash_tl_if.d2h),
 
@@ -160,7 +165,6 @@ module tb;
     .lc_iso_part_sw_rd_en_i    (flash_ctrl_if.lc_iso_part_sw_rd_en),
     .lc_iso_part_sw_wr_en_i    (flash_ctrl_if.lc_iso_part_sw_wr_en),
     .lc_seed_hw_rd_en_i        (flash_ctrl_if.lc_seed_hw_rd_en),
-    .lc_nvm_debug_en_i         (flash_ctrl_if.lc_nvm_debug_en),
     .lc_escalate_en_i          (flash_ctrl_if.lc_escalate_en),
 
     // life cycle rma handling
@@ -173,23 +177,9 @@ module tb;
     .keymgr_o(flash_ctrl_if.keymgr),
 
     // flash prim signals
-    .flash_power_ready_h_i  (flash_ctrl_if.power_ready_h),
-    .flash_power_down_h_i   (flash_power_down_h),
-    .flash_bist_enable_i    (prim_mubi_pkg::MuBi4False),
-    .flash_test_mode_a_io   (flash_test_mode_a),
-    .flash_test_voltage_h_io(flash_test_v),
-
-    // test
-    .scanmode_i (prim_mubi_pkg::MuBi4False),
-    .scan_rst_ni('0),
-    .scan_en_i  ('0),
-
-    // JTAG
-    .cio_tck_i   (flash_ctrl_if.cio_tck),
-    .cio_tms_i   (flash_ctrl_if.cio_tms),
-    .cio_tdi_i   (flash_ctrl_if.cio_tdi),
-    .cio_tdo_en_o(flash_ctrl_if.cio_tdo_en),
-    .cio_tdo_o   (flash_ctrl_if.cio_tdo),
+    .flash_macro_o            (flash_macro_req),
+    .flash_macro_i            (flash_macro_rsp),
+    .flash_macro_status_i     (flash_macro_status),
 
     // alerts and interrupts
     .intr_prog_empty_o(intr_prog_empty),
@@ -199,12 +189,43 @@ module tb;
     .intr_op_done_o   (intr_op_done),
     .intr_corr_err_o  (intr_err),
     .alert_rx_i       (alert_rx),
-    .alert_tx_o       (alert_tx),
+    .alert_tx_o       (alert_tx)
 
-    // Observability
-    .obs_ctrl_i(obs_ctrl),
-    .fla_obs_o (        )
+  );
 
+  flash_macro_wrapper #(
+    .NumBanks(flash_phy_macro_pkg::NumBanks),
+    .InfosPerBank(flash_phy_macro_pkg::InfosPerBank),
+    .InfoTypes(flash_phy_macro_pkg::InfoTypes),
+    .InfoTypesWidth(flash_phy_macro_pkg::InfoTypesWidth),
+    .PagesPerBank(flash_phy_macro_pkg::PagesPerBank),
+    .WordsPerPage(flash_phy_macro_pkg::WordsPerPage),
+    .DataWidth(flash_phy_pkg::FullDataWidth)
+  ) flash_macro_wrapper (
+    .clk_i (clk),
+    .rst_ni (rst_n),
+    .tl_i (prim_tl_if.h2d),
+    .tl_o (prim_tl_if.d2h),
+    .lc_nvm_debug_en_i (flash_ctrl_if.lc_nvm_debug_en),
+    .flash_i (flash_macro_req),
+    .flash_o (flash_macro_rsp),
+    .status_o (flash_macro_status),
+    // JTAG
+    .cio_tck_i   (flash_ctrl_if.cio_tck),
+    .cio_tms_i   (flash_ctrl_if.cio_tms),
+    .cio_tdi_i   (flash_ctrl_if.cio_tdi),
+    .cio_tdo_en_o(flash_ctrl_if.cio_tdo_en),
+    .cio_tdo_o   (flash_ctrl_if.cio_tdo),
+    .bist_enable_i(prim_mubi_pkg::MuBi4False),
+    .obs_ctrl_i (obs_ctrl),
+    .fla_obs_o ( ),
+    .scanmode_i (prim_mubi_pkg::MuBi4False),
+    .scan_en_i ('0),
+    .scan_rst_ni ('0),
+    .power_ready_h_i (flash_ctrl_if.power_ready_h),
+    .power_down_h_i (flash_power_down_h),
+    .test_mode_a_io    (flash_test_mode_a),
+    .test_voltage_h_io (flash_test_v)
   );
 
   // Create edge in flash_power_down_h_i, whenever reset is asserted
@@ -243,25 +264,22 @@ module tb;
   //
   // For eflash of a specific vendor implementation, set the hierarchy to the memory element
   // correctly when creating these instances in the extended testbench.
-  `define FLASH_BANK_HIER(i)                                                            \
-      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
-      u_prim_flash_bank
+  `define FLASH_BANK_HIER(i)                                             \
+      tb.flash_macro_wrapper.gen_flash_banks[i].u_flash_macro_bank
 
-  `define FLASH_DATA_MEM_HIER(i)                                                        \
+  `define FLASH_DATA_MEM_HIER(i)    \
       `FLASH_BANK_HIER(i).u_mem.mem
 
-  `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
-      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
-                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.mem"}, i)
+  `define FLASH_DATA_MEM_HIER_STR(i)                                          \
+      $sformatf("tb.flash_macro_wrapper.gen_flash_banks[%0d].u_flash_macro_bank.u_mem.mem", i)
 
-  `define FLASH_INFO_MEM_HIER(i, j)                                                     \
-      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
-      u_prim_flash_bank.gen_info_types[j].u_info_mem.mem
+  `define FLASH_INFO_MEM_HIER(i, j)                          \
+      tb.flash_macro_wrapper.gen_flash_banks[i].             \
+      u_flash_macro_bank.gen_info_types[j].u_info_mem.mem
 
-  `define FLASH_INFO_MEM_HIER_STR(i, j)                                                 \
-      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
-                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
-                 "u_info_mem.mem"}, i, j)
+  `define FLASH_INFO_MEM_HIER_STR(i, j)                                             \
+      $sformatf({"tb.flash_macro_wrapper.gen_flash_banks[%0d].u_flash_macro_bank.", \
+                 "gen_info_types[%0d].u_info_mem.mem"}, i, j)
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     for (genvar i = 0; i < flash_ctrl_top_specific_pkg::NumBanks; i++) begin : gen_each_bank
@@ -276,6 +294,9 @@ module tb;
             .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
             .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
         );
+        `DV_CHECK(m_mem_bkdr_util, $sformatf(
+                  "mem_bkdr_util bank=%0d part=%s fails", i, part.name()), ,
+                  "flash_ctrl tb")
         uvm_config_db#(flash_ctrl_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                              m_mem_bkdr_util);
         part = part.next();
@@ -291,6 +312,9 @@ module tb;
               .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
               .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
           );
+          `DV_CHECK(m_mem_bkdr_util, $sformatf(
+                    "mem_bkdr_util bank=%0d, part=%s, info=%0d fails", i, part.name(), j), ,
+                    "flash_ctrl tb")
           uvm_config_db#(flash_ctrl_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
                                                m_mem_bkdr_util);
           part = part.next();
@@ -337,7 +361,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
                                             "clk_rst_vif_flash_ctrl_eflash_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
-                                            "clk_rst_vif_flash_ctrl_prim_reg_block", clk_rst_if);
+                                            "clk_rst_vif_flash_macro_wrapper_reg_block",
+                                            clk_rst_if);
 
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif",
                                                  rst_shadowed_if);
@@ -346,8 +371,8 @@ module tb;
                                        tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_eflash_reg_block*", "vif",
                                        eflash_tl_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_prim_reg_block*", "vif",
-                                       prim_tl_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_macro_wrapper_reg_block*",
+                                       "vif", prim_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
     $timeformat(-9, 1, " ns", 9);

@@ -9,6 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:englishbreakfast_ip:flash_ctrl
     files:
       - flash_ctrl_cov_bind.sv

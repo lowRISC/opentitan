@@ -47,11 +47,8 @@ with_unknown! {
         GpioGpio31 = 31,
         Uart0Rx = 32,
         Uart1Rx = 33,
-        FlashCtrlTck = 34,
-        FlashCtrlTms = 35,
-        FlashCtrlTdi = 36,
-        UsbdevSense = 37,
-        End = 38,
+        UsbdevSense = 34,
+        End = 35,
     }
 
     pub enum PinmuxInsel: u32 [default = Self::End] {
@@ -196,8 +193,7 @@ with_unknown! {
         GpioGpio31 = 34,
         Uart0Tx = 35,
         Uart1Tx = 36,
-        FlashCtrlTdo = 37,
-        End = 38,
+        End = 37,
     }
 
     pub enum DirectPads: u32 [default = Self::End] {

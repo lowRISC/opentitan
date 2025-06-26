@@ -282,24 +282,6 @@ extern "C" {
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_CORE_SIZE_BYTES 0x200u
 
 /**
- * Peripheral base address for prim device on flash_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000u
-
-/**
- * Peripheral size for prim device on flash_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES 0x80u
-
-/**
  * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -316,6 +298,24 @@ extern "C" {
  * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES`.
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000u
+
+/**
+ * Peripheral base address for flash_macro_wrapper in top englishbreakfast.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR 0x41008000u
+
+/**
+ * Peripheral size for flash_macro_wrapper in top englishbreakfast.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_SIZE_BYTES`.
+ */
+#define TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_SIZE_BYTES 0x80u
 
 /**
  * Peripheral base address for rv_plic in top englishbreakfast.
@@ -661,11 +661,8 @@ typedef enum top_englishbreakfast_pinmux_peripheral_in {
   kTopEnglishbreakfastPinmuxPeripheralInGpioGpio31 = 31, /**< Peripheral Input 31 */
   kTopEnglishbreakfastPinmuxPeripheralInUart0Rx = 32, /**< Peripheral Input 32 */
   kTopEnglishbreakfastPinmuxPeripheralInUart1Rx = 33, /**< Peripheral Input 33 */
-  kTopEnglishbreakfastPinmuxPeripheralInFlashCtrlTck = 34, /**< Peripheral Input 34 */
-  kTopEnglishbreakfastPinmuxPeripheralInFlashCtrlTms = 35, /**< Peripheral Input 35 */
-  kTopEnglishbreakfastPinmuxPeripheralInFlashCtrlTdi = 36, /**< Peripheral Input 36 */
-  kTopEnglishbreakfastPinmuxPeripheralInUsbdevSense = 37, /**< Peripheral Input 37 */
-  kTopEnglishbreakfastPinmuxPeripheralInLast = 37, /**< \internal Last valid peripheral input */
+  kTopEnglishbreakfastPinmuxPeripheralInUsbdevSense = 34, /**< Peripheral Input 34 */
+  kTopEnglishbreakfastPinmuxPeripheralInLast = 34, /**< \internal Last valid peripheral input */
 } top_englishbreakfast_pinmux_peripheral_in_t;
 
 /**
@@ -819,8 +816,7 @@ typedef enum top_englishbreakfast_pinmux_outsel {
   kTopEnglishbreakfastPinmuxOutselGpioGpio31 = 34, /**< Peripheral Output 31 */
   kTopEnglishbreakfastPinmuxOutselUart0Tx = 35, /**< Peripheral Output 32 */
   kTopEnglishbreakfastPinmuxOutselUart1Tx = 36, /**< Peripheral Output 33 */
-  kTopEnglishbreakfastPinmuxOutselFlashCtrlTdo = 37, /**< Peripheral Output 34 */
-  kTopEnglishbreakfastPinmuxOutselLast = 37, /**< \internal Last valid outsel value */
+  kTopEnglishbreakfastPinmuxOutselLast = 36, /**< \internal Last valid outsel value */
 } top_englishbreakfast_pinmux_outsel_t;
 
 /**

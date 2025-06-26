@@ -17,6 +17,7 @@ load("//hw/ip/csrng:defs.bzl", "CSRNG")
 load("//hw/ip/edn:defs.bzl", "EDN")
 load("//hw/ip/entropy_src:defs.bzl", "ENTROPY_SRC")
 load("//hw/top_earlgrey/ip_autogen/flash_ctrl:defs.bzl", "FLASH_CTRL")
+load("//hw/ip/flash_macro_wrapper:defs.bzl", "FLASH_MACRO_WRAPPER")
 load("//hw/top_earlgrey/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
@@ -55,6 +56,7 @@ EARLGREY_IPS = [
     EDN,
     ENTROPY_SRC,
     FLASH_CTRL,
+    FLASH_MACRO_WRAPPER,
     GPIO,
     HMAC,
     I2C,

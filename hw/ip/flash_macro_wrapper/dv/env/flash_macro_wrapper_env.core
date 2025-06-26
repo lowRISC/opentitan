@@ -1,0 +1,27 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:flash_macro_wrapper_env:0.1"
+description: "FLASH_MACRO_WRAPPER DV UVM environment"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:ralgen
+      - lowrisc:dv:cip_lib
+
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: flash_macro_wrapper
+      ip_hjson: ../../data/flash_macro_wrapper.hjson
+    position: prepend
+
+targets:
+  default:
+    filesets:
+      - files_dv
+    generate:
+      - ral

@@ -28,12 +28,12 @@ int main(int argc, char **argv) {
               4);
   // Only handle the lower bank of flash for now.
   MemArea flash0(top_scope +
-                     ".u_flash_ctrl.u_eflash.u_flash."
-                     "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem",
+                     ".u_flash_macro_wrapper.gen_flash_banks[0]."
+                     "u_flash_macro_bank.u_mem",
                  0x80000 / 8, 8);
   MemArea flash1(top_scope +
-                     ".u_flash_ctrl.u_eflash.u_flash."
-                     "gen_prim_flash_banks[1].u_prim_flash_bank.u_mem",
+                     ".u_flash_macro_wrapper.gen_flash_banks[1]."
+                     "u_flash_macro_bank.u_mem",
                  0x80000 / 8, 8);
   // Start with the flash region erased. Future loads can overwrite.
   std::vector<uint8_t> all_ones(flash0.GetSizeBytes());

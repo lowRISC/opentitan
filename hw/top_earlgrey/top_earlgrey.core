@@ -29,7 +29,7 @@ filesets:
       - lowrisc:ip:kmac
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
-      - lowrisc:prim:flash
+      - lowrisc:ip:flash_macro_wrapper
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr
       - lowrisc:earlgrey_constants:top_pkg
@@ -111,7 +111,6 @@ mapping:
   "lowrisc:virtual_constants:top_pkg": "lowrisc:earlgrey_constants:top_pkg"
   "lowrisc:virtual_constants:top_racl_pkg": "lowrisc:earlgrey_constants:top_racl_pkg"
   "lowrisc:systems:ast_pkg": "lowrisc:systems:top_earlgrey_ast_pkg"
-  "lowrisc:virtual_ip:flash_ctrl_prim_reg_top": "lowrisc:earlgrey_ip:flash_ctrl_prim_reg_top"
   "lowrisc:virtual_ip:lc_ctrl_state_pkg": "lowrisc:earlgrey_constants:dev_lc_ctrl_state_pkg"
   # TODO(#27347): prim_legacy_pkg is deprecated
   "lowrisc:prim:prim_pkg": "lowrisc:prim:prim_legacy_pkg"

@@ -43,7 +43,7 @@
 //     -> sm1_43
 //       -> flash_ctrl.core
 //     -> sm1_44
-//       -> flash_ctrl.prim
+//       -> flash_macro_wrapper
 //     -> sm1_31
 //       -> flash_ctrl.mem
 //     -> sm1_45
@@ -97,7 +97,7 @@
 //     -> sm1_43
 //       -> flash_ctrl.core
 //     -> sm1_44
-//       -> flash_ctrl.prim
+//       -> flash_macro_wrapper
 //     -> sm1_31
 //       -> flash_ctrl.mem
 //     -> sm1_45
@@ -164,8 +164,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_usbdev_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__core_i,
-  output tlul_pkg::tl_h2d_t tl_flash_ctrl__prim_o,
-  input  tlul_pkg::tl_d2h_t tl_flash_ctrl__prim_i,
+  output tlul_pkg::tl_h2d_t tl_flash_macro_wrapper_o,
+  input  tlul_pkg::tl_d2h_t tl_flash_macro_wrapper_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__mem_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__mem_i,
   output tlul_pkg::tl_h2d_t tl_hmac_o,
@@ -633,8 +633,8 @@ module xbar_main (
   assign tl_flash_ctrl__core_o = tl_sm1_43_ds_h2d;
   assign tl_sm1_43_ds_d2h = tl_flash_ctrl__core_i;
 
-  assign tl_flash_ctrl__prim_o = tl_sm1_44_ds_h2d;
-  assign tl_sm1_44_ds_d2h = tl_flash_ctrl__prim_i;
+  assign tl_flash_macro_wrapper_o = tl_sm1_44_ds_h2d;
+  assign tl_sm1_44_ds_d2h = tl_flash_macro_wrapper_i;
 
   assign tl_aes_o = tl_sm1_45_ds_h2d;
   assign tl_sm1_45_ds_d2h = tl_aes_i;
@@ -742,7 +742,7 @@ end
       dev_sel_s1n_32 = 5'd9;
 
     end else if ((tl_s1n_32_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
+                  ~(ADDR_MASK_FLASH_MACRO_WRAPPER)) == ADDR_SPACE_FLASH_MACRO_WRAPPER) begin
       dev_sel_s1n_32 = 5'd10;
 
     end else if ((tl_s1n_32_us_h2d.a_address &
@@ -845,7 +845,7 @@ end
       dev_sel_s1n_57 = 5'd9;
 
     end else if ((tl_s1n_57_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
+                  ~(ADDR_MASK_FLASH_MACRO_WRAPPER)) == ADDR_SPACE_FLASH_MACRO_WRAPPER) begin
       dev_sel_s1n_57 = 5'd10;
 
     end else if ((tl_s1n_57_us_h2d.a_address &

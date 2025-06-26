@@ -44,11 +44,11 @@ module xbar_main_bind;
     .h2d    (tl_flash_ctrl__core_o),
     .d2h    (tl_flash_ctrl__core_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__prim (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_macro_wrapper (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_flash_ctrl__prim_o),
-    .d2h    (tl_flash_ctrl__prim_i)
+    .h2d    (tl_flash_macro_wrapper_o),
+    .d2h    (tl_flash_macro_wrapper_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_flash_ctrl__mem (
     .clk_i  (clk_main_i),

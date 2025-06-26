@@ -3,23 +3,24 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim_generic:flash"
-description: "prim"
-virtual:
-  - lowrisc:prim:flash
+name: "lowrisc:ip:flash_macro_wrapper:0.1"
+description: "Flash macro wrapper"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
+      - lowrisc:prim:mubi_pkg
       - lowrisc:prim:ram_1p
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - lowrisc:virtual_ip:flash_ctrl_top_specific_pkg
-      - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
+      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip:flash_macro_wrapper_pkg
+      - lowrisc:ip:flash_macro_wrapper_reg_top
+      - lowrisc:virtual_ip:flash_phy_macro_pkg
     files:
-      - rtl/prim_generic_flash_bank.sv
-      - rtl/prim_flash.sv
+      - rtl/flash_macro_bank.sv
+      - rtl/flash_macro_wrapper.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -27,7 +28,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_generic_flash.vlt
+      - lint/flash_macro_wrapper.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -35,7 +36,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_generic_flash.waiver
+      - lint/flash_macro_wrapper.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -44,9 +45,20 @@ filesets:
       - lowrisc:lint:common
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

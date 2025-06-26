@@ -235,7 +235,7 @@
             "aon_timer_aon",
             "ast",
             "flash_ctrl.core",
-            "flash_ctrl.prim",
+            "flash_macro_wrapper",
             "rv_plic",
             "aes",
             "sram_ctrl_main.regs"
@@ -491,7 +491,6 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       base_addrs: {
         core: {hart: "0x41000000"},
-        prim: {hart: "0x41008000"},
         mem:  {hart: "0x20000000"}
       }
       param_decl: {
@@ -513,6 +512,26 @@
       }
       attr: "ipgen",
       outgoing_alert: "englishbreakfast",
+    },
+    { name: "flash_macro_wrapper",
+      type: "flash_macro_wrapper",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "infra",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        hart: "0x41008000",
+      },
+      param_decl: {
+        // Change these to be from package
+        NumBanks: "2",
+        InfosPerBank: "10",
+        InfoTypes: "3",
+        InfoTypesWidth: "2",
+        PagesPerBank: "16",
+        WordsPerPage: "256",
+        DataWidth: "72",
+        TestModeWidth: "2",
+      },
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -728,7 +747,11 @@
       // The idle connection is automatically connected through topgen.
       // The user does not need to explicitly declare anything other than
       // an empty list.
-      'clkmgr_aon.idle'         : [],
+      'clkmgr_aon.idle'           : [],
+
+      // FLASH_CTRL FLASH_MACRO_WRAPPER connections
+      'flash_ctrl.flash_macro'        : ['flash_macro_wrapper.flash'],
+      'flash_ctrl.flash_macro_status' : ['flash_macro_wrapper.status'],
 
       // rv_plic connections
       'rv_plic.msip' : ['rv_core_ibex.irq_software'],
@@ -797,11 +820,11 @@
         'clkmgr_aon.all_clk_byp_ack'   : 'all_clk_byp_ack',
         'clkmgr_aon.io_clk_byp_req'    : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'    : 'io_clk_byp_ack',
-        'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
-        'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
-        'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',
-        'flash_ctrl.obs_ctrl'             : 'obs_ctrl',
-        'flash_ctrl.fla_obs'              : 'flash_obs',
+        'flash_macro_wrapper.bist_enable'  : 'flash_bist_enable',
+        'flash_macro_wrapper.power_down_h' : 'flash_power_down_h',
+        'flash_macro_wrapper.power_ready_h': 'flash_power_ready_h',
+        'flash_macro_wrapper.obs_ctrl'     : 'obs_ctrl',
+        'flash_macro_wrapper.fla_obs'      : 'flash_obs',
         # 'entropy_src.entropy_src_rng'  : '',
         # 'entropy_src.rng_fips'         : '',
         'peri.tl_ast'                  : 'ast_tl',

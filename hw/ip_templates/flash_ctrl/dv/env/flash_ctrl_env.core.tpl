@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_top_specific_pkg")}
       - ${instance_vlnv("lowrisc:constants:top_pkg")}
+      - lowrisc:dv:flash_macro_wrapper_env
     files:
       - flash_ctrl_eflash_ral_pkg.sv
       - flash_ctrl_env_pkg.sv

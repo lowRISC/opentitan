@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:earlgrey_ip:flash_ctrl_top_specific_pkg
       - lowrisc:earlgrey_constants:top_pkg
+      - lowrisc:dv:flash_macro_wrapper_env
     files:
       - flash_ctrl_eflash_ral_pkg.sv
       - flash_ctrl_env_pkg.sv

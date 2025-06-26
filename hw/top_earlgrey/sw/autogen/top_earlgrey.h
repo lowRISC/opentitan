@@ -607,24 +607,6 @@ extern "C" {
 #define TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES 0x200u
 
 /**
- * Peripheral base address for prim device on flash_ctrl in top earlgrey.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000u
-
-/**
- * Peripheral size for prim device on flash_ctrl in top earlgrey.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR and
- * `TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES`.
- */
-#define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x80u
-
-/**
  * Peripheral base address for mem device on flash_ctrl in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -641,6 +623,24 @@ extern "C" {
  * `TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES 0x100000u
+
+/**
+ * Peripheral base address for flash_macro_wrapper in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_EARLGREY_FLASH_MACRO_WRAPPER_BASE_ADDR 0x41008000u
+
+/**
+ * Peripheral size for flash_macro_wrapper in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_EARLGREY_FLASH_MACRO_WRAPPER_BASE_ADDR and
+ * `TOP_EARLGREY_FLASH_MACRO_WRAPPER_BASE_ADDR + TOP_EARLGREY_FLASH_MACRO_WRAPPER_SIZE_BYTES`.
+ */
+#define TOP_EARLGREY_FLASH_MACRO_WRAPPER_SIZE_BYTES 0x80u
 
 /**
  * Peripheral base address for regs device on rv_dm in top earlgrey.
@@ -1462,9 +1462,9 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInUart2Rx = 44, /**< Peripheral Input 44 */
   kTopEarlgreyPinmuxPeripheralInUart3Rx = 45, /**< Peripheral Input 45 */
   kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 46, /**< Peripheral Input 46 */
-  kTopEarlgreyPinmuxPeripheralInFlashCtrlTck = 47, /**< Peripheral Input 47 */
-  kTopEarlgreyPinmuxPeripheralInFlashCtrlTms = 48, /**< Peripheral Input 48 */
-  kTopEarlgreyPinmuxPeripheralInFlashCtrlTdi = 49, /**< Peripheral Input 49 */
+  kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTck = 47, /**< Peripheral Input 47 */
+  kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTms = 48, /**< Peripheral Input 48 */
+  kTopEarlgreyPinmuxPeripheralInFlashMacroWrapperTdi = 49, /**< Peripheral Input 49 */
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent = 50, /**< Peripheral Input 50 */
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In = 51, /**< Peripheral Input 51 */
   kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In = 52, /**< Peripheral Input 52 */
@@ -1644,7 +1644,7 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselPattgenPcl1Tx = 52, /**< Peripheral Output 49 */
   kTopEarlgreyPinmuxOutselSpiHost1Sck = 53, /**< Peripheral Output 50 */
   kTopEarlgreyPinmuxOutselSpiHost1Csb = 54, /**< Peripheral Output 51 */
-  kTopEarlgreyPinmuxOutselFlashCtrlTdo = 55, /**< Peripheral Output 52 */
+  kTopEarlgreyPinmuxOutselFlashMacroWrapperTdo = 55, /**< Peripheral Output 52 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut0 = 56, /**< Peripheral Output 53 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut1 = 57, /**< Peripheral Output 54 */
   kTopEarlgreyPinmuxOutselSensorCtrlAonAstDebugOut2 = 58, /**< Peripheral Output 55 */

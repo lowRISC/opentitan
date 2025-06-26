@@ -18,7 +18,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST1            = 32'h 40310000;
   localparam logic [31:0] ADDR_SPACE_USBDEV               = 32'h 40320000;
   localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__CORE     = 32'h 41000000;
-  localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__PRIM     = 32'h 41008000;
+  localparam logic [31:0] ADDR_SPACE_FLASH_MACRO_WRAPPER  = 32'h 41008000;
   localparam logic [31:0] ADDR_SPACE_FLASH_CTRL__MEM      = 32'h 20000000;
   localparam logic [31:0] ADDR_SPACE_HMAC                 = 32'h 41110000;
   localparam logic [31:0] ADDR_SPACE_KMAC                 = 32'h 41120000;
@@ -46,7 +46,7 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SPI_HOST1            = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__CORE     = 32'h 000001ff;
-  localparam logic [31:0] ADDR_MASK_FLASH_CTRL__PRIM     = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_FLASH_MACRO_WRAPPER  = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_FLASH_CTRL__MEM      = 32'h 000fffff;
   localparam logic [31:0] ADDR_MASK_HMAC                 = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_KMAC                 = 32'h 00000fff;
@@ -75,7 +75,7 @@ package tl_main_pkg;
     TlSpiHost1 = 6,
     TlUsbdev = 7,
     TlFlashCtrlCore = 8,
-    TlFlashCtrlPrim = 9,
+    TlFlashMacroWrapper = 9,
     TlFlashCtrlMem = 10,
     TlHmac = 11,
     TlKmac = 12,

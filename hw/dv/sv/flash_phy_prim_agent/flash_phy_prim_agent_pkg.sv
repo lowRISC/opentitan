@@ -7,15 +7,13 @@ package flash_phy_prim_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
-  import flash_ctrl_top_specific_pkg::*;
-
+  import flash_phy_macro_pkg::DataWidth;
+  import flash_phy_macro_pkg::NumBanks;
+  import flash_phy_macro_pkg::flash_phy_macro_bank_req_t;
+  import flash_phy_macro_pkg::flash_phy_macro_bank_rsp_t;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
-
-  // parameters
-  localparam int unsigned PhyAddrW = flash_phy_pkg::BankAddrW;
-  localparam int unsigned PhyDataW = flash_phy_pkg::FullDataWidth;
 
   // local types
   // forward declare classes to allow typedefs below
@@ -26,7 +24,7 @@ package flash_phy_prim_agent_pkg;
   typedef dv_base_sequencer #(.ITEM_T(flash_phy_prim_item),
                               .CFG_T (flash_phy_prim_agent_cfg)) flash_phy_prim_sequencer;
 
-  typedef logic [flash_phy_pkg::FullDataWidth-1:0] fdata_q_t[$];
+  typedef logic [DataWidth-1:0] fdata_q_t[$];
 
   // functions
 

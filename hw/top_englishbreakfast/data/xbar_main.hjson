@@ -49,7 +49,7 @@
       req_fifo_pass: true,
       rsp_fifo_pass: false,
     },
-    { name:      "flash_ctrl.prim",
+    { name:      "flash_macro_wrapper",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -99,7 +99,7 @@
     rv_core_ibex.corei:  ["rom_ctrl.rom", "sram_ctrl_main.ram", "flash_ctrl.mem"],
     rv_core_ibex.cored:  [
       "rom_ctrl.rom", "rom_ctrl.regs",
-      "sram_ctrl_main.ram", "flash_ctrl.mem", "peri", "flash_ctrl.core", "flash_ctrl.prim",
+      "sram_ctrl_main.ram", "flash_ctrl.mem", "peri", "flash_ctrl.core", "flash_macro_wrapper",
       "aes",
       "rv_plic", "sram_ctrl_main.ram", "sram_ctrl_main.regs",
       "rv_core_ibex.cfg"

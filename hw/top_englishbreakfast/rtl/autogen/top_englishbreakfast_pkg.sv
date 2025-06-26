@@ -150,16 +150,6 @@ package top_englishbreakfast_pkg;
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_CORE_SIZE_BYTES = 32'h200;
 
   /**
-   * Peripheral base address for prim device on flash_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR = 32'h41008000;
-
-  /**
-   * Peripheral size in bytes for prim device on flash_ctrl in top englishbreakfast.
-   */
-  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h80;
-
-  /**
    * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
@@ -168,6 +158,16 @@ package top_englishbreakfast_pkg;
    * Peripheral size in bytes for mem device on flash_ctrl in top englishbreakfast.
    */
   parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES = 32'h10000;
+
+  /**
+   * Peripheral base address for flash_macro_wrapper in top englishbreakfast.
+   */
+  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR = 32'h41008000;
+
+  /**
+   * Peripheral size in bytes for flash_macro_wrapper in top englishbreakfast.
+   */
+  parameter int unsigned TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_SIZE_BYTES = 32'h80;
 
   /**
    * Peripheral base address for rv_plic in top englishbreakfast.
@@ -504,11 +504,8 @@ package top_englishbreakfast_pkg;
     MioInGpioGpio31 = 31,
     MioInUart0Rx = 32,
     MioInUart1Rx = 33,
-    MioInFlashCtrlTck = 34,
-    MioInFlashCtrlTms = 35,
-    MioInFlashCtrlTdi = 36,
-    MioInUsbdevSense = 37,
-    MioInCount = 38
+    MioInUsbdevSense = 34,
+    MioInCount = 35
   } mio_in_e;
 
   typedef enum {
@@ -546,8 +543,7 @@ package top_englishbreakfast_pkg;
     MioOutGpioGpio31 = 31,
     MioOutUart0Tx = 32,
     MioOutUart1Tx = 33,
-    MioOutFlashCtrlTdo = 34,
-    MioOutCount = 35
+    MioOutCount = 34
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.
@@ -660,6 +656,7 @@ package top_englishbreakfast_pkg;
     PeripheralAst,
     PeripheralClkmgrAon,
     PeripheralFlashCtrl,
+    PeripheralFlashMacroWrapper,
     PeripheralGpio,
     PeripheralPinmuxAon,
     PeripheralPwrmgrAon,

@@ -70,6 +70,7 @@ module top_earlgrey #(
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
+  // parameters for flash_macro_wrapper
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -401,11 +402,12 @@ module top_earlgrey #(
   logic [8:0]  cio_sensor_ctrl_aon_ast_debug_out_en_d2p;
   // sram_ctrl_ret_aon
   // flash_ctrl
-  logic        cio_flash_ctrl_tck_p2d;
-  logic        cio_flash_ctrl_tms_p2d;
-  logic        cio_flash_ctrl_tdi_p2d;
-  logic        cio_flash_ctrl_tdo_d2p;
-  logic        cio_flash_ctrl_tdo_en_d2p;
+  // flash_macro_wrapper
+  logic        cio_flash_macro_wrapper_tck_p2d;
+  logic        cio_flash_macro_wrapper_tms_p2d;
+  logic        cio_flash_macro_wrapper_tdi_p2d;
+  logic        cio_flash_macro_wrapper_tdo_d2p;
+  logic        cio_flash_macro_wrapper_tdo_en_d2p;
   // rv_dm
   // rv_plic
   // aes
@@ -673,6 +675,9 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_seed_hw_rd_en;
   otp_ctrl_macro_pkg::otp_ctrl_macro_req_t       otp_ctrl_otp_macro_req;
   otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t       otp_ctrl_otp_macro_rsp;
+  flash_phy_macro_pkg::flash_phy_macro_req_t       flash_ctrl_flash_macro_req;
+  flash_phy_macro_pkg::flash_phy_macro_rsp_t       flash_ctrl_flash_macro_rsp;
+  flash_phy_macro_pkg::flash_macro_status_t       flash_ctrl_flash_macro_status;
   logic       rv_plic_msip;
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
@@ -708,8 +713,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       usbdev_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
+  tlul_pkg::tl_h2d_t       flash_macro_wrapper_tl_req;
+  tlul_pkg::tl_d2h_t       flash_macro_wrapper_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_mem_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_mem_tl_rsp;
   tlul_pkg::tl_h2d_t       hmac_tl_req;
@@ -2279,15 +2284,6 @@ module top_earlgrey #(
     .RdFifoDepth(FlashCtrlRdFifoDepth)
   ) u_flash_ctrl (
 
-      // Input
-      .cio_tck_i    (cio_flash_ctrl_tck_p2d),
-      .cio_tms_i    (cio_flash_ctrl_tms_p2d),
-      .cio_tdi_i    (cio_flash_ctrl_tdi_p2d),
-
-      // Output
-      .cio_tdo_o    (cio_flash_ctrl_tdo_d2p),
-      .cio_tdo_en_o (cio_flash_ctrl_tdo_en_d2p),
-
       // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
       .intr_prog_lvl_o   (intr_flash_ctrl_prog_lvl),
@@ -2306,12 +2302,6 @@ module top_earlgrey #(
       // Inter-module signals
       .otp_o(flash_ctrl_otp_req),
       .otp_i(flash_ctrl_otp_rsp),
-      .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
-      .flash_bist_enable_i(flash_bist_enable_i),
-      .flash_power_down_h_i(flash_power_down_h_i),
-      .flash_power_ready_h_i(flash_power_ready_h_i),
-      .flash_test_mode_a_io(flash_test_mode_a_io),
-      .flash_test_voltage_h_io(flash_test_voltage_h_io),
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_i(lc_ctrl_lc_owner_seed_sw_rw_en),
       .lc_iso_part_sw_rd_en_i(lc_ctrl_lc_iso_part_sw_rd_en),
@@ -2323,17 +2313,13 @@ module top_earlgrey #(
       .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
       .keymgr_o(flash_ctrl_keymgr),
-      .obs_ctrl_i(ast_obs_ctrl),
-      .fla_obs_o(flash_obs_o),
+      .flash_macro_o(flash_ctrl_flash_macro_req),
+      .flash_macro_i(flash_ctrl_flash_macro_rsp),
+      .flash_macro_status_i(flash_ctrl_flash_macro_status),
       .core_tl_i(flash_ctrl_core_tl_req),
       .core_tl_o(flash_ctrl_core_tl_rsp),
-      .prim_tl_i(flash_ctrl_prim_tl_req),
-      .prim_tl_o(flash_ctrl_prim_tl_rsp),
       .mem_tl_i(flash_ctrl_mem_tl_req),
       .mem_tl_o(flash_ctrl_mem_tl_rsp),
-      .scanmode_i,
-      .scan_rst_ni,
-      .scan_en_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -2341,6 +2327,48 @@ module top_earlgrey #(
       .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+  flash_macro_wrapper #(
+    .NumBanks(flash_phy_macro_pkg::NumBanks),
+    .InfosPerBank(flash_phy_macro_pkg::InfosPerBank),
+    .InfoTypes(flash_phy_macro_pkg::InfoTypes),
+    .InfoTypesWidth(flash_phy_macro_pkg::InfoTypesWidth),
+    .PagesPerBank(flash_phy_macro_pkg::PagesPerBank),
+    .WordsPerPage(flash_phy_macro_pkg::WordsPerPage),
+    .DataWidth(flash_phy_macro_pkg::DataWidth),
+    .TestModeWidth(flash_phy_macro_pkg::TestModeWidth)
+  ) u_flash_macro_wrapper (
+
+      // Input
+      .cio_tck_i    (cio_flash_macro_wrapper_tck_p2d),
+      .cio_tms_i    (cio_flash_macro_wrapper_tms_p2d),
+      .cio_tdi_i    (cio_flash_macro_wrapper_tdi_p2d),
+
+      // Output
+      .cio_tdo_o    (cio_flash_macro_wrapper_tdo_d2p),
+      .cio_tdo_en_o (cio_flash_macro_wrapper_tdo_en_d2p),
+
+      // Inter-module signals
+      .flash_i(flash_ctrl_flash_macro_req),
+      .flash_o(flash_ctrl_flash_macro_rsp),
+      .status_o(flash_ctrl_flash_macro_status),
+      .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
+      .bist_enable_i(flash_bist_enable_i),
+      .power_down_h_i(flash_power_down_h_i),
+      .power_ready_h_i(flash_power_ready_h_i),
+      .test_mode_a_io(flash_test_mode_a_io),
+      .test_voltage_h_io(flash_test_voltage_h_io),
+      .obs_ctrl_i(ast_obs_ctrl),
+      .fla_obs_o(flash_obs_o),
+      .tl_i(flash_macro_wrapper_tl_req),
+      .tl_o(flash_macro_wrapper_tl_rsp),
+      .scanmode_i,
+      .scan_rst_ni,
+      .scan_en_i,
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_dm #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[40:40]),
@@ -3123,9 +3151,9 @@ module top_earlgrey #(
     .tl_flash_ctrl__core_o(flash_ctrl_core_tl_req),
     .tl_flash_ctrl__core_i(flash_ctrl_core_tl_rsp),
 
-    // port: tl_flash_ctrl__prim
-    .tl_flash_ctrl__prim_o(flash_ctrl_prim_tl_req),
-    .tl_flash_ctrl__prim_i(flash_ctrl_prim_tl_rsp),
+    // port: tl_flash_macro_wrapper
+    .tl_flash_macro_wrapper_o(flash_macro_wrapper_tl_req),
+    .tl_flash_macro_wrapper_i(flash_macro_wrapper_tl_rsp),
 
     // port: tl_flash_ctrl__mem
     .tl_flash_ctrl__mem_o(flash_ctrl_mem_tl_req),
@@ -3355,9 +3383,9 @@ module top_earlgrey #(
   assign cio_uart2_rx_p2d = mio_p2d[MioInUart2Rx];
   assign cio_uart3_rx_p2d = mio_p2d[MioInUart3Rx];
   assign cio_spi_device_tpm_csb_p2d = mio_p2d[MioInSpiDeviceTpmCsb];
-  assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
-  assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
-  assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
+  assign cio_flash_macro_wrapper_tck_p2d = mio_p2d[MioInFlashMacroWrapperTck];
+  assign cio_flash_macro_wrapper_tms_p2d = mio_p2d[MioInFlashMacroWrapperTms];
+  assign cio_flash_macro_wrapper_tdi_p2d = mio_p2d[MioInFlashMacroWrapperTdi];
   assign cio_sysrst_ctrl_aon_ac_present_p2d = mio_p2d[MioInSysrstCtrlAonAcPresent];
   assign cio_sysrst_ctrl_aon_key0_in_p2d = mio_p2d[MioInSysrstCtrlAonKey0In];
   assign cio_sysrst_ctrl_aon_key1_in_p2d = mio_p2d[MioInSysrstCtrlAonKey1In];
@@ -3419,7 +3447,7 @@ module top_earlgrey #(
   assign mio_d2p[MioOutPattgenPcl1Tx] = cio_pattgen_pcl1_tx_d2p;
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p;
   assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p;
-  assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
+  assign mio_d2p[MioOutFlashMacroWrapperTdo] = cio_flash_macro_wrapper_tdo_d2p;
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut0] = cio_sensor_ctrl_aon_ast_debug_out_d2p[0];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut1] = cio_sensor_ctrl_aon_ast_debug_out_d2p[1];
   assign mio_d2p[MioOutSensorCtrlAonAstDebugOut2] = cio_sensor_ctrl_aon_ast_debug_out_d2p[2];
@@ -3496,7 +3524,7 @@ module top_earlgrey #(
   assign mio_en_d2p[MioOutPattgenPcl1Tx] = cio_pattgen_pcl1_tx_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p;
   assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p;
-  assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;
+  assign mio_en_d2p[MioOutFlashMacroWrapperTdo] = cio_flash_macro_wrapper_tdo_en_d2p;
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut0] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[0];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut1] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[1];
   assign mio_en_d2p[MioOutSensorCtrlAonAstDebugOut2] = cio_sensor_ctrl_aon_ast_debug_out_en_d2p[2];

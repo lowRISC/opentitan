@@ -49,7 +49,7 @@ tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if spi_host1_tl_if(clk_io_div2, rst_n);
 tl_if usbdev_tl_if(clk_usb, rst_n);
 tl_if flash_ctrl__core_tl_if(clk_main, rst_n);
-tl_if flash_ctrl__prim_tl_if(clk_main, rst_n);
+tl_if flash_macro_wrapper_tl_if(clk_main, rst_n);
 tl_if flash_ctrl__mem_tl_if(clk_main, rst_n);
 tl_if hmac_tl_if(clk_main, rst_n);
 tl_if kmac_tl_if(clk_main, rst_n);
@@ -131,7 +131,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__core, flash_ctrl, core_tl)
-    `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__prim, flash_ctrl, prim_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(flash_macro_wrapper, flash_macro_wrapper, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(flash_ctrl__mem, flash_ctrl, mem_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(hmac, hmac, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(kmac, kmac, tl)

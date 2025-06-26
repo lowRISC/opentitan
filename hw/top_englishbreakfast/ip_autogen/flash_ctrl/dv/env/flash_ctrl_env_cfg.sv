@@ -28,7 +28,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // interface
   virtual flash_ctrl_if flash_ctrl_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
-  virtual clk_rst_if clk_rst_vif_flash_ctrl_prim_reg_block;
   virtual flash_ctrl_mem_if flash_ctrl_mem_vif[NumBanks];
 
   // knobs
@@ -283,7 +282,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction // get_region_from_info
 
   virtual function void initialize(addr_t csr_base_addr = '1);
-    string prim_ral_name = "flash_ctrl_prim_reg_block";
+    string prim_ral_name = "flash_macro_wrapper_reg_block";
     string fast_rcvr_name = "";
 
     list_of_alerts = flash_ctrl_env_pkg::LIST_OF_ALERTS;
@@ -594,13 +593,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       data_4s_t loc_data = (scheme == FlashMemInitCustom) ? data[i] :
                  (scheme == FlashMemInitRandomize) ? $urandom() : wr_data;
 
-      _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
       `uvm_info(`gfn, $sformatf(
                                 "flash_mem_bkdr_write: partition = %s, {%s} = 0x%0h",
                                 flash_op.partition.name(),
                                 addr_attrs.sprint(),
                                 loc_data
-                                ), UVM_HIGH)
+                                ), UVM_MEDIUM)
+      _flash_full_write(flash_op.partition, addr_attrs.bank, addr_attrs.bank_addr, loc_data);
 
       // update the scoreboard on backdoor-programs as well
       mem_data[0] = loc_data;

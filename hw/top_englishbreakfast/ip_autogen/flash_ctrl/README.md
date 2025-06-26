@@ -193,3 +193,14 @@ During production and RMA states, the isolated page is also readable.
 * Both `lc_iso_part_sw_wr_en` and `lc_iso_part_sw_rd_en` are set.
 
 See [life cycle](../../../ip/lc_ctrl/README.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details
+
+## IP Blocks Organization
+
+The flash macro wrapper is provided by a separate IP block that is directly instantiated under the top level.
+As such it has its own IP documentation (https://opentitan.org/book/hw/ip/flash_macro_wrapper/index.html).
+This split allows the controller to be independent of low level testing and vendor specific interfaces to the Flash Macro.
+It makes it simpler to make changes for different vendor flash macros.
+
+In terms of the top generation (https://opentitan.org/book/util/topgen/index.html#overview), the controller is an ipgen peripheral, while the macro is generic.
+The controller can be generated with different parameters that directly affect the macro.
+The macro wrapper is parameterized at the top-level so that it matches the controller's configuration.

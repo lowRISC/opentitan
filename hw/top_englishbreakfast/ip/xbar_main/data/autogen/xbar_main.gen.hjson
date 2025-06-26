@@ -53,7 +53,7 @@
       flash_ctrl.mem
       peri
       flash_ctrl.core
-      flash_ctrl.prim
+      flash_macro_wrapper
       aes
       rv_plic
       sram_ctrl_main.ram
@@ -175,13 +175,13 @@
       pipeline: true
     }
     {
-      name: flash_ctrl.prim
+      name: flash_macro_wrapper
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       req_fifo_pass: true
       rsp_fifo_pass: false
-      inst_type: flash_ctrl
+      inst_type: flash_macro_wrapper
       addr_range:
       [
         {
@@ -408,7 +408,7 @@
       index: -1
     }
     {
-      name: tl_flash_ctrl__prim
+      name: tl_flash_macro_wrapper
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -416,7 +416,7 @@
       inst_name: main
       width: 1
       default: ""
-      top_signame: flash_ctrl_prim_tl
+      top_signame: flash_macro_wrapper_tl
       index: -1
     }
     {

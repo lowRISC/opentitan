@@ -330,16 +330,6 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES = 32'h200;
 
   /**
-   * Peripheral base address for prim device on flash_ctrl in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR = 32'h41008000;
-
-  /**
-   * Peripheral size in bytes for prim device on flash_ctrl in top earlgrey.
-   */
-  parameter int unsigned TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES = 32'h80;
-
-  /**
    * Peripheral base address for mem device on flash_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR = 32'h20000000;
@@ -348,6 +338,16 @@ package top_earlgrey_pkg;
    * Peripheral size in bytes for mem device on flash_ctrl in top earlgrey.
    */
   parameter int unsigned TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES = 32'h100000;
+
+  /**
+   * Peripheral base address for flash_macro_wrapper in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_MACRO_WRAPPER_BASE_ADDR = 32'h41008000;
+
+  /**
+   * Peripheral size in bytes for flash_macro_wrapper in top earlgrey.
+   */
+  parameter int unsigned TOP_EARLGREY_FLASH_MACRO_WRAPPER_SIZE_BYTES = 32'h80;
 
   /**
    * Peripheral base address for regs device on rv_dm in top earlgrey.
@@ -937,9 +937,9 @@ package top_earlgrey_pkg;
     MioInUart2Rx = 44,
     MioInUart3Rx = 45,
     MioInSpiDeviceTpmCsb = 46,
-    MioInFlashCtrlTck = 47,
-    MioInFlashCtrlTms = 48,
-    MioInFlashCtrlTdi = 49,
+    MioInFlashMacroWrapperTck = 47,
+    MioInFlashMacroWrapperTms = 48,
+    MioInFlashMacroWrapperTdi = 49,
     MioInSysrstCtrlAonAcPresent = 50,
     MioInSysrstCtrlAonKey0In = 51,
     MioInSysrstCtrlAonKey1In = 52,
@@ -1003,7 +1003,7 @@ package top_earlgrey_pkg;
     MioOutPattgenPcl1Tx = 49,
     MioOutSpiHost1Sck = 50,
     MioOutSpiHost1Csb = 51,
-    MioOutFlashCtrlTdo = 52,
+    MioOutFlashMacroWrapperTdo = 52,
     MioOutSensorCtrlAonAstDebugOut0 = 53,
     MioOutSensorCtrlAonAstDebugOut1 = 54,
     MioOutSensorCtrlAonAstDebugOut2 = 55,
@@ -1150,6 +1150,7 @@ package top_earlgrey_pkg;
     PeripheralEdn1,
     PeripheralEntropySrc,
     PeripheralFlashCtrl,
+    PeripheralFlashMacroWrapper,
     PeripheralGpio,
     PeripheralHmac,
     PeripheralI2c0,

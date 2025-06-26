@@ -604,7 +604,7 @@
             sensor_ctrl
             sram_ctrl_ret_aon
             flash_ctrl.core
-            flash_ctrl.prim
+            flash_macro_wrapper
             rv_plic
             aes
             hmac
@@ -6032,10 +6032,6 @@
         {
           hart: 0x41000000
         }
-        prim:
-        {
-          hart: 0x41008000
-        }
         mem:
         {
           hart: 0x20000000
@@ -6116,88 +6112,6 @@
           default: ""
           end_idx: -1
           top_signame: flash_ctrl_otp
-          index: -1
-        }
-        {
-          name: lc_nvm_debug_en
-          struct: lc_tx
-          package: lc_ctrl_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          top_signame: lc_ctrl_lc_nvm_debug_en
-          index: -1
-        }
-        {
-          name: flash_bist_enable
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          external: true
-          top_signame: flash_bist_enable
-          conn_type: false
-          index: -1
-        }
-        {
-          name: flash_power_down_h
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_power_down_h
-          conn_type: false
-          index: -1
-        }
-        {
-          name: flash_power_ready_h
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_power_ready_h
-          conn_type: false
-          index: -1
-        }
-        {
-          name: flash_test_mode_a
-          struct: ""
-          type: io
-          act: none
-          width: 2
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_test_mode_a
-          conn_type: false
-          index: -1
-        }
-        {
-          name: flash_test_voltage_h
-          struct: ""
-          type: io
-          act: none
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_test_voltage_h
-          conn_type: false
           index: -1
         }
         {
@@ -6337,29 +6251,32 @@
           index: -1
         }
         {
-          name: obs_ctrl
-          struct: ast_obs_ctrl
-          package: ast_pkg
+          name: flash_macro
+          desc: Data interface to the flash macro wrapper
+          struct: flash_phy_macro
+          package: flash_phy_macro_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: flash_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: flash_ctrl_flash_macro
+          index: -1
+        }
+        {
+          name: flash_macro_status
+          desc: Status interface from the flash macro wrapper
+          struct: flash_macro_status
+          package: flash_phy_macro_pkg
           type: uni
           act: rcv
           width: 1
           inst_name: flash_ctrl
           default: ""
-          top_signame: ast_obs_ctrl
-          index: -1
-        }
-        {
-          name: fla_obs
-          struct: logic
-          type: uni
-          act: req
-          width: 8
-          inst_name: flash_ctrl
-          default: ""
-          package: ""
-          external: true
-          top_signame: flash_obs
-          conn_type: false
+          end_idx: -1
+          top_type: broadcast
+          top_signame: flash_ctrl_flash_macro_status
           index: -1
         }
         {
@@ -6376,19 +6293,6 @@
           index: -1
         }
         {
-          name: prim_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          end_idx: -1
-          top_signame: flash_ctrl_prim_tl
-          index: -1
-        }
-        {
           name: mem_tl
           struct: tl
           package: tlul_pkg
@@ -6402,6 +6306,275 @@
           index: -1
         }
       ]
+      generate_dif: true
+      domain:
+      [
+        "0"
+      ]
+    }
+    {
+      name: flash_macro_wrapper
+      type: flash_macro_wrapper
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: infra
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      param_decl:
+      {
+        NumBanks: flash_phy_macro_pkg::NumBanks
+        InfosPerBank: flash_phy_macro_pkg::InfosPerBank
+        InfoTypes: flash_phy_macro_pkg::InfoTypes
+        InfoTypesWidth: flash_phy_macro_pkg::InfoTypesWidth
+        PagesPerBank: flash_phy_macro_pkg::PagesPerBank
+        WordsPerPage: flash_phy_macro_pkg::WordsPerPage
+        DataWidth: flash_phy_macro_pkg::DataWidth
+        TestModeWidth: flash_phy_macro_pkg::TestModeWidth
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_infra
+      }
+      memory: {}
+      param_list:
+      [
+        {
+          name: NumBanks
+          desc: Number of flash banks
+          type: int
+          default: flash_phy_macro_pkg::NumBanks
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperNumBanks
+        }
+        {
+          name: InfosPerBank
+          desc: Info pages per bank
+          type: int
+          default: flash_phy_macro_pkg::InfosPerBank
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperInfosPerBank
+        }
+        {
+          name: InfoTypes
+          desc: Number of different info page types per bank
+          type: int
+          default: flash_phy_macro_pkg::InfoTypes
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperInfoTypes
+        }
+        {
+          name: InfoTypesWidth
+          desc: Number of bits to encode the info page types
+          type: int
+          default: flash_phy_macro_pkg::InfoTypesWidth
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperInfoTypesWidth
+        }
+        {
+          name: PagesPerBank
+          desc: Number of data pages per bank
+          type: int
+          default: flash_phy_macro_pkg::PagesPerBank
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperPagesPerBank
+        }
+        {
+          name: WordsPerPage
+          desc: Number of words per data page
+          type: int
+          default: flash_phy_macro_pkg::WordsPerPage
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperWordsPerPage
+        }
+        {
+          name: DataWidth
+          desc: Number of bits per data word
+          type: int
+          default: flash_phy_macro_pkg::DataWidth
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperDataWidth
+        }
+        {
+          name: TestModeWidth
+          desc: Number of bits to encode test mode
+          type: int
+          default: flash_phy_macro_pkg::TestModeWidth
+          local: "false"
+          expose: "false"
+          name_top: FlashMacroWrapperTestModeWidth
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: flash
+          desc: Data interface to the flash controller
+          struct: flash_phy_macro
+          package: flash_phy_macro_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          top_signame: flash_ctrl_flash_macro
+          index: -1
+        }
+        {
+          name: status
+          struct: flash_macro_status
+          package: flash_phy_macro_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          top_signame: flash_ctrl_flash_macro_status
+          index: -1
+        }
+        {
+          name: lc_nvm_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          top_signame: lc_ctrl_lc_nvm_debug_en
+          index: -1
+        }
+        {
+          name: bist_enable
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          external: true
+          top_signame: flash_bist_enable
+          conn_type: false
+          index: -1
+        }
+        {
+          name: power_down_h
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_power_down_h
+          conn_type: false
+          index: -1
+        }
+        {
+          name: power_ready_h
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_power_ready_h
+          conn_type: false
+          index: -1
+        }
+        {
+          name: test_mode_a
+          struct: ""
+          type: io
+          act: none
+          width: 2
+          inst_name: flash_macro_wrapper
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_test_mode_a
+          conn_type: false
+          index: -1
+        }
+        {
+          name: test_voltage_h
+          struct: ""
+          type: io
+          act: none
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_test_voltage_h
+          conn_type: false
+          index: -1
+        }
+        {
+          name: obs_ctrl
+          struct: ast_obs_ctrl
+          package: ast_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          top_signame: ast_obs_ctrl
+          index: -1
+        }
+        {
+          name: fla_obs
+          struct: logic
+          type: uni
+          act: req
+          width: 8
+          inst_name: flash_macro_wrapper
+          default: ""
+          package: ""
+          external: true
+          top_signame: flash_obs
+          conn_type: false
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: flash_macro_wrapper
+          default: ""
+          end_idx: -1
+          top_signame: flash_macro_wrapper_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          hart: 0x41008000
+        }
+      }
       generate_dif: true
       domain:
       [
@@ -9858,7 +10031,7 @@
     {
       ast.obs_ctrl:
       [
-        flash_ctrl.obs_ctrl
+        flash_macro_wrapper.obs_ctrl
         otp_macro.obs_ctrl
       ]
       ast.ram_1p_cfg:
@@ -10114,7 +10287,7 @@
       ]
       lc_ctrl.lc_nvm_debug_en:
       [
-        flash_ctrl.lc_nvm_debug_en
+        flash_macro_wrapper.lc_nvm_debug_en
       ]
       lc_ctrl.lc_hw_debug_clr:
       [
@@ -10188,6 +10361,14 @@
       otp_ctrl.otp_macro:
       [
         otp_macro.otp
+      ]
+      flash_ctrl.flash_macro:
+      [
+        flash_macro_wrapper.flash
+      ]
+      flash_ctrl.flash_macro_status:
+      [
+        flash_macro_wrapper.status
       ]
       rv_plic.msip:
       [
@@ -10283,9 +10464,9 @@
       [
         main.tl_flash_ctrl__core
       ]
-      flash_ctrl.prim_tl:
+      flash_macro_wrapper.tl:
       [
-        main.tl_flash_ctrl__prim
+        main.tl_flash_macro_wrapper
       ]
       flash_ctrl.mem_tl:
       [
@@ -10486,12 +10667,12 @@
       clkmgr_aon.hi_speed_sel: hi_speed_sel
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
-      flash_ctrl.flash_bist_enable: flash_bist_enable
-      flash_ctrl.flash_power_down_h: flash_power_down_h
-      flash_ctrl.flash_power_ready_h: flash_power_ready_h
-      flash_ctrl.flash_test_mode_a: flash_test_mode_a
-      flash_ctrl.flash_test_voltage_h: flash_test_voltage_h
-      flash_ctrl.fla_obs: flash_obs
+      flash_macro_wrapper.bist_enable: flash_bist_enable
+      flash_macro_wrapper.power_down_h: flash_power_down_h
+      flash_macro_wrapper.power_ready_h: flash_power_ready_h
+      flash_macro_wrapper.test_mode_a: flash_test_mode_a
+      flash_macro_wrapper.test_voltage_h: flash_test_voltage_h
+      flash_macro_wrapper.fla_obs: flash_obs
       entropy_src.entropy_src_rng_enable: es_rng_enable
       entropy_src.entropy_src_rng_valid: es_rng_valid
       entropy_src.entropy_src_rng_bits: es_rng_bit
@@ -10598,7 +10779,7 @@
           spi_host1
           usbdev
           flash_ctrl.core
-          flash_ctrl.prim
+          flash_macro_wrapper
           flash_ctrl.mem
           aes
           entropy_src
@@ -10625,7 +10806,7 @@
           spi_host1
           usbdev
           flash_ctrl.core
-          flash_ctrl.prim
+          flash_macro_wrapper
           flash_ctrl.mem
           aes
           entropy_src
@@ -10888,13 +11069,13 @@
           pipeline: true
         }
         {
-          name: flash_ctrl.prim
+          name: flash_macro_wrapper
           type: device
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
-          inst_type: flash_ctrl
+          inst_type: flash_macro_wrapper
           addr_range:
           [
             {
@@ -11374,7 +11555,7 @@
           index: -1
         }
         {
-          name: tl_flash_ctrl__prim
+          name: tl_flash_macro_wrapper
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -11382,7 +11563,7 @@
           inst_name: main
           width: 1
           default: ""
-          top_signame: flash_ctrl_prim_tl
+          top_signame: flash_macro_wrapper_tl
           index: -1
         }
         {
@@ -13400,6 +13581,14 @@
         attr: ""
       }
       {
+        instance: flash_macro_wrapper
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
         instance: sensor_ctrl_aon
         port: ""
         connection: muxed
@@ -14222,7 +14411,7 @@
         glob_idx: 46
       }
       {
-        name: flash_ctrl_tck
+        name: flash_macro_wrapper_tck
         width: 1
         type: input
         idx: -1
@@ -14233,7 +14422,7 @@
         glob_idx: 47
       }
       {
-        name: flash_ctrl_tms
+        name: flash_macro_wrapper_tms
         width: 1
         type: input
         idx: -1
@@ -14244,7 +14433,7 @@
         glob_idx: 48
       }
       {
-        name: flash_ctrl_tdi
+        name: flash_macro_wrapper_tdi
         width: 1
         type: input
         idx: -1
@@ -14464,7 +14653,7 @@
         glob_idx: 51
       }
       {
-        name: flash_ctrl_tdo
+        name: flash_macro_wrapper_tdo
         width: 1
         type: output
         idx: -1
@@ -22406,88 +22595,6 @@
         index: -1
       }
       {
-        name: lc_nvm_debug_en
-        struct: lc_tx
-        package: lc_ctrl_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        top_signame: lc_ctrl_lc_nvm_debug_en
-        index: -1
-      }
-      {
-        name: flash_bist_enable
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        external: true
-        top_signame: flash_bist_enable
-        conn_type: false
-        index: -1
-      }
-      {
-        name: flash_power_down_h
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_power_down_h
-        conn_type: false
-        index: -1
-      }
-      {
-        name: flash_power_ready_h
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_power_ready_h
-        conn_type: false
-        index: -1
-      }
-      {
-        name: flash_test_mode_a
-        struct: ""
-        type: io
-        act: none
-        width: 2
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_test_mode_a
-        conn_type: false
-        index: -1
-      }
-      {
-        name: flash_test_voltage_h
-        struct: ""
-        type: io
-        act: none
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_test_voltage_h
-        conn_type: false
-        index: -1
-      }
-      {
         name: lc_creator_seed_sw_rw_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -22624,29 +22731,32 @@
         index: -1
       }
       {
-        name: obs_ctrl
-        struct: ast_obs_ctrl
-        package: ast_pkg
+        name: flash_macro
+        desc: Data interface to the flash macro wrapper
+        struct: flash_phy_macro
+        package: flash_phy_macro_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: flash_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: flash_ctrl_flash_macro
+        index: -1
+      }
+      {
+        name: flash_macro_status
+        desc: Status interface from the flash macro wrapper
+        struct: flash_macro_status
+        package: flash_phy_macro_pkg
         type: uni
         act: rcv
         width: 1
         inst_name: flash_ctrl
         default: ""
-        top_signame: ast_obs_ctrl
-        index: -1
-      }
-      {
-        name: fla_obs
-        struct: logic
-        type: uni
-        act: req
-        width: 8
-        inst_name: flash_ctrl
-        default: ""
-        package: ""
-        external: true
-        top_signame: flash_obs
-        conn_type: false
+        end_idx: -1
+        top_type: broadcast
+        top_signame: flash_ctrl_flash_macro_status
         index: -1
       }
       {
@@ -22663,19 +22773,6 @@
         index: -1
       }
       {
-        name: prim_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        end_idx: -1
-        top_signame: flash_ctrl_prim_tl
-        index: -1
-      }
-      {
         name: mem_tl
         struct: tl
         package: tlul_pkg
@@ -22686,6 +22783,152 @@
         default: ""
         end_idx: -1
         top_signame: flash_ctrl_mem_tl
+        index: -1
+      }
+      {
+        name: flash
+        desc: Data interface to the flash controller
+        struct: flash_phy_macro
+        package: flash_phy_macro_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        top_signame: flash_ctrl_flash_macro
+        index: -1
+      }
+      {
+        name: status
+        struct: flash_macro_status
+        package: flash_phy_macro_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        top_signame: flash_ctrl_flash_macro_status
+        index: -1
+      }
+      {
+        name: lc_nvm_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        top_signame: lc_ctrl_lc_nvm_debug_en
+        index: -1
+      }
+      {
+        name: bist_enable
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        external: true
+        top_signame: flash_bist_enable
+        conn_type: false
+        index: -1
+      }
+      {
+        name: power_down_h
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_power_down_h
+        conn_type: false
+        index: -1
+      }
+      {
+        name: power_ready_h
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_power_ready_h
+        conn_type: false
+        index: -1
+      }
+      {
+        name: test_mode_a
+        struct: ""
+        type: io
+        act: none
+        width: 2
+        inst_name: flash_macro_wrapper
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_test_mode_a
+        conn_type: false
+        index: -1
+      }
+      {
+        name: test_voltage_h
+        struct: ""
+        type: io
+        act: none
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_test_voltage_h
+        conn_type: false
+        index: -1
+      }
+      {
+        name: obs_ctrl
+        struct: ast_obs_ctrl
+        package: ast_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        top_signame: ast_obs_ctrl
+        index: -1
+      }
+      {
+        name: fla_obs
+        struct: logic
+        type: uni
+        act: req
+        width: 8
+        inst_name: flash_macro_wrapper
+        default: ""
+        package: ""
+        external: true
+        top_signame: flash_obs
+        conn_type: false
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: flash_macro_wrapper
+        default: ""
+        end_idx: -1
+        top_signame: flash_macro_wrapper_tl
         index: -1
       }
       {
@@ -24668,7 +24911,7 @@
         index: -1
       }
       {
-        name: tl_flash_ctrl__prim
+        name: tl_flash_macro_wrapper
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -24676,7 +24919,7 @@
         inst_name: main
         width: 1
         default: ""
-        top_signame: flash_ctrl_prim_tl
+        top_signame: flash_macro_wrapper_tl
         index: -1
       }
       {
@@ -27019,6 +27262,39 @@
         default: "'0"
       }
       {
+        package: flash_phy_macro_pkg
+        struct: flash_phy_macro_req
+        signame: flash_ctrl_flash_macro_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: flash_phy_macro_pkg
+        struct: flash_phy_macro_rsp
+        signame: flash_ctrl_flash_macro_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: flash_phy_macro_pkg::FLASH_PHY_MACRO_RSP_DEFAULT
+      }
+      {
+        package: flash_phy_macro_pkg
+        struct: flash_macro_status
+        signame: flash_ctrl_flash_macro_status
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: flash_phy_macro_pkg::FLASH_MACRO_STATUS_DEFAULT
+      }
+      {
         package: ""
         struct: logic
         signame: rv_plic_msip
@@ -27406,7 +27682,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: flash_ctrl_prim_tl_req
+        signame: flash_macro_wrapper_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -27417,7 +27693,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: flash_ctrl_prim_tl_rsp
+        signame: flash_macro_wrapper_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

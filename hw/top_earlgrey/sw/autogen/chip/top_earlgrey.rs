@@ -469,20 +469,6 @@ pub const FLASH_CTRL_CORE_BASE_ADDR: usize = 0x41000000;
 /// `FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_CORE_SIZE_BYTES`.
 pub const FLASH_CTRL_CORE_SIZE_BYTES: usize = 0x200;
 
-/// Peripheral base address for prim device on flash_ctrl in top earlgrey.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x41008000;
-
-/// Peripheral size for prim device on flash_ctrl in top earlgrey.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #FLASH_CTRL_PRIM_BASE_ADDR and
-/// `FLASH_CTRL_PRIM_BASE_ADDR + FLASH_CTRL_PRIM_SIZE_BYTES`.
-pub const FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for mem device on flash_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -496,6 +482,20 @@ pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
 /// address between #FLASH_CTRL_MEM_BASE_ADDR and
 /// `FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_MEM_SIZE_BYTES`.
 pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x100000;
+
+/// Peripheral base address for flash_macro_wrapper in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const FLASH_MACRO_WRAPPER_BASE_ADDR: usize = 0x41008000;
+
+/// Peripheral size for flash_macro_wrapper in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #FLASH_MACRO_WRAPPER_BASE_ADDR and
+/// `FLASH_MACRO_WRAPPER_BASE_ADDR + FLASH_MACRO_WRAPPER_SIZE_BYTES`.
+pub const FLASH_MACRO_WRAPPER_SIZE_BYTES: usize = 0x80;
 
 /// Peripheral base address for regs device on rv_dm in top earlgrey.
 ///
@@ -2400,11 +2400,11 @@ pub enum PinmuxPeripheralIn {
     /// Peripheral Input 46
     SpiDeviceTpmCsb = 46,
     /// Peripheral Input 47
-    FlashCtrlTck = 47,
+    FlashMacroWrapperTck = 47,
     /// Peripheral Input 48
-    FlashCtrlTms = 48,
+    FlashMacroWrapperTms = 48,
     /// Peripheral Input 49
-    FlashCtrlTdi = 49,
+    FlashMacroWrapperTdi = 49,
     /// Peripheral Input 50
     SysrstCtrlAonAcPresent = 50,
     /// Peripheral Input 51
@@ -2472,9 +2472,9 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
             44 => Ok(Self::Uart2Rx),
             45 => Ok(Self::Uart3Rx),
             46 => Ok(Self::SpiDeviceTpmCsb),
-            47 => Ok(Self::FlashCtrlTck),
-            48 => Ok(Self::FlashCtrlTms),
-            49 => Ok(Self::FlashCtrlTdi),
+            47 => Ok(Self::FlashMacroWrapperTck),
+            48 => Ok(Self::FlashMacroWrapperTms),
+            49 => Ok(Self::FlashMacroWrapperTdi),
             50 => Ok(Self::SysrstCtrlAonAcPresent),
             51 => Ok(Self::SysrstCtrlAonKey0In),
             52 => Ok(Self::SysrstCtrlAonKey1In),
@@ -2920,7 +2920,7 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 51
     SpiHost1Csb = 54,
     /// Peripheral Output 52
-    FlashCtrlTdo = 55,
+    FlashMacroWrapperTdo = 55,
     /// Peripheral Output 53
     SensorCtrlAonAstDebugOut0 = 56,
     /// Peripheral Output 54
@@ -3026,7 +3026,7 @@ impl TryFrom<u32> for PinmuxOutsel {
             52 => Ok(Self::PattgenPcl1Tx),
             53 => Ok(Self::SpiHost1Sck),
             54 => Ok(Self::SpiHost1Csb),
-            55 => Ok(Self::FlashCtrlTdo),
+            55 => Ok(Self::FlashMacroWrapperTdo),
             56 => Ok(Self::SensorCtrlAonAstDebugOut0),
             57 => Ok(Self::SensorCtrlAonAstDebugOut1),
             58 => Ok(Self::SensorCtrlAonAstDebugOut2),

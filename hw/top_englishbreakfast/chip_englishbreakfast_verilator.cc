@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
   MemArea flash0(top_scope +
-                     ".u_flash_ctrl.u_eflash.u_flash."
-                     "gen_prim_flash_banks[0].u_prim_flash_bank.u_mem",
+                     ".u_flash_macro_wrapper.gen_flash_banks[0]."
+                     "u_flash_bank.u_mem",
                  0x100000 / 8, 8);
 
   memutil.RegisterMemoryArea("rom", 0x8000, &rom);
