@@ -82,7 +82,7 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
   virtual task body();
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
-      uvm_reg otp_prim_regs[$], flash_prim_regs[$];
+      uvm_reg otp_prim_regs[$], flash_macro_wrapper_regs[$];
 
       if (trans_i > 1 && $urandom_range(0, 4)) dut_init();
       `uvm_info(`gfn, $sformatf("Run iterations %0d/%0d with lc_state %0s", trans_i, num_trans,
@@ -96,8 +96,8 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
       if ($urandom_range(0, 1)) begin
         `uvm_info(`gfn, "Check FLASH_CTRL prim_tl access", UVM_HIGH)
-        ral.flash_ctrl_prim.get_registers(flash_prim_regs);
-        rand_rw_prim_regs(flash_prim_regs, 0);
+        ral.flash_macro_wrapper.get_registers(flash_macro_wrapper_regs);
+        rand_rw_prim_regs(flash_macro_wrapper_regs, 0);
       end
     end
   endtask : body

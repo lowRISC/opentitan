@@ -9,6 +9,8 @@
 // scramble, ECC, security and arbitration logic.
 
 module flash_phy_core
+  import flash_phy_macro_pkg::flash_phy_macro_bank_req_t;
+  import flash_phy_macro_pkg::flash_phy_macro_bank_rsp_t;
   import flash_phy_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
@@ -39,8 +41,8 @@ module flash_phy_core
   input prim_mubi_pkg::mubi4_t       flash_disable_i,
   output scramble_req_t              scramble_req_o,
   input  scramble_rsp_t              scramble_rsp_i,
-  input  flash_phy_prim_flash_rsp_t  prim_flash_rsp_i,
-  output flash_phy_prim_flash_req_t  prim_flash_req_o,
+  input  flash_phy_macro_bank_rsp_t  flash_macro_rsp_i,
+  output flash_phy_macro_bank_req_t  flash_macro_req_o,
   output logic                       host_req_rdy_o,
   output logic                       host_req_done_o,
   output logic                       rd_done_o,
@@ -566,7 +568,7 @@ module flash_phy_core
   ////////////////////////
 
   // Connections to the actual flash macro wrapper
-  assign prim_flash_req_o = '{
+  assign flash_macro_req_o = '{
     rd_req: flash_rd_req,
     prog_req: flash_prog_req,
     prog_last: prog_last,
@@ -583,9 +585,9 @@ module flash_phy_core
     prog_full_data: prog_full_data
   };
 
-  assign ack = prim_flash_rsp_i.ack;
-  assign done = prim_flash_rsp_i.done;
-  assign flash_rdata = prim_flash_rsp_i.rdata;
+  assign ack = flash_macro_rsp_i.ack;
+  assign done = flash_macro_rsp_i.done;
+  assign flash_rdata = flash_macro_rsp_i.rdata;
 
   /////////////////////////////////
   // Assertions

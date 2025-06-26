@@ -14,7 +14,13 @@ package flash_ctrl_top_specific_pkg;
   export flash_ctrl_pkg::OwnerSeedIdx;
   export flash_ctrl_pkg::SeedWidth;
   export flash_ctrl_pkg::KeyWidth;
+  export flash_ctrl_pkg::FlashProgNormal;
+  export flash_ctrl_pkg::FlashProgRepair;
   export flash_ctrl_pkg::flash_key_t;
+  export flash_ctrl_pkg::FlashPartData;
+  export flash_ctrl_pkg::FlashPartInfo;
+  export flash_ctrl_pkg::flash_part_e;
+  export flash_ctrl_pkg::flash_prog_e;
   export flash_ctrl_pkg::keymgr_flash_t;
 
   // design parameters that can be altered through topgen
@@ -328,13 +334,6 @@ package flash_ctrl_top_specific_pkg;
     FlashOpInvalid  = 2'h3
   } flash_op_e;
 
-  // Flash Program Operations Supported
-  typedef enum logic {
-    FlashProgNormal = 0,
-    FlashProgRepair = 1
-  } flash_prog_e;
-  parameter int ProgTypes = 2;
-
   // Flash Erase Operations Supported
   typedef enum logic  {
     FlashErasePage  = 0,
@@ -353,12 +352,6 @@ package flash_ctrl_top_specific_pkg;
     WriteDir     = 1'b0,
     ReadDir      = 1'b1
   } flash_flfo_dir_e;
-
-  // Flash partition type
-  typedef enum logic {
-    FlashPartData = 1'b0,
-    FlashPartInfo = 1'b1
-  } flash_part_e;
 
   // Flash controller to memory
   typedef struct packed {
@@ -385,7 +378,6 @@ package flash_ctrl_top_specific_pkg;
     logic [KeyWidth-1:0]  rand_data_key;
     logic                 alert_trig;
     logic                 alert_ack;
-    jtag_pkg::jtag_req_t  jtag_req;
     prim_mubi_pkg::mubi4_t flash_disable;
   } flash_req_t;
 
@@ -414,7 +406,6 @@ package flash_ctrl_top_specific_pkg;
     rand_data_key: '0,
     alert_trig:    1'b0,
     alert_ack:     1'b0,
-    jtag_req:      '0,
     flash_disable: prim_mubi_pkg::MuBi4False
   };
 
@@ -427,10 +418,8 @@ package flash_ctrl_top_specific_pkg;
     logic                    rd_err;
     logic [BusFullWidth-1:0] rd_data;
     logic                    init_busy;
-    logic                    macro_err;
     logic [NumBanks-1:0]     ecc_single_err;
     logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
-    jtag_pkg::jtag_rsp_t     jtag_rsp;
     logic                    prog_intg_err;
     logic                    storage_relbl_err;
     logic                    storage_intg_err;
@@ -450,10 +439,8 @@ package flash_ctrl_top_specific_pkg;
     rd_err:             '0,
     rd_data:            '0,
     init_busy:          1'b0,
-    macro_err:          1'b0,
     ecc_single_err:     '0,
     ecc_addr:           '0,
-    jtag_rsp:           '0,
     prog_intg_err:      '0,
     storage_relbl_err:  '0,
     storage_intg_err:   '0,
@@ -516,16 +503,6 @@ package flash_ctrl_top_specific_pkg;
        num_pages: (PageW + 1)'(PagesPerBank)
      }
   };
-
-  // dft_en jtag selection
-  typedef enum logic [2:0] {
-    FlashLcTckSel,
-    FlashLcTdiSel,
-    FlashLcTmsSel,
-    FlashLcTdoSel,
-    FlashBistSel,
-    FlashLcDftLast
-  } flash_lc_jtag_e;
 
   // Error bit positioning
   typedef struct packed {

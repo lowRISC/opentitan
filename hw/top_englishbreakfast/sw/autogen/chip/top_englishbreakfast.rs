@@ -217,20 +217,6 @@ pub const FLASH_CTRL_CORE_BASE_ADDR: usize = 0x41000000;
 /// `FLASH_CTRL_CORE_BASE_ADDR + FLASH_CTRL_CORE_SIZE_BYTES`.
 pub const FLASH_CTRL_CORE_SIZE_BYTES: usize = 0x200;
 
-/// Peripheral base address for prim device on flash_ctrl in top englishbreakfast.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const FLASH_CTRL_PRIM_BASE_ADDR: usize = 0x41008000;
-
-/// Peripheral size for prim device on flash_ctrl in top englishbreakfast.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #FLASH_CTRL_PRIM_BASE_ADDR and
-/// `FLASH_CTRL_PRIM_BASE_ADDR + FLASH_CTRL_PRIM_SIZE_BYTES`.
-pub const FLASH_CTRL_PRIM_SIZE_BYTES: usize = 0x80;
-
 /// Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -244,6 +230,20 @@ pub const FLASH_CTRL_MEM_BASE_ADDR: usize = 0x20000000;
 /// address between #FLASH_CTRL_MEM_BASE_ADDR and
 /// `FLASH_CTRL_MEM_BASE_ADDR + FLASH_CTRL_MEM_SIZE_BYTES`.
 pub const FLASH_CTRL_MEM_SIZE_BYTES: usize = 0x10000;
+
+/// Peripheral base address for flash_macro_wrapper in top englishbreakfast.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const FLASH_MACRO_WRAPPER_BASE_ADDR: usize = 0x41008000;
+
+/// Peripheral size for flash_macro_wrapper in top englishbreakfast.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #FLASH_MACRO_WRAPPER_BASE_ADDR and
+/// `FLASH_MACRO_WRAPPER_BASE_ADDR + FLASH_MACRO_WRAPPER_SIZE_BYTES`.
+pub const FLASH_MACRO_WRAPPER_SIZE_BYTES: usize = 0x80;
 
 /// Peripheral base address for rv_plic in top englishbreakfast.
 ///
@@ -966,13 +966,7 @@ pub enum PinmuxPeripheralIn {
     /// Peripheral Input 33
     Uart1Rx = 33,
     /// Peripheral Input 34
-    FlashCtrlTck = 34,
-    /// Peripheral Input 35
-    FlashCtrlTms = 35,
-    /// Peripheral Input 36
-    FlashCtrlTdi = 36,
-    /// Peripheral Input 37
-    UsbdevSense = 37,
+    UsbdevSense = 34,
 }
 
 impl TryFrom<u32> for PinmuxPeripheralIn {
@@ -1013,10 +1007,7 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
             31 => Ok(Self::GpioGpio31),
             32 => Ok(Self::Uart0Rx),
             33 => Ok(Self::Uart1Rx),
-            34 => Ok(Self::FlashCtrlTck),
-            35 => Ok(Self::FlashCtrlTms),
-            36 => Ok(Self::FlashCtrlTdi),
-            37 => Ok(Self::UsbdevSense),
+            34 => Ok(Self::UsbdevSense),
             _ => Err(val),
         }
     }
@@ -1418,8 +1409,6 @@ pub enum PinmuxOutsel {
     Uart0Tx = 35,
     /// Peripheral Output 33
     Uart1Tx = 36,
-    /// Peripheral Output 34
-    FlashCtrlTdo = 37,
 }
 
 impl TryFrom<u32> for PinmuxOutsel {
@@ -1463,7 +1452,6 @@ impl TryFrom<u32> for PinmuxOutsel {
             34 => Ok(Self::GpioGpio31),
             35 => Ok(Self::Uart0Tx),
             36 => Ok(Self::Uart1Tx),
-            37 => Ok(Self::FlashCtrlTdo),
             _ => Err(val),
         }
     }

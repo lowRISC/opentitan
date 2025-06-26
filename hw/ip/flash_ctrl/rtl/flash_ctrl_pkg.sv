@@ -26,4 +26,17 @@ package flash_ctrl_pkg;
     }
   };
 
+  // Flash Program Operations Supported
+  typedef enum logic {
+    FlashProgNormal = 0,
+    FlashProgRepair = 1
+  } flash_prog_e;
+  parameter int ProgTypes = 2;
+
+  // Flash partition type
+  typedef enum logic {
+    FlashPartData = 1'b0,
+    FlashPartInfo = 1'b1
+  } flash_part_e;
+
 endpackage : flash_ctrl_pkg
