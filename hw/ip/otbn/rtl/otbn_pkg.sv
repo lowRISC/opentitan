@@ -61,7 +61,7 @@ package otbn_pkg;
   // Register file implementation selection enum.
   typedef enum integer {
     RegFileFF    = 0, // Generic flip-flop based implementation
-    RegFileFPGA  = 1  // FPGA implmentation, does infer RAM primitives.
+    RegFileFPGA  = 1  // FPGA implementation, does infer RAM primitives.
   } regfile_e;
 
   // Command to execute. See the CMD register description in otbn.hjson for details.

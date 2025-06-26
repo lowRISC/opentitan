@@ -215,8 +215,8 @@ module otbn_mac_bignum
     endcase
   end
 
-  // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occuring or secure
-  // wipe of the internal state is occuring.
+  // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occurring or secure
+  // wipe of the internal state is occurring.
   assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i;
 
   always_ff @(posedge clk_i) begin

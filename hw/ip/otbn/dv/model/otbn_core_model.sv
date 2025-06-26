@@ -284,7 +284,7 @@ module otbn_core_model
   // model the timing too precisely on the SV side.
   logic [3:0] busy_counter_q, busy_counter_d;
   logic       reset_busy_counter, step_iss;
-  // This bit can be set by a hierrachical component when ISS model should step for extra time.
+  // This bit can be set by a hierarchical component when ISS model should step for extra time.
   bit         wakeup_iss;
 
   initial begin

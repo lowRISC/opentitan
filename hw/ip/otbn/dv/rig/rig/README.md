@@ -28,7 +28,7 @@ For a brief summary for the currently existing `.yaml` files:
 Picks a configuration file at random from below with specified weights.
 - `base.yaml` : Consists of all possible snippet generators with their default weights relative to each other.
 - `loopy.yaml`: A custom configuration that generates hundred times as many loop instructions compared to the `base` configuration.
-- `straigh-line.yaml`: A custom configuration that does not generate any branches, hence the name.
+- `straight-line.yaml`: A custom configuration that does not generate any branches, hence the name.
 
 ## Abstract Models in RIG
 In order to generate concise programs that don't run into architectural problems RIG needs to have an idea about how OTBN works, what's a memory, a register etc.

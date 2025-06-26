@@ -60,7 +60,7 @@ class otbn_common_vseq extends otbn_base_vseq;
     `DV_ASSERT_CTRL_REQ("otbn_status_assert_en", 1'b1)
   endtask
 
-  // Overriden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
+  // Overridden from cip_base_vseq. Initialise Imem and Dmem and then call the super function.
   task run_passthru_mem_tl_intg_err_vseq_sub(string ral_name);
     `uvm_info(`gfn, "Overriding run_passthru_mem_tl_intg_err_vseq_sub", UVM_HIGH)
     imem_init();

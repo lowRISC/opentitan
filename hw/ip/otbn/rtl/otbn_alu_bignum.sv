@@ -267,7 +267,7 @@ module otbn_alu_bignum
     // enable signal is data dependent (it depends on the lower half of the accumulator result). As
     // a result the enable signal might change back and forth during instruction execution which may
     // lead to SCA leakage. There is nothing that can really be done to avoid this other than
-    // pipelining the flag computation which has a peformance impact.
+    // pipelining the flag computation which has a performance impact.
     //
     // By blanking the enable signal for the other flag group, we can at least avoid leakage related
     // to the other flag group, i.e., we give the programmer a way to control where the leakage

@@ -61,7 +61,7 @@ def _get_symbol_addr_map(elf_file: ELFFile) -> Dict[int, str]:
     if not isinstance(section, SymbolTableSection):
         return {}
 
-    # Filter lables and offsets from data section
+    # Filter labels and offsets from data section
     return {
         sym.name: sym.entry.st_value
         for sym in section.iter_symbols() if sym.entry['st_shndx'] == 2
