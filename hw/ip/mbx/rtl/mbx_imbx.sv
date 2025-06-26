@@ -75,7 +75,7 @@ module mbx_imbx #(
     .q_o   ( req_q        )
   );
 
-  // The abort requested was handled by the host. This re-initialzes the write pointer
+  // The abort requested was handled by the host. This re-initializes the write pointer
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 

@@ -387,7 +387,7 @@
           { name: "doe_async_msg_en"
             desc: '''
                   If DOE Async Message Support is Set, this bit, when Set, enables the use of the DOE Async Message mechanism.
-                  When this bit is set, it allows the DOE instance to raise the SOC_STATUS.doe_async_msg_status, indicating an asnchronous message request.
+                  When this bit is set, it allows the DOE instance to raise the SOC_STATUS.doe_async_msg_status, indicating an asynchronous message request.
                   '''
             bits: "3"
             resval: "0x0"
