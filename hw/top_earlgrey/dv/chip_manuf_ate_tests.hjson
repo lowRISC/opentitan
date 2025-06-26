@@ -56,6 +56,7 @@
         "+sw_test_timeout_ns=1000000000",
         "+use_otp_image=OtpTypeCustom",
         "+skip_flash_bkdr_load=1",
+        "+use_spi_load_bootstrap=1",
       ]
       run_timeout_mins: 800
     }
@@ -71,6 +72,7 @@
         "+sw_test_timeout_ns=1000000000",
         "+use_otp_image=OtpTypeCustom",
         "+skip_flash_bkdr_load=1",
+        "+use_spi_load_bootstrap=1",
       ]
       run_timeout_mins: 800
     }
