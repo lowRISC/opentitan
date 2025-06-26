@@ -548,12 +548,12 @@ module lc_ctrl_fsm
 
 
       EscalateSt: begin
-        // During an escalation it is okay to de-assert token_hash_req without receivng ACK.
+        // During an escalation it is okay to de-assert token_hash_req without receiving ACK.
         token_hash_req_chk_o = 1'b0;
       end
 
       InvalidSt: begin
-        // During an escalation it is okay to de-assert token_hash_req without receivng ACK.
+        // During an escalation it is okay to de-assert token_hash_req without receiving ACK.
         token_hash_req_chk_o = 1'b0;
         state_invalid_error_o = 1'b1;
       end

@@ -650,7 +650,7 @@
             local escalation is triggered (MAIN.FSM.LOCAL_ESC).
             Note that any non-RAW manufacturing state requires the transition counter to
             be nonzero. Also, the transition counter is used to enforce a limit of maximum
-            24 state transitions in order to guard against bruteforcing.
+            24 state transitions in order to guard against brute-forcing.
             '''
     }
     { name: "STATE.CONFIG.SPARSE",

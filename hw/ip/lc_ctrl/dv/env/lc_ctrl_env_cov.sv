@@ -85,7 +85,7 @@ class lc_ctrl_env_cov extends cip_base_env_cov #(
     token_mux_digest_err_cp: coverpoint cfg.err_inj.token_mux_digest_err;
     jtag_csr_cp: coverpoint cfg.jtag_csr;
 
-    // verilog_format: off - formatter doesnt like the macros here
+    // verilog_format: off - formatter doesn't like the macros here
     // Crosses for attempted second transition with and without failure
     `LC_CTRL_POST_TRANS_CROSS(err_inj)
     `LC_CTRL_POST_TRANS_CROSS(state_err)
