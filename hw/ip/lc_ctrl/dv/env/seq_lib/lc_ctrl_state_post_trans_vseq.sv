@@ -12,7 +12,7 @@ class lc_ctrl_state_post_trans_vseq extends lc_ctrl_errors_vseq;
     err_inj.post_trans_err == 1;
     // Allow for post_trans_err plus one other error
     // 50% just post_trans_err
-    // 50% post_trans_err plus another error for first tranistion attempt
+    // 50% post_trans_err plus another error for first transition attempt
     $countones(
         err_inj
     ) dist {

@@ -104,7 +104,7 @@
     {
       name: lc_errors
       desc: '''
-            This test randomly executes the error senarios:
+            This test randomly executes the error scenarios:
             - otp_ctrl input lc_trans_cnt reaches 16
             - lc_ctrl state transition request is invalid
             - input LC token does not match the output from otp_ctrl
@@ -193,7 +193,7 @@
 
             **Checks if the feature is enabled in HW**:
             - If the current state is RawState, and transition state is TestUnlocked0, and if the
-              input token is correct, expect the transition to be sucessful.
+              input token is correct, expect the transition to be successful.
             - Check status and volatile_raw_unlock output.
             - If the raw unlock transition is successful, check the second lc_transition can be
               performed without any error.

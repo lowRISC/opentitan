@@ -173,7 +173,7 @@ package lc_ctrl_state_pkg;
   ////////////////////////
 
   // Use lc_state_t and lc_cnt_t in interfaces as very wide enumerations ( > 64 bits )
-  // are not supported for virtual interfaces by Excelium yet
+  // are not supported for virtual interfaces by Xcelium yet
   // https://github.com/lowRISC/opentitan/issues/8884 (Cadence issue: cds_46570160)
   // The enumeration types lc_state_e and lc_cnt_e are still ok in other circumstances
 
