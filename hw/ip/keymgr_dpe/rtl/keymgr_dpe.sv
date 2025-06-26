@@ -159,7 +159,7 @@ module keymgr_dpe
   //  LFSR
   /////////////////////////////////////
 
-  // A farily large lfsr is used here as entropy in multiple places.
+  // A fairly large lfsr is used here as entropy in multiple places.
   // - populate the default working state
   // - generate random inputs when a bad input is selected
   //

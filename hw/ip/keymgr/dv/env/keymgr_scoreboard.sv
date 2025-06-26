@@ -325,7 +325,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
 
         case (op)
           keymgr_pkg::OpAdvance: begin
-            // if it's StOwnerKey, it advacens to OpDisable. Key is just random value
+            // if it's StOwnerKey, it advances to OpDisable. Key is just random value
             if (current_state == keymgr_pkg::StOwnerKey || get_op_err()) begin
               update_result = NotUpdate;
             end else begin
@@ -487,7 +487,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_enable", "sw_binding_regwen": begin
-        // no speical handle is needed
+        // no special handle is needed
       end
       "err_code": begin
         // Check in this block

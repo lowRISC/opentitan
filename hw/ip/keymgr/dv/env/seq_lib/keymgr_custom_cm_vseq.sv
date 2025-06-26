@@ -9,7 +9,7 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
   `uvm_object_utils(keymgr_custom_cm_vseq)
   `uvm_object_new
 
-  // override the constrant - don't need to always advance to StDisabled
+  // override the constraint - don't need to always advance to StDisabled
   constraint num_adv_c {
     num_adv inside {[1:state.num()]};
   }

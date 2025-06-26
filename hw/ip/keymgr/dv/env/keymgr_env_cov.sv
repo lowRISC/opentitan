@@ -139,7 +139,7 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     }
   endgroup
 
-  // Covergroup to sample key version comparion with OpGenSwOut and OpGenHwOut in legal states
+  // Covergroup to sample key version comparison with OpGenSwOut and OpGenHwOut in legal states
   // When comparison is CompareOpGt, it's SW invalid input
   covergroup key_version_compare_cg with function sample(compare_op_e key_version_cmp,
                                                          keymgr_pkg::keymgr_working_state_e state,

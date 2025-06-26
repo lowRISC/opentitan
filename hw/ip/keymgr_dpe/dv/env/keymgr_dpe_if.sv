@@ -449,7 +449,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
       end
       FaultKeyIntgError: begin
         // TODO(opentitan-integrated/issues/669):
-        // re-evalute this key logic, as key_state_q does not exist
+        // re-evaluate this key logic, as key_state_q does not exist
         // in keymgr_dpe
 
         //pre_internal_key = tb.dut.u_ctrl.key_state_q;

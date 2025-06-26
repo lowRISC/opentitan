@@ -94,7 +94,7 @@ module keymgr_kmac_if
   localparam int GenRounds = (GenDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int MaxRounds = KDFMaxWidth  / KmacDataIfWidth;
 
-  // calculated parameters for number of roudns and interface width
+  // calculated parameters for number of rounds and interface width
   localparam int CntWidth = $clog2(MaxRounds);
   localparam int IfBytes = KmacDataIfWidth / 8;
   localparam int DecoyCopies = KmacDataIfWidth / RandWidth;

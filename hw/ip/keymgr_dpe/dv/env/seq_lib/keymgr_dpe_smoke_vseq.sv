@@ -13,7 +13,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     };
   }
 
-  // retain parent is 1 becuse we want to test
+  // retain parent is 1 because we want to test
   // filling and emptying key slots
   constraint set_policy_c {
     policy.allow_child == 1;

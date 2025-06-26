@@ -163,7 +163,7 @@ module keymgr_dpe_ctrl
   logic op_err;
   logic op_fault_err;
 
-  // Unlock `SW_BINDING`, `SLOT_POLICY` and `MAX_KEY_VERSION` registers after succesful advance
+  // Unlock `SW_BINDING`, `SLOT_POLICY` and `MAX_KEY_VERSION` registers after successful advance
   assign unlock_after_advance_o = adv_req & op_ack & ~(op_err | op_fault_err);
 
   // error definition
@@ -212,7 +212,7 @@ module keymgr_dpe_ctrl
   ///////////////////////////
 
   // Upon entering StCtrlDisabled or StCtrlInvalid, the PRNG is kept advancing until it has been
-  // reseeded twice (through the reseeding mechansism inside keymgr_reseed_ctrl.sv).
+  // reseeded twice (through the reseeding mechanism inside keymgr_reseed_ctrl.sv).
   logic [1:0] prng_en_dis_inv_d, prng_en_dis_inv_q;
   logic prng_en_dis_inv_set;
 
@@ -390,7 +390,7 @@ module keymgr_dpe_ctrl
 
   // SEC_CM: CTRL.FSM.LOCAL_ESC
   // begin invalidation when faults are observed.
-  // sync faults only invalidate on transaction boudaries
+  // sync faults only invalidate on transaction boundaries
   // async faults begin invalidating immediately
 
   logic invalid_advance;
@@ -597,7 +597,7 @@ module keymgr_dpe_ctrl
 
 
   /////////////////////////
-  // Operateion state, handle advance and generate
+  // Operation state, handle advance and generate
   /////////////////////////
 
   logic op_fsm_err;
@@ -657,7 +657,7 @@ module keymgr_dpe_ctrl
   assign invalid_src_slot = ~active_key_slot_o.valid;
 
   // If `retain_parent` is set, it means we intend to keep the parent context around. Therefore,
-  // the destination must be 1) a different slot than src, 2) not occuppied.
+  // the destination must be 1) a different slot than src, 2) not occupied.
   // If `retain_parent` is unset, then we need to erase the parent context. This is done by
   // in-place update. Therefore, src and dst must be the same.
   logic invalid_retain_parent;

@@ -208,7 +208,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.
-  // Note the sideload error is not a direct constant comparision. Instead
+  // Note the sideload error is not a direct constant comparison. Instead
   // it provides hint when valids is allowed to be valid.  If valid becomes
   // 1 outside that window, then an error is triggered.
   assign sideload_sel_err_o = |(~valid_tracking_q & valids);

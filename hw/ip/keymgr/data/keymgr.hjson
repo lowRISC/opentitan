@@ -385,7 +385,7 @@
         An attacker would need to fault both the software valid and the software data enable.
 
         During a sideload operation, if an attacker manages to fault the valid but not the data enable,
-        the software key is populated with random data.  If an atacker manages to fault the data enable but
+        the software key is populated with random data.  If an attacker manages to fault the data enable but
         not the valid, then the software key retains its previous value.
       '''
     }
@@ -598,7 +598,7 @@
             When the OPERATION field is programmed to generate output, this field selects
             the appropriate crypto cipher target.
 
-            This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
+            This field should be programmed for both hw / sw generation, as this helps diversifies the output.
           ''',
           resval: "0"
           enum: [
@@ -876,7 +876,7 @@
           desc: '''
             Max key version.
 
-            Any key version up to the value specificed in this register is valid.
+            Any key version up to the value specified in this register is valid.
           '''
         },
       ]
@@ -912,7 +912,7 @@
           desc: '''
             Max key version.
 
-            Any key version up to the value specificed in this register is valid.
+            Any key version up to the value specified in this register is valid.
           '''
         },
       ]
@@ -948,7 +948,7 @@
           desc: '''
             Max key version.
 
-            Any key version up to the value specificed in this register is valid.
+            Any key version up to the value specified in this register is valid.
           '''
         },
       ]
