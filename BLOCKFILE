@@ -41,6 +41,7 @@ hw/ip/aon_timer/rtl/*
 hw/ip/csrng/rtl/*
 hw/ip/edn/rtl/*
 hw/ip/entropy_src/rtl/*
+hw/ip/flash_macro_wrapper/rtl/*
 hw/ip/hmac/rtl/*
 hw/ip/i2c/rtl/*
 hw/ip/keymgr/rtl/*
@@ -89,6 +90,7 @@ hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson
 hw/ip/otbn/data/otbn.hjson
 hw/ip/otp_macro/data/otp_macro.hjson
 hw/ip/entropy_src/data/entropy_src.hjson
+hw/ip/flash_macro_wrapper/data/flash_macro_wrapper.hjson
 hw/ip/aes/data/aes.hjson
 hw/ip/i2c/data/i2c.hjson
 hw/top_earlgrey/data/otp/otp_ctrl.hjson

@@ -25,7 +25,7 @@ initial force dut.rst_fixed_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rom_ctrl__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)
 `CONNECT_TL_DEVICE_IF(flash_ctrl__core, dut, clk_main_i, rst_n)
-`CONNECT_TL_DEVICE_IF(flash_ctrl__prim, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(flash_macro_wrapper, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(flash_ctrl__mem, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(aes, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rv_plic, dut, clk_main_i, rst_n)

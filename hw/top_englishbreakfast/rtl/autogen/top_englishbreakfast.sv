@@ -39,6 +39,7 @@ module top_englishbreakfast #(
   parameter bit SecFlashCtrlScrambleEn = 0,
   parameter int FlashCtrlProgFifoDepth = 16,
   parameter int FlashCtrlRdFifoDepth = 16,
+  // parameters for flash_macro_wrapper
   // parameters for rv_plic
   // parameters for aes
   parameter bit SecAesMasking = 1,
@@ -170,9 +171,9 @@ module top_englishbreakfast #(
   localparam int SramCtrlMainOutstanding = 2;
 
   // Signals
-  logic [37:0] mio_p2d;
-  logic [34:0] mio_d2p;
-  logic [34:0] mio_en_d2p;
+  logic [34:0] mio_p2d;
+  logic [33:0] mio_d2p;
+  logic [33:0] mio_en_d2p;
   logic [13:0] dio_p2d;
   logic [13:0] dio_d2p;
   logic [13:0] dio_en_d2p;
@@ -218,11 +219,12 @@ module top_englishbreakfast #(
   // pinmux_aon
   // aon_timer_aon
   // flash_ctrl
-  logic        cio_flash_ctrl_tck_p2d;
-  logic        cio_flash_ctrl_tms_p2d;
-  logic        cio_flash_ctrl_tdi_p2d;
-  logic        cio_flash_ctrl_tdo_d2p;
-  logic        cio_flash_ctrl_tdo_en_d2p;
+  // flash_macro_wrapper
+  logic        cio_flash_macro_wrapper_tck_p2d;
+  logic        cio_flash_macro_wrapper_tms_p2d;
+  logic        cio_flash_macro_wrapper_tdi_p2d;
+  logic        cio_flash_macro_wrapper_tdo_d2p;
+  logic        cio_flash_macro_wrapper_tdo_en_d2p;
   // rv_plic
   // aes
   // sram_ctrl_main
@@ -312,6 +314,9 @@ module top_englishbreakfast #(
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_aon_usbdev_wake_detect_active;
   prim_mubi_pkg::mubi4_t       clkmgr_aon_idle;
+  flash_phy_macro_pkg::flash_phy_macro_req_t       flash_ctrl_flash_macro_req;
+  flash_phy_macro_pkg::flash_phy_macro_rsp_t       flash_ctrl_flash_macro_rsp;
+  flash_phy_macro_pkg::flash_macro_status_t       flash_ctrl_flash_macro_status;
   logic       rv_plic_msip;
   logic       rv_plic_irq;
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
@@ -333,8 +338,8 @@ module top_englishbreakfast #(
   tlul_pkg::tl_d2h_t       main_tl_peri_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_core_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_core_tl_rsp;
-  tlul_pkg::tl_h2d_t       flash_ctrl_prim_tl_req;
-  tlul_pkg::tl_d2h_t       flash_ctrl_prim_tl_rsp;
+  tlul_pkg::tl_h2d_t       flash_macro_wrapper_tl_req;
+  tlul_pkg::tl_d2h_t       flash_macro_wrapper_tl_rsp;
   tlul_pkg::tl_h2d_t       flash_ctrl_mem_tl_req;
   tlul_pkg::tl_d2h_t       flash_ctrl_mem_tl_rsp;
   tlul_pkg::tl_h2d_t       aes_tl_req;
@@ -1079,15 +1084,6 @@ module top_englishbreakfast #(
     .RdFifoDepth(FlashCtrlRdFifoDepth)
   ) u_flash_ctrl (
 
-      // Input
-      .cio_tck_i    (cio_flash_ctrl_tck_p2d),
-      .cio_tms_i    (cio_flash_ctrl_tms_p2d),
-      .cio_tdi_i    (cio_flash_ctrl_tdi_p2d),
-
-      // Output
-      .cio_tdo_o    (cio_flash_ctrl_tdo_d2p),
-      .cio_tdo_en_o (cio_flash_ctrl_tdo_en_d2p),
-
       // Interrupt
       .intr_prog_empty_o (intr_flash_ctrl_prog_empty),
       .intr_prog_lvl_o   (intr_flash_ctrl_prog_lvl),
@@ -1106,12 +1102,6 @@ module top_englishbreakfast #(
       // Inter-module signals
       .otp_o(),
       .otp_i(otp_ctrl_pkg::FLASH_OTP_KEY_RSP_DEFAULT),
-      .lc_nvm_debug_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
-      .flash_bist_enable_i(flash_bist_enable_i),
-      .flash_power_down_h_i(flash_power_down_h_i),
-      .flash_power_ready_h_i(flash_power_ready_h_i),
-      .flash_test_mode_a_io(),
-      .flash_test_voltage_h_io(),
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .lc_owner_seed_sw_rw_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
       .lc_iso_part_sw_rd_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
@@ -1123,17 +1113,13 @@ module top_englishbreakfast #(
       .rma_seed_i(lc_ctrl_pkg::LC_FLASH_RMA_SEED_DEFAULT),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
       .keymgr_o(),
-      .obs_ctrl_i(obs_ctrl_i),
-      .fla_obs_o(flash_obs_o),
+      .flash_macro_o(flash_ctrl_flash_macro_req),
+      .flash_macro_i(flash_ctrl_flash_macro_rsp),
+      .flash_macro_status_i(flash_ctrl_flash_macro_status),
       .core_tl_i(flash_ctrl_core_tl_req),
       .core_tl_o(flash_ctrl_core_tl_rsp),
-      .prim_tl_i(flash_ctrl_prim_tl_req),
-      .prim_tl_o(flash_ctrl_prim_tl_rsp),
       .mem_tl_i(flash_ctrl_mem_tl_req),
       .mem_tl_o(flash_ctrl_mem_tl_rsp),
-      .scanmode_i,
-      .scan_rst_ni,
-      .scan_en_i,
 
       // Clock and reset connections
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
@@ -1141,6 +1127,48 @@ module top_englishbreakfast #(
       .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
+  flash_macro_wrapper #(
+    .NumBanks(2),
+    .InfosPerBank(10),
+    .InfoTypes(3),
+    .InfoTypesWidth(2),
+    .PagesPerBank(16),
+    .WordsPerPage(256),
+    .DataWidth(72),
+    .TestModeWidth(2)
+  ) u_flash_macro_wrapper (
+
+      // Input
+      .cio_tck_i    (cio_flash_macro_wrapper_tck_p2d),
+      .cio_tms_i    (cio_flash_macro_wrapper_tms_p2d),
+      .cio_tdi_i    (cio_flash_macro_wrapper_tdi_p2d),
+
+      // Output
+      .cio_tdo_o    (cio_flash_macro_wrapper_tdo_d2p),
+      .cio_tdo_en_o (cio_flash_macro_wrapper_tdo_en_d2p),
+
+      // Inter-module signals
+      .flash_i(flash_ctrl_flash_macro_req),
+      .flash_o(flash_ctrl_flash_macro_rsp),
+      .status_o(flash_ctrl_flash_macro_status),
+      .lc_nvm_debug_en_i(lc_ctrl_pkg::LC_TX_DEFAULT),
+      .bist_enable_i(flash_bist_enable_i),
+      .power_down_h_i(flash_power_down_h_i),
+      .power_ready_h_i(flash_power_ready_h_i),
+      .test_mode_a_io(),
+      .test_voltage_h_io(),
+      .obs_ctrl_i(obs_ctrl_i),
+      .fla_obs_o(flash_obs_o),
+      .tl_i(flash_macro_wrapper_tl_req),
+      .tl_o(flash_macro_wrapper_tl_rsp),
+      .scanmode_i,
+      .scan_rst_ni,
+      .scan_en_i,
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   rv_plic #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[19:19]),
@@ -1452,9 +1480,9 @@ module top_englishbreakfast #(
     .tl_flash_ctrl__core_o(flash_ctrl_core_tl_req),
     .tl_flash_ctrl__core_i(flash_ctrl_core_tl_rsp),
 
-    // port: tl_flash_ctrl__prim
-    .tl_flash_ctrl__prim_o(flash_ctrl_prim_tl_req),
-    .tl_flash_ctrl__prim_i(flash_ctrl_prim_tl_rsp),
+    // port: tl_flash_macro_wrapper
+    .tl_flash_macro_wrapper_o(flash_macro_wrapper_tl_req),
+    .tl_flash_macro_wrapper_i(flash_macro_wrapper_tl_rsp),
 
     // port: tl_flash_ctrl__mem
     .tl_flash_ctrl__mem_o(flash_ctrl_mem_tl_req),
@@ -1583,9 +1611,6 @@ module top_englishbreakfast #(
   assign cio_gpio_gpio_p2d[31] = mio_p2d[MioInGpioGpio31];
   assign cio_uart0_rx_p2d = mio_p2d[MioInUart0Rx];
   assign cio_uart1_rx_p2d = mio_p2d[MioInUart1Rx];
-  assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
-  assign cio_flash_ctrl_tms_p2d = mio_p2d[MioInFlashCtrlTms];
-  assign cio_flash_ctrl_tdi_p2d = mio_p2d[MioInFlashCtrlTdi];
   assign cio_usbdev_sense_p2d = mio_p2d[MioInUsbdevSense];
 
   // All muxed outputs
@@ -1623,7 +1648,6 @@ module top_englishbreakfast #(
   assign mio_d2p[MioOutGpioGpio31] = cio_gpio_gpio_d2p[31];
   assign mio_d2p[MioOutUart0Tx] = cio_uart0_tx_d2p;
   assign mio_d2p[MioOutUart1Tx] = cio_uart1_tx_d2p;
-  assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
 
   // All muxed output enables
   assign mio_en_d2p[MioOutGpioGpio0] = cio_gpio_gpio_en_d2p[0];
@@ -1660,7 +1684,6 @@ module top_englishbreakfast #(
   assign mio_en_d2p[MioOutGpioGpio31] = cio_gpio_gpio_en_d2p[31];
   assign mio_en_d2p[MioOutUart0Tx] = cio_uart0_tx_en_d2p;
   assign mio_en_d2p[MioOutUart1Tx] = cio_uart1_tx_en_d2p;
-  assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;
 
   // All dedicated inputs
   logic [13:0] unused_dio_p2d;

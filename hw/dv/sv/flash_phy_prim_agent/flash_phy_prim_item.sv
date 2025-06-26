@@ -7,8 +7,8 @@ class flash_phy_prim_item extends uvm_sequence_item;
   `uvm_object_utils_begin(flash_phy_prim_item)
   `uvm_object_utils_end
 
-  flash_phy_pkg::flash_phy_prim_flash_req_t req;
-  flash_phy_pkg::flash_phy_prim_flash_rsp_t rsp;
+  flash_phy_macro_bank_req_t req;
+  flash_phy_macro_bank_rsp_t rsp;
 
   fdata_q_t fq;
   `uvm_object_new
