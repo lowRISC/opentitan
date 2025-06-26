@@ -266,13 +266,13 @@ This is not necessary in a `.c` or `.cc` file, where this cannot cause downstrea
 
 ### C++ Version
 
-C++ code should target C++14.
+C++ code should target C++17.
 
 ### Aggregate Initializers
 
 ***C++20-style designated initializers are permitted in C++ code, when used with POD types.***
 
-While we target C++14, both GCC and Clang allow C++20 designated initializers in C++14-mode, as an extension:
+While we target C++17, both GCC and Clang allow C++20 designated initializers in C++17-mode, as an extension:
 ```
 struct Foo { int a, b; };
 
