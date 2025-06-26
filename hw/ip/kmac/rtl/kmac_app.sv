@@ -184,7 +184,7 @@ module kmac_app
 
   // app_rsp_t signals
   // The state machine controls mux selection, which controls the ready signal
-  // the other responses are controled in separate logic. So define the signals
+  // the other responses are controlled in separate logic. So define the signals
   // here and merge them to the response.
   logic app_data_ready, fsm_data_ready;
   logic app_digest_done, fsm_digest_done_q, fsm_digest_done_d;
@@ -253,7 +253,7 @@ module kmac_app
         };
       end
     end // for {i, NumAppIntf, i++}
-  end // aiways_comb
+  end // always_comb
 
   // app_id latch
   always_ff @(posedge clk_i or negedge rst_ni) begin

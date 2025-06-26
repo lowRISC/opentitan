@@ -29,7 +29,7 @@
 // If masking is enabled, this implementation uses both randomness provided
 // from an external PRNG as well as intermediate results for remasking the DOM
 // multipliers below. Per clock cycle, 800b of pseudo-random data (PRD) are
-// required. A carfully designed schedule ensures to only ever update the input
+// required. A carefully designed schedule ensures to only ever update the input
 // data of the DOM multipliers when also providing fresh randomness and vice
 // versa. Updating one without the other could lead to undesired SCA leakage.
 
@@ -356,7 +356,7 @@ module keccak_round
         // We don't need fresh randomness for the next cycle as the DOM
         // multipliers inside keccak_2share will keep seeing the first
         // lane halves in the next cycle. If we updated the randomness,
-        // old data got combined with frash randomness which is not
+        // old data got combined with fresh randomness which is not
         // desirable as it could lead to SCA leakage.
         update_storage = 1'b 1;
 
@@ -486,7 +486,7 @@ module keccak_round
     if (xor_message) begin
       for (int j = 0 ; j < Share ; j++) begin
         for (int unsigned i = 0 ; i < DInEntry ; i++) begin
-          // ICEBOX(#18029): handle If Width is not integer divisable by DInWidth
+          // ICEBOX(#18029): handle If Width is not integer divisible by DInWidth
           // Currently it is not allowed to have partial write
           // Please see the Assertion `WidthDivisableByDInWidth_A`
           if (addr_i == i[DInAddr-1:0]) begin
@@ -583,10 +583,10 @@ module keccak_round
   // Assertions //
   ////////////////
 
-  // Only allow `DInWidth` that `Width` is integer divisable by `DInWidth`
+  // Only allow `DInWidth` that `Width` is integer divisible by `DInWidth`
   `ASSERT_INIT(WidthDivisableByDInWidth_A, (Width % DInWidth) == 0)
 
-  // If `run_i` triggerred, it shall complete
+  // If `run_i` triggered, it shall complete
   //`ASSERT(RunResultComplete_A, run_i ##[MaxRound:] complete_o, clk_i, !rst_ni)
 
   // valid_i and run_i cannot be asserted at the same time

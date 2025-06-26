@@ -279,7 +279,7 @@ module kmac_core
   // 1. Prepare left_encode(w)
   // 2. Prepare left_encode(len(secret_key))
   // 3. Concatenate left_encode(len(secret_key)) || secret_key
-  // 4. Concaatenate left_encode(w) || encode_string(secret_key)
+  // 4. Concatenate left_encode(w) || encode_string(secret_key)
   // 5. Based on the address, slice out the data into MsgWidth bits
 
   // left_encode(w): Same as used in sha3pad logic.

@@ -259,7 +259,7 @@ module sha3pad
 
   // `process_latched` latches the `process_i` input before it is seen in the
   // FSM. `process_i` may follow `start_i` too fast so that the FSM may not
-  // see it fast enought in case of cSHAKE mode. cSHAKE needs to process the
+  // see it fast enough in case of cSHAKE mode. cSHAKE needs to process the
   // prefix prior to see the process indicator.
   logic process_latched;
 
@@ -318,7 +318,7 @@ module sha3pad
       // In Idle state, the FSM checks if the software (or upper FSM) initiates
       // the hash process. If `start_i` is asserted (assume it is pulse), FSM
       // starts to push the data into the keccak round logic. Depending on the
-      // hashing mode, FSM may push additional prefex in front of the actual
+      // hashing mode, FSM may push additional prefix in front of the actual
       // message. It means, the message could be back-pressured until the first
       // prefix is processed.
       StPadIdle: begin
@@ -409,7 +409,7 @@ module sha3pad
       // Pad state just pushes the ending suffix. Depending on the mode, the
       // padding value is unique. SHA3 adds 2'b10, SHAKE adds 4'b1111, and
       // cSHAKE adds 2'b 00. Refer `function_pad`. The signal has one more bit
-      // defined to accomodate first 1 bit of `pad10*1()` function.
+      // defined to accommodate first 1 bit of `pad10*1()` function.
       StPad: begin
         sel_mux = MuxFuncPad;
 
