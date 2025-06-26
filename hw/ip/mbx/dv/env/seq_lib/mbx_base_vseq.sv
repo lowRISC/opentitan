@@ -10,7 +10,7 @@
   the nominal control flow to short-circuit to the end of the txn, while confirming we see the
   effect of these stressors.
   Each 'iteration' (num_iters) consists of a number of 'transactions' (num_txns), with a DUT reset
-  seperating each iteration. This allows the regwen features to be meaningfully exercised.
+  separating each iteration. This allows the regwen features to be meaningfully exercised.
   This is a quick, minimal effort extension of the existing 'smoke' test into something that more
   thoroughly exercises the mailbox IP at block level, including exceptional traffic/conditions.
   The linear-nature of stimulus->checking means it is not the basis of a proper DV stress test.

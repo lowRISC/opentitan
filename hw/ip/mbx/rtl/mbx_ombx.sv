@@ -53,7 +53,7 @@ module mbx_ombx #(
   logic set_first_req, clear_first_req;
 
   // Generate the read request
-  // - Mbx reader ACK the current read data and initate the first request
+  // - Mbx reader ACK the current read data and initiate the first request
   // First is initiated by mbx owner writes object size register
   // Note that pointer comparison with hostif_limit_i is inclusive, while comparison with internal
   // limit of the object size is exclusive
@@ -113,7 +113,7 @@ module mbx_ombx #(
                           sysif_read_data_write_valid_i  &
                           (sram_read_ptr_q == sram_read_ptr_limit_q);
 
-  // The abort requestet was handled by the host. This re-initialzes the read pointer
+  // The abort requestet was handled by the host. This re-initializes the read pointer
   logic host_clear_abort;
   assign host_clear_abort = hostif_control_abort_clear_i & mbx_sys_abort;
 
@@ -284,7 +284,7 @@ module mbx_ombx #(
   // When reading from the ombx doe_status.ready must have been asserted
   `ASSERT_NEVER(ReadyAssertedWhenRead_A, ombx_sram_read_req_o &
                 ~(first_req_q | sysif_status_ready_i))
-  // System write-to-read data is non-posted.  No subsequential read or write comes before the
+  // System write-to-read data is non-posted.  No subsequent read or write comes before the
   // write is ACKed
   `ASSERT_NEVER(NoReadBeforeWriteAcked_A, ombx_pending_o &
                 (sysif_read_data_read_valid_i | sysif_read_data_write_valid_i))
