@@ -23,26 +23,32 @@ waive -rules RESET_MUX -location {top_darjeeling.sv} -regexp {Asynchronous reset
 waive -rules RESET_USE -location {top_darjeeling.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
 
-# TODO: Remove waiver when #25410 is resolved
-waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
-      -msg {Net 'rst_sys_ni' is not read from in module 'pinmux'} \
-      -comment "This signal is unused but cannot yet be gated in ipgen"
-
-# TODO: Remove waiver when #25410 is resolved
 waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
       -msg {Net 'scanmode_i' is not read from in module 'pinmux'} \
       -comment "This signal is unused but cannot yet be gated in ipgen"
 
-waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port '(rst_sys_ni|scanmode_i)' is not read from} \
+waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port 'scanmode_i' is not read from, instance 'pinmux' of module} \
       -comment "This signal is unused but cannot yet be gated in ipgen."
 
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_root' is not read from in module 'clkmgr'} \
+# Remove once #26758 is merged
+waive -rules {HIER_NET_NOT_READ} -location {clkmgr.sv} \
+      -regexp {Net 'clk_io_root' is not read from in module 'clkmgr'} \
       -comment "This clock is unused in Darjeeling - should not be generated"
 
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
-      -regexp {(Net|Signal) 'clk_io_div2_root' is not read from in module 'clkmgr'} \
-      -comment "This clock is unused in Darjeeling  - should not be generated"
+# Remove once #26758 is merged
+waive -rules {HIER_NET_NOT_READ} -location {clkmgr.sv} \
+      -regexp {Net 'clk_io_div2_root' is not read from in module 'clkmgr'} \
+      -comment "This clock is unused in Darjeeling - should not be generated"
+
+# Remove once #26758 is merged
+waive -rules {NOT_READ} -location {clkmgr.sv} \
+      -regexp {Signal 'clk_io_root' is not read from in module 'clkmgr'} \
+      -comment "This clock is unused in Darjeeling - should not be generated"
+
+# Remove once #26758 is merged
+waive -rules {NOT_READ} -location {clkmgr.sv} \
+      -regexp {Signal 'clk_io_div2_root' is not read from in module 'clkmgr'} \
+      -comment "This clock is unused in Darjeeling - should not be generated"
 
 waive -rules CLOCK_MUX -location {clkmgr.sv top_darjeeling.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"

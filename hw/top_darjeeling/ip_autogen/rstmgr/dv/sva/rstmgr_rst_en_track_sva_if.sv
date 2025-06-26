@@ -200,19 +200,6 @@ interface rstmgr_rst_en_track_sva_if (
           clk_main_i,
           !rst_por_ni)
 
-  `ASSERT(DAonRstSysIoDiv4EnTracksRstSysIoDiv4Active_A,
-          $fell(resets_i.rst_sys_io_div4_n[DomainAonSel]) |-> ##[0:DELAY]
-          reset_en_i.sys_io_div4[DomainAonSel] == prim_mubi_pkg::MuBi4True,
-          clk_io_div4_i,
-          !rst_por_ni)
-
-  `ASSERT(DAonRstSysIoDiv4EnTracksRstSysIoDiv4Inactive_A,
-          $rose(resets_i.rst_sys_io_div4_n[DomainAonSel]) |-> ##DELAY
-          !resets_i.rst_sys_io_div4_n[DomainAonSel] ||
-          reset_en_i.sys_io_div4[DomainAonSel] == prim_mubi_pkg::MuBi4False,
-          clk_io_div4_i,
-          !rst_por_ni)
-
   `ASSERT(D0RstSpiDeviceEnTracksRstSpiDeviceActive_A,
           $fell(resets_i.rst_spi_device_n[Domain0Sel]) |-> ##[0:DELAY]
           reset_en_i.spi_device[Domain0Sel] == prim_mubi_pkg::MuBi4True,

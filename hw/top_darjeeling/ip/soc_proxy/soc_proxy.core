@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:ip:tlul
+      - lowrisc:ip:dma_pkg
       - lowrisc:systems:soc_proxy_pkg
     files:
       - rtl/bat.sv

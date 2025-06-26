@@ -19,7 +19,6 @@ module pinmux
 ) (
   input                            clk_i,
   input                            rst_ni,
-  input                            rst_sys_ni,
   // Scan enable
   input  prim_mubi_pkg::mubi4_t    scanmode_i,
   // Slow always-on clock

@@ -979,15 +979,11 @@ module top_darjeeling #(
     prim_mubi_pkg::mubi4_t unused_rst_en_20;
     assign unused_rst_en_20 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_21;
-    assign unused_rst_en_21 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_21 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_22;
-    assign unused_rst_en_22 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_22 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_23;
-    assign unused_rst_en_23 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_24;
-    assign unused_rst_en_24 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_25;
-    assign unused_rst_en_25 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_23 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
 //VCS coverage on
 // pragma coverage on
 
@@ -1583,8 +1579,7 @@ module top_darjeeling #(
       .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-      .rst_sys_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel])
+      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel])
   );
   aon_timer #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[20:20])

@@ -86,16 +86,6 @@ module soc_dbg_ctrl_decode #(
   prim_flop_en #(
     .Width      ( prim_mubi_pkg::MuBi4Width   ),
     .ResetValue ( {prim_mubi_pkg::MuBi4False} )
-  ) u_delay_valid (
-    .clk_i  ( clk_i           ),
-    .rst_ni ( rst_ni          ),
-    .en_i   ( valid_rising    ),
-    .d_i    ( valid_sync      ),
-    .q_o    ( {valid_delayed} )
-  );
-  prim_flop_en #(
-    .Width      ( prim_mubi_pkg::MuBi4Width   ),
-    .ResetValue ( {prim_mubi_pkg::MuBi4False} )
   ) u_delay_relock (
     .clk_i  ( clk_i              ),
     .rst_ni ( rst_ni             ),
@@ -104,8 +94,7 @@ module soc_dbg_ctrl_decode #(
     .q_o    ( {relocked_delayed} )
   );
 
-  logic valid_decoded, relocked_decoded;
-  assign valid_decoded    = prim_mubi_pkg::mubi4_test_true_strict(valid_delayed);
+  logic relocked_decoded;
   assign relocked_decoded = prim_mubi_pkg::mubi4_test_true_strict(relocked_delayed);
 
   // Output the decoded logic

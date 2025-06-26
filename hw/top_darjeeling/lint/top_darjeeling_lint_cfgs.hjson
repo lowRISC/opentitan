@@ -63,11 +63,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip/ast/lint/{tool}"
              },
-             //{    name: clkmgr
-             //     fusesoc_core: lowrisc:darjeeling_ip:clkmgr
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-             //     rel_path: "hw/top_darjeeling/ip_autogen/clkmgr/lint/{tool}",
-             //},
+             {    name: clkmgr
+                  fusesoc_core: lowrisc:darjeeling_ip:clkmgr
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/top_darjeeling/ip_autogen/clkmgr/lint/{tool}",
+             },
              {    name: csrng
                   fusesoc_core: lowrisc:ip:csrng
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -128,11 +129,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip_autogen/otp_ctrl/lint/{tool}"
              },
-             //{    name: pinmux
-             //     fusesoc_core: lowrisc:darjeeling_ip:pinmux
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_darjeeling/ip_autogen/pinmux/lint/{tool}"
-             //},
+             {    name: pinmux
+                  fusesoc_core: lowrisc:darjeeling_ip:pinmux
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/top_darjeeling/ip_autogen/pinmux/lint/{tool}"
+             },
              {    name: pwrmgr
                   fusesoc_core: lowrisc:darjeeling_ip:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
@@ -175,16 +177,23 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/ip/soc_dbg_ctrl/lint/{tool}"
              },
-             //{    name: soc_dbg_ctrl_decode
-             //     fusesoc_core: lowrisc:ip:soc_dbg_ctrl_decode
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
-             //},
+             {    name: soc_dbg_ctrl_decode
+                  fusesoc_core: lowrisc:ip:soc_dbg_ctrl_decode
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
+             },
              {    name: top_darjeeling_rv_plic
                   fusesoc_core: lowrisc:darjeeling_ip:rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/ip_autogen/rv_plic/lint/{tool}"
+             },
+             {    name: racl_ctrl
+                  fusesoc_core: lowrisc:darjeeling_ip:racl_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/top_darjeeling/ip_autogen/racl_ctrl/lint/{tool}"
              },
              {    name: rv_timer
                   fusesoc_core: lowrisc:ip:rv_timer
@@ -192,11 +201,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path:  "hw/ip/rv_timer/lint/{tool}"
              },
-             //{    name: soc_proxy
-             //     fusesoc_core: lowrisc:systems:soc_proxy
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_darjeeling/ip/soc_proxy/lint/{tool}"
-             //},
+             {    name: soc_proxy
+                  fusesoc_core: lowrisc:systems:soc_proxy
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/top_darjeeling/ip/soc_proxy/lint/{tool}"
+             },
              {    name: spi_device
                   fusesoc_core: lowrisc:ip:spi_device
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -239,16 +249,18 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/ip/tlul/adapter_reg/lint/{tool}"
              },
-             //{    name: adapter_dmi
-             //     fusesoc_core: lowrisc:tlul:adapter_dmi
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/ip/tlul/adapter_dmi/lint/{tool}"
-             //},
-             //{    name: jtag_dtm
-             //     fusesoc_core: lowrisc:tlul:jtag_dtm
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/ip/tlul/jtag_dtm/lint/{tool}"
-             //},
+             {    name: adapter_dmi
+                  fusesoc_core: lowrisc:tlul:adapter_dmi
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/ip/tlul/adapter_dmi/lint/{tool}"
+             },
+             {    name: jtag_dtm
+                  fusesoc_core: lowrisc:tlul:jtag_dtm
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/ip/tlul/jtag_dtm/lint/{tool}"
+             },
              {    name: adapter_sram
                   fusesoc_core: lowrisc:tlul:adapter_sram
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -267,11 +279,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/top_darjeeling/lint/{tool}"
              },
-             //{    name: chip_darjeeling_asic
-             //     fusesoc_core: lowrisc:systems:chip_darjeeling_asic
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_darjeeling/lint/{tool}"
-             //},
+             {    name: chip_darjeeling_asic
+                  fusesoc_core: lowrisc:systems:chip_darjeeling_asic
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/top_darjeeling/lint/{tool}"
+             },
             ]
 
 }
