@@ -15,7 +15,7 @@ class otbn_rnd_sec_cm_vseq extends otbn_multi_vseq;
   `uvm_object_new
 
   task body();
-    // Do not do the end addr check because we are finishing the program abrubtly with an error.
+    // Do not do the end addr check because we are finishing the program abruptly with an error.
     do_end_addr_check = 0;
     super.body();
   endtask
@@ -28,7 +28,7 @@ class otbn_rnd_sec_cm_vseq extends otbn_multi_vseq;
       @(negedge cfg.clk_rst_vif.clk);
       if(cfg.poll_rnd_edn_req() && ~cfg.rnd_vif.edn_rnd_ack_i) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(entropy)
-        // Distrubution of num_repeated_edn will determine the behaviour of the test.
+        // Distribution of num_repeated_edn will determine the behaviour of the test.
         // For detailed explanation see the comments above.
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_repeated_edn,
                                            num_repeated_edn dist { 0      :/ 25,

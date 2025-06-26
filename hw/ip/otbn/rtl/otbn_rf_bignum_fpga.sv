@@ -49,7 +49,7 @@ module otbn_rf_bignum_fpga
   assign unused_rf = rf;
 
   // Split registers into individual 39bit wide memories - otherwise the tool fails to properly
-  // implement the non-zero memory intialization assignment in the initial block. Further, the
+  // implement the non-zero memory initialization assignment in the initial block. Further, the
   // regfile is split into two sets of memories for clear separation of the enable terms.
   for (genvar i = 0; i < BaseWordsPerWLEN; i++) begin : gen_rf
     logic [BaseIntgWidth-1:0] rf_local [NWdr];

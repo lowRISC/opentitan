@@ -612,7 +612,7 @@ module otbn_controller
                                              (insn_dec_base_i.a == 5'd1);
 
   // All software errors that aren't bad_insn_addr. Factored into bad_insn_addr so it is only raised
-  // if other software errors haven't ocurred. As bad_insn_addr relates to the next instruction
+  // if other software errors haven't occurred. As bad_insn_addr relates to the next instruction
   // begin fetched it cannot occur if the current instruction has seen an error and failed to
   // execute.
   assign non_insn_addr_software_err = |{key_invalid_err,
@@ -955,7 +955,7 @@ module otbn_controller
 
   // Bignum RF control signals from the controller aren't actually used, instead the predecoded
   // one-hot versions are. The predecoded versions get checked against the signals produced here.
-  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // Buffer them to ensure they don't get optimised away (with a functionally correct OTBN they will
   // always be identical).
   assign rf_bignum_rd_addr_a_unbuf = insn_dec_bignum_i.rf_a_indirect ? insn_bignum_rd_addr_a_q :
                                                                        insn_dec_bignum_i.a;
@@ -1036,11 +1036,11 @@ module otbn_controller
   // Note that blanking both registers is not feasible nor absolutely required because:
   // - The flag group selection and flag selection are known in the predecoder stage but the actual
   //   flag isn't.
-  // - Selecting the flag in the predocder stage using combinatorial inputs may lead to SCA leakage
+  // - Selecting the flag in the predecoder stage using combinatorial inputs may lead to SCA leakage
   //   between the still combinatorial flag groups and flags within a group which might be
   //   undesirable as well.
   // - When executing a selection instruction, programmers can expected that there will be some SCA
-  //   leakage between the two options. But it may be much lesse expected for such leakage to occur
+  //   leakage between the two options. But it may be much less expected for such leakage to occur
   //   for other instructions.
   `ASSERT(SelFlagValid, insn_valid_i & insn_dec_bignum_i.sel_insn |->
     insn_dec_bignum_i.alu_sel_flag inside {FlagC, FlagL, FlagM, FlagZ})
@@ -1082,7 +1082,7 @@ module otbn_controller
 
   // Bignum RF control signals from the controller aren't actually used, instead the predecoded
   // one-hot versions are. The predecoded versions get checked against the signals produced here.
-  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // Buffer them to ensure they don't get optimised away (with a functionally correct OTBN they will
   // always be identical).
   prim_buf #(
     .Width(2)
@@ -1141,7 +1141,7 @@ module otbn_controller
 
   // Bignum RF control signals from the controller aren't actually used, instead the predecoded
   // one-hot versions are. The predecoded versions get checked against the signals produced here.
-  // Buffer them to ensure they don't get optimised away (with a functionaly correct OTBN they will
+  // Buffer them to ensure they don't get optimised away (with a functionally correct OTBN they will
   // always be identical).
   assign rf_bignum_wr_addr_unbuf = insn_dec_bignum_i.rf_d_indirect ? insn_bignum_wr_addr_q :
                                                                      insn_dec_bignum_i.d;
