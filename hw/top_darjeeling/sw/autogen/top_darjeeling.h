@@ -1260,6 +1260,7 @@ typedef enum top_darjeeling_plic_target {
   kTopDarjeelingPlicTargetLast = 0, /**< \internal Final PLIC target */
 } top_darjeeling_plic_target_t;
 
+
 /**
  * Alert Handler Source Peripheral.
  *

@@ -203,6 +203,13 @@
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
+  // Interrupt handler information for the design
+  interrupts: {
+    // Any module with interrupts that doesn't specify plic
+    // will have its interrupts sent here
+    default_plic: "rv_plic"
+  }
+
   // `addr_spaces` names the distinct address spaces present in the device.
   // All hosts in the same address space share the same base addresses for
   // all peripherals, though not every peripheral will be accessible to every
@@ -509,6 +516,7 @@
         hart: "0x48000000",
       },
       attr: "ipgen",
+      targets: ["rv_core_ibex"]
     },
     { name: "aes",
       type: "aes",
