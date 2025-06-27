@@ -63,7 +63,7 @@ class aes_fi_vseq extends aes_base_vseq;
           end
         join_none
         // make sure we don't wait for a reset that never comes
-        // in case the inject happened efter test finished
+        // in case the inject happened after test finished
         wait (finished_all_msgs);
         if (wait_for_alert_clear) begin
           `uvm_fatal(`gfn, $sformatf("Was Able to finish without clearing reset"))

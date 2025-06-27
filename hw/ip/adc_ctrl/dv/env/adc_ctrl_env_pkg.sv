@@ -80,7 +80,7 @@ package adc_ctrl_env_pkg;
     ADC_CTRL_FILTER_COND_OUT = 1
   } adc_ctrl_filter_cond_e;
 
-  // Filter configurration
+  // Filter configuration
   typedef struct packed {
     adc_ctrl_filter_cond_e cond;  // Condition
     int min_v;  // Minimum value

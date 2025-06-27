@@ -75,7 +75,7 @@ class aes_message_item extends uvm_sequence_item;
   // set if this message should not be
   // validated
   // due to a premature trigger
-  // i.e unkown key and IV settings used
+  // i.e unknown key and IV settings used
   bit    skip_msg             = 0;
 
   ///////////////////////////////////////

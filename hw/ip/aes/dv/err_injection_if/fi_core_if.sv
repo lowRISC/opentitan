@@ -32,7 +32,7 @@ interface fi_core_if
     return intf_mul_array.size();
   endfunction // get_if_size
 
-  // check which array we need to access and force or releae
+  // check which array we need to access and force or release
   function automatic void force_signal(int target, bit rel, bit [31:0] value);
     if (!rel) begin
       aes_core_cg_inst.sample(target);

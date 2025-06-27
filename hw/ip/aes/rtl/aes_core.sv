@@ -231,7 +231,7 @@ module aes_core
     end
   end
   // The cipher core uses multiple packed dimensions internally but the number of bits remain the
-  // same. Since some tools fail to peform the `conversion` on input ports, we do it here.
+  // same. Since some tools fail to perform the `conversion` on input ports, we do it here.
   assign prd_clearing_state = prd_clearing_128;
   assign prd_clearing_key   = prd_clearing_256;
 
@@ -518,7 +518,7 @@ module aes_core
     // counter and feedback path through the IV regs.
 
     // Only unmask the final cipher core output. Unmasking intermediate output data causes
-    // additional SCA leakage and thus has to be avoided. Forward PRD instead of a determinsitic
+    // additional SCA leakage and thus has to be avoided. Forward PRD instead of a deterministic
     // value to avoid leaking the cipher core output when it becomes valid.
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
@@ -556,7 +556,7 @@ module aes_core
   // Control Register //
   //////////////////////
 
-  // Shadowed register primitve
+  // Shadowed register primitive
   aes_ctrl_reg_shadowed #(
     .AES192Enable ( AES192Enable )
   ) u_ctrl_reg_shadowed (

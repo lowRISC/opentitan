@@ -4,7 +4,7 @@ This chapter shows how to use the HMAC/SHA-2 IP by showing some snippets such as
 This code is not compilable but serves to demonstrate the IO required.
 A more detailed SW implementation can be found in software under `sw/` in [cryptolib code](../../../../sw/device/lib/crypto/drivers/hmac.c) which is the recommended reference implementation for further SW development.
 HMAC/SHA-2 IP is also used in [ROM code](../../../../sw/device/silicon_creator/lib/drivers/hmac.c) but this is a constrained implementation for specific ROM code purposes. Therefore, it is not a recommended software implementation reference.
-Code in [HMAC DIF](../../../../sw/device/lib/dif/dif_hmac.c) is intended for tesing development purposes, but remains limited to configuring HMAC only in SHA-2 256 with 256-bit key, with plans to update it in the near future.
+Code in [HMAC DIF](../../../../sw/device/lib/dif/dif_hmac.c) is intended for testing development purposes, but remains limited to configuring HMAC only in SHA-2 256 with 256-bit key, with plans to update it in the near future.
 
 ## Initialization
 

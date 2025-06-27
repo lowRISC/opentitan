@@ -24,7 +24,7 @@ function automatic logic [127:0] swap_endianess_byte(logic [127:0] vector_in);
   //   vector_out[127 - 8*i : 120 - 8*i] = vector_in[7 + 8*i : 8*i];
   // end
   //
-  // Posible solutions recomend a generate-for-loop and then to embedd an
+  // Possible solutions recommend a generate-for-loop and then to embed an
   // allways_comb block. However this does not seem reasonable for a function.
   // However, there might be other problems:
   //   - https://github.com/verilator/verilator/issues/1418

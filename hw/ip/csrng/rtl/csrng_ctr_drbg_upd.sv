@@ -22,7 +22,7 @@ module csrng_ctr_drbg_upd #(
   input logic                ctr_drbg_upd_req_i,
   output logic               ctr_drbg_upd_rdy_o, // ready to process the req above
   input logic [Cmd-1:0]      ctr_drbg_upd_ccmd_i,
-  input logic [StateId-1:0]  ctr_drbg_upd_inst_id_i, // instantance id
+  input logic [StateId-1:0]  ctr_drbg_upd_inst_id_i, // instance id
   input logic [SeedLen-1:0]  ctr_drbg_upd_pdata_i, // provided_data
   input logic [KeyLen-1:0]   ctr_drbg_upd_key_i,
   input logic [BlkLen-1:0]   ctr_drbg_upd_v_i,
@@ -31,7 +31,7 @@ module csrng_ctr_drbg_upd #(
   output logic [KeyLen-1:0]  ctr_drbg_upd_key_o,
   output logic [BlkLen-1:0]  ctr_drbg_upd_v_o,
   output logic               ctr_drbg_upd_ack_o, // final ack when update process has been completed
-  input logic                ctr_drbg_upd_rdy_i, // readu to process the ack above
+  input logic                ctr_drbg_upd_rdy_i, // ready to process the ack above
 
    // es_req/ack
   input logic                ctr_drbg_upd_es_req_i,
@@ -501,7 +501,7 @@ module csrng_ctr_drbg_upd #(
   logic [BlkLen-1:0] unused_concat_outblk_shifted_value;
   assign unused_concat_outblk_shifted_value = concat_outblk_shifted_value[SeedLen+BlkLen-1:SeedLen];
 
-  // concatination counter
+  // concatenation counter
   assign concat_ctr_d =
          (!ctr_drbg_upd_enable_i) ? '0 :
          concat_ctr_done ? '0 :

@@ -746,7 +746,7 @@ interface entropy_src_cov_if
     // bits, though they do permit false positive rates in the range of 2^(-20) - 2^(-40)
     // are acceptable.
     //
-    // For ideal RNG inputs and this range corrensponds to events in the
+    // For ideal RNG inputs and this range corresponds to events in the
     // "medhigh" bin below for the single-line repcnt test, or the "low"
     // bin for the repcnts (4-bit symbol) test.
     //
@@ -808,7 +808,7 @@ interface entropy_src_cov_if
   // "Deep" covergroup definition to confirm that the threshold performance has been
   // properly tested for a practical range of thresholds for all windowed tests.
   //
-  // Covering a range of thesholds for the windowed tests is challenging as the
+  // Covering a range of thresholds for the windowed tests is challenging as the
   // results of the test values are generally expected to be centered around the average
   // value.  Many threshold values will require directed tests to obtain a pass or fail value,
   // if they are even testable at all.
@@ -821,7 +821,7 @@ interface entropy_src_cov_if
   // an ideal stream of RNG inputs.
   //
   // The least aggressive threshold bin (> 6 sigma) more accurately corresponds to the functional
-  // mode of operation, with a low rate of false postives, which will require some directed
+  // mode of operation, with a low rate of false positives, which will require some directed
   // tests to trigger a HT failure.
   //
   // The definition of these practical ranges depends on the size of the windows

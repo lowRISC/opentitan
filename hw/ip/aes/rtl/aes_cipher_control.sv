@@ -374,7 +374,7 @@ module aes_cipher_control import aes_pkg::*;
                                dec_key_gen_q == SP2V_HIGH) || CiphOpFwdOnly ? CIPH_FWD : op_i;
   assign key_expand_round_o = rnd_ctr;
 
-  // Let the main controller know whate we are doing.
+  // Let the main controller know what we are doing.
   assign crypt_o          = crypt_q;
   assign dec_key_gen_o    = dec_key_gen_q;
   assign prng_reseed_o    = prng_reseed_q;

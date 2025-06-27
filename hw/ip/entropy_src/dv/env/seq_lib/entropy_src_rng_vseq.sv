@@ -216,7 +216,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // The DUT thresholds can be configured in coordination with the expected noise properties of
     // the RNG (which can also be parametrized to introduce bias or other non-idealities).  However
     // the RNG sequence then needs to be constructed before initializing the DUT, so that we can
-    // query it for recommended thresholds when calling entropy_src_init().   So these seqeunces
+    // query it for recommended thresholds when calling entropy_src_init().   So these sequences
     // are constructed before calling super.pre_start()
     //
 
@@ -520,7 +520,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   endtask
 
-  // A thread task to continously handle interrupts
+  // A thread task to continuously handle interrupts
   // runs until the timer thread
   task interrupt_handler_thread();
     `uvm_info(`gfn, "Starting interrupt loop", UVM_LOW)
@@ -629,7 +629,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
               msg = $sformatf("Forcing disable from state %s", rare_fsm_states[i].name());
               `uvm_info(`gfn, msg, UVM_HIGH)
               // First immediately disable the device, with an ASAP frontdoor write and if needed
-              // a preceeding backdoor write (timed to trigger in the next cycle, for states that
+              // a preceding backdoor write (timed to trigger in the next cycle, for states that
               // almost always follow CSR operations such as enable signals)
               // Finally call disable_dut() to clean things up properly.
               if (rare_state_to_idle_backdoor[i]) begin
@@ -676,7 +676,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `DV_SPINWAIT_EXIT(m_csrng_pull_seq.wait_for_items_processed(csrng_pull_seq_seed_offset + 1);,
                         wait (!do_background_procs))
       if(do_background_procs) begin
-        // Notify the interrtupt/CSR access thread after the single boot mode seed has been
+        // Notify the interrupt/CSR access thread after the single boot mode seed has been
         // received
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut)
         `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);,

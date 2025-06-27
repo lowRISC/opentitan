@@ -465,7 +465,7 @@ module aes_dom_dep_mul_gf2pn #(
   // Calculation & Integration //
   ///////////////////////////////
   // Compute b. Note that unlike for the unoptimized implementation, we don't combine the blinded
-  // shares of y to obtain a single b value. Intstead, every domain d gets its own version of b:
+  // shares of y to obtain a single b value. Instead, every domain d gets its own version of b:
   //
   //   d_b = d_y ^ _D_y_z0
   //
@@ -723,7 +723,7 @@ module aes_dom_inverse_gf2p4 #(
   end else begin : gen_no_prim_flop_ab_y10
     // When using un-pipelined multipliers, there is no need to insert additional registers.
     // We drive the corresponding inputs to 0 to make sure the functionality isn't correct in case
-    // the pipeliend inputs are erroneously used.
+    // the pipelined inputs are erroneously used.
 
     assign a_gamma1_qq = '0;
     assign a_gamma0_qq = '0;
@@ -784,7 +784,7 @@ module aes_dom_inverse_gf2p4 #(
 
   // Use intermediate results for generating PRD for Stage 4 of another S-Box instance.
   // Use one share only. Directly use output of flops updating with we_i[1].
-  // b_gamma1/0_omega_prd3 are both based on b_omega but XORed with differend parts of prd_3_i,
+  // b_gamma1/0_omega_prd3 are both based on b_omega but XORed with different parts of prd_3_i,
   // thus uniformly distributed and independent of b_omega (see Lemma 1 in [2]).
   assign prd_3_o = {b_gamma1_omega_prd3, b_gamma0_omega_prd3};
 
@@ -853,7 +853,7 @@ module aes_dom_inverse_gf2p8 #(
   end else begin : gen_no_prim_flop_ab_y10
     // When using un-pipelined multipliers, there is no need to insert additional registers.
     // We drive the corresponding inputs to 0 to make sure the functionality isn't correct in case
-    // the pipeliend inputs are erroneously used.
+    // the pipelined inputs are erroneously used.
 
     assign a_y1_q = '0;
     assign a_y0_q = '0;

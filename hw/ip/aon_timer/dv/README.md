@@ -114,7 +114,7 @@ Covergroup `wake_up_timer_thold_hit_cg`:
 
 - `wkup_thold_cp`: samples WKUP threshold.
 
-- `wkup_int_cp`: samples whether an interupt was generated.
+- `wkup_int_cp`: samples whether an interrupt was generated.
 
 - `wkup_thold_cpXwkup_int_cp`: crosses the threshold and interrupt (count is implicit).
 

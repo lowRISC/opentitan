@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This sequence generates back-pressure seq
-// The sequence disabled all the rand delay and optional reg checkings
+// The sequence disabled all the rand delay and optional reg checking
 
 class hmac_back_pressure_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_back_pressure_vseq)

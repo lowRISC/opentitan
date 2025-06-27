@@ -91,7 +91,7 @@ interface aes_cov_if
 
     // all modes are tested in both auto an manual operation
     cr_mode_man_op:  cross cp_mode, cp_manual_operation;
-    // All modes used in both incryption and decryption
+    // All modes used in both encryption and decryption
     cr_mode_op:      cross cp_mode, cp_operation;
 
   endgroup // aes_ctrl_cg
@@ -157,7 +157,7 @@ interface aes_cov_if
   // interleaving writes to each registers is allowed
   // This covergroup has a bin for each i => j combination. For example, 0 => 0 means "write to
   // data_in_0 twice in a row". 3 => 0 means "write to data_in_3 and then data_in_0"
-  // it also checks that we attemp to access the register while DUT is !idle
+  // it also checks that we attempt to access the register while DUT is !idle
   // the test well verify correct behavior (read and write data is accepted under certain
   // conditions
   covergroup aes_wr_data_interleave_cg with function sample(int data_in, bit idle);
@@ -181,7 +181,7 @@ interface aes_cov_if
   // interleaving writes to each registers is allowed
   // This covergroup has a bin for each i => j combination. For example, 0 => 0 means "reading
   // data_out_0 twice in a row". 3 => 0 means "reading data_out_3 and then data_out_0"
-  // it also checks that we attemp to access the register while DUT is !idle
+  // it also checks that we attempt to access the register while DUT is !idle
   // the test well verify correct behavior (read and write data is accepted under certain
   // conditions
   covergroup aes_rd_data_interleave_cg with function sample(int data_out, bit idle);
@@ -203,7 +203,7 @@ interface aes_cov_if
   // interleaving writes to each registers is allowed
   // This covergroup has a bin for each i => j combination. For example, 0 => 0 means "write to
   // iv_0 twice in a row". 3 => 0 means "write to iv_3 and then iv_0"
-  // it also checks that we attemp to access the register while DUT is !idle
+  // it also checks that we attempt to access the register while DUT is !idle
   // the test well verify correct behavior (read and write data is accepted under certain
   // conditions
   covergroup aes_iv_interleave_cg with function sample(int iv, bit idle);
@@ -226,7 +226,7 @@ interface aes_cov_if
   // interleaving writes to each registers is allowed
   // This covergroup has a bin for each i => j combination. For example, 0 => 0 means "write to
   // key_0 twice in a row". 3 => 0 means "write to key_3 and then key_0"
-  // it also checks that we attemp to access the register while DUT is !idle
+  // it also checks that we attempt to access the register while DUT is !idle
   // the test well verify correct behavior (read and write data is accepted under certain
   // conditions
   covergroup aes_key_interleave_cg with function sample(int key, bit idle);

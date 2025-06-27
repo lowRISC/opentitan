@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
   }
 
   // init
-  // cyper text is already in state
+  // cypher text is already in state
   // round key is prepared already
   // reset rcon
   rcon = 0x00;

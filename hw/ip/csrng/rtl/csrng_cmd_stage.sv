@@ -184,7 +184,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // Capture the application command type.
   assign acmd = sfifo_cmd_rdata[2:0];
 
-  // For gen commands, capture information from the orignal command for use later.
+  // For gen commands, capture information from the original command for use later.
   assign cmd_gen_flag_d =
          (!cs_enable_i) ? '0 :
          cmd_gen_1st_req ? (acmd == GEN) :

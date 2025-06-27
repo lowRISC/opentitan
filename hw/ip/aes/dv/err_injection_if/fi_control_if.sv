@@ -61,7 +61,7 @@ interface fi_control_if
     return intf_array.size() + intf_mul_array.size();
   endfunction // get_if_size
 
-  // check which array we need to access and force or releae
+  // check which array we need to access and force or release
   function automatic void force_signal(int target, bit rel, bit [31:0] value);
     if (!rel) aes_ctrl_fsm_cg_inst.sample(target);
     if (target < intf_array.size()) begin
@@ -183,7 +183,7 @@ interface fi_control_if
 
   covergroup aes_ctrl_fsm_cg (int num_bins) with function sample(int target);
     // We want to see coverage per instance,
-    // but as the code are copies of eachother
+    // but as the code are copies of each other
     // we don't need every instance to achieve 100% coverage
     // a total of 100% is enough so we set the option
     // to merge the coverage of the instances

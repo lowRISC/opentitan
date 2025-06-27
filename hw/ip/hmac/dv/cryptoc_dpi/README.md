@@ -5,7 +5,7 @@ This cryptoc library has been pulled from open source Chromium repo:
 This directory contains the following stand-alone crypto implementations:
 sha, sha256 and hmac (using sha and sha256)
 
-These implemenations have no stl or OpenSSL dependencies and are
+These implementations have no stl or OpenSSL dependencies and are
 endian-neutral.
 
 The sha*.*,  hmac.* and util.* sources are in their original, unmodified state.

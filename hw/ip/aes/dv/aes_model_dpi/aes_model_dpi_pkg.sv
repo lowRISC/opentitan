@@ -59,7 +59,7 @@ package aes_model_dpi_pkg;
 
   // wrapper function that converts from register format (4x32bit)
   // to the 4x4x8 format of the c functions and back
-  // this ensures that RTL and refence models have same input and output format.
+  // this ensures that RTL and reference models have same input and output format.
   function automatic void sv_dpi_aes_crypt_block(
     input  bit             impl_i,    // 0 = C model, 1 = OpenSSL/BoringSSL
     input  bit             op_i,      // 0 = encrypt, 1 = decrypt

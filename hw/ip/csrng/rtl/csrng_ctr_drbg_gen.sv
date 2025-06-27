@@ -25,7 +25,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   input logic                ctr_drbg_gen_req_i,
   output logic               ctr_drbg_gen_rdy_o, // ready to process the req above
   input logic [Cmd-1:0]      ctr_drbg_gen_ccmd_i,    // current command
-  input logic [StateId-1:0]  ctr_drbg_gen_inst_id_i, // instantance id
+  input logic [StateId-1:0]  ctr_drbg_gen_inst_id_i, // instance id
   input logic                ctr_drbg_gen_glast_i,   // gen cmd last beat
   input logic                ctr_drbg_gen_fips_i,    // fips
   input logic [SeedLen-1:0]  ctr_drbg_gen_adata_i,   // additional data

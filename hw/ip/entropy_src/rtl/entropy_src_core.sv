@@ -599,7 +599,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // most of the module is not enabled.  (The enable pulse is for clearing the
   // residual internal state.)
   //
-  // The rest of the module is enabled in the second clock cycle after seting the
+  // The rest of the module is enabled in the second clock cycle after setting the
   // module_enable register to MuBi4True.
   //
   // When module_enable is set to MuBi4False the module is disabled.  No further
@@ -927,8 +927,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          err_code_test_bit[3];
 
   // The following test bits help normally diagnose the _type_ of
-  // error when they are triggred by the fifo. However when
-  // they are triggered by softwre they are not linked to a
+  // error when they are triggered by the fifo. However when
+  // they are triggered by software they are not linked to a
   // particular sfifo and do not trigger an alert, unless
   // we capture them here.
   assign sfifo_test_err_sum = err_code_test_bit[28] ||

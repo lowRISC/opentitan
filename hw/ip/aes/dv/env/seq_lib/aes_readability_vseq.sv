@@ -4,7 +4,7 @@
 
 // This test verifies the behavior of different registers matches the specification. In particular:
 // - Initial key registers are not readable.
-// - Registers are cleared with psuedo-random data if requested (including the unreadable key
+// - Registers are cleared with pseudo-random data if requested (including the unreadable key
 //   registers).
 
 class aes_readability_vseq extends aes_base_vseq;
