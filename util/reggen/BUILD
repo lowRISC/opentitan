@@ -80,6 +80,7 @@ py_library(
         ":lib",
         ":params",
         "//util/design/mubi:prim_mubi",
+        requirement("peakrdl_systemrdl"),
     ],
 )
 
@@ -320,6 +321,15 @@ py_library(
         ":register",
         ":validate",
         ":window",
+    ],
+)
+
+py_library(
+    name = "gen_systemrdl",
+    srcs = ["gen_systemrdl.py"],
+    deps = [
+        ":ip_block",
+        requirement("peakrdl_systemrdl"),
     ],
 )
 
