@@ -4367,6 +4367,9 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
+        FlopWdataScramble: 1
+        FlopReadAddrScramble: 1
       }
       base_addrs:
       {
@@ -4498,6 +4501,33 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlRetAonEccCorrection
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopRamOutput
+        }
+        {
+          name: FlopWdataScramble
+          desc: Add a flop stage after the write data scrambler.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopWdataScramble
+        }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonFlopReadAddrScramble
         }
       ]
       inter_signal_list:
@@ -6715,6 +6745,9 @@
       {
         InstrExec: "1"
         InstSize: 65536
+        FlopRamOutput: 1
+        FlopWdataScramble: 1
+        FlopReadAddrScramble: 1
       }
       base_addrs:
       {
@@ -6846,6 +6879,33 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMainEccCorrection
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopRamOutput
+        }
+        {
+          name: FlopWdataScramble
+          desc: Add a flop stage after the write data scrambler.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopWdataScramble
+        }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainFlopReadAddrScramble
         }
       ]
       inter_signal_list:
@@ -7042,6 +7102,9 @@
       {
         InstrExec: "0"
         InstSize: 4096
+        FlopRamOutput: 1
+        FlopWdataScramble: 1
+        FlopReadAddrScramble: 1
       }
       base_addrs:
       {
@@ -7173,6 +7236,33 @@
           local: "false"
           expose: "true"
           name_top: SramCtrlMboxEccCorrection
+        }
+        {
+          name: FlopRamOutput
+          desc: Add a flop stage after the RAM macro output.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopRamOutput
+        }
+        {
+          name: FlopWdataScramble
+          desc: Add a flop stage after the write data scrambler.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopWdataScramble
+        }
+        {
+          name: FlopReadAddrScramble
+          desc: Add a flop stage after the address scrambler for reads.
+          type: bit
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxFlopReadAddrScramble
         }
       ]
       inter_signal_list:

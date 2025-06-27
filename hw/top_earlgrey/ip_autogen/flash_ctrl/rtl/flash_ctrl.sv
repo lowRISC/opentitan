@@ -549,7 +549,6 @@ module flash_ctrl
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
-    .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0)
   );
 
@@ -669,7 +668,6 @@ module flash_ctrl
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
-    .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0)
   );
 
@@ -1336,7 +1334,6 @@ module flash_ctrl
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
-    .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0)
   );
 

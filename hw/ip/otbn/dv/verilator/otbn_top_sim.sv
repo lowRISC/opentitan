@@ -176,7 +176,6 @@ module otbn_top_sim (
   bind otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   assign u_otbn_core.i_otbn_trace_if.scramble_state_err_i = '0;
-  assign u_otbn_core.i_otbn_trace_if.missed_gnt_i = '0;
 
   // Convert from core_err_bits_t to err_bits_t
   assign otbn_err_bits = '{
@@ -249,7 +248,7 @@ module otbn_top_sim (
   assign dmem_index = dmem_addr[DmemAddrWidth-1:DmemAddrWidth-DmemIndexWidth];
   assign unused_dmem_addr = dmem_addr[DmemAddrWidth-DmemIndexWidth-1:0];
 
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width              ( ExtWLEN       ),
     .Depth              ( DmemSizeWords ),
     .InstDepth          ( DmemSizeWords ),
@@ -279,7 +278,6 @@ module otbn_top_sim (
     .cfg_i            ( '0                ),
     .cfg_rsp_o        (                   ),
 
-    .wr_collision_o   (                   ),
     .write_pending_o  (                   ),
 
     .alert_o          (                   )
@@ -297,7 +295,7 @@ module otbn_top_sim (
   assign imem_index = imem_addr[ImemAddrWidth-1:2];
   assign unused_imem_addr = imem_addr[1:0];
 
-  prim_ram_1p_scr #(
+  prim_ram_1p_scr_1cyc #(
     .Width           ( 39            ),
     .Depth           ( ImemSizeWords ),
     .InstDepth       ( ImemSizeWords ),
@@ -326,7 +324,6 @@ module otbn_top_sim (
     .cfg_i            ( '0                      ),
     .cfg_rsp_o        (                         ),
 
-    .wr_collision_o   (                         ),
     .write_pending_o  (                         ),
 
     .alert_o          (                         )
