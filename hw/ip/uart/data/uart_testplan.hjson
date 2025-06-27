@@ -18,7 +18,7 @@
             - TX and RX have 2 independent threads respectively.
               -  program one Tx item in register and wait for it to complete at uart interface,
                  before send another one
-              - sequencally send one Rx byte, then immediately read from register and check it'''
+              - sequentially send one Rx byte, then immediately read from register and check it'''
       stage: V1
       tests: ["uart_smoke"]
     }
@@ -127,7 +127,7 @@
     {
       name: sys_loopback
       desc: '''
-            - Enable system looback, then drive uart TX and data will be loopbacked through RX
+            - Enable system loopback, then drive uart TX and data will be loopbacked through RX
             - After loopback is done, uart.RDATA will be equal to the data programmed to
               uart.WDATA'''
       stage: V2
@@ -149,7 +149,7 @@
               otherwise, data change won't be taken
             - Enable noise filter and drive many glitches. Each glitch doesn't lasts less than
               3 clocks
-            - Ensure the noise will be filterred out and it doesn't affect next normal
+            - Ensure the noise will be filtered out and it doesn't affect next normal
               transaction'''
       stage: V2
       tests: ["uart_noise_filter"]
