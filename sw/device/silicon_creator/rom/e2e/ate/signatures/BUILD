@@ -11,5 +11,8 @@ filegroup(
 
 filegroup(
     name = "spx_signatures",
-    srcs = glob(["*.spx_sig"]),
+    srcs = glob(
+        ["*.spx_sig"],
+        allow_empty = True,
+    ),
 )

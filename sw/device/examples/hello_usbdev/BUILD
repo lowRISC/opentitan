@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "opentitan_binary")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 
 opentitan_binary(
     name = "hello_usbdev",
