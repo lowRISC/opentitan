@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// combine all sram_ctrl vseqs (except the ones belwo) in one top level vseq to run sequentially
+// combine all sram_ctrl vseqs (except the ones below) in one top level vseq to run sequentially
 // 1. common vseq: csr/alert tests disable scb, and sram does not have interrupts
 // 2. lc_escalation_vseq can issue an internal reset, so it is included in stress_all_vseq,
 //    but excluded from stress_all_with_rand_reset
