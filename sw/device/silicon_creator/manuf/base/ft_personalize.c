@@ -883,6 +883,7 @@ static status_t write_cert_to_flash_info_page(
   return OK_STATUS();
 }
 
+size_t orig_num_objects_from_host;
 static status_t personalize_endorse_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Certificate Export and Endorsement.
@@ -953,6 +954,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     free_room -= block.obj_size;
   }
 
+  orig_num_objects_from_host = perso_blob_from_host.num_objs;
   // Extract the remaining cert perso LTV objects received from the host.
   while (perso_blob_from_host.num_objs)
     TRY(extract_next_cert(&next_cert, &free_room));
@@ -1135,6 +1137,7 @@ static status_t provision(ujson_t *uj) {
       .uj = uj,
       .perso_blob_from_host = &perso_blob_from_host,
       .cert_flash_layout = cert_flash_layout};
+  post_endorse.perso_blob_from_host->num_objs = orig_num_objects_from_host;
   TRY(personalize_extension_post_cert_endorse(&post_endorse));
 
   // Check the hash of all perso objects with the host to confirm integrity of
