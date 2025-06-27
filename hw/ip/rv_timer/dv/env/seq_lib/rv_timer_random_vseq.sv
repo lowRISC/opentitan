@@ -134,7 +134,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
                 automatic int a_i = i;
                 fork
                   // Poll intr_status continuously until it reads the expected value.
-                  // The delay value set for the `timeout_ns` arg is mulitplied by two due to
+                  // The delay value set for the `timeout_ns` arg is multiplied by two due to
                   // `intr_state_spinwait` task: if the interrupt is set right after csr_rd, then in the
                   // worst case, the code will wait for two `spinwait_delay_ns` before hitting the break
                   // statement.
@@ -170,7 +170,7 @@ class rv_timer_random_vseq extends rv_timer_base_vseq;
     end
   endtask : body
 
-  // Function to calculate number of clks to interrup for given hart and timer
+  // Function to calculate number of clks to interrupt for given hart and timer
   function automatic uint calculate_num_clks(int hart = 0, int timer = 0);
     uint64 mtime_dif = compare_val[hart][timer] - timer_val[hart];
     calculate_num_clks = ((mtime_dif / step[hart]) +

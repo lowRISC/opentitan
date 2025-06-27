@@ -32,7 +32,7 @@
     {
       name: disabled
       desc: '''This test to verify no activity in mTime, Interrupt Status, Interrupt signal,
-            When all timers are deactive (ctrl.active = 0).
+            When all timers are deactivated (ctrl.active = 0).
             - Program 1 in interrupt enable and 0 in control register and random value for
               rest of the registers
             - Scoreboard check for no activity and no interrupt whatever is setting'''
@@ -43,7 +43,7 @@
       name: cfg_update_on_fly
       desc: '''This test will verify update timer configuration on running timer.
             - Program timer.Active to zero
-            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - Program random values in interrupt enable, prescaler, step, mtime and mtime cmp
             - After some clocks update timer config values
             - Check for interrupt as per new config set'''
       stage: V2
@@ -54,7 +54,7 @@
       desc: '''This test will update timer value and compare value just before timer is going to
             expire (multiple times) and verify no interrupt is asserted
             - Program timer.Active to zero
-            - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
+            - Program random values in interrupt enable, prescaler, step, mtime and mtime cmp
             - Update timer config values just before timer is about to expire
             - Check for no interrupt set'''
       stage: V2
