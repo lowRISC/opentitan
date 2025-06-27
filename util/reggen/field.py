@@ -488,4 +488,7 @@ class Field:
         hwaccess = self.hwaccess.to_systemrdl()
         importer.assign_property(field, "hw", hwaccess["hw"])
 
+        if self.desc:
+            importer.assign_property(field, "desc", self.desc)
+
         return field
