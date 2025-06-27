@@ -111,7 +111,7 @@
 
             Stimulus:
               - Reset the spi_host randomly
-                after a random number of data shows up on fifos
+                after a random number of data shows up on FIFOs
 
             Checking:
               - Ensure that reads to RXDATA register yield 0s after the rx_fifo is reset
@@ -213,7 +213,7 @@
 
             Stimulus:
               - Issue a transaction
-              - De-assert CONTROL.SPIEN after the command byte is receieved
+              - De-assert CONTROL.SPIEN after the command byte is received
               - Re-assert after a randomized delay
             Checking:
               - Ensure transactions are transmitted/received correctly, even with a large
@@ -262,7 +262,7 @@
               Push on new word from SR/ByteMerge, Pop on CSR read
 
             Stimulus:
-              - Create transactions that Pop/Push to the data fifos
+              - Create transactions that Pop/Push to the data FIFOs
               - Readback the queue depths at various points during active and after completed
                 transactions.
 
@@ -278,7 +278,7 @@
           Replace SPI agent with the Winbond Flash model
 
           Stimulus:
-            - constraint the Sequence to create welformed transactions that the model understands
+            - constraint the Sequence to create well-formed transactions that the model understands
 
           Checking:
             - Verify the DUT against the WindBond bfm by making the spi agent passive
@@ -328,7 +328,7 @@
     {
       name: control_cg
       desc: '''
-            Collect coverage on the control register to make sure all options are excercised
+            Collect coverage on the control register to make sure all options are exercised
             - Tx and RX water mark should have a bin for min value, max value
               and one for everything in between
             '''
@@ -348,7 +348,7 @@
     {
       name: command_cg
       desc: '''
-            Collect coverage that different commant settings, important cross:
+            Collect coverage that different command settings, important cross:
 
             - Direction and SPEED
             - CSAAT and SPEED
@@ -408,7 +408,7 @@
             Check that the pass through data is transmitted instead of the data in the tx fifo.
 
             - Cover that passthrough is activated when a normal transaction is in progress.
-            - Cover that data on the passthrough interface is ignored while passthroug disabled.
+            - Cover that data on the passthrough interface is ignored while passthrough disabled.
 
             '''
     }

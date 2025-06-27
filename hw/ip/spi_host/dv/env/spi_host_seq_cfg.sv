@@ -51,11 +51,11 @@ class spi_host_seq_cfg extends uvm_object;
   bit  quad_en                        = 0;
 
 
-  // the direction knobs are speciel,
-  // the setting is vs standart
+  // the direction knobs are special,
+  // the setting is vs standard
   // i.e a rx pc of 20 will result in
   // 20 of RX transactions will be RX only the
-  // remailing 80% will be standard.
+  // remaining 80% will be standard.
   // similar for tx pct
   // i.e the rx setting does not affect
   // the tx distribution

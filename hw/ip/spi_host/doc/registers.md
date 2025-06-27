@@ -291,7 +291,7 @@ Segment Length.
 
    For read or write segments, this field controls the
    number of 1-byte bursts to transmit and or receive in
-   this command segment.  The number of cyles required
+   this command segment.  The number of cycles required
    to send or received a byte will depend on [`COMMAND.SPEED.`](#command)
    For dummy segments, ([`COMMAND.DIRECTION`](#command) == 0), this register
    controls the number of dummy cycles to issue.
@@ -352,7 +352,7 @@ SPI Transmit Data.
    are always transmitted with the most significant bit first.
    Multi-byte writes are also supported, and if ByteOrder = 0,
    the bits of [`TXDATA`](#txdata) are transmitted strictly in order of
-   decreasing signficance (i.e. most signicant bit first).
+   decreasing significance (i.e. most significant bit first).
    For some processor architectures, this could lead to shuffling
    of flash data as compared to how it is written in memory.
    In which case, choosing ByteOrder = 1 can reverse the

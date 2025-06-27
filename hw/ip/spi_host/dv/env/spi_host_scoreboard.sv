@@ -644,7 +644,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           spi_cmd_reg.csaat     = get_field_val(ral.command.csaat, item.a_data);
           spi_cmd_reg.len       = get_field_val(ral.command.len, item.a_data);
 
-          // add global spi seetings to individual transaction
+          // add global spi settings to individual transaction
           host_wr_segment.command_reg.len       = spi_cmd_reg.len;
           host_wr_segment.command_reg.direction = spi_cmd_reg.direction;
           host_wr_segment.command_reg.mode      = spi_cmd_reg.mode;
