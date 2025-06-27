@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This contains SVA assertions to check losing calibration enables crtl regwen.
+// This contains SVA assertions to check losing calibration enables ctrl regwen.
 
 interface clkmgr_lost_calib_regwen_sva_if (
   input logic clk,
