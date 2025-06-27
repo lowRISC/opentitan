@@ -175,5 +175,10 @@
     "test_case_id": 33,
     "command": "CharSramWriteReadAlt",
     "expected_output": ["{\"memory\":[2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,3131746989,3134333474,2880293630,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
+  },
+  {
+    "test_case_id": 34,
+    "command": "CharSramReadRet",
+    "expected_output": ["{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0], \"sram_err_status\":56}"]
   }
 ]
