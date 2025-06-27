@@ -74,7 +74,7 @@ module tb;
   // values and parameters)
   bind dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare rom_ctrl_compare_if u_compare_if ();
 
-  // Instantitate the memory backdoor util instance.
+  // Instantiate the memory backdoor util instance.
   `define ROM_CTRL_MEM_HIER \
     tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.mem
 
