@@ -103,9 +103,9 @@ class usbdev_bfm extends uvm_component;
 
   // Internal packet buffer memory; this is a 32-bit addressable read/write memory accessed from
   // both the CSR and USB sides. It is, however, decomposed into 'NumBuffers' packet-sized buffers
-  // of 'MaxPktSizeByte' bytes each, with each packet buffer serving only as a undirectional channel
-  // (IN packet or OUT packet), and is not required to support simultaneous reads and writes to any
-  // given packet buffer.
+  // of 'MaxPktSizeByte' bytes each, with each packet buffer serving only as a unidirectional
+  // channel (IN packet or OUT packet), and is not required to support simultaneous reads and writes
+  // to any given packet buffer.
   logic [31:0] buffer[NumBuffers * MaxPktSizeByte / 4];
 
   // The DUT and BFM packet buffer memories are 32 bits wide (TL-UL interface) and only full 32-bit
@@ -117,7 +117,7 @@ class usbdev_bfm extends uvm_component;
   // within this bank are replaced when actual bytes are received from the USB. (usbdev_usbif.sv)
   bit [31:0] wdata_q;
 
-  // The decision on whether and how to respond to an IN request cannot be actioned imediately
+  // The decision on whether and how to respond to an IN request cannot be actioned immediately
   // because the CSR state may change in the interim; we introduce a short delay before deciding
   // how to respond to an IN request.
   token_pkt in_token;

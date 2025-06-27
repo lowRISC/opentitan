@@ -16,7 +16,7 @@ class usbdev_stall_trans_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet
     send_prnd_out_packet(ep_default, PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
 
-    // Check that the DUT reponds with the PidTypeStall
+    // Check that the DUT responds with the PidTypeStall
     check_response_matches(PidTypeStall);
   endtask
 

@@ -203,7 +203,7 @@ module usbdev
   logic usb_tx_dn;
   logic usb_tx_oe;
   /////////////////////////////////
-  // USB contol pins after CDC   //
+  // USB control pins after CDC  //
   /////////////////////////////////
   logic usb_pwr_sense;
   logic usb_pullup_en;

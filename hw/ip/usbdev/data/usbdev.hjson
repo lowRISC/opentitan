@@ -511,7 +511,7 @@
           bits: "10:0",
           name: "frame",
           desc: '''
-                Frame index received from host. On an active link, this will increment every milisecond.
+                Frame index received from host. On an active link, this will increment every millisecond.
                 '''
         }
         {
