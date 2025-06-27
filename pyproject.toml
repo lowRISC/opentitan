@@ -70,6 +70,8 @@ dependencies = [
   # The hardware package manager and build system.
   "fusesoc==2.4.3",
 
+  "peakrdl-systemrdl >= 1.0",
+
   # Development version of minimal ChipWhisperer toolchain with latest features
   # and bug fixes. We fix the version for improved stability and manually update
   # if necessary.
