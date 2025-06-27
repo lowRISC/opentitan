@@ -649,7 +649,7 @@ class IpBlock:
                 status = False
         return status
 
-    def to_systemrdl(self, importer: RDLImporter) -> Optional[Addrmap]:
+    def to_systemrdl(self, importer: RDLImporter) -> Addrmap | None:
         num_children = 0
 
         rdl_addrmap = importer.create_addrmap_definition(self.name)

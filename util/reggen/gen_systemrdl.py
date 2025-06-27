@@ -5,19 +5,20 @@
 
 '''Generate a SystemRDL description of the block'''
 
-import os
 from typing import TextIO
 
 from reggen.ip_block import IpBlock
 
-from systemrdl.importer import RDLImporter, RDLCompiler
+from systemrdl import RDLCompiler  # type: ignore[attr-defined]
+from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
+from systemrdl.importer import RDLImporter
 from peakrdl_systemrdl import exporter
 
 
 def gen(block: IpBlock, outfile: TextIO) -> int:
     comp = RDLCompiler()
     imp = RDLImporter(comp)
-    imp.default_src_ref = None
+    imp.default_src_ref = FileSourceRef(outfile.name)
     exp = exporter.SystemRDLExporter()
 
     rdl_addrmap = block.to_systemrdl(imp)
