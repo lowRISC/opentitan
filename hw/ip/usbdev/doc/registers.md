@@ -388,7 +388,7 @@ Other values are reserved.
 Start of frame not received from host for 4.096 ms and the line is active.
 
 ### usbstat . frame
-Frame index received from host. On an active link, this will increment every milisecond.
+Frame index received from host. On an active link, this will increment every millisecond.
 
 ## avoutbuffer
 Available OUT Buffer FIFO

@@ -20,9 +20,9 @@ class usbdev_in_iso_vseq extends usbdev_base_vseq;
     send_token_packet(ep_default, PidTypeInToken);
     check_response_matches(PidTypeData0);
     // For completion of IN transaction and assertion of in_sent interrupt
-    // after succesful IN. ACK from Host is not required because the endpoint
-    // hase been configured for isochronous traffic.
-    // Verify Transaction reads register status and verifis that IN trans is successfull.
-    check_in_sent(ep_default); // verify that IN transaction is successfull.
+    // after successful IN. ACK from Host is not required because the endpoint
+    // has been configured for isochronous traffic.
+    // Verify Transaction reads register status and verifies that IN trans is successful.
+    check_in_sent(ep_default); // verify that IN transaction is successful.
   endtask
 endclass

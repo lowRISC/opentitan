@@ -411,7 +411,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         string field_name = fields[f].get_name();
         // Maximum delay (in DUT clock cycles) for a prediction to be met; most delays should take
         // only a few cycles for internal changes to propagate, but some are substantially longer
-        // oweing to the immediate operation of the functional model.
+        // owing to the immediate operation of the functional model.
         int unsigned max_delay = 16;
         bit include_field = 1'b1;
         // There are a few fields that we cannot predict because the BFM does not have an
@@ -488,7 +488,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                 max_delay = 4364;
               else begin
                 // `usbdev_rand_bus_disconnects` induces a transitional link state that may or may
-                // not be observed, so the model cannot reliably predice the `link_state` field yet.
+                // not be observed, so the model cannot reliably predict the `link_state` field yet.
                 include_field = 1'b0;
               end
             end

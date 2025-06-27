@@ -21,7 +21,7 @@ class usbdev_pending_in_trans_vseq extends usbdev_base_vseq;
     // the setup transaction by clearing the 'rdy' bit in the configin register.
     send_prnd_setup_packet(ep_default);
     check_response_matches(PidTypeAck);
-    // Verify that after the setup transaction, the waiting IN transction is canceled
+    // Verify that after the setup transaction, the waiting IN transaction is canceled
     // by checking 'rdy' and 'pend' bit of configin register.
     csr_rd(ral.configin[ep_default], config_in);
     `DV_CHECK_EQ(get_field_val(ral.configin[ep_default].rdy, config_in), 0);

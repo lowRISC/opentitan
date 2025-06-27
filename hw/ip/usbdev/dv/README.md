@@ -57,7 +57,7 @@ USBDEV has dedicated agents for two interfaces.
 The DV environment for the USBDEV provides two reference models:
 
 - A functional model of the DUT which is implemented as a single class derived from `uvm_component`.
-This class contains a number of member variables that model the intenal state of the DUT, including FIFO contents, packet buffer memory and the state of the CSRs.
+This class contains a number of member variables that model the internal state of the DUT, including FIFO contents, packet buffer memory and the state of the CSRs.
 It also includes a number of functions that implement the more complex CSR-side operations and any stimulus that may occur on the USB, including packet transfers, bus-level events and invalid traffic.
 The class functions return predictions of the expected response of the DUT to these stimuli, as well as updating the internal state of the model.
 
@@ -83,7 +83,7 @@ The following covergroups are implemented to give confidence that the DUT has be
 - common covergroups for interrupts hw/dv/sv/cip_lib/cip_base_env_cov.sv: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 - `pids_to_dut_cg` to ensure that the DUT has encountered all of the Packet Identifiers that it is expected to handle as a Full Speed USB device.
 - `pids_from_dut_cg` to ensure the DUT has transmitted all of the types of response that it is expected to produce.
-- `framenum_rx_cg` to check that all signficant bus frame numbers have been seen by the DUT.
+- `framenum_rx_cg` to check that all significant bus frame numbers have been seen by the DUT.
 - `crc16_cg` to ensure that the device operates correctly with CRC16 values that require the introduction of bit stuffing.
 - `crc5_cg` to ensure that all CRC5 values have been observed, including those cases where bit stuffing must be performed because the combination of endpoint number and CRC5 within a token packet yields a run of six or more consecutive '1' bits.
 - `address_cg` to ensure that the DUT can operate with any device address that it may be assigned by the USB host controller, including awkward cases that require the introduction of bit stuffing within the device address field of token packets.
