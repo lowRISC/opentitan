@@ -474,4 +474,18 @@ class Field:
 
     def to_systemrdl(self, importer: RDLImporter) -> systemrdl.component.Field:
         rdl_t = importer.create_field_definition(self.name)
-        return importer.instantiate_field(rdl_t, self.name, self.bits.lsb, self.bits.width())
+        field = importer.instantiate_field(
+            rdl_t, self.name.upper(), self.bits.lsb, self.bits.width()
+        )
+
+        swaccess = self.swaccess.to_systemrdl()
+        importer.assign_property(field, "sw", swaccess["sw"])
+        if "onread" in swaccess:
+            importer.assign_property(field, "onread", swaccess["onread"])
+        if "onwrite" in swaccess:
+            importer.assign_property(field, "onwrite", swaccess["onwrite"])
+
+        hwaccess = self.hwaccess.to_systemrdl()
+        importer.assign_property(field, "hw", hwaccess["hw"])
+
+        return field
