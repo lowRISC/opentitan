@@ -17,7 +17,7 @@ class pattgen_seq_cfg extends uvm_object;
   uint pattgen_max_num_runs          = 5;
 
   // see the specification document, the effective values of prediv, len, and reps
-  // are incremented from the coresponding register values
+  // are incremented from the corresponding register values
 
   uint pattgen_min_prediv            = PredivMinValue;
   uint pattgen_max_prediv            = PredivMaxValue;

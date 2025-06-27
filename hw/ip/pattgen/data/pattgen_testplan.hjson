@@ -58,7 +58,7 @@
             Checking ip operation with random counter values
 
             Stimulus:
-              - Program the pre-divider and size registers to unconstraint random values
+              - Program the pre-divider and size registers to unconstrained random values
               - Program the clk_cnt, bit_cnt and rep_cnt to values less than but close to
                 predivider and size registers, so that counting would take a reasonable
                 number of clock cycles
@@ -81,7 +81,7 @@
             Reset then re-start the output channel on the fly.
 
             Stimulus:
-              - Programm the configuration registers of the output channels
+              - Program the configuration registers of the output channels
               - Randomly re-enable the in progress output channels
               - Re-program the configuration registers of the output channels
 
