@@ -8,7 +8,7 @@
 // with the purpose of making simulations take less time for longer tests
 interface spi_host_fsm_if ();
 
-  // Knowb to be enabled in UVM VSEQs whenever we want the decrement signal to be
+  // Knob to be enabled in UVM VSEQs whenever we want the decrement signal to be
   // greater than 1 (currently hardcoded at 16 when in fast_mode)
   bit fast_mode;
 

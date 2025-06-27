@@ -28,7 +28,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
     spi_host_command_t command_snd;
     bit [7:0] read_q[$];
 
-    // Generate read transactions without accesing RXFIFO until we get an rxstall
+    // Generate read transactions without accessing RXFIFO until we get an rxstall
     begin : isolation_fork
       // Start the agent sequences to provide (random) response data to our reads.
       fork start_agent_reactive_seqs(); join_none
@@ -44,7 +44,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
             // not indicate rxfull or rxstall.
 
             // if we're mid-spi transaction and the QUEUE is FULL minus 1 then we need to
-            // check if it fils up
+            // check if it fills up
             csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
             if ((rxqd + 1) == SPI_HOST_RX_DEPTH &&
                 cfg.m_spi_agent_cfg.vif.csb[0] === 0 // active spi txn

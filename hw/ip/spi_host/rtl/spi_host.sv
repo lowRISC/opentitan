@@ -422,7 +422,7 @@ module spi_host
   assign tx_valid_checked = tx_valid & ~error_overflow & ~error_access_inval;
 
   // Note on ByteOrder and ByteSwapping.
-  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is acheived by
+  // ByteOrder == 1 is for Little-Endian transmission (i.e. LSB first), which is achieved by
   // default with the prim_packer_fifo implementation.  Thus we have to swap if Big-Endian
   // transmission is required (i.e. if ByteOrder == 0).
   spi_host_data_fifos #(

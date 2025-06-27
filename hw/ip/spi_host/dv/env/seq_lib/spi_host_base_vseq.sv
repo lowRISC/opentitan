@@ -338,7 +338,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Triggered 'start_stop_spinwait_ev' due to SW_RST=1", UVM_DEBUG)
     // make sure data completely drained from fifo then release reset
     wait_for_fifos_empty(AllFifos);
-    // Backdoor read to avoid writing somethging different to what's there
+    // Backdoor read to avoid writing something different to what's there
     csr_rd(.ptr(ral.control), .value(control_reg), .backdoor(1));
     control_reg[30] = 0; // SW reset field
     csr_wr(.ptr(ral.control), .value(control_reg));

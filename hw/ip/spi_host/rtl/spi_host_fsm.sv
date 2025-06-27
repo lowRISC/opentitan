@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Core Implemenation module for Serial Peripheral Interface (SPI) Host IP.
+// Core Implementation module for Serial Peripheral Interface (SPI) Host IP.
 //
 
 module spi_host_fsm
@@ -352,7 +352,7 @@ module spi_host_fsm
   assign segment_rd_en_cpha0 = cmd_rd_en_q;
 
   // We can calculate byte transitions for CPHA=1 by noting
-  // that in this implmentation, the sck edges have a 1-1
+  // that in this implementation, the sck edges have a 1-1
   // correspondence with FSM transitions.
   // New bytes are loaded exactly one state transition behind the time
   // when they would be loaded if CPHA=0
