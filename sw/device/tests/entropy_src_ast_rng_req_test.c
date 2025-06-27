@@ -10,8 +10,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
-
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
@@ -30,8 +28,7 @@ static uint32_t read_fifo_depth(dif_entropy_src_t *entropy) {
 
 bool test_main(void) {
   dif_entropy_src_t entropy_src;
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
 
   CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
@@ -51,7 +48,7 @@ bool test_main(void) {
       .route_to_firmware = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = false, /*default*/
-      .health_test_window_size = 0x0200,    /*default*/
+      .health_test_window_size = 0x0800,    /*default*/
       .alert_threshold = 2,                 /*default*/
   };
   CHECK_DIF_OK(

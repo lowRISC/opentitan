@@ -1159,9 +1159,8 @@ module chip_darjeeling_asic #(
   assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
-  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
+  logic es_rng_enable, es_rng_valid;
+  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -1282,7 +1281,6 @@ module chip_darjeeling_asic #(
   prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
-    .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
     .AdcDataWidth(ast_pkg::AdcDataWidth),
     .UsbCalibWidth(ast_pkg::UsbCalibWidth),
@@ -1361,9 +1359,6 @@ module chip_darjeeling_asic #(
     .clk_src_usb_en_i      ( '0 ),
     .clk_src_usb_o         (    ),
     .clk_src_usb_val_o     (    ),
-    // entropy_src
-    .es_req_i              ( entropy_src_hw_if_req ),
-    .es_rsp_o              ( entropy_src_hw_if_rsp ),
     // adc
     .adc_pd_i              ( '0 ),
     .adc_chnsel_i          ( '0 ),
@@ -1372,6 +1367,11 @@ module chip_darjeeling_asic #(
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
+    // rng
+    .rng_en_i              ( es_rng_enable ),
+    .rng_fips_i            ( es_rng_fips   ),
+    .rng_val_o             ( es_rng_valid  ),
+    .rng_b_o               ( es_rng_bit    ),
     // alerts
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
@@ -1703,8 +1703,6 @@ module chip_darjeeling_asic #(
     .soc_wkup_async_i                  ( 1'b0                       ),
     .soc_rst_req_async_i               ( soc_rst_req_async          ),
     .soc_lsio_trigger_i                ( '0                         ),
-    .entropy_src_hw_if_req_o           ( entropy_src_hw_if_req      ),
-    .entropy_src_hw_if_rsp_i           ( entropy_src_hw_if_rsp      ),
     .mbx0_doe_intr_en_o                (                            ),
     .mbx0_doe_intr_o                   (                            ),
     .mbx0_doe_intr_support_o           (                            ),
@@ -1745,6 +1743,10 @@ module chip_darjeeling_asic #(
     .mbx_pcie1_doe_intr_o              (                            ),
     .mbx_pcie1_doe_intr_support_o      (                            ),
     .mbx_pcie1_doe_async_msg_support_o (                            ),
+    .es_rng_enable_o                   ( es_rng_enable              ),
+    .es_rng_valid_i                    ( es_rng_valid               ),
+    .es_rng_bit_i                      ( es_rng_bit                 ),
+    .es_rng_fips_o                     ( es_rng_fips                ),
     .io_clk_byp_req_o                  ( io_clk_byp_req             ),
     .io_clk_byp_ack_i                  ( io_clk_byp_ack             ),
     .all_clk_byp_req_o                 ( all_clk_byp_req            ),

@@ -351,7 +351,7 @@ In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitB
 ## HEALTH_TEST_WINDOWS
 Health test windows register
 - Offset: `0x30`
-- Reset default: `0x600200`
+- Reset default: `0x1800800`
 - Reset mask: `0xffffffff`
 - Register enable: [`REGWEN`](#regwen)
 
@@ -363,13 +363,13 @@ Health test windows register
 
 |  Bits  |  Type  |  Reset  | Name                                                 |
 |:------:|:------:|:-------:|:-----------------------------------------------------|
-| 31:16  |   rw   |  0x60   | [BYPASS_WINDOW](#health_test_windows--bypass_window) |
-|  15:0  |   rw   |  0x200  | [FIPS_WINDOW](#health_test_windows--fips_window)     |
+| 31:16  |   rw   |  0x180  | [BYPASS_WINDOW](#health_test_windows--bypass_window) |
+|  15:0  |   rw   |  0x800  | [FIPS_WINDOW](#health_test_windows--fips_window)     |
 
 ### HEALTH_TEST_WINDOWS . BYPASS_WINDOW
 This is the window size for all health tests when running in bypass mode.
 This mode is active after reset for the first and only test run, or when this mode is programmed by firmware by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False`.
-The default value is (384 bits * 1 clock/4 bits);
+The default value is 384 bits;
 
 Note that currently only a window size of 384 is supported and tested (this corresponds to the register default value 0x60).
 Do not use any other values, unless you know what you are doing.
@@ -377,7 +377,7 @@ Do not use any other values, unless you know what you are doing.
 ### HEALTH_TEST_WINDOWS . FIPS_WINDOW
 This is the window size for all health tests.
 This value is used when entropy is being tested in FIPS/CC compliance mode (for simplicity referred to as FIPS mode).
-The default value is (2048 bits * 1 clock/4 bits);
+The default value is 2048 bits;
 
 Note that the number of tested bits taken by the conditioner to produce a seed is equal to the window size x 4.
 The only exception is the startup seed which is produced using the bits of two subsequent windows, i.e., 2 x window size x 4 tested bits.

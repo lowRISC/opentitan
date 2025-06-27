@@ -74,6 +74,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
                   rel_path: "hw/ip/csrng/lint/{tool}"
              },
+             {    name: entropy_src
+                  fusesoc_core: lowrisc:ip:entropy_src
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_darjeeling:0.1"
+                  rel_path: "hw/ip/entropy_src/lint/{tool}"
+             },
              {    name: edn
                   fusesoc_core: lowrisc:ip:edn
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

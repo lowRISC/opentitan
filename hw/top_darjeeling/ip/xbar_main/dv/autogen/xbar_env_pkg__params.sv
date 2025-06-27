@@ -43,6 +43,9 @@ tl_device_t xbar_devices[$] = '{
     '{"aes", '{
         '{32'h21100000, 32'h211000ff}
     }},
+    '{"entropy_src", '{
+        '{32'h21160000, 32'h211600ff}
+    }},
     '{"csrng", '{
         '{32'h21150000, 32'h2115007f}
     }},
@@ -129,6 +132,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",
@@ -165,6 +169,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "peri",
         "aes",
+        "entropy_src",
         "csrng",
         "edn0",
         "edn1",

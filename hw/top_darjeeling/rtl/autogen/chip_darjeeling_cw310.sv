@@ -999,9 +999,8 @@ module chip_darjeeling_cw310 #(
   assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
-  entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
-  entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
+  logic es_rng_enable, es_rng_valid;
+  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
 
   // entropy distribution network
   edn_pkg::edn_req_t ast_edn_edn_req;
@@ -1137,7 +1136,6 @@ module chip_darjeeling_cw310 #(
   prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
-    .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
     .AdcDataWidth(ast_pkg::AdcDataWidth),
     .UsbCalibWidth(ast_pkg::UsbCalibWidth),
@@ -1220,9 +1218,6 @@ module chip_darjeeling_cw310 #(
     .clk_src_usb_en_i      ( '0 ),
     .clk_src_usb_o         (    ),
     .clk_src_usb_val_o     (    ),
-    // entropy_src
-    .es_req_i              ( entropy_src_hw_if_req ),
-    .es_rsp_o              ( entropy_src_hw_if_rsp ),
     // adc
     .adc_pd_i              ( '0 ),
     .adc_chnsel_i          ( '0 ),
@@ -1231,6 +1226,11 @@ module chip_darjeeling_cw310 #(
     // entropy
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
+    // rng
+    .rng_en_i              ( es_rng_enable ),
+    .rng_fips_i            ( es_rng_fips   ),
+    .rng_val_o             ( es_rng_valid  ),
+    .rng_b_o               ( es_rng_bit    ),
     // alerts
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
@@ -1609,8 +1609,9 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .dma_sys_rsp_i                ( '0                         ),
     .soc_rst_req_async_i          ( external_reset             ),
     .soc_lsio_trigger_i           ( '0                         ),
-    .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
-    .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
+    .es_rng_enable_o              ( es_rng_enable              ),
+    .es_rng_valid_i               ( es_rng_valid               ),
+    .es_rng_bit_i                 ( es_rng_bit                 ),
     .calib_rdy_i                  ( ast_init_done              ),
 
     // DMI TL-UL

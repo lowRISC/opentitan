@@ -52,7 +52,7 @@ irq_per_test = 10
 irq_test_count = len(irq_peripheral_names) // 10 + 1
 expected_irq_tests = {
     "earlgrey": 3,
-    "darjeeling": 2,
+    "darjeeling": 3,
     "englishbreakfast": 1,
 }
 
