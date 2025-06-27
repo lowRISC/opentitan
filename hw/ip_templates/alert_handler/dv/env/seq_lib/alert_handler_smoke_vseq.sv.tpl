@@ -159,7 +159,7 @@ class ${module_instance_name}_smoke_vseq extends ${module_instance_name}_base_vs
       // always set phase_cycle for the first iteration, in order to pass stress_all test
       if (do_wr_phases_cyc || i == 1) wr_phases_cycle(max_phase_cyc);
 
-      // randomly write interrupt timeout resigers and accumulative threshold registers
+      // randomly write interrupt timeout registers and accumulative threshold registers
       if (do_esc_intr_timeout) wr_intr_timeout_cycle(intr_timeout_cyc);
       wr_class_accum_threshold(accum_thresh);
       wr_ping_timeout_cycle(ping_timeout_cyc);
