@@ -193,9 +193,9 @@ module sysrst_ctrl
     .z3_wakeup_hw_o(aon_z3_wakeup_hw)
   );
 
-  /////////////////////////////
-  // Key triggered interrups //
-  /////////////////////////////
+  //////////////////////////////
+  // Key triggered interrupts //
+  //////////////////////////////
 
   // This module runs on the AON clock entirely.
   // Hence, its local signals are not prefixed with aon_*.
@@ -257,7 +257,7 @@ module sysrst_ctrl
   ///////////////////////////////
 
   // This module operates on both synchronized and unsynchronized signals.
-  // I.e., the passthrough signals are NOT synchronnous to the AON clock.
+  // I.e., the passthrough signals are NOT synchronous to the AON clock.
   logic pwrb_out_int, key0_out_int, key1_out_int, key2_out_int, aon_bat_disable_out_int;
   logic aon_z3_wakeup_out_int, aon_ec_rst_out_int_l, aon_flash_wp_out_int_l;
   sysrst_ctrl_pin u_sysrst_ctrl_pin (
@@ -321,7 +321,7 @@ module sysrst_ctrl
   assign cio_flash_wp_l_en_o = 1'b1;
 
   ///////////////////////////
-  // Interrupt agreggation //
+  // Interrupt aggregation //
   ///////////////////////////
 
   sysrst_ctrl_intr u_sysrst_ctrl_intr (

@@ -92,7 +92,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
 
       // Scenario : Trigger precondition Debounce to Idle state via
       //            disabling precondition before debounce timer
-      // Assert input signals to match predoncition selection
+      // Assert input signals to match precondition selection
       reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Disable precondition before debounce timer
@@ -103,7 +103,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
 
       // Scenario : Trigger precondition Detect to Idle state via
       //            disabling precondition before detect timer
-      // Assert input signals to match predoncition selection
+      // Assert input signals to match precondition selection
       config_combo_register(i);
       reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] - 10);
@@ -115,7 +115,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
 
       // Scenario : Trigger precondition Detect to Idle state via
       //            deassertion of input signals
-      // Assert input signals to match predoncition selection
+      // Assert input signals to match precondition selection
       config_combo_register(i);
       reset_combo_inputs(~trigger_combo_precondition[i]);
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] - 10);
@@ -131,7 +131,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
       reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
-      // Wait for some time but dont exceed debounce time
+      // Wait for some time but don't exceed debounce time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Deassert combo inputs before debounce timer
       reset_combo_inputs();
@@ -144,7 +144,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
       reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
-      // Wait for some time but dont exceed debounce time
+      // Wait for some time but don't exceed debounce time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer - 10);
       // Disable combo detect before debounce timer
       csr_wr(ral.com_sel_ctl[i], 0);
@@ -163,7 +163,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
       reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
-      // Wait for some time but dont exceed detect time
+      // Wait for some time but don't exceed detect time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration[i] - 10);
       // Disable combo detect before detect timer
       csr_wr(ral.com_sel_ctl[i], 0);
@@ -181,7 +181,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration_precondition[i] + 10);
       // Set combo input to trigger combo detection
       reset_combo_inputs(~trigger_combo[i], ~trigger_combo_precondition[i]);
-      // Wait for some time but dont exceed detect time
+      // Wait for some time but don't exceed detect time
       cfg.clk_aon_rst_vif.wait_clks(set_key_timer + set_duration[i] - 10);
       // Deassert combo inputs before detect timer
       reset_combo_inputs();
@@ -260,7 +260,7 @@ class sysrst_ctrl_feature_disable_vseq extends sysrst_ctrl_combo_detect_with_pre
     cfg.clk_aon_rst_vif.wait_clks(3);
   endtask
 
-  // Key intrrrupt control Debounce to idle state transition
+  // Key interrupt control Debounce to idle state transition
   // 1. disable config before debounce
   // 2. disable config after debounce and before detect time
   task key_intr_debounce_to_idle();

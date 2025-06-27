@@ -166,7 +166,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
     join_none
   endtask
 
-  // Check for a input singal transition that triggers the combo detection logic
+  // Check for a input signal transition that triggers the combo detection logic
   function bit get_combo_trigger(int index, bit [4:0] combo_input_prev);
     logic [4:0] in;
     int count_ones_prev, count_ones;
@@ -338,7 +338,7 @@ class sysrst_ctrl_combo_detect_with_pre_cond_vseq extends sysrst_ctrl_base_vseq;
 
     `uvm_info(`gfn, "Starting the body from combo detect with precondition", UVM_LOW)
 
-    // Start sequence by releaseing ec_rst_l_o. post reset ec_rst_l_o remains asserted,
+    // Start sequence by releasing ec_rst_l_o. post reset ec_rst_l_o remains asserted,
     // and must be deasserted. This is to make sure during test, the H->L and L->H transitions
     // of ec_rst_l_o can be observed
     release_ec_rst_l_o();

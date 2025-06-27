@@ -54,7 +54,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
         [1 : (set_duration[i] + set_key_timer) - 2] :/ 20,
         [(set_duration[i] + set_key_timer) + 5 : (set_duration[i] + set_key_timer) * 2]   :/ 80
       };
-      // Don't fall into this uncerntain period.
+      // Don't fall into this uncertain period.
       !(cycles inside {[(set_duration[i] + set_key_timer) - 1 :
                         (set_duration[i] + set_key_timer) + 5]});
     }
@@ -226,7 +226,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
       if (ec_act_triggered) begin
         // We don't check ec_rst_pulse right after it occurs. past_cycles indicates how many
         // cycles the pulse has been active.
-        // -2 is because cross clock domaim make take ~2 cycles.
+        // -2 is because cross clock domain make take ~2 cycles.
         int past_cycles = cycles - ec_act_occur_cyc - 2;
         monitor_ec_rst_low(set_pulse_width - past_cycles);
       end else begin
