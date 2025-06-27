@@ -40,7 +40,7 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
     int rsp_abort_pct = 25, int d_error_pct = 0, int d_chan_intg_err_pct = 0);
   extern virtual task configure_range(int unsigned idx = 0, bit [DataWidth-1:0] base = 0,
     bit [DataWidth-1:0] limit = 0, bit read_perm = 0, bit write_perm = 0, bit execute_perm = 0,
-    bit en = 0);
+    bit en = 0, bit log_denied_access = 0);
 endclass : ac_range_check_base_vseq
 
 
@@ -159,7 +159,7 @@ endtask : tl_filt_device_auto_resp
 
 task ac_range_check_base_vseq::configure_range(int unsigned idx = 0,
   bit [DataWidth-1:0] base = 0, bit [DataWidth-1:0] limit = 0, bit read_perm = 0,
-  bit write_perm = 0, bit execute_perm = 0,bit en = 0);
+  bit write_perm = 0, bit execute_perm = 0, bit en = 0, bit log_denied_access = 0);
 
   `uvm_info(`gfn, $sformatf("Configuring range index: %0d", idx), UVM_MEDIUM)
   `uvm_info(`gfn, $sformatf("Base: 0%0h Limit:0%0h", base, limit), UVM_MEDIUM)
@@ -182,10 +182,11 @@ task ac_range_check_base_vseq::configure_range(int unsigned idx = 0,
   dut_cfg.range_limit[idx].rand_mode(0);
 
   // RANGE_ATTR_x broken down into fields
-  ral.range_attr[idx].execute_access.set(mubi4_bool_to_mubi(execute_perm));
-  ral.range_attr[idx].write_access.set  (mubi4_bool_to_mubi(write_perm));
-  ral.range_attr[idx].read_access.set   (mubi4_bool_to_mubi(read_perm));
-  ral.range_attr[idx].enable.set        (mubi4_bool_to_mubi(en));
+  ral.range_attr[idx].log_denied_access.set(mubi4_bool_to_mubi(log_denied_access));
+  ral.range_attr[idx].execute_access.set   (mubi4_bool_to_mubi(execute_perm));
+  ral.range_attr[idx].write_access.set     (mubi4_bool_to_mubi(write_perm));
+  ral.range_attr[idx].read_access.set      (mubi4_bool_to_mubi(read_perm));
+  ral.range_attr[idx].enable.set           (mubi4_bool_to_mubi(en));
   csr_update(.csr(ral.range_attr[idx]));
 
   // Disable RACL side effects for simplicity.

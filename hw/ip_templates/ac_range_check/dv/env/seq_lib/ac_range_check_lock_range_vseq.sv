@@ -46,6 +46,10 @@ class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
   rand bit [NUM_RANGES-1:0] enable;
   rand bit [NUM_RANGES-1:0] enable_new;
 
+  // Mask indicating which Range Indexes have logging enabled
+  rand bit [NUM_RANGES-1:0] log_denied_access;
+  rand bit [NUM_RANGES-1:0] log_denied_access_new;
+
   // Random delay in **clock cycles** before the re-program phase begins.
   rand int unsigned reprogram_delay_clks;
 
@@ -115,12 +119,14 @@ task ac_range_check_lock_range_vseq::body();
   this.write_perm.rand_mode(0);
   this.execute_perm.rand_mode(0);
   this.enable.rand_mode(0);
+  this.log_denied_access.rand_mode(0);
   this.base_new.rand_mode(0);
   this.limit_new.rand_mode(0);
   this.read_perm_new.rand_mode(0);
   this.write_perm_new.rand_mode(0);
   this.execute_perm_new.rand_mode(0);
   this.enable_new.rand_mode(0);
+  this.log_denied_access_new.rand_mode(0);
   this.lock_mask.rand_mode(0);
   this.reprogram_delay_clks.rand_mode(0);
 
@@ -128,7 +134,8 @@ task ac_range_check_lock_range_vseq::body();
   // Step 1 : Configure every range once with *initial* values.
   //------------------------------------------------------------------
   foreach (base[i]) begin
-    configure_range(i, base[i], limit[i], read_perm[i], write_perm[i], execute_perm[i], enable[i]);
+    configure_range(i, base[i], limit[i], read_perm[i], write_perm[i], execute_perm[i],
+                    enable[i], log_denied_access[i]);
   end
 
   //------------------------------------------------------------------
@@ -149,7 +156,10 @@ task ac_range_check_lock_range_vseq::body();
     // Currently in ac_range_check_scoreboard we are seeing TL transactions to range_regwen[i]
     // register being dropped when a write with range_regwen[i] = 1. This needs to be debugged as
     // a write to this register irrespective of the value triggers coverage sampling
-    if (cfg.en_cov) cov.sample_range_lock_cg(i, enable[i], lock_mask[i]);
+    if (cfg.en_cov) begin
+      cov.sample_range_lock_cg(i, enable[i], lock_mask[i]);
+      cov.sample_lock_logging_cg(i, log_denied_access[i], lock_mask[i]);
+    end
   end
 
   //------------------------------------------------------------------
@@ -189,11 +199,11 @@ task ac_range_check_lock_range_vseq::body();
           // 'ral.range_attr[i].write_access.set(mubi4_bool_to_mubi(write_perm_new[i]));'
           // will not work. We need to build the attr field explictly and then write new values
           // to the CSRlocation via csr_wr() method for base, limit & attr.
-          mubi4_execute    = mubi4_bool_to_mubi(execute_perm_new[i]);
-          mubi4_write      = mubi4_bool_to_mubi(write_perm_new[i]  );
-          mubi4_read       = mubi4_bool_to_mubi(read_perm_new[i]   );
-          mubi4_enable     = mubi4_bool_to_mubi(enable_new[i]      );
-          mubi4_log_denied = MuBi4True;
+          mubi4_execute    = mubi4_bool_to_mubi(execute_perm_new[i]     );
+          mubi4_write      = mubi4_bool_to_mubi(write_perm_new[i]       );
+          mubi4_read       = mubi4_bool_to_mubi(read_perm_new[i]        );
+          mubi4_enable     = mubi4_bool_to_mubi(enable_new[i]           );
+          mubi4_log_denied = mubi4_bool_to_mubi(log_denied_access_new[i]);
 
           // The attr register consist of 5 fields namely:
           // log_denied_access, execute_access, write_access, read_access, enable.
@@ -233,7 +243,7 @@ task ac_range_check_lock_range_vseq::body();
         end else begin
           // Unlocked ranges get a full, legal re-configuration.
           configure_range(i, base_new[i], limit_new[i], read_perm_new[i], write_perm_new[i],
-                          execute_perm_new[i], enable_new[i]);
+                          execute_perm_new[i], enable_new[i], log_denied_access_new[i]);
         end
       end
       reprogram_done = 1;

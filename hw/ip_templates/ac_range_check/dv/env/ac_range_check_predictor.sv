@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class ac_range_check_predictor extends uvm_component;
+  import ac_range_check_reg_pkg::*;
   `uvm_component_utils(ac_range_check_predictor)
 
   // Local objects
@@ -23,6 +24,8 @@ class ac_range_check_predictor extends uvm_component;
   int all_unfilt_a_chan_cnt;          // Total number of received transactions on unfilt A channel
   int exp_unfilt_d_chan_cnt;
   int exp_filt_a_chan_cnt;
+  bit [DenyCountWidth-1:0] deny_cnt;
+  bit overflow_flag;
 
   // Local queues
   access_decision_e tr_access_decision_q[$];  // Access decision for each incoming transaction
@@ -47,6 +50,8 @@ class ac_range_check_predictor extends uvm_component;
   extern function void reset(string kind = "HARD");
   extern function access_decision_e check_access(tl_seq_item item);
   extern function cip_tl_seq_item predict_tl_unfilt_d_chan();
+  extern function void update_log(tl_seq_item item, int index, bit no_match,
+                                        access_type_e access_type, bit attr_perm, bit racl_perm);
 endclass : ac_range_check_predictor
 
 
@@ -134,6 +139,7 @@ task ac_range_check_predictor::process_tl_unfilt_a_chan_fifo(
   // Store whether the access is granted or not, this info could be then retrieved by using the
   // the queue index based on the all_unfilt_a_chan_cnt
   tr_access_decision_q.push_back(check_access(tl_unfilt.item));
+  `uvm_info(`gfn, $sformatf({"The deny cnt is %d"}, deny_cnt), UVM_MEDIUM)
 
   if (tr_access_decision_q[all_unfilt_a_chan_cnt-1] == AccessGranted) begin
     exp_filt_a_chan_cnt++;
@@ -152,7 +158,9 @@ task ac_range_check_predictor::get_tl_filt_d_chan_item(output ac_range_check_scb
   tl_filt = ac_range_check_scb_item::type_id::create("tl_filt");
   // Timeout with an error if the FIFO remains empty
   fork
-    `DV_WAIT_TIMEOUT(10_000_000, `gfn, "Unable to get any item from tl_filt_d_chan_fifo.", 0)
+    // Because of the increased number of transactions, the timeout must be
+    // increased
+    `DV_WAIT_TIMEOUT(100_000_000, `gfn, "Unable to get any item from tl_filt_d_chan_fifo.", 0)
     tl_filt_d_chan_fifo.get(tl_filt.item);
   join_any
   exp_unfilt_d_chan_cnt++;
@@ -184,6 +192,41 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
   // Check if bypass is enabled
   bypass_enable = env_cfg.misc_vif.get_range_check_overwrite();
 
+  // Clear log status register if the log_clear regfield is set
+  if (`gmv(env_cfg.ral.log_config.log_clear)) begin
+    `uvm_info(`gfn, $sformatf("Clear performed to log_status and log_address"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"Cleared info in RAL:\n",
+            " - deny_range_index: %0d\n",
+            " - denied_ctn_uid: 0b%0b\n",
+            " - denied_source_role: 0b%0b\n",
+            " - denied_racl_write: %0b\n",
+            " - denied_racl_read: %0b\n",
+            " - denied_no_match: %0b\n",
+            " - denied_execute_access: %0b\n",
+            " - denied_write_access: %0b\n",
+            " - denied_read_access: %0b\n",
+            " - deny_cnt: %0d\n",
+            " - log_address: 0x%0x\n"},
+            `gmv(env_cfg.ral.log_status.deny_range_index),
+            `gmv(env_cfg.ral.log_status.denied_ctn_uid),
+            `gmv(env_cfg.ral.log_status.denied_source_role),
+            `gmv(env_cfg.ral.log_status.denied_racl_write),
+            `gmv(env_cfg.ral.log_status.denied_racl_read),
+            `gmv(env_cfg.ral.log_status.denied_no_match),
+            `gmv(env_cfg.ral.log_status.denied_execute_access),
+            `gmv(env_cfg.ral.log_status.denied_write_access),
+            `gmv(env_cfg.ral.log_status.denied_read_access),
+            `gmv(env_cfg.ral.log_status.deny_cnt),
+            `gmv(env_cfg.ral.log_address)),
+            UVM_MEDIUM)
+    deny_cnt = 0;
+    overflow_flag = 0;
+    void'(env_cfg.ral.log_status.predict
+          (.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+    void'(env_cfg.ral.log_address.predict
+          (.value(32'b0), .kind(UVM_PREDICT_DIRECT)));
+  end
+
   if (env_cfg.en_cov && !bypass_sampled) begin
     // bypass_sampled is set so that we only need to sample coverage once per test and not per
     // transaction
@@ -194,7 +237,6 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
   if (bypass_enable) begin
     return AccessGranted;
   end
-
 
   // Due to the note above, we should keep this loop starting from index 0
   for (int i = 0; i < NUM_RANGES; i++) begin
@@ -267,7 +309,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
                            .execute_perm(dut_cfg.range_attr[i].execute_access),
                            .acc_permit(0));
       end
-
+      update_log(item, i, 0, access_type, attr_ok, racl_ok);
       return AccessDenied;
     end
 
@@ -276,6 +318,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
                 access_type.name(), item.a_addr, i), UVM_MEDIUM)
       if (env_cfg.en_cov) cov.sample_racl_cg(.idx(i), .access_type(access_type),
                                              .role(racl_role), .racl_check(0));
+      update_log(item, i, 0, access_type, attr_ok, racl_ok);
       return AccessDenied;
     end
 
@@ -302,6 +345,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
   if (env_cfg.en_cov) begin
     cov.sample_all_index_miss_cg();
   end
+  update_log(item, 0, 1, access_type, attr_ok, racl_ok);
   return AccessDenied;
 endfunction : check_access
 
@@ -334,12 +378,129 @@ function cip_tl_seq_item ac_range_check_predictor::predict_tl_unfilt_d_chan();
   return tmp_exp;
 endfunction : predict_tl_unfilt_d_chan
 
+// Update the RAL registers for the logging CSRs upon a DENIED request,
+// keeping track of the deny count. It also raises the intr_state field
+// once the deny count passes the threshold
+function void ac_range_check_predictor::update_log(tl_seq_item item, int index, bit no_match,
+                                        access_type_e access_type, bit attr_perm, bit racl_perm);
+  tlul_pkg::tl_a_user_t a_user;
+  bit [top_racl_pkg::NrRaclBits-1:0] racl_role;
+  bit [top_racl_pkg::NrCtnUidBits-1:0] ctn_uid;
+  bit racl_write,
+      racl_read,
+      execute_access,
+      write_access,
+      read_access;
+  bit [31:0] log_address;
+
+  // Extract CSRs
+  ac_range_check_reg_log_config   log_config_csr  = env_cfg.ral.log_config;
+  ac_range_check_reg_log_status   log_status_csr  = env_cfg.ral.log_status;
+  ac_range_check_reg_log_address  log_address_csr = env_cfg.ral.log_address;
+  ac_range_check_reg_intr_state   intr_state_csr  = env_cfg.ral.intr_state;
+  ac_range_check_reg_range_attr   range_attr_csr  = env_cfg.ral.range_attr[index];
+
+  a_user          = item.a_user;
+  racl_role       = top_racl_pkg::tlul_extract_racl_role_bits(a_user.rsvd);
+  ctn_uid         = top_racl_pkg::tlul_extract_ctn_uid_bits(a_user.rsvd);
+  write_access    = item.is_write();
+  execute_access  = !item.is_write() && item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] == MuBi4True;
+  read_access     = !item.is_write() && item.a_user[InstrTypeMsbPos:InstrTypeLsbPos] != MuBi4True;
+  log_address     = item.a_addr;
+  racl_write      = write_access && !(dut_cfg.range_racl_policy[index].write_perm[racl_role]);
+  racl_read       = (read_access || execute_access) &&
+                    !(dut_cfg.range_racl_policy[index].read_perm[racl_role]);
+
+  if (`gmv(log_config_csr.log_enable)) begin
+    if (`gmv(log_status_csr.deny_cnt) == 0 && !overflow_flag &&
+        `gmv(range_attr_csr.log_denied_access) == MuBi4True) begin
+      deny_cnt = deny_cnt + 8'd1;
+      `uvm_info(`gfn, $sformatf({"First deny log information:\n",
+              " - deny_range_index: %0d\n",
+              " - denied_ctn_uid: 0b%0b\n",
+              " - denied_source_role: 0b%0b\n",
+              " - denied_racl_write: %0b\n",
+              " - denied_racl_read: %0b\n",
+              " - denied_no_match: %0b\n",
+              " - denied_execute_access: %0b\n",
+              " - denied_write_access: %0b\n",
+              " - denied_read_access: %0b\n",
+              " - deny_cnt: %0d\n",
+              " - log_address: 0x%0x\n"}, index, ctn_uid, racl_role,
+              racl_write, racl_read, no_match, execute_access, write_access,
+              read_access, deny_cnt, log_address), UVM_MEDIUM)
+      void'(env_cfg.ral.log_status.deny_range_index.predict
+          (.value(index), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_ctn_uid.predict
+          (.value(ctn_uid), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_source_role.predict
+          (.value(racl_role), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_racl_write.predict
+          (.value(racl_write), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_racl_read.predict
+          (.value(racl_read), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_no_match.predict
+          (.value(no_match), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_execute_access.predict
+          (.value(execute_access), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_write_access.predict
+          (.value(write_access), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.denied_read_access.predict
+          (.value(read_access), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_status.deny_cnt.predict
+          (.value(deny_cnt), .kind(UVM_PREDICT_DIRECT)));
+      void'(env_cfg.ral.log_address.predict
+          (.value(log_address), .kind(UVM_PREDICT_DIRECT)));
+    end else if (`gmv(range_attr_csr.log_denied_access) == MuBi4True) begin
+      overflow_flag = (deny_cnt == (1 << DenyCountWidth)-1) ? 1'b1 : 1'b0;
+      deny_cnt = (overflow_flag) ? (1 << DenyCountWidth)-1 : deny_cnt + 8'd1;
+      void'(env_cfg.ral.log_status.deny_cnt.predict
+          (.value(deny_cnt), .kind(UVM_PREDICT_DIRECT)));
+    end
+
+    if (deny_cnt > `gmv(log_config_csr.deny_cnt_threshold)) begin
+      void'(env_cfg.ral.intr_state.deny_cnt_reached.predict
+          (.value(1), .kind(UVM_PREDICT_DIRECT)));
+    end
+  end
+
+  if (env_cfg.en_cov) begin
+    bit log_written = !(`gmv(env_cfg.ral.log_status) == 0
+                      && `gmv(env_cfg.ral.log_address) == 0);
+    bit cnt_reached = (deny_cnt >= `gmv(env_cfg.ral.log_config.deny_cnt_threshold))
+                      || overflow_flag;
+    cov.sample_log_intr_cg(
+      .log_enable(`gmv(env_cfg.ral.log_config.log_enable)),
+      .log_written(log_written),
+      .deny_th(`gmv(env_cfg.ral.log_config.deny_cnt_threshold)),
+      .cnt_reached(cnt_reached),
+      .intr_state(`gmv(env_cfg.ral.intr_state.deny_cnt_reached)));
+    cov.sample_log_denied_access_cg(
+      .idx(index),
+      .log_denied_access(`gmv(env_cfg.ral.range_attr[index].log_denied_access)));
+    // TODO: Coverage sampling for interrupts should be moved to the CIP
+    // instead of it being performed in the scoreboard / predictor. Why it is
+    // implemented in such a manner must be examined.
+    cov.intr_cg.sample(.intr(0),
+                       .intr_en(`gmv(env_cfg.ral.intr_enable)),
+                       .intr_state(`gmv(env_cfg.ral.intr_state)));
+    cov.intr_test_cg.sample(.intr(0),
+                            .intr_test(`gmv(env_cfg.ral.intr_test)),
+                            .intr_en(`gmv(env_cfg.ral.intr_enable)),
+                            .intr_state(`gmv(env_cfg.ral.intr_state)));
+    cov.intr_pins_cg.sample(.intr_pin(0),
+                            .intr_pin_value(env_cfg.intr_vif.sample()));
+  end
+endfunction : update_log
+
 function void ac_range_check_predictor::reset(string kind = "HARD");
   tl_unfilt_a_chan_fifo.flush();
   tl_filt_d_chan_fifo.flush();
   all_unfilt_a_chan_cnt = 0;
   exp_unfilt_d_chan_cnt = 0;
   exp_filt_a_chan_cnt   = 0;
+  deny_cnt              = 0;
+  overflow_flag         = 0;
   latest_filtered_item  = null;
 endfunction : reset
 
