@@ -491,6 +491,9 @@ class Field:
         if self.resval is not None:
             importer.assign_property(field, "reset", self.resval)
 
+        if self.hwqe:
+            importer.assign_property(field, "swmod", self.hwqe)
+
         if self.desc:
             importer.assign_property(field, "desc", self.desc)
 
