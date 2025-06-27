@@ -271,7 +271,7 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
   endfunction
 
   // This turns off/on some clocks being measured to trigger a measurement timeout.
-  // A side-effect is that some RTL assertions will fire, so they are corresponsdingly controlled.
+  // A side-effect is that some RTL assertions will fire, so they are correspondingly controlled.
   task disturb_measured_clock(clk_mesr_e clk, bit enable);
     case (clk)
 % for src in rg_srcs:
