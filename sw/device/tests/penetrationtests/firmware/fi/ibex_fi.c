@@ -60,6 +60,9 @@ static dif_rv_core_ibex_t rv_core_ibex;
 // Interface to OTP.
 static dif_otp_ctrl_t otp;
 
+// Interface to retention SRAM.
+static dif_sram_ctrl_t ret_sram;
+
 // Indicates whether flash already was initialized for the test or not.
 static bool flash_init;
 // Indicates whether flash content is valid or not.
@@ -3032,10 +3035,106 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) __attribute__((optnone)) {
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_sram_read_ret(ujson_t *uj)
+    __attribute__((optnone)) {
+  if (!sram_ret_init) {
+    // Init retention SRAM, wipe and scramble it.
+    mmio_region_t addr =
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+    TRY(dif_sram_ctrl_init(addr, &ret_sram));
+    TRY(sram_ctrl_testutils_wipe(&ret_sram));
+    TRY(sram_ctrl_testutils_scramble(&ret_sram));
+    sram_ret_init = true;
+  }
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
+  size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
+  size_t ret_ram_half_len = ret_ram_len / 2;
+
+  // Write counter value into ret SRAM.
+  for (size_t i = 0; i < ret_ram_len; i++) {
+    ret_ram[i] = i;
+  }
+
+  // Init the SRAM position we are reading from with ref_values[0].
+  ret_ram[ret_ram_half_len] = ref_values[0];
+
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  // Read from ret. SRAM into temporary registers.
+  asm volatile("lw x5, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x6, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x7, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x12, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x13, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x14, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x15, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x16, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x17, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x28, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x29, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x30, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  asm volatile("lw x31, (%0)" : : "r"(&ret_ram[ret_ram_half_len]));
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_TMP_REGISTER_FILE
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  ibex_fi_faulty_data_sram_codes_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
+  // Check if one or multiple registers values are faulty.
+  size_t compare_regs[IBEXFI_MAX_FAULTY_ADDRESSES_DATA] = {
+      kRegX5,  kRegX6,  kRegX7,  kRegX12, kRegX13, kRegX14, kRegX15,
+      kRegX16, kRegX17, kRegX28, kRegX29, kRegX30, kRegX31};
+  for (size_t it = 0; it < IBEXFI_MAX_FAULTY_ADDRESSES_DATA; it++) {
+    if (registers_dumped[compare_regs[it]] != ref_values[0]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+      uj_output.data[it] = registers_dumped[compare_regs[it]];
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Read the ret. SRAM errors from the status register.
+  dif_sram_ctrl_status_bitfield_t ret_sram_codes;
+  TRY(dif_sram_ctrl_get_status(&ret_sram, &ret_sram_codes));
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  uj_output.sram_err_status = ret_sram_codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_data_sram_codes_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_sram_static(ujson_t *uj) __attribute__((optnone)) {
   if (!sram_ret_init) {
     // Init retention SRAM, wipe and scramble it.
-    dif_sram_ctrl_t ret_sram;
     mmio_region_t addr =
         mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
     TRY(dif_sram_ctrl_init(addr, &ret_sram));
@@ -4124,6 +4223,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_single_bne(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
+    case kIbexFiSubcommandCharSramReadRet:
+      return handle_ibex_fi_char_sram_read_ret(uj);
     case kIbexFiSubcommandCharSramStatic:
       return handle_ibex_fi_char_sram_static(uj);
     case kIbexFiSubcommandCharSramWrite:
