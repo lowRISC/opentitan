@@ -284,7 +284,7 @@ module rom_ctrl_fsm
   assign exp_digest_idx_o = rel_addr;
 
   // The 'done' signal for pwrmgr is asserted once we get into the Done state. The 'good' signal
-  // compes directly from the checker.
+  // comes directly from the checker.
   assign pwrmgr_data_o = '{done: in_state_done, good: checker_good};
 
   // Pass the digest all-at-once to the keymgr. The loose check means that glitches will add
