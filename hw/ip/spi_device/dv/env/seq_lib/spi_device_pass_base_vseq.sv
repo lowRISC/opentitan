@@ -34,7 +34,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   rand device_mode_e device_mode;
 
-  // overide this to enable other modes
+  // override this to enable other modes
   constraint device_mode_c {
     device_mode == PassthroughMode;
   }
@@ -509,7 +509,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       end
     end
 
-    // set busy enabled, when this flas is set and cmd is updated with payload
+    // set busy enabled, when this flash is set and cmd is updated with payload
     if (always_set_busy_when_upload_contain_payload && ral.cmd_info[idx].upload.get()
        && (ral.cmd_info[idx].payload_en.get() == 0 ||
            ral.cmd_info[idx].payload_dir.get() == PayloadIn)) begin
