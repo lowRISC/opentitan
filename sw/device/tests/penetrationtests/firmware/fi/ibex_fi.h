@@ -605,6 +605,20 @@ status_t handle_ibex_fi_char_single_bne(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
 
 /**
+ * ibex.fi.char.sram_read_ret command handler.
+ *
+ * Same as handle_ibex_fi_char_sram_read but runs on the retention SRAM instead
+ * of the main SRAM.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
+
+/**
  * ibex.fi.char.sram_static command handler.
  *
  * This FI penetration tests executes the following instructions:

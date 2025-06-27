@@ -49,6 +49,7 @@ extern "C" {
     value(_, CharSingleBeq) \
     value(_, CharSingleBne) \
     value(_, CharSramRead) \
+    value(_, CharSramReadRet) \
     value(_, CharSramStatic) \
     value(_, CharSramWrite) \
     value(_, CharSramWriteRead) \
@@ -106,6 +107,16 @@ UJSON_SERDE_STRUCT(IbexFiTestResultMult, ibex_fi_test_result_mult_t, IBEXFI_TEST
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiFaultyData, ibex_fi_faulty_data_t, IBEXFI_FAULTY_DATA);
+
+#define IBEXFI_FAULTY_DATA_SRAM_CODES(field, string) \
+    field(sram_err_status, uint32_t) \
+    field(err_status, uint32_t) \
+    field(registers, uint32_t, IBEXFI_NUM_REGS) \
+    field(data_faulty, bool, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(data, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(alerts, uint32_t, 3) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(IbexFiFaultyDataSramCodes, ibex_fi_faulty_data_sram_codes_t, IBEXFI_FAULTY_DATA_SRAM_CODES);
 
 #define IBEXFI_FAULTY_ADDRESS_DATA(field, string) \
     field(err_status, uint32_t) \
