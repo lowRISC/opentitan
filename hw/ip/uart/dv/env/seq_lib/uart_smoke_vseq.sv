@@ -48,7 +48,7 @@ class uart_smoke_vseq extends uart_tx_rx_vseq;
     end
   endtask : process_tx
 
-  // sequencally send one Rx byte, then immediately read from register and check it
+  // sequentially send one Rx byte, then immediately read from register and check it
   virtual task process_rx();
     for (int j = 1; j <= num_rx_bytes; j++) begin
       byte rx_byte;

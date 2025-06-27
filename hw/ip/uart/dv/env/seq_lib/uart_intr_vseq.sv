@@ -214,7 +214,7 @@ class uart_intr_vseq extends uart_base_vseq;
         cfg.disable_scb_rx_frame_check  = 1;
 
         // from 11 to RXBLVL * char - 1
-        if (break_bytes > 2) begin // avoid negetive value
+        if (break_bytes > 2) begin // avoid negative value
           wait_for_baud_clock_cycles(bit_num_per_trans * (break_bytes - 1) - 11);
           nonblocking_check_all_intr(.exp(exp_intr_state), .do_clear(1),
               .exp_mask(exp_intr_state_mask));
