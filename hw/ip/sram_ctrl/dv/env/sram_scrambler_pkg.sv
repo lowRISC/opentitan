@@ -50,7 +50,7 @@ package sram_scrambler_pkg;
   //
   // If `WIDTH % 4 != 0`, the uppermost bits will get shifted to lower positions
   // during either the `flip_vector` or `perm_layer` stage of the network,
-  // so it is guaranted that all bits will eventually go through an sbox.
+  // so it is guaranteed that all bits will eventually go through an sbox.
   function automatic state_t sbox_layer(state_t state, int width, bit inv);
     logic state_out[] = new[width](state);
     logic [3:0] sbox_in;

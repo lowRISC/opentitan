@@ -118,7 +118,7 @@ module tb;
   // key, nonce, seed_valid all driven by push_pull Device interface
   assign {key, nonce, seed_valid} = kdi_if.d_data;
 
-  // Instantitate the memory backdoor util instance.
+  // Instantiate the memory backdoor util instance.
   `define SRAM_CTRL_MEM_HIER \
     tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.mem
 
