@@ -150,7 +150,7 @@
             This tests the three `pwr_o.*_status` output ports, for the
             `io`, `main`, and `usb` clocks.
 
-            The `pwr_o.*_status` output must track the correspponding
+            The `pwr_o.*_status` output must track the corresponding
             `pwr_i.*_ip_clk_en` input.
 
             **Stimulus**:
@@ -217,7 +217,7 @@
             These counters compute the number of cycles of some clock relative
             to the aon timer. It should trigger a recoverable alert when there
             is no valid measurement when enabled, leading to a timeout. This is
-            separate from the `frequenty` testpoint to simplify the test checks.
+            separate from the `frequently` testpoint to simplify the test checks.
 
             **Stimulus**:
             - Randomly stop measured clocks to trigger a timeout.
