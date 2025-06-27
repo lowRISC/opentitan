@@ -17,7 +17,7 @@
 // - Status register reflect the correct error
 // - Otp_ctrl's power init output stays 0
 // This sequence will check the following items if OTP init failed with correctable error:
-// - Otp_initialtion passed with power init output changes to 1
+// - Otp_initialization passed with power init output changes to 1
 // - Otp status and interrupt reflect the correct error message
 
 class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
@@ -132,7 +132,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       end else if ($urandom_range(0, 1)) begin
 
         // Randomly force ECC reg in sw partitions to create a check failure.
-        // Totaly three sw partitions, and each bit indexes a partition.
+        // Totally three sw partitions, and each bit indexes a partition.
         bit [NumPartUnbuf-1:0] sw_check_fail = $urandom_range(1, (1'b1<<NumPartUnbuf)-1);
         cfg.otp_ctrl_vif.force_sw_check_fail(sw_check_fail);
         `uvm_info(`gfn, $sformatf("OTP_init SW ECC check failure with index %0h", sw_check_fail),

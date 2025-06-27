@@ -16,7 +16,7 @@ class chip_sw_fault_base_vseq extends chip_sw_base_vseq;
   int    alert_id;
   sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
 
-  // This function should be overriden and set if_path and alert_id.
+  // This function should be overridden and set if_path and alert_id.
   virtual function void set_fault_parameters();
   endfunction : set_fault_parameters
 

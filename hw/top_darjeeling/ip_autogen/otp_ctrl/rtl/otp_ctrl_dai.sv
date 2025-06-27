@@ -20,7 +20,7 @@ module otp_ctrl_dai
 (
   input                                  clk_i,
   input                                  rst_ni,
-  // Init reqest from power manager
+  // Init request from power manager
   input                                  init_req_i,
   output logic                           init_done_o,
   // Init request going to partitions
@@ -246,7 +246,7 @@ module otp_ctrl_dai
         end
       end
       ///////////////////////////////////////////////////////////////////
-      // We wait here unitl the OTP macro has initialized without
+      // We wait here until the OTP macro has initialized without
       // error. If an error occurred during this stage, we latch that
       // error and move into a terminal error  state.
       InitOtpSt: begin
@@ -516,7 +516,7 @@ module otp_ctrl_dai
       // SEC_CM: SECRET.MEM.SCRAMBLE
       ScrWaitSt: begin
         scrmbl_mtx_req_o = 1'b1;
-        // Continously check write access and bail out if this is not consistent.
+        // Continuously check write access and bail out if this is not consistent.
         if (part_sel_valid && mubi8_test_false_strict(part_access_i[part_idx].write_lock) &&
             // If this is a non HW digest write to a buffered partition.
             (PartInfo[part_idx].variant == Buffered && PartInfo[part_idx].secret &&

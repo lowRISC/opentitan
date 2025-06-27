@@ -133,7 +133,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     used_dai_addrs.delete();
   endfunction
 
-  // Overide this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
+  // Override this task for otp_ctrl_common_vseq and otp_ctrl_stress_all_with_rand_reset_vseq
   // because some registers won't set to default value until otp_init is done.
   virtual task read_and_check_all_csrs_after_reset();
     cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
@@ -550,8 +550,8 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // This function backdoor inject error according to ecc_err:
-  // - for OtpEccUncorrErr it injects a 2 bit eror
-  // - for OtpEccCorrErr it injects a 1 bit eror
+  // - for OtpEccUncorrErr it injects a 2 bit error
+  // - for OtpEccCorrErr it injects a 1 bit error
   // This function will output original backdoor read data for the given address
   // so the error can be cleared.
   virtual function bit [TL_DW-1:0] backdoor_inject_ecc_err(bit [TL_DW-1:0] addr,

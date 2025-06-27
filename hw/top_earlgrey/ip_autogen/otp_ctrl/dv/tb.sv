@@ -85,7 +85,7 @@ module tb;
 
   // This signal probes design's alert request to avoid additional logic for triggering alert and
   // disable assertions.
-  // Alert checkings are done independently in otp_ctrl's scb.
+  // Alert checks are done independently in otp_ctrl's scb.
   // The correctness of this probed signal is checked in otp_ctrl's scb as well.
   assign otp_ctrl_if.alert_reqs = dut.alerts[0] | dut.alerts[1];
 
@@ -200,7 +200,7 @@ module tb;
   assign interrupts[OtpOperationDone] = intr_otp_operation_done;
   assign interrupts[OtpErr]           = intr_otp_error;
 
-  // Instantitate the memory backdoor util instance only for OS implementation
+  // Instantiate the memory backdoor util instance only for OS implementation
   // Proprietary IP will instantiate their own backdoor util
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_impl_generic

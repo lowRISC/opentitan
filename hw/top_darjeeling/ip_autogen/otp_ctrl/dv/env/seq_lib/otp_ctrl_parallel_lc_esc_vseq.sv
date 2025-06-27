@@ -86,7 +86,7 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
 
     if (!cfg.under_reset) cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
 
-    // Wait 5 clock cycles until async lc_escalate_en propogate to each state machine.
+    // Wait 5 clock cycles until async lc_escalate_en propagate to each state machine.
     cfg.clk_rst_vif.wait_clks(5);
 
     // After LC_escalate is On, we trigger the dai_lock_vseq to check interfaces will return

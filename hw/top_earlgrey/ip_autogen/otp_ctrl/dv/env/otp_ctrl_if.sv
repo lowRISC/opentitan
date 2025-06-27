@@ -87,7 +87,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   // Set this variable to 0 after a LC program request might cause otp checks to fail.
   bit lc_check_byp_en = 1;
 
-  // Internal veriable to track which sw partitions have ECC reg error.
+  // Internal variable to track which sw partitions have ECC reg error.
   bit [NumPartUnbuf-1:0] force_sw_parts_ecc_reg;
 
   // DUT configuration object
@@ -97,7 +97,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   string msg_id = "otp_ctrl_if";
 
   // Lc_err could trigger during LC program, so check intr and status after lc_req is finished.
-  // Lc_err takes one clock cycle to propogate to intr signal. So avoid intr check if it happens
+  // Lc_err takes one clock cycle to propagate to intr signal. So avoid intr check if it happens
   // during the transition.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -324,7 +324,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                        (pwr_otp_idle_o == 0 || $rose(lc_prog_err)) within lc_prog_req[*1:$])
 
   // During fatal alert, check if otp outputs revert back to default value.
-  // Wait three clock cycles until error propogates to each FSM states and regs.
+  // Wait three clock cycles until error propagates to each FSM states and regs.
   `define OTP_FATAL_ERR_ASSERT(NAME, SEQ) \
     `ASSERT(FatalErr``NAME``, alert_reqs |-> ##3 SEQ)
 

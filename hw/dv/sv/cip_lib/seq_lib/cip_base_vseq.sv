@@ -866,7 +866,7 @@ class cip_base_vseq #(
     end
   endtask
 
-  // This can be overriden in derived classes to wait a longer time for no outstanding accesses
+  // This can be overridden in derived classes to wait a longer time for no outstanding accesses
   // before giving up.
   virtual function int wait_cycles_with_no_outstanding_accesses();
     return 10_000;
@@ -1080,7 +1080,7 @@ class cip_base_vseq #(
                 else                                     mask = '1;
                 data = $urandom;
                 // set check_rsp to 0 to skip checking rsp in sequence, as there could be a mem
-                // which always returns d_error = 1. scb will be overriden to handle it and check
+                // which always returns d_error = 1. scb will be overridden to handle it and check
                 // the d_error.
                 tl_access_w_abort(.addr(addr), .write(1), .data(data),
                                   .completed(write_completed), .saw_err(write_error), .check_rsp(0),
