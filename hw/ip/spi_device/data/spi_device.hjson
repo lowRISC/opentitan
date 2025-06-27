@@ -573,7 +573,7 @@
                 flash traffics to the attached downstream flash device. HW may
                 processes commands internally and returns data.
 
-                SW may configure the device to drop inadmissable commands.
+                SW may configure the device to drop inadmissible commands.
                 '''
             }
           ]
@@ -1560,7 +1560,7 @@
     { name: "TPM_CMD_ADDR"
       desc: '''TPM Command and Address buffer
 
-        The SW may get the received TPM command and address by readin gthis CSR.
+        The SW may get the received TPM command and address by reading this CSR.
         '''
       swaccess: "ro"
       hwaccess: "hrw"

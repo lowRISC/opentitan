@@ -295,7 +295,7 @@ module spi_device
   // Synchronous clear of read buffer tracking.
   logic readbuf_clr;
 
-  // Passthrouth config signals
+  // Passthrough config signals
   logic [255:0] cmd_filter;
 
   logic [31:0] addr_swap_mask;

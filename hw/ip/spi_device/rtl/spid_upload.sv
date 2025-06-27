@@ -390,7 +390,7 @@ module spid_upload
     if (!sys_rst_ni)                     sys_payload_start_idx_o <= '0;
     else if (sys_payloadptr_clr_posedge) sys_payload_start_idx_o <= '0;
     else if (sys_cmdfifo_set && payload_max) begin
-      // Payload reached the max, need to tell SW the exact location SW shoul
+      // Payload reached the max, need to tell SW the exact location SW should
       // read
       sys_payload_start_idx_o <= payloadptr;
     end else if (sys_cmdfifo_set && !payload_max) begin
