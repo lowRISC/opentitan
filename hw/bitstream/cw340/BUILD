@@ -2,8 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otp.bzl", "get_otp_images")
-
 # We do not have a signed CW340 ROM yet.
 KEY_AUTHENTICITY = [
     "fake",

@@ -7,10 +7,10 @@
 # Earl Grey silicon. Some of the countermeasures in the ROM are disabled to
 # de-risk bring-up and provisioning tests.
 
+load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_ALERTS")
 load(
     "//rules:const.bzl",
     "CONST",
-    "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
 )
