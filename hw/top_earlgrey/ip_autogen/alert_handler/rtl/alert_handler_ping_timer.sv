@@ -22,7 +22,7 @@
 `include "prim_assert.sv"
 
 module alert_handler_ping_timer import alert_handler_pkg::*; #(
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t        RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t        RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   // Enable this for DV, disable this for long LFSRs in FPV
