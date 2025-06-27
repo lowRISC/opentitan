@@ -170,7 +170,7 @@ class rv_timer_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  // task to read interrup status reg for given Hart
+  // task to read interrupt status reg for given Hart
   virtual task read_intr_status_reg(input  int  hart = 0,
                                     output uint status_val);
     uvm_reg intr_state_rg;
