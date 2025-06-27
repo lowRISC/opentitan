@@ -55,6 +55,11 @@
       reseed: 20
     }
     {
+      name: ac_range_check_smoke_high_threshold
+      uvm_test_seq: ac_range_check_smoke_high_threshold_vseq
+      reseed: 20
+    }
+    {
       name: ac_range_check_bypass
       uvm_test_seq: ac_range_check_bypass_vseq
       reseed: 1
@@ -72,12 +77,16 @@
   regressions: [
     {
       name: smoke
-      tests: ["ac_range_check_smoke", "ac_range_check_smoke_racl"]
+      tests: ["ac_range_check_smoke",
+              "ac_range_check_smoke_racl",
+              "ac_range_check_smoke_high_threshold"
+             ]
     }
     {
       name: normal
       tests: ["ac_range_check_smoke",
               "ac_range_check_smoke_racl",
+              "ac_range_check_smoke_high_threshold",
               "ac_range_check_bypass",
               "ac_range_check_lock_range"
              ]
