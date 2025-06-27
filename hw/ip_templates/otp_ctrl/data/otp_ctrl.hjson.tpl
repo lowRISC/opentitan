@@ -540,7 +540,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.PARTITION.OWNER_SW_CFG"
-      desc: "Define attriutes for rom code execution"
+      desc: "Define attributes for rom code execution"
     }
     {
       name: "OTP_CTRL.INIT"
@@ -603,7 +603,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"
-      desc: "Recoverable error is created when unauthorized access atempt are detected via dai interface."
+      desc: "Recoverable error is created when unauthorized access attempt are detected via dai interface."
     }
     {
       name: "OTP_CTRL.ERROR_HANDLING.FATAL"
@@ -752,7 +752,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
                 { value: "2",
                   name: "MACRO_ECC_CORR_ERROR",
                   desc: '''
-                  A correctable ECC error has occured during an OTP read operation.
+                  A correctable ECC error has occurred during an OTP read operation.
                   The corresponding controller automatically recovers from this error when
                   issuing a new command.
                   '''

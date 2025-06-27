@@ -88,7 +88,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         otp_a        = '{default:0};
         otp_lc_data  = '{default:0};
         // secret partitions have been scrambled before writing to OTP.
-        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret0Idx);
         for (int i = Secret0Offset / TL_SIZE;
              i <= Secret0DigestOffset / TL_SIZE - 1;
@@ -97,7 +97,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
         // secret partitions have been scrambled before writing to OTP.
-        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret1Idx);
         for (int i = Secret1Offset / TL_SIZE;
              i <= Secret1DigestOffset / TL_SIZE - 1;
@@ -106,7 +106,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
         // secret partitions have been scrambled before writing to OTP.
-        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret2Idx);
         for (int i = Secret2Offset / TL_SIZE;
              i <= Secret2DigestOffset / TL_SIZE - 1;
@@ -115,7 +115,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
               data[SCRAMBLE_DATA_SIZE-1:TL_DW] : data[TL_DW-1:0];
         end
         // secret partitions have been scrambled before writing to OTP.
-        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, Secret3Idx);
         for (int i = Secret3Offset / TL_SIZE;
              i <= Secret3DigestOffset / TL_SIZE - 1;
@@ -179,7 +179,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           if (!cfg.otp_ctrl_vif.under_error_states()) begin
             // ---------------------- Check lc_data_o output -----------------------------------
-            // Because initialization was succesful, the valid should be set and error should be
+            // Because initialization was successful, the valid should be set and error should be
             // reset.
             exp_lc_data.valid = 1;
             exp_lc_data.error = 0;

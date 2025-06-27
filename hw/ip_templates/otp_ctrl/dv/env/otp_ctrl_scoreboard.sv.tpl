@@ -117,7 +117,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   part_name_camel = Name.to_camel_case(part["name"])
 %>\
         // secret partitions have been scrambled before writing to OTP.
-        // here calculate the pre-srambled raw data when clearing internal OTP to all 0s.
+        // here calculate the pre-scrambled raw data when clearing internal OTP to all 0s.
         data = descramble_data(0, ${part_name_camel}Idx);
         for (int i = ${part_name_camel}Offset / TL_SIZE;
              i <= ${part_name_camel}DigestOffset / TL_SIZE - 1;
@@ -182,7 +182,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           if (!cfg.otp_ctrl_vif.under_error_states()) begin
             // ---------------------- Check lc_data_o output -----------------------------------
-            // Because initialization was succesful, the valid should be set and error should be
+            // Because initialization was successful, the valid should be set and error should be
             // reset.
             exp_lc_data.valid = 1;
             exp_lc_data.error = 0;

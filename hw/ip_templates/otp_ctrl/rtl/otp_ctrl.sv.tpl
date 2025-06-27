@@ -22,7 +22,7 @@ module otp_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
@@ -820,7 +820,7 @@ end
   // I.e., each agent (e.g. the DAI or a partition) can request a lock on the mutex. Once granted,
   // the partition can keep the lock as long as needed for the transaction to complete. The
   // partition must yield its lock by deasserting the request signal for the arbiter to proceed.
-  // Since this scheme does not have built-in preemtion, it must be ensured that the agents
+  // Since this scheme does not have built-in preemption, it must be ensured that the agents
   // eventually release their locks for this to be fair.
   //
   // This is documented in ../README.md (generated from hw/ip_templates/otp_ctrl/README.md.tpl) see

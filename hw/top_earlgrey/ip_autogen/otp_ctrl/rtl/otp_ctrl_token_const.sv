@@ -7,7 +7,7 @@
 // random netlist constants at compile time, and hence does not contain any "real" logic.
 
 module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter digest_const_array_t    RndCnstDigestConst    = RndCnstDigestConstDefault,
   parameter digest_iv_array_t       RndCnstDigestIV       = RndCnstDigestIVDefault,
   parameter lc_ctrl_pkg::lc_token_t RndCnstRawUnlockToken = RndCnstRawUnlockTokenDefault

@@ -33,7 +33,7 @@ module otp_ctrl_lfsr_timer
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_top_specific_pkg::*;
 #(
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (

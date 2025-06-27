@@ -48,7 +48,7 @@
 //             call of the Digest command. Also, mode_i can be used to set the digest mode. If
 //             mode_i is set to "StandardMode", the data to be digested has to be provided via
 //             data_i and LoadShadow. If mode_i is set to "ChainedMode", the digest input is formed
-//             by concatenating the results of the revious two encryption commands.
+//             by concatenating the results of the previous two encryption commands.
 //
 // Digest: In "StandardMode", this command concatenates the data input supplied via data_i with
 //         the shadow register in order to form a 128bit block ({data_i, data_shadow_q}). This block
