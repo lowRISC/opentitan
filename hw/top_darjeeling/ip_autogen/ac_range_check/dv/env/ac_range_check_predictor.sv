@@ -240,7 +240,7 @@ function access_decision_e ac_range_check_predictor::check_access(tl_seq_item it
 
   // Due to the note above, we should keep this loop starting from index 0
   for (int i = 0; i < NUM_RANGES; i++) begin
-    // Start building coverage model right from the begining
+    // Start building coverage model right from the beginning
     if (env_cfg.en_cov) begin
       cov.sample_range_cg(.idx(i), .range_en(dut_cfg.range_attr[i].enable));
     end

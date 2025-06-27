@@ -61,7 +61,7 @@ function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
 
   // Used to allow reset operations without waiting for CSR accesses to complete
   // At the moment resets will only be used in stress_all_with_rand_reset.
-  // Reset strategy in genral will need a rethink (Check PR #25463)
+  // Reset strategy in general will need a rethink (Check PR #25463)
   can_reset_with_csr_accesses = 1;
 
   // By default no error downgrade is allowed.

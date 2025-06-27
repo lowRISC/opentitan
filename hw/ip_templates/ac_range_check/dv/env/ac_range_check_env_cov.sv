@@ -162,7 +162,7 @@ class ac_range_check_env_cov extends cip_base_env_cov #(.CFG_T(ac_range_check_en
   endgroup : addr_match_cg
 
   // all_index_miss_cg is a negative covergroup.
-  // A situtation can occur when a TLUL transaction being checked by ac_range will miss all
+  // A situation can occur when a TLUL transaction being checked by ac_range will miss all
   // configured indexes and be denied.
   covergroup all_index_miss_cg;
     coverpoint all_index_miss_cp { bins addr_hit_seen = {0};

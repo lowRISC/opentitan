@@ -77,7 +77,7 @@ class ac_range_check_lock_range_vseq extends ac_range_check_smoke_vseq;
       if (i == (NUM_RANGES-1)) {
         // This is a catch all since there is a situation where the test fails due to a TB condition
         // which checks for at least 1 TLUL GRANTED transaction. By enabling the write permission
-        // for the very last index and forcing a transaction that is guranteed to be GRANTED
+        // for the very last index and forcing a transaction that is guaranteed to be GRANTED
         // overcomes this restriction.
         enable[i]     == 1;
         lock_mask[i]  == 1;
@@ -194,10 +194,10 @@ task ac_range_check_lock_range_vseq::body();
           bit [DataWidth-1:0] mubi4_attr;
 
           // When range index is locked, the RTL and the RAL are in sync. Which means the RAL model
-          // is also locked for the sepcific index and the set methods for fields such as
+          // is also locked for the specific index and the set methods for fields such as
           // 'ral.range_attr[i].read_access.set(mubi4_bool_to_mubi(read_perm_new[i]));'
           // 'ral.range_attr[i].write_access.set(mubi4_bool_to_mubi(write_perm_new[i]));'
-          // will not work. We need to build the attr field explictly and then write new values
+          // will not work. We need to build the attr field explicitly and then write new values
           // to the CSRlocation via csr_wr() method for base, limit & attr.
           mubi4_execute    = mubi4_bool_to_mubi(execute_perm_new[i]     );
           mubi4_write      = mubi4_bool_to_mubi(write_perm_new[i]       );
@@ -268,7 +268,7 @@ task ac_range_check_lock_range_vseq::body();
 
 
     // The lock range test fails because of a check in the scoreboard that has not seen a single
-    // transaction granted. By sending a TLUL request that gurantees to get granted, The TB
+    // transaction granted. By sending a TLUL request that guarantees to get granted, The TB
     // condition is satisfied.
     if (i == (NUM_RANGES-1)) begin
       tl_main_vars.addr = base[i];
