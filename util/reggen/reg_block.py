@@ -744,7 +744,7 @@ class RegBlock:
         for alias_name, reg in name_to_flat_reg_copy.items():
             self._rename_flat_reg(alias_name, reg.name)
 
-    def to_systemrdl(self, importer: RDLImporter) -> Optional[Addrmap]:
+    def to_systemrdl(self, importer: RDLImporter) -> Addrmap | None:
         nonempty = False
 
         name = self.name or 'none'
