@@ -64,7 +64,7 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
   endfunction
 
   // In this sequence, because we disable all external alerts, so to ensure local alerts are
-  // triggerd, we wait for interrupt pins to fire then wait for alert and escalation handshake
+  // triggered, we wait for interrupt pins to fire then wait for alert and escalation handshake
   // to finish.
   virtual task wait_alert_esc_done();
     wait (cfg.intr_vif.pins[NUM_ALERT_CLASSES-1:0]);
