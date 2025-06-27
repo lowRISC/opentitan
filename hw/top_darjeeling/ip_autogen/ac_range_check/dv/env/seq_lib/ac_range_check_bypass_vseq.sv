@@ -6,7 +6,7 @@
 // ---------------
 // - Exercises the *bypass* feature for AC_RANGE_CHECK.
 // - Confirms that once RANGE_CHECK_OVERWRITE interface is set, The module is in bypass mode and the
-//   design is transperent to all TLUL transactions on the TLUL unfiltered interface.
+//   design is transparent to all TLUL transactions on the TLUL unfiltered interface.
 // - Runs live TLUL traffic to catch any functional issues.
 //
 // Key take-aways
