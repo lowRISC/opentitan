@@ -69,7 +69,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
              end
          end
        end
-       // After h2l_detected is set, check the input stay low for enought time
+       // After h2l_detected is set, check the input stay low for enough time
        forever begin
          bit h2l_timer_reached;
          wait (h2l_detected && !edge_detect_h2l.h2l_triggered);

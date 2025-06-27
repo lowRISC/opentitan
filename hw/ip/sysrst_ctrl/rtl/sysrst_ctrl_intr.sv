@@ -43,7 +43,7 @@ module sysrst_ctrl_intr
                      aon_h2l_key_intr_i,
                      aon_l2h_key_intr_i};
 
-  // Latch any event in the AON domain for generating the wakep request.
+  // Latch any event in the AON domain for generating the wakeup request.
   assign wkup_status_o.de = |aon_reqs;
   assign wkup_status_o.d = 1'b1;
   assign aon_wkup_req_o = wkup_status_i.q;
@@ -70,7 +70,7 @@ module sysrst_ctrl_intr
   logic [NumAonIntrEvents-1:0] aon_req_hold_q;
   logic aon_ack;
 
-  // staging has pending requsts
+  // staging has pending requests
   assign aon_ld_req = (aon_req_hold_q == '0) && |aon_staging_reqs_q;
 
   // request hold self clears when the handshake cycle is complete
