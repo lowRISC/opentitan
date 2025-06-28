@@ -199,7 +199,9 @@ sram_start:
   lw   t3, 0(sp)
   addi sp, sp, OTTF_WORD_SIZE
   mv   sp, t3
-  ebreak
+  loop_forever:
+    wfi
+    j loop_forever
 
   // Set function size to allow disassembly.
   .size sram_start, .-sram_start
