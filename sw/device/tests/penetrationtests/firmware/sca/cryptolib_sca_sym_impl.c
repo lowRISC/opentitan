@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -201,6 +202,110 @@ status_t cryptolib_sca_drbg_impl(uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES],
   *cfg_out = 0;
   memset(data_out, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(data_out, output_data, *data_out_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_gcm_impl(
+    uint8_t data_in[AES_CMD_MAX_MSG_BYTES], size_t data_in_len,
+    uint8_t aad[AES_CMD_MAX_MSG_BYTES], size_t aad_len,
+    uint8_t key[AES_CMD_MAX_KEY_BYTES], size_t key_len,
+    uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
+    uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
+    uint8_t tag[AES_CMD_MAX_MSG_BYTES], size_t *tag_len, size_t cfg_in,
+    size_t *cfg_out, size_t trigger) {
+  // Construct the blinded key configuration.
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Construct blinded key from the key and testing mask.
+  uint32_t key_buf[kPentestAesMaxKeyWords];
+  memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key_buf, key, key_len);
+
+  uint32_t keyblob[keyblob_num_words(config)];
+  TRY(keyblob_from_key_and_mask(key_buf, kAesKeyMask, config, keyblob));
+  LOG_INFO("GCM IMPl1");
+  // Construct the blinded key.
+  otcrypto_blinded_key_t gcm_key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Set the checksum.
+  gcm_key.checksum = integrity_blinded_checksum(&gcm_key);
+  LOG_INFO("GCM IMPl1");
+  // Prepare the input buffers.
+  size_t iv_num_words = 4;
+  uint32_t iv_data[iv_num_words];
+  memcpy(iv_data, iv, sizeof(iv_data));
+  otcrypto_const_word32_buf_t gcm_iv = {
+      .data = iv_data,
+      .len = iv_num_words,
+  };
+  otcrypto_const_byte_buf_t plaintext = {
+      .data = data_in,
+      .len = data_in_len,
+  };
+  otcrypto_const_byte_buf_t gcm_aad = {
+      .data = aad,
+      .len = aad_len,
+  };
+
+  size_t tag_num_words = (*tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t actual_tag_data[tag_num_words];
+  otcrypto_word32_buf_t actual_tag = {
+      .data = actual_tag_data,
+      .len = tag_num_words,
+  };
+
+  uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
+  otcrypto_byte_buf_t actual_ciphertext = {
+      .data = actual_ciphertext_data,
+      .len = data_in_len,
+  };
+
+  otcrypto_aes_gcm_tag_len_t gcm_tag_len;
+  switch (*tag_len) {
+    case (128 / 8):
+      gcm_tag_len = kOtcryptoAesGcmTagLen128;
+      break;
+    case (96 / 8):
+      gcm_tag_len = kOtcryptoAesGcmTagLen96;
+      break;
+    case (64 / 8):
+      gcm_tag_len = kOtcryptoAesGcmTagLen64;
+      break;
+    case (32 / 8):
+      gcm_tag_len = kOtcryptoAesGcmTagLen32;
+      break;
+    default:
+      LOG_ERROR("Unrecognized AES-GCM tag length: %d", *tag_len);
+      return INVALID_ARGUMENT();
+  }
+  LOG_INFO("GCM IMPl1");
+  // Trigger window.
+  pentest_set_trigger_high();
+  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
+                               gcm_tag_len, actual_ciphertext, actual_tag));
+  pentest_set_trigger_low();
+  LOG_INFO("GCM IMPl1");
+  // Return data back to host.
+  *cfg_out = 0;
+  // Ciphertext.
+  *data_out_len = data_in_len;
+  memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(data_out, actual_ciphertext_data, *data_out_len);
+  // Tag.
+  memset(tag, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(tag, actual_tag_data, *tag_len);
 
   return OK_STATUS();
 }
