@@ -83,10 +83,12 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
               end
               1: begin
                 ready_to_trigger_csr_rw = 1;
+                shadow_reg_err_ctrl_svas(.enable(0));
                 poke_and_check_storage_error(shadowed_csrs[i]);
                 has_fatal_alert = 1;
               end
               1: begin
+                shadow_reg_err_ctrl_svas(.enable(0));
                 glitch_shadowed_reset(shadowed_csrs, ready_to_trigger_csr_rw, has_fatal_alert);
               end
             endcase
@@ -100,12 +102,13 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
               run_csr_vseq("rw");
             end
           end
-       join
+        join
+        shadow_reg_err_ctrl_svas(.enable(1));
 
-       if (has_fatal_alert) begin
-         dut_init();
-         read_and_check_all_csrs_after_reset();
-       end
+        if (has_fatal_alert) begin
+          dut_init();
+          read_and_check_all_csrs_after_reset();
+        end
       end // repeat(5)
     end
   end
@@ -384,3 +387,7 @@ virtual task read_check_shadow_reg_status(string msg_id);
                  .err_msg($sformatf(" %0s: check storage_err status", msg_id)));
   end
 endtask
+
+// enable/disable shadow reg error assertions.
+virtual function void shadow_reg_err_ctrl_svas(bit enable, string path = "*");
+endfunction
