@@ -57,8 +57,8 @@ assert -name InpAlwaysOnehot0_A {$onehot0(dut.u_reg.u_prim_reg_we_check.u_prim_o
 # the same reason argued above, we know that oh_i is always onehot or zero so we can't get multiple
 # ones in an or_tree and therefore in an err_tree. So, oh_0 is always false.
 # Lastly, enable_err needs root node of the or_tree as true and en_i (assigned in u_reg) as false.
-# Again the agument above for the precondiiton of EnableCheck states that we can't get oh_i without
-# en_i and if we don't have oh_i then we can't get any node in an or_tree as true.
+# Again the argument above for the precondition of EnableCheck states that we can't get oh_i
+# without en_i and if we don't have oh_i then we can't get any node in an or_tree as true.
 cover -disable <embedded>::rv_plic_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
 
 # The intention to add this assertion is to make sure that err_o never happens as we waived off the
