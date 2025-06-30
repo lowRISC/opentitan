@@ -35,13 +35,13 @@
     }
     {
       name: "n_mio_periph_in"
-      desc: "Number of MIO periperal ins"
+      desc: "Number of MIO peripheral ins"
       type: "int"
       default: "8"
     }
     {
       name: "n_mio_periph_out"
-      desc: "Number of MIO periperal outs"
+      desc: "Number of MIO peripheral outs"
       type: "int"
       default: "8"
     }
@@ -53,13 +53,13 @@
     }
     {
       name: "n_dio_periph_in"
-      desc: "Number of DIO periperal ins"
+      desc: "Number of DIO peripheral ins"
       type: "int"
       default: "8"
     }
     {
       name: "n_dio_periph_out"
-      desc: "Number of DIO periperal outs"
+      desc: "Number of DIO peripheral outs"
       type: "int"
       default: "8"
     }

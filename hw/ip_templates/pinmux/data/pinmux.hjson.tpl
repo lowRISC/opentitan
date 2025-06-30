@@ -1023,7 +1023,7 @@
                       The behavior is as specified in !!WKUP_DETECTOR,
                       !!WKUP_DETECTOR_CNT_TH and !!WKUP_DETECTOR_PADSEL.
                       '''
-                      // In CSR tests, we do not touch the chip IOs. Thet are either pulled low or
+                      // In CSR tests, we do not touch the chip IOs. They are either pulled low or
                       // or undriven.
                       //
                       // Random writes to the wkup detect CSRs may result in the case where the

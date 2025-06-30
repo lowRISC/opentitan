@@ -567,7 +567,7 @@
     {
       name: WkupTimedHigh_A
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 3,
-            which means postive pulse cycles are used to detect wakeup. If variable `final_pin_val`
+            which means positive pulse cycles are used to detect wakeup. If variable `final_pin_val`
             stays high longer than the threshold, then `wkup_cause` register's `de` attribute
             should be set to 1.'''
       stage: V1
