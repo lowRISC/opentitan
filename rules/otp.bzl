@@ -397,7 +397,7 @@ OTP_SIGVERIFY_FAKE_KEYS = [
     "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
-STD_OTP_OVERLAYS = ["//hw/top_earlgrey/data/otp:std_otp_overlay"]
+STD_OTP_OVERLAYS = opentitan_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
     return hex(v)
