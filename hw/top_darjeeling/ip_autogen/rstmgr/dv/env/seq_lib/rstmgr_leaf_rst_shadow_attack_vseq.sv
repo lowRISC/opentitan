@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Description:
 // Test assert glitch to shadow leaf reset module and
-// check if nomal reset module got affected or vice versa
+// check if normal reset module got affected or vice versa
 class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_leaf_rst_shadow_attack_vseq)
 
