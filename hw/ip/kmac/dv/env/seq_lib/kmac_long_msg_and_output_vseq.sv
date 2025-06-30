@@ -20,13 +20,23 @@ class kmac_long_msg_and_output_vseq extends kmac_smoke_vseq;
 
   // keep the max msg size at 10KB to avoid major performance issues
   constraint msg_c {
-    msg.size() dist {
-      0               :/ 1,
-      [1    : 2500]   :/ 1,
-      [2501 : 5000]   :/ 1,
-      [5001 : 7500]   :/ 3,
-      [5001 : 10_000] :/ 4
-    };
+    // In case we expect a reset we don't want to time out because of a msg that is too long.
+    if (common_seq_type == "stress_all_with_rand_reset") {
+      msg.size() dist {
+        0               :/ 1,
+        [1    : 2500]   :/ 1,
+        [2501 : 5000]   :/ 1
+      };
+
+    } else {
+      msg.size() dist {
+        0               :/ 1,
+        [1    : 2500]   :/ 1,
+        [2501 : 5000]   :/ 1,
+        [5001 : 7500]   :/ 3,
+        [5001 : 10_000] :/ 4
+      };
+    }
   }
 
   // allow full randomization of customization string
