@@ -103,8 +103,6 @@ interface entropy_src_path_if ();
     $assertoff(0, `CORE.Final_EsbitFifoPushedIntoPosthtFifo_A);
     $assertoff(0, `CORE.AtReset_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
     $assertoff(0, `CORE.Final_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-    // TODO(#24085): Remove this assertoff once the issue is solved.
-    $assertoff(0, `CORE.FifosEmptyWhenShaProcess_A);
   endfunction
 endinterface // entropy_src_path_if
 
