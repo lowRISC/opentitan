@@ -42,7 +42,6 @@ load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 load("//hw/top:defs.bzl", "opentitan_select_top_attr")
-load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_STD_OTP_OVERLAYS", "EARLGREY_OTP_SIGVERIFY_FAKE_KEYS")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -394,9 +393,9 @@ otp_image_consts = rule(
 # The following overlays are used to generate a generic OTP image with fake
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
-OTP_SIGVERIFY_FAKE_KEYS = EARLGREY_OTP_SIGVERIFY_FAKE_KEYS
+OTP_SIGVERIFY_FAKE_KEYS = opentitan_select_top_attr("otp_sigverify_fake_keys")
 
-STD_OTP_OVERLAYS = EARLGREY_STD_OTP_OVERLAYS
+STD_OTP_OVERLAYS = opentitan_select_top_attr("std_otp_overlay")
 
 def otp_hex(v):
     return hex(v)
