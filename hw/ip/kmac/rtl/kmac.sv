@@ -920,6 +920,7 @@ module kmac
     end : g_msg_data_mask
   end else begin : g_no_msg_mask
     assign msg_data_masked[0] = msg_data[0];
+    assign msg_mask = '0;
 
     logic unused_msgmask;
     assign unused_msgmask = ^{msg_mask, cfg_msg_mask, msg_mask_en};
@@ -1332,11 +1333,11 @@ module kmac
     assign unused_sha3_rand_update = sha3_rand_update;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
-    logic        unused_seed_update;
-    logic [31:0] unused_seed_data;
-    logic [31:0] unused_refresh_period;
+    logic unused_seed_update;
+    logic unused_seed_data;
+    logic unused_refresh_period;
     logic unused_entropy_refresh_req;
-    assign unused_seed_data = entropy_seed_data;
+    assign unused_seed_data = ^entropy_seed_data;
     assign unused_seed_update = entropy_seed_update;
     assign unused_refresh_period = ^{wait_timer_limit, wait_timer_prescaler};
     assign unused_entropy_refresh_req = entropy_refresh_req;
@@ -1350,11 +1351,17 @@ module kmac
     assign kmac_entropy_state_error = 1'b 0;
     assign kmac_entropy_hash_counter_error  = 1'b 0;
 
-    logic [1:0] unused_entropy_status;
+    logic unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
 
     // If Masking is off, always entropy configured
     assign entropy_configured = prim_mubi_pkg::MuBi4True;
+
+    logic unused_edn_clk_rst;
+    assign unused_edn_clk_rst = ^{clk_edn_i, rst_edn_ni};
+
+    logic unused_lc_escalate_en5;
+    assign unused_lc_escalate_en5 = ^lc_escalate_en[5];
   end
 
   // MUBI4 buf
