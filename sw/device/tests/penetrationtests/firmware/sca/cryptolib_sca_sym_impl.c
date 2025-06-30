@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -140,6 +141,66 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   *cfg_out = 0;
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(data_out, output_buf, padded_len_bytes);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_drbg_impl(uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES],
+                                 size_t entropy_len,
+                                 uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES],
+                                 size_t nonce_len,
+                                 uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES],
+                                 size_t *data_out_len, size_t reseed_interval,
+                                 size_t mode, size_t cfg_in, size_t *cfg_out,
+                                 size_t trigger) {
+  // Entropy buffer used for the instantiation of the DRBG.
+  uint8_t entropy_buf[entropy_len];
+  memcpy(entropy_buf, entropy, entropy_len);
+
+  otcrypto_const_byte_buf_t entropy_in = {
+      .len = entropy_len,
+      .data = entropy_buf,
+  };
+
+  // Trigger window 0.
+  if (trigger == 0) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_drbg_instantiate(entropy_in));
+  if (trigger == 0) {
+    pentest_set_trigger_low();
+  }
+
+  // Nonce buffer used for the generate command of the DRBG.
+  uint8_t nonce_buf[nonce_len];
+  memcpy(nonce_buf, nonce, nonce_len);
+
+  otcrypto_const_byte_buf_t nonce_in = {
+      .len = nonce_len,
+      .data = nonce_buf,
+  };
+
+  // Buffer for the output entropy data.
+  uint32_t output_data[entropy_len];
+  otcrypto_word32_buf_t output = {
+      .data = output_data,
+      .len = ARRAYSIZE(output_data),
+  };
+
+  // Trigger window 0.
+  if (trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_drbg_generate(nonce_in, output));
+  if (trigger == 1) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  *data_out_len = entropy_len;
+  *cfg_out = 0;
+  memset(data_out, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
+  memcpy(data_out, output_data, *data_out_len);
 
   return OK_STATUS();
 }
