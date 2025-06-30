@@ -33,6 +33,9 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   int sha3_variant;
   int shake_variant;
 
+  // Defines the maximum message size when randomizing the message.
+  int unsigned max_msg_size = 10_000;
+
   `uvm_object_utils_begin(kmac_env_cfg)
   `uvm_object_utils_end
 
