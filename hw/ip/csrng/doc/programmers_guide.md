@@ -4,9 +4,9 @@ This section discusses how software can interface with CSRNG.
 
 ## Module enable and disable
 
-CSRNG may only be enabled if `ENTROPY_SRC` is enabled.
 CSRNG may only be disabled if all EDNs are disabled.
-Once disabled, CSRNG may only be re-enabled after `ENTROPY_SRC` has been disabled and re-enabled.
+
+The recommended enable sequence for the entropy complex is to first enable ENTROPY_SRC, then CSRNG, and finally the EDNs.
 
 ## Endianness and Known-Answer Tests
 
