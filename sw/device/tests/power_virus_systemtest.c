@@ -115,7 +115,7 @@ enum {
   /**
    * Entropy Source parameters.
    */
-  kEntropySrcHealthTestWindowSize = 0x60,
+  kEntropySrcHealthTestWindowSize = 384,
   kEntropySrcAdaptiveProportionHealthTestHighThreshold = 0x50,
   kEntropySrcAdaptiveProportionHealthTestLowThreshold = 0x10,
   /**

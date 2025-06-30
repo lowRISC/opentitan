@@ -146,15 +146,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     completed = 0;
 
-    // If we are in the single lane mode, the window size is 4 times as large.
-    // We need the same number of bits but only have a single lane.
-    if (newcfg.rng_bit_enable != MuBi4False) begin
-      fips_window_size   = 4*newcfg.fips_window_size;
-      bypass_window_size = 4*newcfg.bypass_window_size;
-    end else begin
-      fips_window_size   = newcfg.fips_window_size;
-      bypass_window_size = newcfg.bypass_window_size;
-    end
+    fips_window_size   = newcfg.fips_window_size;
+    bypass_window_size = newcfg.bypass_window_size;
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
