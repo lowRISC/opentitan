@@ -75,12 +75,9 @@ static status_t trigger_cryptolib_gcm(
   // Perform a GCM encryption with aad and generate a tag.
   // Then, verify that tag again, before sending the output.
   // Trigger are over the API calls.
-
-  memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
-  *data_out_len = AES_CMD_MAX_MSG_BYTES;
-  memset(tag, 0, AES_CMD_MAX_MSG_BYTES);
-  *tag_len = AES_CMD_MAX_MSG_BYTES;
-  *cfg_out = 0;
+  TRY(cryptolib_sca_gcm_impl(data_in, data_in_len, aad, aad_len, key, key_len,
+                             iv, data_out, data_out_len, tag, tag_len, cfg_in,
+                             cfg_out, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -328,8 +325,8 @@ status_t handle_cryptolib_sca_sym_gcm_fvsr_plaintext(ujson_t *uj) {
   uint8_t batch_keys[uj_input.num_iterations][AES_CMD_MAX_KEY_BYTES];
 
   // First generate all FvsR data sets. When sample_fixed,
-  // the provided key is used and the message is random. When
-  // not sample_fixed, a random key and a random message is
+  // the provided key is used and the message is fixed. When
+  // not sample_fixed, the provided key and a random message is
   // generated.
   bool sample_fixed = true;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
@@ -346,7 +343,7 @@ status_t handle_cryptolib_sca_sym_gcm_fvsr_plaintext(ujson_t *uj) {
   uint8_t data_out_buf[AES_CMD_MAX_MSG_BYTES];
   size_t data_out_len;
   uint8_t tag_buf[AES_CMD_MAX_MSG_BYTES];
-  size_t tag_len;
+  size_t tag_len = 16;
   size_t cfg_out;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_gcm(batch_data_in[it], uj_input.data_len,
@@ -394,7 +391,7 @@ status_t handle_cryptolib_sca_sym_gcm_fvsr_key(ujson_t *uj) {
   uint8_t data_out_buf[AES_CMD_MAX_MSG_BYTES];
   size_t data_out_len;
   uint8_t tag_buf[AES_CMD_MAX_MSG_BYTES];
-  size_t tag_len;
+  size_t tag_len = 16;
   size_t cfg_out;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_gcm(batch_data_in[it], uj_input.data_len,
