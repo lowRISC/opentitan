@@ -20,8 +20,6 @@ Since there exists another feature to avoid power spikes between ENTROPY_SRC and
 Bit 16 in the [`DEBUG_STATUS`](registers.md#debug_status) should be polled after the ENTROPY_SRC enable bits are cleared in the [`CONF`](registers.md#conf) register.
 After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
 
-ENTROPY_SRC may only be disabled if CSRNG is disabled.
-
 Disabling Entropy Source does not clear the bits in `RECOV_ALERT_STS` (see [*Handling a Recoverable Alert*](#handling-a-recoverable-alert)).
 
 
