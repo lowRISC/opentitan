@@ -303,6 +303,12 @@ module kmac_errchk
     logic unused_cfg_entropy_ready;
     assign unused_cfg_entropy_ready = cfg_entropy_ready;
 
+    logic unused_err_processed;
+    assign unused_err_processed = err_processed_i;
+
+    logic unused_entropy_ready_puls;
+    assign unused_entropy_ready_puls = entropy_ready_pulse_i;
+
   end
 
   always_comb begin : recode_st
