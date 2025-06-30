@@ -753,6 +753,7 @@ cc_test(
         "autogen/dif_pwrmgr_autogen_unittest.cc",
         "dif_pwrmgr_unittest.cc",
     ],
+    copts = ["-Wno-enum-constexpr-conversion"],
     deps = [
         ":pwrmgr",
         ":test_base",

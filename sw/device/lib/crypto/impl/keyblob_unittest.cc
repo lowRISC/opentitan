@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 
 #include <array>
+#include <vector>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -111,9 +112,9 @@ TEST(Keyblob, FromSharesSimpleTest) {
   // Convert shares to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
   EXPECT_THAT(keyblob_share_num_words(kConfigCtr128), 4);
-  uint32_t keyblob[keyblob_words] = {0};
+  std::vector<uint32_t> keyblob(keyblob_words, 0);
   keyblob_from_shares(test_share0.data(), test_share1.data(), kConfigCtr128,
-                      keyblob);
+                      keyblob.data());
 
   // Check that keyblob is both shares concatenated.
   for (size_t i = 0; i < test_share0.size(); i++) {
@@ -136,15 +137,15 @@ TEST(Keyblob, FromToSharesNoop) {
 
   // Convert shares to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
-  uint32_t keyblob[keyblob_words] = {0};
+  std::vector<uint32_t> keyblob(keyblob_words, 0);
   keyblob_from_shares(test_share0.data(), test_share1.data(), kConfigCtr128,
-                      keyblob);
+                      keyblob.data());
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
+      .keyblob_length = keyblob.size() * sizeof(uint32_t),
+      .keyblob = keyblob.data(),
       .checksum = 0,
   };
 
@@ -174,15 +175,15 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
 
   // Convert key/mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
-  uint32_t keyblob[keyblob_words] = {0};
+  std::vector<uint32_t> keyblob(keyblob_words, 0);
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask.data(),
-                                      kConfigCtr128, keyblob));
+                                      kConfigCtr128, keyblob.data()));
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
+      .keyblob_length = keyblob.size() * sizeof(uint32_t),
+      .keyblob = keyblob.data(),
       .checksum = 0,
   };
 
@@ -321,15 +322,15 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
 
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
-  uint32_t keyblob[keyblob_words] = {0};
+  std::vector<uint32_t> keyblob(keyblob_words, 0);
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
-                                      kConfigCtr128, keyblob));
+                                      kConfigCtr128, keyblob.data()));
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
+      .keyblob_length = keyblob.size() * sizeof(uint32_t),
+      .keyblob = keyblob.data(),
       .checksum = 0,
   };
 
@@ -365,15 +366,15 @@ TEST(Keyblob, RemaskWithZero) {
 
   // Convert key and first mask to keyblob array.
   size_t keyblob_words = keyblob_num_words(kConfigCtr128);
-  uint32_t keyblob[keyblob_words] = {0};
+  std::vector<uint32_t> keyblob(keyblob_words, 0);
   EXPECT_OK(keyblob_from_key_and_mask(test_key.data(), test_mask0.data(),
-                                      kConfigCtr128, keyblob));
+                                      kConfigCtr128, keyblob.data()));
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = sizeof(keyblob),
-      .keyblob = keyblob,
+      .keyblob_length = keyblob.size() * sizeof(uint32_t),
+      .keyblob = keyblob.data(),
       .checksum = 0,
   };
 
