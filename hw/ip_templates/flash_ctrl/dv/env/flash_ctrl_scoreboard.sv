@@ -506,7 +506,7 @@ class flash_ctrl_scoreboard #(
     endcase
   endfunction
 
-  // In opensource, `sel` is always 0.
+  // In open-source, `sel` is always 0.
   // When `sel` is 1, which indicates bank erase,
   // task `erase_bank` is called.
   virtual function void erase_data(flash_dv_part_e part, addr_t addr, bit sel);
@@ -818,7 +818,7 @@ class flash_ctrl_scoreboard #(
     end
   endfunction
 
-  // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
+  // Overridden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit   ecc_err, in_err;

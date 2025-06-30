@@ -60,7 +60,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
     `uvm_info(`gfn, "TEST : FLASH CTRL SECRET PARTITION & OTP KEY TESTS", UVM_LOW)
 
-    // Initialise Partion Flags to Indicate Unwritten (from Frontdoor)
+    // Initialise Partition Flags to Indicate Unwritten (from Frontdoor)
     creator_prog_flag = 1'b0;
     owner_prog_flag   = 1'b0;
 

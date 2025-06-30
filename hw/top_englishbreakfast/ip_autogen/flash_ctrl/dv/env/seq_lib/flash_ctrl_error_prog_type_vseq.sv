@@ -57,7 +57,7 @@ class flash_ctrl_error_prog_type_vseq extends flash_ctrl_base_vseq;
     flash_op.prog_sel inside {FlashProgSelNormal, FlashProgSelRepair};
   }
 
-  // Flash ctrl operation data queue - used for programing in this test
+  // Flash ctrl operation data queue - used for programming in this test
   constraint flash_op_data_c {
     flash_op_data.size() == flash_op.num_words;
   }

@@ -93,7 +93,7 @@ class flash_otf_item extends uvm_object;
     end
 
     // if wq size is odd number,
-    // push remainer to upper half of fdata.
+    // push remainder to upper half of fdata.
     if (dq.size() > 0) begin
       fdata = 'h0;
       fdata[top_pkg::TL_DW-1:0] = dq.pop_front();
@@ -223,7 +223,7 @@ class flash_otf_item extends uvm_object;
           data = dec68.data;
         end
         // check ecc
-        // chec icv
+        // check icv
         if (ecc_en) begin
           data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
           icv_err = (data_with_icv[67:64] != data[67:64]);

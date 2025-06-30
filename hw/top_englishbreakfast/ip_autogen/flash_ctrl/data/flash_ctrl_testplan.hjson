@@ -223,8 +223,8 @@
             any catastrophic event happens.
               - Program flash size longer than 64 bytes.
                 This wil cause prog_win_err.
-              - Read flash from controller without settting start op.
-              - Issue rd_fifo read more thatn CONTROL.NUM field value.
+              - Read flash from controller without setting start op.
+              - Issue rd_fifo read more that CONTROL.NUM field value.
                 Both will cause d_error in tlul response.
             Each transaction is terminated gracefully and should not cause
             data path lock up. Also error status should be check per each
@@ -266,7 +266,7 @@
       desc: '''
             Verify the secret information partitions. Accessibility is controlled by the Life Cycle Controller
             Seeds are read upon flash controller initialization and sent to the Key Manager, additionally verify
-            that scramble Keys are Read from the OTP and sent into the Flash Ctlr.  Also erify that programmed
+            that scramble Keys are Read from the OTP and sent into the Flash Ctrl.  Also verify that programmed
             Secret Partitions retain their values through a Reset Cycle.
             '''
       stage: V2
@@ -275,7 +275,7 @@
     {
       name: isolation_partition
       desc: '''
-            Verify the isolated information partitions. Accessablity is controlled by Life
+            Verify the isolated information partitions. Accessibility is controlled by Life
             Cycle Controller.  Verify Partition can be erase, written and programmed, with
             HW control, and wipes after an RMA.
             '''
@@ -390,8 +390,8 @@
     {
       name: rma_write_process_error
       desc: '''
-            Verify error handling process duing the rma wipe process.
-            In normal rma process, inject bit error at the write path
+            Verify error handling process during the RMA wipe process.
+            In normal RMA process, inject bit error at the write path
             (tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.pack_data).
             This should make debug_state to flash_ctrl_env_pkg::FlashLcIvalid and
             fatal error (std_fault_status.lcmgr_err) should be triggered.
@@ -403,7 +403,7 @@
       name: asymmetric_read_path
       desc: '''
             Create 'fast' and 'slow' read path using scramble enable.
-            Send flash read requst over slow path followed by fast path.
+            Send flash read request over slow path followed by fast path.
             While return data comes from fast path first but they are expected
             to be returned in request order.
             '''
@@ -425,7 +425,7 @@
     {
       name: erase_susp_cg
       desc: '''
-            Covers if request of erase suspension occured.
+            Covers if request of erase suspension occurred.
             '''
     }
     {
@@ -456,7 +456,7 @@
             Sample all 4 rd_buf status.
             When each buffer hazard is set, capture the address stored in the buffer.
             Then search from tb data base to see which region the address belong to.
-            After that record the config value (scrambe_en and ecc_en) of the region.
+            After that record the config value (scramble_en and ecc_en) of the region.
             Use cross over buffer index, the operation to cause the eviction and
             the region config values.
             '''

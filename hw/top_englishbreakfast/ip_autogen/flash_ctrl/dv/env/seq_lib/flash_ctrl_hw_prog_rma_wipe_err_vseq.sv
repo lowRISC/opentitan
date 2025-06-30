@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence assert erros during rma wipe stage targeting
+// This sequence assert errors during rma wipe stage targeting
 // hit a couple of hw oriented fault_status errors.
 // See 'check_status' tasks for what status errors are covered.
 class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;

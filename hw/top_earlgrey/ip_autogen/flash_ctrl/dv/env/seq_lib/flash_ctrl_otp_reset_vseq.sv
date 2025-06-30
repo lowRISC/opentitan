@@ -138,7 +138,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
         disable fork;
         // Since the 2nd begin/end wait for substate of OTP,
         // the 2nd begin/end always finish first.
-        // So diable fork only terminate first begin/end.
+        // So disable fork only terminate first begin/end.
       end join // fork begin
 
       update_assert(.enable(1));

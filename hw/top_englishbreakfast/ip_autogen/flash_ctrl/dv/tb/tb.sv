@@ -236,7 +236,7 @@ module tb;
     end
   end
 
-  // Instantitate the memory backdoor util instances.
+  // Instantiate the memory backdoor util instances.
   //
   // This only applies to the generic eflash. A unique memory backdoor util instance is created for
   // each type of flash partition in each bank.
