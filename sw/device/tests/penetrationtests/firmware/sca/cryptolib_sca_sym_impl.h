@@ -63,6 +63,34 @@ status_t cryptolib_sca_drbg_impl(uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES],
                                  size_t trigger);
 
 /**
+ * Wrapper to AES-GCM cryptolib implementation.
+ *
+ * @param data_in .
+ * @param data_in_len .
+ * @param aad .
+ * @param aad_len .
+ * @param key .
+ * @param key_len .
+ * @param iv .
+ * @param[out] data_out .
+ * @param[out] data_out_len .
+ * @param[out] tag .
+ * @param[out] tag_len .
+ * @param cfg_in .
+ * @param[out] cfg_out .
+ * @param trigger .
+ * @return OK or error.
+ */
+status_t cryptolib_sca_gcm_impl(
+    uint8_t data_in[AES_CMD_MAX_MSG_BYTES], size_t data_in_len,
+    uint8_t aad[AES_CMD_MAX_MSG_BYTES], size_t aad_len,
+    uint8_t key[AES_CMD_MAX_KEY_BYTES], size_t key_len,
+    uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
+    uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
+    uint8_t tag[AES_CMD_MAX_MSG_BYTES], size_t *tag_len, size_t cfg_in,
+    size_t *cfg_out, size_t trigger);
+
+/**
  * Wrapper to HMAC cryptolib implementation.
  *
  * @param data_in Input data.

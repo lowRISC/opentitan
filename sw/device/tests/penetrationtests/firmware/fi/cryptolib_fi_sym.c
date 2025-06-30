@@ -61,16 +61,11 @@ status_t handle_cryptolib_fi_sym_gcm(ujson_t *uj) {
   // Perform a GCM encryption with aad and generate a tag.
   // Then, verify that tag again, before sending the output.
   // Trigger are over the API calls.
-
   cryptolib_fi_sym_gcm_out_t uj_output;
-  memset(uj_output.data, 0, AES_CMD_MAX_MSG_BYTES);
-  uj_output.data_len = AES_CMD_MAX_MSG_BYTES;
-  memset(uj_output.tag, 0, AES_CMD_MAX_MSG_BYTES);
-  uj_output.tag_len = AES_CMD_MAX_MSG_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_gcm_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_sym_gcm_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_gcm_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
