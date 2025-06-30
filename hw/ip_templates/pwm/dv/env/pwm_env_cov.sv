@@ -183,7 +183,7 @@ class pwm_env_cov extends cip_base_env_cov #(.CFG_T(pwm_env_cfg));
     tl_core_eq_cross_cp: cross core_clk_cp, tl_clk_cp;
   endgroup : clock_cg
 
-// Since DUT doesnt have a status register or a output signal to monitor underflow / overflow.
+// Since DUT doesn't have a status register or a output signal to monitor underflow / overflow.
 // passing the coverage from TB calculated values
   covergroup dc_uf_ovf_tb_cg with function sample(bit [PWM_NUM_CHANNELS-1:0] channel, bit uf_ovf);
      // sampled channel

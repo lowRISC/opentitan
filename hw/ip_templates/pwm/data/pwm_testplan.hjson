@@ -15,7 +15,7 @@
             pwm_smoke tests pulse and blink mode for a single channel
 
             Stimulus:
-              - configure the envionment for one PWM channel
+              - configure the environment for one PWM channel
               - program the duty cycle a and b values
               - configure  the ClkDiv and Resn
 
