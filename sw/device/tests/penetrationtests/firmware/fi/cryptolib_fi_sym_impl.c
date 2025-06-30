@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/hmac.h"
@@ -189,6 +190,106 @@ status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
   uj_output->cfg = 0;
   memset(uj_output->data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(uj_output->data, output_data, uj_output->data_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
+                               cryptolib_fi_sym_gcm_out_t *uj_output) {
+  // Construct the blinded key configuration.
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = uj_input.key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Construct blinded key from the key and testing mask.
+  uint32_t key_buf[kPentestAesMaxKeyWords];
+  memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key_buf, uj_input.key, uj_input.key_len);
+
+  uint32_t keyblob[keyblob_num_words(config)];
+  TRY(keyblob_from_key_and_mask(key_buf, kAesKeyMask, config, keyblob));
+
+  // Construct the blinded key.
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  // Set the checksum.
+  key.checksum = integrity_blinded_checksum(&key);
+
+  // Prepare the input buffers.
+  size_t iv_num_words = 4;
+  uint32_t iv_data[iv_num_words];
+  memcpy(iv_data, uj_input.iv, sizeof(iv_data));
+  otcrypto_const_word32_buf_t iv = {
+      .data = iv_data,
+      .len = iv_num_words,
+  };
+  otcrypto_const_byte_buf_t plaintext = {
+      .data = uj_input.data,
+      .len = uj_input.data_len,
+  };
+  otcrypto_const_byte_buf_t aad = {
+      .data = uj_input.aad,
+      .len = uj_input.aad_len,
+  };
+
+  size_t tag_num_words =
+      (uj_input.tag_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  uint32_t actual_tag_data[tag_num_words];
+  otcrypto_word32_buf_t actual_tag = {
+      .data = actual_tag_data,
+      .len = tag_num_words,
+  };
+
+  uint8_t actual_ciphertext_data[AES_CMD_MAX_MSG_BYTES];
+  otcrypto_byte_buf_t actual_ciphertext = {
+      .data = actual_ciphertext_data,
+      .len = uj_input.data_len,
+  };
+
+  otcrypto_aes_gcm_tag_len_t tag_len;
+  switch (uj_input.tag_len) {
+    case (128 / 8):
+      tag_len = kOtcryptoAesGcmTagLen128;
+      break;
+    case (96 / 8):
+      tag_len = kOtcryptoAesGcmTagLen96;
+      break;
+    case (64 / 8):
+      tag_len = kOtcryptoAesGcmTagLen64;
+      break;
+    case (32 / 8):
+      tag_len = kOtcryptoAesGcmTagLen32;
+      break;
+    default:
+      LOG_ERROR("Unrecognized AES-GCM tag length: %d", uj_input.tag_len);
+      return INVALID_ARGUMENT();
+  }
+
+  // Trigger window.
+  pentest_set_trigger_high();
+  TRY(otcrypto_aes_gcm_encrypt(&key, plaintext, iv, aad, tag_len,
+                               actual_ciphertext, actual_tag));
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  // Ciphertext.
+  uj_output->data_len = uj_input.data_len;
+  memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(uj_output->data, actual_ciphertext_data, uj_output->data_len);
+  // Tag.
+  uj_output->tag_len = uj_input.tag_len;
+  memset(uj_output->tag, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(uj_output->tag, actual_tag_data, uj_output->tag_len);
 
   return OK_STATUS();
 }

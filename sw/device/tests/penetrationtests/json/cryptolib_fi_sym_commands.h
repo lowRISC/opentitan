@@ -81,7 +81,7 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymCmacOut, cryptolib_fi_sym_cmac_out_t, CRYPTOLIB
     field(key, uint8_t, AES_CMD_MAX_KEY_BYTES) \
     field(key_len, size_t) \
     field(tag, uint8_t, AES_CMD_MAX_MSG_BYTES) \
-    field(tag_len, uint32_t) \
+    field(tag_len, size_t) \
     field(iv, uint8_t, AES_CMD_MAX_BLOCK_BYTES) \
     field(cfg, size_t) \
     field(trigger, size_t)
@@ -89,9 +89,9 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymGcmIn, cryptolib_fi_sym_gcm_in_t, CRYPTOLIBFISY
 
 #define CRYPTOLIBFISYM_GCM_OUT(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
-    field(data_len, uint32_t) \
+    field(data_len, size_t) \
     field(tag, uint8_t, AES_CMD_MAX_MSG_BYTES) \
-    field(tag_len, uint32_t) \
+    field(tag_len, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymGcmOut, cryptolib_fi_sym_gcm_out_t, CRYPTOLIBFISYM_GCM_OUT);
 
