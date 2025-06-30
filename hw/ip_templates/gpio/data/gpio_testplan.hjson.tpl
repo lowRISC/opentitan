@@ -84,7 +84,7 @@
     }
     {
       name: interrupt_and_noise_filter
-      desc: '''GPIO test that exercise GPIO noise filter functionaliy along with random interrupt
+      desc: '''GPIO test that exercise GPIO noise filter functionality along with random interrupt
             programming and randomly toggling each GPIO pin value, independently of other GPIO pins.
             Each random iteration performs following operations:
             1. programs random values in one or more interrupt registers
@@ -147,7 +147,7 @@
     }
     {
       name: straps_data
-      desc: '''Verify the straps data/valid ouput expected values based on the strap_en and gpio_i inputs:
+      desc: '''Verify the straps data/valid output expected values based on the strap_en and gpio_i inputs:
       - Drive gpio_i input with random values.
       - Set strap_en high for at least one clock cycle.
       - Read the registers hw_straps_data_in and hw_straps_data_in_valid.

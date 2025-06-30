@@ -33,7 +33,7 @@ class gpio_out_oe_cov_obj extends uvm_object;
   `uvm_object_utils(gpio_out_oe_cov_obj)
 
   // Covergroup: var1_var2_cg
-  // Covergroup invovling two variables of bit type and are meant to
+  // Covergroup involving two variables of bit type and are meant to
   // be used for cross coverage related to *out* and *oe* registers
   covergroup var1_var2_cg(string name) with function sample(bit var1, bit var2);
     option.per_instance = 1;
@@ -117,7 +117,7 @@ class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module
         intr_state_cov_obj[each_pin] = new($sformatf("intr_state_cov_obj_pin%0d", each_pin));
         // Create per pin coverage interrupts
         foreach(intr_types[each_type]) begin
-          // Per pin coverage for "Intrrupt Control Enable" values
+          // Per pin coverage for "Interrupt Control Enable" values
           // and transitions for each type of interrupt
           intr_ctrl_en_cov_objs[each_pin][{"intr_ctrl_en_", intr_types[each_type]}] =
               new({"intr_ctrl_en_", intr_types[each_type], $sformatf("_pin%0d_cov", each_pin)});

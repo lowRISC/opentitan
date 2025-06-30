@@ -29,7 +29,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   bit [TL_DW-1:0] last_intr_test_event;
   // Flag to:
   //  (i) indicate that write to INTR_STATE register just happened, and
-  // (ii) store information of which all interupt bits were cleared
+  // (ii) store information of which all interrupt bits were cleared
   bit [TL_DW-1:0] cleared_intr_bits;
   // Flag to indicate that the strap was triggered
   bit first_strap_triggered;
@@ -677,7 +677,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           end
         end
       end
-      // Coverage Sampling: Cross coverage of (edge tiggered intr type)x(enable)x(state)
+      // Coverage Sampling: Cross coverage of (edge triggered intr type)x(enable)x(state)
       // when type is enabled
       if (cfg.en_cov) begin
         foreach (rising_edge_intr_events[each_bit]) begin
@@ -692,7 +692,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
       end
     end
-    // 2. Look for level triggerred interrupts
+    // 2. Look for level triggered interrupts
     begin
       bit [TL_DW-1:0] lvlhigh_intr_events, lvllow_intr_events;
       for (uint each_bit = 0; each_bit < TL_DW; each_bit++) begin
@@ -710,7 +710,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           end
         end
       end
-      // Coverage Sampling: Cross coverage of (edge tiggered intr type)x(enable)x(state)
+      // Coverage Sampling: Cross coverage of (edge triggered intr type)x(enable)x(state)
       // when type is enabled
       if (cfg.en_cov) begin
         foreach (lvlhigh_intr_events[each_bit]) begin

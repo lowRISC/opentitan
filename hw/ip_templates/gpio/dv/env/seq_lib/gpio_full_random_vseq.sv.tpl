@@ -102,7 +102,7 @@ class ${module_instance_name}_full_random_vseq extends ${module_instance_name}_r
   // As some of the GPIO pins are already configured and driven as inputs, we need
   // to make sure that DATA_OUT and DATA_OE combination is programmed such that:
   // - Output driven on pin is same as GPIO input value, or
-  // - Outpurt enable on pin is 0
+  // - Output enable on pin is 0
   // By doing either of above two options, we make sure that none of the GPIO pins
   // become unknowns due to multiple drivers with conflicting values.
   task pgm_out_oe_regs(bit [NUM_GPIOS-1:0] gpio_if_pins_o_val,
