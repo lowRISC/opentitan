@@ -115,14 +115,11 @@ status_t handle_cryptolib_fi_sym_drbg(ujson_t *uj) {
   /////////////// STUB START ///////////////
   // Perform a DRBG call to generate random output.
   // Trigger are over the API calls.
-
   cryptolib_fi_sym_drbg_out_t uj_output;
-  memset(uj_output.data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
-  uj_output.data_len = DRBG_CMD_MAX_OUTPUT_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_drbg_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 

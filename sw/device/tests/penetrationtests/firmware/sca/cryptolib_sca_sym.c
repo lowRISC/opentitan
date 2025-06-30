@@ -138,10 +138,9 @@ static status_t trigger_cryptolib_drbg(
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
-
-  memset(data_out, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
-  *data_out_len = DRBG_CMD_MAX_OUTPUT_BYTES;
-  *cfg_out = 0;
+  TRY(cryptolib_sca_drbg_impl(entropy, entropy_len, nonce, nonce_len, data_out,
+                              data_out_len, reseed_interval, mode, cfg_in,
+                              cfg_out, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
