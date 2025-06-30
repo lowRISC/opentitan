@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Verify the straps data/valid ouput expected values based on the strap_en and gpio_in inputs:
+// Verify the straps data/valid output expected values based on the strap_en and gpio_in inputs:
 //    - Drive gpio_in input with random values.
 //    - Set the strap_en high for at least one clock cycle.
 //    - Read the registers hw_straps_data_in and hw_straps_data_in_valid.
@@ -99,7 +99,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
   // This task start the strap en test. First it will test the strap enable
   // with the driven gpio_i. On a second step drive the gpio_out and check the strap
   // registers based on that. And finally applies a second reset and check if the strap registers
-  // are reseted.
+  // are reset.
   task start_test();
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
