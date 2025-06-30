@@ -89,7 +89,7 @@ class flash_ctrl_env #(
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
-    // For fast receiver, set the range of asyn frequency between 1/5 and 10 times
+    // For fast receiver, set the range of async frequency between 1/5 and 10 times
     // of core frequency
     foreach (cfg.m_alert_agent_cfgs[i]) begin
       if (cfg.m_alert_agent_cfgs[i].fast_rcvr) begin

@@ -21,7 +21,7 @@ class flash_ctrl_sw_op_vseq extends flash_ctrl_base_vseq;
   // Bit vector representing which of the mp region cfg CSRs to enable.
   bit           [flash_ctrl_top_specific_pkg::MpRegions-1:0] en_mp_regions;
 
-  // Indicates whether to poll before writing to the prog_fifo or reading from the rd_fifo. If interupts are
+  // Indicates whether to poll before writing to the prog_fifo or reading from the rd_fifo. If interrupts are
   // enabled, the interrupt signals will be used instead. When set to 0, it will continuously write
   // to prog_fifo / read from rd_fifo, relying on their natural backpressure mechanism.
   bit                                           poll_fifo_status;
