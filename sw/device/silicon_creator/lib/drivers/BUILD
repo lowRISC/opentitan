@@ -217,6 +217,7 @@ dual_cc_library(
 cc_test(
     name = "hmac_unittest",
     srcs = ["hmac_unittest.cc"],
+    local_defines = ["HMAC_UNIT_TEST_"],
     deps = [
         dual_cc_device_library_of(":hmac"),
         "//hw/ip/hmac/data:hmac_c_regs",
