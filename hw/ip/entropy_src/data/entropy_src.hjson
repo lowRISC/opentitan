@@ -409,28 +409,6 @@
         }
       ]
     },
-    { name: "REV",
-      desc: "Revision register",
-      swaccess: "ro",
-      hwaccess: "none",
-      fields: [
-        { bits: "23:16",
-          name: "CHIP_TYPE",
-          desc: "Read of this register shows the type of chip using this block.",
-          resval: "0x1"
-        }
-        { bits: "15:8",
-          name: "HW_REVISION",
-          desc: "Read of this register shows the revision of this block.",
-          resval: "0x3"
-        }
-        { bits: "7:0",
-          name: "ABI_REVISION",
-          desc: "Read of this register shows the ABI of this block.",
-          resval: "0x3"
-        }
-      ]
-    },
     { name: "MODULE_ENABLE",
       desc: "Module enable register",
       swaccess: "rw",
