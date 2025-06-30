@@ -12,7 +12,7 @@
               - Generate instruction binary and load to memory model
               - Only arithmetic instructions are generated
               - Assert fetch enable to start the core execution
-              - Terminate the test after ecall instructinon in detected
+              - Terminate the test after ecall instruction in detected
               - All instruction results are compared against spike simulation'''
       stage: V1
       tests: ["riscv_arithmetic_basic_test"]
@@ -102,7 +102,7 @@
               - Reserved instructions as specified in RISC-V user mode spec
               - CSR instruction to not implemented CSR
               - Execute S/U mode instructions in machine mode
-            Verify the illlegal instruction exception is raised and the context is captured correctly in privieged mode CSRs
+            Verify the illegal instruction exception is raised and the context is captured correctly in privileged mode CSRs
               - mstatus, mcause, mepc
             Verify the core can resume execution after returning from trap handling'''
       stage: V1
@@ -204,7 +204,7 @@
     {
       name: riscv_debug_ebreakmu_test
       desc: '''
-            - set dcsr.ebreakm/u at begining of test
+            - set dcsr.ebreakm/u at beginning of test
             - randomly insert ebreak instructions in generated code
             - boot randomly into either M/U modes
             - verify that ebreak instructions (in either mode) now enter debug mode'''
@@ -285,7 +285,7 @@
       desc: '''
             Perform all CSR instructions to implemented privileged CSR
             Verify the reset value of the privileged CSR
-            Verify WARL field can be upated properly'''
+            Verify WARL field can be updated properly'''
       stage: V1
       tests: ["riscv_csr_test"]
     }
