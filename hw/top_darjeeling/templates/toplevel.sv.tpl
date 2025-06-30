@@ -11,19 +11,35 @@ from topgen.clocks import Clocks
 from topgen.resets import Resets
 from topgen.merge import is_unmanaged_reset, get_alerts_with_unique_lpg_idx
 
-num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
-                 top['pinmux']['io_counts']['muxed']['inputs']
-num_mio_outputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
-                  top['pinmux']['io_counts']['muxed']['outputs']
-num_mio_pads = top['pinmux']['io_counts']['muxed']['pads']
+## feature-gating flags
+top_has_pinmux        = lib.find_module(top['module'], 'pinmux') is not None
+top_has_alert_handler = lib.find_module(top['module'], 'alert_handler') is not None
+top_has_ast           = lib.find_module(top['module'], 'ast') is not None
+top_has_rstmgr        = lib.find_module(top['module'], 'rstmgr') is not None
+top_has_gpio          = lib.find_module(top['module'], 'gpio') is not None
+top_has_scan_en = False
+for m in top['module']:
+  if not lib.is_inst(m):
+    continue
+  block = name_to_block[m['type']]
+  if block.scan_en:
+    top_has_scan_en = True
 
-num_dio_inputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
-                 top['pinmux']['io_counts']['dedicated']['inputs']
-num_dio_outputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+
+if top_has_pinmux:
+  num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
+                   top['pinmux']['io_counts']['muxed']['inputs']
+  num_mio_outputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
+                    top['pinmux']['io_counts']['muxed']['outputs']
+  num_mio_pads = top['pinmux']['io_counts']['muxed']['pads']
+
+  num_dio_inputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                   top['pinmux']['io_counts']['dedicated']['inputs']
+  num_dio_outputs = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                    top['pinmux']['io_counts']['dedicated']['outputs']
+  num_dio_total = top['pinmux']['io_counts']['dedicated']['inouts'] + \
+                  top['pinmux']['io_counts']['dedicated']['inputs'] + \
                   top['pinmux']['io_counts']['dedicated']['outputs']
-num_dio_total = top['pinmux']['io_counts']['dedicated']['inouts'] + \
-                top['pinmux']['io_counts']['dedicated']['inputs'] + \
-                top['pinmux']['io_counts']['dedicated']['outputs']
 
 num_im = 0
 for x in top["inter_signal"]["external"]:
@@ -33,8 +49,9 @@ for x in top["inter_signal"]["external"]:
                if isinstance(x["width"], Parameter) else x["width"])
     num_im += width
 
-max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
-max_sigwidth = len("{}".format(max_sigwidth))
+if top_has_pinmux:
+  max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
+  max_sigwidth = len("{}".format(max_sigwidth))
 
 cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
 
@@ -87,20 +104,20 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 ) (
-% if num_mio_pads != 0:
+% if top_has_pinmux:
+  % if num_mio_pads != 0:
   // Multiplexed I/O
   input        ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_in_i,
   output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_out_o,
   output logic ${lib.bitarray(num_mio_pads, max_sigwidth)} mio_oe_o,
-% endif
-% if num_dio_total != 0:
+  % endif
+  % if num_dio_total != 0:
   // Dedicated I/O
   input        ${lib.bitarray(num_dio_total, max_sigwidth)} dio_in_i,
   output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_out_o,
   output logic ${lib.bitarray(num_dio_total, max_sigwidth)} dio_oe_o,
-% endif
+  % endif
 
-% if "pinmux" in top:
   // pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
@@ -164,12 +181,16 @@ module top_${top["name"]} #(
   input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
   % endfor
 
+  % if top_has_ast:
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
   output rstmgr_pkg::rstmgr_out_t rsts_ast_o,
+  % endif
 
   input                      scan_rst_ni, // reset used for test mode
+  % if top_has_scan_en:
   input                      scan_en_i,
+  % endif
   input prim_mubi_pkg::mubi4_t scanmode_i   // lc_ctrl_pkg::On for Scan
 );
 
@@ -209,6 +230,7 @@ module top_${top["name"]} #(
   % endfor
 % endfor
 
+% if top_has_pinmux:
   // Signals
   logic [${num_mio_inputs - 1}:0] mio_p2d;
   logic [${num_mio_outputs - 1}:0] mio_d2p;
@@ -216,23 +238,24 @@ module top_${top["name"]} #(
   logic [${num_dio_total - 1}:0] dio_p2d;
   logic [${num_dio_total - 1}:0] dio_d2p;
   logic [${num_dio_total - 1}:0] dio_en_d2p;
-% for m in top["module"]:
-  % if not lib.is_inst(m):
+  % for m in top["module"]:
+    % if not lib.is_inst(m):
 <% continue %>
-  % endif
+    % endif
 <%
   block = name_to_block[m['type']]
   inouts, inputs, outputs = block.xputs
 %>\
   // ${m["name"]}
-  % for p_in in inputs + inouts:
+    % for p_in in inputs + inouts:
   logic ${lib.bitarray(p_in.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_in.name}_p2d;
-  % endfor
-  % for p_out in outputs + inouts:
+    % endfor
+    % for p_out in outputs + inouts:
   logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_d2p;
   logic ${lib.bitarray(p_out.bits.width(), max_sigwidth)} cio_${m["name"]}_${p_out.name}_en_d2p;
+    % endfor
   % endfor
-% endfor
+% endif
 
 
 <%
@@ -246,7 +269,7 @@ module top_${top["name"]} #(
 <%
   block = name_to_block[m['type']]
 %>\
-    % if not lib.is_inst(m):
+    % if not lib.is_inst(m) or "outgoing_interrupt" in m:
 <% continue %>
     % endif
     % for intr in block.interrupts:
@@ -258,16 +281,18 @@ module top_${top["name"]} #(
     % endfor
 % endfor
 
+% if top_has_alert_handler:
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
   prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
 
-% if not top["alert"]:
+  % if not top["alert"]:
   for (genvar k = 0; k < alert_handler_pkg::NAlerts; k++) begin : gen_alert_tie_off
     // tie off if no alerts present in the system
     assign alert_tx[k].alert_p = 1'b0;
     assign alert_tx[k].alert_n = 1'b1;
   end
+  % endif
 % endif
 
 ## Inter-module Definitions
@@ -363,11 +388,13 @@ module top_${top["name"]} #(
   % endif
 % endfor
 
+% if top_has_ast:
   // See #7978 This below is a hack.
   // This is because ast is a comportable-like module that sits outside
   // of top_${top["name"]}'s boundary.
   assign clks_ast_o = ${top['clocks'].hier_paths['top'][:-1]};
   assign rsts_ast_o = ${top['resets'].hier_paths['top'][:-1]};
+% endif
 
   // ibex specific assignments
   // TODO: This should be further automated in the future.
@@ -377,19 +404,23 @@ module top_${top["name"]} #(
   // Unconditionally disable the late debug feature and enable early debug
   assign rv_dm_otp_dis_rv_dm_late_debug = prim_mubi_pkg::MuBi8True;
 
+% if 'rv_core_ibex_boot_addr' in (sig['signame'] for sig in top['inter_signal']['definitions']):
   ## Not all top levels have a rom controller.
   ## For those that do not, reference the ROM directly.
 <% num_rom_ctrl = lib.num_rom_ctrl(top["module"]) %>\
-% if num_rom_ctrl != 0:
+  % if num_rom_ctrl != 0:
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL0__ROM;
-% else:
+  % else:
   ## Not all top levels have
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM;
+  % endif
 % endif
 
+% if top_has_alert_handler:
   // Wire up alert handler LPGs
   prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
   prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_rst_en;
+% endif
 
 <%
 # get all known typed clocks and add them to a dict
@@ -454,6 +485,7 @@ for rst in output_rsts:
   % endfor
 % endfor
 
+% if top_has_rstmgr:
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off
@@ -473,6 +505,7 @@ for rst in output_rsts:
 % endfor
 //VCS coverage on
 // pragma coverage on
+% endif
 
   // Peripheral Instantiation
 
@@ -704,7 +737,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   );
 % endfor
 
-% if "pinmux" in top:
+% if top_has_pinmux:
   // Pinmux connections
   // All muxed inputs
   % for sig in top["pinmux"]["ios"]:
