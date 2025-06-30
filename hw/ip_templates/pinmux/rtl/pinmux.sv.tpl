@@ -22,7 +22,9 @@ module pinmux
 ) (
   input                            clk_i,
   input                            rst_ni,
+% if enable_strap_sampling:
   input                            rst_sys_ni,
+% endif
   // Scan enable
   input  prim_mubi_pkg::mubi4_t    scanmode_i,
   // Slow always-on clock

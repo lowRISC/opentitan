@@ -164,7 +164,6 @@
       { name: "lc_io_div2",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div2" }
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clock: "io_div4" }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clock: "main"    }
-      { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clock: "io_div4" }
       { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
       { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true }
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clock: "io_div4", sw: true },
@@ -539,7 +538,6 @@
       clock_group: "powerup",
       reset_connections: {rst_ni: "lc_io_div4",
                           rst_aon_ni: "lc_aon",
-                          rst_sys_ni: "sys_io_div4"
                          },
       domain: ["Aon"],
       base_addr: {
