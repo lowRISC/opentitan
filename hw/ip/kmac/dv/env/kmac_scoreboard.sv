@@ -1016,6 +1016,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             do_read_check = 0;
             `DV_CHECK_EQ(csr.get_mirrored_value() & err_chk_mask, item.d_data & err_chk_mask,
                          $sformatf("reg name: %0s", csr.get_full_name()))
+          end else if (err_code.code == sha3_pkg::ErrSha3SwControl) begin
+            // Fault must have been injected.
+            do_read_check = 0;
+            `DV_CHECK_NE(err_code.info[6:3], prim_mubi_pkg::MuBi4False,
+                         $sformatf("reg name: %0s", csr.get_full_name()))
+            `DV_CHECK_NE(err_code.info[6:3], prim_mubi_pkg::MuBi4True,
+                         $sformatf("reg name: %0s", csr.get_full_name()))
           end
         end
       end
