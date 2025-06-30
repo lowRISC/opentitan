@@ -307,21 +307,21 @@
     % endfor
 
     { name: "NumRstReqs",
-      desc: "Number of peripheral reset requets",
+      desc: "Number of peripheral reset requests",
       type: "int",
       default: "${NumRstReqs}",
       local: "true"
     },
 
     { name: "NumIntRstReqs",
-      desc: "Number of pwrmgr internal reset requets",
+      desc: "Number of pwrmgr internal reset requests",
       type: "int",
       default: "${len(int_reset_reqs)}",
       local: "true"
     },
 
     { name: "NumDebugRstReqs",
-      desc: "Number of debug reset requets",
+      desc: "Number of debug reset requests",
       type: "int",
       default: "${len(debug_reset_reqs)}",
       local: "true"

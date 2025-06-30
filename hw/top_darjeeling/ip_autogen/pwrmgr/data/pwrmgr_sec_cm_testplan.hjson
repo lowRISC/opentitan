@@ -98,7 +98,7 @@
             - Expecting fatal alert event and rstreqs[ResetEscIdx].
             - Add assertion to see if u_esc_timeout happens, then
               rstreqs[ResetEscIdx] should be asserted.
-            - After the alert agent processese the alert
+            - After the alert agent processes the alert
               by asserting escalation reset,
               see if dut is back to normal operation state.
             '''

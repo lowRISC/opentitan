@@ -23,7 +23,7 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
     wait_for_rom_and_active();
   endtask : body
 
-  // Trigers an escalation timeout fault, either stopping clk_esc_i or driving rst_esc_ni.
+  // Triggers an escalation timeout fault, either stopping clk_esc_i or driving rst_esc_ni.
   //
   // Randomly set a bit to 0 or 1: if 0 stop clk_esc_i, if 1 make rst_esc_ni active.
   task trigger_escalation_timeout();
