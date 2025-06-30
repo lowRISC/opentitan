@@ -19,22 +19,29 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_lc_ctrl_t lc;
 
 status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  penetrationtest_cpuctrl_t uj_cpuctrl_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
+  penetrationtest_sensor_config_t uj_sensor_data;
+  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  penetrationtest_alert_config_t uj_alert_data;
+  TRY(ujson_deserialize_penetrationtest_alert_config_t(uj, &uj_alert_data));
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // pentest_init is not needed. kPentestTriggerSourceAes is selected as a
   // placeholder.
   pentest_init(kPentestTriggerSourceAes,
-               kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng);
+               kPentestPeripheralIoDiv4 | kPentestPeripheralCsrng,
+               uj_sensor_data.sensor_ctrl_enable,
+               uj_sensor_data.sensor_ctrl_en_fatal);
 
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;
   TRY(pentest_configure_cpu(
-      uj_data.enable_icache, &uj_output.icache_en, uj_data.enable_dummy_instr,
-      &uj_output.dummy_instr_en, uj_data.enable_jittery_clock,
-      uj_data.enable_sram_readback, &uj_output.clock_jitter_locked,
+      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
+      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
+      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
+      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
       &uj_output.sram_ret_readback_en));
@@ -50,11 +57,21 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  pentest_configure_alert_handler();
+  pentest_configure_alert_handler(
+      uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
+      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
+      uj_alert_data.signals, uj_alert_data.duration_cycles,
+      uj_alert_data.ping_timeout);
 
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
+
+  // Read the sensor config.
+  TRY(pentest_send_sensor_config(uj));
+
+  // Read the alert config.
+  TRY(pentest_send_alert_config(uj));
 
   // Read different SKU config fields and return to host.
   TRY(pentest_send_sku_config(uj));

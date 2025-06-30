@@ -38,6 +38,10 @@ enum {
    * Number of reference values that are available in the ref_values array.
    */
   kNumRefValues = 32,
+  /**
+   * Number of values used for the sram_write_read_alt test.
+   */
+  kSramWriteReadAltNumValues = 16,
 };
 
 // A function which takes an uint32_t as its only argument.
@@ -3318,6 +3322,96 @@ status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_sram_write_read_alt(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // Initialize the SRAM with a counter
+  for (size_t i = 0; i < kSramWriteReadAltNumValues; i++) {
+    sram_main_buffer[i] = i;
+  }
+
+  // Initialize the register file before the FI trigger window.
+  INIT_REGISTER_FILE
+
+  // FI code target.
+  PENTEST_ASM_TRIGGER_HIGH
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[1]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[1]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[2]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[2]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[3]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[3]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[4]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[4]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[5]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[5]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[6]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[6]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[7]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[7]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[8]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[8]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[9]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[9]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[10]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[10]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[11]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[11]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[12]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[12]));
+  asm volatile("sw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[13]));
+  asm volatile("lw x6, (%0)" : : "r"((uint32_t *)&sram_main_buffer[13]));
+  asm volatile("sw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[14]));
+  asm volatile("lw x7, (%0)" : : "r"((uint32_t *)&sram_main_buffer[14]));
+  asm volatile("sw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[15]));
+  asm volatile("lw x5, (%0)" : : "r"((uint32_t *)&sram_main_buffer[15]));
+  PENTEST_ASM_TRIGGER_LOW
+
+  // Dump the register file after the FI trigger window.
+  DUMP_REGISTER_FILE
+
+  // Load the values stored in the sram buffer.
+  uint32_t sram_values[kSramWriteReadAltNumValues] = {0};
+  for (size_t i = 0; i < kSramWriteReadAltNumValues; i++) {
+    sram_values[i] = sram_main_buffer[i];
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  ibex_fi_test_result_sram_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.memory, 0, sizeof(uj_output.memory));
+  memset(uj_output.registers, 0, sizeof(uj_output.registers));
+
+  // Return the 16 values from SRAM.
+  for (size_t it = 0; it < kSramWriteReadAltNumValues; it++) {
+    uj_output.memory[it] = sram_values[it];
+  }
+
+  // Return register file dump back to host.
+  memcpy(uj_output.registers, registers_dumped, sizeof(registers_dumped));
+  // Send result & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_sram_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
@@ -3821,8 +3915,12 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop_chain(ujson_t *uj)
 }
 
 status_t handle_ibex_fi_init(ujson_t *uj) {
-  penetrationtest_cpuctrl_t uj_data;
-  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_data));
+  penetrationtest_cpuctrl_t uj_cpuctrl_data;
+  TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
+  penetrationtest_sensor_config_t uj_sensor_data;
+  TRY(ujson_deserialize_penetrationtest_sensor_config_t(uj, &uj_sensor_data));
+  penetrationtest_alert_config_t uj_alert_data;
+  TRY(ujson_deserialize_penetrationtest_alert_config_t(uj, &uj_alert_data));
 
   pentest_select_trigger_type(kPentestTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
@@ -3832,18 +3930,25 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
                kPentestPeripheralIoDiv4 | kPentestPeripheralEdn |
                    kPentestPeripheralCsrng | kPentestPeripheralEntropy |
                    kPentestPeripheralAes | kPentestPeripheralHmac |
-                   kPentestPeripheralKmac | kPentestPeripheralOtbn);
+                   kPentestPeripheralKmac | kPentestPeripheralOtbn,
+               uj_sensor_data.sensor_ctrl_enable,
+               uj_sensor_data.sensor_ctrl_en_fatal);
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured
   // and reported to the test.
-  pentest_configure_alert_handler();
+  pentest_configure_alert_handler(
+      uj_alert_data.alert_classes, uj_alert_data.enable_alerts,
+      uj_alert_data.enable_classes, uj_alert_data.accumulation_thresholds,
+      uj_alert_data.signals, uj_alert_data.duration_cycles,
+      uj_alert_data.ping_timeout);
 
   // Configure the CPU for the pentest.
   penetrationtest_device_info_t uj_output;
   TRY(pentest_configure_cpu(
-      uj_data.enable_icache, &uj_output.icache_en, uj_data.enable_dummy_instr,
-      &uj_output.dummy_instr_en, uj_data.enable_jittery_clock,
-      uj_data.enable_sram_readback, &uj_output.clock_jitter_locked,
+      uj_cpuctrl_data.enable_icache, &uj_output.icache_en,
+      uj_cpuctrl_data.enable_dummy_instr, &uj_output.dummy_instr_en,
+      uj_cpuctrl_data.dummy_instr_count, uj_cpuctrl_data.enable_jittery_clock,
+      uj_cpuctrl_data.enable_sram_readback, &uj_output.clock_jitter_locked,
       &uj_output.clock_jitter_en, &uj_output.sram_main_readback_locked,
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
       &uj_output.sram_ret_readback_en));
@@ -3866,6 +3971,12 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
+
+  // Read the sensor config.
+  TRY(pentest_send_sensor_config(uj));
+
+  // Read the alert config.
+  TRY(pentest_send_alert_config(uj));
 
   // Read different SKU config fields and return to host.
   TRY(pentest_send_sku_config(uj));
@@ -4012,6 +4123,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_sram_write(uj);
     case kIbexFiSubcommandCharSramWriteRead:
       return handle_ibex_fi_char_sram_write_read(uj);
+    case kIbexFiSubcommandCharSramWriteReadAlt:
+      return handle_ibex_fi_char_sram_write_read_alt(uj);
     case kIbexFiSubcommandCharSramWriteStaticUnrolled:
       return handle_ibex_fi_char_sram_write_static_unrolled(uj);
     case kIbexFiSubcommandCharUncondBranch:

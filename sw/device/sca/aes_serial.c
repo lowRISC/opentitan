@@ -782,8 +782,11 @@ static void init_aes(void) {
  * UART.
  */
 bool test_main(void) {
+  bool sensor_ctrl_enable = false;
+  bool sensor_ctrl_en_fatal[SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS] = {false};
   pentest_init(kPentestTriggerSourceAes,
-               kPentestPeripheralIoDiv4 | kPentestPeripheralAes);
+               kPentestPeripheralIoDiv4 | kPentestPeripheralAes,
+               sensor_ctrl_enable, sensor_ctrl_en_fatal);
 
   LOG_INFO("Running AES serial");
 

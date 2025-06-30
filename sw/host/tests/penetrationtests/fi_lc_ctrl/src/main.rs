@@ -41,7 +41,24 @@ struct FiLcCtrlTestCase {
     // Input only needed for the "Init" subcommand.
     #[serde(default)]
     input: String,
+    #[serde(default)]
+    sensors: String,
+    #[serde(default)]
+    alerts: String,
     expected_output: Vec<String>,
+}
+
+fn filter_response(response: serde_json::Value) -> serde_json::Map<String, serde_json::Value> {
+    // Filter common items.
+    let response_common_filtered = filter_response_common(response.clone());
+    // Filter test-specifc items.
+    let mut map: serde_json::Map<String, serde_json::Value> = response_common_filtered.clone();
+    // Depending on the SKU, the life cycle state and counter could be different.
+    // Hence, filter it.
+    map.remove("state");
+    map.remove("counter");
+
+    map
 }
 
 fn run_fi_lc_ctrl_testcase(
@@ -68,6 +85,18 @@ fn run_fi_lc_ctrl_testcase(
         input.send(uart)?;
     }
 
+    // Check if we need to send sensor info.
+    if !test_case.sensors.is_empty() {
+        let sensors: serde_json::Value = serde_json::from_str(test_case.sensors.as_str()).unwrap();
+        sensors.send(uart)?;
+    }
+
+    // Check if we need to send alert info.
+    if !test_case.alerts.is_empty() {
+        let alerts: serde_json::Value = serde_json::from_str(test_case.alerts.as_str()).unwrap();
+        alerts.send(uart)?;
+    }
+
     // Check test outputs
     if !test_case.expected_output.is_empty() {
         for exp_output in test_case.expected_output.iter() {
@@ -80,12 +109,12 @@ fn run_fi_lc_ctrl_testcase(
             )?;
             // Only check non empty JSON responses.
             if output.as_object().is_some() {
-                let output_received = filter_response_common(output.clone());
+                let output_received = filter_response(output.clone());
 
                 // Filter expected output.
                 let exp_output: serde_json::Value =
                     serde_json::from_str(exp_output.as_str()).unwrap();
-                let output_expected = filter_response_common(exp_output.clone());
+                let output_expected = filter_response(exp_output.clone());
 
                 // Check received with expected output.
                 if output_expected != output_received {
