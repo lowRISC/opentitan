@@ -25,6 +25,9 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // Tracks if a test invalidated the sideloading key.
   bit key_invalidated = 0;
 
+  // Tracks if a sha3 sw control error is expected to occur.
+  bit expect_sha3_sw_ctrl_err = 0;
+
   // These values are used by the test vector tests to select the correct vector text files.
   // These are unused by all other tests.
   int sha3_variant;
