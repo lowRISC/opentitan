@@ -423,7 +423,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   //    precondition about the initial state of the prim_alert_sender FSM, guaranteeing that we're
   //    not waiting for an ack.
   //
-  //  - The prim_alert_sender musn't detect a signal integrity issue on the alert signal coming in
+  //  - The prim_alert_sender mustn't detect a signal integrity issue on the alert signal coming in
   //    (alert_rx_i). Normally FpvSecCm tests get analysed with an FPV_ALERT_NO_SIGINT_ERR define,
   //    but we don't have that defined here. To avoid this happening, we want an assertion of the
   //    form "If no integrity error is detected for _SEC_CM_ALERT_MAX_CYC cycles, the alert_p signal
