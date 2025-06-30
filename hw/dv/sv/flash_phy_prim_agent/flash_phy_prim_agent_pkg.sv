@@ -14,7 +14,7 @@ package flash_phy_prim_agent_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  localparam int unsigned PhyAddrW = flash_phy_pkg::BankAddrW;
+  localparam int unsigned PhyAddrW = flash_phy_macro_pkg::BankAddrW;
   localparam int unsigned PhyDataW = flash_phy_pkg::FullDataWidth;
 
   // local types

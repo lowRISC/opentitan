@@ -26,7 +26,7 @@
 //     -> asf_18
 //       -> peri
 //     -> flash_ctrl.core
-//     -> flash_ctrl.prim
+//     -> flash_macro_wrapper
 //     -> aes
 //     -> rv_plic
 //     -> sram_ctrl_main.regs
@@ -53,8 +53,8 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_peri_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__core_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__core_i,
-  output tlul_pkg::tl_h2d_t tl_flash_ctrl__prim_o,
-  input  tlul_pkg::tl_d2h_t tl_flash_ctrl__prim_i,
+  output tlul_pkg::tl_h2d_t tl_flash_macro_wrapper_o,
+  input  tlul_pkg::tl_d2h_t tl_flash_macro_wrapper_i,
   output tlul_pkg::tl_h2d_t tl_flash_ctrl__mem_o,
   input  tlul_pkg::tl_d2h_t tl_flash_ctrl__mem_i,
   output tlul_pkg::tl_h2d_t tl_aes_o,
@@ -154,8 +154,8 @@ module xbar_main (
   assign tl_flash_ctrl__core_o = tl_s1n_17_ds_h2d[5];
   assign tl_s1n_17_ds_d2h[5] = tl_flash_ctrl__core_i;
 
-  assign tl_flash_ctrl__prim_o = tl_s1n_17_ds_h2d[6];
-  assign tl_s1n_17_ds_d2h[6] = tl_flash_ctrl__prim_i;
+  assign tl_flash_macro_wrapper_o = tl_s1n_17_ds_h2d[6];
+  assign tl_s1n_17_ds_d2h[6] = tl_flash_macro_wrapper_i;
 
   assign tl_aes_o = tl_s1n_17_ds_h2d[7];
   assign tl_s1n_17_ds_d2h[7] = tl_aes_i;
@@ -232,7 +232,7 @@ end
       dev_sel_s1n_17 = 4'd5;
 
     end else if ((tl_s1n_17_us_h2d.a_address &
-                  ~(ADDR_MASK_FLASH_CTRL__PRIM)) == ADDR_SPACE_FLASH_CTRL__PRIM) begin
+                  ~(ADDR_MASK_FLASH_MACRO_WRAPPER)) == ADDR_SPACE_FLASH_MACRO_WRAPPER) begin
       dev_sel_s1n_17 = 4'd6;
 
     end else if ((tl_s1n_17_us_h2d.a_address &

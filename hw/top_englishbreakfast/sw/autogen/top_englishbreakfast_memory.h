@@ -295,23 +295,6 @@
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_CORE_SIZE_BYTES 0x200
 /**
- * Peripheral base address for prim device on flash_ctrl in top englishbreakfast.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR 0x41008000
-
-/**
- * Peripheral size for prim device on flash_ctrl in top englishbreakfast.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES`.
- */
-#define TOP_ENGLISHBREAKFAST_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
-/**
  * Peripheral base address for mem device on flash_ctrl in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -328,6 +311,23 @@
  * `TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES`.
  */
 #define TOP_ENGLISHBREAKFAST_FLASH_CTRL_MEM_SIZE_BYTES 0x10000
+/**
+ * Peripheral base address for flash_macro_wrapper in top englishbreakfast.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR 0x41008000
+
+/**
+ * Peripheral size for flash_macro_wrapper in top englishbreakfast.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_BASE_ADDR + TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_SIZE_BYTES`.
+ */
+#define TOP_ENGLISHBREAKFAST_FLASH_MACRO_WRAPPER_SIZE_BYTES 0x80
 /**
  * Peripheral base address for rv_plic in top englishbreakfast.
  *

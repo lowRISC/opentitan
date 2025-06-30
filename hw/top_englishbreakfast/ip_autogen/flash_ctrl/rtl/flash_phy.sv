@@ -11,6 +11,7 @@
 // correctly collecting the responses in order.
 
 module flash_phy
+  import flash_ctrl_pkg::ProgTypes;
   import flash_ctrl_top_specific_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
@@ -25,26 +26,13 @@ module flash_phy
   output logic host_req_done_o,
   output logic [BusFullWidth-1:0] host_rdata_o,
   output logic host_rderr_o,
-  input flash_req_t flash_ctrl_i,
+  input  flash_req_t flash_ctrl_i,
   output flash_rsp_t flash_ctrl_o,
-  input tlul_pkg::tl_h2d_t tl_i,
-  output tlul_pkg::tl_d2h_t tl_o,
-  input mubi4_t scanmode_i,
-  input scan_en_i,
-  input scan_rst_ni,
-  input flash_power_ready_h_i,
-  input flash_power_down_h_i,
-  inout [1:0] flash_test_mode_a_io,
-  inout flash_test_voltage_h_io,
-  input mubi4_t flash_bist_enable_i,
-  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
-  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
-  output logic [7:0] fla_obs_o,
-  output logic fatal_prim_flash_alert_o,
-  output logic recov_prim_flash_alert_o
+  output flash_phy_macro_pkg::flash_phy_macro_req_t flash_macro_req_o,
+  input  flash_phy_macro_pkg::flash_phy_macro_rsp_t flash_macro_rsp_i,
+  input logic [ProgTypes-1:0] prog_type_avail_i,
+  input logic                 init_busy_i
 );
-
-  import prim_mubi_pkg::MuBi4False;
 
   // Flash macro outstanding refers to how many reads we allow a macro to move ahead of an
   // in order blocking read. Since the data cannot be returned out of order, this simply
@@ -86,8 +74,6 @@ module flash_phy
   logic [NumBanks-1:0]  rd_done;
   logic [NumBanks-1:0]  prog_done;
   logic [NumBanks-1:0]  erase_done;
-  logic                 init_busy;
-  logic [ProgTypes-1:0] prog_type_avail;
 
   // common interface
   logic [BusFullWidth-1:0] rd_data_host [NumBanks];
@@ -130,13 +116,13 @@ module flash_phy
   assign host_rdata_o = host_rsp_data[rsp_bank_sel];
 
   // all banks are assumed to be the same in terms of prog_type support
-  assign flash_ctrl_o.prog_type_avail = prog_type_avail;
+  assign flash_ctrl_o.prog_type_avail = prog_type_avail_i;
   assign flash_ctrl_o.rd_done = rd_done[ctrl_bank_sel];
   assign flash_ctrl_o.prog_done = prog_done[ctrl_bank_sel];
   assign flash_ctrl_o.erase_done = erase_done[ctrl_bank_sel];
   assign flash_ctrl_o.rd_data = rd_data_ctrl[ctrl_bank_sel];
   assign flash_ctrl_o.rd_err = rd_err[ctrl_bank_sel];
-  assign flash_ctrl_o.init_busy = init_busy;
+  assign flash_ctrl_o.init_busy = init_busy_i;
   assign flash_ctrl_o.prog_intg_err = |prog_intg_err;
   assign flash_ctrl_o.storage_relbl_err = |relbl_ecc_err;
   assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
@@ -202,10 +188,8 @@ module flash_phy
   assign host_ecc_en = mubi4_test_true_strict(mubi4_and_hi(region_cfg.ecc_en, region_cfg.en));
 
   // Prim flash to flash_phy_core connections
-  flash_phy_pkg::scramble_req_t             [NumBanks-1:0] scramble_req;
-  flash_phy_pkg::scramble_rsp_t             [NumBanks-1:0] scramble_rsp;
-  flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
-  flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] prim_flash_rsp;
+  flash_phy_pkg::scramble_req_t [NumBanks-1:0] scramble_req;
+  flash_phy_pkg::scramble_rsp_t [NumBanks-1:0] scramble_rsp;
   logic [NumBanks-1:0] ecc_single_err;
   logic [NumBanks-1:0][BusAddrW-1:0] ecc_addr;
 
@@ -294,8 +278,8 @@ module flash_phy
       .flash_disable_i(flash_disable[bank]),
       .scramble_req_o(scramble_req[bank]),
       .scramble_rsp_i(scramble_rsp[bank]),
-      .prim_flash_req_o(prim_flash_req[bank]),
-      .prim_flash_rsp_i(prim_flash_rsp[bank]),
+      .flash_macro_req_o(flash_macro_req_o.bank_reqs[bank]),
+      .flash_macro_rsp_i(flash_macro_rsp_i.bank_rsps[bank]),
       .ecc_single_err_o(ecc_single_err[bank]),
       .ecc_addr_o(ecc_addr[bank][BusBankAddrW-1:0]),
       .fsm_err_o(fsm_err[bank]),
@@ -328,71 +312,8 @@ module flash_phy
     .arb_err_o(scramble_arb_err) // fatal error from redundant arbiter logic
   );
 
-  // life cycle handling
-  logic tdo;
-  lc_ctrl_pkg::lc_tx_t [FlashLcDftLast-1:0] lc_nvm_debug_en;
-
-  assign flash_ctrl_o.jtag_rsp.tdo = tdo &
-      lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTdoSel]);
-
-  prim_lc_sync #(
-    .NumCopies(int'(FlashLcDftLast))
-  ) u_lc_nvm_debug_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_nvm_debug_en_i),
-    .lc_en_o(lc_nvm_debug_en)
-  );
-
-  import lc_ctrl_pkg::lc_tx_test_true_strict;
-  // if nvm debug is enabled, flash_bist_enable controls entry to flash test mode.
-  // if nvm debug is disabled, flash_bist_enable is always turned off.
-  mubi4_t bist_enable_qual;
-  assign bist_enable_qual = (lc_tx_test_true_strict(lc_nvm_debug_en[FlashBistSel])) ?
-                            flash_bist_enable_i :
-                            MuBi4False;
-
-  prim_flash #(
-    .NumBanks(NumBanks),
-    .InfosPerBank(InfosPerBank),
-    .InfoTypes(InfoTypes),
-    .InfoTypesWidth(InfoTypesWidth),
-    .PagesPerBank(PagesPerBank),
-    .WordsPerPage(WordsPerPage),
-    .DataWidth(flash_phy_pkg::FullDataWidth)
-  ) u_flash (
-    .clk_i,
-    .rst_ni,
-    .tl_i,
-    .tl_o,
-    .flash_req_i(prim_flash_req),
-    .flash_rsp_o(prim_flash_rsp),
-    .prog_type_avail_o(prog_type_avail),
-    .init_busy_o(init_busy),
-    .tck_i(flash_ctrl_i.jtag_req.tck & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTckSel])),
-    .tdi_i(flash_ctrl_i.jtag_req.tdi & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTdiSel])),
-    .tms_i(flash_ctrl_i.jtag_req.tms & lc_tx_test_true_strict(lc_nvm_debug_en[FlashLcTmsSel])),
-    .tdo_o(tdo),
-    .bist_enable_i(bist_enable_qual),
-    .obs_ctrl_i,
-    .fla_obs_o,
-    .scanmode_i,
-    .scan_en_i,
-    .scan_rst_ni,
-    .flash_power_ready_h_i,
-    .flash_power_down_h_i,
-    .flash_test_mode_a_io,
-    .flash_test_voltage_h_io,
-    .flash_err_o(flash_ctrl_o.macro_err),
-    .fatal_alert_o(fatal_prim_flash_alert_o),
-    .recov_alert_o(recov_prim_flash_alert_o)
-  );
   logic unused_alert;
   assign unused_alert = flash_ctrl_i.alert_trig & flash_ctrl_i.alert_ack;
-
-  logic unused_trst_n;
-  assign unused_trst_n = flash_ctrl_i.jtag_req.trst_n;
-  assign flash_ctrl_o.jtag_rsp.tdo_oe = 1'b1;
 
   //////////////////////////////////////////////
   // Assertions, Assumptions, and Coverpoints //
