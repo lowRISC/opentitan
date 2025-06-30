@@ -410,7 +410,7 @@
     { name:    "ICacheScramble"
       type:    "bit"
       default: "0"
-      desc:    "Scramble instruction cach"
+      desc:    "Scramble instruction cache"
       local:   "false"
       expose:  "true"
     },
@@ -434,7 +434,7 @@
     { name:    "DbgTriggerEn"
       type:    "bit"
       default: "1"
-      desc:    "Enable degug trigger"
+      desc:    "Enable debug trigger"
       local:   "false"
       expose:  "true"
     },
@@ -466,7 +466,7 @@
     { name:    "DmAddrMask"
       type:    "int unsigned"
       default: "4095" //"32'h00000FFF"
-      desc:    "Adress mask of Debug Module"
+      desc:    "Address mask of Debug Module"
       local:   "false"
       expose:  "true"
     }

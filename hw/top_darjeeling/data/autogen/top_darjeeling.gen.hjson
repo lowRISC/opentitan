@@ -10606,7 +10606,7 @@
         }
         {
           name: ICacheScramble
-          desc: Scramble instruction cach
+          desc: Scramble instruction cache
           type: bit
           default: "1"
           local: "false"
@@ -10633,7 +10633,7 @@
         }
         {
           name: DbgTriggerEn
-          desc: Enable degug trigger
+          desc: Enable debug trigger
           type: bit
           default: "1"
           local: "false"
@@ -10669,7 +10669,7 @@
         }
         {
           name: DmAddrMask
-          desc: Adress mask of Debug Module
+          desc: Address mask of Debug Module
           type: int unsigned
           default: tl_main_pkg::ADDR_MASK_RV_DM__MEM
           local: "false"
