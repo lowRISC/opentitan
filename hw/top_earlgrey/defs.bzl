@@ -5,6 +5,7 @@
 
 load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY_IPS")
+load("//hw/top_earlgrey/data/otp:defs.bzl", "EARLGREY_OTP_SIGVERIFY_FAKE_KEYS", "EARLGREY_STD_OTP_OVERLAYS")
 
 EARLGREY = opentitan_top(
     name = "earlgrey",
@@ -12,5 +13,7 @@ EARLGREY = opentitan_top(
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     otp_map = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    std_otp_overlay = EARLGREY_STD_OTP_OVERLAYS,
+    otp_sigverify_fake_keys = EARLGREY_OTP_SIGVERIFY_FAKE_KEYS,
     ips = EARLGREY_IPS,
 )
