@@ -18,7 +18,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // Double bit err is created
   bit        global_derr_is_set = 0;
 
-  // Trace host read ountstanding
+  // Trace host read outstanding
   int        d_cnt1, d_cnt2;
 
   // Number of controller transactions per a single task
@@ -134,7 +134,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // transaction creates prog_win error.
     // To prevent that, make full size access always start from address[2:0] == 0.
     if (fractions == 16) rand_op.addr[2] == 0;
-    // Make sure that the operation will not cross the selected partition boundries.
+    // Make sure that the operation will not cross the selected partition boundaries.
     if (rand_op.partition != FlashPartData) {
       rand_op.addr inside
         {[0:InfoTypeBytes[rand_op.partition>>1]-(FlashBankBytesPerWord*fractions)]};
@@ -802,7 +802,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   //               word selector s.t.
   //               addr[2]? upper 4byte : lower 4byte of phy data.
   // @arg : bank : bank index to access flash.
-  // @arg : num  : number of 4byte data to read countinuously
+  // @arg : num  : number of 4byte data to read continuously
   //               by 4 byte apart.
   // @arg: in_err : inject fatal error causes flash access disable
   virtual task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, bit in_err);
@@ -1051,7 +1051,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         end
       end
       flash_op.addr = tmp_addr;
-      // Bank id truncaded by otf_addr size
+      // Bank id truncated by otf_addr size
       flash_op.otf_addr = tmp_addr;
 
       // recalculate page and region based on start address

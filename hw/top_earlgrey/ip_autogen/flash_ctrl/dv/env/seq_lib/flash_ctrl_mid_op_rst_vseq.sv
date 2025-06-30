@@ -211,7 +211,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
     // Make sure to clear the op_status register's done.
     clear_outstanding_done();
-    // Configure memry protection.
+    // Configure memory protection.
     do_cfg();
     // Do random program transaction, then check it completed successfully.
     `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpProgram;

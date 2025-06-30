@@ -10,7 +10,7 @@
 //   Randomize (Read Cycle, Data Partition, Exec Key, Instruction Type)
 //   Model and Verify Expected Functionality
 //     Do Flash Read, expect code access Allowed/Denied
-//     Uses Modeling in the Scorboard to expect TLUL Error when denied
+//     Uses Modeling in the Scoreboard to expect TLUL Error when denied
 //     Checks Data via Frontdoor/Backdoor and Equal to Zero as required
 // }
 //
@@ -95,7 +95,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     flash_op.num_words < (FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth]);
   }
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
+  // Flash ctrl operation data queue - used for programming or reading the flash.
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
     if (flash_op.op inside {

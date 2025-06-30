@@ -18,7 +18,7 @@
 lint_off -rule WIDTH -file "*/rtl/*flash_ctrl.sv" -match "Operator ASSIGNW expects 10 bits*MUL generates 32 bits."
 
 // The following are int parameter assignments into variables
-// While the variables themselves are technically not large enough to accommodate a 32b integer, synthsizers
+// While the variables themselves are technically not large enough to accommodate a 32b integer, synthesizers
 // are smart enough to do the right thing
 lint_off -rule WIDTH -file "*flash_ctrl_lcmgr.sv" -match "Operator EQ expects 32 bits on the LHS, but LHS's VARREF 'seed_cnt_q' generates 2 bits."
 lint_off -rule WIDTH -file "*flash_ctrl_lcmgr.sv" -match "Operator ADD expects 32 bits on the LHS, but LHS's VARREF 'word_cnt' generates 10 bits."

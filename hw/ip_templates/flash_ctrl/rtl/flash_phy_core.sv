@@ -183,7 +183,7 @@ module flash_phy_core
     .mubi_o(flash_disable)
   );
 
-  // Oustanding width is slightly larger to ensure a faulty increment is able to reach
+  // Outstanding width is slightly larger to ensure a faulty increment is able to reach
   // the higher value. For example if RspOrderDepth were 3, a clog2 of 3 would still be 2
   // and not allow the counter to increment to 4.
   localparam int OutstandingRdWidth = $clog2(RspOrderDepth+2);
@@ -422,7 +422,7 @@ module flash_phy_core
   //
   // If ctrl_fsm_idle inexplicably goes low while there are host transactions
   // the transaction handling may be irreversibly broken.
-  // The host_oustanding_rd_err makes a best effort attempt to cleanly
+  // The host_outstanding_rd_err makes a best effort attempt to cleanly
   // recover.  It responds with in-band error controller transactions until the
   // all pending transactions are flushed.
   logic arb_host_gnt_err;

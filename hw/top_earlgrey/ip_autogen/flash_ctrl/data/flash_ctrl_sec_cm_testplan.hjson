@@ -70,7 +70,7 @@
       desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
         - Creator info partition can be read, written, erased when lc_creator_seed_sw_rw_en is true.
           Owner info partition can be read, written, erased when lc_owner_seed_sw_rw_en is true.
-          Isolated info partition can be written whwen lc_iso_part_sw_wr_en is true,
+          Isolated info partition can be written when lc_iso_part_sw_wr_en is true,
           and can be read when lc_iso_part_sw_rd_en is true.
           Run test for each partition and check whether each partition can be accessed
           only when each lc_ctrl input is valid.
@@ -78,7 +78,7 @@
           recoverable fatal alert.
         - lc_seed_hw_rd_en is covered by flash_ctrl_otp_reset test.
         - lc_escalate_en_i is covered by flash_ctrl_disable test. See 'flash_ctrl_disable`
-          from the flash_ctrl_testpan.hjson
+          from the flash_ctrl_testplan.hjson
         - lc_nvm_debug_en_i is covered by flash_ctrl_connect. See 'flash_ctrl_connect'
           from the flash_ctrl_testplan.hjson
       '''
@@ -206,7 +206,7 @@
       name: sec_cm_ctrl_fsm_sparse
       desc: '''Verify the countermeasure(s) CTRL.FSM.SPARSE.
       Error is injected by global test.
-      Follwing state machines are in this category.
+      Following state machines are in this category.
         - tb.dut.u_ctrl_arb.state_q :
           Error from this state machine will trigger std_fault_status.arb_fsm_err.
         - tb.dut.u_flash_hw_if.state_q, tb.dut.u_flash_hw_if.rma_state_q
@@ -239,7 +239,7 @@
       name: sec_cm_ctr_redun
       desc: '''Verify the countermeasure(s) CTR.REDUN.
       Error is injected by global test.
-      Follwing counters are in this category.
+      Following counters are in this category.
         - tb.dut.u_flash_hw_if.seed_cnt_q
         - tb.dut.u_flash_hw_if.addr_cnt_q
         - tb.dut.u_flash_hw_if.page_cnt
@@ -294,11 +294,11 @@
       name: sec_cm_fifo_ctr_redun
       desc: '''Verify the countermeasure(s) FIFO.CTR.REDUN.
       Error is injected by global test.
-      Follwing fifos are in this category.
+      Following FIFOs are in this category.
         - dut.u_to_rd_fifo,
         - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rsp_order_fifo,
         - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rd_storage
-      Error from these fifos will trigger std_fault_status.fifo_err.
+      Error from these FIFOs will trigger std_fault_status.fifo_err.
       '''
       stage: V2S
       tests: ["flash_ctrl_sec_cm"]
