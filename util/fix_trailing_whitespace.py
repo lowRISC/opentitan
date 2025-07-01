@@ -55,7 +55,7 @@ def main():
         '--recursive', '-r',
         action='store_true',
         default=False,
-        help='traverse the entire tree modolo .gitignore'
+        help='traverse the entire tree modulo .gitignore'
     )
     parser.add_argument(
         '--verbose', '-v',

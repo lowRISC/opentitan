@@ -261,7 +261,7 @@ def checkAddressSpacing(addr: Tuple[int, int],
     return len(result) != 0
 
 
-# this returns 1 if the size mask overlapps with the address base
+# this returns 1 if the size mask overlaps with the address base
 def checkBaseSizeOverlap(addr_base: int, size: int) -> int:
     return ((size - 1) & addr_base)
 

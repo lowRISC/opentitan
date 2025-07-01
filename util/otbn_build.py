@@ -15,7 +15,7 @@ environment variables:
   sensible default values are provided (tools are generally expected to be in
   the $PATH).
 
-  OTBN_TOOLS         path to the OTBN linker and assemler tools
+  OTBN_TOOLS         path to the OTBN linker and assembler tools
   RV32_TOOL_LD       path to RV32 ld
   RV32_TOOL_AS       path to RV32 as
   RV32_TOOL_AR       path to RV32 ar

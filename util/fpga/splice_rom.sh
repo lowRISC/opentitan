@@ -127,7 +127,7 @@ hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
 
 # Splice the ROM.
 # The --debug flag is undocumented and causes updatemem to print out the INIT_XX
-# values of the four BRAM cells. These values are also oberservable when opening
+# values of the four BRAM cells. These values are also observable when opening
 # the implemented design in Vivado and then inspecting the cell properties of
 # the corresponding BRAM cells. This information is very useful when debugging
 # the splicing flow.

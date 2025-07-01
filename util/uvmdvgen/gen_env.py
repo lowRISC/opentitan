@@ -1,7 +1,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Generate SystemVerilog UVM agent extended freom our DV lib
+"""Generate SystemVerilog UVM agent extended from our DV lib
 """
 
 import os
