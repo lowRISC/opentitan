@@ -14,7 +14,7 @@ from tabulate import tabulate
 
 
 def to_markdown(text):
-    """Adds prefix and sufix newlines to 'text'."""
+    """Adds prefix and suffix newlines to 'text'."""
     doc_text = f"""
 {text}
 """

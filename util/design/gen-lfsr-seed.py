@@ -15,7 +15,7 @@ from lib import common as common
 SV_INSTRUCTIONS = """
 ------------------------------------------------
 | COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
-| RTL CODE, INLUDING THE COMMENT IN ORDER TO   |
+| RTL CODE, INCLUDING THE COMMENT IN ORDER TO  |
 | EASE AUDITABILITY AND REPRODUCIBILITY.       |
 ------------------------------------------------
 """

@@ -47,7 +47,7 @@ def _get_incremental_codewords(config, base_ecc, existing_words):
 
     # We only need to spin through data bits that have not been set yet.
     # Hence, we first count how many bits are zero (and hence still
-    # modifyable). Then, we enumerate all possible combinations and scatter
+    # modifiable). Then, we enumerate all possible combinations and scatter
     # the bits of the enumerated values into the correct bit positions using
     # the scatter_bits() function.
     incr_cands = []

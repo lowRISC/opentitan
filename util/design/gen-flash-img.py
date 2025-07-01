@@ -5,7 +5,7 @@
 r"""Takes a compiled VMEM image and processes it for loading into flash.
 
     Specifically, this takes a raw flash image and adds both layers of ECC
-    (integrity and reliablity), and optionally, scrambles the data using the
+    (integrity and reliability), and optionally, scrambles the data using the
     same XEX scrambling scheme used in the flash controller. This enables
     backdoor loading the flash on simulation platforms (e.g., DV and Verilator).
 """
@@ -325,7 +325,7 @@ def _reformat_flash_vmem(
                                          scrambling_configs.addr_key,
                                          scrambling_configs.data_key)
                     data_w_intg_ecc = intg_ecc | data
-                # `data_w_full_ecc` will be in format {reliablity ECC bits,
+                # `data_w_full_ecc` will be in format {reliability ECC bits,
                 # integrity ECC bits, data bits}.
                 data_w_full_ecc, _ = secded_gen.ecc_encode(
                     ecc_configs, "hamming",
@@ -395,7 +395,7 @@ def main(argv: List[str]):
     if scrambling_configs.scrambling_enabled:
         _compute_flash_scrambling_keys(scrambling_configs)
 
-    # Reformat flash VMEM file to add integrity/reliablity ECC and scrambling.
+    # Reformat flash VMEM file to add integrity/reliability ECC and scrambling.
     reformatted_vmem_lines = _reformat_flash_vmem(args.in_flash_vmem,
                                                   scrambling_configs)
 
