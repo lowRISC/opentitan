@@ -32,7 +32,7 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
 
     super.body();
 
-    // Since super.body only does backdoor operatoin,
+    // Since super.body only does backdoor operation,
     // add wait for clock task before the test uses jtag polling task.
     wait_rom_check_done();
     wait_lc_ready(1);

@@ -1517,7 +1517,7 @@
               size: 9192
               desc:
                 '''
-                Fully SW managed patition
+                Fully SW managed partition
                 ROM patch section
                 signed patch(es)
                 Each patch Contains header, signature, patch match/redirect configuration and patch code

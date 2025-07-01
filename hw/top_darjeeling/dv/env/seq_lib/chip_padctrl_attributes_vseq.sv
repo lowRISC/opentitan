@@ -192,7 +192,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // For DIO pinmux testing.
   //
-  // Pads are either analog, input only or bidirectional. For bdirectional, only drive either the
+  // Pads are either analog, input only or bidirectional. For bidirectional, only drive either the
   // pad or the periph input. If none are driven, then on the pull. For input only, drive the periph
   // randomly - it should have no effect.
   rand logic [DioCount-1:0]  dio_to_periph;

@@ -823,7 +823,7 @@
                 {
                     name: "ROM_PATCH_DATA",
                     size: "9192"
-                    desc: ''' Fully SW managed patition
+                    desc: ''' Fully SW managed partition
                     ROM patch section
                     signed patch(es)
                     Each patch Contains header, signature, patch match/redirect configuration and patch code
@@ -1063,7 +1063,7 @@
                 // life cycle controller to ensure that the counter is always written
                 // before any state update. I.e., the life cycle controller
                 // already splits the counter and state updates into two
-                // supsequent requests through the LCI, where the first request
+                // subsequent requests through the LCI, where the first request
                 // only contains the updated transition counter, and the second
                 // request the updated transition counter and state.
                 {
