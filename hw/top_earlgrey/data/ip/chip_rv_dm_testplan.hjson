@@ -119,7 +119,7 @@
       desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
 
             - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
-            - Configure RV_DM to send NDM reset request to reset sytem reset tree.
+            - Configure RV_DM to send NDM reset request to reset system reset tree.
             - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
               accessed.
             - Read the programmed CSRs / mem to ensure that everything under system reset tree is

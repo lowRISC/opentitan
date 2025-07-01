@@ -31,7 +31,7 @@
                cov: true
              }
 
-             // Use chip_eargrey_asic parameters to verify pinmux.
+             // Use chip_earlgrey_asic parameters to verify pinmux.
              {
                name: pinmux_chip_fpv
                dut: pinmux_chip_tb

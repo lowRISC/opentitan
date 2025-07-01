@@ -113,7 +113,7 @@ set_rule_status -rule {E_RST_METASTABILITY E_RDC_METASTABILITY} \
     time with the IP reset, it may create metastability issue to many \
     registers inside SPI_DEVICE IP. \
     \
-    However, at the time when POR is released, or SW requsts the reset, SPI \
+    However, at the time when POR is released, or SW requests the reset, SPI \
     is assumes as quiescent or stalled. If SPI line is stalled, part of the \
     internal content may not be reset. But, it can be solvable by setting \
     invert to the CSb pad. \

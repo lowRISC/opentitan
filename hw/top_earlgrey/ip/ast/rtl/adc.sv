@@ -17,7 +17,7 @@ module adc #(
 ) (
   input ast_pkg::awire_t adc_a0_ai,  // ADC A0 Analog Input
   input ast_pkg::awire_t adc_a1_ai,  // ADC A1 Analog Input
-  input [AdcChannels-1:0] adc_chnsel_i,  // Onehot value only for selrction
+  input [AdcChannels-1:0] adc_chnsel_i,  // Onehot value only for selection
   input adc_pd_i,                    // ADC Power Down
   input clk_adc_i,                   // ADC Clock (aon_clk - 200KHz)
   input rst_adc_ni,                  // ADC Reset active low
@@ -54,7 +54,7 @@ always_ff @( posedge clk_adc_i, negedge rst_adc_ni ) begin
   end
 end
 
-// New Convertion
+// New Conversion
 assign new_convert = chn_selected && !chn_selected_d && !adc_busy;
 
 ////////////////////////////////////////

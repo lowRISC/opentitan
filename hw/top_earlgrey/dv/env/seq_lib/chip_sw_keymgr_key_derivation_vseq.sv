@@ -5,7 +5,7 @@
 // This sequence interacts with the C test (sw/device/tests/sim_dv/keymgr_key_derivation.c) and
 // performs the checks on digest data
 //  - In the SW test, write fixed value to OTP for root_key and write creator and owner
-//    seeds in flash. And then roboot the chip.
+//    seeds in flash. And then reboot the chip.
 //  - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
 //  - For HardwareRevisionSecret, use the constant values in design.
 //  - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.

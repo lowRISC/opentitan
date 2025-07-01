@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This is base sequence for lc_ctr chip level test.
-// The purpose of the sequence is to put all redundent lc related tasks
+// The purpose of the sequence is to put all redundant lc related tasks
 // to common place.
 
 class chip_sw_lc_base_vseq extends chip_sw_base_vseq;
