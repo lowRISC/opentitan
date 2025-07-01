@@ -735,7 +735,7 @@ def _hsiao_code(k, m):
     # Then message _k_ X matrix_code ==> original message with parity
     #
     # Make a row to have even number of 1 including the I matrix.
-    # This helps to calculate the syndrom at the decoding stage.
+    # This helps to calculate the syndrome at the decoding stage.
     # To reduce the max fan-in, Starting with smallest number 3.
     # the number means the number of one in a row.
     # Small number of ones means smaller fan-in overall.

@@ -31,17 +31,17 @@ MAX_DRAWS = 10000
 MAX_RESTARTS = 10000
 
 SV_INSTRUCTIONS = """
-------------------------------------------------------
-| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR RTL   |
-| IMPLEMENTATION, INLUDING THE COMMENT AND PRIM_FLOP |
-| IN ORDER TO EASE AUDITABILITY AND REPRODUCIBILITY. |
-------------------------------------------------------
+-------------------------------------------------------
+| COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR RTL    |
+| IMPLEMENTATION, INCLUDING THE COMMENT AND PRIM_FLOP |
+| IN ORDER TO EASE AUDITABILITY AND REPRODUCIBILITY.  |
+-------------------------------------------------------
 """
 
 C_INSTRUCTIONS = """
 ------------------------------------------------
 | COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
-| C HEADER, INLUDING THE COMMENT IN ORDER TO   |
+| C HEADER, INCLUDING THE COMMENT IN ORDER TO  |
 | EASE AUDITABILITY AND REPRODUCIBILITY.       |
 ------------------------------------------------
 """
@@ -49,7 +49,7 @@ C_INSTRUCTIONS = """
 RUST_INSTRUCTIONS = """
 ------------------------------------------------
 | COPY PASTE THE CODE TEMPLATE BELOW INTO YOUR |
-| RUST FILE, INLUDING THE COMMENT IN ORDER TO  |
+| RUST FILE, INCLUDING THE COMMENT IN ORDER TO |
 | EASE AUDITABILITY AND REPRODUCIBILITY.       |
 ------------------------------------------------
 """
