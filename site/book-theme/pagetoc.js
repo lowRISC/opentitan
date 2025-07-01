@@ -53,7 +53,7 @@ window.addEventListener("load", updateDynamicHighlight);
 window.addEventListener("scroll", updateDynamicHighlight);
 
 /* Style the heading that matches the URL fragment (i.e. when you click a hyperlink).
- * - Find the element with the ":target" psuedoclass applied
+ * - Find the element with the ":target" pseudo-class applied
  * - Measure it's rendered height, and set the '--target-height' variable to this value.
  * - The CSS selected by ":target" will style the horizontal highlighting bar to match this height. */
 var set_target_highlight = function(event) {
@@ -102,7 +102,7 @@ window.addEventListener("resize", set_pagetoc_height);
 
 /* create_pagetoc_structure()
  * Dynamically create a tree of <a> elements for each heading in
- * the content body, with wrapper divs for each level of heirarchy.
+ * the content body, with wrapper divs for each level of hierarchy.
  * This will allow formatting/styling which better illustrates the
  * structure of the page.
  * Add the created structure within the 'pagetoc' element.
@@ -212,7 +212,7 @@ var create_pagetoc_structure = function(el_pagetoc) {
     // startIdx to stopIdx, recursively adding more wrappers if
     // headings in the range are lower Hnum.
     // Strictly, 'startIdx <= stopIdx'
-    // This allows the heirarchy of the headings to be mirrored
+    // This allows the hierarchy of the headings to be mirrored
     // within the pagetoc structure, allowing for some context-aware
     // formatting options.
     function wrapAllDescendingElems(
