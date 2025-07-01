@@ -60,9 +60,11 @@ status_t handle_cryptolib_sca_asym_rsa_dec_fvsr(ujson_t *uj) {
   size_t cfg_out;
   uint8_t n[RSA_CMD_MAX_N_BYTES];
   uint8_t d[RSA_CMD_MAX_N_BYTES];
-  memcpy(n, uj_input.n, RSA_CMD_MAX_N_BYTES);
-  memcpy(d, uj_input.d, RSA_CMD_MAX_N_BYTES);
   size_t n_len = uj_input.n_len;
+  memset(n, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(n, uj_input.n, n_len);
+  memset(d, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(d, uj_input.d, n_len);
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(trigger_cryptolib_sca_asym_rsa_dec(
         batch_data[it], uj_input.data_len, uj_input.mode, uj_input.e, n, d,
@@ -93,13 +95,8 @@ status_t handle_cryptolib_sca_asym_rsa_sign(
   // Perform an RSA sign.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
-
-  memset(n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(d, 0, RSA_CMD_MAX_N_BYTES);
-  *n_len = RSA_CMD_MAX_N_BYTES;
-  memset(sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  *sig_len = RSA_CMD_MAX_SIGNATURE_BYTES;
-  *cfg_out = 0;
+  TRY(cryptolib_sca_rsa_sign_impl(data, data_len, e, n, d, n_len, sig, sig_len,
+                                  hashing, padding, cfg_in, cfg_out, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -129,9 +126,11 @@ status_t handle_cryptolib_sca_asym_rsa_sign_fvsr(ujson_t *uj) {
   size_t sig_len;
   uint8_t n[RSA_CMD_MAX_N_BYTES];
   uint8_t d[RSA_CMD_MAX_N_BYTES];
-  memcpy(n, uj_input.n, RSA_CMD_MAX_N_BYTES);
-  memcpy(d, uj_input.d, RSA_CMD_MAX_N_BYTES);
   size_t n_len = uj_input.n_len;
+  memset(n, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(n, uj_input.n, n_len);
+  memset(d, 0, RSA_CMD_MAX_N_BYTES);
+  memcpy(d, uj_input.d, n_len);
   size_t cfg_out;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
     TRY(handle_cryptolib_sca_asym_rsa_sign(
