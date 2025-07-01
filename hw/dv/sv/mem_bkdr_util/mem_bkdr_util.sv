@@ -20,6 +20,10 @@ class mem_bkdr_util extends uvm_object;
   // is used to perform the backdoor access
   protected string tiling_path;
 
+  // Format string to provide the tiling suffix. Must contain a %d for the tile and %s for the
+  // tiling_path path. Can be overwritten for different hierarchies, ie., when DFT is enabled.
+  protected string tiling_suffix_fmt_str;
+
   // The depth of the memory.
   protected uint32_t depth;
 
@@ -100,22 +104,29 @@ class mem_bkdr_util extends uvm_object;
   //                           when tile_depth < depth). By default this is empty because there are
   //                           no tiles that would need paths at all.
   //
+  //  tiling_suffix_fmt_str    Format string to provide the tiling suffix. Must contain a %d for the
+  //                           tile and %s for the tiling_path path. If the testbench uses a
+  //                           different path, i.e., in a DFT environment, you can pass a different
+  //                           format string to construct the tiling path.
+  //
   //  tile_depth               The number of rows of a single tle. By default, this is the entire
   //                           memory.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
                uint32_t num_prince_rounds_half = 3,
                uint32_t extra_bits_per_subword = 0, uint32_t system_base_addr = 0,
-               string tiling_path = "", uint32_t tile_depth = depth);
+               string tiling_path = "", string tiling_suffix_fmt_str = ".gen_ram_inst[%0d].%s",
+               uint32_t tile_depth = depth);
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
 
-    this.path                  = path;
-    this.tiling_path           = tiling_path;
-    this.depth                 = depth;
-    this.tile_depth            = tile_depth;
-    this.width                 = n_bits / depth;
-    this.err_detection_scheme  = err_detection_scheme;
+    this.path                   = path;
+    this.tiling_path            = tiling_path;
+    this.depth                  = depth;
+    this.tile_depth             = tile_depth;
+    this.tiling_suffix_fmt_str  = tiling_suffix_fmt_str;
+    this.width                  = n_bits / depth;
+    this.err_detection_scheme   = err_detection_scheme;
     this.num_prince_rounds_half = num_prince_rounds_half;
 
     // Check if the inferred path to each tile (or the whole memory) really exist
@@ -201,7 +212,7 @@ class mem_bkdr_util extends uvm_object;
                     $sformatf("Positive tile index (%0d) with empty tiling path.", tile))
 
     if (tiling_path != "") begin
-      tile_suffix = $sformatf(".gen_ram_inst[%0d].%s", tile, tiling_path);
+      tile_suffix = $sformatf(tiling_suffix_fmt_str, tile, tiling_path);
     end
 
     return {base, tile_suffix};
