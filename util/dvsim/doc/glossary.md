@@ -32,7 +32,7 @@ The [IBM LSF](https://www.ibm.com/docs/en/spectrum-lsf/10.1.0?topic=overview-lsf
 EDA tool flows are run at various levels of the design:
 - **Primitives**:
   The most basic building blocks used to create hardware designs
-  OpenTitan provides a library of reusble [primitives](../../../hw/ip/prim/).
+  OpenTitan provides a library of reusable [primitives](../../../hw/ip/prim/).
 
 - **Modules**:
   A discrete entity that implements a specific feature of a larger design
@@ -98,7 +98,7 @@ Please see [TBD]() for more details.
 DVSim provides these standard regression targets for all DUTs:
 - `smoke` (typically run in CI checks)
 - `nightly` (a full regression with coverage enabled, that is run every night)
-- `v1` / `v2` / `v3` (DVSim automatically extracts tests that are tagged V1 / V2 / V3 and creates a regression target.
+- `v1` / `v2` / `v3` (DVSim automatically extracts tests that are tagged V1 / V2 / V3 and creates a regression target).
 - `all` (runs all tests with the preset reseeds, without coverage)
 - `all_once` (run all tests with only a single randomly chosen seed)
 
@@ -145,7 +145,7 @@ The test specification label(s) that satisfy a testpoint are mapped to the testp
 
 ## Top level
 
-A top level entity is the highest design entity (i.e., a design entity which is itself, not instatiated as a sub-module in a different module) that is compiled and elaborated.
+A top level entity is the highest design entity (i.e., a design entity which is itself, not instantiated as a sub-module in a different module) that is compiled and elaborated.
 For simulations, this is typically the testbench, since it instantiates the DUT.
 In simulations, there are also standalone RTL modules (specifically, SVA bindfiles) that are not directly instantiated in the testbench or the DUT hierarchies.
 These are also considered "top levels" that are elaborated by the tool.

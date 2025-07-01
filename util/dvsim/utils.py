@@ -303,7 +303,7 @@ def find_and_substitute_wildcards(sub_dict,
     '''
     for key in sub_dict.keys():
         if type(sub_dict[key]) in [dict, OrderedDict]:
-            # Recursively call this funciton in sub-dicts
+            # Recursively call this function in sub-dicts
             sub_dict[key] = find_and_substitute_wildcards(
                 sub_dict[key], full_dict, ignored_wildcards, ignore_error)
 
@@ -313,7 +313,7 @@ def find_and_substitute_wildcards(sub_dict,
             # in case it contains a wildcard
             for i in range(len(sub_dict_key_values)):
                 if type(sub_dict_key_values[i]) in [dict, OrderedDict]:
-                    # Recursively call this funciton in sub-dicts
+                    # Recursively call this function in sub-dicts
                     sub_dict_key_values[i] = \
                         find_and_substitute_wildcards(sub_dict_key_values[i],
                                                       full_dict, ignored_wildcards, ignore_error)
@@ -361,7 +361,7 @@ def htmc_color_pc_cells(text):
     Depending on the identifier, it shades the cell in a specific way. A set of
     12 color palettes for setting those shades are encoded in ./style.css.
     These are 'cna' (grey), 'c0' (red), 'c1' ... 'c10' (green). The shade 'cna'
-    is used for items that are maked as 'not applicable'. The shades 'c1' to
+    is used for items that are marked as 'not applicable'. The shades 'c1' to
     'c9' form a gradient from red to lime-green to indicate 'levels of
     completeness'. 'cna' is used for greying out a box for 'not applicable'
     items, 'c0' is for items that are considered risky (or not yet started) and
@@ -391,7 +391,7 @@ def htmc_color_pc_cells(text):
         indicator is negative.
 
     N/A items can have any of the following indicators and need not be
-    preceeded with a numerical value:
+    preceded with a numerical value:
 
     '--', 'NA', 'N.A.', 'N.A', 'N/A', 'na', 'n.a.', 'n.a', 'n/a'
 
@@ -400,7 +400,7 @@ def htmc_color_pc_cells(text):
     # Replace <td> with <td class="color-class"> based on the fp
     # value. "color-classes" are listed in ./style.css as follows: "cna"
     # for NA value, "c0" to "c10" for fp value falling between 0.00-9.99,
-    # 10.00-19.99 ... 90.00-99.99, 100.0 respetively.
+    # 10.00-19.99 ... 90.00-99.99, 100.0 respectively.
     def color_cell(cell, cclass, indicator="%"):
         op = cell.replace("<td", "<td class=\"" + cclass + "\"")
         # Remove the indicator.
@@ -563,7 +563,7 @@ def mk_path(path):
 
     'path' is a Path-like object. If it does exist, the function simply
     returns. If it does not exist, the function creates the path and its
-    parent dictories if necessary.
+    parent directories if necessary.
     '''
     try:
         Path(path).mkdir(parents=True, exist_ok=True)

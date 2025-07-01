@@ -188,7 +188,7 @@ class Deploy():
         """Recursively search and replace substitution variables.
 
         First pass: search within self dict. We ignore errors since some
-        substitions may be available in the second pass. Second pass: search
+        substitutions may be available in the second pass. Second pass: search
         the entire sim_cfg object."""
 
         self.__dict__ = find_and_substitute_wildcards(self.__dict__,

@@ -51,7 +51,7 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
 - Readability
   - Describe testplans, tool configurations, build modes, run modes, test specifications, testplans and regressions in a human readable, but machine parsable format.
 
-- Scalablility
+- Scalability
   - Enable launching jobs into each new partner's unique compute infrastructure.
   - Provide a method to easily add support for more new EDA tool flows.
   - Support a wide variety of open / commercial EDA tools for each flow (i.e. run the same simulation with Synopsys VCS, Cadence Xcelium or Mentor Graphics Questa etc.).
@@ -84,11 +84,11 @@ Some of the goals / usecases listed below are specific to an EDA tool flow (such
     - Enable specification of common passing and failing patterns.
     - Enable specification of failing patterns that are specific to the EDA tool itself.
     - Assess pass / fail by parsing the EDA tool flow's log i.e., none of the failing patterns must be seen AND all passing patterns must be seen.
-  - Enable common failure signatures to be bucketized for the ease of readablility of the report.
+  - Enable common failure signatures to be bucketized for the ease of readability of the report.
   - Provide ability to publish the reports to a web server (as a command line option).
   - Report the wall-clock time and simulated time (the worst case, if the test is multiply seeded) for each test.
   - For simulations, enable mapping the results of the regression (i.e., the status of the set of tests run) to the testplan entries to indicate the testpoints that have been successfully completed.
-  - Enable common failure signatures to be bucketized for the ease of readablility of the report.
+  - Enable common failure signatures to be bucketized for the ease of readability of the report.
 
 - Debuggability
   - Provide logging at multiple levels (normal, verbose and debug) to help debug / triage tool / infrastructure issues.
