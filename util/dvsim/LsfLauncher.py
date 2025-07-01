@@ -278,7 +278,7 @@ class LsfLauncher(Launcher):
         # so that we can report the status accurately.
         #
         # At this point, we could run bjobs or bhist to determine the status,
-        # but it has been found to be too slow, expecially when running 1000s
+        # but it has been found to be too slow, especially when running 1000s
         # of jobs. Plus, we have to read the job script output anyway to look
         # for those error messages.
         #
