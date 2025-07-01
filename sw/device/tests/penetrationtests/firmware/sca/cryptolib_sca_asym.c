@@ -251,16 +251,11 @@ status_t handle_cryptolib_sca_asym_p256_sign(ujson_t *uj) {
   /////////////// STUB START ///////////////
   // Perform a P256 signature.
   // Trigger are over the API calls.
-
   cryptolib_sca_asym_p256_sign_out_t uj_output;
-  memset(uj_output.pubx, 0, P256_CMD_BYTES);
-  memset(uj_output.puby, 0, P256_CMD_BYTES);
-  memset(uj_output.r, 0, P256_CMD_BYTES);
-  memset(uj_output.s, 0, P256_CMD_BYTES);
-  uj_output.cfg = 0;
+  TRY(cryptolib_sca_p256_sign_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_sign_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_sign_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
