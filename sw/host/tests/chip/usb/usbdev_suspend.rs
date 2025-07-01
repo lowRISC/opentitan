@@ -242,7 +242,7 @@ fn usbdev_suspend(
             // of being ready to receive the stimulus within a given test phase, because we have
             // neither this harness nor the device-side code has any control over how long it takes
             // the host to detect and configure the device.
-            UartConsole::wait_for(uart, r"Phase awaiting stimulus", opts.timeout)?;
+            UartConsole::wait_for(uart, r"Phase awaiting stimulus \([^)]*\)", opts.timeout)?;
 
             // All phase require a Suspend request and then wait for > 3 frames; some phases require
             // a longer delay so that the device-side code decides to enter a sleep state.
