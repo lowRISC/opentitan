@@ -44,7 +44,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_a} {firmware}@{owner_slot_b}",
         exit_failure = "BFV|PASS|FAIL",
-        exit_success = "FinalBootLog: 2:AA\r\n",
+        exit_success = "FinalBootLog: 4:AAAA\r\n",
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
