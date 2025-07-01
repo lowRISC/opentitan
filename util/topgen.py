@@ -812,6 +812,7 @@ def _get_rv_core_ibex_params(topcfg: Dict[str, object]) -> Dict[str, object]:
     return {
         "racl_support": module.get("ipgen_param", {}).get("racl_support", False),
         "num_regions": module['ipgen_param']['NumRegions'],
+        "enable_lc_ctrl": module.get("ipgen_param", {}).get("LcCtrl", True),
         'module_instance_name': module['type']
     }
 

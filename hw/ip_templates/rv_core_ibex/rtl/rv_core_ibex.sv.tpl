@@ -106,7 +106,9 @@ module ${module_instance_name}
   output cpu_crash_dump_t crash_dump_o,
 
   // CPU Control Signals
+% if enable_lc_ctrl:
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
+% endif
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
   output cpu_pwrmgr_t pwrmgr_o,
 
@@ -294,6 +296,7 @@ module ${module_instance_name}
   logic irq_nm;
   assign irq_nm = |(reg2hw.nmi_state & reg2hw.nmi_enable);
 
+% if enable_lc_ctrl:
   lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
   prim_lc_sync u_lc_sync (
     .clk_i,
@@ -302,6 +305,7 @@ module ${module_instance_name}
     .lc_en_o(lc_cpu_en)
   );
 
+% endif
   lc_ctrl_pkg::lc_tx_t [0:0] pwrmgr_cpu_en;
   prim_lc_sync u_pwrmgr_sync (
     .clk_i,
@@ -387,9 +391,13 @@ module ${module_instance_name}
   // Multibit AND computation for fetch enable. Fetch is only enabled when local fetch enable,
   // lifecycle CPU enable and power manager CPU enable are all enabled.
   lc_ctrl_pkg::lc_tx_t fetch_enable;
+% if enable_lc_ctrl:
   assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(local_fetch_enable_q,
                                                   lc_ctrl_pkg::lc_tx_and_hi(lc_cpu_en[0],
                                                                             pwrmgr_cpu_en[0]));
+% else:
+  assign fetch_enable = lc_ctrl_pkg::lc_tx_and_hi(local_fetch_enable_q, pwrmgr_cpu_en[0]);
+% endif
 
   ibex_pkg::crash_dump_t crash_dump;
   ibex_top #(
@@ -529,7 +537,9 @@ module ${module_instance_name}
     .rvfi_ext_ic_scr_key_valid(),
     .rvfi_ext_irq_valid       (),
 `endif
+% if enable_lc_ctrl:
     // SEC_CM: FETCH.CTRL.LC_GATED
+% endif
     .fetch_enable_i         (fetch_enable),
     .alert_minor_o          (alert_minor),
     .alert_major_internal_o (alert_major_internal),
@@ -968,16 +978,20 @@ module ${module_instance_name}
       fatal_core_err
       |=>
       lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+% if enable_lc_ctrl:
   `ASSERT(FpvSecCmIbexFetchEnable1_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
       |->
       ${"##"}[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+% endif
   `ASSERT(FpvSecCmIbexFetchEnable2_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(pwrmgr_cpu_en_i)
       |->
       ${"##"}[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
   `ASSERT(FpvSecCmIbexFetchEnable3_A,
+% if enable_lc_ctrl:
       lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
+% endif
       lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ${"##"}1
       lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
@@ -986,8 +1000,10 @@ module ${module_instance_name}
   `ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
       ${"##"}2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
       |->
+% if enable_lc_ctrl:
       ($past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 2) ||
        $past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 3)) &&
+% endif
       ($past(lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i), 2) ||
        $past(lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i), 3)) &&
       $past(!fatal_core_err))
