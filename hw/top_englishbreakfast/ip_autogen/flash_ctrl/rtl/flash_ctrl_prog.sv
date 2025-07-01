@@ -5,7 +5,10 @@
 // Faux Flash Prog Control
 //
 
-module flash_ctrl_prog import flash_ctrl_top_specific_pkg::*; (
+module flash_ctrl_prog
+  import flash_ctrl_pkg::*;
+  import flash_ctrl_top_specific_pkg::*;
+(
   input clk_i,
   input rst_ni,
 

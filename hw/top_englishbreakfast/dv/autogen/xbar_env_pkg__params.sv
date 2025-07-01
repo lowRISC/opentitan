@@ -16,7 +16,7 @@ tl_device_t xbar_devices[$] = '{
     '{"flash_ctrl__core", '{
         '{32'h41000000, 32'h410001ff}
     }},
-    '{"flash_ctrl__prim", '{
+    '{"flash_macro_wrapper", '{
         '{32'h41008000, 32'h4100807f}
     }},
     '{"flash_ctrl__mem", '{
@@ -99,7 +99,7 @@ tl_host_t xbar_hosts[$] = '{
         "pinmux_aon",
         "ast",
         "flash_ctrl__core",
-        "flash_ctrl__prim",
+        "flash_macro_wrapper",
         "aes",
         "rv_plic",
         "sram_ctrl_main__ram",

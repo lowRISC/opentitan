@@ -41,490 +41,484 @@
 | pinmux.[`MIO_PERIPH_INSEL_REGWEN_32`](#mio_periph_insel_regwen) | 0x84     |        4 | Register write enable for MIO peripheral input selects.             |
 | pinmux.[`MIO_PERIPH_INSEL_REGWEN_33`](#mio_periph_insel_regwen) | 0x88     |        4 | Register write enable for MIO peripheral input selects.             |
 | pinmux.[`MIO_PERIPH_INSEL_REGWEN_34`](#mio_periph_insel_regwen) | 0x8c     |        4 | Register write enable for MIO peripheral input selects.             |
-| pinmux.[`MIO_PERIPH_INSEL_REGWEN_35`](#mio_periph_insel_regwen) | 0x90     |        4 | Register write enable for MIO peripheral input selects.             |
-| pinmux.[`MIO_PERIPH_INSEL_REGWEN_36`](#mio_periph_insel_regwen) | 0x94     |        4 | Register write enable for MIO peripheral input selects.             |
-| pinmux.[`MIO_PERIPH_INSEL_REGWEN_37`](#mio_periph_insel_regwen) | 0x98     |        4 | Register write enable for MIO peripheral input selects.             |
-| pinmux.[`MIO_PERIPH_INSEL_0`](#mio_periph_insel)                | 0x9c     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_1`](#mio_periph_insel)                | 0xa0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_2`](#mio_periph_insel)                | 0xa4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_3`](#mio_periph_insel)                | 0xa8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_4`](#mio_periph_insel)                | 0xac     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_5`](#mio_periph_insel)                | 0xb0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_6`](#mio_periph_insel)                | 0xb4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_7`](#mio_periph_insel)                | 0xb8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_8`](#mio_periph_insel)                | 0xbc     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_9`](#mio_periph_insel)                | 0xc0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_10`](#mio_periph_insel)               | 0xc4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_11`](#mio_periph_insel)               | 0xc8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_12`](#mio_periph_insel)               | 0xcc     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_13`](#mio_periph_insel)               | 0xd0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_14`](#mio_periph_insel)               | 0xd4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_15`](#mio_periph_insel)               | 0xd8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_16`](#mio_periph_insel)               | 0xdc     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_17`](#mio_periph_insel)               | 0xe0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_18`](#mio_periph_insel)               | 0xe4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_19`](#mio_periph_insel)               | 0xe8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_20`](#mio_periph_insel)               | 0xec     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_21`](#mio_periph_insel)               | 0xf0     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_22`](#mio_periph_insel)               | 0xf4     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_23`](#mio_periph_insel)               | 0xf8     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_24`](#mio_periph_insel)               | 0xfc     |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_25`](#mio_periph_insel)               | 0x100    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_26`](#mio_periph_insel)               | 0x104    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_27`](#mio_periph_insel)               | 0x108    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_28`](#mio_periph_insel)               | 0x10c    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_29`](#mio_periph_insel)               | 0x110    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_30`](#mio_periph_insel)               | 0x114    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_31`](#mio_periph_insel)               | 0x118    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_32`](#mio_periph_insel)               | 0x11c    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_33`](#mio_periph_insel)               | 0x120    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_34`](#mio_periph_insel)               | 0x124    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_35`](#mio_periph_insel)               | 0x128    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_36`](#mio_periph_insel)               | 0x12c    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_PERIPH_INSEL_37`](#mio_periph_insel)               | 0x130    |        4 | For each peripheral input, this selects the muxable pad input.      |
-| pinmux.[`MIO_OUTSEL_REGWEN_0`](#mio_outsel_regwen)              | 0x134    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_1`](#mio_outsel_regwen)              | 0x138    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_2`](#mio_outsel_regwen)              | 0x13c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_3`](#mio_outsel_regwen)              | 0x140    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_4`](#mio_outsel_regwen)              | 0x144    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_5`](#mio_outsel_regwen)              | 0x148    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_6`](#mio_outsel_regwen)              | 0x14c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_7`](#mio_outsel_regwen)              | 0x150    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_8`](#mio_outsel_regwen)              | 0x154    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_9`](#mio_outsel_regwen)              | 0x158    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_10`](#mio_outsel_regwen)             | 0x15c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_11`](#mio_outsel_regwen)             | 0x160    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_12`](#mio_outsel_regwen)             | 0x164    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_13`](#mio_outsel_regwen)             | 0x168    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_14`](#mio_outsel_regwen)             | 0x16c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_15`](#mio_outsel_regwen)             | 0x170    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_16`](#mio_outsel_regwen)             | 0x174    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_17`](#mio_outsel_regwen)             | 0x178    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_18`](#mio_outsel_regwen)             | 0x17c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_19`](#mio_outsel_regwen)             | 0x180    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_20`](#mio_outsel_regwen)             | 0x184    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_21`](#mio_outsel_regwen)             | 0x188    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_22`](#mio_outsel_regwen)             | 0x18c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_23`](#mio_outsel_regwen)             | 0x190    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_24`](#mio_outsel_regwen)             | 0x194    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_25`](#mio_outsel_regwen)             | 0x198    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_26`](#mio_outsel_regwen)             | 0x19c    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_27`](#mio_outsel_regwen)             | 0x1a0    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_28`](#mio_outsel_regwen)             | 0x1a4    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_29`](#mio_outsel_regwen)             | 0x1a8    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_30`](#mio_outsel_regwen)             | 0x1ac    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_31`](#mio_outsel_regwen)             | 0x1b0    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_32`](#mio_outsel_regwen)             | 0x1b4    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_33`](#mio_outsel_regwen)             | 0x1b8    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_34`](#mio_outsel_regwen)             | 0x1bc    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_35`](#mio_outsel_regwen)             | 0x1c0    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_36`](#mio_outsel_regwen)             | 0x1c4    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_37`](#mio_outsel_regwen)             | 0x1c8    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_38`](#mio_outsel_regwen)             | 0x1cc    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_39`](#mio_outsel_regwen)             | 0x1d0    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_40`](#mio_outsel_regwen)             | 0x1d4    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_41`](#mio_outsel_regwen)             | 0x1d8    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_42`](#mio_outsel_regwen)             | 0x1dc    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_43`](#mio_outsel_regwen)             | 0x1e0    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_44`](#mio_outsel_regwen)             | 0x1e4    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_45`](#mio_outsel_regwen)             | 0x1e8    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_REGWEN_46`](#mio_outsel_regwen)             | 0x1ec    |        4 | Register write enable for MIO output selects.                       |
-| pinmux.[`MIO_OUTSEL_0`](#mio_outsel)                            | 0x1f0    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_1`](#mio_outsel)                            | 0x1f4    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_2`](#mio_outsel)                            | 0x1f8    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_3`](#mio_outsel)                            | 0x1fc    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_4`](#mio_outsel)                            | 0x200    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_5`](#mio_outsel)                            | 0x204    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_6`](#mio_outsel)                            | 0x208    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_7`](#mio_outsel)                            | 0x20c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_8`](#mio_outsel)                            | 0x210    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_9`](#mio_outsel)                            | 0x214    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_10`](#mio_outsel)                           | 0x218    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_11`](#mio_outsel)                           | 0x21c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_12`](#mio_outsel)                           | 0x220    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_13`](#mio_outsel)                           | 0x224    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_14`](#mio_outsel)                           | 0x228    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_15`](#mio_outsel)                           | 0x22c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_16`](#mio_outsel)                           | 0x230    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_17`](#mio_outsel)                           | 0x234    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_18`](#mio_outsel)                           | 0x238    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_19`](#mio_outsel)                           | 0x23c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_20`](#mio_outsel)                           | 0x240    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_21`](#mio_outsel)                           | 0x244    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_22`](#mio_outsel)                           | 0x248    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_23`](#mio_outsel)                           | 0x24c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_24`](#mio_outsel)                           | 0x250    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_25`](#mio_outsel)                           | 0x254    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_26`](#mio_outsel)                           | 0x258    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_27`](#mio_outsel)                           | 0x25c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_28`](#mio_outsel)                           | 0x260    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_29`](#mio_outsel)                           | 0x264    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_30`](#mio_outsel)                           | 0x268    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_31`](#mio_outsel)                           | 0x26c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_32`](#mio_outsel)                           | 0x270    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_33`](#mio_outsel)                           | 0x274    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_34`](#mio_outsel)                           | 0x278    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_35`](#mio_outsel)                           | 0x27c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_36`](#mio_outsel)                           | 0x280    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_37`](#mio_outsel)                           | 0x284    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_38`](#mio_outsel)                           | 0x288    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_39`](#mio_outsel)                           | 0x28c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_40`](#mio_outsel)                           | 0x290    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_41`](#mio_outsel)                           | 0x294    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_42`](#mio_outsel)                           | 0x298    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_43`](#mio_outsel)                           | 0x29c    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_44`](#mio_outsel)                           | 0x2a0    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_45`](#mio_outsel)                           | 0x2a4    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_OUTSEL_46`](#mio_outsel)                           | 0x2a8    |        4 | For each muxable pad, this selects the peripheral output.           |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_0`](#mio_pad_attr_regwen)          | 0x2ac    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_1`](#mio_pad_attr_regwen)          | 0x2b0    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_2`](#mio_pad_attr_regwen)          | 0x2b4    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_3`](#mio_pad_attr_regwen)          | 0x2b8    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_4`](#mio_pad_attr_regwen)          | 0x2bc    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_5`](#mio_pad_attr_regwen)          | 0x2c0    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_6`](#mio_pad_attr_regwen)          | 0x2c4    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_7`](#mio_pad_attr_regwen)          | 0x2c8    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_8`](#mio_pad_attr_regwen)          | 0x2cc    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_9`](#mio_pad_attr_regwen)          | 0x2d0    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_10`](#mio_pad_attr_regwen)         | 0x2d4    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_11`](#mio_pad_attr_regwen)         | 0x2d8    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_12`](#mio_pad_attr_regwen)         | 0x2dc    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_13`](#mio_pad_attr_regwen)         | 0x2e0    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_14`](#mio_pad_attr_regwen)         | 0x2e4    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_15`](#mio_pad_attr_regwen)         | 0x2e8    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_16`](#mio_pad_attr_regwen)         | 0x2ec    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_17`](#mio_pad_attr_regwen)         | 0x2f0    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_18`](#mio_pad_attr_regwen)         | 0x2f4    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_19`](#mio_pad_attr_regwen)         | 0x2f8    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_20`](#mio_pad_attr_regwen)         | 0x2fc    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_21`](#mio_pad_attr_regwen)         | 0x300    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_22`](#mio_pad_attr_regwen)         | 0x304    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_23`](#mio_pad_attr_regwen)         | 0x308    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_24`](#mio_pad_attr_regwen)         | 0x30c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_25`](#mio_pad_attr_regwen)         | 0x310    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_26`](#mio_pad_attr_regwen)         | 0x314    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_27`](#mio_pad_attr_regwen)         | 0x318    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_28`](#mio_pad_attr_regwen)         | 0x31c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_29`](#mio_pad_attr_regwen)         | 0x320    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_30`](#mio_pad_attr_regwen)         | 0x324    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_31`](#mio_pad_attr_regwen)         | 0x328    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_32`](#mio_pad_attr_regwen)         | 0x32c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_33`](#mio_pad_attr_regwen)         | 0x330    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_34`](#mio_pad_attr_regwen)         | 0x334    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_35`](#mio_pad_attr_regwen)         | 0x338    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_36`](#mio_pad_attr_regwen)         | 0x33c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_37`](#mio_pad_attr_regwen)         | 0x340    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_38`](#mio_pad_attr_regwen)         | 0x344    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_39`](#mio_pad_attr_regwen)         | 0x348    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_40`](#mio_pad_attr_regwen)         | 0x34c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_41`](#mio_pad_attr_regwen)         | 0x350    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_42`](#mio_pad_attr_regwen)         | 0x354    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_43`](#mio_pad_attr_regwen)         | 0x358    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_44`](#mio_pad_attr_regwen)         | 0x35c    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_45`](#mio_pad_attr_regwen)         | 0x360    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_REGWEN_46`](#mio_pad_attr_regwen)         | 0x364    |        4 | Register write enable for MIO PAD attributes.                       |
-| pinmux.[`MIO_PAD_ATTR_0`](#mio_pad_attr)                        | 0x368    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_1`](#mio_pad_attr)                        | 0x36c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_2`](#mio_pad_attr)                        | 0x370    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_3`](#mio_pad_attr)                        | 0x374    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_4`](#mio_pad_attr)                        | 0x378    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_5`](#mio_pad_attr)                        | 0x37c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_6`](#mio_pad_attr)                        | 0x380    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_7`](#mio_pad_attr)                        | 0x384    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_8`](#mio_pad_attr)                        | 0x388    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_9`](#mio_pad_attr)                        | 0x38c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_10`](#mio_pad_attr)                       | 0x390    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_11`](#mio_pad_attr)                       | 0x394    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_12`](#mio_pad_attr)                       | 0x398    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_13`](#mio_pad_attr)                       | 0x39c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_14`](#mio_pad_attr)                       | 0x3a0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_15`](#mio_pad_attr)                       | 0x3a4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_16`](#mio_pad_attr)                       | 0x3a8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_17`](#mio_pad_attr)                       | 0x3ac    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_18`](#mio_pad_attr)                       | 0x3b0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_19`](#mio_pad_attr)                       | 0x3b4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_20`](#mio_pad_attr)                       | 0x3b8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_21`](#mio_pad_attr)                       | 0x3bc    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_22`](#mio_pad_attr)                       | 0x3c0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_23`](#mio_pad_attr)                       | 0x3c4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_24`](#mio_pad_attr)                       | 0x3c8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_25`](#mio_pad_attr)                       | 0x3cc    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_26`](#mio_pad_attr)                       | 0x3d0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_27`](#mio_pad_attr)                       | 0x3d4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_28`](#mio_pad_attr)                       | 0x3d8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_29`](#mio_pad_attr)                       | 0x3dc    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_30`](#mio_pad_attr)                       | 0x3e0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_31`](#mio_pad_attr)                       | 0x3e4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_32`](#mio_pad_attr)                       | 0x3e8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_33`](#mio_pad_attr)                       | 0x3ec    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_34`](#mio_pad_attr)                       | 0x3f0    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_35`](#mio_pad_attr)                       | 0x3f4    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_36`](#mio_pad_attr)                       | 0x3f8    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_37`](#mio_pad_attr)                       | 0x3fc    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_38`](#mio_pad_attr)                       | 0x400    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_39`](#mio_pad_attr)                       | 0x404    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_40`](#mio_pad_attr)                       | 0x408    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_41`](#mio_pad_attr)                       | 0x40c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_42`](#mio_pad_attr)                       | 0x410    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_43`](#mio_pad_attr)                       | 0x414    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_44`](#mio_pad_attr)                       | 0x418    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_45`](#mio_pad_attr)                       | 0x41c    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`MIO_PAD_ATTR_46`](#mio_pad_attr)                       | 0x420    |        4 | Muxed pad attributes.                                               |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_0`](#dio_pad_attr_regwen)          | 0x424    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_1`](#dio_pad_attr_regwen)          | 0x428    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_2`](#dio_pad_attr_regwen)          | 0x42c    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_3`](#dio_pad_attr_regwen)          | 0x430    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_4`](#dio_pad_attr_regwen)          | 0x434    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_5`](#dio_pad_attr_regwen)          | 0x438    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_6`](#dio_pad_attr_regwen)          | 0x43c    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_7`](#dio_pad_attr_regwen)          | 0x440    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_8`](#dio_pad_attr_regwen)          | 0x444    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_9`](#dio_pad_attr_regwen)          | 0x448    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_10`](#dio_pad_attr_regwen)         | 0x44c    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_11`](#dio_pad_attr_regwen)         | 0x450    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_12`](#dio_pad_attr_regwen)         | 0x454    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_REGWEN_13`](#dio_pad_attr_regwen)         | 0x458    |        4 | Register write enable for DIO PAD attributes.                       |
-| pinmux.[`DIO_PAD_ATTR_0`](#dio_pad_attr)                        | 0x45c    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_1`](#dio_pad_attr)                        | 0x460    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_2`](#dio_pad_attr)                        | 0x464    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_3`](#dio_pad_attr)                        | 0x468    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_4`](#dio_pad_attr)                        | 0x46c    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_5`](#dio_pad_attr)                        | 0x470    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_6`](#dio_pad_attr)                        | 0x474    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_7`](#dio_pad_attr)                        | 0x478    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_8`](#dio_pad_attr)                        | 0x47c    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_9`](#dio_pad_attr)                        | 0x480    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_10`](#dio_pad_attr)                       | 0x484    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_11`](#dio_pad_attr)                       | 0x488    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_12`](#dio_pad_attr)                       | 0x48c    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`DIO_PAD_ATTR_13`](#dio_pad_attr)                       | 0x490    |        4 | Dedicated pad attributes.                                           |
-| pinmux.[`MIO_PAD_SLEEP_STATUS_0`](#mio_pad_sleep_status_0)      | 0x494    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`MIO_PAD_SLEEP_STATUS_1`](#mio_pad_sleep_status_1)      | 0x498    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_0`](#mio_pad_sleep_regwen)        | 0x49c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_1`](#mio_pad_sleep_regwen)        | 0x4a0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_2`](#mio_pad_sleep_regwen)        | 0x4a4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_3`](#mio_pad_sleep_regwen)        | 0x4a8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_4`](#mio_pad_sleep_regwen)        | 0x4ac    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_5`](#mio_pad_sleep_regwen)        | 0x4b0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_6`](#mio_pad_sleep_regwen)        | 0x4b4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_7`](#mio_pad_sleep_regwen)        | 0x4b8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_8`](#mio_pad_sleep_regwen)        | 0x4bc    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_9`](#mio_pad_sleep_regwen)        | 0x4c0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_10`](#mio_pad_sleep_regwen)       | 0x4c4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_11`](#mio_pad_sleep_regwen)       | 0x4c8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_12`](#mio_pad_sleep_regwen)       | 0x4cc    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_13`](#mio_pad_sleep_regwen)       | 0x4d0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_14`](#mio_pad_sleep_regwen)       | 0x4d4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_15`](#mio_pad_sleep_regwen)       | 0x4d8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_16`](#mio_pad_sleep_regwen)       | 0x4dc    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_17`](#mio_pad_sleep_regwen)       | 0x4e0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_18`](#mio_pad_sleep_regwen)       | 0x4e4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_19`](#mio_pad_sleep_regwen)       | 0x4e8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_20`](#mio_pad_sleep_regwen)       | 0x4ec    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_21`](#mio_pad_sleep_regwen)       | 0x4f0    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_22`](#mio_pad_sleep_regwen)       | 0x4f4    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_23`](#mio_pad_sleep_regwen)       | 0x4f8    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_24`](#mio_pad_sleep_regwen)       | 0x4fc    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_25`](#mio_pad_sleep_regwen)       | 0x500    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_26`](#mio_pad_sleep_regwen)       | 0x504    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_27`](#mio_pad_sleep_regwen)       | 0x508    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_28`](#mio_pad_sleep_regwen)       | 0x50c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_29`](#mio_pad_sleep_regwen)       | 0x510    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_30`](#mio_pad_sleep_regwen)       | 0x514    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_31`](#mio_pad_sleep_regwen)       | 0x518    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_32`](#mio_pad_sleep_regwen)       | 0x51c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_33`](#mio_pad_sleep_regwen)       | 0x520    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_34`](#mio_pad_sleep_regwen)       | 0x524    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_35`](#mio_pad_sleep_regwen)       | 0x528    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_36`](#mio_pad_sleep_regwen)       | 0x52c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_37`](#mio_pad_sleep_regwen)       | 0x530    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_38`](#mio_pad_sleep_regwen)       | 0x534    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_39`](#mio_pad_sleep_regwen)       | 0x538    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_40`](#mio_pad_sleep_regwen)       | 0x53c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_41`](#mio_pad_sleep_regwen)       | 0x540    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_42`](#mio_pad_sleep_regwen)       | 0x544    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_43`](#mio_pad_sleep_regwen)       | 0x548    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_44`](#mio_pad_sleep_regwen)       | 0x54c    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_45`](#mio_pad_sleep_regwen)       | 0x550    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_REGWEN_46`](#mio_pad_sleep_regwen)       | 0x554    |        4 | Register write enable for MIO sleep value configuration.            |
-| pinmux.[`MIO_PAD_SLEEP_EN_0`](#mio_pad_sleep_en)                | 0x558    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_1`](#mio_pad_sleep_en)                | 0x55c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_2`](#mio_pad_sleep_en)                | 0x560    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_3`](#mio_pad_sleep_en)                | 0x564    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_4`](#mio_pad_sleep_en)                | 0x568    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_5`](#mio_pad_sleep_en)                | 0x56c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_6`](#mio_pad_sleep_en)                | 0x570    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_7`](#mio_pad_sleep_en)                | 0x574    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_8`](#mio_pad_sleep_en)                | 0x578    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_9`](#mio_pad_sleep_en)                | 0x57c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_10`](#mio_pad_sleep_en)               | 0x580    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_11`](#mio_pad_sleep_en)               | 0x584    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_12`](#mio_pad_sleep_en)               | 0x588    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_13`](#mio_pad_sleep_en)               | 0x58c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_14`](#mio_pad_sleep_en)               | 0x590    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_15`](#mio_pad_sleep_en)               | 0x594    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_16`](#mio_pad_sleep_en)               | 0x598    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_17`](#mio_pad_sleep_en)               | 0x59c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_18`](#mio_pad_sleep_en)               | 0x5a0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_19`](#mio_pad_sleep_en)               | 0x5a4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_20`](#mio_pad_sleep_en)               | 0x5a8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_21`](#mio_pad_sleep_en)               | 0x5ac    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_22`](#mio_pad_sleep_en)               | 0x5b0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_23`](#mio_pad_sleep_en)               | 0x5b4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_24`](#mio_pad_sleep_en)               | 0x5b8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_25`](#mio_pad_sleep_en)               | 0x5bc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_26`](#mio_pad_sleep_en)               | 0x5c0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_27`](#mio_pad_sleep_en)               | 0x5c4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_28`](#mio_pad_sleep_en)               | 0x5c8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_29`](#mio_pad_sleep_en)               | 0x5cc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_30`](#mio_pad_sleep_en)               | 0x5d0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_31`](#mio_pad_sleep_en)               | 0x5d4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_32`](#mio_pad_sleep_en)               | 0x5d8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_33`](#mio_pad_sleep_en)               | 0x5dc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_34`](#mio_pad_sleep_en)               | 0x5e0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_35`](#mio_pad_sleep_en)               | 0x5e4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_36`](#mio_pad_sleep_en)               | 0x5e8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_37`](#mio_pad_sleep_en)               | 0x5ec    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_38`](#mio_pad_sleep_en)               | 0x5f0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_39`](#mio_pad_sleep_en)               | 0x5f4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_40`](#mio_pad_sleep_en)               | 0x5f8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_41`](#mio_pad_sleep_en)               | 0x5fc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_42`](#mio_pad_sleep_en)               | 0x600    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_43`](#mio_pad_sleep_en)               | 0x604    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_44`](#mio_pad_sleep_en)               | 0x608    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_45`](#mio_pad_sleep_en)               | 0x60c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_EN_46`](#mio_pad_sleep_en)               | 0x610    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_0`](#mio_pad_sleep_mode)            | 0x614    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_1`](#mio_pad_sleep_mode)            | 0x618    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_2`](#mio_pad_sleep_mode)            | 0x61c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_3`](#mio_pad_sleep_mode)            | 0x620    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_4`](#mio_pad_sleep_mode)            | 0x624    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_5`](#mio_pad_sleep_mode)            | 0x628    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_6`](#mio_pad_sleep_mode)            | 0x62c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_7`](#mio_pad_sleep_mode)            | 0x630    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_8`](#mio_pad_sleep_mode)            | 0x634    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_9`](#mio_pad_sleep_mode)            | 0x638    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_10`](#mio_pad_sleep_mode)           | 0x63c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_11`](#mio_pad_sleep_mode)           | 0x640    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_12`](#mio_pad_sleep_mode)           | 0x644    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_13`](#mio_pad_sleep_mode)           | 0x648    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_14`](#mio_pad_sleep_mode)           | 0x64c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_15`](#mio_pad_sleep_mode)           | 0x650    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_16`](#mio_pad_sleep_mode)           | 0x654    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_17`](#mio_pad_sleep_mode)           | 0x658    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_18`](#mio_pad_sleep_mode)           | 0x65c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_19`](#mio_pad_sleep_mode)           | 0x660    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_20`](#mio_pad_sleep_mode)           | 0x664    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_21`](#mio_pad_sleep_mode)           | 0x668    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_22`](#mio_pad_sleep_mode)           | 0x66c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_23`](#mio_pad_sleep_mode)           | 0x670    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_24`](#mio_pad_sleep_mode)           | 0x674    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_25`](#mio_pad_sleep_mode)           | 0x678    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_26`](#mio_pad_sleep_mode)           | 0x67c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_27`](#mio_pad_sleep_mode)           | 0x680    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_28`](#mio_pad_sleep_mode)           | 0x684    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_29`](#mio_pad_sleep_mode)           | 0x688    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_30`](#mio_pad_sleep_mode)           | 0x68c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_31`](#mio_pad_sleep_mode)           | 0x690    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_32`](#mio_pad_sleep_mode)           | 0x694    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_33`](#mio_pad_sleep_mode)           | 0x698    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_34`](#mio_pad_sleep_mode)           | 0x69c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_35`](#mio_pad_sleep_mode)           | 0x6a0    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_36`](#mio_pad_sleep_mode)           | 0x6a4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_37`](#mio_pad_sleep_mode)           | 0x6a8    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_38`](#mio_pad_sleep_mode)           | 0x6ac    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_39`](#mio_pad_sleep_mode)           | 0x6b0    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_40`](#mio_pad_sleep_mode)           | 0x6b4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_41`](#mio_pad_sleep_mode)           | 0x6b8    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_42`](#mio_pad_sleep_mode)           | 0x6bc    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_43`](#mio_pad_sleep_mode)           | 0x6c0    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_44`](#mio_pad_sleep_mode)           | 0x6c4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_45`](#mio_pad_sleep_mode)           | 0x6c8    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`MIO_PAD_SLEEP_MODE_46`](#mio_pad_sleep_mode)           | 0x6cc    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
-| pinmux.[`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status)          | 0x6d0    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_0`](#dio_pad_sleep_regwen)        | 0x6d4    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_1`](#dio_pad_sleep_regwen)        | 0x6d8    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_2`](#dio_pad_sleep_regwen)        | 0x6dc    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_3`](#dio_pad_sleep_regwen)        | 0x6e0    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_4`](#dio_pad_sleep_regwen)        | 0x6e4    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_5`](#dio_pad_sleep_regwen)        | 0x6e8    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_6`](#dio_pad_sleep_regwen)        | 0x6ec    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_7`](#dio_pad_sleep_regwen)        | 0x6f0    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_8`](#dio_pad_sleep_regwen)        | 0x6f4    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_9`](#dio_pad_sleep_regwen)        | 0x6f8    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_10`](#dio_pad_sleep_regwen)       | 0x6fc    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_11`](#dio_pad_sleep_regwen)       | 0x700    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_12`](#dio_pad_sleep_regwen)       | 0x704    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_REGWEN_13`](#dio_pad_sleep_regwen)       | 0x708    |        4 | Register write enable for DIO sleep value configuration.            |
-| pinmux.[`DIO_PAD_SLEEP_EN_0`](#dio_pad_sleep_en)                | 0x70c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_1`](#dio_pad_sleep_en)                | 0x710    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_2`](#dio_pad_sleep_en)                | 0x714    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_3`](#dio_pad_sleep_en)                | 0x718    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_4`](#dio_pad_sleep_en)                | 0x71c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_5`](#dio_pad_sleep_en)                | 0x720    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_6`](#dio_pad_sleep_en)                | 0x724    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_7`](#dio_pad_sleep_en)                | 0x728    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_8`](#dio_pad_sleep_en)                | 0x72c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_9`](#dio_pad_sleep_en)                | 0x730    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_10`](#dio_pad_sleep_en)               | 0x734    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_11`](#dio_pad_sleep_en)               | 0x738    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_12`](#dio_pad_sleep_en)               | 0x73c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_EN_13`](#dio_pad_sleep_en)               | 0x740    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_0`](#dio_pad_sleep_mode)            | 0x744    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_1`](#dio_pad_sleep_mode)            | 0x748    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_2`](#dio_pad_sleep_mode)            | 0x74c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_3`](#dio_pad_sleep_mode)            | 0x750    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_4`](#dio_pad_sleep_mode)            | 0x754    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_5`](#dio_pad_sleep_mode)            | 0x758    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_6`](#dio_pad_sleep_mode)            | 0x75c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_7`](#dio_pad_sleep_mode)            | 0x760    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_8`](#dio_pad_sleep_mode)            | 0x764    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_9`](#dio_pad_sleep_mode)            | 0x768    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_10`](#dio_pad_sleep_mode)           | 0x76c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_11`](#dio_pad_sleep_mode)           | 0x770    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_12`](#dio_pad_sleep_mode)           | 0x774    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`DIO_PAD_SLEEP_MODE_13`](#dio_pad_sleep_mode)           | 0x778    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
-| pinmux.[`WKUP_DETECTOR_REGWEN_0`](#wkup_detector_regwen)        | 0x77c    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_1`](#wkup_detector_regwen)        | 0x780    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_2`](#wkup_detector_regwen)        | 0x784    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_3`](#wkup_detector_regwen)        | 0x788    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_4`](#wkup_detector_regwen)        | 0x78c    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_5`](#wkup_detector_regwen)        | 0x790    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_6`](#wkup_detector_regwen)        | 0x794    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_REGWEN_7`](#wkup_detector_regwen)        | 0x798    |        4 | Register write enable for wakeup detectors.                         |
-| pinmux.[`WKUP_DETECTOR_EN_0`](#wkup_detector_en)                | 0x79c    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_1`](#wkup_detector_en)                | 0x7a0    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_2`](#wkup_detector_en)                | 0x7a4    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_3`](#wkup_detector_en)                | 0x7a8    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_4`](#wkup_detector_en)                | 0x7ac    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_5`](#wkup_detector_en)                | 0x7b0    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_6`](#wkup_detector_en)                | 0x7b4    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_EN_7`](#wkup_detector_en)                | 0x7b8    |        4 | Enables for the wakeup detectors.                                   |
-| pinmux.[`WKUP_DETECTOR_0`](#wkup_detector)                      | 0x7bc    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_1`](#wkup_detector)                      | 0x7c0    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_2`](#wkup_detector)                      | 0x7c4    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_3`](#wkup_detector)                      | 0x7c8    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_4`](#wkup_detector)                      | 0x7cc    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_5`](#wkup_detector)                      | 0x7d0    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_6`](#wkup_detector)                      | 0x7d4    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_7`](#wkup_detector)                      | 0x7d8    |        4 | Configuration of wakeup condition detectors.                        |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_0`](#wkup_detector_cnt_th)        | 0x7dc    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_1`](#wkup_detector_cnt_th)        | 0x7e0    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_2`](#wkup_detector_cnt_th)        | 0x7e4    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_3`](#wkup_detector_cnt_th)        | 0x7e8    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_4`](#wkup_detector_cnt_th)        | 0x7ec    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_5`](#wkup_detector_cnt_th)        | 0x7f0    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_6`](#wkup_detector_cnt_th)        | 0x7f4    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_CNT_TH_7`](#wkup_detector_cnt_th)        | 0x7f8    |        4 | Counter thresholds for wakeup condition detectors.                  |
-| pinmux.[`WKUP_DETECTOR_PADSEL_0`](#wkup_detector_padsel)        | 0x7fc    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_1`](#wkup_detector_padsel)        | 0x800    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_2`](#wkup_detector_padsel)        | 0x804    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_3`](#wkup_detector_padsel)        | 0x808    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_4`](#wkup_detector_padsel)        | 0x80c    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_5`](#wkup_detector_padsel)        | 0x810    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_6`](#wkup_detector_padsel)        | 0x814    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_DETECTOR_PADSEL_7`](#wkup_detector_padsel)        | 0x818    |        4 | Pad selects for pad wakeup condition detectors.                     |
-| pinmux.[`WKUP_CAUSE`](#wkup_cause)                              | 0x81c    |        4 | Cause registers for wakeup detectors.                               |
+| pinmux.[`MIO_PERIPH_INSEL_0`](#mio_periph_insel)                | 0x90     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_1`](#mio_periph_insel)                | 0x94     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_2`](#mio_periph_insel)                | 0x98     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_3`](#mio_periph_insel)                | 0x9c     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_4`](#mio_periph_insel)                | 0xa0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_5`](#mio_periph_insel)                | 0xa4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_6`](#mio_periph_insel)                | 0xa8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_7`](#mio_periph_insel)                | 0xac     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_8`](#mio_periph_insel)                | 0xb0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_9`](#mio_periph_insel)                | 0xb4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_10`](#mio_periph_insel)               | 0xb8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_11`](#mio_periph_insel)               | 0xbc     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_12`](#mio_periph_insel)               | 0xc0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_13`](#mio_periph_insel)               | 0xc4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_14`](#mio_periph_insel)               | 0xc8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_15`](#mio_periph_insel)               | 0xcc     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_16`](#mio_periph_insel)               | 0xd0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_17`](#mio_periph_insel)               | 0xd4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_18`](#mio_periph_insel)               | 0xd8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_19`](#mio_periph_insel)               | 0xdc     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_20`](#mio_periph_insel)               | 0xe0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_21`](#mio_periph_insel)               | 0xe4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_22`](#mio_periph_insel)               | 0xe8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_23`](#mio_periph_insel)               | 0xec     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_24`](#mio_periph_insel)               | 0xf0     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_25`](#mio_periph_insel)               | 0xf4     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_26`](#mio_periph_insel)               | 0xf8     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_27`](#mio_periph_insel)               | 0xfc     |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_28`](#mio_periph_insel)               | 0x100    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_29`](#mio_periph_insel)               | 0x104    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_30`](#mio_periph_insel)               | 0x108    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_31`](#mio_periph_insel)               | 0x10c    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_32`](#mio_periph_insel)               | 0x110    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_33`](#mio_periph_insel)               | 0x114    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_PERIPH_INSEL_34`](#mio_periph_insel)               | 0x118    |        4 | For each peripheral input, this selects the muxable pad input.      |
+| pinmux.[`MIO_OUTSEL_REGWEN_0`](#mio_outsel_regwen)              | 0x11c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_1`](#mio_outsel_regwen)              | 0x120    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_2`](#mio_outsel_regwen)              | 0x124    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_3`](#mio_outsel_regwen)              | 0x128    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_4`](#mio_outsel_regwen)              | 0x12c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_5`](#mio_outsel_regwen)              | 0x130    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_6`](#mio_outsel_regwen)              | 0x134    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_7`](#mio_outsel_regwen)              | 0x138    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_8`](#mio_outsel_regwen)              | 0x13c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_9`](#mio_outsel_regwen)              | 0x140    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_10`](#mio_outsel_regwen)             | 0x144    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_11`](#mio_outsel_regwen)             | 0x148    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_12`](#mio_outsel_regwen)             | 0x14c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_13`](#mio_outsel_regwen)             | 0x150    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_14`](#mio_outsel_regwen)             | 0x154    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_15`](#mio_outsel_regwen)             | 0x158    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_16`](#mio_outsel_regwen)             | 0x15c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_17`](#mio_outsel_regwen)             | 0x160    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_18`](#mio_outsel_regwen)             | 0x164    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_19`](#mio_outsel_regwen)             | 0x168    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_20`](#mio_outsel_regwen)             | 0x16c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_21`](#mio_outsel_regwen)             | 0x170    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_22`](#mio_outsel_regwen)             | 0x174    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_23`](#mio_outsel_regwen)             | 0x178    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_24`](#mio_outsel_regwen)             | 0x17c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_25`](#mio_outsel_regwen)             | 0x180    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_26`](#mio_outsel_regwen)             | 0x184    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_27`](#mio_outsel_regwen)             | 0x188    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_28`](#mio_outsel_regwen)             | 0x18c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_29`](#mio_outsel_regwen)             | 0x190    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_30`](#mio_outsel_regwen)             | 0x194    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_31`](#mio_outsel_regwen)             | 0x198    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_32`](#mio_outsel_regwen)             | 0x19c    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_33`](#mio_outsel_regwen)             | 0x1a0    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_34`](#mio_outsel_regwen)             | 0x1a4    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_35`](#mio_outsel_regwen)             | 0x1a8    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_36`](#mio_outsel_regwen)             | 0x1ac    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_37`](#mio_outsel_regwen)             | 0x1b0    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_38`](#mio_outsel_regwen)             | 0x1b4    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_39`](#mio_outsel_regwen)             | 0x1b8    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_40`](#mio_outsel_regwen)             | 0x1bc    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_41`](#mio_outsel_regwen)             | 0x1c0    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_42`](#mio_outsel_regwen)             | 0x1c4    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_43`](#mio_outsel_regwen)             | 0x1c8    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_44`](#mio_outsel_regwen)             | 0x1cc    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_45`](#mio_outsel_regwen)             | 0x1d0    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_REGWEN_46`](#mio_outsel_regwen)             | 0x1d4    |        4 | Register write enable for MIO output selects.                       |
+| pinmux.[`MIO_OUTSEL_0`](#mio_outsel)                            | 0x1d8    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_1`](#mio_outsel)                            | 0x1dc    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_2`](#mio_outsel)                            | 0x1e0    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_3`](#mio_outsel)                            | 0x1e4    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_4`](#mio_outsel)                            | 0x1e8    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_5`](#mio_outsel)                            | 0x1ec    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_6`](#mio_outsel)                            | 0x1f0    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_7`](#mio_outsel)                            | 0x1f4    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_8`](#mio_outsel)                            | 0x1f8    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_9`](#mio_outsel)                            | 0x1fc    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_10`](#mio_outsel)                           | 0x200    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_11`](#mio_outsel)                           | 0x204    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_12`](#mio_outsel)                           | 0x208    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_13`](#mio_outsel)                           | 0x20c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_14`](#mio_outsel)                           | 0x210    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_15`](#mio_outsel)                           | 0x214    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_16`](#mio_outsel)                           | 0x218    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_17`](#mio_outsel)                           | 0x21c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_18`](#mio_outsel)                           | 0x220    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_19`](#mio_outsel)                           | 0x224    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_20`](#mio_outsel)                           | 0x228    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_21`](#mio_outsel)                           | 0x22c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_22`](#mio_outsel)                           | 0x230    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_23`](#mio_outsel)                           | 0x234    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_24`](#mio_outsel)                           | 0x238    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_25`](#mio_outsel)                           | 0x23c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_26`](#mio_outsel)                           | 0x240    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_27`](#mio_outsel)                           | 0x244    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_28`](#mio_outsel)                           | 0x248    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_29`](#mio_outsel)                           | 0x24c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_30`](#mio_outsel)                           | 0x250    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_31`](#mio_outsel)                           | 0x254    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_32`](#mio_outsel)                           | 0x258    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_33`](#mio_outsel)                           | 0x25c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_34`](#mio_outsel)                           | 0x260    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_35`](#mio_outsel)                           | 0x264    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_36`](#mio_outsel)                           | 0x268    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_37`](#mio_outsel)                           | 0x26c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_38`](#mio_outsel)                           | 0x270    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_39`](#mio_outsel)                           | 0x274    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_40`](#mio_outsel)                           | 0x278    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_41`](#mio_outsel)                           | 0x27c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_42`](#mio_outsel)                           | 0x280    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_43`](#mio_outsel)                           | 0x284    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_44`](#mio_outsel)                           | 0x288    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_45`](#mio_outsel)                           | 0x28c    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_OUTSEL_46`](#mio_outsel)                           | 0x290    |        4 | For each muxable pad, this selects the peripheral output.           |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_0`](#mio_pad_attr_regwen)          | 0x294    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_1`](#mio_pad_attr_regwen)          | 0x298    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_2`](#mio_pad_attr_regwen)          | 0x29c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_3`](#mio_pad_attr_regwen)          | 0x2a0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_4`](#mio_pad_attr_regwen)          | 0x2a4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_5`](#mio_pad_attr_regwen)          | 0x2a8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_6`](#mio_pad_attr_regwen)          | 0x2ac    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_7`](#mio_pad_attr_regwen)          | 0x2b0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_8`](#mio_pad_attr_regwen)          | 0x2b4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_9`](#mio_pad_attr_regwen)          | 0x2b8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_10`](#mio_pad_attr_regwen)         | 0x2bc    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_11`](#mio_pad_attr_regwen)         | 0x2c0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_12`](#mio_pad_attr_regwen)         | 0x2c4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_13`](#mio_pad_attr_regwen)         | 0x2c8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_14`](#mio_pad_attr_regwen)         | 0x2cc    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_15`](#mio_pad_attr_regwen)         | 0x2d0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_16`](#mio_pad_attr_regwen)         | 0x2d4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_17`](#mio_pad_attr_regwen)         | 0x2d8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_18`](#mio_pad_attr_regwen)         | 0x2dc    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_19`](#mio_pad_attr_regwen)         | 0x2e0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_20`](#mio_pad_attr_regwen)         | 0x2e4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_21`](#mio_pad_attr_regwen)         | 0x2e8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_22`](#mio_pad_attr_regwen)         | 0x2ec    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_23`](#mio_pad_attr_regwen)         | 0x2f0    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_24`](#mio_pad_attr_regwen)         | 0x2f4    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_25`](#mio_pad_attr_regwen)         | 0x2f8    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_26`](#mio_pad_attr_regwen)         | 0x2fc    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_27`](#mio_pad_attr_regwen)         | 0x300    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_28`](#mio_pad_attr_regwen)         | 0x304    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_29`](#mio_pad_attr_regwen)         | 0x308    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_30`](#mio_pad_attr_regwen)         | 0x30c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_31`](#mio_pad_attr_regwen)         | 0x310    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_32`](#mio_pad_attr_regwen)         | 0x314    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_33`](#mio_pad_attr_regwen)         | 0x318    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_34`](#mio_pad_attr_regwen)         | 0x31c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_35`](#mio_pad_attr_regwen)         | 0x320    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_36`](#mio_pad_attr_regwen)         | 0x324    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_37`](#mio_pad_attr_regwen)         | 0x328    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_38`](#mio_pad_attr_regwen)         | 0x32c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_39`](#mio_pad_attr_regwen)         | 0x330    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_40`](#mio_pad_attr_regwen)         | 0x334    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_41`](#mio_pad_attr_regwen)         | 0x338    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_42`](#mio_pad_attr_regwen)         | 0x33c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_43`](#mio_pad_attr_regwen)         | 0x340    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_44`](#mio_pad_attr_regwen)         | 0x344    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_45`](#mio_pad_attr_regwen)         | 0x348    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_REGWEN_46`](#mio_pad_attr_regwen)         | 0x34c    |        4 | Register write enable for MIO PAD attributes.                       |
+| pinmux.[`MIO_PAD_ATTR_0`](#mio_pad_attr)                        | 0x350    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_1`](#mio_pad_attr)                        | 0x354    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_2`](#mio_pad_attr)                        | 0x358    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_3`](#mio_pad_attr)                        | 0x35c    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_4`](#mio_pad_attr)                        | 0x360    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_5`](#mio_pad_attr)                        | 0x364    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_6`](#mio_pad_attr)                        | 0x368    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_7`](#mio_pad_attr)                        | 0x36c    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_8`](#mio_pad_attr)                        | 0x370    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_9`](#mio_pad_attr)                        | 0x374    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_10`](#mio_pad_attr)                       | 0x378    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_11`](#mio_pad_attr)                       | 0x37c    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_12`](#mio_pad_attr)                       | 0x380    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_13`](#mio_pad_attr)                       | 0x384    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_14`](#mio_pad_attr)                       | 0x388    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_15`](#mio_pad_attr)                       | 0x38c    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_16`](#mio_pad_attr)                       | 0x390    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_17`](#mio_pad_attr)                       | 0x394    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_18`](#mio_pad_attr)                       | 0x398    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_19`](#mio_pad_attr)                       | 0x39c    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_20`](#mio_pad_attr)                       | 0x3a0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_21`](#mio_pad_attr)                       | 0x3a4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_22`](#mio_pad_attr)                       | 0x3a8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_23`](#mio_pad_attr)                       | 0x3ac    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_24`](#mio_pad_attr)                       | 0x3b0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_25`](#mio_pad_attr)                       | 0x3b4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_26`](#mio_pad_attr)                       | 0x3b8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_27`](#mio_pad_attr)                       | 0x3bc    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_28`](#mio_pad_attr)                       | 0x3c0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_29`](#mio_pad_attr)                       | 0x3c4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_30`](#mio_pad_attr)                       | 0x3c8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_31`](#mio_pad_attr)                       | 0x3cc    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_32`](#mio_pad_attr)                       | 0x3d0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_33`](#mio_pad_attr)                       | 0x3d4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_34`](#mio_pad_attr)                       | 0x3d8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_35`](#mio_pad_attr)                       | 0x3dc    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_36`](#mio_pad_attr)                       | 0x3e0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_37`](#mio_pad_attr)                       | 0x3e4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_38`](#mio_pad_attr)                       | 0x3e8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_39`](#mio_pad_attr)                       | 0x3ec    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_40`](#mio_pad_attr)                       | 0x3f0    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_41`](#mio_pad_attr)                       | 0x3f4    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_42`](#mio_pad_attr)                       | 0x3f8    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_43`](#mio_pad_attr)                       | 0x3fc    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_44`](#mio_pad_attr)                       | 0x400    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_45`](#mio_pad_attr)                       | 0x404    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`MIO_PAD_ATTR_46`](#mio_pad_attr)                       | 0x408    |        4 | Muxed pad attributes.                                               |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_0`](#dio_pad_attr_regwen)          | 0x40c    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_1`](#dio_pad_attr_regwen)          | 0x410    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_2`](#dio_pad_attr_regwen)          | 0x414    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_3`](#dio_pad_attr_regwen)          | 0x418    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_4`](#dio_pad_attr_regwen)          | 0x41c    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_5`](#dio_pad_attr_regwen)          | 0x420    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_6`](#dio_pad_attr_regwen)          | 0x424    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_7`](#dio_pad_attr_regwen)          | 0x428    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_8`](#dio_pad_attr_regwen)          | 0x42c    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_9`](#dio_pad_attr_regwen)          | 0x430    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_10`](#dio_pad_attr_regwen)         | 0x434    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_11`](#dio_pad_attr_regwen)         | 0x438    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_12`](#dio_pad_attr_regwen)         | 0x43c    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_REGWEN_13`](#dio_pad_attr_regwen)         | 0x440    |        4 | Register write enable for DIO PAD attributes.                       |
+| pinmux.[`DIO_PAD_ATTR_0`](#dio_pad_attr)                        | 0x444    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_1`](#dio_pad_attr)                        | 0x448    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_2`](#dio_pad_attr)                        | 0x44c    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_3`](#dio_pad_attr)                        | 0x450    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_4`](#dio_pad_attr)                        | 0x454    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_5`](#dio_pad_attr)                        | 0x458    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_6`](#dio_pad_attr)                        | 0x45c    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_7`](#dio_pad_attr)                        | 0x460    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_8`](#dio_pad_attr)                        | 0x464    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_9`](#dio_pad_attr)                        | 0x468    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_10`](#dio_pad_attr)                       | 0x46c    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_11`](#dio_pad_attr)                       | 0x470    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_12`](#dio_pad_attr)                       | 0x474    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`DIO_PAD_ATTR_13`](#dio_pad_attr)                       | 0x478    |        4 | Dedicated pad attributes.                                           |
+| pinmux.[`MIO_PAD_SLEEP_STATUS_0`](#mio_pad_sleep_status_0)      | 0x47c    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`MIO_PAD_SLEEP_STATUS_1`](#mio_pad_sleep_status_1)      | 0x480    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_0`](#mio_pad_sleep_regwen)        | 0x484    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_1`](#mio_pad_sleep_regwen)        | 0x488    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_2`](#mio_pad_sleep_regwen)        | 0x48c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_3`](#mio_pad_sleep_regwen)        | 0x490    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_4`](#mio_pad_sleep_regwen)        | 0x494    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_5`](#mio_pad_sleep_regwen)        | 0x498    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_6`](#mio_pad_sleep_regwen)        | 0x49c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_7`](#mio_pad_sleep_regwen)        | 0x4a0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_8`](#mio_pad_sleep_regwen)        | 0x4a4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_9`](#mio_pad_sleep_regwen)        | 0x4a8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_10`](#mio_pad_sleep_regwen)       | 0x4ac    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_11`](#mio_pad_sleep_regwen)       | 0x4b0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_12`](#mio_pad_sleep_regwen)       | 0x4b4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_13`](#mio_pad_sleep_regwen)       | 0x4b8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_14`](#mio_pad_sleep_regwen)       | 0x4bc    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_15`](#mio_pad_sleep_regwen)       | 0x4c0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_16`](#mio_pad_sleep_regwen)       | 0x4c4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_17`](#mio_pad_sleep_regwen)       | 0x4c8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_18`](#mio_pad_sleep_regwen)       | 0x4cc    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_19`](#mio_pad_sleep_regwen)       | 0x4d0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_20`](#mio_pad_sleep_regwen)       | 0x4d4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_21`](#mio_pad_sleep_regwen)       | 0x4d8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_22`](#mio_pad_sleep_regwen)       | 0x4dc    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_23`](#mio_pad_sleep_regwen)       | 0x4e0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_24`](#mio_pad_sleep_regwen)       | 0x4e4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_25`](#mio_pad_sleep_regwen)       | 0x4e8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_26`](#mio_pad_sleep_regwen)       | 0x4ec    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_27`](#mio_pad_sleep_regwen)       | 0x4f0    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_28`](#mio_pad_sleep_regwen)       | 0x4f4    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_29`](#mio_pad_sleep_regwen)       | 0x4f8    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_30`](#mio_pad_sleep_regwen)       | 0x4fc    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_31`](#mio_pad_sleep_regwen)       | 0x500    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_32`](#mio_pad_sleep_regwen)       | 0x504    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_33`](#mio_pad_sleep_regwen)       | 0x508    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_34`](#mio_pad_sleep_regwen)       | 0x50c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_35`](#mio_pad_sleep_regwen)       | 0x510    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_36`](#mio_pad_sleep_regwen)       | 0x514    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_37`](#mio_pad_sleep_regwen)       | 0x518    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_38`](#mio_pad_sleep_regwen)       | 0x51c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_39`](#mio_pad_sleep_regwen)       | 0x520    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_40`](#mio_pad_sleep_regwen)       | 0x524    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_41`](#mio_pad_sleep_regwen)       | 0x528    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_42`](#mio_pad_sleep_regwen)       | 0x52c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_43`](#mio_pad_sleep_regwen)       | 0x530    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_44`](#mio_pad_sleep_regwen)       | 0x534    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_45`](#mio_pad_sleep_regwen)       | 0x538    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_REGWEN_46`](#mio_pad_sleep_regwen)       | 0x53c    |        4 | Register write enable for MIO sleep value configuration.            |
+| pinmux.[`MIO_PAD_SLEEP_EN_0`](#mio_pad_sleep_en)                | 0x540    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_1`](#mio_pad_sleep_en)                | 0x544    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_2`](#mio_pad_sleep_en)                | 0x548    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_3`](#mio_pad_sleep_en)                | 0x54c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_4`](#mio_pad_sleep_en)                | 0x550    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_5`](#mio_pad_sleep_en)                | 0x554    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_6`](#mio_pad_sleep_en)                | 0x558    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_7`](#mio_pad_sleep_en)                | 0x55c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_8`](#mio_pad_sleep_en)                | 0x560    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_9`](#mio_pad_sleep_en)                | 0x564    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_10`](#mio_pad_sleep_en)               | 0x568    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_11`](#mio_pad_sleep_en)               | 0x56c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_12`](#mio_pad_sleep_en)               | 0x570    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_13`](#mio_pad_sleep_en)               | 0x574    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_14`](#mio_pad_sleep_en)               | 0x578    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_15`](#mio_pad_sleep_en)               | 0x57c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_16`](#mio_pad_sleep_en)               | 0x580    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_17`](#mio_pad_sleep_en)               | 0x584    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_18`](#mio_pad_sleep_en)               | 0x588    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_19`](#mio_pad_sleep_en)               | 0x58c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_20`](#mio_pad_sleep_en)               | 0x590    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_21`](#mio_pad_sleep_en)               | 0x594    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_22`](#mio_pad_sleep_en)               | 0x598    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_23`](#mio_pad_sleep_en)               | 0x59c    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_24`](#mio_pad_sleep_en)               | 0x5a0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_25`](#mio_pad_sleep_en)               | 0x5a4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_26`](#mio_pad_sleep_en)               | 0x5a8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_27`](#mio_pad_sleep_en)               | 0x5ac    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_28`](#mio_pad_sleep_en)               | 0x5b0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_29`](#mio_pad_sleep_en)               | 0x5b4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_30`](#mio_pad_sleep_en)               | 0x5b8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_31`](#mio_pad_sleep_en)               | 0x5bc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_32`](#mio_pad_sleep_en)               | 0x5c0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_33`](#mio_pad_sleep_en)               | 0x5c4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_34`](#mio_pad_sleep_en)               | 0x5c8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_35`](#mio_pad_sleep_en)               | 0x5cc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_36`](#mio_pad_sleep_en)               | 0x5d0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_37`](#mio_pad_sleep_en)               | 0x5d4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_38`](#mio_pad_sleep_en)               | 0x5d8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_39`](#mio_pad_sleep_en)               | 0x5dc    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_40`](#mio_pad_sleep_en)               | 0x5e0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_41`](#mio_pad_sleep_en)               | 0x5e4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_42`](#mio_pad_sleep_en)               | 0x5e8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_43`](#mio_pad_sleep_en)               | 0x5ec    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_44`](#mio_pad_sleep_en)               | 0x5f0    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_45`](#mio_pad_sleep_en)               | 0x5f4    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_EN_46`](#mio_pad_sleep_en)               | 0x5f8    |        4 | Enables the sleep mode of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_0`](#mio_pad_sleep_mode)            | 0x5fc    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_1`](#mio_pad_sleep_mode)            | 0x600    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_2`](#mio_pad_sleep_mode)            | 0x604    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_3`](#mio_pad_sleep_mode)            | 0x608    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_4`](#mio_pad_sleep_mode)            | 0x60c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_5`](#mio_pad_sleep_mode)            | 0x610    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_6`](#mio_pad_sleep_mode)            | 0x614    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_7`](#mio_pad_sleep_mode)            | 0x618    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_8`](#mio_pad_sleep_mode)            | 0x61c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_9`](#mio_pad_sleep_mode)            | 0x620    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_10`](#mio_pad_sleep_mode)           | 0x624    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_11`](#mio_pad_sleep_mode)           | 0x628    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_12`](#mio_pad_sleep_mode)           | 0x62c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_13`](#mio_pad_sleep_mode)           | 0x630    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_14`](#mio_pad_sleep_mode)           | 0x634    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_15`](#mio_pad_sleep_mode)           | 0x638    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_16`](#mio_pad_sleep_mode)           | 0x63c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_17`](#mio_pad_sleep_mode)           | 0x640    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_18`](#mio_pad_sleep_mode)           | 0x644    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_19`](#mio_pad_sleep_mode)           | 0x648    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_20`](#mio_pad_sleep_mode)           | 0x64c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_21`](#mio_pad_sleep_mode)           | 0x650    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_22`](#mio_pad_sleep_mode)           | 0x654    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_23`](#mio_pad_sleep_mode)           | 0x658    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_24`](#mio_pad_sleep_mode)           | 0x65c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_25`](#mio_pad_sleep_mode)           | 0x660    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_26`](#mio_pad_sleep_mode)           | 0x664    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_27`](#mio_pad_sleep_mode)           | 0x668    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_28`](#mio_pad_sleep_mode)           | 0x66c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_29`](#mio_pad_sleep_mode)           | 0x670    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_30`](#mio_pad_sleep_mode)           | 0x674    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_31`](#mio_pad_sleep_mode)           | 0x678    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_32`](#mio_pad_sleep_mode)           | 0x67c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_33`](#mio_pad_sleep_mode)           | 0x680    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_34`](#mio_pad_sleep_mode)           | 0x684    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_35`](#mio_pad_sleep_mode)           | 0x688    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_36`](#mio_pad_sleep_mode)           | 0x68c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_37`](#mio_pad_sleep_mode)           | 0x690    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_38`](#mio_pad_sleep_mode)           | 0x694    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_39`](#mio_pad_sleep_mode)           | 0x698    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_40`](#mio_pad_sleep_mode)           | 0x69c    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_41`](#mio_pad_sleep_mode)           | 0x6a0    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_42`](#mio_pad_sleep_mode)           | 0x6a4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_43`](#mio_pad_sleep_mode)           | 0x6a8    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_44`](#mio_pad_sleep_mode)           | 0x6ac    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_45`](#mio_pad_sleep_mode)           | 0x6b0    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`MIO_PAD_SLEEP_MODE_46`](#mio_pad_sleep_mode)           | 0x6b4    |        4 | Defines sleep behavior of the corresponding muxed pad.              |
+| pinmux.[`DIO_PAD_SLEEP_STATUS`](#dio_pad_sleep_status)          | 0x6b8    |        4 | Register indicating whether the corresponding pad is in sleep mode. |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_0`](#dio_pad_sleep_regwen)        | 0x6bc    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_1`](#dio_pad_sleep_regwen)        | 0x6c0    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_2`](#dio_pad_sleep_regwen)        | 0x6c4    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_3`](#dio_pad_sleep_regwen)        | 0x6c8    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_4`](#dio_pad_sleep_regwen)        | 0x6cc    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_5`](#dio_pad_sleep_regwen)        | 0x6d0    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_6`](#dio_pad_sleep_regwen)        | 0x6d4    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_7`](#dio_pad_sleep_regwen)        | 0x6d8    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_8`](#dio_pad_sleep_regwen)        | 0x6dc    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_9`](#dio_pad_sleep_regwen)        | 0x6e0    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_10`](#dio_pad_sleep_regwen)       | 0x6e4    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_11`](#dio_pad_sleep_regwen)       | 0x6e8    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_12`](#dio_pad_sleep_regwen)       | 0x6ec    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_REGWEN_13`](#dio_pad_sleep_regwen)       | 0x6f0    |        4 | Register write enable for DIO sleep value configuration.            |
+| pinmux.[`DIO_PAD_SLEEP_EN_0`](#dio_pad_sleep_en)                | 0x6f4    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_1`](#dio_pad_sleep_en)                | 0x6f8    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_2`](#dio_pad_sleep_en)                | 0x6fc    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_3`](#dio_pad_sleep_en)                | 0x700    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_4`](#dio_pad_sleep_en)                | 0x704    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_5`](#dio_pad_sleep_en)                | 0x708    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_6`](#dio_pad_sleep_en)                | 0x70c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_7`](#dio_pad_sleep_en)                | 0x710    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_8`](#dio_pad_sleep_en)                | 0x714    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_9`](#dio_pad_sleep_en)                | 0x718    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_10`](#dio_pad_sleep_en)               | 0x71c    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_11`](#dio_pad_sleep_en)               | 0x720    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_12`](#dio_pad_sleep_en)               | 0x724    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_EN_13`](#dio_pad_sleep_en)               | 0x728    |        4 | Enables the sleep mode of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_0`](#dio_pad_sleep_mode)            | 0x72c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_1`](#dio_pad_sleep_mode)            | 0x730    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_2`](#dio_pad_sleep_mode)            | 0x734    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_3`](#dio_pad_sleep_mode)            | 0x738    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_4`](#dio_pad_sleep_mode)            | 0x73c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_5`](#dio_pad_sleep_mode)            | 0x740    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_6`](#dio_pad_sleep_mode)            | 0x744    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_7`](#dio_pad_sleep_mode)            | 0x748    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_8`](#dio_pad_sleep_mode)            | 0x74c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_9`](#dio_pad_sleep_mode)            | 0x750    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_10`](#dio_pad_sleep_mode)           | 0x754    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_11`](#dio_pad_sleep_mode)           | 0x758    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_12`](#dio_pad_sleep_mode)           | 0x75c    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`DIO_PAD_SLEEP_MODE_13`](#dio_pad_sleep_mode)           | 0x760    |        4 | Defines sleep behavior of the corresponding dedicated pad.          |
+| pinmux.[`WKUP_DETECTOR_REGWEN_0`](#wkup_detector_regwen)        | 0x764    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_1`](#wkup_detector_regwen)        | 0x768    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_2`](#wkup_detector_regwen)        | 0x76c    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_3`](#wkup_detector_regwen)        | 0x770    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_4`](#wkup_detector_regwen)        | 0x774    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_5`](#wkup_detector_regwen)        | 0x778    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_6`](#wkup_detector_regwen)        | 0x77c    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_REGWEN_7`](#wkup_detector_regwen)        | 0x780    |        4 | Register write enable for wakeup detectors.                         |
+| pinmux.[`WKUP_DETECTOR_EN_0`](#wkup_detector_en)                | 0x784    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_1`](#wkup_detector_en)                | 0x788    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_2`](#wkup_detector_en)                | 0x78c    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_3`](#wkup_detector_en)                | 0x790    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_4`](#wkup_detector_en)                | 0x794    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_5`](#wkup_detector_en)                | 0x798    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_6`](#wkup_detector_en)                | 0x79c    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_EN_7`](#wkup_detector_en)                | 0x7a0    |        4 | Enables for the wakeup detectors.                                   |
+| pinmux.[`WKUP_DETECTOR_0`](#wkup_detector)                      | 0x7a4    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_1`](#wkup_detector)                      | 0x7a8    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_2`](#wkup_detector)                      | 0x7ac    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_3`](#wkup_detector)                      | 0x7b0    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_4`](#wkup_detector)                      | 0x7b4    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_5`](#wkup_detector)                      | 0x7b8    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_6`](#wkup_detector)                      | 0x7bc    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_7`](#wkup_detector)                      | 0x7c0    |        4 | Configuration of wakeup condition detectors.                        |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_0`](#wkup_detector_cnt_th)        | 0x7c4    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_1`](#wkup_detector_cnt_th)        | 0x7c8    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_2`](#wkup_detector_cnt_th)        | 0x7cc    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_3`](#wkup_detector_cnt_th)        | 0x7d0    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_4`](#wkup_detector_cnt_th)        | 0x7d4    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_5`](#wkup_detector_cnt_th)        | 0x7d8    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_6`](#wkup_detector_cnt_th)        | 0x7dc    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_CNT_TH_7`](#wkup_detector_cnt_th)        | 0x7e0    |        4 | Counter thresholds for wakeup condition detectors.                  |
+| pinmux.[`WKUP_DETECTOR_PADSEL_0`](#wkup_detector_padsel)        | 0x7e4    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_1`](#wkup_detector_padsel)        | 0x7e8    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_2`](#wkup_detector_padsel)        | 0x7ec    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_3`](#wkup_detector_padsel)        | 0x7f0    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_4`](#wkup_detector_padsel)        | 0x7f4    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_5`](#wkup_detector_padsel)        | 0x7f8    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_6`](#wkup_detector_padsel)        | 0x7fc    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_DETECTOR_PADSEL_7`](#wkup_detector_padsel)        | 0x800    |        4 | Pad selects for pad wakeup condition detectors.                     |
+| pinmux.[`WKUP_CAUSE`](#wkup_cause)                              | 0x804    |        4 | Cause registers for wakeup detectors.                               |
 
 ## ALERT_TEST
 Alert Test Register
@@ -587,9 +581,6 @@ Register write enable for MIO peripheral input selects.
 | MIO_PERIPH_INSEL_REGWEN_32 | 0x84     |
 | MIO_PERIPH_INSEL_REGWEN_33 | 0x88     |
 | MIO_PERIPH_INSEL_REGWEN_34 | 0x8c     |
-| MIO_PERIPH_INSEL_REGWEN_35 | 0x90     |
-| MIO_PERIPH_INSEL_REGWEN_36 | 0x94     |
-| MIO_PERIPH_INSEL_REGWEN_37 | 0x98     |
 
 
 ### Fields
@@ -613,44 +604,41 @@ For each peripheral input, this selects the muxable pad input.
 
 | Name                | Offset   |
 |:--------------------|:---------|
-| MIO_PERIPH_INSEL_0  | 0x9c     |
-| MIO_PERIPH_INSEL_1  | 0xa0     |
-| MIO_PERIPH_INSEL_2  | 0xa4     |
-| MIO_PERIPH_INSEL_3  | 0xa8     |
-| MIO_PERIPH_INSEL_4  | 0xac     |
-| MIO_PERIPH_INSEL_5  | 0xb0     |
-| MIO_PERIPH_INSEL_6  | 0xb4     |
-| MIO_PERIPH_INSEL_7  | 0xb8     |
-| MIO_PERIPH_INSEL_8  | 0xbc     |
-| MIO_PERIPH_INSEL_9  | 0xc0     |
-| MIO_PERIPH_INSEL_10 | 0xc4     |
-| MIO_PERIPH_INSEL_11 | 0xc8     |
-| MIO_PERIPH_INSEL_12 | 0xcc     |
-| MIO_PERIPH_INSEL_13 | 0xd0     |
-| MIO_PERIPH_INSEL_14 | 0xd4     |
-| MIO_PERIPH_INSEL_15 | 0xd8     |
-| MIO_PERIPH_INSEL_16 | 0xdc     |
-| MIO_PERIPH_INSEL_17 | 0xe0     |
-| MIO_PERIPH_INSEL_18 | 0xe4     |
-| MIO_PERIPH_INSEL_19 | 0xe8     |
-| MIO_PERIPH_INSEL_20 | 0xec     |
-| MIO_PERIPH_INSEL_21 | 0xf0     |
-| MIO_PERIPH_INSEL_22 | 0xf4     |
-| MIO_PERIPH_INSEL_23 | 0xf8     |
-| MIO_PERIPH_INSEL_24 | 0xfc     |
-| MIO_PERIPH_INSEL_25 | 0x100    |
-| MIO_PERIPH_INSEL_26 | 0x104    |
-| MIO_PERIPH_INSEL_27 | 0x108    |
-| MIO_PERIPH_INSEL_28 | 0x10c    |
-| MIO_PERIPH_INSEL_29 | 0x110    |
-| MIO_PERIPH_INSEL_30 | 0x114    |
-| MIO_PERIPH_INSEL_31 | 0x118    |
-| MIO_PERIPH_INSEL_32 | 0x11c    |
-| MIO_PERIPH_INSEL_33 | 0x120    |
-| MIO_PERIPH_INSEL_34 | 0x124    |
-| MIO_PERIPH_INSEL_35 | 0x128    |
-| MIO_PERIPH_INSEL_36 | 0x12c    |
-| MIO_PERIPH_INSEL_37 | 0x130    |
+| MIO_PERIPH_INSEL_0  | 0x90     |
+| MIO_PERIPH_INSEL_1  | 0x94     |
+| MIO_PERIPH_INSEL_2  | 0x98     |
+| MIO_PERIPH_INSEL_3  | 0x9c     |
+| MIO_PERIPH_INSEL_4  | 0xa0     |
+| MIO_PERIPH_INSEL_5  | 0xa4     |
+| MIO_PERIPH_INSEL_6  | 0xa8     |
+| MIO_PERIPH_INSEL_7  | 0xac     |
+| MIO_PERIPH_INSEL_8  | 0xb0     |
+| MIO_PERIPH_INSEL_9  | 0xb4     |
+| MIO_PERIPH_INSEL_10 | 0xb8     |
+| MIO_PERIPH_INSEL_11 | 0xbc     |
+| MIO_PERIPH_INSEL_12 | 0xc0     |
+| MIO_PERIPH_INSEL_13 | 0xc4     |
+| MIO_PERIPH_INSEL_14 | 0xc8     |
+| MIO_PERIPH_INSEL_15 | 0xcc     |
+| MIO_PERIPH_INSEL_16 | 0xd0     |
+| MIO_PERIPH_INSEL_17 | 0xd4     |
+| MIO_PERIPH_INSEL_18 | 0xd8     |
+| MIO_PERIPH_INSEL_19 | 0xdc     |
+| MIO_PERIPH_INSEL_20 | 0xe0     |
+| MIO_PERIPH_INSEL_21 | 0xe4     |
+| MIO_PERIPH_INSEL_22 | 0xe8     |
+| MIO_PERIPH_INSEL_23 | 0xec     |
+| MIO_PERIPH_INSEL_24 | 0xf0     |
+| MIO_PERIPH_INSEL_25 | 0xf4     |
+| MIO_PERIPH_INSEL_26 | 0xf8     |
+| MIO_PERIPH_INSEL_27 | 0xfc     |
+| MIO_PERIPH_INSEL_28 | 0x100    |
+| MIO_PERIPH_INSEL_29 | 0x104    |
+| MIO_PERIPH_INSEL_30 | 0x108    |
+| MIO_PERIPH_INSEL_31 | 0x10c    |
+| MIO_PERIPH_INSEL_32 | 0x110    |
+| MIO_PERIPH_INSEL_33 | 0x114    |
+| MIO_PERIPH_INSEL_34 | 0x118    |
 
 
 ### Fields
@@ -673,53 +661,53 @@ Register write enable for MIO output selects.
 
 | Name                 | Offset   |
 |:---------------------|:---------|
-| MIO_OUTSEL_REGWEN_0  | 0x134    |
-| MIO_OUTSEL_REGWEN_1  | 0x138    |
-| MIO_OUTSEL_REGWEN_2  | 0x13c    |
-| MIO_OUTSEL_REGWEN_3  | 0x140    |
-| MIO_OUTSEL_REGWEN_4  | 0x144    |
-| MIO_OUTSEL_REGWEN_5  | 0x148    |
-| MIO_OUTSEL_REGWEN_6  | 0x14c    |
-| MIO_OUTSEL_REGWEN_7  | 0x150    |
-| MIO_OUTSEL_REGWEN_8  | 0x154    |
-| MIO_OUTSEL_REGWEN_9  | 0x158    |
-| MIO_OUTSEL_REGWEN_10 | 0x15c    |
-| MIO_OUTSEL_REGWEN_11 | 0x160    |
-| MIO_OUTSEL_REGWEN_12 | 0x164    |
-| MIO_OUTSEL_REGWEN_13 | 0x168    |
-| MIO_OUTSEL_REGWEN_14 | 0x16c    |
-| MIO_OUTSEL_REGWEN_15 | 0x170    |
-| MIO_OUTSEL_REGWEN_16 | 0x174    |
-| MIO_OUTSEL_REGWEN_17 | 0x178    |
-| MIO_OUTSEL_REGWEN_18 | 0x17c    |
-| MIO_OUTSEL_REGWEN_19 | 0x180    |
-| MIO_OUTSEL_REGWEN_20 | 0x184    |
-| MIO_OUTSEL_REGWEN_21 | 0x188    |
-| MIO_OUTSEL_REGWEN_22 | 0x18c    |
-| MIO_OUTSEL_REGWEN_23 | 0x190    |
-| MIO_OUTSEL_REGWEN_24 | 0x194    |
-| MIO_OUTSEL_REGWEN_25 | 0x198    |
-| MIO_OUTSEL_REGWEN_26 | 0x19c    |
-| MIO_OUTSEL_REGWEN_27 | 0x1a0    |
-| MIO_OUTSEL_REGWEN_28 | 0x1a4    |
-| MIO_OUTSEL_REGWEN_29 | 0x1a8    |
-| MIO_OUTSEL_REGWEN_30 | 0x1ac    |
-| MIO_OUTSEL_REGWEN_31 | 0x1b0    |
-| MIO_OUTSEL_REGWEN_32 | 0x1b4    |
-| MIO_OUTSEL_REGWEN_33 | 0x1b8    |
-| MIO_OUTSEL_REGWEN_34 | 0x1bc    |
-| MIO_OUTSEL_REGWEN_35 | 0x1c0    |
-| MIO_OUTSEL_REGWEN_36 | 0x1c4    |
-| MIO_OUTSEL_REGWEN_37 | 0x1c8    |
-| MIO_OUTSEL_REGWEN_38 | 0x1cc    |
-| MIO_OUTSEL_REGWEN_39 | 0x1d0    |
-| MIO_OUTSEL_REGWEN_40 | 0x1d4    |
-| MIO_OUTSEL_REGWEN_41 | 0x1d8    |
-| MIO_OUTSEL_REGWEN_42 | 0x1dc    |
-| MIO_OUTSEL_REGWEN_43 | 0x1e0    |
-| MIO_OUTSEL_REGWEN_44 | 0x1e4    |
-| MIO_OUTSEL_REGWEN_45 | 0x1e8    |
-| MIO_OUTSEL_REGWEN_46 | 0x1ec    |
+| MIO_OUTSEL_REGWEN_0  | 0x11c    |
+| MIO_OUTSEL_REGWEN_1  | 0x120    |
+| MIO_OUTSEL_REGWEN_2  | 0x124    |
+| MIO_OUTSEL_REGWEN_3  | 0x128    |
+| MIO_OUTSEL_REGWEN_4  | 0x12c    |
+| MIO_OUTSEL_REGWEN_5  | 0x130    |
+| MIO_OUTSEL_REGWEN_6  | 0x134    |
+| MIO_OUTSEL_REGWEN_7  | 0x138    |
+| MIO_OUTSEL_REGWEN_8  | 0x13c    |
+| MIO_OUTSEL_REGWEN_9  | 0x140    |
+| MIO_OUTSEL_REGWEN_10 | 0x144    |
+| MIO_OUTSEL_REGWEN_11 | 0x148    |
+| MIO_OUTSEL_REGWEN_12 | 0x14c    |
+| MIO_OUTSEL_REGWEN_13 | 0x150    |
+| MIO_OUTSEL_REGWEN_14 | 0x154    |
+| MIO_OUTSEL_REGWEN_15 | 0x158    |
+| MIO_OUTSEL_REGWEN_16 | 0x15c    |
+| MIO_OUTSEL_REGWEN_17 | 0x160    |
+| MIO_OUTSEL_REGWEN_18 | 0x164    |
+| MIO_OUTSEL_REGWEN_19 | 0x168    |
+| MIO_OUTSEL_REGWEN_20 | 0x16c    |
+| MIO_OUTSEL_REGWEN_21 | 0x170    |
+| MIO_OUTSEL_REGWEN_22 | 0x174    |
+| MIO_OUTSEL_REGWEN_23 | 0x178    |
+| MIO_OUTSEL_REGWEN_24 | 0x17c    |
+| MIO_OUTSEL_REGWEN_25 | 0x180    |
+| MIO_OUTSEL_REGWEN_26 | 0x184    |
+| MIO_OUTSEL_REGWEN_27 | 0x188    |
+| MIO_OUTSEL_REGWEN_28 | 0x18c    |
+| MIO_OUTSEL_REGWEN_29 | 0x190    |
+| MIO_OUTSEL_REGWEN_30 | 0x194    |
+| MIO_OUTSEL_REGWEN_31 | 0x198    |
+| MIO_OUTSEL_REGWEN_32 | 0x19c    |
+| MIO_OUTSEL_REGWEN_33 | 0x1a0    |
+| MIO_OUTSEL_REGWEN_34 | 0x1a4    |
+| MIO_OUTSEL_REGWEN_35 | 0x1a8    |
+| MIO_OUTSEL_REGWEN_36 | 0x1ac    |
+| MIO_OUTSEL_REGWEN_37 | 0x1b0    |
+| MIO_OUTSEL_REGWEN_38 | 0x1b4    |
+| MIO_OUTSEL_REGWEN_39 | 0x1b8    |
+| MIO_OUTSEL_REGWEN_40 | 0x1bc    |
+| MIO_OUTSEL_REGWEN_41 | 0x1c0    |
+| MIO_OUTSEL_REGWEN_42 | 0x1c4    |
+| MIO_OUTSEL_REGWEN_43 | 0x1c8    |
+| MIO_OUTSEL_REGWEN_44 | 0x1cc    |
+| MIO_OUTSEL_REGWEN_45 | 0x1d0    |
+| MIO_OUTSEL_REGWEN_46 | 0x1d4    |
 
 
 ### Fields
@@ -743,53 +731,53 @@ For each muxable pad, this selects the peripheral output.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| MIO_OUTSEL_0  | 0x1f0    |
-| MIO_OUTSEL_1  | 0x1f4    |
-| MIO_OUTSEL_2  | 0x1f8    |
-| MIO_OUTSEL_3  | 0x1fc    |
-| MIO_OUTSEL_4  | 0x200    |
-| MIO_OUTSEL_5  | 0x204    |
-| MIO_OUTSEL_6  | 0x208    |
-| MIO_OUTSEL_7  | 0x20c    |
-| MIO_OUTSEL_8  | 0x210    |
-| MIO_OUTSEL_9  | 0x214    |
-| MIO_OUTSEL_10 | 0x218    |
-| MIO_OUTSEL_11 | 0x21c    |
-| MIO_OUTSEL_12 | 0x220    |
-| MIO_OUTSEL_13 | 0x224    |
-| MIO_OUTSEL_14 | 0x228    |
-| MIO_OUTSEL_15 | 0x22c    |
-| MIO_OUTSEL_16 | 0x230    |
-| MIO_OUTSEL_17 | 0x234    |
-| MIO_OUTSEL_18 | 0x238    |
-| MIO_OUTSEL_19 | 0x23c    |
-| MIO_OUTSEL_20 | 0x240    |
-| MIO_OUTSEL_21 | 0x244    |
-| MIO_OUTSEL_22 | 0x248    |
-| MIO_OUTSEL_23 | 0x24c    |
-| MIO_OUTSEL_24 | 0x250    |
-| MIO_OUTSEL_25 | 0x254    |
-| MIO_OUTSEL_26 | 0x258    |
-| MIO_OUTSEL_27 | 0x25c    |
-| MIO_OUTSEL_28 | 0x260    |
-| MIO_OUTSEL_29 | 0x264    |
-| MIO_OUTSEL_30 | 0x268    |
-| MIO_OUTSEL_31 | 0x26c    |
-| MIO_OUTSEL_32 | 0x270    |
-| MIO_OUTSEL_33 | 0x274    |
-| MIO_OUTSEL_34 | 0x278    |
-| MIO_OUTSEL_35 | 0x27c    |
-| MIO_OUTSEL_36 | 0x280    |
-| MIO_OUTSEL_37 | 0x284    |
-| MIO_OUTSEL_38 | 0x288    |
-| MIO_OUTSEL_39 | 0x28c    |
-| MIO_OUTSEL_40 | 0x290    |
-| MIO_OUTSEL_41 | 0x294    |
-| MIO_OUTSEL_42 | 0x298    |
-| MIO_OUTSEL_43 | 0x29c    |
-| MIO_OUTSEL_44 | 0x2a0    |
-| MIO_OUTSEL_45 | 0x2a4    |
-| MIO_OUTSEL_46 | 0x2a8    |
+| MIO_OUTSEL_0  | 0x1d8    |
+| MIO_OUTSEL_1  | 0x1dc    |
+| MIO_OUTSEL_2  | 0x1e0    |
+| MIO_OUTSEL_3  | 0x1e4    |
+| MIO_OUTSEL_4  | 0x1e8    |
+| MIO_OUTSEL_5  | 0x1ec    |
+| MIO_OUTSEL_6  | 0x1f0    |
+| MIO_OUTSEL_7  | 0x1f4    |
+| MIO_OUTSEL_8  | 0x1f8    |
+| MIO_OUTSEL_9  | 0x1fc    |
+| MIO_OUTSEL_10 | 0x200    |
+| MIO_OUTSEL_11 | 0x204    |
+| MIO_OUTSEL_12 | 0x208    |
+| MIO_OUTSEL_13 | 0x20c    |
+| MIO_OUTSEL_14 | 0x210    |
+| MIO_OUTSEL_15 | 0x214    |
+| MIO_OUTSEL_16 | 0x218    |
+| MIO_OUTSEL_17 | 0x21c    |
+| MIO_OUTSEL_18 | 0x220    |
+| MIO_OUTSEL_19 | 0x224    |
+| MIO_OUTSEL_20 | 0x228    |
+| MIO_OUTSEL_21 | 0x22c    |
+| MIO_OUTSEL_22 | 0x230    |
+| MIO_OUTSEL_23 | 0x234    |
+| MIO_OUTSEL_24 | 0x238    |
+| MIO_OUTSEL_25 | 0x23c    |
+| MIO_OUTSEL_26 | 0x240    |
+| MIO_OUTSEL_27 | 0x244    |
+| MIO_OUTSEL_28 | 0x248    |
+| MIO_OUTSEL_29 | 0x24c    |
+| MIO_OUTSEL_30 | 0x250    |
+| MIO_OUTSEL_31 | 0x254    |
+| MIO_OUTSEL_32 | 0x258    |
+| MIO_OUTSEL_33 | 0x25c    |
+| MIO_OUTSEL_34 | 0x260    |
+| MIO_OUTSEL_35 | 0x264    |
+| MIO_OUTSEL_36 | 0x268    |
+| MIO_OUTSEL_37 | 0x26c    |
+| MIO_OUTSEL_38 | 0x270    |
+| MIO_OUTSEL_39 | 0x274    |
+| MIO_OUTSEL_40 | 0x278    |
+| MIO_OUTSEL_41 | 0x27c    |
+| MIO_OUTSEL_42 | 0x280    |
+| MIO_OUTSEL_43 | 0x284    |
+| MIO_OUTSEL_44 | 0x288    |
+| MIO_OUTSEL_45 | 0x28c    |
+| MIO_OUTSEL_46 | 0x290    |
 
 
 ### Fields
@@ -812,53 +800,53 @@ Register write enable for MIO PAD attributes.
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
-| MIO_PAD_ATTR_REGWEN_0  | 0x2ac    |
-| MIO_PAD_ATTR_REGWEN_1  | 0x2b0    |
-| MIO_PAD_ATTR_REGWEN_2  | 0x2b4    |
-| MIO_PAD_ATTR_REGWEN_3  | 0x2b8    |
-| MIO_PAD_ATTR_REGWEN_4  | 0x2bc    |
-| MIO_PAD_ATTR_REGWEN_5  | 0x2c0    |
-| MIO_PAD_ATTR_REGWEN_6  | 0x2c4    |
-| MIO_PAD_ATTR_REGWEN_7  | 0x2c8    |
-| MIO_PAD_ATTR_REGWEN_8  | 0x2cc    |
-| MIO_PAD_ATTR_REGWEN_9  | 0x2d0    |
-| MIO_PAD_ATTR_REGWEN_10 | 0x2d4    |
-| MIO_PAD_ATTR_REGWEN_11 | 0x2d8    |
-| MIO_PAD_ATTR_REGWEN_12 | 0x2dc    |
-| MIO_PAD_ATTR_REGWEN_13 | 0x2e0    |
-| MIO_PAD_ATTR_REGWEN_14 | 0x2e4    |
-| MIO_PAD_ATTR_REGWEN_15 | 0x2e8    |
-| MIO_PAD_ATTR_REGWEN_16 | 0x2ec    |
-| MIO_PAD_ATTR_REGWEN_17 | 0x2f0    |
-| MIO_PAD_ATTR_REGWEN_18 | 0x2f4    |
-| MIO_PAD_ATTR_REGWEN_19 | 0x2f8    |
-| MIO_PAD_ATTR_REGWEN_20 | 0x2fc    |
-| MIO_PAD_ATTR_REGWEN_21 | 0x300    |
-| MIO_PAD_ATTR_REGWEN_22 | 0x304    |
-| MIO_PAD_ATTR_REGWEN_23 | 0x308    |
-| MIO_PAD_ATTR_REGWEN_24 | 0x30c    |
-| MIO_PAD_ATTR_REGWEN_25 | 0x310    |
-| MIO_PAD_ATTR_REGWEN_26 | 0x314    |
-| MIO_PAD_ATTR_REGWEN_27 | 0x318    |
-| MIO_PAD_ATTR_REGWEN_28 | 0x31c    |
-| MIO_PAD_ATTR_REGWEN_29 | 0x320    |
-| MIO_PAD_ATTR_REGWEN_30 | 0x324    |
-| MIO_PAD_ATTR_REGWEN_31 | 0x328    |
-| MIO_PAD_ATTR_REGWEN_32 | 0x32c    |
-| MIO_PAD_ATTR_REGWEN_33 | 0x330    |
-| MIO_PAD_ATTR_REGWEN_34 | 0x334    |
-| MIO_PAD_ATTR_REGWEN_35 | 0x338    |
-| MIO_PAD_ATTR_REGWEN_36 | 0x33c    |
-| MIO_PAD_ATTR_REGWEN_37 | 0x340    |
-| MIO_PAD_ATTR_REGWEN_38 | 0x344    |
-| MIO_PAD_ATTR_REGWEN_39 | 0x348    |
-| MIO_PAD_ATTR_REGWEN_40 | 0x34c    |
-| MIO_PAD_ATTR_REGWEN_41 | 0x350    |
-| MIO_PAD_ATTR_REGWEN_42 | 0x354    |
-| MIO_PAD_ATTR_REGWEN_43 | 0x358    |
-| MIO_PAD_ATTR_REGWEN_44 | 0x35c    |
-| MIO_PAD_ATTR_REGWEN_45 | 0x360    |
-| MIO_PAD_ATTR_REGWEN_46 | 0x364    |
+| MIO_PAD_ATTR_REGWEN_0  | 0x294    |
+| MIO_PAD_ATTR_REGWEN_1  | 0x298    |
+| MIO_PAD_ATTR_REGWEN_2  | 0x29c    |
+| MIO_PAD_ATTR_REGWEN_3  | 0x2a0    |
+| MIO_PAD_ATTR_REGWEN_4  | 0x2a4    |
+| MIO_PAD_ATTR_REGWEN_5  | 0x2a8    |
+| MIO_PAD_ATTR_REGWEN_6  | 0x2ac    |
+| MIO_PAD_ATTR_REGWEN_7  | 0x2b0    |
+| MIO_PAD_ATTR_REGWEN_8  | 0x2b4    |
+| MIO_PAD_ATTR_REGWEN_9  | 0x2b8    |
+| MIO_PAD_ATTR_REGWEN_10 | 0x2bc    |
+| MIO_PAD_ATTR_REGWEN_11 | 0x2c0    |
+| MIO_PAD_ATTR_REGWEN_12 | 0x2c4    |
+| MIO_PAD_ATTR_REGWEN_13 | 0x2c8    |
+| MIO_PAD_ATTR_REGWEN_14 | 0x2cc    |
+| MIO_PAD_ATTR_REGWEN_15 | 0x2d0    |
+| MIO_PAD_ATTR_REGWEN_16 | 0x2d4    |
+| MIO_PAD_ATTR_REGWEN_17 | 0x2d8    |
+| MIO_PAD_ATTR_REGWEN_18 | 0x2dc    |
+| MIO_PAD_ATTR_REGWEN_19 | 0x2e0    |
+| MIO_PAD_ATTR_REGWEN_20 | 0x2e4    |
+| MIO_PAD_ATTR_REGWEN_21 | 0x2e8    |
+| MIO_PAD_ATTR_REGWEN_22 | 0x2ec    |
+| MIO_PAD_ATTR_REGWEN_23 | 0x2f0    |
+| MIO_PAD_ATTR_REGWEN_24 | 0x2f4    |
+| MIO_PAD_ATTR_REGWEN_25 | 0x2f8    |
+| MIO_PAD_ATTR_REGWEN_26 | 0x2fc    |
+| MIO_PAD_ATTR_REGWEN_27 | 0x300    |
+| MIO_PAD_ATTR_REGWEN_28 | 0x304    |
+| MIO_PAD_ATTR_REGWEN_29 | 0x308    |
+| MIO_PAD_ATTR_REGWEN_30 | 0x30c    |
+| MIO_PAD_ATTR_REGWEN_31 | 0x310    |
+| MIO_PAD_ATTR_REGWEN_32 | 0x314    |
+| MIO_PAD_ATTR_REGWEN_33 | 0x318    |
+| MIO_PAD_ATTR_REGWEN_34 | 0x31c    |
+| MIO_PAD_ATTR_REGWEN_35 | 0x320    |
+| MIO_PAD_ATTR_REGWEN_36 | 0x324    |
+| MIO_PAD_ATTR_REGWEN_37 | 0x328    |
+| MIO_PAD_ATTR_REGWEN_38 | 0x32c    |
+| MIO_PAD_ATTR_REGWEN_39 | 0x330    |
+| MIO_PAD_ATTR_REGWEN_40 | 0x334    |
+| MIO_PAD_ATTR_REGWEN_41 | 0x338    |
+| MIO_PAD_ATTR_REGWEN_42 | 0x33c    |
+| MIO_PAD_ATTR_REGWEN_43 | 0x340    |
+| MIO_PAD_ATTR_REGWEN_44 | 0x344    |
+| MIO_PAD_ATTR_REGWEN_45 | 0x348    |
+| MIO_PAD_ATTR_REGWEN_46 | 0x34c    |
 
 
 ### Fields
@@ -885,53 +873,53 @@ The muxed pad that is used for TAP strap 0 has a different reset value, with `pu
 
 | Name            | Offset   |
 |:----------------|:---------|
-| MIO_PAD_ATTR_0  | 0x368    |
-| MIO_PAD_ATTR_1  | 0x36c    |
-| MIO_PAD_ATTR_2  | 0x370    |
-| MIO_PAD_ATTR_3  | 0x374    |
-| MIO_PAD_ATTR_4  | 0x378    |
-| MIO_PAD_ATTR_5  | 0x37c    |
-| MIO_PAD_ATTR_6  | 0x380    |
-| MIO_PAD_ATTR_7  | 0x384    |
-| MIO_PAD_ATTR_8  | 0x388    |
-| MIO_PAD_ATTR_9  | 0x38c    |
-| MIO_PAD_ATTR_10 | 0x390    |
-| MIO_PAD_ATTR_11 | 0x394    |
-| MIO_PAD_ATTR_12 | 0x398    |
-| MIO_PAD_ATTR_13 | 0x39c    |
-| MIO_PAD_ATTR_14 | 0x3a0    |
-| MIO_PAD_ATTR_15 | 0x3a4    |
-| MIO_PAD_ATTR_16 | 0x3a8    |
-| MIO_PAD_ATTR_17 | 0x3ac    |
-| MIO_PAD_ATTR_18 | 0x3b0    |
-| MIO_PAD_ATTR_19 | 0x3b4    |
-| MIO_PAD_ATTR_20 | 0x3b8    |
-| MIO_PAD_ATTR_21 | 0x3bc    |
-| MIO_PAD_ATTR_22 | 0x3c0    |
-| MIO_PAD_ATTR_23 | 0x3c4    |
-| MIO_PAD_ATTR_24 | 0x3c8    |
-| MIO_PAD_ATTR_25 | 0x3cc    |
-| MIO_PAD_ATTR_26 | 0x3d0    |
-| MIO_PAD_ATTR_27 | 0x3d4    |
-| MIO_PAD_ATTR_28 | 0x3d8    |
-| MIO_PAD_ATTR_29 | 0x3dc    |
-| MIO_PAD_ATTR_30 | 0x3e0    |
-| MIO_PAD_ATTR_31 | 0x3e4    |
-| MIO_PAD_ATTR_32 | 0x3e8    |
-| MIO_PAD_ATTR_33 | 0x3ec    |
-| MIO_PAD_ATTR_34 | 0x3f0    |
-| MIO_PAD_ATTR_35 | 0x3f4    |
-| MIO_PAD_ATTR_36 | 0x3f8    |
-| MIO_PAD_ATTR_37 | 0x3fc    |
-| MIO_PAD_ATTR_38 | 0x400    |
-| MIO_PAD_ATTR_39 | 0x404    |
-| MIO_PAD_ATTR_40 | 0x408    |
-| MIO_PAD_ATTR_41 | 0x40c    |
-| MIO_PAD_ATTR_42 | 0x410    |
-| MIO_PAD_ATTR_43 | 0x414    |
-| MIO_PAD_ATTR_44 | 0x418    |
-| MIO_PAD_ATTR_45 | 0x41c    |
-| MIO_PAD_ATTR_46 | 0x420    |
+| MIO_PAD_ATTR_0  | 0x350    |
+| MIO_PAD_ATTR_1  | 0x354    |
+| MIO_PAD_ATTR_2  | 0x358    |
+| MIO_PAD_ATTR_3  | 0x35c    |
+| MIO_PAD_ATTR_4  | 0x360    |
+| MIO_PAD_ATTR_5  | 0x364    |
+| MIO_PAD_ATTR_6  | 0x368    |
+| MIO_PAD_ATTR_7  | 0x36c    |
+| MIO_PAD_ATTR_8  | 0x370    |
+| MIO_PAD_ATTR_9  | 0x374    |
+| MIO_PAD_ATTR_10 | 0x378    |
+| MIO_PAD_ATTR_11 | 0x37c    |
+| MIO_PAD_ATTR_12 | 0x380    |
+| MIO_PAD_ATTR_13 | 0x384    |
+| MIO_PAD_ATTR_14 | 0x388    |
+| MIO_PAD_ATTR_15 | 0x38c    |
+| MIO_PAD_ATTR_16 | 0x390    |
+| MIO_PAD_ATTR_17 | 0x394    |
+| MIO_PAD_ATTR_18 | 0x398    |
+| MIO_PAD_ATTR_19 | 0x39c    |
+| MIO_PAD_ATTR_20 | 0x3a0    |
+| MIO_PAD_ATTR_21 | 0x3a4    |
+| MIO_PAD_ATTR_22 | 0x3a8    |
+| MIO_PAD_ATTR_23 | 0x3ac    |
+| MIO_PAD_ATTR_24 | 0x3b0    |
+| MIO_PAD_ATTR_25 | 0x3b4    |
+| MIO_PAD_ATTR_26 | 0x3b8    |
+| MIO_PAD_ATTR_27 | 0x3bc    |
+| MIO_PAD_ATTR_28 | 0x3c0    |
+| MIO_PAD_ATTR_29 | 0x3c4    |
+| MIO_PAD_ATTR_30 | 0x3c8    |
+| MIO_PAD_ATTR_31 | 0x3cc    |
+| MIO_PAD_ATTR_32 | 0x3d0    |
+| MIO_PAD_ATTR_33 | 0x3d4    |
+| MIO_PAD_ATTR_34 | 0x3d8    |
+| MIO_PAD_ATTR_35 | 0x3dc    |
+| MIO_PAD_ATTR_36 | 0x3e0    |
+| MIO_PAD_ATTR_37 | 0x3e4    |
+| MIO_PAD_ATTR_38 | 0x3e8    |
+| MIO_PAD_ATTR_39 | 0x3ec    |
+| MIO_PAD_ATTR_40 | 0x3f0    |
+| MIO_PAD_ATTR_41 | 0x3f4    |
+| MIO_PAD_ATTR_42 | 0x3f8    |
+| MIO_PAD_ATTR_43 | 0x3fc    |
+| MIO_PAD_ATTR_44 | 0x400    |
+| MIO_PAD_ATTR_45 | 0x404    |
+| MIO_PAD_ATTR_46 | 0x408    |
 
 
 ### Fields
@@ -1002,20 +990,20 @@ Register write enable for DIO PAD attributes.
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
-| DIO_PAD_ATTR_REGWEN_0  | 0x424    |
-| DIO_PAD_ATTR_REGWEN_1  | 0x428    |
-| DIO_PAD_ATTR_REGWEN_2  | 0x42c    |
-| DIO_PAD_ATTR_REGWEN_3  | 0x430    |
-| DIO_PAD_ATTR_REGWEN_4  | 0x434    |
-| DIO_PAD_ATTR_REGWEN_5  | 0x438    |
-| DIO_PAD_ATTR_REGWEN_6  | 0x43c    |
-| DIO_PAD_ATTR_REGWEN_7  | 0x440    |
-| DIO_PAD_ATTR_REGWEN_8  | 0x444    |
-| DIO_PAD_ATTR_REGWEN_9  | 0x448    |
-| DIO_PAD_ATTR_REGWEN_10 | 0x44c    |
-| DIO_PAD_ATTR_REGWEN_11 | 0x450    |
-| DIO_PAD_ATTR_REGWEN_12 | 0x454    |
-| DIO_PAD_ATTR_REGWEN_13 | 0x458    |
+| DIO_PAD_ATTR_REGWEN_0  | 0x40c    |
+| DIO_PAD_ATTR_REGWEN_1  | 0x410    |
+| DIO_PAD_ATTR_REGWEN_2  | 0x414    |
+| DIO_PAD_ATTR_REGWEN_3  | 0x418    |
+| DIO_PAD_ATTR_REGWEN_4  | 0x41c    |
+| DIO_PAD_ATTR_REGWEN_5  | 0x420    |
+| DIO_PAD_ATTR_REGWEN_6  | 0x424    |
+| DIO_PAD_ATTR_REGWEN_7  | 0x428    |
+| DIO_PAD_ATTR_REGWEN_8  | 0x42c    |
+| DIO_PAD_ATTR_REGWEN_9  | 0x430    |
+| DIO_PAD_ATTR_REGWEN_10 | 0x434    |
+| DIO_PAD_ATTR_REGWEN_11 | 0x438    |
+| DIO_PAD_ATTR_REGWEN_12 | 0x43c    |
+| DIO_PAD_ATTR_REGWEN_13 | 0x440    |
 
 
 ### Fields
@@ -1041,20 +1029,20 @@ all attributes.
 
 | Name            | Offset   |
 |:----------------|:---------|
-| DIO_PAD_ATTR_0  | 0x45c    |
-| DIO_PAD_ATTR_1  | 0x460    |
-| DIO_PAD_ATTR_2  | 0x464    |
-| DIO_PAD_ATTR_3  | 0x468    |
-| DIO_PAD_ATTR_4  | 0x46c    |
-| DIO_PAD_ATTR_5  | 0x470    |
-| DIO_PAD_ATTR_6  | 0x474    |
-| DIO_PAD_ATTR_7  | 0x478    |
-| DIO_PAD_ATTR_8  | 0x47c    |
-| DIO_PAD_ATTR_9  | 0x480    |
-| DIO_PAD_ATTR_10 | 0x484    |
-| DIO_PAD_ATTR_11 | 0x488    |
-| DIO_PAD_ATTR_12 | 0x48c    |
-| DIO_PAD_ATTR_13 | 0x490    |
+| DIO_PAD_ATTR_0  | 0x444    |
+| DIO_PAD_ATTR_1  | 0x448    |
+| DIO_PAD_ATTR_2  | 0x44c    |
+| DIO_PAD_ATTR_3  | 0x450    |
+| DIO_PAD_ATTR_4  | 0x454    |
+| DIO_PAD_ATTR_5  | 0x458    |
+| DIO_PAD_ATTR_6  | 0x45c    |
+| DIO_PAD_ATTR_7  | 0x460    |
+| DIO_PAD_ATTR_8  | 0x464    |
+| DIO_PAD_ATTR_9  | 0x468    |
+| DIO_PAD_ATTR_10 | 0x46c    |
+| DIO_PAD_ATTR_11 | 0x470    |
+| DIO_PAD_ATTR_12 | 0x474    |
+| DIO_PAD_ATTR_13 | 0x478    |
 
 
 ### Fields
@@ -1118,7 +1106,7 @@ Invert input and output levels.
 
 ## MIO_PAD_SLEEP_STATUS_0
 Register indicating whether the corresponding pad is in sleep mode.
-- Offset: `0x494`
+- Offset: `0x47c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1165,7 +1153,7 @@ Register indicating whether the corresponding pad is in sleep mode.
 
 ## MIO_PAD_SLEEP_STATUS_1
 Register indicating whether the corresponding pad is in sleep mode.
-- Offset: `0x498`
+- Offset: `0x480`
 - Reset default: `0x0`
 - Reset mask: `0x7fff`
 
@@ -1203,53 +1191,53 @@ Register write enable for MIO sleep value configuration.
 
 | Name                    | Offset   |
 |:------------------------|:---------|
-| MIO_PAD_SLEEP_REGWEN_0  | 0x49c    |
-| MIO_PAD_SLEEP_REGWEN_1  | 0x4a0    |
-| MIO_PAD_SLEEP_REGWEN_2  | 0x4a4    |
-| MIO_PAD_SLEEP_REGWEN_3  | 0x4a8    |
-| MIO_PAD_SLEEP_REGWEN_4  | 0x4ac    |
-| MIO_PAD_SLEEP_REGWEN_5  | 0x4b0    |
-| MIO_PAD_SLEEP_REGWEN_6  | 0x4b4    |
-| MIO_PAD_SLEEP_REGWEN_7  | 0x4b8    |
-| MIO_PAD_SLEEP_REGWEN_8  | 0x4bc    |
-| MIO_PAD_SLEEP_REGWEN_9  | 0x4c0    |
-| MIO_PAD_SLEEP_REGWEN_10 | 0x4c4    |
-| MIO_PAD_SLEEP_REGWEN_11 | 0x4c8    |
-| MIO_PAD_SLEEP_REGWEN_12 | 0x4cc    |
-| MIO_PAD_SLEEP_REGWEN_13 | 0x4d0    |
-| MIO_PAD_SLEEP_REGWEN_14 | 0x4d4    |
-| MIO_PAD_SLEEP_REGWEN_15 | 0x4d8    |
-| MIO_PAD_SLEEP_REGWEN_16 | 0x4dc    |
-| MIO_PAD_SLEEP_REGWEN_17 | 0x4e0    |
-| MIO_PAD_SLEEP_REGWEN_18 | 0x4e4    |
-| MIO_PAD_SLEEP_REGWEN_19 | 0x4e8    |
-| MIO_PAD_SLEEP_REGWEN_20 | 0x4ec    |
-| MIO_PAD_SLEEP_REGWEN_21 | 0x4f0    |
-| MIO_PAD_SLEEP_REGWEN_22 | 0x4f4    |
-| MIO_PAD_SLEEP_REGWEN_23 | 0x4f8    |
-| MIO_PAD_SLEEP_REGWEN_24 | 0x4fc    |
-| MIO_PAD_SLEEP_REGWEN_25 | 0x500    |
-| MIO_PAD_SLEEP_REGWEN_26 | 0x504    |
-| MIO_PAD_SLEEP_REGWEN_27 | 0x508    |
-| MIO_PAD_SLEEP_REGWEN_28 | 0x50c    |
-| MIO_PAD_SLEEP_REGWEN_29 | 0x510    |
-| MIO_PAD_SLEEP_REGWEN_30 | 0x514    |
-| MIO_PAD_SLEEP_REGWEN_31 | 0x518    |
-| MIO_PAD_SLEEP_REGWEN_32 | 0x51c    |
-| MIO_PAD_SLEEP_REGWEN_33 | 0x520    |
-| MIO_PAD_SLEEP_REGWEN_34 | 0x524    |
-| MIO_PAD_SLEEP_REGWEN_35 | 0x528    |
-| MIO_PAD_SLEEP_REGWEN_36 | 0x52c    |
-| MIO_PAD_SLEEP_REGWEN_37 | 0x530    |
-| MIO_PAD_SLEEP_REGWEN_38 | 0x534    |
-| MIO_PAD_SLEEP_REGWEN_39 | 0x538    |
-| MIO_PAD_SLEEP_REGWEN_40 | 0x53c    |
-| MIO_PAD_SLEEP_REGWEN_41 | 0x540    |
-| MIO_PAD_SLEEP_REGWEN_42 | 0x544    |
-| MIO_PAD_SLEEP_REGWEN_43 | 0x548    |
-| MIO_PAD_SLEEP_REGWEN_44 | 0x54c    |
-| MIO_PAD_SLEEP_REGWEN_45 | 0x550    |
-| MIO_PAD_SLEEP_REGWEN_46 | 0x554    |
+| MIO_PAD_SLEEP_REGWEN_0  | 0x484    |
+| MIO_PAD_SLEEP_REGWEN_1  | 0x488    |
+| MIO_PAD_SLEEP_REGWEN_2  | 0x48c    |
+| MIO_PAD_SLEEP_REGWEN_3  | 0x490    |
+| MIO_PAD_SLEEP_REGWEN_4  | 0x494    |
+| MIO_PAD_SLEEP_REGWEN_5  | 0x498    |
+| MIO_PAD_SLEEP_REGWEN_6  | 0x49c    |
+| MIO_PAD_SLEEP_REGWEN_7  | 0x4a0    |
+| MIO_PAD_SLEEP_REGWEN_8  | 0x4a4    |
+| MIO_PAD_SLEEP_REGWEN_9  | 0x4a8    |
+| MIO_PAD_SLEEP_REGWEN_10 | 0x4ac    |
+| MIO_PAD_SLEEP_REGWEN_11 | 0x4b0    |
+| MIO_PAD_SLEEP_REGWEN_12 | 0x4b4    |
+| MIO_PAD_SLEEP_REGWEN_13 | 0x4b8    |
+| MIO_PAD_SLEEP_REGWEN_14 | 0x4bc    |
+| MIO_PAD_SLEEP_REGWEN_15 | 0x4c0    |
+| MIO_PAD_SLEEP_REGWEN_16 | 0x4c4    |
+| MIO_PAD_SLEEP_REGWEN_17 | 0x4c8    |
+| MIO_PAD_SLEEP_REGWEN_18 | 0x4cc    |
+| MIO_PAD_SLEEP_REGWEN_19 | 0x4d0    |
+| MIO_PAD_SLEEP_REGWEN_20 | 0x4d4    |
+| MIO_PAD_SLEEP_REGWEN_21 | 0x4d8    |
+| MIO_PAD_SLEEP_REGWEN_22 | 0x4dc    |
+| MIO_PAD_SLEEP_REGWEN_23 | 0x4e0    |
+| MIO_PAD_SLEEP_REGWEN_24 | 0x4e4    |
+| MIO_PAD_SLEEP_REGWEN_25 | 0x4e8    |
+| MIO_PAD_SLEEP_REGWEN_26 | 0x4ec    |
+| MIO_PAD_SLEEP_REGWEN_27 | 0x4f0    |
+| MIO_PAD_SLEEP_REGWEN_28 | 0x4f4    |
+| MIO_PAD_SLEEP_REGWEN_29 | 0x4f8    |
+| MIO_PAD_SLEEP_REGWEN_30 | 0x4fc    |
+| MIO_PAD_SLEEP_REGWEN_31 | 0x500    |
+| MIO_PAD_SLEEP_REGWEN_32 | 0x504    |
+| MIO_PAD_SLEEP_REGWEN_33 | 0x508    |
+| MIO_PAD_SLEEP_REGWEN_34 | 0x50c    |
+| MIO_PAD_SLEEP_REGWEN_35 | 0x510    |
+| MIO_PAD_SLEEP_REGWEN_36 | 0x514    |
+| MIO_PAD_SLEEP_REGWEN_37 | 0x518    |
+| MIO_PAD_SLEEP_REGWEN_38 | 0x51c    |
+| MIO_PAD_SLEEP_REGWEN_39 | 0x520    |
+| MIO_PAD_SLEEP_REGWEN_40 | 0x524    |
+| MIO_PAD_SLEEP_REGWEN_41 | 0x528    |
+| MIO_PAD_SLEEP_REGWEN_42 | 0x52c    |
+| MIO_PAD_SLEEP_REGWEN_43 | 0x530    |
+| MIO_PAD_SLEEP_REGWEN_44 | 0x534    |
+| MIO_PAD_SLEEP_REGWEN_45 | 0x538    |
+| MIO_PAD_SLEEP_REGWEN_46 | 0x53c    |
 
 
 ### Fields
@@ -1273,53 +1261,53 @@ Enables the sleep mode of the corresponding muxed pad.
 
 | Name                | Offset   |
 |:--------------------|:---------|
-| MIO_PAD_SLEEP_EN_0  | 0x558    |
-| MIO_PAD_SLEEP_EN_1  | 0x55c    |
-| MIO_PAD_SLEEP_EN_2  | 0x560    |
-| MIO_PAD_SLEEP_EN_3  | 0x564    |
-| MIO_PAD_SLEEP_EN_4  | 0x568    |
-| MIO_PAD_SLEEP_EN_5  | 0x56c    |
-| MIO_PAD_SLEEP_EN_6  | 0x570    |
-| MIO_PAD_SLEEP_EN_7  | 0x574    |
-| MIO_PAD_SLEEP_EN_8  | 0x578    |
-| MIO_PAD_SLEEP_EN_9  | 0x57c    |
-| MIO_PAD_SLEEP_EN_10 | 0x580    |
-| MIO_PAD_SLEEP_EN_11 | 0x584    |
-| MIO_PAD_SLEEP_EN_12 | 0x588    |
-| MIO_PAD_SLEEP_EN_13 | 0x58c    |
-| MIO_PAD_SLEEP_EN_14 | 0x590    |
-| MIO_PAD_SLEEP_EN_15 | 0x594    |
-| MIO_PAD_SLEEP_EN_16 | 0x598    |
-| MIO_PAD_SLEEP_EN_17 | 0x59c    |
-| MIO_PAD_SLEEP_EN_18 | 0x5a0    |
-| MIO_PAD_SLEEP_EN_19 | 0x5a4    |
-| MIO_PAD_SLEEP_EN_20 | 0x5a8    |
-| MIO_PAD_SLEEP_EN_21 | 0x5ac    |
-| MIO_PAD_SLEEP_EN_22 | 0x5b0    |
-| MIO_PAD_SLEEP_EN_23 | 0x5b4    |
-| MIO_PAD_SLEEP_EN_24 | 0x5b8    |
-| MIO_PAD_SLEEP_EN_25 | 0x5bc    |
-| MIO_PAD_SLEEP_EN_26 | 0x5c0    |
-| MIO_PAD_SLEEP_EN_27 | 0x5c4    |
-| MIO_PAD_SLEEP_EN_28 | 0x5c8    |
-| MIO_PAD_SLEEP_EN_29 | 0x5cc    |
-| MIO_PAD_SLEEP_EN_30 | 0x5d0    |
-| MIO_PAD_SLEEP_EN_31 | 0x5d4    |
-| MIO_PAD_SLEEP_EN_32 | 0x5d8    |
-| MIO_PAD_SLEEP_EN_33 | 0x5dc    |
-| MIO_PAD_SLEEP_EN_34 | 0x5e0    |
-| MIO_PAD_SLEEP_EN_35 | 0x5e4    |
-| MIO_PAD_SLEEP_EN_36 | 0x5e8    |
-| MIO_PAD_SLEEP_EN_37 | 0x5ec    |
-| MIO_PAD_SLEEP_EN_38 | 0x5f0    |
-| MIO_PAD_SLEEP_EN_39 | 0x5f4    |
-| MIO_PAD_SLEEP_EN_40 | 0x5f8    |
-| MIO_PAD_SLEEP_EN_41 | 0x5fc    |
-| MIO_PAD_SLEEP_EN_42 | 0x600    |
-| MIO_PAD_SLEEP_EN_43 | 0x604    |
-| MIO_PAD_SLEEP_EN_44 | 0x608    |
-| MIO_PAD_SLEEP_EN_45 | 0x60c    |
-| MIO_PAD_SLEEP_EN_46 | 0x610    |
+| MIO_PAD_SLEEP_EN_0  | 0x540    |
+| MIO_PAD_SLEEP_EN_1  | 0x544    |
+| MIO_PAD_SLEEP_EN_2  | 0x548    |
+| MIO_PAD_SLEEP_EN_3  | 0x54c    |
+| MIO_PAD_SLEEP_EN_4  | 0x550    |
+| MIO_PAD_SLEEP_EN_5  | 0x554    |
+| MIO_PAD_SLEEP_EN_6  | 0x558    |
+| MIO_PAD_SLEEP_EN_7  | 0x55c    |
+| MIO_PAD_SLEEP_EN_8  | 0x560    |
+| MIO_PAD_SLEEP_EN_9  | 0x564    |
+| MIO_PAD_SLEEP_EN_10 | 0x568    |
+| MIO_PAD_SLEEP_EN_11 | 0x56c    |
+| MIO_PAD_SLEEP_EN_12 | 0x570    |
+| MIO_PAD_SLEEP_EN_13 | 0x574    |
+| MIO_PAD_SLEEP_EN_14 | 0x578    |
+| MIO_PAD_SLEEP_EN_15 | 0x57c    |
+| MIO_PAD_SLEEP_EN_16 | 0x580    |
+| MIO_PAD_SLEEP_EN_17 | 0x584    |
+| MIO_PAD_SLEEP_EN_18 | 0x588    |
+| MIO_PAD_SLEEP_EN_19 | 0x58c    |
+| MIO_PAD_SLEEP_EN_20 | 0x590    |
+| MIO_PAD_SLEEP_EN_21 | 0x594    |
+| MIO_PAD_SLEEP_EN_22 | 0x598    |
+| MIO_PAD_SLEEP_EN_23 | 0x59c    |
+| MIO_PAD_SLEEP_EN_24 | 0x5a0    |
+| MIO_PAD_SLEEP_EN_25 | 0x5a4    |
+| MIO_PAD_SLEEP_EN_26 | 0x5a8    |
+| MIO_PAD_SLEEP_EN_27 | 0x5ac    |
+| MIO_PAD_SLEEP_EN_28 | 0x5b0    |
+| MIO_PAD_SLEEP_EN_29 | 0x5b4    |
+| MIO_PAD_SLEEP_EN_30 | 0x5b8    |
+| MIO_PAD_SLEEP_EN_31 | 0x5bc    |
+| MIO_PAD_SLEEP_EN_32 | 0x5c0    |
+| MIO_PAD_SLEEP_EN_33 | 0x5c4    |
+| MIO_PAD_SLEEP_EN_34 | 0x5c8    |
+| MIO_PAD_SLEEP_EN_35 | 0x5cc    |
+| MIO_PAD_SLEEP_EN_36 | 0x5d0    |
+| MIO_PAD_SLEEP_EN_37 | 0x5d4    |
+| MIO_PAD_SLEEP_EN_38 | 0x5d8    |
+| MIO_PAD_SLEEP_EN_39 | 0x5dc    |
+| MIO_PAD_SLEEP_EN_40 | 0x5e0    |
+| MIO_PAD_SLEEP_EN_41 | 0x5e4    |
+| MIO_PAD_SLEEP_EN_42 | 0x5e8    |
+| MIO_PAD_SLEEP_EN_43 | 0x5ec    |
+| MIO_PAD_SLEEP_EN_44 | 0x5f0    |
+| MIO_PAD_SLEEP_EN_45 | 0x5f4    |
+| MIO_PAD_SLEEP_EN_46 | 0x5f8    |
 
 
 ### Fields
@@ -1353,53 +1341,53 @@ Defines sleep behavior of the corresponding muxed pad.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| MIO_PAD_SLEEP_MODE_0  | 0x614    |
-| MIO_PAD_SLEEP_MODE_1  | 0x618    |
-| MIO_PAD_SLEEP_MODE_2  | 0x61c    |
-| MIO_PAD_SLEEP_MODE_3  | 0x620    |
-| MIO_PAD_SLEEP_MODE_4  | 0x624    |
-| MIO_PAD_SLEEP_MODE_5  | 0x628    |
-| MIO_PAD_SLEEP_MODE_6  | 0x62c    |
-| MIO_PAD_SLEEP_MODE_7  | 0x630    |
-| MIO_PAD_SLEEP_MODE_8  | 0x634    |
-| MIO_PAD_SLEEP_MODE_9  | 0x638    |
-| MIO_PAD_SLEEP_MODE_10 | 0x63c    |
-| MIO_PAD_SLEEP_MODE_11 | 0x640    |
-| MIO_PAD_SLEEP_MODE_12 | 0x644    |
-| MIO_PAD_SLEEP_MODE_13 | 0x648    |
-| MIO_PAD_SLEEP_MODE_14 | 0x64c    |
-| MIO_PAD_SLEEP_MODE_15 | 0x650    |
-| MIO_PAD_SLEEP_MODE_16 | 0x654    |
-| MIO_PAD_SLEEP_MODE_17 | 0x658    |
-| MIO_PAD_SLEEP_MODE_18 | 0x65c    |
-| MIO_PAD_SLEEP_MODE_19 | 0x660    |
-| MIO_PAD_SLEEP_MODE_20 | 0x664    |
-| MIO_PAD_SLEEP_MODE_21 | 0x668    |
-| MIO_PAD_SLEEP_MODE_22 | 0x66c    |
-| MIO_PAD_SLEEP_MODE_23 | 0x670    |
-| MIO_PAD_SLEEP_MODE_24 | 0x674    |
-| MIO_PAD_SLEEP_MODE_25 | 0x678    |
-| MIO_PAD_SLEEP_MODE_26 | 0x67c    |
-| MIO_PAD_SLEEP_MODE_27 | 0x680    |
-| MIO_PAD_SLEEP_MODE_28 | 0x684    |
-| MIO_PAD_SLEEP_MODE_29 | 0x688    |
-| MIO_PAD_SLEEP_MODE_30 | 0x68c    |
-| MIO_PAD_SLEEP_MODE_31 | 0x690    |
-| MIO_PAD_SLEEP_MODE_32 | 0x694    |
-| MIO_PAD_SLEEP_MODE_33 | 0x698    |
-| MIO_PAD_SLEEP_MODE_34 | 0x69c    |
-| MIO_PAD_SLEEP_MODE_35 | 0x6a0    |
-| MIO_PAD_SLEEP_MODE_36 | 0x6a4    |
-| MIO_PAD_SLEEP_MODE_37 | 0x6a8    |
-| MIO_PAD_SLEEP_MODE_38 | 0x6ac    |
-| MIO_PAD_SLEEP_MODE_39 | 0x6b0    |
-| MIO_PAD_SLEEP_MODE_40 | 0x6b4    |
-| MIO_PAD_SLEEP_MODE_41 | 0x6b8    |
-| MIO_PAD_SLEEP_MODE_42 | 0x6bc    |
-| MIO_PAD_SLEEP_MODE_43 | 0x6c0    |
-| MIO_PAD_SLEEP_MODE_44 | 0x6c4    |
-| MIO_PAD_SLEEP_MODE_45 | 0x6c8    |
-| MIO_PAD_SLEEP_MODE_46 | 0x6cc    |
+| MIO_PAD_SLEEP_MODE_0  | 0x5fc    |
+| MIO_PAD_SLEEP_MODE_1  | 0x600    |
+| MIO_PAD_SLEEP_MODE_2  | 0x604    |
+| MIO_PAD_SLEEP_MODE_3  | 0x608    |
+| MIO_PAD_SLEEP_MODE_4  | 0x60c    |
+| MIO_PAD_SLEEP_MODE_5  | 0x610    |
+| MIO_PAD_SLEEP_MODE_6  | 0x614    |
+| MIO_PAD_SLEEP_MODE_7  | 0x618    |
+| MIO_PAD_SLEEP_MODE_8  | 0x61c    |
+| MIO_PAD_SLEEP_MODE_9  | 0x620    |
+| MIO_PAD_SLEEP_MODE_10 | 0x624    |
+| MIO_PAD_SLEEP_MODE_11 | 0x628    |
+| MIO_PAD_SLEEP_MODE_12 | 0x62c    |
+| MIO_PAD_SLEEP_MODE_13 | 0x630    |
+| MIO_PAD_SLEEP_MODE_14 | 0x634    |
+| MIO_PAD_SLEEP_MODE_15 | 0x638    |
+| MIO_PAD_SLEEP_MODE_16 | 0x63c    |
+| MIO_PAD_SLEEP_MODE_17 | 0x640    |
+| MIO_PAD_SLEEP_MODE_18 | 0x644    |
+| MIO_PAD_SLEEP_MODE_19 | 0x648    |
+| MIO_PAD_SLEEP_MODE_20 | 0x64c    |
+| MIO_PAD_SLEEP_MODE_21 | 0x650    |
+| MIO_PAD_SLEEP_MODE_22 | 0x654    |
+| MIO_PAD_SLEEP_MODE_23 | 0x658    |
+| MIO_PAD_SLEEP_MODE_24 | 0x65c    |
+| MIO_PAD_SLEEP_MODE_25 | 0x660    |
+| MIO_PAD_SLEEP_MODE_26 | 0x664    |
+| MIO_PAD_SLEEP_MODE_27 | 0x668    |
+| MIO_PAD_SLEEP_MODE_28 | 0x66c    |
+| MIO_PAD_SLEEP_MODE_29 | 0x670    |
+| MIO_PAD_SLEEP_MODE_30 | 0x674    |
+| MIO_PAD_SLEEP_MODE_31 | 0x678    |
+| MIO_PAD_SLEEP_MODE_32 | 0x67c    |
+| MIO_PAD_SLEEP_MODE_33 | 0x680    |
+| MIO_PAD_SLEEP_MODE_34 | 0x684    |
+| MIO_PAD_SLEEP_MODE_35 | 0x688    |
+| MIO_PAD_SLEEP_MODE_36 | 0x68c    |
+| MIO_PAD_SLEEP_MODE_37 | 0x690    |
+| MIO_PAD_SLEEP_MODE_38 | 0x694    |
+| MIO_PAD_SLEEP_MODE_39 | 0x698    |
+| MIO_PAD_SLEEP_MODE_40 | 0x69c    |
+| MIO_PAD_SLEEP_MODE_41 | 0x6a0    |
+| MIO_PAD_SLEEP_MODE_42 | 0x6a4    |
+| MIO_PAD_SLEEP_MODE_43 | 0x6a8    |
+| MIO_PAD_SLEEP_MODE_44 | 0x6ac    |
+| MIO_PAD_SLEEP_MODE_45 | 0x6b0    |
+| MIO_PAD_SLEEP_MODE_46 | 0x6b4    |
 
 
 ### Fields
@@ -1426,7 +1414,7 @@ Value to drive in deep sleep.
 
 ## DIO_PAD_SLEEP_STATUS
 Register indicating whether the corresponding pad is in sleep mode.
-- Offset: `0x6d0`
+- Offset: `0x6b8`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
 
@@ -1463,20 +1451,20 @@ Register write enable for DIO sleep value configuration.
 
 | Name                    | Offset   |
 |:------------------------|:---------|
-| DIO_PAD_SLEEP_REGWEN_0  | 0x6d4    |
-| DIO_PAD_SLEEP_REGWEN_1  | 0x6d8    |
-| DIO_PAD_SLEEP_REGWEN_2  | 0x6dc    |
-| DIO_PAD_SLEEP_REGWEN_3  | 0x6e0    |
-| DIO_PAD_SLEEP_REGWEN_4  | 0x6e4    |
-| DIO_PAD_SLEEP_REGWEN_5  | 0x6e8    |
-| DIO_PAD_SLEEP_REGWEN_6  | 0x6ec    |
-| DIO_PAD_SLEEP_REGWEN_7  | 0x6f0    |
-| DIO_PAD_SLEEP_REGWEN_8  | 0x6f4    |
-| DIO_PAD_SLEEP_REGWEN_9  | 0x6f8    |
-| DIO_PAD_SLEEP_REGWEN_10 | 0x6fc    |
-| DIO_PAD_SLEEP_REGWEN_11 | 0x700    |
-| DIO_PAD_SLEEP_REGWEN_12 | 0x704    |
-| DIO_PAD_SLEEP_REGWEN_13 | 0x708    |
+| DIO_PAD_SLEEP_REGWEN_0  | 0x6bc    |
+| DIO_PAD_SLEEP_REGWEN_1  | 0x6c0    |
+| DIO_PAD_SLEEP_REGWEN_2  | 0x6c4    |
+| DIO_PAD_SLEEP_REGWEN_3  | 0x6c8    |
+| DIO_PAD_SLEEP_REGWEN_4  | 0x6cc    |
+| DIO_PAD_SLEEP_REGWEN_5  | 0x6d0    |
+| DIO_PAD_SLEEP_REGWEN_6  | 0x6d4    |
+| DIO_PAD_SLEEP_REGWEN_7  | 0x6d8    |
+| DIO_PAD_SLEEP_REGWEN_8  | 0x6dc    |
+| DIO_PAD_SLEEP_REGWEN_9  | 0x6e0    |
+| DIO_PAD_SLEEP_REGWEN_10 | 0x6e4    |
+| DIO_PAD_SLEEP_REGWEN_11 | 0x6e8    |
+| DIO_PAD_SLEEP_REGWEN_12 | 0x6ec    |
+| DIO_PAD_SLEEP_REGWEN_13 | 0x6f0    |
 
 
 ### Fields
@@ -1500,20 +1488,20 @@ Enables the sleep mode of the corresponding dedicated pad.
 
 | Name                | Offset   |
 |:--------------------|:---------|
-| DIO_PAD_SLEEP_EN_0  | 0x70c    |
-| DIO_PAD_SLEEP_EN_1  | 0x710    |
-| DIO_PAD_SLEEP_EN_2  | 0x714    |
-| DIO_PAD_SLEEP_EN_3  | 0x718    |
-| DIO_PAD_SLEEP_EN_4  | 0x71c    |
-| DIO_PAD_SLEEP_EN_5  | 0x720    |
-| DIO_PAD_SLEEP_EN_6  | 0x724    |
-| DIO_PAD_SLEEP_EN_7  | 0x728    |
-| DIO_PAD_SLEEP_EN_8  | 0x72c    |
-| DIO_PAD_SLEEP_EN_9  | 0x730    |
-| DIO_PAD_SLEEP_EN_10 | 0x734    |
-| DIO_PAD_SLEEP_EN_11 | 0x738    |
-| DIO_PAD_SLEEP_EN_12 | 0x73c    |
-| DIO_PAD_SLEEP_EN_13 | 0x740    |
+| DIO_PAD_SLEEP_EN_0  | 0x6f4    |
+| DIO_PAD_SLEEP_EN_1  | 0x6f8    |
+| DIO_PAD_SLEEP_EN_2  | 0x6fc    |
+| DIO_PAD_SLEEP_EN_3  | 0x700    |
+| DIO_PAD_SLEEP_EN_4  | 0x704    |
+| DIO_PAD_SLEEP_EN_5  | 0x708    |
+| DIO_PAD_SLEEP_EN_6  | 0x70c    |
+| DIO_PAD_SLEEP_EN_7  | 0x710    |
+| DIO_PAD_SLEEP_EN_8  | 0x714    |
+| DIO_PAD_SLEEP_EN_9  | 0x718    |
+| DIO_PAD_SLEEP_EN_10 | 0x71c    |
+| DIO_PAD_SLEEP_EN_11 | 0x720    |
+| DIO_PAD_SLEEP_EN_12 | 0x724    |
+| DIO_PAD_SLEEP_EN_13 | 0x728    |
 
 
 ### Fields
@@ -1547,20 +1535,20 @@ Defines sleep behavior of the corresponding dedicated pad.
 
 | Name                  | Offset   |
 |:----------------------|:---------|
-| DIO_PAD_SLEEP_MODE_0  | 0x744    |
-| DIO_PAD_SLEEP_MODE_1  | 0x748    |
-| DIO_PAD_SLEEP_MODE_2  | 0x74c    |
-| DIO_PAD_SLEEP_MODE_3  | 0x750    |
-| DIO_PAD_SLEEP_MODE_4  | 0x754    |
-| DIO_PAD_SLEEP_MODE_5  | 0x758    |
-| DIO_PAD_SLEEP_MODE_6  | 0x75c    |
-| DIO_PAD_SLEEP_MODE_7  | 0x760    |
-| DIO_PAD_SLEEP_MODE_8  | 0x764    |
-| DIO_PAD_SLEEP_MODE_9  | 0x768    |
-| DIO_PAD_SLEEP_MODE_10 | 0x76c    |
-| DIO_PAD_SLEEP_MODE_11 | 0x770    |
-| DIO_PAD_SLEEP_MODE_12 | 0x774    |
-| DIO_PAD_SLEEP_MODE_13 | 0x778    |
+| DIO_PAD_SLEEP_MODE_0  | 0x72c    |
+| DIO_PAD_SLEEP_MODE_1  | 0x730    |
+| DIO_PAD_SLEEP_MODE_2  | 0x734    |
+| DIO_PAD_SLEEP_MODE_3  | 0x738    |
+| DIO_PAD_SLEEP_MODE_4  | 0x73c    |
+| DIO_PAD_SLEEP_MODE_5  | 0x740    |
+| DIO_PAD_SLEEP_MODE_6  | 0x744    |
+| DIO_PAD_SLEEP_MODE_7  | 0x748    |
+| DIO_PAD_SLEEP_MODE_8  | 0x74c    |
+| DIO_PAD_SLEEP_MODE_9  | 0x750    |
+| DIO_PAD_SLEEP_MODE_10 | 0x754    |
+| DIO_PAD_SLEEP_MODE_11 | 0x758    |
+| DIO_PAD_SLEEP_MODE_12 | 0x75c    |
+| DIO_PAD_SLEEP_MODE_13 | 0x760    |
 
 
 ### Fields
@@ -1594,14 +1582,14 @@ Register write enable for wakeup detectors.
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
-| WKUP_DETECTOR_REGWEN_0 | 0x77c    |
-| WKUP_DETECTOR_REGWEN_1 | 0x780    |
-| WKUP_DETECTOR_REGWEN_2 | 0x784    |
-| WKUP_DETECTOR_REGWEN_3 | 0x788    |
-| WKUP_DETECTOR_REGWEN_4 | 0x78c    |
-| WKUP_DETECTOR_REGWEN_5 | 0x790    |
-| WKUP_DETECTOR_REGWEN_6 | 0x794    |
-| WKUP_DETECTOR_REGWEN_7 | 0x798    |
+| WKUP_DETECTOR_REGWEN_0 | 0x764    |
+| WKUP_DETECTOR_REGWEN_1 | 0x768    |
+| WKUP_DETECTOR_REGWEN_2 | 0x76c    |
+| WKUP_DETECTOR_REGWEN_3 | 0x770    |
+| WKUP_DETECTOR_REGWEN_4 | 0x774    |
+| WKUP_DETECTOR_REGWEN_5 | 0x778    |
+| WKUP_DETECTOR_REGWEN_6 | 0x77c    |
+| WKUP_DETECTOR_REGWEN_7 | 0x780    |
 
 
 ### Fields
@@ -1628,14 +1616,14 @@ However, read/write accesses following a write will block until that write has c
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| WKUP_DETECTOR_EN_0 | 0x79c    |
-| WKUP_DETECTOR_EN_1 | 0x7a0    |
-| WKUP_DETECTOR_EN_2 | 0x7a4    |
-| WKUP_DETECTOR_EN_3 | 0x7a8    |
-| WKUP_DETECTOR_EN_4 | 0x7ac    |
-| WKUP_DETECTOR_EN_5 | 0x7b0    |
-| WKUP_DETECTOR_EN_6 | 0x7b4    |
-| WKUP_DETECTOR_EN_7 | 0x7b8    |
+| WKUP_DETECTOR_EN_0 | 0x784    |
+| WKUP_DETECTOR_EN_1 | 0x788    |
+| WKUP_DETECTOR_EN_2 | 0x78c    |
+| WKUP_DETECTOR_EN_3 | 0x790    |
+| WKUP_DETECTOR_EN_4 | 0x794    |
+| WKUP_DETECTOR_EN_5 | 0x798    |
+| WKUP_DETECTOR_EN_6 | 0x79c    |
+| WKUP_DETECTOR_EN_7 | 0x7a0    |
 
 
 ### Fields
@@ -1665,14 +1653,14 @@ The reason for that is that the pulse width counter is NOT cleared upon a mode c
 
 | Name            | Offset   |
 |:----------------|:---------|
-| WKUP_DETECTOR_0 | 0x7bc    |
-| WKUP_DETECTOR_1 | 0x7c0    |
-| WKUP_DETECTOR_2 | 0x7c4    |
-| WKUP_DETECTOR_3 | 0x7c8    |
-| WKUP_DETECTOR_4 | 0x7cc    |
-| WKUP_DETECTOR_5 | 0x7d0    |
-| WKUP_DETECTOR_6 | 0x7d4    |
-| WKUP_DETECTOR_7 | 0x7d8    |
+| WKUP_DETECTOR_0 | 0x7a4    |
+| WKUP_DETECTOR_1 | 0x7a8    |
+| WKUP_DETECTOR_2 | 0x7ac    |
+| WKUP_DETECTOR_3 | 0x7b0    |
+| WKUP_DETECTOR_4 | 0x7b4    |
+| WKUP_DETECTOR_5 | 0x7b8    |
+| WKUP_DETECTOR_6 | 0x7bc    |
+| WKUP_DETECTOR_7 | 0x7c0    |
 
 
 ### Fields
@@ -1723,14 +1711,14 @@ However, read/write accesses following a write will block until that write has c
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
-| WKUP_DETECTOR_CNT_TH_0 | 0x7dc    |
-| WKUP_DETECTOR_CNT_TH_1 | 0x7e0    |
-| WKUP_DETECTOR_CNT_TH_2 | 0x7e4    |
-| WKUP_DETECTOR_CNT_TH_3 | 0x7e8    |
-| WKUP_DETECTOR_CNT_TH_4 | 0x7ec    |
-| WKUP_DETECTOR_CNT_TH_5 | 0x7f0    |
-| WKUP_DETECTOR_CNT_TH_6 | 0x7f4    |
-| WKUP_DETECTOR_CNT_TH_7 | 0x7f8    |
+| WKUP_DETECTOR_CNT_TH_0 | 0x7c4    |
+| WKUP_DETECTOR_CNT_TH_1 | 0x7c8    |
+| WKUP_DETECTOR_CNT_TH_2 | 0x7cc    |
+| WKUP_DETECTOR_CNT_TH_3 | 0x7d0    |
+| WKUP_DETECTOR_CNT_TH_4 | 0x7d4    |
+| WKUP_DETECTOR_CNT_TH_5 | 0x7d8    |
+| WKUP_DETECTOR_CNT_TH_6 | 0x7dc    |
+| WKUP_DETECTOR_CNT_TH_7 | 0x7e0    |
 
 
 ### Fields
@@ -1755,14 +1743,14 @@ This register is NOT synced to the AON domain since the muxing mechanism is impl
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
-| WKUP_DETECTOR_PADSEL_0 | 0x7fc    |
-| WKUP_DETECTOR_PADSEL_1 | 0x800    |
-| WKUP_DETECTOR_PADSEL_2 | 0x804    |
-| WKUP_DETECTOR_PADSEL_3 | 0x808    |
-| WKUP_DETECTOR_PADSEL_4 | 0x80c    |
-| WKUP_DETECTOR_PADSEL_5 | 0x810    |
-| WKUP_DETECTOR_PADSEL_6 | 0x814    |
-| WKUP_DETECTOR_PADSEL_7 | 0x818    |
+| WKUP_DETECTOR_PADSEL_0 | 0x7e4    |
+| WKUP_DETECTOR_PADSEL_1 | 0x7e8    |
+| WKUP_DETECTOR_PADSEL_2 | 0x7ec    |
+| WKUP_DETECTOR_PADSEL_3 | 0x7f0    |
+| WKUP_DETECTOR_PADSEL_4 | 0x7f4    |
+| WKUP_DETECTOR_PADSEL_5 | 0x7f8    |
+| WKUP_DETECTOR_PADSEL_6 | 0x7fc    |
+| WKUP_DETECTOR_PADSEL_7 | 0x800    |
 
 
 ### Fields
@@ -1787,7 +1775,7 @@ Cause registers for wakeup detectors.
 Note that these registers are synced to the always-on clock.
 The first write access always completes immediately.
 However, read/write accesses following a write will block until that write has completed.
-- Offset: `0x81c`
+- Offset: `0x804`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
