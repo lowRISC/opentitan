@@ -41,7 +41,7 @@ pub struct UsbOpts {
     pub strapping: Vec<String>,
 
     // VBUS disconnect timeout: how long to wait after setting the pin.
-    #[arg(long, value_parser = humantime::parse_duration, default_value = "100ms")]
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
     pub vbus_sense_wait: Duration,
 }
 
