@@ -327,12 +327,12 @@ SPI Receive Data.
    is chosen to match SPI flash devices. Individual bytes
    are always transmitted with the most significant bit first.
    Only four-byte reads are supported. If ByteOrder = 0,
-   the first byte received is packed in the MSB of !!RXDATA.
+   the first byte received is packed in the MSB of [`RXDATA.`](#rxdata)
    For some processor architectures, this could lead to shuffling
    of flash data as compared to how it is written in memory.
    In which case, choosing ByteOrder = 1 can reverse the
    byte-order of each data read, causing the first byte
-   received to be packed into the LSB of !!RXDATA. (Though within
+   received to be packed into the LSB of [`RXDATA.`](#rxdata) (Though within
    each byte the most significant bit is always pulled
    from the bus first.)
 
@@ -351,7 +351,7 @@ SPI Transmit Data.
    is chosen to match SPI flash devices. Individual bytes
    are always transmitted with the most significant bit first.
    Multi-byte writes are also supported, and if ByteOrder = 0,
-   the bits of !!TXDATA are transmitted strictly in order of
+   the bits of [`TXDATA`](#txdata) are transmitted strictly in order of
    decreasing signficance (i.e. most signicant bit first).
    For some processor architectures, this could lead to shuffling
    of flash data as compared to how it is written in memory.

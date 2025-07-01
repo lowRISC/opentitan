@@ -9,7 +9,7 @@
 | pwrmgr.[`INTR_ENABLE`](#intr_enable)                     | 0x4      |        4 | Interrupt Enable Register                                                       |
 | pwrmgr.[`INTR_TEST`](#intr_test)                         | 0x8      |        4 | Interrupt Test Register                                                         |
 | pwrmgr.[`ALERT_TEST`](#alert_test)                       | 0xc      |        4 | Alert Test Register                                                             |
-| pwrmgr.[`CTRL_CFG_REGWEN`](#ctrl_cfg_regwen)             | 0x10     |        4 | Controls the configurability of the !!CONTROL register.                         |
+| pwrmgr.[`CTRL_CFG_REGWEN`](#ctrl_cfg_regwen)             | 0x10     |        4 | Controls the configurability of the [`CONTROL`](#control) register.             |
 | pwrmgr.[`CONTROL`](#control)                             | 0x14     |        4 | Control register                                                                |
 | pwrmgr.[`CFG_CDC_SYNC`](#cfg_cdc_sync)                   | 0x18     |        4 | The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the |
 | pwrmgr.[`WAKEUP_EN_REGWEN`](#wakeup_en_regwen)           | 0x1c     |        4 | Configuration enable for wakeup_en register                                     |

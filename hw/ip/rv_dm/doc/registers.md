@@ -3,11 +3,11 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rv_dm/data/rv_dm.hjson -->
 ## Summary of the **`regs`** interface's registers
 
-| Name                                                          | Offset   |   Length | Description                                |
-|:--------------------------------------------------------------|:---------|---------:|:-------------------------------------------|
-| rv_dm.[`ALERT_TEST`](#alert_test)                             | 0x0      |        4 | Alert Test Register                        |
-| rv_dm.[`LATE_DEBUG_ENABLE_REGWEN`](#late_debug_enable_regwen) | 0x4      |        4 | Lock bit for !!LATE_DEBUG_ENABLE register. |
-| rv_dm.[`LATE_DEBUG_ENABLE`](#late_debug_enable)               | 0x8      |        4 | Debug enable register.                     |
+| Name                                                          | Offset   |   Length | Description                                                      |
+|:--------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------------------|
+| rv_dm.[`ALERT_TEST`](#alert_test)                             | 0x0      |        4 | Alert Test Register                                              |
+| rv_dm.[`LATE_DEBUG_ENABLE_REGWEN`](#late_debug_enable_regwen) | 0x4      |        4 | Lock bit for [`LATE_DEBUG_ENABLE`](#late_debug_enable) register. |
+| rv_dm.[`LATE_DEBUG_ENABLE`](#late_debug_enable)               | 0x8      |        4 | Debug enable register.                                           |
 
 ## ALERT_TEST
 Alert Test Register

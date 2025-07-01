@@ -5,274 +5,274 @@ A number of memory-mapped registers are available to control Ibex-related functi
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_darjeeling/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 ## Summary
 
-| Name                                                        | Offset   |   Length | Description                                          |
-|:------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------|
-| rv_core_ibex.[`ALERT_TEST`](#alert_test)                    | 0x0      |        4 | Alert Test Register                                  |
-| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                | 0x4      |        4 | Software recoverable error                           |
-| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                | 0x8      |        4 | Software fatal error                                 |
-| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                | 0xc      |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                | 0x10     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_2`](#ibus_regwen)                | 0x14     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_3`](#ibus_regwen)                | 0x18     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_4`](#ibus_regwen)                | 0x1c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_5`](#ibus_regwen)                | 0x20     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_6`](#ibus_regwen)                | 0x24     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_7`](#ibus_regwen)                | 0x28     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_8`](#ibus_regwen)                | 0x2c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_9`](#ibus_regwen)                | 0x30     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_10`](#ibus_regwen)               | 0x34     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_11`](#ibus_regwen)               | 0x38     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_12`](#ibus_regwen)               | 0x3c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_13`](#ibus_regwen)               | 0x40     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_14`](#ibus_regwen)               | 0x44     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_15`](#ibus_regwen)               | 0x48     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_16`](#ibus_regwen)               | 0x4c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_17`](#ibus_regwen)               | 0x50     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_18`](#ibus_regwen)               | 0x54     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_19`](#ibus_regwen)               | 0x58     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_20`](#ibus_regwen)               | 0x5c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_21`](#ibus_regwen)               | 0x60     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_22`](#ibus_regwen)               | 0x64     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_23`](#ibus_regwen)               | 0x68     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_24`](#ibus_regwen)               | 0x6c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_25`](#ibus_regwen)               | 0x70     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_26`](#ibus_regwen)               | 0x74     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_27`](#ibus_regwen)               | 0x78     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_28`](#ibus_regwen)               | 0x7c     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_29`](#ibus_regwen)               | 0x80     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_30`](#ibus_regwen)               | 0x84     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_31`](#ibus_regwen)               | 0x88     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)              | 0x8c     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)              | 0x90     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_2`](#ibus_addr_en)              | 0x94     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_3`](#ibus_addr_en)              | 0x98     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_4`](#ibus_addr_en)              | 0x9c     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_5`](#ibus_addr_en)              | 0xa0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_6`](#ibus_addr_en)              | 0xa4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_7`](#ibus_addr_en)              | 0xa8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_8`](#ibus_addr_en)              | 0xac     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_9`](#ibus_addr_en)              | 0xb0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_10`](#ibus_addr_en)             | 0xb4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_11`](#ibus_addr_en)             | 0xb8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_12`](#ibus_addr_en)             | 0xbc     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_13`](#ibus_addr_en)             | 0xc0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_14`](#ibus_addr_en)             | 0xc4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_15`](#ibus_addr_en)             | 0xc8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_16`](#ibus_addr_en)             | 0xcc     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_17`](#ibus_addr_en)             | 0xd0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_18`](#ibus_addr_en)             | 0xd4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_19`](#ibus_addr_en)             | 0xd8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_20`](#ibus_addr_en)             | 0xdc     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_21`](#ibus_addr_en)             | 0xe0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_22`](#ibus_addr_en)             | 0xe4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_23`](#ibus_addr_en)             | 0xe8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_24`](#ibus_addr_en)             | 0xec     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_25`](#ibus_addr_en)             | 0xf0     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_26`](#ibus_addr_en)             | 0xf4     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_27`](#ibus_addr_en)             | 0xf8     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_28`](#ibus_addr_en)             | 0xfc     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_29`](#ibus_addr_en)             | 0x100    |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_30`](#ibus_addr_en)             | 0x104    |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_31`](#ibus_addr_en)             | 0x108    |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)  | 0x10c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)  | 0x110    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_2`](#ibus_addr_matching)  | 0x114    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_3`](#ibus_addr_matching)  | 0x118    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_4`](#ibus_addr_matching)  | 0x11c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_5`](#ibus_addr_matching)  | 0x120    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_6`](#ibus_addr_matching)  | 0x124    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_7`](#ibus_addr_matching)  | 0x128    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_8`](#ibus_addr_matching)  | 0x12c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_9`](#ibus_addr_matching)  | 0x130    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_10`](#ibus_addr_matching) | 0x134    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_11`](#ibus_addr_matching) | 0x138    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_12`](#ibus_addr_matching) | 0x13c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_13`](#ibus_addr_matching) | 0x140    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_14`](#ibus_addr_matching) | 0x144    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_15`](#ibus_addr_matching) | 0x148    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_16`](#ibus_addr_matching) | 0x14c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_17`](#ibus_addr_matching) | 0x150    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_18`](#ibus_addr_matching) | 0x154    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_19`](#ibus_addr_matching) | 0x158    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_20`](#ibus_addr_matching) | 0x15c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_21`](#ibus_addr_matching) | 0x160    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_22`](#ibus_addr_matching) | 0x164    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_23`](#ibus_addr_matching) | 0x168    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_24`](#ibus_addr_matching) | 0x16c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_25`](#ibus_addr_matching) | 0x170    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_26`](#ibus_addr_matching) | 0x174    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_27`](#ibus_addr_matching) | 0x178    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_28`](#ibus_addr_matching) | 0x17c    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_29`](#ibus_addr_matching) | 0x180    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_30`](#ibus_addr_matching) | 0x184    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_31`](#ibus_addr_matching) | 0x188    |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)        | 0x18c    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)        | 0x190    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_2`](#ibus_remap_addr)        | 0x194    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_3`](#ibus_remap_addr)        | 0x198    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_4`](#ibus_remap_addr)        | 0x19c    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_5`](#ibus_remap_addr)        | 0x1a0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_6`](#ibus_remap_addr)        | 0x1a4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_7`](#ibus_remap_addr)        | 0x1a8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_8`](#ibus_remap_addr)        | 0x1ac    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_9`](#ibus_remap_addr)        | 0x1b0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_10`](#ibus_remap_addr)       | 0x1b4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_11`](#ibus_remap_addr)       | 0x1b8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_12`](#ibus_remap_addr)       | 0x1bc    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_13`](#ibus_remap_addr)       | 0x1c0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_14`](#ibus_remap_addr)       | 0x1c4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_15`](#ibus_remap_addr)       | 0x1c8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_16`](#ibus_remap_addr)       | 0x1cc    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_17`](#ibus_remap_addr)       | 0x1d0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_18`](#ibus_remap_addr)       | 0x1d4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_19`](#ibus_remap_addr)       | 0x1d8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_20`](#ibus_remap_addr)       | 0x1dc    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_21`](#ibus_remap_addr)       | 0x1e0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_22`](#ibus_remap_addr)       | 0x1e4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_23`](#ibus_remap_addr)       | 0x1e8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_24`](#ibus_remap_addr)       | 0x1ec    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_25`](#ibus_remap_addr)       | 0x1f0    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_26`](#ibus_remap_addr)       | 0x1f4    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_27`](#ibus_remap_addr)       | 0x1f8    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_28`](#ibus_remap_addr)       | 0x1fc    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_29`](#ibus_remap_addr)       | 0x200    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_30`](#ibus_remap_addr)       | 0x204    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_31`](#ibus_remap_addr)       | 0x208    |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                | 0x20c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                | 0x210    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_2`](#dbus_regwen)                | 0x214    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_3`](#dbus_regwen)                | 0x218    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_4`](#dbus_regwen)                | 0x21c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_5`](#dbus_regwen)                | 0x220    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_6`](#dbus_regwen)                | 0x224    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_7`](#dbus_regwen)                | 0x228    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_8`](#dbus_regwen)                | 0x22c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_9`](#dbus_regwen)                | 0x230    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_10`](#dbus_regwen)               | 0x234    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_11`](#dbus_regwen)               | 0x238    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_12`](#dbus_regwen)               | 0x23c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_13`](#dbus_regwen)               | 0x240    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_14`](#dbus_regwen)               | 0x244    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_15`](#dbus_regwen)               | 0x248    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_16`](#dbus_regwen)               | 0x24c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_17`](#dbus_regwen)               | 0x250    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_18`](#dbus_regwen)               | 0x254    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_19`](#dbus_regwen)               | 0x258    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_20`](#dbus_regwen)               | 0x25c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_21`](#dbus_regwen)               | 0x260    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_22`](#dbus_regwen)               | 0x264    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_23`](#dbus_regwen)               | 0x268    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_24`](#dbus_regwen)               | 0x26c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_25`](#dbus_regwen)               | 0x270    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_26`](#dbus_regwen)               | 0x274    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_27`](#dbus_regwen)               | 0x278    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_28`](#dbus_regwen)               | 0x27c    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_29`](#dbus_regwen)               | 0x280    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_30`](#dbus_regwen)               | 0x284    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_31`](#dbus_regwen)               | 0x288    |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)              | 0x28c    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)              | 0x290    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_2`](#dbus_addr_en)              | 0x294    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_3`](#dbus_addr_en)              | 0x298    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_4`](#dbus_addr_en)              | 0x29c    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_5`](#dbus_addr_en)              | 0x2a0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_6`](#dbus_addr_en)              | 0x2a4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_7`](#dbus_addr_en)              | 0x2a8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_8`](#dbus_addr_en)              | 0x2ac    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_9`](#dbus_addr_en)              | 0x2b0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_10`](#dbus_addr_en)             | 0x2b4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_11`](#dbus_addr_en)             | 0x2b8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_12`](#dbus_addr_en)             | 0x2bc    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_13`](#dbus_addr_en)             | 0x2c0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_14`](#dbus_addr_en)             | 0x2c4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_15`](#dbus_addr_en)             | 0x2c8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_16`](#dbus_addr_en)             | 0x2cc    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_17`](#dbus_addr_en)             | 0x2d0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_18`](#dbus_addr_en)             | 0x2d4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_19`](#dbus_addr_en)             | 0x2d8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_20`](#dbus_addr_en)             | 0x2dc    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_21`](#dbus_addr_en)             | 0x2e0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_22`](#dbus_addr_en)             | 0x2e4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_23`](#dbus_addr_en)             | 0x2e8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_24`](#dbus_addr_en)             | 0x2ec    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_25`](#dbus_addr_en)             | 0x2f0    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_26`](#dbus_addr_en)             | 0x2f4    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_27`](#dbus_addr_en)             | 0x2f8    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_28`](#dbus_addr_en)             | 0x2fc    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_29`](#dbus_addr_en)             | 0x300    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_30`](#dbus_addr_en)             | 0x304    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_31`](#dbus_addr_en)             | 0x308    |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)  | 0x30c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)  | 0x310    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_2`](#dbus_addr_matching)  | 0x314    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_3`](#dbus_addr_matching)  | 0x318    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_4`](#dbus_addr_matching)  | 0x31c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_5`](#dbus_addr_matching)  | 0x320    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_6`](#dbus_addr_matching)  | 0x324    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_7`](#dbus_addr_matching)  | 0x328    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_8`](#dbus_addr_matching)  | 0x32c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_9`](#dbus_addr_matching)  | 0x330    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_10`](#dbus_addr_matching) | 0x334    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_11`](#dbus_addr_matching) | 0x338    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_12`](#dbus_addr_matching) | 0x33c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_13`](#dbus_addr_matching) | 0x340    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_14`](#dbus_addr_matching) | 0x344    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_15`](#dbus_addr_matching) | 0x348    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_16`](#dbus_addr_matching) | 0x34c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_17`](#dbus_addr_matching) | 0x350    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_18`](#dbus_addr_matching) | 0x354    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_19`](#dbus_addr_matching) | 0x358    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_20`](#dbus_addr_matching) | 0x35c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_21`](#dbus_addr_matching) | 0x360    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_22`](#dbus_addr_matching) | 0x364    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_23`](#dbus_addr_matching) | 0x368    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_24`](#dbus_addr_matching) | 0x36c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_25`](#dbus_addr_matching) | 0x370    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_26`](#dbus_addr_matching) | 0x374    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_27`](#dbus_addr_matching) | 0x378    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_28`](#dbus_addr_matching) | 0x37c    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_29`](#dbus_addr_matching) | 0x380    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_30`](#dbus_addr_matching) | 0x384    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_31`](#dbus_addr_matching) | 0x388    |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)        | 0x38c    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)        | 0x390    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_2`](#dbus_remap_addr)        | 0x394    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_3`](#dbus_remap_addr)        | 0x398    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_4`](#dbus_remap_addr)        | 0x39c    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_5`](#dbus_remap_addr)        | 0x3a0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_6`](#dbus_remap_addr)        | 0x3a4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_7`](#dbus_remap_addr)        | 0x3a8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_8`](#dbus_remap_addr)        | 0x3ac    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_9`](#dbus_remap_addr)        | 0x3b0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_10`](#dbus_remap_addr)       | 0x3b4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_11`](#dbus_remap_addr)       | 0x3b8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_12`](#dbus_remap_addr)       | 0x3bc    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_13`](#dbus_remap_addr)       | 0x3c0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_14`](#dbus_remap_addr)       | 0x3c4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_15`](#dbus_remap_addr)       | 0x3c8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_16`](#dbus_remap_addr)       | 0x3cc    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_17`](#dbus_remap_addr)       | 0x3d0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_18`](#dbus_remap_addr)       | 0x3d4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_19`](#dbus_remap_addr)       | 0x3d8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_20`](#dbus_remap_addr)       | 0x3dc    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_21`](#dbus_remap_addr)       | 0x3e0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_22`](#dbus_remap_addr)       | 0x3e4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_23`](#dbus_remap_addr)       | 0x3e8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_24`](#dbus_remap_addr)       | 0x3ec    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_25`](#dbus_remap_addr)       | 0x3f0    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_26`](#dbus_remap_addr)       | 0x3f4    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_27`](#dbus_remap_addr)       | 0x3f8    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_28`](#dbus_remap_addr)       | 0x3fc    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_29`](#dbus_remap_addr)       | 0x400    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_30`](#dbus_remap_addr)       | 0x404    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_31`](#dbus_remap_addr)       | 0x408    |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                    | 0x40c    |        4 | Enable mask for NMI.                                 |
-| rv_core_ibex.[`NMI_STATE`](#nmi_state)                      | 0x410    |        4 | Current NMI state                                    |
-| rv_core_ibex.[`ERR_STATUS`](#err_status)                    | 0x414    |        4 | error status                                         |
-| rv_core_ibex.[`RND_DATA`](#rnd_data)                        | 0x418    |        4 | Random data from EDN                                 |
-| rv_core_ibex.[`RND_STATUS`](#rnd_status)                    | 0x41c    |        4 | Status of random data in !!RND_DATA                  |
-| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                      | 0x420    |        4 | FPGA build timestamp info.                           |
-| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)              | 0x440    |       32 | Exposed tlul window for DV only purposes.            |
+| Name                                                        | Offset   |   Length | Description                                                                   |
+|:------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------|
+| rv_core_ibex.[`ALERT_TEST`](#alert_test)                    | 0x0      |        4 | Alert Test Register                                                           |
+| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                | 0x4      |        4 | Software recoverable error                                                    |
+| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                | 0x8      |        4 | Software fatal error                                                          |
+| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                | 0xc      |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                | 0x10     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_2`](#ibus_regwen)                | 0x14     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_3`](#ibus_regwen)                | 0x18     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_4`](#ibus_regwen)                | 0x1c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_5`](#ibus_regwen)                | 0x20     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_6`](#ibus_regwen)                | 0x24     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_7`](#ibus_regwen)                | 0x28     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_8`](#ibus_regwen)                | 0x2c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_9`](#ibus_regwen)                | 0x30     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_10`](#ibus_regwen)               | 0x34     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_11`](#ibus_regwen)               | 0x38     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_12`](#ibus_regwen)               | 0x3c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_13`](#ibus_regwen)               | 0x40     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_14`](#ibus_regwen)               | 0x44     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_15`](#ibus_regwen)               | 0x48     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_16`](#ibus_regwen)               | 0x4c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_17`](#ibus_regwen)               | 0x50     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_18`](#ibus_regwen)               | 0x54     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_19`](#ibus_regwen)               | 0x58     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_20`](#ibus_regwen)               | 0x5c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_21`](#ibus_regwen)               | 0x60     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_22`](#ibus_regwen)               | 0x64     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_23`](#ibus_regwen)               | 0x68     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_24`](#ibus_regwen)               | 0x6c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_25`](#ibus_regwen)               | 0x70     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_26`](#ibus_regwen)               | 0x74     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_27`](#ibus_regwen)               | 0x78     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_28`](#ibus_regwen)               | 0x7c     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_29`](#ibus_regwen)               | 0x80     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_30`](#ibus_regwen)               | 0x84     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_31`](#ibus_regwen)               | 0x88     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)              | 0x8c     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)              | 0x90     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_2`](#ibus_addr_en)              | 0x94     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_3`](#ibus_addr_en)              | 0x98     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_4`](#ibus_addr_en)              | 0x9c     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_5`](#ibus_addr_en)              | 0xa0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_6`](#ibus_addr_en)              | 0xa4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_7`](#ibus_addr_en)              | 0xa8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_8`](#ibus_addr_en)              | 0xac     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_9`](#ibus_addr_en)              | 0xb0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_10`](#ibus_addr_en)             | 0xb4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_11`](#ibus_addr_en)             | 0xb8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_12`](#ibus_addr_en)             | 0xbc     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_13`](#ibus_addr_en)             | 0xc0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_14`](#ibus_addr_en)             | 0xc4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_15`](#ibus_addr_en)             | 0xc8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_16`](#ibus_addr_en)             | 0xcc     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_17`](#ibus_addr_en)             | 0xd0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_18`](#ibus_addr_en)             | 0xd4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_19`](#ibus_addr_en)             | 0xd8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_20`](#ibus_addr_en)             | 0xdc     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_21`](#ibus_addr_en)             | 0xe0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_22`](#ibus_addr_en)             | 0xe4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_23`](#ibus_addr_en)             | 0xe8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_24`](#ibus_addr_en)             | 0xec     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_25`](#ibus_addr_en)             | 0xf0     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_26`](#ibus_addr_en)             | 0xf4     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_27`](#ibus_addr_en)             | 0xf8     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_28`](#ibus_addr_en)             | 0xfc     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_29`](#ibus_addr_en)             | 0x100    |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_30`](#ibus_addr_en)             | 0x104    |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_31`](#ibus_addr_en)             | 0x108    |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)  | 0x10c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)  | 0x110    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_2`](#ibus_addr_matching)  | 0x114    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_3`](#ibus_addr_matching)  | 0x118    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_4`](#ibus_addr_matching)  | 0x11c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_5`](#ibus_addr_matching)  | 0x120    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_6`](#ibus_addr_matching)  | 0x124    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_7`](#ibus_addr_matching)  | 0x128    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_8`](#ibus_addr_matching)  | 0x12c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_9`](#ibus_addr_matching)  | 0x130    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_10`](#ibus_addr_matching) | 0x134    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_11`](#ibus_addr_matching) | 0x138    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_12`](#ibus_addr_matching) | 0x13c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_13`](#ibus_addr_matching) | 0x140    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_14`](#ibus_addr_matching) | 0x144    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_15`](#ibus_addr_matching) | 0x148    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_16`](#ibus_addr_matching) | 0x14c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_17`](#ibus_addr_matching) | 0x150    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_18`](#ibus_addr_matching) | 0x154    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_19`](#ibus_addr_matching) | 0x158    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_20`](#ibus_addr_matching) | 0x15c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_21`](#ibus_addr_matching) | 0x160    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_22`](#ibus_addr_matching) | 0x164    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_23`](#ibus_addr_matching) | 0x168    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_24`](#ibus_addr_matching) | 0x16c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_25`](#ibus_addr_matching) | 0x170    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_26`](#ibus_addr_matching) | 0x174    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_27`](#ibus_addr_matching) | 0x178    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_28`](#ibus_addr_matching) | 0x17c    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_29`](#ibus_addr_matching) | 0x180    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_30`](#ibus_addr_matching) | 0x184    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_31`](#ibus_addr_matching) | 0x188    |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)        | 0x18c    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)        | 0x190    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_2`](#ibus_remap_addr)        | 0x194    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_3`](#ibus_remap_addr)        | 0x198    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_4`](#ibus_remap_addr)        | 0x19c    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_5`](#ibus_remap_addr)        | 0x1a0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_6`](#ibus_remap_addr)        | 0x1a4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_7`](#ibus_remap_addr)        | 0x1a8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_8`](#ibus_remap_addr)        | 0x1ac    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_9`](#ibus_remap_addr)        | 0x1b0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_10`](#ibus_remap_addr)       | 0x1b4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_11`](#ibus_remap_addr)       | 0x1b8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_12`](#ibus_remap_addr)       | 0x1bc    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_13`](#ibus_remap_addr)       | 0x1c0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_14`](#ibus_remap_addr)       | 0x1c4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_15`](#ibus_remap_addr)       | 0x1c8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_16`](#ibus_remap_addr)       | 0x1cc    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_17`](#ibus_remap_addr)       | 0x1d0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_18`](#ibus_remap_addr)       | 0x1d4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_19`](#ibus_remap_addr)       | 0x1d8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_20`](#ibus_remap_addr)       | 0x1dc    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_21`](#ibus_remap_addr)       | 0x1e0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_22`](#ibus_remap_addr)       | 0x1e4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_23`](#ibus_remap_addr)       | 0x1e8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_24`](#ibus_remap_addr)       | 0x1ec    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_25`](#ibus_remap_addr)       | 0x1f0    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_26`](#ibus_remap_addr)       | 0x1f4    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_27`](#ibus_remap_addr)       | 0x1f8    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_28`](#ibus_remap_addr)       | 0x1fc    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_29`](#ibus_remap_addr)       | 0x200    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_30`](#ibus_remap_addr)       | 0x204    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_31`](#ibus_remap_addr)       | 0x208    |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                | 0x20c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                | 0x210    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_2`](#dbus_regwen)                | 0x214    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_3`](#dbus_regwen)                | 0x218    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_4`](#dbus_regwen)                | 0x21c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_5`](#dbus_regwen)                | 0x220    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_6`](#dbus_regwen)                | 0x224    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_7`](#dbus_regwen)                | 0x228    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_8`](#dbus_regwen)                | 0x22c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_9`](#dbus_regwen)                | 0x230    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_10`](#dbus_regwen)               | 0x234    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_11`](#dbus_regwen)               | 0x238    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_12`](#dbus_regwen)               | 0x23c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_13`](#dbus_regwen)               | 0x240    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_14`](#dbus_regwen)               | 0x244    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_15`](#dbus_regwen)               | 0x248    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_16`](#dbus_regwen)               | 0x24c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_17`](#dbus_regwen)               | 0x250    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_18`](#dbus_regwen)               | 0x254    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_19`](#dbus_regwen)               | 0x258    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_20`](#dbus_regwen)               | 0x25c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_21`](#dbus_regwen)               | 0x260    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_22`](#dbus_regwen)               | 0x264    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_23`](#dbus_regwen)               | 0x268    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_24`](#dbus_regwen)               | 0x26c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_25`](#dbus_regwen)               | 0x270    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_26`](#dbus_regwen)               | 0x274    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_27`](#dbus_regwen)               | 0x278    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_28`](#dbus_regwen)               | 0x27c    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_29`](#dbus_regwen)               | 0x280    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_30`](#dbus_regwen)               | 0x284    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_31`](#dbus_regwen)               | 0x288    |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)              | 0x28c    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)              | 0x290    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_2`](#dbus_addr_en)              | 0x294    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_3`](#dbus_addr_en)              | 0x298    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_4`](#dbus_addr_en)              | 0x29c    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_5`](#dbus_addr_en)              | 0x2a0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_6`](#dbus_addr_en)              | 0x2a4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_7`](#dbus_addr_en)              | 0x2a8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_8`](#dbus_addr_en)              | 0x2ac    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_9`](#dbus_addr_en)              | 0x2b0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_10`](#dbus_addr_en)             | 0x2b4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_11`](#dbus_addr_en)             | 0x2b8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_12`](#dbus_addr_en)             | 0x2bc    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_13`](#dbus_addr_en)             | 0x2c0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_14`](#dbus_addr_en)             | 0x2c4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_15`](#dbus_addr_en)             | 0x2c8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_16`](#dbus_addr_en)             | 0x2cc    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_17`](#dbus_addr_en)             | 0x2d0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_18`](#dbus_addr_en)             | 0x2d4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_19`](#dbus_addr_en)             | 0x2d8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_20`](#dbus_addr_en)             | 0x2dc    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_21`](#dbus_addr_en)             | 0x2e0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_22`](#dbus_addr_en)             | 0x2e4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_23`](#dbus_addr_en)             | 0x2e8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_24`](#dbus_addr_en)             | 0x2ec    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_25`](#dbus_addr_en)             | 0x2f0    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_26`](#dbus_addr_en)             | 0x2f4    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_27`](#dbus_addr_en)             | 0x2f8    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_28`](#dbus_addr_en)             | 0x2fc    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_29`](#dbus_addr_en)             | 0x300    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_30`](#dbus_addr_en)             | 0x304    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_31`](#dbus_addr_en)             | 0x308    |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)  | 0x30c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)  | 0x310    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_2`](#dbus_addr_matching)  | 0x314    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_3`](#dbus_addr_matching)  | 0x318    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_4`](#dbus_addr_matching)  | 0x31c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_5`](#dbus_addr_matching)  | 0x320    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_6`](#dbus_addr_matching)  | 0x324    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_7`](#dbus_addr_matching)  | 0x328    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_8`](#dbus_addr_matching)  | 0x32c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_9`](#dbus_addr_matching)  | 0x330    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_10`](#dbus_addr_matching) | 0x334    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_11`](#dbus_addr_matching) | 0x338    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_12`](#dbus_addr_matching) | 0x33c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_13`](#dbus_addr_matching) | 0x340    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_14`](#dbus_addr_matching) | 0x344    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_15`](#dbus_addr_matching) | 0x348    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_16`](#dbus_addr_matching) | 0x34c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_17`](#dbus_addr_matching) | 0x350    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_18`](#dbus_addr_matching) | 0x354    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_19`](#dbus_addr_matching) | 0x358    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_20`](#dbus_addr_matching) | 0x35c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_21`](#dbus_addr_matching) | 0x360    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_22`](#dbus_addr_matching) | 0x364    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_23`](#dbus_addr_matching) | 0x368    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_24`](#dbus_addr_matching) | 0x36c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_25`](#dbus_addr_matching) | 0x370    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_26`](#dbus_addr_matching) | 0x374    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_27`](#dbus_addr_matching) | 0x378    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_28`](#dbus_addr_matching) | 0x37c    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_29`](#dbus_addr_matching) | 0x380    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_30`](#dbus_addr_matching) | 0x384    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_31`](#dbus_addr_matching) | 0x388    |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)        | 0x38c    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)        | 0x390    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_2`](#dbus_remap_addr)        | 0x394    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_3`](#dbus_remap_addr)        | 0x398    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_4`](#dbus_remap_addr)        | 0x39c    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_5`](#dbus_remap_addr)        | 0x3a0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_6`](#dbus_remap_addr)        | 0x3a4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_7`](#dbus_remap_addr)        | 0x3a8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_8`](#dbus_remap_addr)        | 0x3ac    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_9`](#dbus_remap_addr)        | 0x3b0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_10`](#dbus_remap_addr)       | 0x3b4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_11`](#dbus_remap_addr)       | 0x3b8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_12`](#dbus_remap_addr)       | 0x3bc    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_13`](#dbus_remap_addr)       | 0x3c0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_14`](#dbus_remap_addr)       | 0x3c4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_15`](#dbus_remap_addr)       | 0x3c8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_16`](#dbus_remap_addr)       | 0x3cc    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_17`](#dbus_remap_addr)       | 0x3d0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_18`](#dbus_remap_addr)       | 0x3d4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_19`](#dbus_remap_addr)       | 0x3d8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_20`](#dbus_remap_addr)       | 0x3dc    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_21`](#dbus_remap_addr)       | 0x3e0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_22`](#dbus_remap_addr)       | 0x3e4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_23`](#dbus_remap_addr)       | 0x3e8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_24`](#dbus_remap_addr)       | 0x3ec    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_25`](#dbus_remap_addr)       | 0x3f0    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_26`](#dbus_remap_addr)       | 0x3f4    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_27`](#dbus_remap_addr)       | 0x3f8    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_28`](#dbus_remap_addr)       | 0x3fc    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_29`](#dbus_remap_addr)       | 0x400    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_30`](#dbus_remap_addr)       | 0x404    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_31`](#dbus_remap_addr)       | 0x408    |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                    | 0x40c    |        4 | Enable mask for NMI.                                                          |
+| rv_core_ibex.[`NMI_STATE`](#nmi_state)                      | 0x410    |        4 | Current NMI state                                                             |
+| rv_core_ibex.[`ERR_STATUS`](#err_status)                    | 0x414    |        4 | error status                                                                  |
+| rv_core_ibex.[`RND_DATA`](#rnd_data)                        | 0x418    |        4 | Random data from EDN                                                          |
+| rv_core_ibex.[`RND_STATUS`](#rnd_status)                    | 0x41c    |        4 | Status of random data in [`RND_DATA`](#rnd_data)                              |
+| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                      | 0x420    |        4 | FPGA build timestamp info.                                                    |
+| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)              | 0x440    |       32 | Exposed tlul window for DV only purposes.                                     |
 
 ## ALERT_TEST
 Alert Test Register
