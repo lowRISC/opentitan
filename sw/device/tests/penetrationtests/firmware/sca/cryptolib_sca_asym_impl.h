@@ -35,4 +35,29 @@ status_t cryptolib_sca_rsa_dec_impl(
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
     size_t *cfg_out, size_t trigger);
 
+/**
+ * Wrapper to RSA decryption implementation.
+ *
+ * @param data Input data.
+ * @param data_len Input data length.
+ * @param e RSA public exponent.
+ * @param n RSA modulus.
+ * @param d RSA private key.
+ * @param[out] n_len RSA length.
+ * @param[out] sig Output data.
+ * @param[out] sig_len Output data length.
+ * @param hashing Hashing mode.
+ * @param padding Padding mode.
+ * @param cfg_in Input config.
+ * @param[out] cfg_out Output config.
+ * @param trigger Trigger config.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_rsa_sign_impl(
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
+    size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
+    size_t trigger);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_
