@@ -568,7 +568,7 @@
                     fields. Each 128-bit subfield encodes four 32-bit words that
                     contain the alert phase cycle count configurations for alert
                     escalation phases 0 to 3, from LSW to MSW. Each 128-bit
-                    subfield is contains all cofigurations for a single alert
+                    subfield is contains all configurations for a single alert
                     class, arranged from class A to D, from LS to MS. For
                     example, the cycle durations of each escalation phase in
                     this field should be configured as such, from LSB to MSB:
@@ -752,7 +752,7 @@
                     '''
                 }
                 {
-                    // Datatype: hardended_bool_t
+                    // Datatype: hardened_bool_t
                     // True enables, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
                     size: "4",
@@ -1160,7 +1160,7 @@
                 // life cycle controller to ensure that the counter is always written
                 // before any state update. I.e., the life cycle controller
                 // already splits the counter and state updates into two
-                // supsequent requests through the LCI, where the first request
+                // subsequent requests through the LCI, where the first request
                 // only contains the updated transition counter, and the second
                 // request the updated transition counter and state.
                 {

@@ -892,7 +892,7 @@
                 fields. Each 128-bit subfield encodes four 32-bit words that
                 contain the alert phase cycle count configurations for alert
                 escalation phases 0 to 3, from LSW to MSW. Each 128-bit
-                subfield is contains all cofigurations for a single alert
+                subfield is contains all configurations for a single alert
                 class, arranged from class A to D, from LS to MS. For
                 example, the cycle durations of each escalation phase in
                 this field should be configured as such, from LSB to MSB:

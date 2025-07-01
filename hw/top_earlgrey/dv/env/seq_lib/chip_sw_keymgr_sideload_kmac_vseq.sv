@@ -7,7 +7,7 @@ class chip_sw_keymgr_sideload_kmac_vseq extends chip_sw_keymgr_key_derivation_vs
 
   `uvm_object_new
 
-  // The following varibles match their SW side equivalents
+  // The following variables match their SW side equivalents
   localparam int MessageBytes = 4;
   localparam bit [7:0] MsgArr[MessageBytes] = {8'h00, 8'h01, 8'h02, 8'h03};
   localparam string CustomStr = "";

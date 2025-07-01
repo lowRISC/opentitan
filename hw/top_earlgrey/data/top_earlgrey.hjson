@@ -115,7 +115,7 @@
 
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
-  //   - The top/ext desgination follows the same scheme as inter-module
+  //   - The top/ext designation follows the same scheme as inter-module
   // The node key represents all the known resets in the design
   resets: {
 
@@ -288,7 +288,7 @@
      //   reggen_only: Similar to reggen_top, but are not instantiated in the top level.
   module: [
     { name: "uart0",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -305,7 +305,7 @@
       },
     },
     { name: "uart1",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -322,7 +322,7 @@
       },
     },
     { name: "uart2",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection
@@ -339,7 +339,7 @@
       },
     },
     { name: "uart3",    // instance name
-      type: "uart",     // Must be matched to the ip name in `ip.hson` (_reg, _cfg permitted)
+      type: "uart",     // Must be matched to the ip name in `ip.hjson` (_reg, _cfg permitted)
                         // and `hw/ip/{type}`
 
       // clock connections defines the port to top level clock connection

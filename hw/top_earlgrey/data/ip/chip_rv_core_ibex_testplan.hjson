@@ -79,10 +79,10 @@
             - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
               done by the test_rom startup code).
             - Execute the `fence` instruction to invalidate the icache.
-            - In simultation: verify using probes, that this resulted in a new scrambling key
+            - In simulation: verify using probes, that this resulted in a new scrambling key
               fetched from the OTP ctrl.
             - In SiVal: loop reading the value of the Ibex CSR cpustrlsts.ic_scr_key_valid until it
-              indciates a valid scrambling key, then continue executing some code to demonstrate
+              indicates a valid scrambling key, then continue executing some code to demonstrate
               continued functioning of the instruction cache.
             '''
       stage: V2

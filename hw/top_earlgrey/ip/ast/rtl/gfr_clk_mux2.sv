@@ -4,7 +4,7 @@
 //
 //############################################################################
 // *Name: gfr_clk_mux2
-// *Module Description: Glitch Free Asyncronus 2-Clocks Multiplexer
+// *Module Description: Glitch Free Asynchronous 2-Clocks Multiplexer
 //############################################################################
 
 module gfr_clk_mux2 (

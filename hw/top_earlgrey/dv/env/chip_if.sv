@@ -82,7 +82,7 @@ interface chip_if;
   // Identifier for logs.
   string MsgId = $sformatf("%m");
 
-  // Identifier for the envorinment to which this interface is passed on via uvm_config_db.
+  // Identifier for the environment to which this interface is passed on via uvm_config_db.
   string env_name = "env";
 
   // Directly connected to chip IOs.
@@ -764,7 +764,7 @@ interface chip_if;
 `else
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 `endif
-  // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
+  // clkmgr related: SW controlled clock gating control signals reflecting the actual status
   // of these clocks.
 `ifdef GATE_LEVEL
   wire aes_clk_is_enabled = 0;
@@ -926,7 +926,7 @@ interface chip_if;
   assign probed_cpu_pc.pc_id = `CPU_CORE_HIER.u_ibex_core.pc_id;
   assign probed_cpu_pc.pc_wb = `CPU_CORE_HIER.u_ibex_core.pc_wb;
 `endif
-  // Stub CPU envorinment.
+  // Stub CPU environment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
   // as well. If enabled, the following things happen:
@@ -967,7 +967,7 @@ interface chip_if;
         join_none
       end else begin
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
-        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't recognize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;
@@ -1147,7 +1147,7 @@ interface chip_if;
 
   // A custom signal probe function for LC program request to OTP.
   // See dv_macros.svh for a signal probe function description, but they only deal with
-  // vectors: it would be nice to extend them to deal with arbirary types, or at least
+  // vectors: it would be nice to extend them to deal with arbitrary types, or at least
   // support enums.
   function static void signal_probe_otp_ctrl_lc_program_state (
       dv_utils_pkg::signal_probe_e kind, lc_ctrl_state_pkg::lc_state_e state);
@@ -1166,7 +1166,7 @@ interface chip_if;
   // The otp should error if any bit changes back to 0, which will happen by a transition from
   // any non-RAW state when all the new state bits are 0, as in the RAW state.
   //
-  // The lc_ctrl will block any illegal transition, thus the need to tamper with a requst
+  // The lc_ctrl will block any illegal transition, thus the need to tamper with a request
   // in-flight.
   task static create_illegal_lc_request_for_otp();
     forever begin
@@ -1248,7 +1248,7 @@ interface chip_if;
    * during the max power epoch of the power_virus test.
    */
 
-  // Signal probe fuction for `fsm_state_q` of ADC_CTRL
+  // Signal probe function for `fsm_state_q` of ADC_CTRL
   wire [4:0] adc_ctrl_state;
 `ifdef GATE_LEVEL
 `define _ADC_FSM_STATE_Q(i) \

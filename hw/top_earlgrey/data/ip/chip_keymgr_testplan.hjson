@@ -10,7 +10,7 @@
       desc: '''Verify the keymgr advances to all states and generate identity / SW output.
 
             - In the SW test, write fixed value to OTP for root_key and write creator and owner
-              seeds in flash. And then roboot the chip.
+              seeds in flash. And then reboot the chip.
             - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
             - For HardwareRevisionSecret, use the constant values in design.
             - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
@@ -30,7 +30,7 @@
             - Note: there are 3 ways of calculating the expected digest for comparison. Any of them
               is acceptable.
               - Use SW to calculate that, and it will also exercise the Ibex.
-              - SW sends all the keys through CSRs to KMAC to generate the degist data.
+              - SW sends all the keys through CSRs to KMAC to generate the digest data.
               - DV calls C functions to generate and backdoor load to a specific memory location
                 for SW. (Adopt this approach.)
 
