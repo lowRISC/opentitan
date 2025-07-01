@@ -41,17 +41,11 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
   // You can give cfg a value such that the RSA generates its own private key
   // and you can give a value such that RSA switches between signing and
   // verifying against the given signature. Trigger are over the API calls.
-
   cryptolib_fi_asym_rsa_sign_out_t uj_output;
-  memset(uj_output.sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  uj_output.sig_len = RSA_CMD_MAX_SIGNATURE_BYTES;
-  memset(uj_output.n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output.d, 0, RSA_CMD_MAX_N_BYTES);
-  uj_output.n_len = RSA_CMD_MAX_N_BYTES;
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_rsa_sign_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_sign_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_sign_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 

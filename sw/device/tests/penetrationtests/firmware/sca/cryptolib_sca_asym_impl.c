@@ -11,6 +11,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -66,15 +67,19 @@ status_t cryptolib_sca_rsa_dec_impl(
   TRY_CHECK(num_bytes == data_len);
 
   otcrypto_hash_mode_t hash_mode;
+  size_t hash_digest_bytes;
   switch (hashing) {
     case kPentestRsaHashmodeSha256:
       hash_mode = kOtcryptoHashModeSha256;
+      hash_digest_bytes = kPentestSha256DigestBytes;
       break;
     case kPentestRsaHashmodeSha384:
       hash_mode = kOtcryptoHashModeSha384;
+      hash_digest_bytes = kPentestSha384DigestBytes;
       break;
     case kPentestRsaHashmodeSha512:
       hash_mode = kOtcryptoHashModeSha512;
+      hash_digest_bytes = kPentestSha512DigestBytes;
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", hashing);
@@ -151,10 +156,11 @@ status_t cryptolib_sca_rsa_dec_impl(
                                          .len = kTestLabelLen};
 
   // Create output buffer for the plaintext.
-  uint8_t plaintext_buf[RSA_CMD_MAX_MESSAGE_BYTES];
+  size_t kMaxPlaintextBytes = num_bytes - 2 * hash_digest_bytes - 2;
+  uint8_t plaintext_buf[kMaxPlaintextBytes];
   otcrypto_byte_buf_t plaintext = {
       .data = plaintext_buf,
-      .len = num_words,
+      .len = kMaxPlaintextBytes,
   };
 
   size_t msg_len;
@@ -173,6 +179,182 @@ status_t cryptolib_sca_rsa_dec_impl(
   *cfg_out = 0;
   memset(data_out, 0, RSA_CMD_MAX_MESSAGE_BYTES);
   memcpy(data_out, plaintext_buf, msg_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_sca_rsa_sign_impl(
+    uint8_t data[RSA_CMD_MAX_MESSAGE_BYTES], size_t data_len, uint32_t e,
+    uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
+    size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
+    size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
+    size_t trigger) {
+  size_t private_key_bytes;
+  size_t private_key_blob_bytes;
+  size_t num_words;
+  otcrypto_rsa_size_t rsa_size;
+  switch (*n_len) {
+    case kPentestRsa2048NumBytes:
+      private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
+      private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
+      num_words = kPentestRsa2048NumWords;
+      rsa_size = kOtcryptoRsaSize2048;
+      break;
+    case kPentestRsa3072NumBytes:
+      private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
+      private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
+      num_words = kPentestRsa3072NumWords;
+      rsa_size = kOtcryptoRsaSize3072;
+      break;
+    case kPentestRsa4096NumBytes:
+      private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
+      private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
+      num_words = kPentestRsa4096NumWords;
+      rsa_size = kOtcryptoRsaSize4096;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA mode: %d", *n_len);
+      return INVALID_ARGUMENT();
+  }
+
+  otcrypto_key_mode_t key_mode;
+  otcrypto_rsa_padding_t padding_mode;
+  switch (padding) {
+    case kPentestRsaPaddingPkcs:
+      padding_mode = kOtcryptoRsaPaddingPkcs;
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
+      break;
+    case kPentestRsaPaddingPss:
+      padding_mode = kOtcryptoRsaPaddingPss;
+      key_mode = kOtcryptoKeyModeRsaSignPss;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA padding mode: %d", padding);
+      return INVALID_ARGUMENT();
+  };
+
+  otcrypto_hash_mode_t hash_mode;
+  size_t hash_digest_words;
+  switch (hashing) {
+    case kPentestRsaHashmodeSha256:
+      hash_mode = kOtcryptoHashModeSha256;
+      hash_digest_words = kPentestSha256DigestWords;
+      break;
+    case kPentestRsaHashmodeSha384:
+      hash_mode = kOtcryptoHashModeSha384;
+      hash_digest_words = kPentestSha384DigestWords;
+      break;
+    case kPentestRsaHashmodeSha512:
+      hash_mode = kOtcryptoHashModeSha512;
+      hash_digest_words = kPentestSha512DigestWords;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA hash mode: %d", hashing);
+      return INVALID_ARGUMENT();
+  }
+  // Create two shares for the private exponent (second share is all-zero).
+  uint32_t d_buf[kPentestRsaMaxDWords];
+  memset(d_buf, 0, sizeof(d_buf));
+  memcpy(d_buf, d, *n_len);
+
+  otcrypto_const_word32_buf_t d_share0 = {
+      .data = d_buf,
+      .len = num_words,
+  };
+  uint32_t share1[kPentestRsaMaxDWords] = {0};
+  otcrypto_const_word32_buf_t d_share1 = {
+      .data = share1,
+      .len = num_words,
+  };
+
+  // Construct the private key.
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = key_mode,
+      .key_length = private_key_bytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  size_t keyblob_words = ceil_div(private_key_blob_bytes, sizeof(uint32_t));
+  uint32_t keyblob[keyblob_words];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = private_key_blob_bytes,
+  };
+
+  // Create the modulus N buffer.
+  uint32_t n_buf[kPentestRsaMaxNWords];
+  memset(n_buf, 0, sizeof(n_buf));
+  memcpy(n_buf, n, *n_len);
+
+  otcrypto_const_word32_buf_t modulus = {
+      .data = n_buf,
+      .len = num_words,
+  };
+
+  // Trigger window.
+  if (trigger == 0) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, e, d_share0,
+                                              d_share1, &private_key));
+  if (trigger == 0) {
+    pentest_set_trigger_low();
+  }
+
+  // Copy the message into the buffer.
+  uint8_t msg[data_len];
+  memcpy(msg, data, data_len);
+  otcrypto_const_byte_buf_t msg_buf = {
+      .len = data_len,
+      .data = msg,
+  };
+
+  // Buffer to store the digest.
+  uint32_t msg_digest_data[hash_digest_words];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = hash_mode,
+  };
+  // Trigger window.
+  if (trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  // Hash the message.
+  if (hash_mode == kOtcryptoHashModeSha256) {
+    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
+  } else if (hash_mode == kOtcryptoHashModeSha384) {
+    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
+  } else {
+    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
+  }
+  if (trigger == 1) {
+    pentest_set_trigger_low();
+  }
+
+  uint32_t sig_buf[kPentestRsaMaxMsgWords];
+  otcrypto_word32_buf_t rsa_sig = {
+      .data = sig_buf,
+      .len = num_words,
+  };
+
+  // Trigger window.
+  if (trigger == 2) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig));
+  // Trigger window.
+  if (trigger == 2) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  *sig_len = *n_len;
+  *cfg_out = 0;
+  memset(sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
+  memcpy(sig, sig_buf, *sig_len);
 
   return OK_STATUS();
 }
