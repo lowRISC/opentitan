@@ -90,7 +90,7 @@ class secure_prng():
         error out.
         """
 
-        # Checks if the PRNG was instantitated before first use.
+        # Checks if the PRNG was Instantiated before first use.
         if not self.reseed_counter:
             log.error("Seed must be provided before requesting output. " +
                       "Use secure_prng.reseed()")

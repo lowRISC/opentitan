@@ -1436,7 +1436,7 @@ def main():
     parser.add_argument(
         "--no-plic",
         action="store_true",
-        help="If defined, topgen doesn't generate the interrup controller RTLs."
+        help="If defined, topgen doesn't generate the interrupt controller RTLs."
     )
     parser.add_argument("--no-rust",
                         action="store_true",
@@ -1591,7 +1591,7 @@ def main():
     # avoid performing multiple passes when creating the complete top
     # configuration. Please refer to the description in util/topgen/README.md.
     #
-    # This performs mutiple passes until the complete top configuration
+    # This performs multiple passes until the complete top configuration
     # doesn't change.
     #
     # This fix is related to #2083

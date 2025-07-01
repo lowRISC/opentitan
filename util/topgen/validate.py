@@ -350,7 +350,7 @@ reset_requests_added = {}
 
 reset_request_required = {
     'name': ['s', 'the reset request name'],
-    'desc': ['s', 'the reset request descrption'],
+    'desc': ['s', 'the reset request description'],
     'module': ['s', 'the reset request source'],
 }
 reset_request_optional = {
@@ -478,7 +478,7 @@ class Target:
 class Flash:
     """Flash class contains information regarding parameter defaults.
        For now, only expose banks / pages_per_bank for user configuration.
-       For now, also enforce power of 2 requiremnt.
+       For now, also enforce power of 2 requirement.
     """
     max_banks = 4
     max_pages_per_bank = 1024

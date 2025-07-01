@@ -130,7 +130,7 @@ optional arguments:
   --verbose, -v         Verbose
   --no-top              If defined, topgen doesn't generate top_{name} RTLs.
   --no-xbar             If defined, topgen doesn't generate crossbar RTLs.
-  --no-plic             If defined, topgen doesn't generate the interrup controller RTLs.
+  --no-plic             If defined, topgen doesn't generate the interrupt controller RTLs.
   --no-gen-hjson        If defined, the tool assumes topcfg as a generated hjson. So it
                         bypasses the validation step and doesn't read ip and xbar
                         configurations
