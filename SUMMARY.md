@@ -663,7 +663,7 @@
   - [Directory Structure](./doc/contributing/directory_structure.md)
   - [Contributing to Documentation](./doc/contributing/doc/README.md)
     - [An Example IP Block's Documentation](./doc/contributing/doc/example_ip_block.md)
-  - [Continuous Intergration](./doc/contributing/ci/README.md)
+  - [Continuous Integration](./doc/contributing/ci/README.md)
   - [Top-Level Design and Targets](./doc/contributing/system_list.md)
   - [GitHub Notes](./doc/contributing/github_notes.md)
   - [Bazel Notes](./doc/contributing/bazel_notes.md)
