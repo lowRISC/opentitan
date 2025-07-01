@@ -244,7 +244,7 @@ class MultiRegister(RegBase):
                              'but has regwen_multi set.')
 
         # The checks above should have checked that we cannot "turn on" being
-        # compact with the config file. Make sure of this explictly.
+        # compact with the config file. Make sure of this explicitly.
         assert default_compact or not compact
 
         # Generate the registers that this multireg expands into. Here, a

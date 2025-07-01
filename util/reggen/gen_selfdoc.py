@@ -128,7 +128,7 @@ In all of these the swaccess parameter is inherited from the register
 level, and will be added so this key is always available to the
 backend. The RXS and ENRXS will default to zero reset value (unless
 something different is provided for the register) and will have the
-key added, but TXILVL expicitly sets its reset value as 2.
+key added, but TXILVL explicitly sets its reset value as 2.
 
 The missing bits 17 and 18 will be treated as reserved by the tool, as
 will any bits between 21 and the maximum in the register.
