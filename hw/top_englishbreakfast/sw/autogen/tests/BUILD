@@ -19,7 +19,7 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
-# Number of periphals per test
+# Number of peripherals per test
 NR_IRQ_PERIPH_PER_TEST = 10
 
 # Total numbers of tests (the last will contain only remaining IRQs)
