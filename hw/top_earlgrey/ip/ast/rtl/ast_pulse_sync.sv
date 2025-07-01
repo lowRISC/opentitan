@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
-// *Name: ast_pulse_symc
+// *Name: ast_pulse_sync
 // *Module Description: AST Pulse Synchronizer
 //
 // Synchronizes a pulse from source clock domain (clk_src) to destination
@@ -116,7 +116,7 @@ prim_flop_2sync #(
   .q_o ( src_ack )
 );
 
-// Source is BUSY when REQ not equel to ACK
+// Source is BUSY when REQ not equal to ACK
 assign src_busy_o = (src_req ^ src_ack);
 
 

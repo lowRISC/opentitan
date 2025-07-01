@@ -19,7 +19,7 @@ This section also contains a brief overview of some of the features of the final
 
 ### Clocking and Reset
 
-Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md)) from this point onwards in the document.
+Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](../../ip/ast/README.md) from this point onwards in the document.
 
 `ast` supplies a number of clocks into `top_earlgrey`.
 - sys: main jittery system clock used for higher performance blocks and security (processor, memory and crypto blocks).
@@ -28,14 +28,14 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 - aon: an always on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
-See [clock manager](../../ip_autogen/clkmgr/README.md)) for more details.
+See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.
 - vcmain_pok: The main operating domain of the system is ready.
 
 When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
-Please refer to [reset manager](../../ip_autogen/rstmgr/README.md)) for more details.
+Please refer to [reset manager](../../ip_autogen/rstmgr/README.md) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
 Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
@@ -98,7 +98,7 @@ It is assumed that the flash device, when powered, will be able to correctly han
 
 #### Reset due to Low Power Entry
 
-When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling)) is responsible for ensuring the entry request is aborted.
+When the device receives a low power entry request while flash activity is ongoing, the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) is responsible for ensuring the entry request is aborted.
 
 
 ### Main processor (`core_ibex`)

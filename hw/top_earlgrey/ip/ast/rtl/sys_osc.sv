@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //############################################################################
 // *Name: sys_osc
-// *Module Description: System Clock Oscilator
+// *Module Description: System Clock Oscillator
 //############################################################################
 
 module sys_osc (
@@ -126,7 +126,7 @@ prim_clock_gating #(
 
 logic en_osc_fe;
 
-// Syncronize en_osc to clk FE for glitch free disable
+// Synchronize en_osc to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;

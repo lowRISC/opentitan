@@ -9,7 +9,7 @@
 # Unfortunately, the code in question doesn't really translate to always_comb.
 # And we don't really care about the linting rule: the code is just supposed to
 # be a behavioural model of some analog code that isn't really part of the OT
-# opensource repo. Waive the warning.
+# open-source repo. Waive the warning.
 waive --rule=always-comb --location="vcc_pgd.sv"
 waive --rule=always-comb --location="vio_pgd.sv"
 waive --rule=always-comb --location="vcaon_pgd.sv"

@@ -155,7 +155,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
     is_chip = 1;
 
-    // No need to cover all kinds of interity errors as they are tested in block-level.
+    // No need to cover all kinds of integrity errors as they are tested in block-level.
     en_tl_intg_err_cov = 0;
 
     // Alert_esc_agent does not support ping timeout check in chip-level.

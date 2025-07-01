@@ -137,7 +137,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // For DIO pinmux testing.
   //
-  // Pads are either analog, input only or bidirectional. For bdirectional, only drive either the
+  // Pads are either analog, input only or bidirectional. For bidirectional, only drive either the
   // pad or the periph input. If none are driven, then on the pull. For input only, drive the periph
   // randomly - it should have no effect.
   rand logic [DioCount-1:0]  dio_to_periph;
@@ -632,7 +632,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on CC1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC1")
@@ -643,7 +643,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[0]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St1", "on CC1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC1")
@@ -668,7 +668,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on CC2")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on CC2")
@@ -679,7 +679,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.cc_if.pins[1]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St1", "on CC2")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on CC2")
@@ -704,7 +704,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE0")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE0")
@@ -715,7 +715,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[0]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE0")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE0")
@@ -740,7 +740,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St0", "on FLASH_TEST_MODE1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We0", "on FLASH_TEST_MODE1")
@@ -751,7 +751,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     #(cfg.pad_pull_delay * 1ns);
     obs_strength = $sformatf("%v", cfg.chip_vif.flash_test_mode_if.pins[1]);
 `ifdef VCS
-    // TODO(#18988): Drive strengh seems to be reported incorrectly by VCS.
+    // TODO(#18988): Drive strength seems to be reported incorrectly by VCS.
     `DV_CHECK_STREQ(obs_strength, "St1", "on FLASH_TEST_MODE1")
 `else
     `DV_CHECK_STREQ(obs_strength, "We1", "on FLASH_TEST_MODE1")

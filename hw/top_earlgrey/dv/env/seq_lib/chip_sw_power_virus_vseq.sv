@@ -64,7 +64,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
   endtask
 
   // Utility task to handle the spi_host1 transmission
-  // It continuosly reads the data as long as CSb[0] is 0.
+  // It continuously reads the data as long as CSb[0] is 0.
   virtual task read_spi_host1_bytes();
     bit [7:0] data; // holds the spi_host1 TX bytes
     fork

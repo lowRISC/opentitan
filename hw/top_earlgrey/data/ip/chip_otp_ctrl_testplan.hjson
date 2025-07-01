@@ -176,7 +176,7 @@
               will be implemented in a translation 'shim'.
             - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
               When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
-            - For sival, this test can only run on opensource rtl in test_unlocked or rma state.
+            - For sival, this test can only run on open-source RTL in test_unlocked or rma state.
               Do random csr write and read back for RW type registers.
             '''
       stage: V2
@@ -240,7 +240,7 @@
     }
     {
       name: otp_ctrl_partition_access_locked
-      desc: '''Verify accessibily of all partition except life_cycle partition.
+      desc: '''Verify accessibility of all partitions except life_cycle partition.
 
             - Without locking state, try random write and read back test over all sw accessible partitions.
             - Per each partition, enable write lock and try to do subsequent write then readback.
@@ -273,7 +273,7 @@
     }
     {
       name: otp_ctrl_check_timeout
-      desc: '''Verify check_tiemout feature.
+      desc: '''Verify check_timeout feature.
 
             - Program otp_ctrl.check_timeout value small value (e.g. 1000 cycles).
             - Write 1 to otp_ctrl.check_trigger.integrity.

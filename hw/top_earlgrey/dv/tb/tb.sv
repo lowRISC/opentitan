@@ -344,7 +344,7 @@ module tb;
 `undef ASSIGN_GPIODPI_D2P
 `undef ASSIGN_UNUSED_GPIODPI_D2P
 
-  // The connection to the uarts via DPI. Notice this connects directy to pads, per the
+  // The connection to the uarts via DPI. Notice this connects directly to pads, per the
   // Specific board model.
   logic uartdpi_tx;
   logic uartdpi_rx;
@@ -456,7 +456,7 @@ module tb;
     end
   end
 
-  // Instantitate the memory backdoor util instances.
+  // Instantiate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     initial begin
       // Unfortunately xcelium does not understand typed constructors so we must assign to local

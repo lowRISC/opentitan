@@ -9,7 +9,7 @@
 // Verify in DEV state, only the LC tap and RISC-V taps can be selected.
 // Verify DFT test mode straps are sampled and output to AST via
 // top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
-// Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
+// Verify pinmux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
 
 class chip_tap_straps_vseq extends chip_sw_base_vseq;

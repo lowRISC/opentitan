@@ -73,10 +73,10 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
                  "timeout waiting for C side trigger",
                  cfg.sw_test_timeout_ns)
 
-    // Spawn off a thread to continously create sof pulses.
+    // Spawn off a thread to continuously create sof pulses.
     fork set_usbdev_sof_pulse(); join_none
 
-    // Wait for software sychronization.
+    // Wait for software synchronization.
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "sof complete");,
              "timeout waiting for C side completion",
              cfg.sw_test_timeout_ns)

@@ -32,7 +32,7 @@ puts "Applying constraints for top level"
 # This is not needed by CDC runs
 if {!$IS_CDC_RUN} {
     # in synthesis, we treat all clock networks as ideal nets.
-    # architecturally insterted CGs however can be interpreted as
+    # architecturally inserted CGs however can be interpreted as
     # sequential cells by the tool, hence stopping automatic propagation
     # of ideal network attributes. therefore, we go through the design and
     # declare all architectural CG outputs as ideal.
@@ -321,7 +321,7 @@ set STORAGE_OUT_DEL_MIN 0
 set STORAGE_OUT_DEL_MAX 9
 
 ###################################################
-# SPI input outpt delay based Ziv Spec
+# SPI input output delay based Ziv Spec
 ###################################################
 # Note: below values apply if the spec_constr variable is set to "false".
 # If the spec_constr variable is set to true:

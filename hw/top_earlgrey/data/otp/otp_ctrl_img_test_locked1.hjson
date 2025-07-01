@@ -19,7 +19,7 @@
                 {
                     name: "CREATOR_SW_CFG_ROM_EXEC_EN",
                     // ROM execution is enabled if this item is set to a
-                    // mnon-zero value.
+                    // non-zero value.
                     value: "0xffffffff",
                 },
             ],
