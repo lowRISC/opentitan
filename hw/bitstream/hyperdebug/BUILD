@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otp.bzl", "get_otp_images")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 
 package(default_visibility = ["//visibility:public"])
