@@ -60,6 +60,21 @@ Notes:
 
   Future versions of EDN will likely support an automated way for consuming any remaining entropy, see also [Issue #22850](https://github.com/lowRISC/opentitan/issues/22850).
 
+## Running EDN in Auto Request Mode with ENTROPY_SRC disabled
+
+Once the entropy complex has been enabled and all configured CSRNG instances have been seeded with entropy, firmware can again disable ENTROPY_SRC (and the PTRNG noise source to e.g. save power) while CSRNG and EDN remain running to keep serving entropy to consumers.
+
+Depending on the mode in which EDN and the associated CSRNG instance are running, firmware can use a different mechanism to efficiently operate the entropy complex without having the ENTROPY_SRC continuously running:
+
+### Regular, non-deterministic mode
+
+The same guidance applies as for [CSRNG](../../csrng/doc/programmers_guide.md#regular-non-deterministic-mode).
+
+### Fully deterministic mode
+
+The same guidance applies as for [CSRNG](../../csrng/doc/programmers_guide.md#fully-deterministic-mode).
+However, the `generate` and `reseed` commands including the additional data fields can only be configured before starting **[Auto Request Mode](./theory_of_operation.md#auto-request-mode)** via the [`GENERATE_CMD`](registers.md#generate_cmd) and [`RESEED_CMD`](registers.md#reseed_cmd) FIFOs.
+To inject fresh entropy, firmware thus has to [uninstantiate the CSRNG instance through EDN](#uninstantiating-csrng-through-edn), disable EDN, configure the FIFOs and then re-enable EDN in Auto Request Mode, and finally trigger the `instantiate` command.
 
 ## Error conditions
 
