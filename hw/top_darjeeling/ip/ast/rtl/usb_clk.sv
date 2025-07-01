@@ -13,8 +13,8 @@ module usb_clk (
   input clk_src_usb_en_i,            // USB Source Clock Enable
   input usb_ref_val_i,               // USB Reference (Pulse) Valid
   input usb_ref_pulse_i,             // USB Reference Pulse
-  input clk_ast_usb_i,               // USB Bufferd Clock
-  input rst_ast_usb_ni,              // USB Bufferd Reset
+  input clk_ast_usb_i,               // USB Buffered Clock
+  input rst_ast_usb_ni,              // USB Buffered Reset
   input scan_mode_i,                 // Scan Mode
   input usb_osc_cal_i,               // USB Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
@@ -47,7 +47,7 @@ assign rst_n  = scan_mode_i ? rst_ast_usb_ni : rst_da_n;
 
 
 ///////////////////////////////////////
-// Clock Calibrate & Drift Adjusment
+// Clock Calibrate & Drift Adjustment
 ///////////////////////////////////////
 
 // Reference Pulse Detect
@@ -70,7 +70,7 @@ ast_pulse_sync u_ref_pulse_sync (
   .dst_pulse_o ( ref_pulse_re )
 );
 
-// Clock Oscilator
+// Clock Oscillator
 ///////////////////////////////////////
 // 2-stage de-assertion
 logic rst_usb_n;

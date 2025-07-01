@@ -29,7 +29,7 @@ package ibex_pmp_reset_pkg;
     '{lock: 1'b0, mode: PMP_MODE_OFF,   exec: 1'b0, write: 1'b0, read: 1'b0}  // 15
   };
 
-  // Addresses are given in byte granularity for readibility. A minimum of two
+  // Addresses are given in byte granularity for readability. A minimum of two
   // bits will be stripped off the bottom (PMPGranularity == 0) with more stripped
   // off at coarser granularities.
   //

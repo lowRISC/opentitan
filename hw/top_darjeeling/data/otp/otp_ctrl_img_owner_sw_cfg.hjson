@@ -37,14 +37,14 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ESCALATION"
-                    // Set the esclation policies to kAlertEscalateNone.
+                    // Set the escalation policies to kAlertEscalateNone.
                     // See `alert_escalate_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: "0xd1d1d1d1",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
-                    // Set the classifiactions to kAlertClassX.
+                    // Set the classifications to kAlertClassX.
                     // See `alert_class_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: [
@@ -152,7 +152,7 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION"
-                    // Set the classifiactions to kAlertClassX.
+                    // Set the classifications to kAlertClassX.
                     // See `alert_class_t`
                     // in sw/device/silicon_creator/lib/drivers/alert.h
                     value: [

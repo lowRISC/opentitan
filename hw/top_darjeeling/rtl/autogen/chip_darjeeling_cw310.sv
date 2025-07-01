@@ -999,7 +999,7 @@ module chip_darjeeling_cw310 #(
   assign otp_cfg = otp_macro_pkg::OTP_CFG_DEFAULT;
 
   // entropy source interface
-  // The entropy source pacakge definition should eventually be moved to es
+  // The entropy source package definition should eventually be moved to es
   entropy_src_pkg::entropy_src_hw_if_req_t entropy_src_hw_if_req;
   entropy_src_pkg::entropy_src_hw_if_rsp_t entropy_src_hw_if_rsp;
 
@@ -1150,7 +1150,7 @@ module chip_darjeeling_cw310 #(
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       ( ),
 
-    // clocks' oschillator bypass for FPGA
+    // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
 
     // adc

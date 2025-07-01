@@ -30,7 +30,7 @@ class chip_jtag_csr_rw_vseq extends chip_common_vseq;
                             dv_base_reg_block models[$] = {},
                             string ral_name = "");
     // JTAG cannot process outstanding access, so JTAG protocol will process one request at a time.
-    // However, still set this varible to 1 to avoid spinwait timeout when sequence sends all csrs
+    // However, still set this variable to 1 to avoid spinwait timeout when sequence sends all csrs
     // transaction requests at .
     max_outstanding_accesses = 1;
 
