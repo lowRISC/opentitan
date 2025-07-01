@@ -28,8 +28,28 @@ static status_t check_empty(retention_sram_t *retram,
   boot_svc_msg_t msg = retram->creator.boot_svc_msg;
   TRY(boot_svc_header_check(&msg.header));
   TRY_CHECK(msg.header.type == kBootSvcEmptyResType);
-  state->state = kBootSvcTestStateFinal;
+  state->state = kBootSvcTestStateEmptyRes;
   return OK_STATUS();
+}
+
+static status_t send_empty_res(retention_sram_t *retram,
+                               boot_svc_retram_t *state) {
+  boot_svc_msg_t msg = {0};
+  boot_svc_empty_res_init(&msg.empty);
+  retram->creator.boot_svc_msg = msg;
+  state->state = kBootSvcTestStateInvalidMsg;
+  rstmgr_reset();
+  return INTERNAL();
+}
+
+static status_t send_invalid_msg(retention_sram_t *retram,
+                                 boot_svc_retram_t *state) {
+  boot_svc_msg_t msg = {0};
+  boot_svc_header_finalize(0x1234, sizeof(boot_svc_msg_t), &msg.header);
+  retram->creator.boot_svc_msg = msg;
+  state->state = kBootSvcTestStateFinal;
+  rstmgr_reset();
+  return INTERNAL();
 }
 
 static status_t empty_message_test(void) {
@@ -45,6 +65,12 @@ static status_t empty_message_test(void) {
         break;
       case kBootSvcTestStateCheckEmpty:
         TRY(check_empty(retram, state));
+        break;
+      case kBootSvcTestStateEmptyRes:
+        TRY(send_empty_res(retram, state));
+        break;
+      case kBootSvcTestStateInvalidMsg:
+        TRY(send_invalid_msg(retram, state));
         break;
       case kBootSvcTestStateFinal:
         LOG_INFO("FinalBootLog: %d:%s", state->boots, state->partition);
