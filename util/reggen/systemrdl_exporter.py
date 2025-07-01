@@ -137,7 +137,9 @@ class Register2Systemrdl:
         for rfield in self.inner.fields:
             self.importer.add_child(rdl_t, Field2Systemrdl(rfield, self.importer).export())
 
-        return self.importer.instantiate_reg(rdl_t, self.inner.name, self.inner.offset)
+        reg = self.importer.instantiate_reg(rdl_t, self.inner.name, self.inner.offset)
+        reg.external = self.inner.hwext
+        return reg
 
 
 @dataclass
