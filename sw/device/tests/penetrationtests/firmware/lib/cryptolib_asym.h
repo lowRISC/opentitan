@@ -7,6 +7,15 @@
 
 enum {
   /**
+   * SHA2 number of words.
+   */
+  kPentestSha256DigestBytes = 256 / 8,
+  kPentestSha384DigestBytes = 384 / 8,
+  kPentestSha512DigestBytes = 512 / 8,
+  kPentestSha256DigestWords = kPentestSha256DigestBytes / sizeof(uint32_t),
+  kPentestSha384DigestWords = kPentestSha384DigestBytes / sizeof(uint32_t),
+  kPentestSha512DigestWords = kPentestSha512DigestBytes / sizeof(uint32_t),
+  /**
    * Number of words and bytes for different RSA modes.
    */
   kPentestRsa2048NumBytes = 2048 / 8,
@@ -39,6 +48,11 @@ enum {
    * Number of max D words in RSA.
    */
   kPentestRsaMaxDWords = RSA_CMD_MAX_N_BYTES / sizeof(uint32_t),
+  /**
+   * RSA padding modes.
+   */
+  kPentestRsaPaddingPkcs = 0,
+  kPentestRsaPaddingPss = 1,
 };
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_CRYPTOLIB_ASYM_H_
