@@ -1,6 +1,6 @@
 # SoftHSM2 Configuration
 
-This is a basic SoftHSM2 configurtion for testing signing flows with fake keys.
+This is a basic SoftHSM2 configuration for testing signing flows with fake keys.
 
 The configuration was created via:
 
