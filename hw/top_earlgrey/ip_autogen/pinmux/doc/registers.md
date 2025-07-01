@@ -1506,12 +1506,12 @@ Defines sleep behavior of the corresponding muxed pad.
 ### MIO_PAD_SLEEP_MODE . OUT
 Value to drive in deep sleep.
 
-| Value   | Name     | Description                                                                                                                                                                    |
-|:--------|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Tie-Low  | The pad is driven actively to zero in deep sleep mode.                                                                                                                         |
-| 0x1     | Tie-High | The pad is driven actively to one in deep sleep mode.                                                                                                                          |
-| 0x2     | High-Z   | The pad is left undriven in deep sleep mode. Note that the actual driving behavior during deep sleep will then depend on the pull-up/-down configuration of in !!MIO_PAD_ATTR. |
-| 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                     |
+| Value   | Name     | Description                                                                                                                                                                                     |
+|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Tie-Low  | The pad is driven actively to zero in deep sleep mode.                                                                                                                                          |
+| 0x1     | Tie-High | The pad is driven actively to one in deep sleep mode.                                                                                                                                           |
+| 0x2     | High-Z   | The pad is left undriven in deep sleep mode. Note that the actual driving behavior during deep sleep will then depend on the pull-up/-down configuration of in [`MIO_PAD_ATTR.`](#mio_pad_attr) |
+| 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                                      |
 
 
 ## DIO_PAD_SLEEP_STATUS
@@ -1675,12 +1675,12 @@ Defines sleep behavior of the corresponding dedicated pad.
 ### DIO_PAD_SLEEP_MODE . OUT
 Value to drive in deep sleep.
 
-| Value   | Name     | Description                                                                                                                                                                    |
-|:--------|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Tie-Low  | The pad is driven actively to zero in deep sleep mode.                                                                                                                         |
-| 0x1     | Tie-High | The pad is driven actively to one in deep sleep mode.                                                                                                                          |
-| 0x2     | High-Z   | The pad is left undriven in deep sleep mode. Note that the actual driving behavior during deep sleep will then depend on the pull-up/-down configuration of in !!DIO_PAD_ATTR. |
-| 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                     |
+| Value   | Name     | Description                                                                                                                                                                                     |
+|:--------|:---------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Tie-Low  | The pad is driven actively to zero in deep sleep mode.                                                                                                                                          |
+| 0x1     | Tie-High | The pad is driven actively to one in deep sleep mode.                                                                                                                                           |
+| 0x2     | High-Z   | The pad is left undriven in deep sleep mode. Note that the actual driving behavior during deep sleep will then depend on the pull-up/-down configuration of in [`DIO_PAD_ATTR.`](#dio_pad_attr) |
+| 0x3     | Keep     | Keep last driven value (including high-Z).                                                                                                                                                      |
 
 
 ## WKUP_DETECTOR_REGWEN
@@ -1798,13 +1798,13 @@ can be used for debouncing.
 ### WKUP_DETECTOR . MODE
 Wakeup detection mode. Out of range values default to Posedge.
 
-| Value   | Name      | Description                                                                                                                              |
-|:--------|:----------|:-----------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Posedge   | Trigger a wakeup request when observing a positive edge.                                                                                 |
-| 0x1     | Negedge   | Trigger a wakeup request when observing a negative edge.                                                                                 |
-| 0x2     | Edge      | Trigger a wakeup request when observing an edge in any direction.                                                                        |
-| 0x3     | TimedHigh | Trigger a wakeup request when pin is driven HIGH for a certain amount of always-on clock cycles as configured in !!WKUP_DETECTOR_CNT_TH. |
-| 0x4     | TimedLow  | Trigger a wakeup request when pin is driven LOW for a certain amount of always-on clock cycles as configured in !!WKUP_DETECTOR_CNT_TH.  |
+| Value   | Name      | Description                                                                                                                                                       |
+|:--------|:----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Posedge   | Trigger a wakeup request when observing a positive edge.                                                                                                          |
+| 0x1     | Negedge   | Trigger a wakeup request when observing a negative edge.                                                                                                          |
+| 0x2     | Edge      | Trigger a wakeup request when observing an edge in any direction.                                                                                                 |
+| 0x3     | TimedHigh | Trigger a wakeup request when pin is driven HIGH for a certain amount of always-on clock cycles as configured in [`WKUP_DETECTOR_CNT_TH.`](#wkup_detector_cnt_th) |
+| 0x4     | TimedLow  | Trigger a wakeup request when pin is driven LOW for a certain amount of always-on clock cycles as configured in [`WKUP_DETECTOR_CNT_TH.`](#wkup_detector_cnt_th)  |
 
 Other values are reserved.
 

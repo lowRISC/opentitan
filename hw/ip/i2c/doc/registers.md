@@ -608,10 +608,10 @@ For a bus timeout, the entire clock low time is counted, consistent with the SMB
 
 [`TIMEOUT_CTRL.EN`](#timeout_ctrl) must be 1 for either of these features to be enabled.
 
-| Value   | Name            | Description                                                                                                                                                                                                                                |
-|:--------|:----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | STRETCH_TIMEOUT | The timeout is a target stretch timeout. The counter will track how long the clock has been stretched by another device while the controller is active.                                                                                    |
-| 0x1     | BUS_TIMEOUT     | The timeout is a clock low timeout. The counter will track how long the clock low period is, inclusive of the controller's ordinary low count. A timeout will set !!CONTROLLER_EVENTS.BUS_TIMEOUT and cause a "controller_halt" interrupt. |
+| Value   | Name            | Description                                                                                                                                                                                                                                                      |
+|:--------|:----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | STRETCH_TIMEOUT | The timeout is a target stretch timeout. The counter will track how long the clock has been stretched by another device while the controller is active.                                                                                                          |
+| 0x1     | BUS_TIMEOUT     | The timeout is a clock low timeout. The counter will track how long the clock low period is, inclusive of the controller's ordinary low count. A timeout will set [`CONTROLLER_EVENTS.BUS_TIMEOUT`](#controller_events) and cause a "controller_halt" interrupt. |
 
 
 ### TIMEOUT_CTRL . VAL

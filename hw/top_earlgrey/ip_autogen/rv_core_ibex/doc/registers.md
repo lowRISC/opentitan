@@ -5,34 +5,34 @@ A number of memory-mapped registers are available to control Ibex-related functi
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 ## Summary
 
-| Name                                                       | Offset   |   Length | Description                                          |
-|:-----------------------------------------------------------|:---------|---------:|:-----------------------------------------------------|
-| rv_core_ibex.[`ALERT_TEST`](#alert_test)                   | 0x0      |        4 | Alert Test Register                                  |
-| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)               | 0x4      |        4 | Software recoverable error                           |
-| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)               | 0x8      |        4 | Software fatal error                                 |
-| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)               | 0xc      |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)               | 0x10     |        4 | Ibus address control regwen.                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)             | 0x14     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)             | 0x18     |        4 | Enable Ibus address matching                         |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching) | 0x1c     |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching) | 0x20     |        4 | Matching region programming for ibus.                |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)       | 0x24     |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)       | 0x28     |        4 | The remap address after a match has been made.       |
-| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)               | 0x2c     |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)               | 0x30     |        4 | Dbus address control regwen.                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)             | 0x34     |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)             | 0x38     |        4 | Enable dbus address matching                         |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching) | 0x3c     |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching) | 0x40     |        4 | See !!IBUS_ADDR_MATCHING_0 for detailed description. |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)       | 0x44     |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)       | 0x48     |        4 | See !!IBUS_REMAP_ADDR_0 for a detailed description.  |
-| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                   | 0x4c     |        4 | Enable mask for NMI.                                 |
-| rv_core_ibex.[`NMI_STATE`](#nmi_state)                     | 0x50     |        4 | Current NMI state                                    |
-| rv_core_ibex.[`ERR_STATUS`](#err_status)                   | 0x54     |        4 | error status                                         |
-| rv_core_ibex.[`RND_DATA`](#rnd_data)                       | 0x58     |        4 | Random data from EDN                                 |
-| rv_core_ibex.[`RND_STATUS`](#rnd_status)                   | 0x5c     |        4 | Status of random data in !!RND_DATA                  |
-| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                     | 0x60     |        4 | FPGA build timestamp info.                           |
-| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)             | 0x80     |       32 | Exposed tlul window for DV only purposes.            |
+| Name                                                       | Offset   |   Length | Description                                                                   |
+|:-----------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------|
+| rv_core_ibex.[`ALERT_TEST`](#alert_test)                   | 0x0      |        4 | Alert Test Register                                                           |
+| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)               | 0x4      |        4 | Software recoverable error                                                    |
+| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)               | 0x8      |        4 | Software fatal error                                                          |
+| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)               | 0xc      |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)               | 0x10     |        4 | Ibus address control regwen.                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)             | 0x14     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)             | 0x18     |        4 | Enable Ibus address matching                                                  |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching) | 0x1c     |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching) | 0x20     |        4 | Matching region programming for ibus.                                         |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)       | 0x24     |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)       | 0x28     |        4 | The remap address after a match has been made.                                |
+| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)               | 0x2c     |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)               | 0x30     |        4 | Dbus address control regwen.                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)             | 0x34     |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)             | 0x38     |        4 | Enable dbus address matching                                                  |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching) | 0x3c     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching) | 0x40     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description. |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)       | 0x44     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)       | 0x48     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.     |
+| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                   | 0x4c     |        4 | Enable mask for NMI.                                                          |
+| rv_core_ibex.[`NMI_STATE`](#nmi_state)                     | 0x50     |        4 | Current NMI state                                                             |
+| rv_core_ibex.[`ERR_STATUS`](#err_status)                   | 0x54     |        4 | error status                                                                  |
+| rv_core_ibex.[`RND_DATA`](#rnd_data)                       | 0x58     |        4 | Random data from EDN                                                          |
+| rv_core_ibex.[`RND_STATUS`](#rnd_status)                   | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                              |
+| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                     | 0x60     |        4 | FPGA build timestamp info.                                                    |
+| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)             | 0x80     |       32 | Exposed tlul window for DV only purposes.                                     |
 
 ## ALERT_TEST
 Alert Test Register
