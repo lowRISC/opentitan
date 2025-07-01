@@ -107,8 +107,6 @@ module top_earlgrey #(
   parameter int EntropySrcRngBusWidth = 4,
   parameter int EntropySrcRngBusBitSelWidth = 2,
   parameter int EntropySrcHealthTestWindowWidth = 18,
-  parameter int EntropySrcEsFifoDepth = 3,
-  parameter int unsigned EntropySrcDistrFifoDepth = 2,
   parameter bit EntropySrcStub = 0,
   // parameters for edn0
   // parameters for edn1
@@ -261,6 +259,9 @@ module top_earlgrey #(
   localparam int SpiHost1NumCS = 1;
   // local parameters for sram_ctrl_ret_aon
   localparam int SramCtrlRetAonOutstanding = 2;
+  // local parameters for entropy_src
+  localparam int EntropySrcEsFifoDepth = 3;
+  localparam int unsigned EntropySrcDistrFifoDepth = 2;
   // local parameters for sram_ctrl_main
   localparam int SramCtrlMainOutstanding = 2;
 
