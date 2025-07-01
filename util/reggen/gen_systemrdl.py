@@ -19,7 +19,6 @@ def gen(block: IpBlock, outfile: TextIO) -> int:
     comp = RDLCompiler()
     imp = RDLImporter(comp)
     imp.default_src_ref = FileSourceRef(outfile.name)
-    exp = exporter.SystemRDLExporter()
 
     rdl_addrmap = block.to_systemrdl(imp)
     if rdl_addrmap is None:
@@ -31,6 +30,6 @@ def gen(block: IpBlock, outfile: TextIO) -> int:
     # to exp.export (which expects a path rather than a stream).
     outfile.close()
 
-    exp.export(comp.elaborate(), outfile.name)
+    exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
 
     return 0
