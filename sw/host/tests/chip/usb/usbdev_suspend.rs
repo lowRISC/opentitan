@@ -115,7 +115,7 @@ const TIME_RESETTING: u64 = 10;
 
 fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("suspending port {}", port);
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000))?;
     // Device shall suspend after 3ms of Idle state.
     delay_millis(TIME_SUSPENDING);
     log::info!("suspended");
@@ -124,7 +124,7 @@ fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
 
 fn resume(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("resuming device on port {}", port);
-    hub.op(UsbHubOp::Resume, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Resume, port, Duration::from_millis(1000))?;
     // Resume Signaling shall be performed for at least 20ms.
     delay_millis(TIME_RESUMING);
     log::info!("resumed");
