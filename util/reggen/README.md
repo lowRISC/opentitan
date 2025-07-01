@@ -127,7 +127,7 @@ reset_request_list | optional | list | list of signals requesting reset
 scan | optional | python Bool | Indicates the module have `scanmode_i`
 scan_reset | optional | python Bool | Indicates the module have `scan_rst_ni`
 scan_en | optional | python Bool | Indicates the module has `scan_en_i`
-SPDX-License-Identifier | optional | string | License ientifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
+SPDX-License-Identifier | optional | string | License identifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block
 features | optional | name list | list of functional features in this block
@@ -254,7 +254,7 @@ In all of these the swaccess parameter is inherited from the register
 level, and will be added so this key is always available to the
 backend. The RXS and ENRXS will default to zero reset value (unless
 something different is provided for the register) and will have the
-key added, but TXILVL expicitly sets its reset value as 2.
+key added, but TXILVL explicitly sets its reset value as 2.
 
 The missing bits 17 and 18 will be treated as reserved by the tool, as
 will any bits between 21 and the maximum in the register.

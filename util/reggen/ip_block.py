@@ -138,7 +138,7 @@ OPTIONAL_FIELDS = {
     'scan_reset': ['pb', 'Indicates the module have `scan_rst_ni`'],
     'scan_en': ['pb', 'Indicates the module has `scan_en_i`'],
     'SPDX-License-Identifier': [
-        's', "License ientifier (if using pure json) "
+        's', "License identifier (if using pure json) "
         "Only use this if unable to put this "
         "information in a comment at the top of the "
         "file."

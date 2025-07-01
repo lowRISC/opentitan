@@ -32,7 +32,7 @@ def indent(s: str, amount: int = 4) -> str:
     """Indents a multi-line string considering the depth of bracketing.
 
     This function assumes the input string is un-indented.  It will not
-    unindent an inapprorpiately indented string.
+    unindent an inappropriately indented string.
     """
     result = []
     indent = 0

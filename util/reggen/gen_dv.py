@@ -78,7 +78,7 @@ def gen_core_file(outdir: str, lblock: str, dv_base_names: List[str],
     blocks_base_names = get_dv_base_names_objects(dv_base_names)
 
     if blocks_base_names is not None:
-        # Assume the core file naming convetion is the package name without `_pkg`
+        # Assume the core file naming convention is the package name without `_pkg`
         # suffix.
         for block in blocks_base_names:
             pkg_name = blocks_base_names[block].pkg
