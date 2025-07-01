@@ -53,6 +53,11 @@ enum {
    */
   kPentestRsaPaddingPkcs = 0,
   kPentestRsaPaddingPss = 1,
+  /**
+   * P256 parameters.
+   */
+  kPentestP256Bytes = 256 / 8,
+  kPentestP256Words = kPentestP256Bytes / sizeof(uint32_t),
 };
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_CRYPTOLIB_ASYM_H_

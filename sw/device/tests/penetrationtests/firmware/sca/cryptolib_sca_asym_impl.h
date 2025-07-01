@@ -60,4 +60,15 @@ status_t cryptolib_sca_rsa_sign_impl(
     size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
     size_t trigger);
 
+/**
+ * Wrapper to P256 Sign cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p256_sign_impl(
+    cryptolib_sca_asym_p256_sign_in_t uj_input,
+    cryptolib_sca_asym_p256_sign_out_t *uj_output);
+
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_ASYM_IMPL_H_

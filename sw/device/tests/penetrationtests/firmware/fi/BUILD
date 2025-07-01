@@ -75,6 +75,7 @@ cc_library(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:rsa",
