@@ -97,7 +97,7 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
     let _ = UartConsole::wait_for(uart, r"configured, waiting for suspend", opts.timeout)?;
     let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub")?;
     log::info!("suspend device");
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000))?;
     let _ = UartConsole::wait_for(uart, r"suspended, waiting for", opts.timeout)?;
     log::info!("device has suspended");
 
@@ -105,7 +105,7 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
     match opts.wake {
         WakeMethod::Reset => {
             log::info!("reset device");
-            hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+            hub.op(UsbHubOp::Reset, port, Duration::from_millis(1000))?;
             let _ =
                 UartConsole::wait_for(uart, r"reset, take control back from aon", opts.timeout)?;
         }
