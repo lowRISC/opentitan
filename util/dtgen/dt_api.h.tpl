@@ -87,7 +87,7 @@ dt_instance_id_t dt_plic_id_to_instance_id(dt_plic_irq_id_t irq);
  *
  * This type represents a raw alert ID from the Alert Handler.
  *
- * This is an alias to the top's `alert_id_t` type for backward compatability
+ * This is an alias to the top's `alert_id_t` type for backward compatibility
  * with existing code.
  */
 typedef ${top_name.as_snake_case()}_alert_id_t dt_alert_id_t;

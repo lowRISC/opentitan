@@ -202,7 +202,7 @@ def parse_file(infile, fifodata=False, prefix=None):
             continue
         schar = ','
         if fifodata and ',' not in line:
-            # fifodata could also be whitespace spearated
+            # fifodata could also be whitespace separated
             schar = None
 
         for sline in line.split(sep=schar):

@@ -147,7 +147,7 @@ _upload_br () {
 
     for f in $search_indexes; do
         # Get directory of file, relative to the build directory.
-        # - var=${var#*//} # removes stuff from the begining up to //
+        # - var=${var#*//} # removes stuff from the beginning up to //
         dir=$(dirname "${f#*"${build_dir}"/}")
         # When serving from gcloud buckets, file should be uploaded with an identical name as the
         # original, but compressed and with the matching 'content-encoding' and 'content-type' tags applied.

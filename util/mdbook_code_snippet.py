@@ -48,7 +48,7 @@ def is_declaration(line: str, defn: str) -> bool:
 
 
 def get_header_snippet(m: re.Match) -> str:
-    '''Given the filename and defintion name, create a Markdown snippet.
+    '''Given the filename and definition name, create a Markdown snippet.
 
     This function uses a very simplistic method to get the declaration from the
     header file plus the comment above it, if available:

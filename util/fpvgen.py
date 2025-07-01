@@ -34,7 +34,7 @@ def main():
         util/fpvgen.py hw/ip/prim/rtl/prim_fifo_sync.sv
 
         By default, the output directory is assumed to be '../fpv' with respect
-        to the toplevel module, but this can be overriden using the -eo switch.
+        to the toplevel module, but this can be overridden using the -eo switch.
 
         Further if the IP is comportable, this can be indicated using the -c
         switch, which causes the generator to add a bind statement for the CSR

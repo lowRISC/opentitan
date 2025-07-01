@@ -91,7 +91,7 @@ declare -a modules=(
   "flash_phy"
 )
 
-# TODO: top_earlgrey appears to be too large for verification under the currrent
+# TODO: top_earlgrey appears to be too large for verification under the current
 # setup. Consider adding verification using `hier_compare`.
 
 for module in "${modules[@]}"; do

@@ -135,7 +135,7 @@ class Ip:
 
     def _load_parameters(self):
         assert (self._hjson_data and
-                "ERROR: must load IP HJSON before loarding Parameters")
+                "ERROR: must load IP HJSON before loading Parameters")
         parameters = {}
         if "param_list" in self._hjson_data:
             for parameter in self._hjson_data["param_list"]:
