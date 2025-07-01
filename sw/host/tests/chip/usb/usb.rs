@@ -39,6 +39,10 @@ pub struct UsbOpts {
     /// Apply some strappings.
     #[arg(long)]
     pub strapping: Vec<String>,
+
+    // VBUS disconnect timeout: how long to wait after setting the pin.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
+    pub vbus_sense_wait: Duration,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -191,7 +195,7 @@ impl UsbOpts {
         let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
         vbus_sense_en_pin.write(en)?;
         // Give time to hardware buffer to stabilize.
-        std::thread::sleep(Duration::from_millis(100));
+        std::thread::sleep(self.vbus_sense_wait);
         Ok(())
     }
 

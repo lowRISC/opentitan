@@ -16,6 +16,7 @@ rust_library(
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
+        "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:rusb",
     ],
