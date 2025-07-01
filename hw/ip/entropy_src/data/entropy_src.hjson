@@ -196,14 +196,14 @@
       type:    "int",
       default: "3",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
-      local:   "false",
+      local:   "true",
       expose:  "true"
     },
     { name:    "DistrFifoDepth",
       type:    "int unsigned",
       default: "2",
       desc:    "Number of 32-bit entries in the distr FIFO",
-      local:   "false",
+      local:   "true",
       expose:  "true"
     },
     { name:    "Stub",
