@@ -4,7 +4,7 @@
 
 // By default this test will use a randomly selected instance i2c_idx.
 // To make a dedicated test for instance i, where i is in {0,1,2}, the test
-// shuld run with an option:
+// should run with an option:
 //     run_opts: ["+i2c_idx=i"]
 
 class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;

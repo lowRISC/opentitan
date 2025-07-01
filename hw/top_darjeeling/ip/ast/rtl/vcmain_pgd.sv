@@ -23,7 +23,7 @@ assign gen_supp_a = 1'b1;
 // Behavioral Model
 ////////////////////////////////////////
 // The initial is needed to clear the X of the delays at the start
-// Also to force a power-up effect at the bgining.
+// Also to force a power-up effect at the beginning.
 logic init_start;
 
 initial begin

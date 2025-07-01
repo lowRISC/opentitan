@@ -43,8 +43,8 @@ module ast
   input sns_spi_ext_clk_i,                    // Sensed SPI External Clock
 
 `ifdef AST_BYPASS_CLK
-  // Clocks' Oschillator bypass for OS FPGA
-  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
+  // Clocks' Oscillator bypass for OS FPGA
+  input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oscillator bypass for OS FPGA/VERILATOR
 `endif
 
   // power OK control
@@ -132,11 +132,11 @@ module ast
 `endif
 
   // flash and external clocks
-  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequecy is 96MHz
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External clock frequency is 96MHz
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // All clocks bypass request
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clocks
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // IO clock bypass request (for OTP bootstrap)
-  output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clockn
+  output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
   output prim_mubi_pkg::mubi4_t flash_bist_en_o,    // Flush BIST (TAP) Enable
 
   // memories read-write margins
@@ -335,7 +335,7 @@ assign ast_pwst_o.vcc_pok = vcc_pok_str;
 
 ///////////////////////////////////////
 ///////////////////////////////////////
-// Clocks Oscillattors
+// Clocks Oscillators
 ///////////////////////////////////////
 ///////////////////////////////////////
 
@@ -690,7 +690,7 @@ ast_alert u_alert_gd (
   .alert_req_o ( alert_req_o.alerts[ast_pkg::GdSel] )
 );
 
-// Temprature Sensor High (TS Hi)
+// Temperature Sensor High (TS Hi)
 ///////////////////////////////////////
 ast_alert u_alert_ts_hi (
   .clk_i ( clk_ast_alert_i ),
@@ -701,7 +701,7 @@ ast_alert u_alert_ts_hi (
   .alert_req_o ( alert_req_o.alerts[ast_pkg::TsHiSel] )
 );
 
-// Temprature Sensor Low (TS Lo)
+// Temperature Sensor Low (TS Lo)
 ///////////////////////////////////////
 ast_alert u_alert_ts_lo (
   .clk_i ( clk_ast_alert_i ),

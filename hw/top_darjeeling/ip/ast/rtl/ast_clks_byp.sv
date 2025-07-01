@@ -32,7 +32,7 @@ module ast_clks_byp (
 `endif // of AST_BYPASS_CLK
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_i,    // External IO clock mux for OTP bootstrap
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_i,   // External all clock mux override
-  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequecy is 96MHz (else 48MHz)
+  input prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,   // External Clock Frequency is 96MHz (else 48MHz)
   output prim_mubi_pkg::mubi4_t io_clk_byp_ack_o,   // Switch IO clock to External clock
   output prim_mubi_pkg::mubi4_t all_clk_byp_ack_o,  // Switch all clocks to External clock
   output logic clk_src_sys_o,               // SYS Source Clock
@@ -149,7 +149,7 @@ prim_flop_2sync #(
 
 assign rst_aon_exda_n = scan_mode_i ? scan_reset_ni : rst_aon_n_exda;
 
-// External USB & AON clocks genaration
+// External USB & AON clocks generation
 ////////////////////////////////////////
 `ifndef AST_BYPASS_CLK
 logic clk_src_ext_usb, ext_freq_is_96m, ext_freq_is_96m_sync;
@@ -201,10 +201,10 @@ assign clk_ext_aon = clk_ext_aon_i;
 
 
 ////////////////////////////////////////
-// Deep-Sleep/Enables Gators
+// Deep-Sleep/Enables Gates
 ////////////////////////////////////////
 
-// Deep-Sleep Sync to External clcok
+// Deep-Sleep Sync to External clock
 ////////////////////////////////////////
 logic deep_sleep, deep_sleep_n;
 
@@ -543,7 +543,7 @@ prim_buf u_rst_clk_ext_aon (
   .out_o ( rst_clk_ext_aon_n )
 );
 
-// rst_aon_n deasset to io clock
+// rst_aon_n deassert to io clock
 ////////////////////////////////////////
 logic rst_aon_n_ioda, rst_aon_ioda_n;
 
@@ -747,7 +747,7 @@ prim_mubi4_sender #(
 logic io_clk_byp_is_48m_src, io_clk_byp_is_48m;
 
 // Oscillator source is always 96MHz.
-// External Bypass source is assume to be 96MHz until it is ebabled as 48MHz
+// External Bypass source is assume to be 96MHz until it is enabled as 48MHz
 always_ff @( posedge clk_aon, negedge rst_aon_n ) begin
   if ( !rst_aon_n ) begin
     io_clk_byp_is_48m_src <= 1'b0;

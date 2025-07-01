@@ -157,7 +157,7 @@
 
             - Enable upload related interrupts and configure the spi_device in passthrough mode.
             - Configure a command slot to enable upload for a flash program/erase command.
-            - Excecute two parallel threads:
+            - Execute two parallel threads:
               1. SPI host agent.
                 - Send this command via an upstream SPI host agent, then the agent keeps sending
                 read_status to poll the busy bit.
@@ -348,7 +348,7 @@
       desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
 
             - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
-              1) and verify the correctless of the value on the chip IO.
+              1) and verify the correctness of the value on the chip IO.
             - Program the pin's retention value during deep sleep to be opposite of the active power
               value programmed in the previous step.
             - Reuse an existing deep sleep / low power wake up test, such as
@@ -366,7 +366,7 @@
       name: chip_sw_mbx_smoke
       desc: '''Verify the mailbox integrations with a basic smoketest
 
-            - Random-cyclicly select a mailbox to perform a req-rsp transaction with
+            - Random-cyclically select a mailbox to perform a req-rsp transaction with
             - TB(requester) writes a message into the imbx, then awaits a response
             - sw(responder) awaits the request, reads it then replies with a modified version
               of the original message
@@ -472,7 +472,7 @@
       desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
 
             - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
-            - Configure RV_DM to send NDM reset request to reset sytem reset tree.
+            - Configure RV_DM to send NDM reset request to reset system reset tree.
             - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
               accessed.
             - Read the programmed CSRs / mem to ensure that everything under system reset tree is
@@ -611,7 +611,7 @@
               bark interrupt is fired.
             - Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but the
               phase 1 (i.e. wipe secrets) should occur and last during the time the wdog is
-              programed to bark and bite.
+              programmed to bark and bite.
             - Trigger an alert to cause an escalation condition before the bark signal asserts.
             - After the reset ensure that the reset cause was due to the escalation to prove that
               the wdog was disabled.
@@ -967,7 +967,7 @@
             This verifies ALL reset sources.
             - 7 resets are generated randomly with deep sleeps
             - POR (HW PAD) reset, SW POR, wdog timer reset, esc rst, SW req
-            - esc reset is followd by normal mode because it does not work with sleep mode
+            - esc reset is followed by normal mode because it does not work with sleep mode
             '''
       stage: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
@@ -1331,7 +1331,7 @@
       desc: '''Verify alert_handler's ping mechanism works correctly during sleep and wake up.
 
             There are two scenarios to check:
-            - Configure alert_handler's ping timeout register to a reasonble value that won't cause
+            - Configure alert_handler's ping timeout register to a reasonable value that won't cause
               ping timeout in normal cases.
               Then randomly enter and exit normal or deep sleep modes.
               Check that no local alerts triggered in alert_handler.
@@ -1895,7 +1895,7 @@
             TODO: system level scenario: have all entropy sources request entropy in the same test
             one after to show boot to post boot load, cycling all entropy blocks off and on again.
             Ensure there are no deadlocks and everything works as expected.
-            X'ref'ed with each IP test that requsts entropy from EDN.
+            X'ref'ed with each IP test that requests entropy from EDN.
             '''
       stage: V2
       tests: ["chip_sw_edn_entropy_reqs",
@@ -1908,7 +1908,7 @@
       desc: '''Verify the keymgr advances to all states and generate identity / SW output.
 
             - In the SW test, write fixed value to OTP for root_key and write creator and owner
-              seeds in flash. And then roboot the chip.
+              seeds in flash. And then reboot the chip.
             - In the SV sequence, backdoor read Device ID and ROM digest through CSRs.
             - For HardwareRevisionSecret, use the constant values in design.
             - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
@@ -1928,9 +1928,9 @@
             - Note: there are 3 ways of calculating the expected digest for comparison. Any of them
               is acceptable.
               - Use SW to calculate that, and it will also exercise the Ibex.
-              - SW sends all the keys through CSRs to KMAC to generate the degist data.
+              - SW sends all the keys through CSRs to KMAC to generate the digest data.
               - DV calls C functions to generate and backdoor load to a specific memory location
-                for SW. (Adpot this approach.)
+                for SW. (Adopt this approach.)
 
             X-ref'ed with kmac test.
             '''
@@ -2016,9 +2016,9 @@
 
             - SW initializes the entropy subsystem to generate randomness.
             - SW loads an OTBN app that executes instructions to read the RND bits.
-            - The OTBN app ensures that the values when read consequtively do not match, and its not
-              all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is returning
-              some data.
+            - The OTBN app ensures that the values when read consecutively do not match, and it's
+              not all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is
+              returning some data.
             '''
       stage: V2
       tests: ["chip_sw_otbn_randomness"]
@@ -2654,7 +2654,7 @@
       name: chip_sw_rv_core_ibex_fault_dump
       desc: '''Verify the functionality of the ibex fault dump.
 
-               - Purposely create an ibex exception during execution through reads to an ummapped
+               - Purposely create an ibex exception during execution through reads to an unmapped
                  address.
                - Ensure the rstmgr fault dump correctly captures the related addresses to the
                  exception.
@@ -2714,7 +2714,7 @@
             1. Implement test in the ROM stage itself
             2. Implement test in the flash stage, using test ROM
             3. Implement test in the flash stage, using production ROM
-            4. Enable external maufacturer hooks in existing tests developed in the open source
+            4. Enable external manufacturer hooks in existing tests developed in the open source
             5. Enable concurrent threads in tests
             '''
       stage: V1
@@ -2852,7 +2852,7 @@
     }
     {
       name: chip_sw_lc_walkthrough
-      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
+      desc: '''Walk through the life cycle stages from RAW state and resetting the chip each time.
 
              - Pre-load OTP image with RAW lc_state.
              - Initiate the LC transition to one of the test unlock state.
@@ -2893,7 +2893,7 @@
 
             This test characterizes the DUT initial state before RAW unlock operation, and
             switches to external clock via clkmgr to ensure the system clock can be switched
-            right after transition into test_unlcoked0 state. The test also verifies that
+            right after transition into test_unlocked0 state. The test also verifies that
             AST is not initialized while CPU is executing code.
 
              - Pre-load OTP image with RAW lc_state.
@@ -2928,7 +2928,7 @@
       The test should set a GPIO (mapped to the IOA2 pin) to high while the power
       state of interest is active.
 
-      Blocks / functionality to run simulatenously in this test:
+      Blocks / functionality to run simultaneously in this test:
 
         - The ADC is continuously sampling new data
         - Staggered activation of OTBN, aes, KMAC/HMAC.
@@ -2992,7 +2992,7 @@
       - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
         instructions.
       - In the test program, check whether the OTP partition containing the scramble seeds is
-        locked. Also check that the unscrambled value progarmmed into flash isolated partition
+        locked. Also check that the unscrambled value programmed into flash isolated partition
         can be correctly read back when the region is set to scramble disable.
       - If either of the above checks is incorrect, return error.
 
