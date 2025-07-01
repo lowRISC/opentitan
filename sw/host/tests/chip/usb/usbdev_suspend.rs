@@ -244,14 +244,18 @@ fn usbdev_suspend(
             // the host to detect and configure the device.
             UartConsole::wait_for(uart, r"Phase awaiting stimulus \([^)]*\)", opts.timeout)?;
 
-            // All phase require a Suspend request and then wait for > 3 frames; some phases require
+            // All phases require a suspend request and then wait for > 3 frames; some phases require
             // a longer delay so that the device-side code decides to enter a sleep state.
-            suspend(&hub, port)?;
-            if phase == SuspendPhase::Suspend {
-                delay_millis(time_suspended_short);
-            } else {
-                // Longer Suspended state, a cue to enter the sleep state.
-                delay_millis(time_suspended_long);
+            // However do not suspend if we have reached the Shutdown phase because the device will
+            // disconnect from the bus.
+            if phase != SuspendPhase::Shutdown {
+                suspend(&hub, port)?;
+                if phase == SuspendPhase::Suspend {
+                    delay_millis(time_suspended_short);
+                } else {
+                    // Longer Suspended state, a cue to enter the sleep state.
+                    delay_millis(time_suspended_long);
+                }
             }
 
             // Next test phase; initialize to final phase (safer default than the current phase).
