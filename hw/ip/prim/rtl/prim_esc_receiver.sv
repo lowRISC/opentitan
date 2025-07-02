@@ -29,6 +29,9 @@ module prim_esc_receiver
   // when this primitive is instantiated.
   parameter int PING_CNT_DW = 16,
 
+  // Number of cycles a differential skew is tolerated on the differential escalation signal.
+  parameter int unsigned SkewCycles = 1,
+
   // This counter monitors incoming ping requests and auto-escalates if the alert handler
   // ceases to send them regularly. The maximum number of cycles between subsequent ping requests
   // is N_ESC_SEV x (2 x 2 x 2**PING_CNT_DW), see also implementation of the ping timer
@@ -73,7 +76,8 @@ module prim_esc_receiver
   );
 
   prim_diff_decode #(
-    .AsyncOn(1'b0)
+    .AsyncOn(1'b0),
+    .SkewCycles(SkewCycles)
   ) u_decode_esc (
     .clk_i,
     .rst_ni,
