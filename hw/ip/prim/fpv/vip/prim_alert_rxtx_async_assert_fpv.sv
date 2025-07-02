@@ -187,12 +187,22 @@ module prim_alert_rxtx_async_assert_fpv
       !ping_req_i [*10] ##1 ($rose(alert_req_i) || $rose(alert_test_i)) && sender_is_idle |->
       ##[3:5] alert_o,
       clk_i, !rst_ni || ping_req_i || error_setreg_q || init_pending || alert_skew_i || ack_skew_i)
-  // eventual transmission of alerts in the general case which can include continous ping
-  // collisions
-  `ASSERT(AlertCheck1_A,
-          alert_req_i || alert_test_i |=> s_eventually alert_o,
-          clk_i, !rst_ni || error_setreg_q ||
-          prim_alert_rxtx_async_tb.i_prim_alert_sender.alert_clr || init_pending)
+
+  // If the sender is asked to send an alert (possibly a test), we eventually expect the receiver's
+  // alert_o port to go high.
+  //
+  // This allows things like ping collisions to give us confidence that the alert gets out even when
+  // the receiver is sending ping messages.
+  //
+  // We want to disable the assertion if there is a reset or the alert complex is still
+  // initialising. We also want to disable it if there has been an injected error: the alerts that
+  // should come out in that situation rely on the ping mechanism.
+  //
+  // Finally, we disable it if the sender clears its alert (because ack was dropped again at the end
+  // of an alert handshake).
+  AlertCheck1_A: assert property (disable iff (!rst_ni || init_pending || error_setreg_q ||
+                                               i_prim_alert_sender.alert_clr)
+                                  alert_req_i || alert_test_i |=> s_eventually alert_o);
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
