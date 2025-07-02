@@ -338,6 +338,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
@@ -348,6 +349,7 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
     ],
 )
 
