@@ -721,7 +721,7 @@ static void configure_adc_ctrl_to_continuously_sample(void) {
               .filter = (dif_adc_ctrl_filter_t)filter,
               // Set max range.
               .min_voltage = 0,
-              .max_voltage = ADC_CTRL_ADC_CHN0_FILTER_CTL_0_MAX_V_0_MASK,
+              .max_voltage = ADC_CTRL_ADC_CHN0_FILTER_CTL_0_MAX_V_MASK,
               .in_range = true,
               .generate_wakeup_on_match = false,
               .generate_irq_on_match = false,

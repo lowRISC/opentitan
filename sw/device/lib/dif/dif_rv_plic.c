@@ -14,7 +14,7 @@
 #include "rv_plic_regs.h"  // Generated.
 
 const uint32_t kDifRvPlicMinPriority = 0;
-const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO_0_DATA_0_MASK;
+const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO_0_DATA_MASK;
 
 /**
  * PLIC register info.

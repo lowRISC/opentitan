@@ -23,41 +23,41 @@ static_assert(ALERT_HANDLER_PARAM_N_LOC_ALERT == 7,
 // Enable, class, lock, and cause multiregs for alerts.
 static_assert(ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT &&
                   ALERT_HANDLER_ALERT_EN_SHADOWED_EN_A_FIELD_WIDTH == 1 &&
-                  ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_0_BIT == 0,
+                  ALERT_HANDLER_ALERT_EN_SHADOWED_0_EN_A_BIT == 0,
               "Expected alert enables to be multiregs with LSB at index 0!");
 static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT &&
                   ALERT_HANDLER_ALERT_CLASS_SHADOWED_CLASS_A_FIELD_WIDTH == 2 &&
-                  ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_OFFSET == 0,
+                  ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_OFFSET == 0,
               "Expected alert class CSRs to be multiregs with LSB at index 0!");
 static_assert(ALERT_HANDLER_ALERT_REGWEN_MULTIREG_COUNT &&
                   ALERT_HANDLER_ALERT_REGWEN_EN_FIELD_WIDTH == 1 &&
-                  ALERT_HANDLER_ALERT_REGWEN_0_EN_0_BIT == 0,
+                  ALERT_HANDLER_ALERT_REGWEN_0_EN_BIT == 0,
               "Expected alert locks to be multiregs with LSB at index 0!");
 static_assert(ALERT_HANDLER_ALERT_CAUSE_MULTIREG_COUNT &&
                   ALERT_HANDLER_ALERT_CAUSE_A_FIELD_WIDTH == 1 &&
-                  ALERT_HANDLER_ALERT_CAUSE_0_A_0_BIT == 0,
+                  ALERT_HANDLER_ALERT_CAUSE_0_A_BIT == 0,
               "Expected alert causes to be multiregs with LSB at index 0!");
 
 // Enable, class, lock, and cause multiregs for local alerts.
 static_assert(
     ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_MULTIREG_COUNT &&
         ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_EN_LA_FIELD_WIDTH == 1 &&
-        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_0_BIT == 0,
+        ALERT_HANDLER_LOC_ALERT_EN_SHADOWED_0_EN_LA_BIT == 0,
     "Expected local alert enables to be multiregs with LSB at index 0!");
 static_assert(
     ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT &&
         ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_CLASS_LA_FIELD_WIDTH == 2 &&
-        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_OFFSET == 0,
+        ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_OFFSET == 0,
     "Expected local alert class CSRs to be multiregs with LSB at index 0!");
 static_assert(
     ALERT_HANDLER_LOC_ALERT_REGWEN_MULTIREG_COUNT &&
         ALERT_HANDLER_LOC_ALERT_REGWEN_EN_FIELD_WIDTH == 1 &&
-        ALERT_HANDLER_LOC_ALERT_REGWEN_0_EN_0_BIT == 0,
+        ALERT_HANDLER_LOC_ALERT_REGWEN_0_EN_BIT == 0,
     "Expected local alert locks to be multiregs with LSB at index 0!");
 static_assert(
     ALERT_HANDLER_LOC_ALERT_CAUSE_MULTIREG_COUNT &&
         ALERT_HANDLER_LOC_ALERT_CAUSE_LA_FIELD_WIDTH == 1 &&
-        ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_0_BIT == 0,
+        ALERT_HANDLER_LOC_ALERT_CAUSE_0_LA_BIT == 0,
     "Expected local alert causes to be multiregs with LSB at index 0!");
 
 // Accumulator threshold field sizes.
@@ -111,10 +111,10 @@ static_assert(ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_DATA_MASK <= USHRT_MAX,
 OT_WARN_UNUSED_RESULT
 static bool class_to_uint32(dif_alert_handler_class_t alert_class,
                             uint32_t *classification) {
-#define ALERT_CLASS_REGS_CASE_(class_, value_)                              \
-  case kDifAlertHandlerClass##class_:                                       \
-    *classification =                                                       \
-        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASS##class_; \
+#define ALERT_CLASS_REGS_CASE_(class_, value_)                            \
+  case kDifAlertHandlerClass##class_:                                     \
+    *classification =                                                     \
+        ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_VALUE_CLASS##class_; \
     break;
   switch (alert_class) {
     LIST_OF_CLASSES(ALERT_CLASS_REGS_CASE_)

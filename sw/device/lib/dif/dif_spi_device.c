@@ -354,28 +354,28 @@ dif_result_t dif_spi_device_set_flash_command_slot(
   uint32_t reg_val = 0;
   if (enable == kDifToggleDisabled) {
     reg_val =
-        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, false);
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_BIT, false);
   } else {
     // Validate command info parameters.
     uint32_t address_mode;
     switch (command_info.address_type) {
       case kDifSpiDeviceFlashAddrDisabled:
-        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRDISABLED;
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDRDISABLED;
         break;
       case kDifSpiDeviceFlashAddrCfg:
-        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRCFG;
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDRCFG;
         break;
       case kDifSpiDeviceFlashAddr3Byte:
-        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B;
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDR3B;
         break;
       case kDifSpiDeviceFlashAddr4Byte:
-        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR4B;
+        address_mode = SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDR4B;
         break;
       default:
         return kDifBadArg;
     }
     if (command_info.dummy_cycles >
-        (1u + SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_MASK)) {
+        (1u + SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_MASK)) {
       return kDifBadArg;
     }
 
@@ -405,15 +405,15 @@ dif_result_t dif_spi_device_set_flash_command_slot(
     switch (command_info.read_pipeline_mode) {
       case kDifSpiDeviceReadPipelineModeZeroStages:
         read_pipeline_mode =
-            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_ZERO_STAGES;
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_VALUE_ZERO_STAGES;
         break;
       case kDifSpiDeviceReadPipelineModeTwoStagesHalfCycle:
         read_pipeline_mode =
-            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_TWO_STAGES_HALF_CYCLE;
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_VALUE_TWO_STAGES_HALF_CYCLE;
         break;
       case kDifSpiDeviceReadPipelineModeTwoStagesFullCycle:
         read_pipeline_mode =
-            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_VALUE_TWO_STAGES_FULL_CYCLE;
+            SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_VALUE_TWO_STAGES_FULL_CYCLE;
         break;
       default:
         return kDifBadArg;
@@ -432,36 +432,36 @@ dif_result_t dif_spi_device_set_flash_command_slot(
 
     // Write the command info values.
     reg_val = bitfield_field32_write(
-        reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_0_FIELD, command_info.opcode);
+        reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_FIELD, command_info.opcode);
     reg_val = bitfield_field32_write(
-        reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_FIELD, address_mode);
+        reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_FIELD, address_mode);
     reg_val =
-        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_SWAP_EN_0_BIT,
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_SWAP_EN_BIT,
                              command_info.passthrough_swap_address);
     if (command_info.dummy_cycles > 0) {
       reg_val = bitfield_field32_write(reg_val,
-                                       SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD,
+                                       SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_FIELD,
                                        command_info.dummy_cycles - 1);
-      reg_val = bitfield_bit32_write(
-          reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT, true);
+      reg_val = bitfield_bit32_write(reg_val,
+                                     SPI_DEVICE_CMD_INFO_0_DUMMY_EN_BIT, true);
     }
     reg_val = bitfield_field32_write(
-        reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_0_FIELD, payload_en);
+        reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_FIELD, payload_en);
     reg_val =
-        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_0_BIT,
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_BIT,
                              command_info.payload_dir_to_host);
-    reg_val = bitfield_bit32_write(reg_val,
-                                   SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT,
-                                   command_info.payload_swap_enable);
+    reg_val =
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_BIT,
+                             command_info.payload_swap_enable);
     reg_val = bitfield_field32_write(
-        reg_val, SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_0_FIELD,
+        reg_val, SPI_DEVICE_CMD_INFO_0_READ_PIPELINE_MODE_FIELD,
         read_pipeline_mode);
-    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT,
+    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_BIT,
                                    command_info.upload);
-    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,
+    reg_val = bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_BIT,
                                    command_info.set_busy_status);
     reg_val =
-        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, true);
+        bitfield_bit32_write(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_BIT, true);
   }
   mmio_region_write32(spi->dev.base_addr, reg_offset, reg_val);
   return kDifOk;
@@ -480,18 +480,18 @@ dif_result_t dif_spi_device_get_flash_command_slot(
 
   dif_spi_device_flash_address_type_t address_type;
   uint32_t reg_val_address_mode =
-      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_FIELD);
+      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_FIELD);
   switch (reg_val_address_mode) {
-    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRDISABLED:
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDRDISABLED:
       address_type = kDifSpiDeviceFlashAddrDisabled;
       break;
-    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRCFG:
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDRCFG:
       address_type = kDifSpiDeviceFlashAddrCfg;
       break;
-    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B:
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDR3B:
       address_type = kDifSpiDeviceFlashAddr3Byte;
       break;
-    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR4B:
+    case SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDR4B:
       address_type = kDifSpiDeviceFlashAddr4Byte;
       break;
     default:
@@ -500,17 +500,17 @@ dif_result_t dif_spi_device_get_flash_command_slot(
   }
 
   uint32_t dummy_cycles = 0;
-  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT)) {
+  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_BIT)) {
     dummy_cycles = 1 + bitfield_field32_read(
-                           reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD);
+                           reg_val, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_FIELD);
   } else {
     dummy_cycles = 0;
   }
 
   uint32_t payload_en =
-      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_0_FIELD);
+      bitfield_field32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_EN_FIELD);
   bool payload_dir_to_host =
-      bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_0_BIT);
+      bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_DIR_BIT);
   dif_spi_device_payload_io_t payload_io_type;
   switch (payload_en) {
     case 0x0:
@@ -543,23 +543,22 @@ dif_result_t dif_spi_device_get_flash_command_slot(
 
   dif_spi_device_flash_command_t cmd = {
       .opcode = (uint8_t)bitfield_field32_read(
-          reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_0_FIELD),
+          reg_val, SPI_DEVICE_CMD_INFO_0_OPCODE_FIELD),
       .address_type = address_type,
       .dummy_cycles = (uint8_t)dummy_cycles,
       .payload_io_type = payload_io_type,
       .passthrough_swap_address = bitfield_bit32_read(
-          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT),
+          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_BIT),
       .payload_dir_to_host = payload_dir_to_host,
       .payload_swap_enable = bitfield_bit32_read(
-          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_0_BIT),
-      .upload =
-          bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT),
+          reg_val, SPI_DEVICE_CMD_INFO_0_PAYLOAD_SWAP_EN_BIT),
+      .upload = bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_UPLOAD_BIT),
       .set_busy_status =
-          bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT),
+          bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_BUSY_BIT),
   };
   *command_info = cmd;
 
-  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT)) {
+  if (bitfield_bit32_read(reg_val, SPI_DEVICE_CMD_INFO_0_VALID_BIT)) {
     *enabled = kDifToggleEnabled;
   } else {
     *enabled = kDifToggleDisabled;

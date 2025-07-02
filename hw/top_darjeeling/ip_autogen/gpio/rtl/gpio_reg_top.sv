@@ -191,93 +191,93 @@ module gpio_reg_top
   logic hw_straps_data_in_valid_qs;
   logic [31:0] hw_straps_data_in_qs;
   logic inp_prd_cnt_ctrl_0_we;
-  logic inp_prd_cnt_ctrl_0_enable_0_qs;
-  logic inp_prd_cnt_ctrl_0_enable_0_wd;
-  logic inp_prd_cnt_ctrl_0_continuous_mode_0_qs;
-  logic inp_prd_cnt_ctrl_0_continuous_mode_0_wd;
-  logic inp_prd_cnt_ctrl_0_polarity_0_qs;
-  logic inp_prd_cnt_ctrl_0_polarity_0_wd;
-  logic [7:0] inp_prd_cnt_ctrl_0_input_select_0_qs;
-  logic [7:0] inp_prd_cnt_ctrl_0_input_select_0_wd;
-  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_0_qs;
-  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_0_wd;
+  logic inp_prd_cnt_ctrl_0_enable_qs;
+  logic inp_prd_cnt_ctrl_0_enable_wd;
+  logic inp_prd_cnt_ctrl_0_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_0_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_0_polarity_qs;
+  logic inp_prd_cnt_ctrl_0_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_0_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_0_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_wd;
   logic inp_prd_cnt_ctrl_1_we;
-  logic inp_prd_cnt_ctrl_1_enable_1_qs;
-  logic inp_prd_cnt_ctrl_1_enable_1_wd;
-  logic inp_prd_cnt_ctrl_1_continuous_mode_1_qs;
-  logic inp_prd_cnt_ctrl_1_continuous_mode_1_wd;
-  logic inp_prd_cnt_ctrl_1_polarity_1_qs;
-  logic inp_prd_cnt_ctrl_1_polarity_1_wd;
-  logic [7:0] inp_prd_cnt_ctrl_1_input_select_1_qs;
-  logic [7:0] inp_prd_cnt_ctrl_1_input_select_1_wd;
-  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_1_qs;
-  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_1_wd;
+  logic inp_prd_cnt_ctrl_1_enable_qs;
+  logic inp_prd_cnt_ctrl_1_enable_wd;
+  logic inp_prd_cnt_ctrl_1_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_1_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_1_polarity_qs;
+  logic inp_prd_cnt_ctrl_1_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_1_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_1_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_wd;
   logic inp_prd_cnt_ctrl_2_we;
-  logic inp_prd_cnt_ctrl_2_enable_2_qs;
-  logic inp_prd_cnt_ctrl_2_enable_2_wd;
-  logic inp_prd_cnt_ctrl_2_continuous_mode_2_qs;
-  logic inp_prd_cnt_ctrl_2_continuous_mode_2_wd;
-  logic inp_prd_cnt_ctrl_2_polarity_2_qs;
-  logic inp_prd_cnt_ctrl_2_polarity_2_wd;
-  logic [7:0] inp_prd_cnt_ctrl_2_input_select_2_qs;
-  logic [7:0] inp_prd_cnt_ctrl_2_input_select_2_wd;
-  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_2_qs;
-  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_2_wd;
+  logic inp_prd_cnt_ctrl_2_enable_qs;
+  logic inp_prd_cnt_ctrl_2_enable_wd;
+  logic inp_prd_cnt_ctrl_2_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_2_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_2_polarity_qs;
+  logic inp_prd_cnt_ctrl_2_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_2_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_2_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_wd;
   logic inp_prd_cnt_ctrl_3_we;
-  logic inp_prd_cnt_ctrl_3_enable_3_qs;
-  logic inp_prd_cnt_ctrl_3_enable_3_wd;
-  logic inp_prd_cnt_ctrl_3_continuous_mode_3_qs;
-  logic inp_prd_cnt_ctrl_3_continuous_mode_3_wd;
-  logic inp_prd_cnt_ctrl_3_polarity_3_qs;
-  logic inp_prd_cnt_ctrl_3_polarity_3_wd;
-  logic [7:0] inp_prd_cnt_ctrl_3_input_select_3_qs;
-  logic [7:0] inp_prd_cnt_ctrl_3_input_select_3_wd;
-  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_3_qs;
-  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_3_wd;
+  logic inp_prd_cnt_ctrl_3_enable_qs;
+  logic inp_prd_cnt_ctrl_3_enable_wd;
+  logic inp_prd_cnt_ctrl_3_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_3_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_3_polarity_qs;
+  logic inp_prd_cnt_ctrl_3_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_3_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_3_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_wd;
   logic inp_prd_cnt_ctrl_4_we;
-  logic inp_prd_cnt_ctrl_4_enable_4_qs;
-  logic inp_prd_cnt_ctrl_4_enable_4_wd;
-  logic inp_prd_cnt_ctrl_4_continuous_mode_4_qs;
-  logic inp_prd_cnt_ctrl_4_continuous_mode_4_wd;
-  logic inp_prd_cnt_ctrl_4_polarity_4_qs;
-  logic inp_prd_cnt_ctrl_4_polarity_4_wd;
-  logic [7:0] inp_prd_cnt_ctrl_4_input_select_4_qs;
-  logic [7:0] inp_prd_cnt_ctrl_4_input_select_4_wd;
-  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_4_qs;
-  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_4_wd;
+  logic inp_prd_cnt_ctrl_4_enable_qs;
+  logic inp_prd_cnt_ctrl_4_enable_wd;
+  logic inp_prd_cnt_ctrl_4_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_4_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_4_polarity_qs;
+  logic inp_prd_cnt_ctrl_4_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_4_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_4_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_wd;
   logic inp_prd_cnt_ctrl_5_we;
-  logic inp_prd_cnt_ctrl_5_enable_5_qs;
-  logic inp_prd_cnt_ctrl_5_enable_5_wd;
-  logic inp_prd_cnt_ctrl_5_continuous_mode_5_qs;
-  logic inp_prd_cnt_ctrl_5_continuous_mode_5_wd;
-  logic inp_prd_cnt_ctrl_5_polarity_5_qs;
-  logic inp_prd_cnt_ctrl_5_polarity_5_wd;
-  logic [7:0] inp_prd_cnt_ctrl_5_input_select_5_qs;
-  logic [7:0] inp_prd_cnt_ctrl_5_input_select_5_wd;
-  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_5_qs;
-  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_5_wd;
+  logic inp_prd_cnt_ctrl_5_enable_qs;
+  logic inp_prd_cnt_ctrl_5_enable_wd;
+  logic inp_prd_cnt_ctrl_5_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_5_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_5_polarity_qs;
+  logic inp_prd_cnt_ctrl_5_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_5_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_5_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_wd;
   logic inp_prd_cnt_ctrl_6_we;
-  logic inp_prd_cnt_ctrl_6_enable_6_qs;
-  logic inp_prd_cnt_ctrl_6_enable_6_wd;
-  logic inp_prd_cnt_ctrl_6_continuous_mode_6_qs;
-  logic inp_prd_cnt_ctrl_6_continuous_mode_6_wd;
-  logic inp_prd_cnt_ctrl_6_polarity_6_qs;
-  logic inp_prd_cnt_ctrl_6_polarity_6_wd;
-  logic [7:0] inp_prd_cnt_ctrl_6_input_select_6_qs;
-  logic [7:0] inp_prd_cnt_ctrl_6_input_select_6_wd;
-  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_6_qs;
-  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_6_wd;
+  logic inp_prd_cnt_ctrl_6_enable_qs;
+  logic inp_prd_cnt_ctrl_6_enable_wd;
+  logic inp_prd_cnt_ctrl_6_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_6_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_6_polarity_qs;
+  logic inp_prd_cnt_ctrl_6_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_6_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_6_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_wd;
   logic inp_prd_cnt_ctrl_7_we;
-  logic inp_prd_cnt_ctrl_7_enable_7_qs;
-  logic inp_prd_cnt_ctrl_7_enable_7_wd;
-  logic inp_prd_cnt_ctrl_7_continuous_mode_7_qs;
-  logic inp_prd_cnt_ctrl_7_continuous_mode_7_wd;
-  logic inp_prd_cnt_ctrl_7_polarity_7_qs;
-  logic inp_prd_cnt_ctrl_7_polarity_7_wd;
-  logic [7:0] inp_prd_cnt_ctrl_7_input_select_7_qs;
-  logic [7:0] inp_prd_cnt_ctrl_7_input_select_7_wd;
-  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_7_qs;
-  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_7_wd;
+  logic inp_prd_cnt_ctrl_7_enable_qs;
+  logic inp_prd_cnt_ctrl_7_enable_wd;
+  logic inp_prd_cnt_ctrl_7_continuous_mode_qs;
+  logic inp_prd_cnt_ctrl_7_continuous_mode_wd;
+  logic inp_prd_cnt_ctrl_7_polarity_qs;
+  logic inp_prd_cnt_ctrl_7_polarity_wd;
+  logic [7:0] inp_prd_cnt_ctrl_7_input_select_qs;
+  logic [7:0] inp_prd_cnt_ctrl_7_input_select_wd;
+  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_qs;
+  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_wd;
   logic inp_prd_cnt_val_0_re;
   logic [31:0] inp_prd_cnt_val_0_qs;
   logic [31:0] inp_prd_cnt_val_0_wd;
@@ -814,19 +814,19 @@ module gpio_reg_top
 
   // Subregister 0 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_0]: V(False)
-  //   F[enable_0]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_0_enable_0 (
+  ) u_inp_prd_cnt_ctrl_0_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_0_we),
-    .wd     (inp_prd_cnt_ctrl_0_enable_0_wd),
+    .wd     (inp_prd_cnt_ctrl_0_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[0].enable.de),
@@ -838,22 +838,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_0_enable_0_qs)
+    .qs     (inp_prd_cnt_ctrl_0_enable_qs)
   );
 
-  //   F[continuous_mode_0]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_0_continuous_mode_0 (
+  ) u_inp_prd_cnt_ctrl_0_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_0_we),
-    .wd     (inp_prd_cnt_ctrl_0_continuous_mode_0_wd),
+    .wd     (inp_prd_cnt_ctrl_0_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[0].continuous_mode.de),
@@ -865,22 +865,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_0_continuous_mode_0_qs)
+    .qs     (inp_prd_cnt_ctrl_0_continuous_mode_qs)
   );
 
-  //   F[polarity_0]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_0_polarity_0 (
+  ) u_inp_prd_cnt_ctrl_0_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_0_we),
-    .wd     (inp_prd_cnt_ctrl_0_polarity_0_wd),
+    .wd     (inp_prd_cnt_ctrl_0_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[0].polarity.de),
@@ -892,22 +892,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_0_polarity_0_qs)
+    .qs     (inp_prd_cnt_ctrl_0_polarity_qs)
   );
 
-  //   F[input_select_0]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_0_input_select_0 (
+  ) u_inp_prd_cnt_ctrl_0_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_0_we),
-    .wd     (inp_prd_cnt_ctrl_0_input_select_0_wd),
+    .wd     (inp_prd_cnt_ctrl_0_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[0].input_select.de),
@@ -919,22 +919,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_0_input_select_0_qs)
+    .qs     (inp_prd_cnt_ctrl_0_input_select_qs)
   );
 
-  //   F[prescaler_0]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_0_prescaler_0 (
+  ) u_inp_prd_cnt_ctrl_0_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_0_we),
-    .wd     (inp_prd_cnt_ctrl_0_prescaler_0_wd),
+    .wd     (inp_prd_cnt_ctrl_0_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[0].prescaler.de),
@@ -946,25 +946,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_0_prescaler_0_qs)
+    .qs     (inp_prd_cnt_ctrl_0_prescaler_qs)
   );
 
 
   // Subregister 1 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_1]: V(False)
-  //   F[enable_1]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_1_enable_1 (
+  ) u_inp_prd_cnt_ctrl_1_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_1_we),
-    .wd     (inp_prd_cnt_ctrl_1_enable_1_wd),
+    .wd     (inp_prd_cnt_ctrl_1_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[1].enable.de),
@@ -976,22 +976,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_1_enable_1_qs)
+    .qs     (inp_prd_cnt_ctrl_1_enable_qs)
   );
 
-  //   F[continuous_mode_1]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_1_continuous_mode_1 (
+  ) u_inp_prd_cnt_ctrl_1_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_1_we),
-    .wd     (inp_prd_cnt_ctrl_1_continuous_mode_1_wd),
+    .wd     (inp_prd_cnt_ctrl_1_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[1].continuous_mode.de),
@@ -1003,22 +1003,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_1_continuous_mode_1_qs)
+    .qs     (inp_prd_cnt_ctrl_1_continuous_mode_qs)
   );
 
-  //   F[polarity_1]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_1_polarity_1 (
+  ) u_inp_prd_cnt_ctrl_1_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_1_we),
-    .wd     (inp_prd_cnt_ctrl_1_polarity_1_wd),
+    .wd     (inp_prd_cnt_ctrl_1_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[1].polarity.de),
@@ -1030,22 +1030,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_1_polarity_1_qs)
+    .qs     (inp_prd_cnt_ctrl_1_polarity_qs)
   );
 
-  //   F[input_select_1]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_1_input_select_1 (
+  ) u_inp_prd_cnt_ctrl_1_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_1_we),
-    .wd     (inp_prd_cnt_ctrl_1_input_select_1_wd),
+    .wd     (inp_prd_cnt_ctrl_1_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[1].input_select.de),
@@ -1057,22 +1057,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_1_input_select_1_qs)
+    .qs     (inp_prd_cnt_ctrl_1_input_select_qs)
   );
 
-  //   F[prescaler_1]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_1_prescaler_1 (
+  ) u_inp_prd_cnt_ctrl_1_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_1_we),
-    .wd     (inp_prd_cnt_ctrl_1_prescaler_1_wd),
+    .wd     (inp_prd_cnt_ctrl_1_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[1].prescaler.de),
@@ -1084,25 +1084,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_1_prescaler_1_qs)
+    .qs     (inp_prd_cnt_ctrl_1_prescaler_qs)
   );
 
 
   // Subregister 2 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_2]: V(False)
-  //   F[enable_2]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_2_enable_2 (
+  ) u_inp_prd_cnt_ctrl_2_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_2_we),
-    .wd     (inp_prd_cnt_ctrl_2_enable_2_wd),
+    .wd     (inp_prd_cnt_ctrl_2_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[2].enable.de),
@@ -1114,22 +1114,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_2_enable_2_qs)
+    .qs     (inp_prd_cnt_ctrl_2_enable_qs)
   );
 
-  //   F[continuous_mode_2]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_2_continuous_mode_2 (
+  ) u_inp_prd_cnt_ctrl_2_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_2_we),
-    .wd     (inp_prd_cnt_ctrl_2_continuous_mode_2_wd),
+    .wd     (inp_prd_cnt_ctrl_2_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[2].continuous_mode.de),
@@ -1141,22 +1141,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_2_continuous_mode_2_qs)
+    .qs     (inp_prd_cnt_ctrl_2_continuous_mode_qs)
   );
 
-  //   F[polarity_2]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_2_polarity_2 (
+  ) u_inp_prd_cnt_ctrl_2_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_2_we),
-    .wd     (inp_prd_cnt_ctrl_2_polarity_2_wd),
+    .wd     (inp_prd_cnt_ctrl_2_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[2].polarity.de),
@@ -1168,22 +1168,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_2_polarity_2_qs)
+    .qs     (inp_prd_cnt_ctrl_2_polarity_qs)
   );
 
-  //   F[input_select_2]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_2_input_select_2 (
+  ) u_inp_prd_cnt_ctrl_2_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_2_we),
-    .wd     (inp_prd_cnt_ctrl_2_input_select_2_wd),
+    .wd     (inp_prd_cnt_ctrl_2_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[2].input_select.de),
@@ -1195,22 +1195,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_2_input_select_2_qs)
+    .qs     (inp_prd_cnt_ctrl_2_input_select_qs)
   );
 
-  //   F[prescaler_2]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_2_prescaler_2 (
+  ) u_inp_prd_cnt_ctrl_2_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_2_we),
-    .wd     (inp_prd_cnt_ctrl_2_prescaler_2_wd),
+    .wd     (inp_prd_cnt_ctrl_2_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[2].prescaler.de),
@@ -1222,25 +1222,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_2_prescaler_2_qs)
+    .qs     (inp_prd_cnt_ctrl_2_prescaler_qs)
   );
 
 
   // Subregister 3 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_3]: V(False)
-  //   F[enable_3]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_3_enable_3 (
+  ) u_inp_prd_cnt_ctrl_3_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_3_we),
-    .wd     (inp_prd_cnt_ctrl_3_enable_3_wd),
+    .wd     (inp_prd_cnt_ctrl_3_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[3].enable.de),
@@ -1252,22 +1252,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_3_enable_3_qs)
+    .qs     (inp_prd_cnt_ctrl_3_enable_qs)
   );
 
-  //   F[continuous_mode_3]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_3_continuous_mode_3 (
+  ) u_inp_prd_cnt_ctrl_3_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_3_we),
-    .wd     (inp_prd_cnt_ctrl_3_continuous_mode_3_wd),
+    .wd     (inp_prd_cnt_ctrl_3_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[3].continuous_mode.de),
@@ -1279,22 +1279,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_3_continuous_mode_3_qs)
+    .qs     (inp_prd_cnt_ctrl_3_continuous_mode_qs)
   );
 
-  //   F[polarity_3]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_3_polarity_3 (
+  ) u_inp_prd_cnt_ctrl_3_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_3_we),
-    .wd     (inp_prd_cnt_ctrl_3_polarity_3_wd),
+    .wd     (inp_prd_cnt_ctrl_3_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[3].polarity.de),
@@ -1306,22 +1306,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_3_polarity_3_qs)
+    .qs     (inp_prd_cnt_ctrl_3_polarity_qs)
   );
 
-  //   F[input_select_3]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_3_input_select_3 (
+  ) u_inp_prd_cnt_ctrl_3_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_3_we),
-    .wd     (inp_prd_cnt_ctrl_3_input_select_3_wd),
+    .wd     (inp_prd_cnt_ctrl_3_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[3].input_select.de),
@@ -1333,22 +1333,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_3_input_select_3_qs)
+    .qs     (inp_prd_cnt_ctrl_3_input_select_qs)
   );
 
-  //   F[prescaler_3]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_3_prescaler_3 (
+  ) u_inp_prd_cnt_ctrl_3_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_3_we),
-    .wd     (inp_prd_cnt_ctrl_3_prescaler_3_wd),
+    .wd     (inp_prd_cnt_ctrl_3_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[3].prescaler.de),
@@ -1360,25 +1360,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_3_prescaler_3_qs)
+    .qs     (inp_prd_cnt_ctrl_3_prescaler_qs)
   );
 
 
   // Subregister 4 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_4]: V(False)
-  //   F[enable_4]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_4_enable_4 (
+  ) u_inp_prd_cnt_ctrl_4_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_4_we),
-    .wd     (inp_prd_cnt_ctrl_4_enable_4_wd),
+    .wd     (inp_prd_cnt_ctrl_4_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[4].enable.de),
@@ -1390,22 +1390,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_4_enable_4_qs)
+    .qs     (inp_prd_cnt_ctrl_4_enable_qs)
   );
 
-  //   F[continuous_mode_4]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_4_continuous_mode_4 (
+  ) u_inp_prd_cnt_ctrl_4_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_4_we),
-    .wd     (inp_prd_cnt_ctrl_4_continuous_mode_4_wd),
+    .wd     (inp_prd_cnt_ctrl_4_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[4].continuous_mode.de),
@@ -1417,22 +1417,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_4_continuous_mode_4_qs)
+    .qs     (inp_prd_cnt_ctrl_4_continuous_mode_qs)
   );
 
-  //   F[polarity_4]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_4_polarity_4 (
+  ) u_inp_prd_cnt_ctrl_4_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_4_we),
-    .wd     (inp_prd_cnt_ctrl_4_polarity_4_wd),
+    .wd     (inp_prd_cnt_ctrl_4_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[4].polarity.de),
@@ -1444,22 +1444,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_4_polarity_4_qs)
+    .qs     (inp_prd_cnt_ctrl_4_polarity_qs)
   );
 
-  //   F[input_select_4]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_4_input_select_4 (
+  ) u_inp_prd_cnt_ctrl_4_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_4_we),
-    .wd     (inp_prd_cnt_ctrl_4_input_select_4_wd),
+    .wd     (inp_prd_cnt_ctrl_4_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[4].input_select.de),
@@ -1471,22 +1471,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_4_input_select_4_qs)
+    .qs     (inp_prd_cnt_ctrl_4_input_select_qs)
   );
 
-  //   F[prescaler_4]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_4_prescaler_4 (
+  ) u_inp_prd_cnt_ctrl_4_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_4_we),
-    .wd     (inp_prd_cnt_ctrl_4_prescaler_4_wd),
+    .wd     (inp_prd_cnt_ctrl_4_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[4].prescaler.de),
@@ -1498,25 +1498,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_4_prescaler_4_qs)
+    .qs     (inp_prd_cnt_ctrl_4_prescaler_qs)
   );
 
 
   // Subregister 5 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_5]: V(False)
-  //   F[enable_5]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_5_enable_5 (
+  ) u_inp_prd_cnt_ctrl_5_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_5_we),
-    .wd     (inp_prd_cnt_ctrl_5_enable_5_wd),
+    .wd     (inp_prd_cnt_ctrl_5_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[5].enable.de),
@@ -1528,22 +1528,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_5_enable_5_qs)
+    .qs     (inp_prd_cnt_ctrl_5_enable_qs)
   );
 
-  //   F[continuous_mode_5]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_5_continuous_mode_5 (
+  ) u_inp_prd_cnt_ctrl_5_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_5_we),
-    .wd     (inp_prd_cnt_ctrl_5_continuous_mode_5_wd),
+    .wd     (inp_prd_cnt_ctrl_5_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[5].continuous_mode.de),
@@ -1555,22 +1555,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_5_continuous_mode_5_qs)
+    .qs     (inp_prd_cnt_ctrl_5_continuous_mode_qs)
   );
 
-  //   F[polarity_5]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_5_polarity_5 (
+  ) u_inp_prd_cnt_ctrl_5_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_5_we),
-    .wd     (inp_prd_cnt_ctrl_5_polarity_5_wd),
+    .wd     (inp_prd_cnt_ctrl_5_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[5].polarity.de),
@@ -1582,22 +1582,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_5_polarity_5_qs)
+    .qs     (inp_prd_cnt_ctrl_5_polarity_qs)
   );
 
-  //   F[input_select_5]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_5_input_select_5 (
+  ) u_inp_prd_cnt_ctrl_5_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_5_we),
-    .wd     (inp_prd_cnt_ctrl_5_input_select_5_wd),
+    .wd     (inp_prd_cnt_ctrl_5_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[5].input_select.de),
@@ -1609,22 +1609,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_5_input_select_5_qs)
+    .qs     (inp_prd_cnt_ctrl_5_input_select_qs)
   );
 
-  //   F[prescaler_5]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_5_prescaler_5 (
+  ) u_inp_prd_cnt_ctrl_5_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_5_we),
-    .wd     (inp_prd_cnt_ctrl_5_prescaler_5_wd),
+    .wd     (inp_prd_cnt_ctrl_5_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[5].prescaler.de),
@@ -1636,25 +1636,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_5_prescaler_5_qs)
+    .qs     (inp_prd_cnt_ctrl_5_prescaler_qs)
   );
 
 
   // Subregister 6 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_6]: V(False)
-  //   F[enable_6]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_6_enable_6 (
+  ) u_inp_prd_cnt_ctrl_6_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_6_we),
-    .wd     (inp_prd_cnt_ctrl_6_enable_6_wd),
+    .wd     (inp_prd_cnt_ctrl_6_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[6].enable.de),
@@ -1666,22 +1666,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_6_enable_6_qs)
+    .qs     (inp_prd_cnt_ctrl_6_enable_qs)
   );
 
-  //   F[continuous_mode_6]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_6_continuous_mode_6 (
+  ) u_inp_prd_cnt_ctrl_6_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_6_we),
-    .wd     (inp_prd_cnt_ctrl_6_continuous_mode_6_wd),
+    .wd     (inp_prd_cnt_ctrl_6_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[6].continuous_mode.de),
@@ -1693,22 +1693,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_6_continuous_mode_6_qs)
+    .qs     (inp_prd_cnt_ctrl_6_continuous_mode_qs)
   );
 
-  //   F[polarity_6]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_6_polarity_6 (
+  ) u_inp_prd_cnt_ctrl_6_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_6_we),
-    .wd     (inp_prd_cnt_ctrl_6_polarity_6_wd),
+    .wd     (inp_prd_cnt_ctrl_6_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[6].polarity.de),
@@ -1720,22 +1720,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_6_polarity_6_qs)
+    .qs     (inp_prd_cnt_ctrl_6_polarity_qs)
   );
 
-  //   F[input_select_6]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_6_input_select_6 (
+  ) u_inp_prd_cnt_ctrl_6_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_6_we),
-    .wd     (inp_prd_cnt_ctrl_6_input_select_6_wd),
+    .wd     (inp_prd_cnt_ctrl_6_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[6].input_select.de),
@@ -1747,22 +1747,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_6_input_select_6_qs)
+    .qs     (inp_prd_cnt_ctrl_6_input_select_qs)
   );
 
-  //   F[prescaler_6]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_6_prescaler_6 (
+  ) u_inp_prd_cnt_ctrl_6_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_6_we),
-    .wd     (inp_prd_cnt_ctrl_6_prescaler_6_wd),
+    .wd     (inp_prd_cnt_ctrl_6_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[6].prescaler.de),
@@ -1774,25 +1774,25 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_6_prescaler_6_qs)
+    .qs     (inp_prd_cnt_ctrl_6_prescaler_qs)
   );
 
 
   // Subregister 7 of Multireg inp_prd_cnt_ctrl
   // R[inp_prd_cnt_ctrl_7]: V(False)
-  //   F[enable_7]: 0:0
+  //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_7_enable_7 (
+  ) u_inp_prd_cnt_ctrl_7_enable (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_7_we),
-    .wd     (inp_prd_cnt_ctrl_7_enable_7_wd),
+    .wd     (inp_prd_cnt_ctrl_7_enable_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[7].enable.de),
@@ -1804,22 +1804,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_7_enable_7_qs)
+    .qs     (inp_prd_cnt_ctrl_7_enable_qs)
   );
 
-  //   F[continuous_mode_7]: 1:1
+  //   F[continuous_mode]: 1:1
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_7_continuous_mode_7 (
+  ) u_inp_prd_cnt_ctrl_7_continuous_mode (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_7_we),
-    .wd     (inp_prd_cnt_ctrl_7_continuous_mode_7_wd),
+    .wd     (inp_prd_cnt_ctrl_7_continuous_mode_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[7].continuous_mode.de),
@@ -1831,22 +1831,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_7_continuous_mode_7_qs)
+    .qs     (inp_prd_cnt_ctrl_7_continuous_mode_qs)
   );
 
-  //   F[polarity_7]: 2:2
+  //   F[polarity]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_7_polarity_7 (
+  ) u_inp_prd_cnt_ctrl_7_polarity (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_7_we),
-    .wd     (inp_prd_cnt_ctrl_7_polarity_7_wd),
+    .wd     (inp_prd_cnt_ctrl_7_polarity_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[7].polarity.de),
@@ -1858,22 +1858,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_7_polarity_7_qs)
+    .qs     (inp_prd_cnt_ctrl_7_polarity_qs)
   );
 
-  //   F[input_select_7]: 15:8
+  //   F[input_select]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_7_input_select_7 (
+  ) u_inp_prd_cnt_ctrl_7_input_select (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_7_we),
-    .wd     (inp_prd_cnt_ctrl_7_input_select_7_wd),
+    .wd     (inp_prd_cnt_ctrl_7_input_select_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[7].input_select.de),
@@ -1885,22 +1885,22 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_7_input_select_7_qs)
+    .qs     (inp_prd_cnt_ctrl_7_input_select_qs)
   );
 
-  //   F[prescaler_7]: 23:16
+  //   F[prescaler]: 23:16
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_inp_prd_cnt_ctrl_7_prescaler_7 (
+  ) u_inp_prd_cnt_ctrl_7_prescaler (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (inp_prd_cnt_ctrl_7_we),
-    .wd     (inp_prd_cnt_ctrl_7_prescaler_7_wd),
+    .wd     (inp_prd_cnt_ctrl_7_prescaler_wd),
 
     // from internal hardware
     .de     (hw2reg.inp_prd_cnt_ctrl[7].prescaler.de),
@@ -1912,7 +1912,7 @@ module gpio_reg_top
     .ds     (),
 
     // to register interface (read)
-    .qs     (inp_prd_cnt_ctrl_7_prescaler_7_qs)
+    .qs     (inp_prd_cnt_ctrl_7_prescaler_qs)
   );
 
 
@@ -2342,92 +2342,92 @@ module gpio_reg_top
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
   assign inp_prd_cnt_ctrl_0_we = racl_addr_hit_write[18] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_0_enable_0_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_0_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_0_continuous_mode_0_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_0_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_0_polarity_0_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_0_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_0_input_select_0_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_0_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_0_prescaler_0_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_0_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_1_we = racl_addr_hit_write[19] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_1_enable_1_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_1_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_1_continuous_mode_1_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_1_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_1_polarity_1_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_1_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_1_input_select_1_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_1_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_1_prescaler_1_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_1_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_2_we = racl_addr_hit_write[20] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_2_enable_2_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_2_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_2_continuous_mode_2_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_2_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_2_polarity_2_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_2_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_2_input_select_2_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_2_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_2_prescaler_2_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_2_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_3_we = racl_addr_hit_write[21] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_3_enable_3_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_3_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_3_continuous_mode_3_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_3_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_3_polarity_3_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_3_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_3_input_select_3_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_3_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_3_prescaler_3_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_3_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_4_we = racl_addr_hit_write[22] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_4_enable_4_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_4_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_4_continuous_mode_4_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_4_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_4_polarity_4_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_4_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_4_input_select_4_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_4_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_4_prescaler_4_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_4_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_5_we = racl_addr_hit_write[23] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_5_enable_5_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_5_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_5_continuous_mode_5_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_5_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_5_polarity_5_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_5_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_5_input_select_5_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_5_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_5_prescaler_5_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_5_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_6_we = racl_addr_hit_write[24] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_6_enable_6_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_6_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_6_continuous_mode_6_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_6_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_6_polarity_6_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_6_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_6_input_select_6_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_6_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_6_prescaler_6_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_6_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_ctrl_7_we = racl_addr_hit_write[25] & reg_we & !reg_error;
 
-  assign inp_prd_cnt_ctrl_7_enable_7_wd = reg_wdata[0];
+  assign inp_prd_cnt_ctrl_7_enable_wd = reg_wdata[0];
 
-  assign inp_prd_cnt_ctrl_7_continuous_mode_7_wd = reg_wdata[1];
+  assign inp_prd_cnt_ctrl_7_continuous_mode_wd = reg_wdata[1];
 
-  assign inp_prd_cnt_ctrl_7_polarity_7_wd = reg_wdata[2];
+  assign inp_prd_cnt_ctrl_7_polarity_wd = reg_wdata[2];
 
-  assign inp_prd_cnt_ctrl_7_input_select_7_wd = reg_wdata[15:8];
+  assign inp_prd_cnt_ctrl_7_input_select_wd = reg_wdata[15:8];
 
-  assign inp_prd_cnt_ctrl_7_prescaler_7_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_7_prescaler_wd = reg_wdata[23:16];
   assign inp_prd_cnt_val_0_re = racl_addr_hit_read[26] & reg_re & !reg_error;
 
   assign inp_prd_cnt_val_0_wd = '1;
@@ -2572,67 +2572,67 @@ module gpio_reg_top
       end
 
       racl_addr_hit_read[18]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_0_enable_0_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_0_continuous_mode_0_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_0_polarity_0_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_0_input_select_0_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_0_prescaler_0_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_0_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_0_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_0_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_0_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_0_prescaler_qs;
       end
 
       racl_addr_hit_read[19]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_1_enable_1_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_1_continuous_mode_1_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_1_polarity_1_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_1_input_select_1_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_1_prescaler_1_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_1_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_1_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_1_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_1_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_1_prescaler_qs;
       end
 
       racl_addr_hit_read[20]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_2_enable_2_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_2_continuous_mode_2_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_2_polarity_2_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_2_input_select_2_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_2_prescaler_2_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_2_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_2_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_2_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_2_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_2_prescaler_qs;
       end
 
       racl_addr_hit_read[21]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_3_enable_3_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_3_continuous_mode_3_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_3_polarity_3_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_3_input_select_3_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_3_prescaler_3_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_3_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_3_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_3_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_3_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_3_prescaler_qs;
       end
 
       racl_addr_hit_read[22]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_4_enable_4_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_4_continuous_mode_4_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_4_polarity_4_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_4_input_select_4_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_4_prescaler_4_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_4_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_4_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_4_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_4_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_4_prescaler_qs;
       end
 
       racl_addr_hit_read[23]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_5_enable_5_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_5_continuous_mode_5_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_5_polarity_5_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_5_input_select_5_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_5_prescaler_5_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_5_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_5_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_5_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_5_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_5_prescaler_qs;
       end
 
       racl_addr_hit_read[24]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_6_enable_6_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_6_continuous_mode_6_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_6_polarity_6_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_6_input_select_6_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_6_prescaler_6_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_6_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_6_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_6_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_6_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_6_prescaler_qs;
       end
 
       racl_addr_hit_read[25]: begin
-        reg_rdata_next[0] = inp_prd_cnt_ctrl_7_enable_7_qs;
-        reg_rdata_next[1] = inp_prd_cnt_ctrl_7_continuous_mode_7_qs;
-        reg_rdata_next[2] = inp_prd_cnt_ctrl_7_polarity_7_qs;
-        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_7_input_select_7_qs;
-        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_7_prescaler_7_qs;
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_7_enable_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_7_continuous_mode_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_7_polarity_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_7_input_select_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_7_prescaler_qs;
       end
 
       racl_addr_hit_read[26]: begin

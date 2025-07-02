@@ -458,7 +458,8 @@ class Register(RegBase):
                           alias_target: Optional[str],
                           regwen: Optional[str],
                           field_desc_override: Optional[str],
-                          strip_field: bool) -> 'Register':
+                          strip_field: bool,
+                          is_compact: bool = True) -> 'Register':
         '''Create a register that holds the fields from regs.
 
         The merged register will be have address offset and be called name.
@@ -478,6 +479,9 @@ class Register(RegBase):
         values.
 
         If strip_field is True, we drop any values from field enum types.
+
+        If the registers are being compacted, then suffix the field name with the original
+        register index in order to avoid name colision.
         '''
         assert regs
 
@@ -502,7 +506,6 @@ class Register(RegBase):
             assert reg.update_err_alert == reg0.update_err_alert
             assert reg.storage_err_alert == reg0.storage_err_alert
             assert reg.writes_ignore_errors == reg0.writes_ignore_errors
-
         for reg, reg_idx in regs:
             assert reg.regwen is None or regwen is not None
 
@@ -512,18 +515,20 @@ class Register(RegBase):
             bit_idx += reg.fields[-1].bits.msb + 1
 
             for fld in reg.fields:
-                field_name_suff = f'_{reg_idx}'
 
                 # Translate the field to match the copy of the register that
                 # started at reg_bit0
                 field_copy = fld.make_translated(reg_bit0)
 
-                # The generated field will need a name based on reg_idx (the
-                # index of the register copy that's being used). Similarly, we
-                # have to redirect any alias_target if there is one.
-                field_copy.name += field_name_suff
-                if field_copy.alias_target is not None:
-                    field_copy.alias_target += field_name_suff
+                if is_compact:
+                    # If the register is being compacted, in order to avoid name colision,
+                    # the generated field will need a name based on reg_idx (the index of 
+                    # the register copy that's being used). Similarly, we have to redirect
+                    # any alias_target if there is one.
+                    suffix = f'_{reg_idx}'
+                    field_copy.name += suffix
+                    if field_copy.alias_target is not None:
+                        field_copy.alias_target += suffix
 
                 # Apply field_desc_override (which allows the caller to
                 # simplify documentation for the field when there are lots of

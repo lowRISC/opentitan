@@ -420,10 +420,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_fsm_rst_wdata =
       ^aon_adc_fsm_rst_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_0_min_v_0_qs_int;
-  logic  aon_adc_chn0_filter_ctl_0_cond_0_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_0_max_v_0_qs_int;
-  logic  aon_adc_chn0_filter_ctl_0_en_0_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_0_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_0_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_0_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_0_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_0_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_0_wdata;
   logic aon_adc_chn0_filter_ctl_0_we;
@@ -431,10 +431,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_0_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_0_qs[11:2] = aon_adc_chn0_filter_ctl_0_min_v_0_qs_int;
-    aon_adc_chn0_filter_ctl_0_qs[12] = aon_adc_chn0_filter_ctl_0_cond_0_qs_int;
-    aon_adc_chn0_filter_ctl_0_qs[27:18] = aon_adc_chn0_filter_ctl_0_max_v_0_qs_int;
-    aon_adc_chn0_filter_ctl_0_qs[31] = aon_adc_chn0_filter_ctl_0_en_0_qs_int;
+    aon_adc_chn0_filter_ctl_0_qs[11:2] = aon_adc_chn0_filter_ctl_0_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_0_qs[12] = aon_adc_chn0_filter_ctl_0_cond_qs_int;
+    aon_adc_chn0_filter_ctl_0_qs[27:18] = aon_adc_chn0_filter_ctl_0_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_0_qs[31] = aon_adc_chn0_filter_ctl_0_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -464,10 +464,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_0_wdata =
       ^aon_adc_chn0_filter_ctl_0_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_1_min_v_1_qs_int;
-  logic  aon_adc_chn0_filter_ctl_1_cond_1_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_1_max_v_1_qs_int;
-  logic  aon_adc_chn0_filter_ctl_1_en_1_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_1_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_1_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_1_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_1_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_1_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_1_wdata;
   logic aon_adc_chn0_filter_ctl_1_we;
@@ -475,10 +475,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_1_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_1_qs[11:2] = aon_adc_chn0_filter_ctl_1_min_v_1_qs_int;
-    aon_adc_chn0_filter_ctl_1_qs[12] = aon_adc_chn0_filter_ctl_1_cond_1_qs_int;
-    aon_adc_chn0_filter_ctl_1_qs[27:18] = aon_adc_chn0_filter_ctl_1_max_v_1_qs_int;
-    aon_adc_chn0_filter_ctl_1_qs[31] = aon_adc_chn0_filter_ctl_1_en_1_qs_int;
+    aon_adc_chn0_filter_ctl_1_qs[11:2] = aon_adc_chn0_filter_ctl_1_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_1_qs[12] = aon_adc_chn0_filter_ctl_1_cond_qs_int;
+    aon_adc_chn0_filter_ctl_1_qs[27:18] = aon_adc_chn0_filter_ctl_1_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_1_qs[31] = aon_adc_chn0_filter_ctl_1_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -508,10 +508,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_1_wdata =
       ^aon_adc_chn0_filter_ctl_1_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_2_min_v_2_qs_int;
-  logic  aon_adc_chn0_filter_ctl_2_cond_2_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_2_max_v_2_qs_int;
-  logic  aon_adc_chn0_filter_ctl_2_en_2_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_2_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_2_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_2_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_2_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_2_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_2_wdata;
   logic aon_adc_chn0_filter_ctl_2_we;
@@ -519,10 +519,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_2_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_2_qs[11:2] = aon_adc_chn0_filter_ctl_2_min_v_2_qs_int;
-    aon_adc_chn0_filter_ctl_2_qs[12] = aon_adc_chn0_filter_ctl_2_cond_2_qs_int;
-    aon_adc_chn0_filter_ctl_2_qs[27:18] = aon_adc_chn0_filter_ctl_2_max_v_2_qs_int;
-    aon_adc_chn0_filter_ctl_2_qs[31] = aon_adc_chn0_filter_ctl_2_en_2_qs_int;
+    aon_adc_chn0_filter_ctl_2_qs[11:2] = aon_adc_chn0_filter_ctl_2_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_2_qs[12] = aon_adc_chn0_filter_ctl_2_cond_qs_int;
+    aon_adc_chn0_filter_ctl_2_qs[27:18] = aon_adc_chn0_filter_ctl_2_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_2_qs[31] = aon_adc_chn0_filter_ctl_2_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -552,10 +552,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_2_wdata =
       ^aon_adc_chn0_filter_ctl_2_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_3_min_v_3_qs_int;
-  logic  aon_adc_chn0_filter_ctl_3_cond_3_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_3_max_v_3_qs_int;
-  logic  aon_adc_chn0_filter_ctl_3_en_3_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_3_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_3_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_3_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_3_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_3_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_3_wdata;
   logic aon_adc_chn0_filter_ctl_3_we;
@@ -563,10 +563,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_3_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_3_qs[11:2] = aon_adc_chn0_filter_ctl_3_min_v_3_qs_int;
-    aon_adc_chn0_filter_ctl_3_qs[12] = aon_adc_chn0_filter_ctl_3_cond_3_qs_int;
-    aon_adc_chn0_filter_ctl_3_qs[27:18] = aon_adc_chn0_filter_ctl_3_max_v_3_qs_int;
-    aon_adc_chn0_filter_ctl_3_qs[31] = aon_adc_chn0_filter_ctl_3_en_3_qs_int;
+    aon_adc_chn0_filter_ctl_3_qs[11:2] = aon_adc_chn0_filter_ctl_3_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_3_qs[12] = aon_adc_chn0_filter_ctl_3_cond_qs_int;
+    aon_adc_chn0_filter_ctl_3_qs[27:18] = aon_adc_chn0_filter_ctl_3_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_3_qs[31] = aon_adc_chn0_filter_ctl_3_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -596,10 +596,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_3_wdata =
       ^aon_adc_chn0_filter_ctl_3_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_4_min_v_4_qs_int;
-  logic  aon_adc_chn0_filter_ctl_4_cond_4_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_4_max_v_4_qs_int;
-  logic  aon_adc_chn0_filter_ctl_4_en_4_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_4_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_4_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_4_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_4_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_4_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_4_wdata;
   logic aon_adc_chn0_filter_ctl_4_we;
@@ -607,10 +607,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_4_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_4_qs[11:2] = aon_adc_chn0_filter_ctl_4_min_v_4_qs_int;
-    aon_adc_chn0_filter_ctl_4_qs[12] = aon_adc_chn0_filter_ctl_4_cond_4_qs_int;
-    aon_adc_chn0_filter_ctl_4_qs[27:18] = aon_adc_chn0_filter_ctl_4_max_v_4_qs_int;
-    aon_adc_chn0_filter_ctl_4_qs[31] = aon_adc_chn0_filter_ctl_4_en_4_qs_int;
+    aon_adc_chn0_filter_ctl_4_qs[11:2] = aon_adc_chn0_filter_ctl_4_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_4_qs[12] = aon_adc_chn0_filter_ctl_4_cond_qs_int;
+    aon_adc_chn0_filter_ctl_4_qs[27:18] = aon_adc_chn0_filter_ctl_4_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_4_qs[31] = aon_adc_chn0_filter_ctl_4_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -640,10 +640,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_4_wdata =
       ^aon_adc_chn0_filter_ctl_4_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_5_min_v_5_qs_int;
-  logic  aon_adc_chn0_filter_ctl_5_cond_5_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_5_max_v_5_qs_int;
-  logic  aon_adc_chn0_filter_ctl_5_en_5_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_5_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_5_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_5_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_5_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_5_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_5_wdata;
   logic aon_adc_chn0_filter_ctl_5_we;
@@ -651,10 +651,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_5_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_5_qs[11:2] = aon_adc_chn0_filter_ctl_5_min_v_5_qs_int;
-    aon_adc_chn0_filter_ctl_5_qs[12] = aon_adc_chn0_filter_ctl_5_cond_5_qs_int;
-    aon_adc_chn0_filter_ctl_5_qs[27:18] = aon_adc_chn0_filter_ctl_5_max_v_5_qs_int;
-    aon_adc_chn0_filter_ctl_5_qs[31] = aon_adc_chn0_filter_ctl_5_en_5_qs_int;
+    aon_adc_chn0_filter_ctl_5_qs[11:2] = aon_adc_chn0_filter_ctl_5_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_5_qs[12] = aon_adc_chn0_filter_ctl_5_cond_qs_int;
+    aon_adc_chn0_filter_ctl_5_qs[27:18] = aon_adc_chn0_filter_ctl_5_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_5_qs[31] = aon_adc_chn0_filter_ctl_5_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -684,10 +684,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_5_wdata =
       ^aon_adc_chn0_filter_ctl_5_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_6_min_v_6_qs_int;
-  logic  aon_adc_chn0_filter_ctl_6_cond_6_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_6_max_v_6_qs_int;
-  logic  aon_adc_chn0_filter_ctl_6_en_6_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_6_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_6_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_6_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_6_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_6_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_6_wdata;
   logic aon_adc_chn0_filter_ctl_6_we;
@@ -695,10 +695,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_6_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_6_qs[11:2] = aon_adc_chn0_filter_ctl_6_min_v_6_qs_int;
-    aon_adc_chn0_filter_ctl_6_qs[12] = aon_adc_chn0_filter_ctl_6_cond_6_qs_int;
-    aon_adc_chn0_filter_ctl_6_qs[27:18] = aon_adc_chn0_filter_ctl_6_max_v_6_qs_int;
-    aon_adc_chn0_filter_ctl_6_qs[31] = aon_adc_chn0_filter_ctl_6_en_6_qs_int;
+    aon_adc_chn0_filter_ctl_6_qs[11:2] = aon_adc_chn0_filter_ctl_6_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_6_qs[12] = aon_adc_chn0_filter_ctl_6_cond_qs_int;
+    aon_adc_chn0_filter_ctl_6_qs[27:18] = aon_adc_chn0_filter_ctl_6_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_6_qs[31] = aon_adc_chn0_filter_ctl_6_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -728,10 +728,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_6_wdata =
       ^aon_adc_chn0_filter_ctl_6_wdata;
 
-  logic [9:0]  aon_adc_chn0_filter_ctl_7_min_v_7_qs_int;
-  logic  aon_adc_chn0_filter_ctl_7_cond_7_qs_int;
-  logic [9:0]  aon_adc_chn0_filter_ctl_7_max_v_7_qs_int;
-  logic  aon_adc_chn0_filter_ctl_7_en_7_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_7_min_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_7_cond_qs_int;
+  logic [9:0]  aon_adc_chn0_filter_ctl_7_max_v_qs_int;
+  logic  aon_adc_chn0_filter_ctl_7_en_qs_int;
   logic [31:0] aon_adc_chn0_filter_ctl_7_qs;
   logic [31:0] aon_adc_chn0_filter_ctl_7_wdata;
   logic aon_adc_chn0_filter_ctl_7_we;
@@ -739,10 +739,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn0_filter_ctl_7_qs = 32'h0;
-    aon_adc_chn0_filter_ctl_7_qs[11:2] = aon_adc_chn0_filter_ctl_7_min_v_7_qs_int;
-    aon_adc_chn0_filter_ctl_7_qs[12] = aon_adc_chn0_filter_ctl_7_cond_7_qs_int;
-    aon_adc_chn0_filter_ctl_7_qs[27:18] = aon_adc_chn0_filter_ctl_7_max_v_7_qs_int;
-    aon_adc_chn0_filter_ctl_7_qs[31] = aon_adc_chn0_filter_ctl_7_en_7_qs_int;
+    aon_adc_chn0_filter_ctl_7_qs[11:2] = aon_adc_chn0_filter_ctl_7_min_v_qs_int;
+    aon_adc_chn0_filter_ctl_7_qs[12] = aon_adc_chn0_filter_ctl_7_cond_qs_int;
+    aon_adc_chn0_filter_ctl_7_qs[27:18] = aon_adc_chn0_filter_ctl_7_max_v_qs_int;
+    aon_adc_chn0_filter_ctl_7_qs[31] = aon_adc_chn0_filter_ctl_7_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -772,10 +772,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn0_filter_ctl_7_wdata =
       ^aon_adc_chn0_filter_ctl_7_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_0_min_v_0_qs_int;
-  logic  aon_adc_chn1_filter_ctl_0_cond_0_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_0_max_v_0_qs_int;
-  logic  aon_adc_chn1_filter_ctl_0_en_0_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_0_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_0_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_0_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_0_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_0_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_0_wdata;
   logic aon_adc_chn1_filter_ctl_0_we;
@@ -783,10 +783,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_0_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_0_qs[11:2] = aon_adc_chn1_filter_ctl_0_min_v_0_qs_int;
-    aon_adc_chn1_filter_ctl_0_qs[12] = aon_adc_chn1_filter_ctl_0_cond_0_qs_int;
-    aon_adc_chn1_filter_ctl_0_qs[27:18] = aon_adc_chn1_filter_ctl_0_max_v_0_qs_int;
-    aon_adc_chn1_filter_ctl_0_qs[31] = aon_adc_chn1_filter_ctl_0_en_0_qs_int;
+    aon_adc_chn1_filter_ctl_0_qs[11:2] = aon_adc_chn1_filter_ctl_0_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_0_qs[12] = aon_adc_chn1_filter_ctl_0_cond_qs_int;
+    aon_adc_chn1_filter_ctl_0_qs[27:18] = aon_adc_chn1_filter_ctl_0_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_0_qs[31] = aon_adc_chn1_filter_ctl_0_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -816,10 +816,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_0_wdata =
       ^aon_adc_chn1_filter_ctl_0_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_1_min_v_1_qs_int;
-  logic  aon_adc_chn1_filter_ctl_1_cond_1_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_1_max_v_1_qs_int;
-  logic  aon_adc_chn1_filter_ctl_1_en_1_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_1_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_1_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_1_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_1_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_1_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_1_wdata;
   logic aon_adc_chn1_filter_ctl_1_we;
@@ -827,10 +827,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_1_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_1_qs[11:2] = aon_adc_chn1_filter_ctl_1_min_v_1_qs_int;
-    aon_adc_chn1_filter_ctl_1_qs[12] = aon_adc_chn1_filter_ctl_1_cond_1_qs_int;
-    aon_adc_chn1_filter_ctl_1_qs[27:18] = aon_adc_chn1_filter_ctl_1_max_v_1_qs_int;
-    aon_adc_chn1_filter_ctl_1_qs[31] = aon_adc_chn1_filter_ctl_1_en_1_qs_int;
+    aon_adc_chn1_filter_ctl_1_qs[11:2] = aon_adc_chn1_filter_ctl_1_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_1_qs[12] = aon_adc_chn1_filter_ctl_1_cond_qs_int;
+    aon_adc_chn1_filter_ctl_1_qs[27:18] = aon_adc_chn1_filter_ctl_1_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_1_qs[31] = aon_adc_chn1_filter_ctl_1_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -860,10 +860,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_1_wdata =
       ^aon_adc_chn1_filter_ctl_1_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_2_min_v_2_qs_int;
-  logic  aon_adc_chn1_filter_ctl_2_cond_2_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_2_max_v_2_qs_int;
-  logic  aon_adc_chn1_filter_ctl_2_en_2_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_2_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_2_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_2_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_2_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_2_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_2_wdata;
   logic aon_adc_chn1_filter_ctl_2_we;
@@ -871,10 +871,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_2_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_2_qs[11:2] = aon_adc_chn1_filter_ctl_2_min_v_2_qs_int;
-    aon_adc_chn1_filter_ctl_2_qs[12] = aon_adc_chn1_filter_ctl_2_cond_2_qs_int;
-    aon_adc_chn1_filter_ctl_2_qs[27:18] = aon_adc_chn1_filter_ctl_2_max_v_2_qs_int;
-    aon_adc_chn1_filter_ctl_2_qs[31] = aon_adc_chn1_filter_ctl_2_en_2_qs_int;
+    aon_adc_chn1_filter_ctl_2_qs[11:2] = aon_adc_chn1_filter_ctl_2_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_2_qs[12] = aon_adc_chn1_filter_ctl_2_cond_qs_int;
+    aon_adc_chn1_filter_ctl_2_qs[27:18] = aon_adc_chn1_filter_ctl_2_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_2_qs[31] = aon_adc_chn1_filter_ctl_2_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -904,10 +904,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_2_wdata =
       ^aon_adc_chn1_filter_ctl_2_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_3_min_v_3_qs_int;
-  logic  aon_adc_chn1_filter_ctl_3_cond_3_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_3_max_v_3_qs_int;
-  logic  aon_adc_chn1_filter_ctl_3_en_3_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_3_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_3_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_3_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_3_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_3_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_3_wdata;
   logic aon_adc_chn1_filter_ctl_3_we;
@@ -915,10 +915,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_3_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_3_qs[11:2] = aon_adc_chn1_filter_ctl_3_min_v_3_qs_int;
-    aon_adc_chn1_filter_ctl_3_qs[12] = aon_adc_chn1_filter_ctl_3_cond_3_qs_int;
-    aon_adc_chn1_filter_ctl_3_qs[27:18] = aon_adc_chn1_filter_ctl_3_max_v_3_qs_int;
-    aon_adc_chn1_filter_ctl_3_qs[31] = aon_adc_chn1_filter_ctl_3_en_3_qs_int;
+    aon_adc_chn1_filter_ctl_3_qs[11:2] = aon_adc_chn1_filter_ctl_3_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_3_qs[12] = aon_adc_chn1_filter_ctl_3_cond_qs_int;
+    aon_adc_chn1_filter_ctl_3_qs[27:18] = aon_adc_chn1_filter_ctl_3_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_3_qs[31] = aon_adc_chn1_filter_ctl_3_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -948,10 +948,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_3_wdata =
       ^aon_adc_chn1_filter_ctl_3_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_4_min_v_4_qs_int;
-  logic  aon_adc_chn1_filter_ctl_4_cond_4_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_4_max_v_4_qs_int;
-  logic  aon_adc_chn1_filter_ctl_4_en_4_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_4_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_4_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_4_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_4_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_4_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_4_wdata;
   logic aon_adc_chn1_filter_ctl_4_we;
@@ -959,10 +959,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_4_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_4_qs[11:2] = aon_adc_chn1_filter_ctl_4_min_v_4_qs_int;
-    aon_adc_chn1_filter_ctl_4_qs[12] = aon_adc_chn1_filter_ctl_4_cond_4_qs_int;
-    aon_adc_chn1_filter_ctl_4_qs[27:18] = aon_adc_chn1_filter_ctl_4_max_v_4_qs_int;
-    aon_adc_chn1_filter_ctl_4_qs[31] = aon_adc_chn1_filter_ctl_4_en_4_qs_int;
+    aon_adc_chn1_filter_ctl_4_qs[11:2] = aon_adc_chn1_filter_ctl_4_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_4_qs[12] = aon_adc_chn1_filter_ctl_4_cond_qs_int;
+    aon_adc_chn1_filter_ctl_4_qs[27:18] = aon_adc_chn1_filter_ctl_4_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_4_qs[31] = aon_adc_chn1_filter_ctl_4_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -992,10 +992,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_4_wdata =
       ^aon_adc_chn1_filter_ctl_4_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_5_min_v_5_qs_int;
-  logic  aon_adc_chn1_filter_ctl_5_cond_5_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_5_max_v_5_qs_int;
-  logic  aon_adc_chn1_filter_ctl_5_en_5_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_5_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_5_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_5_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_5_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_5_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_5_wdata;
   logic aon_adc_chn1_filter_ctl_5_we;
@@ -1003,10 +1003,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_5_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_5_qs[11:2] = aon_adc_chn1_filter_ctl_5_min_v_5_qs_int;
-    aon_adc_chn1_filter_ctl_5_qs[12] = aon_adc_chn1_filter_ctl_5_cond_5_qs_int;
-    aon_adc_chn1_filter_ctl_5_qs[27:18] = aon_adc_chn1_filter_ctl_5_max_v_5_qs_int;
-    aon_adc_chn1_filter_ctl_5_qs[31] = aon_adc_chn1_filter_ctl_5_en_5_qs_int;
+    aon_adc_chn1_filter_ctl_5_qs[11:2] = aon_adc_chn1_filter_ctl_5_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_5_qs[12] = aon_adc_chn1_filter_ctl_5_cond_qs_int;
+    aon_adc_chn1_filter_ctl_5_qs[27:18] = aon_adc_chn1_filter_ctl_5_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_5_qs[31] = aon_adc_chn1_filter_ctl_5_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1036,10 +1036,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_5_wdata =
       ^aon_adc_chn1_filter_ctl_5_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_6_min_v_6_qs_int;
-  logic  aon_adc_chn1_filter_ctl_6_cond_6_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_6_max_v_6_qs_int;
-  logic  aon_adc_chn1_filter_ctl_6_en_6_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_6_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_6_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_6_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_6_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_6_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_6_wdata;
   logic aon_adc_chn1_filter_ctl_6_we;
@@ -1047,10 +1047,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_6_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_6_qs[11:2] = aon_adc_chn1_filter_ctl_6_min_v_6_qs_int;
-    aon_adc_chn1_filter_ctl_6_qs[12] = aon_adc_chn1_filter_ctl_6_cond_6_qs_int;
-    aon_adc_chn1_filter_ctl_6_qs[27:18] = aon_adc_chn1_filter_ctl_6_max_v_6_qs_int;
-    aon_adc_chn1_filter_ctl_6_qs[31] = aon_adc_chn1_filter_ctl_6_en_6_qs_int;
+    aon_adc_chn1_filter_ctl_6_qs[11:2] = aon_adc_chn1_filter_ctl_6_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_6_qs[12] = aon_adc_chn1_filter_ctl_6_cond_qs_int;
+    aon_adc_chn1_filter_ctl_6_qs[27:18] = aon_adc_chn1_filter_ctl_6_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_6_qs[31] = aon_adc_chn1_filter_ctl_6_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1080,10 +1080,10 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_6_wdata =
       ^aon_adc_chn1_filter_ctl_6_wdata;
 
-  logic [9:0]  aon_adc_chn1_filter_ctl_7_min_v_7_qs_int;
-  logic  aon_adc_chn1_filter_ctl_7_cond_7_qs_int;
-  logic [9:0]  aon_adc_chn1_filter_ctl_7_max_v_7_qs_int;
-  logic  aon_adc_chn1_filter_ctl_7_en_7_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_7_min_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_7_cond_qs_int;
+  logic [9:0]  aon_adc_chn1_filter_ctl_7_max_v_qs_int;
+  logic  aon_adc_chn1_filter_ctl_7_en_qs_int;
   logic [31:0] aon_adc_chn1_filter_ctl_7_qs;
   logic [31:0] aon_adc_chn1_filter_ctl_7_wdata;
   logic aon_adc_chn1_filter_ctl_7_we;
@@ -1091,10 +1091,10 @@ module adc_ctrl_reg_top (
 
   always_comb begin
     aon_adc_chn1_filter_ctl_7_qs = 32'h0;
-    aon_adc_chn1_filter_ctl_7_qs[11:2] = aon_adc_chn1_filter_ctl_7_min_v_7_qs_int;
-    aon_adc_chn1_filter_ctl_7_qs[12] = aon_adc_chn1_filter_ctl_7_cond_7_qs_int;
-    aon_adc_chn1_filter_ctl_7_qs[27:18] = aon_adc_chn1_filter_ctl_7_max_v_7_qs_int;
-    aon_adc_chn1_filter_ctl_7_qs[31] = aon_adc_chn1_filter_ctl_7_en_7_qs_int;
+    aon_adc_chn1_filter_ctl_7_qs[11:2] = aon_adc_chn1_filter_ctl_7_min_v_qs_int;
+    aon_adc_chn1_filter_ctl_7_qs[12] = aon_adc_chn1_filter_ctl_7_cond_qs_int;
+    aon_adc_chn1_filter_ctl_7_qs[27:18] = aon_adc_chn1_filter_ctl_7_max_v_qs_int;
+    aon_adc_chn1_filter_ctl_7_qs[31] = aon_adc_chn1_filter_ctl_7_en_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1124,14 +1124,14 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_chn1_filter_ctl_7_wdata =
       ^aon_adc_chn1_filter_ctl_7_wdata;
 
-  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_ext_0_ds_int;
-  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_ext_0_qs_int;
-  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_0_ds_int;
-  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_0_qs_int;
-  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_intr_ext_0_ds_int;
-  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_intr_ext_0_qs_int;
-  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_intr_0_ds_int;
-  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_intr_0_qs_int;
+  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_ext_ds_int;
+  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_ext_qs_int;
+  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_ds_int;
+  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_qs_int;
+  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_intr_ext_ds_int;
+  logic [1:0]  aon_adc_chn_val_0_adc_chn_value_intr_ext_qs_int;
+  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_intr_ds_int;
+  logic [9:0]  aon_adc_chn_val_0_adc_chn_value_intr_qs_int;
   logic [27:0] aon_adc_chn_val_0_ds;
   logic aon_adc_chn_val_0_qe;
   logic [27:0] aon_adc_chn_val_0_qs;
@@ -1139,14 +1139,14 @@ module adc_ctrl_reg_top (
   always_comb begin
     aon_adc_chn_val_0_qs = 28'h0;
     aon_adc_chn_val_0_ds = 28'h0;
-    aon_adc_chn_val_0_ds[1:0] = aon_adc_chn_val_0_adc_chn_value_ext_0_ds_int;
-    aon_adc_chn_val_0_qs[1:0] = aon_adc_chn_val_0_adc_chn_value_ext_0_qs_int;
-    aon_adc_chn_val_0_ds[11:2] = aon_adc_chn_val_0_adc_chn_value_0_ds_int;
-    aon_adc_chn_val_0_qs[11:2] = aon_adc_chn_val_0_adc_chn_value_0_qs_int;
-    aon_adc_chn_val_0_ds[17:16] = aon_adc_chn_val_0_adc_chn_value_intr_ext_0_ds_int;
-    aon_adc_chn_val_0_qs[17:16] = aon_adc_chn_val_0_adc_chn_value_intr_ext_0_qs_int;
-    aon_adc_chn_val_0_ds[27:18] = aon_adc_chn_val_0_adc_chn_value_intr_0_ds_int;
-    aon_adc_chn_val_0_qs[27:18] = aon_adc_chn_val_0_adc_chn_value_intr_0_qs_int;
+    aon_adc_chn_val_0_ds[1:0] = aon_adc_chn_val_0_adc_chn_value_ext_ds_int;
+    aon_adc_chn_val_0_qs[1:0] = aon_adc_chn_val_0_adc_chn_value_ext_qs_int;
+    aon_adc_chn_val_0_ds[11:2] = aon_adc_chn_val_0_adc_chn_value_ds_int;
+    aon_adc_chn_val_0_qs[11:2] = aon_adc_chn_val_0_adc_chn_value_qs_int;
+    aon_adc_chn_val_0_ds[17:16] = aon_adc_chn_val_0_adc_chn_value_intr_ext_ds_int;
+    aon_adc_chn_val_0_qs[17:16] = aon_adc_chn_val_0_adc_chn_value_intr_ext_qs_int;
+    aon_adc_chn_val_0_ds[27:18] = aon_adc_chn_val_0_adc_chn_value_intr_ds_int;
+    aon_adc_chn_val_0_qs[27:18] = aon_adc_chn_val_0_adc_chn_value_intr_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1174,14 +1174,14 @@ module adc_ctrl_reg_top (
     .dst_wd_o     ()
   );
 
-  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_ext_1_ds_int;
-  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_ext_1_qs_int;
-  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_1_ds_int;
-  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_1_qs_int;
-  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_intr_ext_1_ds_int;
-  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_intr_ext_1_qs_int;
-  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_intr_1_ds_int;
-  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_intr_1_qs_int;
+  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_ext_ds_int;
+  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_ext_qs_int;
+  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_ds_int;
+  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_qs_int;
+  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_intr_ext_ds_int;
+  logic [1:0]  aon_adc_chn_val_1_adc_chn_value_intr_ext_qs_int;
+  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_intr_ds_int;
+  logic [9:0]  aon_adc_chn_val_1_adc_chn_value_intr_qs_int;
   logic [27:0] aon_adc_chn_val_1_ds;
   logic aon_adc_chn_val_1_qe;
   logic [27:0] aon_adc_chn_val_1_qs;
@@ -1189,14 +1189,14 @@ module adc_ctrl_reg_top (
   always_comb begin
     aon_adc_chn_val_1_qs = 28'h0;
     aon_adc_chn_val_1_ds = 28'h0;
-    aon_adc_chn_val_1_ds[1:0] = aon_adc_chn_val_1_adc_chn_value_ext_1_ds_int;
-    aon_adc_chn_val_1_qs[1:0] = aon_adc_chn_val_1_adc_chn_value_ext_1_qs_int;
-    aon_adc_chn_val_1_ds[11:2] = aon_adc_chn_val_1_adc_chn_value_1_ds_int;
-    aon_adc_chn_val_1_qs[11:2] = aon_adc_chn_val_1_adc_chn_value_1_qs_int;
-    aon_adc_chn_val_1_ds[17:16] = aon_adc_chn_val_1_adc_chn_value_intr_ext_1_ds_int;
-    aon_adc_chn_val_1_qs[17:16] = aon_adc_chn_val_1_adc_chn_value_intr_ext_1_qs_int;
-    aon_adc_chn_val_1_ds[27:18] = aon_adc_chn_val_1_adc_chn_value_intr_1_ds_int;
-    aon_adc_chn_val_1_qs[27:18] = aon_adc_chn_val_1_adc_chn_value_intr_1_qs_int;
+    aon_adc_chn_val_1_ds[1:0] = aon_adc_chn_val_1_adc_chn_value_ext_ds_int;
+    aon_adc_chn_val_1_qs[1:0] = aon_adc_chn_val_1_adc_chn_value_ext_qs_int;
+    aon_adc_chn_val_1_ds[11:2] = aon_adc_chn_val_1_adc_chn_value_ds_int;
+    aon_adc_chn_val_1_qs[11:2] = aon_adc_chn_val_1_adc_chn_value_qs_int;
+    aon_adc_chn_val_1_ds[17:16] = aon_adc_chn_val_1_adc_chn_value_intr_ext_ds_int;
+    aon_adc_chn_val_1_qs[17:16] = aon_adc_chn_val_1_adc_chn_value_intr_ext_qs_int;
+    aon_adc_chn_val_1_ds[27:18] = aon_adc_chn_val_1_adc_chn_value_intr_ds_int;
+    aon_adc_chn_val_1_qs[27:18] = aon_adc_chn_val_1_adc_chn_value_intr_qs_int;
   end
 
   prim_reg_cdc #(
@@ -1672,13 +1672,13 @@ module adc_ctrl_reg_top (
 
   // Subregister 0 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_0]: V(False)
-  //   F[min_v_0]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_0_min_v_0 (
+  ) u_adc_chn0_filter_ctl_0_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1696,16 +1696,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_0_min_v_0_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_0_min_v_qs_int)
   );
 
-  //   F[cond_0]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_0_cond_0 (
+  ) u_adc_chn0_filter_ctl_0_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1723,16 +1723,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_0_cond_0_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_0_cond_qs_int)
   );
 
-  //   F[max_v_0]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_0_max_v_0 (
+  ) u_adc_chn0_filter_ctl_0_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1750,16 +1750,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_0_max_v_0_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_0_max_v_qs_int)
   );
 
-  //   F[en_0]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_0_en_0 (
+  ) u_adc_chn0_filter_ctl_0_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1777,19 +1777,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_0_en_0_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_0_en_qs_int)
   );
 
 
   // Subregister 1 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_1]: V(False)
-  //   F[min_v_1]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_1_min_v_1 (
+  ) u_adc_chn0_filter_ctl_1_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1807,16 +1807,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_1_min_v_1_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_1_min_v_qs_int)
   );
 
-  //   F[cond_1]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_1_cond_1 (
+  ) u_adc_chn0_filter_ctl_1_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1834,16 +1834,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_1_cond_1_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_1_cond_qs_int)
   );
 
-  //   F[max_v_1]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_1_max_v_1 (
+  ) u_adc_chn0_filter_ctl_1_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1861,16 +1861,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_1_max_v_1_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_1_max_v_qs_int)
   );
 
-  //   F[en_1]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_1_en_1 (
+  ) u_adc_chn0_filter_ctl_1_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1888,19 +1888,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_1_en_1_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_1_en_qs_int)
   );
 
 
   // Subregister 2 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_2]: V(False)
-  //   F[min_v_2]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_2_min_v_2 (
+  ) u_adc_chn0_filter_ctl_2_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1918,16 +1918,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_2_min_v_2_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_2_min_v_qs_int)
   );
 
-  //   F[cond_2]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_2_cond_2 (
+  ) u_adc_chn0_filter_ctl_2_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1945,16 +1945,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_2_cond_2_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_2_cond_qs_int)
   );
 
-  //   F[max_v_2]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_2_max_v_2 (
+  ) u_adc_chn0_filter_ctl_2_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1972,16 +1972,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_2_max_v_2_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_2_max_v_qs_int)
   );
 
-  //   F[en_2]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_2_en_2 (
+  ) u_adc_chn0_filter_ctl_2_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -1999,19 +1999,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_2_en_2_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_2_en_qs_int)
   );
 
 
   // Subregister 3 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_3]: V(False)
-  //   F[min_v_3]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_3_min_v_3 (
+  ) u_adc_chn0_filter_ctl_3_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2029,16 +2029,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_3_min_v_3_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_3_min_v_qs_int)
   );
 
-  //   F[cond_3]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_3_cond_3 (
+  ) u_adc_chn0_filter_ctl_3_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2056,16 +2056,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_3_cond_3_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_3_cond_qs_int)
   );
 
-  //   F[max_v_3]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_3_max_v_3 (
+  ) u_adc_chn0_filter_ctl_3_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2083,16 +2083,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_3_max_v_3_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_3_max_v_qs_int)
   );
 
-  //   F[en_3]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_3_en_3 (
+  ) u_adc_chn0_filter_ctl_3_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2110,19 +2110,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_3_en_3_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_3_en_qs_int)
   );
 
 
   // Subregister 4 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_4]: V(False)
-  //   F[min_v_4]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_4_min_v_4 (
+  ) u_adc_chn0_filter_ctl_4_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2140,16 +2140,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_4_min_v_4_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_4_min_v_qs_int)
   );
 
-  //   F[cond_4]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_4_cond_4 (
+  ) u_adc_chn0_filter_ctl_4_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2167,16 +2167,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_4_cond_4_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_4_cond_qs_int)
   );
 
-  //   F[max_v_4]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_4_max_v_4 (
+  ) u_adc_chn0_filter_ctl_4_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2194,16 +2194,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_4_max_v_4_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_4_max_v_qs_int)
   );
 
-  //   F[en_4]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_4_en_4 (
+  ) u_adc_chn0_filter_ctl_4_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2221,19 +2221,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_4_en_4_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_4_en_qs_int)
   );
 
 
   // Subregister 5 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_5]: V(False)
-  //   F[min_v_5]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_5_min_v_5 (
+  ) u_adc_chn0_filter_ctl_5_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2251,16 +2251,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_5_min_v_5_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_5_min_v_qs_int)
   );
 
-  //   F[cond_5]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_5_cond_5 (
+  ) u_adc_chn0_filter_ctl_5_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2278,16 +2278,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_5_cond_5_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_5_cond_qs_int)
   );
 
-  //   F[max_v_5]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_5_max_v_5 (
+  ) u_adc_chn0_filter_ctl_5_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2305,16 +2305,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_5_max_v_5_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_5_max_v_qs_int)
   );
 
-  //   F[en_5]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_5_en_5 (
+  ) u_adc_chn0_filter_ctl_5_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2332,19 +2332,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_5_en_5_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_5_en_qs_int)
   );
 
 
   // Subregister 6 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_6]: V(False)
-  //   F[min_v_6]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_6_min_v_6 (
+  ) u_adc_chn0_filter_ctl_6_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2362,16 +2362,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_6_min_v_6_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_6_min_v_qs_int)
   );
 
-  //   F[cond_6]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_6_cond_6 (
+  ) u_adc_chn0_filter_ctl_6_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2389,16 +2389,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_6_cond_6_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_6_cond_qs_int)
   );
 
-  //   F[max_v_6]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_6_max_v_6 (
+  ) u_adc_chn0_filter_ctl_6_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2416,16 +2416,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_6_max_v_6_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_6_max_v_qs_int)
   );
 
-  //   F[en_6]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_6_en_6 (
+  ) u_adc_chn0_filter_ctl_6_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2443,19 +2443,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_6_en_6_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_6_en_qs_int)
   );
 
 
   // Subregister 7 of Multireg adc_chn0_filter_ctl
   // R[adc_chn0_filter_ctl_7]: V(False)
-  //   F[min_v_7]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_7_min_v_7 (
+  ) u_adc_chn0_filter_ctl_7_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2473,16 +2473,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_7_min_v_7_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_7_min_v_qs_int)
   );
 
-  //   F[cond_7]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_7_cond_7 (
+  ) u_adc_chn0_filter_ctl_7_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2500,16 +2500,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_7_cond_7_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_7_cond_qs_int)
   );
 
-  //   F[max_v_7]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_7_max_v_7 (
+  ) u_adc_chn0_filter_ctl_7_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2527,16 +2527,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_7_max_v_7_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_7_max_v_qs_int)
   );
 
-  //   F[en_7]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn0_filter_ctl_7_en_7 (
+  ) u_adc_chn0_filter_ctl_7_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2554,19 +2554,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn0_filter_ctl_7_en_7_qs_int)
+    .qs     (aon_adc_chn0_filter_ctl_7_en_qs_int)
   );
 
 
   // Subregister 0 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_0]: V(False)
-  //   F[min_v_0]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_0_min_v_0 (
+  ) u_adc_chn1_filter_ctl_0_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2584,16 +2584,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_0_min_v_0_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_0_min_v_qs_int)
   );
 
-  //   F[cond_0]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_0_cond_0 (
+  ) u_adc_chn1_filter_ctl_0_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2611,16 +2611,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_0_cond_0_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_0_cond_qs_int)
   );
 
-  //   F[max_v_0]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_0_max_v_0 (
+  ) u_adc_chn1_filter_ctl_0_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2638,16 +2638,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_0_max_v_0_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_0_max_v_qs_int)
   );
 
-  //   F[en_0]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_0_en_0 (
+  ) u_adc_chn1_filter_ctl_0_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2665,19 +2665,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_0_en_0_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_0_en_qs_int)
   );
 
 
   // Subregister 1 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_1]: V(False)
-  //   F[min_v_1]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_1_min_v_1 (
+  ) u_adc_chn1_filter_ctl_1_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2695,16 +2695,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_1_min_v_1_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_1_min_v_qs_int)
   );
 
-  //   F[cond_1]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_1_cond_1 (
+  ) u_adc_chn1_filter_ctl_1_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2722,16 +2722,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_1_cond_1_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_1_cond_qs_int)
   );
 
-  //   F[max_v_1]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_1_max_v_1 (
+  ) u_adc_chn1_filter_ctl_1_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2749,16 +2749,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_1_max_v_1_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_1_max_v_qs_int)
   );
 
-  //   F[en_1]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_1_en_1 (
+  ) u_adc_chn1_filter_ctl_1_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2776,19 +2776,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_1_en_1_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_1_en_qs_int)
   );
 
 
   // Subregister 2 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_2]: V(False)
-  //   F[min_v_2]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_2_min_v_2 (
+  ) u_adc_chn1_filter_ctl_2_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2806,16 +2806,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_2_min_v_2_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_2_min_v_qs_int)
   );
 
-  //   F[cond_2]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_2_cond_2 (
+  ) u_adc_chn1_filter_ctl_2_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2833,16 +2833,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_2_cond_2_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_2_cond_qs_int)
   );
 
-  //   F[max_v_2]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_2_max_v_2 (
+  ) u_adc_chn1_filter_ctl_2_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2860,16 +2860,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_2_max_v_2_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_2_max_v_qs_int)
   );
 
-  //   F[en_2]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_2_en_2 (
+  ) u_adc_chn1_filter_ctl_2_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2887,19 +2887,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_2_en_2_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_2_en_qs_int)
   );
 
 
   // Subregister 3 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_3]: V(False)
-  //   F[min_v_3]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_3_min_v_3 (
+  ) u_adc_chn1_filter_ctl_3_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2917,16 +2917,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_3_min_v_3_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_3_min_v_qs_int)
   );
 
-  //   F[cond_3]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_3_cond_3 (
+  ) u_adc_chn1_filter_ctl_3_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2944,16 +2944,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_3_cond_3_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_3_cond_qs_int)
   );
 
-  //   F[max_v_3]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_3_max_v_3 (
+  ) u_adc_chn1_filter_ctl_3_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2971,16 +2971,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_3_max_v_3_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_3_max_v_qs_int)
   );
 
-  //   F[en_3]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_3_en_3 (
+  ) u_adc_chn1_filter_ctl_3_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -2998,19 +2998,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_3_en_3_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_3_en_qs_int)
   );
 
 
   // Subregister 4 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_4]: V(False)
-  //   F[min_v_4]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_4_min_v_4 (
+  ) u_adc_chn1_filter_ctl_4_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3028,16 +3028,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_4_min_v_4_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_4_min_v_qs_int)
   );
 
-  //   F[cond_4]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_4_cond_4 (
+  ) u_adc_chn1_filter_ctl_4_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3055,16 +3055,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_4_cond_4_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_4_cond_qs_int)
   );
 
-  //   F[max_v_4]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_4_max_v_4 (
+  ) u_adc_chn1_filter_ctl_4_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3082,16 +3082,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_4_max_v_4_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_4_max_v_qs_int)
   );
 
-  //   F[en_4]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_4_en_4 (
+  ) u_adc_chn1_filter_ctl_4_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3109,19 +3109,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_4_en_4_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_4_en_qs_int)
   );
 
 
   // Subregister 5 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_5]: V(False)
-  //   F[min_v_5]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_5_min_v_5 (
+  ) u_adc_chn1_filter_ctl_5_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3139,16 +3139,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_5_min_v_5_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_5_min_v_qs_int)
   );
 
-  //   F[cond_5]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_5_cond_5 (
+  ) u_adc_chn1_filter_ctl_5_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3166,16 +3166,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_5_cond_5_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_5_cond_qs_int)
   );
 
-  //   F[max_v_5]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_5_max_v_5 (
+  ) u_adc_chn1_filter_ctl_5_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3193,16 +3193,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_5_max_v_5_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_5_max_v_qs_int)
   );
 
-  //   F[en_5]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_5_en_5 (
+  ) u_adc_chn1_filter_ctl_5_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3220,19 +3220,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_5_en_5_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_5_en_qs_int)
   );
 
 
   // Subregister 6 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_6]: V(False)
-  //   F[min_v_6]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_6_min_v_6 (
+  ) u_adc_chn1_filter_ctl_6_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3250,16 +3250,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_6_min_v_6_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_6_min_v_qs_int)
   );
 
-  //   F[cond_6]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_6_cond_6 (
+  ) u_adc_chn1_filter_ctl_6_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3277,16 +3277,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_6_cond_6_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_6_cond_qs_int)
   );
 
-  //   F[max_v_6]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_6_max_v_6 (
+  ) u_adc_chn1_filter_ctl_6_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3304,16 +3304,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_6_max_v_6_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_6_max_v_qs_int)
   );
 
-  //   F[en_6]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_6_en_6 (
+  ) u_adc_chn1_filter_ctl_6_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3331,19 +3331,19 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_6_en_6_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_6_en_qs_int)
   );
 
 
   // Subregister 7 of Multireg adc_chn1_filter_ctl
   // R[adc_chn1_filter_ctl_7]: V(False)
-  //   F[min_v_7]: 11:2
+  //   F[min_v]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_7_min_v_7 (
+  ) u_adc_chn1_filter_ctl_7_min_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3361,16 +3361,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_7_min_v_7_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_7_min_v_qs_int)
   );
 
-  //   F[cond_7]: 12:12
+  //   F[cond]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_7_cond_7 (
+  ) u_adc_chn1_filter_ctl_7_cond (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3388,16 +3388,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_7_cond_7_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_7_cond_qs_int)
   );
 
-  //   F[max_v_7]: 27:18
+  //   F[max_v]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_7_max_v_7 (
+  ) u_adc_chn1_filter_ctl_7_max_v (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3415,16 +3415,16 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_7_max_v_7_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_7_max_v_qs_int)
   );
 
-  //   F[en_7]: 31:31
+  //   F[en]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn1_filter_ctl_7_en_7 (
+  ) u_adc_chn1_filter_ctl_7_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3442,7 +3442,7 @@ module adc_ctrl_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_chn1_filter_ctl_7_en_7_qs_int)
+    .qs     (aon_adc_chn1_filter_ctl_7_en_qs_int)
   );
 
 
@@ -3450,13 +3450,13 @@ module adc_ctrl_reg_top (
   // R[adc_chn_val_0]: V(False)
   logic [3:0] adc_chn_val_0_flds_we;
   assign aon_adc_chn_val_0_qe = |adc_chn_val_0_flds_we;
-  //   F[adc_chn_value_ext_0]: 1:0
+  //   F[adc_chn_value_ext]: 1:0
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_0_adc_chn_value_ext_0 (
+  ) u_adc_chn_val_0_adc_chn_value_ext (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3471,19 +3471,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_0_flds_we[0]),
     .q      (),
-    .ds     (aon_adc_chn_val_0_adc_chn_value_ext_0_ds_int),
+    .ds     (aon_adc_chn_val_0_adc_chn_value_ext_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_0_adc_chn_value_ext_0_qs_int)
+    .qs     (aon_adc_chn_val_0_adc_chn_value_ext_qs_int)
   );
 
-  //   F[adc_chn_value_0]: 11:2
+  //   F[adc_chn_value]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_0_adc_chn_value_0 (
+  ) u_adc_chn_val_0_adc_chn_value (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3498,19 +3498,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_0_flds_we[1]),
     .q      (),
-    .ds     (aon_adc_chn_val_0_adc_chn_value_0_ds_int),
+    .ds     (aon_adc_chn_val_0_adc_chn_value_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_0_adc_chn_value_0_qs_int)
+    .qs     (aon_adc_chn_val_0_adc_chn_value_qs_int)
   );
 
-  //   F[adc_chn_value_intr_ext_0]: 17:16
+  //   F[adc_chn_value_intr_ext]: 17:16
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_0_adc_chn_value_intr_ext_0 (
+  ) u_adc_chn_val_0_adc_chn_value_intr_ext (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3525,19 +3525,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_0_flds_we[2]),
     .q      (),
-    .ds     (aon_adc_chn_val_0_adc_chn_value_intr_ext_0_ds_int),
+    .ds     (aon_adc_chn_val_0_adc_chn_value_intr_ext_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_0_adc_chn_value_intr_ext_0_qs_int)
+    .qs     (aon_adc_chn_val_0_adc_chn_value_intr_ext_qs_int)
   );
 
-  //   F[adc_chn_value_intr_0]: 27:18
+  //   F[adc_chn_value_intr]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_0_adc_chn_value_intr_0 (
+  ) u_adc_chn_val_0_adc_chn_value_intr (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3552,10 +3552,10 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_0_flds_we[3]),
     .q      (),
-    .ds     (aon_adc_chn_val_0_adc_chn_value_intr_0_ds_int),
+    .ds     (aon_adc_chn_val_0_adc_chn_value_intr_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_0_adc_chn_value_intr_0_qs_int)
+    .qs     (aon_adc_chn_val_0_adc_chn_value_intr_qs_int)
   );
 
 
@@ -3563,13 +3563,13 @@ module adc_ctrl_reg_top (
   // R[adc_chn_val_1]: V(False)
   logic [3:0] adc_chn_val_1_flds_we;
   assign aon_adc_chn_val_1_qe = |adc_chn_val_1_flds_we;
-  //   F[adc_chn_value_ext_1]: 1:0
+  //   F[adc_chn_value_ext]: 1:0
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_1_adc_chn_value_ext_1 (
+  ) u_adc_chn_val_1_adc_chn_value_ext (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3584,19 +3584,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_1_flds_we[0]),
     .q      (),
-    .ds     (aon_adc_chn_val_1_adc_chn_value_ext_1_ds_int),
+    .ds     (aon_adc_chn_val_1_adc_chn_value_ext_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_1_adc_chn_value_ext_1_qs_int)
+    .qs     (aon_adc_chn_val_1_adc_chn_value_ext_qs_int)
   );
 
-  //   F[adc_chn_value_1]: 11:2
+  //   F[adc_chn_value]: 11:2
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_1_adc_chn_value_1 (
+  ) u_adc_chn_val_1_adc_chn_value (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3611,19 +3611,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_1_flds_we[1]),
     .q      (),
-    .ds     (aon_adc_chn_val_1_adc_chn_value_1_ds_int),
+    .ds     (aon_adc_chn_val_1_adc_chn_value_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_1_adc_chn_value_1_qs_int)
+    .qs     (aon_adc_chn_val_1_adc_chn_value_qs_int)
   );
 
-  //   F[adc_chn_value_intr_ext_1]: 17:16
+  //   F[adc_chn_value_intr_ext]: 17:16
   prim_subreg #(
     .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_1_adc_chn_value_intr_ext_1 (
+  ) u_adc_chn_val_1_adc_chn_value_intr_ext (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3638,19 +3638,19 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_1_flds_we[2]),
     .q      (),
-    .ds     (aon_adc_chn_val_1_adc_chn_value_intr_ext_1_ds_int),
+    .ds     (aon_adc_chn_val_1_adc_chn_value_intr_ext_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_1_adc_chn_value_intr_ext_1_qs_int)
+    .qs     (aon_adc_chn_val_1_adc_chn_value_intr_ext_qs_int)
   );
 
-  //   F[adc_chn_value_intr_1]: 27:18
+  //   F[adc_chn_value_intr]: 27:18
   prim_subreg #(
     .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (10'h0),
     .Mubi    (1'b0)
-  ) u_adc_chn_val_1_adc_chn_value_intr_1 (
+  ) u_adc_chn_val_1_adc_chn_value_intr (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3665,10 +3665,10 @@ module adc_ctrl_reg_top (
     // to internal hardware
     .qe     (adc_chn_val_1_flds_we[3]),
     .q      (),
-    .ds     (aon_adc_chn_val_1_adc_chn_value_intr_1_ds_int),
+    .ds     (aon_adc_chn_val_1_adc_chn_value_intr_ds_int),
 
     // to register interface (read)
-    .qs     (aon_adc_chn_val_1_adc_chn_value_intr_1_qs_int)
+    .qs     (aon_adc_chn_val_1_adc_chn_value_intr_qs_int)
   );
 
 

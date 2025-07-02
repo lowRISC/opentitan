@@ -369,8 +369,8 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
     if (i <= kDifOtpCtrlStatusCodeHasCauseLast) {
       bitfield_field32_t field;
       field = (bitfield_field32_t){
-          .mask = OTP_CTRL_ERR_CODE_0_DATA_0_MASK,
-          .index = OTP_CTRL_ERR_CODE_0_DATA_0_OFFSET,
+          .mask = OTP_CTRL_ERR_CODE_0_DATA_MASK,
+          .index = OTP_CTRL_ERR_CODE_0_DATA_OFFSET,
       };
 
       ptrdiff_t address =
@@ -379,28 +379,28 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
 
       dif_otp_ctrl_error_t err;
       switch (bitfield_field32_read(error_code, field)) {
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_NO_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_NO_ERROR:
           err = kDifOtpCtrlErrorOk;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_MACRO_ERROR:
           err = kDifOtpCtrlErrorMacroUnspecified;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ECC_CORR_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_MACRO_ECC_CORR_ERROR:
           err = kDifOtpCtrlErrorMacroRecoverableRead;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ECC_UNCORR_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_MACRO_ECC_UNCORR_ERROR:
           err = kDifOtpCtrlErrorMacroUnrecoverableRead;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_WRITE_BLANK_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_MACRO_WRITE_BLANK_ERROR:
           err = kDifOtpCtrlErrorMacroBlankCheckFailed;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_ACCESS_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_ACCESS_ERROR:
           err = kDifOtpCtrlErrorLockedAccess;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_CHECK_FAIL_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_CHECK_FAIL_ERROR:
           err = kDifOtpCtrlErrorBackgroundCheckFailed;
           break;
-        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_FSM_STATE_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_VALUE_FSM_STATE_ERROR:
           err = kDifOtpCtrlErrorFsmBadState;
           break;
         default:

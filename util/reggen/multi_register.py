@@ -288,7 +288,8 @@ class MultiRegister(RegBase):
                                               alias_target,
                                               merged_regwen,
                                               field_desc_override,
-                                              strip_field)
+                                              strip_field,
+                                              compact)
 
             # Check that we haven't overflowed the register width. This
             # shouldn't happen (because of how we calculate regs_per_creg).

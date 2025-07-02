@@ -270,36 +270,36 @@ module sensor_ctrl_reg_top (
   logic manual_pad_attr_regwen_3_wd;
   logic manual_pad_attr_0_re;
   logic manual_pad_attr_0_we;
-  logic manual_pad_attr_0_pull_en_0_qs;
-  logic manual_pad_attr_0_pull_en_0_wd;
-  logic manual_pad_attr_0_pull_select_0_qs;
-  logic manual_pad_attr_0_pull_select_0_wd;
-  logic manual_pad_attr_0_input_disable_0_qs;
-  logic manual_pad_attr_0_input_disable_0_wd;
+  logic manual_pad_attr_0_pull_en_qs;
+  logic manual_pad_attr_0_pull_en_wd;
+  logic manual_pad_attr_0_pull_select_qs;
+  logic manual_pad_attr_0_pull_select_wd;
+  logic manual_pad_attr_0_input_disable_qs;
+  logic manual_pad_attr_0_input_disable_wd;
   logic manual_pad_attr_1_re;
   logic manual_pad_attr_1_we;
-  logic manual_pad_attr_1_pull_en_1_qs;
-  logic manual_pad_attr_1_pull_en_1_wd;
-  logic manual_pad_attr_1_pull_select_1_qs;
-  logic manual_pad_attr_1_pull_select_1_wd;
-  logic manual_pad_attr_1_input_disable_1_qs;
-  logic manual_pad_attr_1_input_disable_1_wd;
+  logic manual_pad_attr_1_pull_en_qs;
+  logic manual_pad_attr_1_pull_en_wd;
+  logic manual_pad_attr_1_pull_select_qs;
+  logic manual_pad_attr_1_pull_select_wd;
+  logic manual_pad_attr_1_input_disable_qs;
+  logic manual_pad_attr_1_input_disable_wd;
   logic manual_pad_attr_2_re;
   logic manual_pad_attr_2_we;
-  logic manual_pad_attr_2_pull_en_2_qs;
-  logic manual_pad_attr_2_pull_en_2_wd;
-  logic manual_pad_attr_2_pull_select_2_qs;
-  logic manual_pad_attr_2_pull_select_2_wd;
-  logic manual_pad_attr_2_input_disable_2_qs;
-  logic manual_pad_attr_2_input_disable_2_wd;
+  logic manual_pad_attr_2_pull_en_qs;
+  logic manual_pad_attr_2_pull_en_wd;
+  logic manual_pad_attr_2_pull_select_qs;
+  logic manual_pad_attr_2_pull_select_wd;
+  logic manual_pad_attr_2_input_disable_qs;
+  logic manual_pad_attr_2_input_disable_wd;
   logic manual_pad_attr_3_re;
   logic manual_pad_attr_3_we;
-  logic manual_pad_attr_3_pull_en_3_qs;
-  logic manual_pad_attr_3_pull_en_3_wd;
-  logic manual_pad_attr_3_pull_select_3_qs;
-  logic manual_pad_attr_3_pull_select_3_wd;
-  logic manual_pad_attr_3_input_disable_3_qs;
-  logic manual_pad_attr_3_input_disable_3_wd;
+  logic manual_pad_attr_3_pull_en_qs;
+  logic manual_pad_attr_3_pull_en_wd;
+  logic manual_pad_attr_3_pull_select_qs;
+  logic manual_pad_attr_3_pull_select_wd;
+  logic manual_pad_attr_3_input_disable_qs;
+  logic manual_pad_attr_3_input_disable_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2278,51 +2278,51 @@ module sensor_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic manual_pad_attr_0_gated_we;
   assign manual_pad_attr_0_gated_we = manual_pad_attr_0_we & manual_pad_attr_regwen_0_qs;
-  //   F[pull_en_0]: 2:2
+  //   F[pull_en]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_0_pull_en_0 (
+  ) u_manual_pad_attr_0_pull_en (
     .re     (manual_pad_attr_0_re),
     .we     (manual_pad_attr_0_gated_we),
-    .wd     (manual_pad_attr_0_pull_en_0_wd),
+    .wd     (manual_pad_attr_0_pull_en_wd),
     .d      (hw2reg.manual_pad_attr[0].pull_en.d),
     .qre    (),
     .qe     (manual_pad_attr_0_flds_we[0]),
     .q      (reg2hw.manual_pad_attr[0].pull_en.q),
     .ds     (),
-    .qs     (manual_pad_attr_0_pull_en_0_qs)
+    .qs     (manual_pad_attr_0_pull_en_qs)
   );
   assign reg2hw.manual_pad_attr[0].pull_en.qe = manual_pad_attr_0_qe;
 
-  //   F[pull_select_0]: 3:3
+  //   F[pull_select]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_0_pull_select_0 (
+  ) u_manual_pad_attr_0_pull_select (
     .re     (manual_pad_attr_0_re),
     .we     (manual_pad_attr_0_gated_we),
-    .wd     (manual_pad_attr_0_pull_select_0_wd),
+    .wd     (manual_pad_attr_0_pull_select_wd),
     .d      (hw2reg.manual_pad_attr[0].pull_select.d),
     .qre    (),
     .qe     (manual_pad_attr_0_flds_we[1]),
     .q      (reg2hw.manual_pad_attr[0].pull_select.q),
     .ds     (),
-    .qs     (manual_pad_attr_0_pull_select_0_qs)
+    .qs     (manual_pad_attr_0_pull_select_qs)
   );
   assign reg2hw.manual_pad_attr[0].pull_select.qe = manual_pad_attr_0_qe;
 
-  //   F[input_disable_0]: 7:7
+  //   F[input_disable]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_0_input_disable_0 (
+  ) u_manual_pad_attr_0_input_disable (
     .re     (manual_pad_attr_0_re),
     .we     (manual_pad_attr_0_gated_we),
-    .wd     (manual_pad_attr_0_input_disable_0_wd),
+    .wd     (manual_pad_attr_0_input_disable_wd),
     .d      (hw2reg.manual_pad_attr[0].input_disable.d),
     .qre    (),
     .qe     (manual_pad_attr_0_flds_we[2]),
     .q      (reg2hw.manual_pad_attr[0].input_disable.q),
     .ds     (),
-    .qs     (manual_pad_attr_0_input_disable_0_qs)
+    .qs     (manual_pad_attr_0_input_disable_qs)
   );
   assign reg2hw.manual_pad_attr[0].input_disable.qe = manual_pad_attr_0_qe;
 
@@ -2335,51 +2335,51 @@ module sensor_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic manual_pad_attr_1_gated_we;
   assign manual_pad_attr_1_gated_we = manual_pad_attr_1_we & manual_pad_attr_regwen_1_qs;
-  //   F[pull_en_1]: 2:2
+  //   F[pull_en]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_1_pull_en_1 (
+  ) u_manual_pad_attr_1_pull_en (
     .re     (manual_pad_attr_1_re),
     .we     (manual_pad_attr_1_gated_we),
-    .wd     (manual_pad_attr_1_pull_en_1_wd),
+    .wd     (manual_pad_attr_1_pull_en_wd),
     .d      (hw2reg.manual_pad_attr[1].pull_en.d),
     .qre    (),
     .qe     (manual_pad_attr_1_flds_we[0]),
     .q      (reg2hw.manual_pad_attr[1].pull_en.q),
     .ds     (),
-    .qs     (manual_pad_attr_1_pull_en_1_qs)
+    .qs     (manual_pad_attr_1_pull_en_qs)
   );
   assign reg2hw.manual_pad_attr[1].pull_en.qe = manual_pad_attr_1_qe;
 
-  //   F[pull_select_1]: 3:3
+  //   F[pull_select]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_1_pull_select_1 (
+  ) u_manual_pad_attr_1_pull_select (
     .re     (manual_pad_attr_1_re),
     .we     (manual_pad_attr_1_gated_we),
-    .wd     (manual_pad_attr_1_pull_select_1_wd),
+    .wd     (manual_pad_attr_1_pull_select_wd),
     .d      (hw2reg.manual_pad_attr[1].pull_select.d),
     .qre    (),
     .qe     (manual_pad_attr_1_flds_we[1]),
     .q      (reg2hw.manual_pad_attr[1].pull_select.q),
     .ds     (),
-    .qs     (manual_pad_attr_1_pull_select_1_qs)
+    .qs     (manual_pad_attr_1_pull_select_qs)
   );
   assign reg2hw.manual_pad_attr[1].pull_select.qe = manual_pad_attr_1_qe;
 
-  //   F[input_disable_1]: 7:7
+  //   F[input_disable]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_1_input_disable_1 (
+  ) u_manual_pad_attr_1_input_disable (
     .re     (manual_pad_attr_1_re),
     .we     (manual_pad_attr_1_gated_we),
-    .wd     (manual_pad_attr_1_input_disable_1_wd),
+    .wd     (manual_pad_attr_1_input_disable_wd),
     .d      (hw2reg.manual_pad_attr[1].input_disable.d),
     .qre    (),
     .qe     (manual_pad_attr_1_flds_we[2]),
     .q      (reg2hw.manual_pad_attr[1].input_disable.q),
     .ds     (),
-    .qs     (manual_pad_attr_1_input_disable_1_qs)
+    .qs     (manual_pad_attr_1_input_disable_qs)
   );
   assign reg2hw.manual_pad_attr[1].input_disable.qe = manual_pad_attr_1_qe;
 
@@ -2392,51 +2392,51 @@ module sensor_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic manual_pad_attr_2_gated_we;
   assign manual_pad_attr_2_gated_we = manual_pad_attr_2_we & manual_pad_attr_regwen_2_qs;
-  //   F[pull_en_2]: 2:2
+  //   F[pull_en]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_2_pull_en_2 (
+  ) u_manual_pad_attr_2_pull_en (
     .re     (manual_pad_attr_2_re),
     .we     (manual_pad_attr_2_gated_we),
-    .wd     (manual_pad_attr_2_pull_en_2_wd),
+    .wd     (manual_pad_attr_2_pull_en_wd),
     .d      (hw2reg.manual_pad_attr[2].pull_en.d),
     .qre    (),
     .qe     (manual_pad_attr_2_flds_we[0]),
     .q      (reg2hw.manual_pad_attr[2].pull_en.q),
     .ds     (),
-    .qs     (manual_pad_attr_2_pull_en_2_qs)
+    .qs     (manual_pad_attr_2_pull_en_qs)
   );
   assign reg2hw.manual_pad_attr[2].pull_en.qe = manual_pad_attr_2_qe;
 
-  //   F[pull_select_2]: 3:3
+  //   F[pull_select]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_2_pull_select_2 (
+  ) u_manual_pad_attr_2_pull_select (
     .re     (manual_pad_attr_2_re),
     .we     (manual_pad_attr_2_gated_we),
-    .wd     (manual_pad_attr_2_pull_select_2_wd),
+    .wd     (manual_pad_attr_2_pull_select_wd),
     .d      (hw2reg.manual_pad_attr[2].pull_select.d),
     .qre    (),
     .qe     (manual_pad_attr_2_flds_we[1]),
     .q      (reg2hw.manual_pad_attr[2].pull_select.q),
     .ds     (),
-    .qs     (manual_pad_attr_2_pull_select_2_qs)
+    .qs     (manual_pad_attr_2_pull_select_qs)
   );
   assign reg2hw.manual_pad_attr[2].pull_select.qe = manual_pad_attr_2_qe;
 
-  //   F[input_disable_2]: 7:7
+  //   F[input_disable]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_2_input_disable_2 (
+  ) u_manual_pad_attr_2_input_disable (
     .re     (manual_pad_attr_2_re),
     .we     (manual_pad_attr_2_gated_we),
-    .wd     (manual_pad_attr_2_input_disable_2_wd),
+    .wd     (manual_pad_attr_2_input_disable_wd),
     .d      (hw2reg.manual_pad_attr[2].input_disable.d),
     .qre    (),
     .qe     (manual_pad_attr_2_flds_we[2]),
     .q      (reg2hw.manual_pad_attr[2].input_disable.q),
     .ds     (),
-    .qs     (manual_pad_attr_2_input_disable_2_qs)
+    .qs     (manual_pad_attr_2_input_disable_qs)
   );
   assign reg2hw.manual_pad_attr[2].input_disable.qe = manual_pad_attr_2_qe;
 
@@ -2449,51 +2449,51 @@ module sensor_ctrl_reg_top (
   // Create REGWEN-gated WE signal
   logic manual_pad_attr_3_gated_we;
   assign manual_pad_attr_3_gated_we = manual_pad_attr_3_we & manual_pad_attr_regwen_3_qs;
-  //   F[pull_en_3]: 2:2
+  //   F[pull_en]: 2:2
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_3_pull_en_3 (
+  ) u_manual_pad_attr_3_pull_en (
     .re     (manual_pad_attr_3_re),
     .we     (manual_pad_attr_3_gated_we),
-    .wd     (manual_pad_attr_3_pull_en_3_wd),
+    .wd     (manual_pad_attr_3_pull_en_wd),
     .d      (hw2reg.manual_pad_attr[3].pull_en.d),
     .qre    (),
     .qe     (manual_pad_attr_3_flds_we[0]),
     .q      (reg2hw.manual_pad_attr[3].pull_en.q),
     .ds     (),
-    .qs     (manual_pad_attr_3_pull_en_3_qs)
+    .qs     (manual_pad_attr_3_pull_en_qs)
   );
   assign reg2hw.manual_pad_attr[3].pull_en.qe = manual_pad_attr_3_qe;
 
-  //   F[pull_select_3]: 3:3
+  //   F[pull_select]: 3:3
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_3_pull_select_3 (
+  ) u_manual_pad_attr_3_pull_select (
     .re     (manual_pad_attr_3_re),
     .we     (manual_pad_attr_3_gated_we),
-    .wd     (manual_pad_attr_3_pull_select_3_wd),
+    .wd     (manual_pad_attr_3_pull_select_wd),
     .d      (hw2reg.manual_pad_attr[3].pull_select.d),
     .qre    (),
     .qe     (manual_pad_attr_3_flds_we[1]),
     .q      (reg2hw.manual_pad_attr[3].pull_select.q),
     .ds     (),
-    .qs     (manual_pad_attr_3_pull_select_3_qs)
+    .qs     (manual_pad_attr_3_pull_select_qs)
   );
   assign reg2hw.manual_pad_attr[3].pull_select.qe = manual_pad_attr_3_qe;
 
-  //   F[input_disable_3]: 7:7
+  //   F[input_disable]: 7:7
   prim_subreg_ext #(
     .DW    (1)
-  ) u_manual_pad_attr_3_input_disable_3 (
+  ) u_manual_pad_attr_3_input_disable (
     .re     (manual_pad_attr_3_re),
     .we     (manual_pad_attr_3_gated_we),
-    .wd     (manual_pad_attr_3_input_disable_3_wd),
+    .wd     (manual_pad_attr_3_input_disable_wd),
     .d      (hw2reg.manual_pad_attr[3].input_disable.d),
     .qre    (),
     .qe     (manual_pad_attr_3_flds_we[2]),
     .q      (reg2hw.manual_pad_attr[3].input_disable.q),
     .ds     (),
-    .qs     (manual_pad_attr_3_input_disable_3_qs)
+    .qs     (manual_pad_attr_3_input_disable_qs)
   );
   assign reg2hw.manual_pad_attr[3].input_disable.qe = manual_pad_attr_3_qe;
 
@@ -2709,35 +2709,35 @@ module sensor_ctrl_reg_top (
   assign manual_pad_attr_0_re = addr_hit[25] & reg_re & !reg_error;
   assign manual_pad_attr_0_we = addr_hit[25] & reg_we & !reg_error;
 
-  assign manual_pad_attr_0_pull_en_0_wd = reg_wdata[2];
+  assign manual_pad_attr_0_pull_en_wd = reg_wdata[2];
 
-  assign manual_pad_attr_0_pull_select_0_wd = reg_wdata[3];
+  assign manual_pad_attr_0_pull_select_wd = reg_wdata[3];
 
-  assign manual_pad_attr_0_input_disable_0_wd = reg_wdata[7];
+  assign manual_pad_attr_0_input_disable_wd = reg_wdata[7];
   assign manual_pad_attr_1_re = addr_hit[26] & reg_re & !reg_error;
   assign manual_pad_attr_1_we = addr_hit[26] & reg_we & !reg_error;
 
-  assign manual_pad_attr_1_pull_en_1_wd = reg_wdata[2];
+  assign manual_pad_attr_1_pull_en_wd = reg_wdata[2];
 
-  assign manual_pad_attr_1_pull_select_1_wd = reg_wdata[3];
+  assign manual_pad_attr_1_pull_select_wd = reg_wdata[3];
 
-  assign manual_pad_attr_1_input_disable_1_wd = reg_wdata[7];
+  assign manual_pad_attr_1_input_disable_wd = reg_wdata[7];
   assign manual_pad_attr_2_re = addr_hit[27] & reg_re & !reg_error;
   assign manual_pad_attr_2_we = addr_hit[27] & reg_we & !reg_error;
 
-  assign manual_pad_attr_2_pull_en_2_wd = reg_wdata[2];
+  assign manual_pad_attr_2_pull_en_wd = reg_wdata[2];
 
-  assign manual_pad_attr_2_pull_select_2_wd = reg_wdata[3];
+  assign manual_pad_attr_2_pull_select_wd = reg_wdata[3];
 
-  assign manual_pad_attr_2_input_disable_2_wd = reg_wdata[7];
+  assign manual_pad_attr_2_input_disable_wd = reg_wdata[7];
   assign manual_pad_attr_3_re = addr_hit[28] & reg_re & !reg_error;
   assign manual_pad_attr_3_we = addr_hit[28] & reg_we & !reg_error;
 
-  assign manual_pad_attr_3_pull_en_3_wd = reg_wdata[2];
+  assign manual_pad_attr_3_pull_en_wd = reg_wdata[2];
 
-  assign manual_pad_attr_3_pull_select_3_wd = reg_wdata[3];
+  assign manual_pad_attr_3_pull_select_wd = reg_wdata[3];
 
-  assign manual_pad_attr_3_input_disable_3_wd = reg_wdata[7];
+  assign manual_pad_attr_3_input_disable_wd = reg_wdata[7];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2923,27 +2923,27 @@ module sensor_ctrl_reg_top (
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[2] = manual_pad_attr_0_pull_en_0_qs;
-        reg_rdata_next[3] = manual_pad_attr_0_pull_select_0_qs;
-        reg_rdata_next[7] = manual_pad_attr_0_input_disable_0_qs;
+        reg_rdata_next[2] = manual_pad_attr_0_pull_en_qs;
+        reg_rdata_next[3] = manual_pad_attr_0_pull_select_qs;
+        reg_rdata_next[7] = manual_pad_attr_0_input_disable_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[2] = manual_pad_attr_1_pull_en_1_qs;
-        reg_rdata_next[3] = manual_pad_attr_1_pull_select_1_qs;
-        reg_rdata_next[7] = manual_pad_attr_1_input_disable_1_qs;
+        reg_rdata_next[2] = manual_pad_attr_1_pull_en_qs;
+        reg_rdata_next[3] = manual_pad_attr_1_pull_select_qs;
+        reg_rdata_next[7] = manual_pad_attr_1_input_disable_qs;
       end
 
       addr_hit[27]: begin
-        reg_rdata_next[2] = manual_pad_attr_2_pull_en_2_qs;
-        reg_rdata_next[3] = manual_pad_attr_2_pull_select_2_qs;
-        reg_rdata_next[7] = manual_pad_attr_2_input_disable_2_qs;
+        reg_rdata_next[2] = manual_pad_attr_2_pull_en_qs;
+        reg_rdata_next[3] = manual_pad_attr_2_pull_select_qs;
+        reg_rdata_next[7] = manual_pad_attr_2_input_disable_qs;
       end
 
       addr_hit[28]: begin
-        reg_rdata_next[2] = manual_pad_attr_3_pull_en_3_qs;
-        reg_rdata_next[3] = manual_pad_attr_3_pull_select_3_qs;
-        reg_rdata_next[7] = manual_pad_attr_3_input_disable_3_qs;
+        reg_rdata_next[2] = manual_pad_attr_3_pull_en_qs;
+        reg_rdata_next[3] = manual_pad_attr_3_pull_select_qs;
+        reg_rdata_next[7] = manual_pad_attr_3_input_disable_qs;
       end
 
       default: begin
