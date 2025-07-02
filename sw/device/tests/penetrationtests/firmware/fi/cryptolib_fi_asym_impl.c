@@ -481,3 +481,56 @@ status_t cryptolib_fi_p256_sign_impl(
 
   return OK_STATUS();
 }
+
+status_t cryptolib_fi_p256_verify_impl(
+    cryptolib_fi_asym_p256_verify_in_t uj_input,
+    cryptolib_fi_asym_p256_verify_out_t *uj_output) {
+  // Set up the message buffer.
+  uint32_t message_buf[kPentestP256Words];
+  memset(message_buf, 0, sizeof(message_buf));
+  memcpy(message_buf, uj_input.message, P256_CMD_BYTES);
+
+  const otcrypto_hash_digest_t message_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = kPentestP256Words,
+      .data = (uint32_t *)message_buf,
+  };
+
+  // Setup the public key buffer.
+  p256_point_t pub_p256;
+  memcpy(pub_p256.x, uj_input.pubx, P256_CMD_BYTES);
+  memcpy(pub_p256.y, uj_input.puby, P256_CMD_BYTES);
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(p256_point_t),
+      .key = (uint32_t *)&pub_p256,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Setup the signature buffer.
+  p256_ecdsa_signature_t signature_p256;
+  memcpy(signature_p256.r, uj_input.r, P256_CMD_BYTES);
+  memcpy(signature_p256.s, uj_input.s, P256_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t signature = {
+      .len = kPentestP256Words * 2,
+      .data = (uint32_t *)&signature_p256,
+  };
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
+                                 &verification_result));
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->result = true;
+  if (verification_result != kHardenedBoolTrue) {
+    uj_output->result = false;
+  }
+  uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
