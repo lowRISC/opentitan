@@ -47,9 +47,10 @@ module prim_alert_rxtx_async_assert_fpv
                         prim_alert_rxtx_async_tb.i_prim_alert_receiver.InitReq,
                         prim_alert_rxtx_async_tb.i_prim_alert_receiver.InitAckWait};
 
-  logic sender_is_idle, receiver_is_idle, sender_is_pinging;
+  logic sender_is_idle, receiver_is_idle, both_idle, sender_is_pinging;
   assign sender_is_idle = i_prim_alert_sender.state_q == i_prim_alert_sender.Idle;
   assign receiver_is_idle = i_prim_alert_receiver.state_q == i_prim_alert_receiver.Idle;
+  assign both_idle = sender_is_idle && receiver_is_idle;
   assign sender_is_pinging = i_prim_alert_sender.state_q inside
                              {i_prim_alert_sender.PingHsPhase1, i_prim_alert_sender.PingHsPhase2};
 
@@ -100,19 +101,23 @@ module prim_alert_rxtx_async_assert_fpv
 
   // note: injected errors may lockup the FSMs, and hence the full HS can
   // only take place if both FSMs are in a good state
-  `ASSERT(PingHs_A, ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) &&
-      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
-      clk_i, !rst_ni || error_setreg_q || init_pending)
-  `ASSERT(AlertHs_A, alert_req_i &&
-      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
-      clk_i, !rst_ni || error_setreg_q || init_pending)
-  `ASSERT(AlertTestHs_A, alert_test_i &&
-      sender_is_idle && receiver_is_idle |-> ##[0:5] FullHandshake_S,
-      clk_i, !rst_ni || error_setreg_q || init_pending)
+  `ASSERT(PingHs_A,
+          ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) && both_idle |->
+          ##[0:5] FullHandshake_S,
+          clk_i, !rst_ni || error_setreg_q || init_pending)
+  `ASSERT(AlertHs_A,
+          alert_req_i && both_idle |->
+          ##[0:5] FullHandshake_S,
+          clk_i, !rst_ni || error_setreg_q || init_pending)
+  `ASSERT(AlertTestHs_A,
+          alert_test_i && both_idle |->
+          ##[0:5] FullHandshake_S,
+          clk_i, !rst_ni || error_setreg_q || init_pending)
   // Make sure we eventually get an ACK
-  `ASSERT(AlertReqAck_A, alert_req_i &&
-      sender_is_idle && receiver_is_idle |-> strong(##[1:$] alert_ack_o),
-      clk_i, !rst_ni || error_setreg_q || init_pending)
+  `ASSERT(AlertReqAck_A,
+          alert_req_i && both_idle |->
+          strong(##[1:$] alert_ack_o),
+          clk_i, !rst_ni || error_setreg_q || init_pending)
 
   // Transmission of pings
   //
