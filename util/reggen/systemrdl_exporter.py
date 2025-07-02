@@ -11,6 +11,7 @@ from typing import TextIO
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
 from reggen.register import Register
+from reggen.multi_register import MultiRegister
 from reggen.window import Window
 from reggen.field import Field
 from reggen.access import SWAccess, HWAccess, HwAccess
@@ -127,18 +128,35 @@ class Window2Systemrdl:
         )
 
 
-@dataclass
 class Register2Systemrdl:
     inner: Register
     importer: RDLImporter
+    stride: int | None = None
+    count: int | None = None
+
+    def __init__(self, reg: MultiRegister | Register, importer: RDLImporter):
+        self.importer = importer
+        if isinstance(reg, Register):
+            self.inner = reg
+        elif isinstance(reg, MultiRegister):
+            self.inner = reg.cregs[0]
+            self.stride = reg.stride
+            self.count = len(reg.cregs)
 
     def export(self) -> systemrdl.component.Reg:
-        rdl_t = self.importer.create_reg_definition(self.inner.name)
+        reg_type = self.importer.create_reg_definition(self.inner.name)
         for rfield in self.inner.fields:
-            self.importer.add_child(rdl_t, Field2Systemrdl(rfield, self.importer).export())
+            self.importer.add_child(reg_type, Field2Systemrdl(rfield, self.importer).export())
 
-        reg = self.importer.instantiate_reg(rdl_t, self.inner.name, self.inner.offset)
-        reg.external = self.inner.hwext
+        reg_type.external = self.inner.hwext
+
+        reg = self.importer.instantiate_reg(
+            reg_type,
+            self.inner.name,
+            self.inner.offset,
+            [self.count] if self.count else None,
+            self.stride if self.stride else None,
+        )
         return reg
 
 
@@ -148,24 +166,25 @@ class RegBlock2Systemrdl:
     importer: RDLImporter
 
     def export(self) -> Addrmap | None:
-        nonempty = False
-
         name = self.inner.name or "none"
         rdl_addrmap_t = self.importer.create_addrmap_definition(name)
         rdl_addrmap = self.importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
 
         # registers and multiregs
-        for name, flat_reg in self.inner.name_to_flat_reg.items():
-            nonempty = True
-            self.importer.add_child(
-                rdl_addrmap, Register2Systemrdl(flat_reg, self.importer).export()
-            )
+        for reg in self.inner.registers:
+            self.importer.add_child(rdl_addrmap, Register2Systemrdl(reg, self.importer).export())
+
+        # multiregs
+        for mreg in self.inner.multiregs:
+            self.importer.add_child(rdl_addrmap, Register2Systemrdl(mreg, self.importer).export())
 
         # windows
         for window in self.inner.windows:
-            nonempty = True
             self.importer.add_child(rdl_addrmap, Window2Systemrdl(window, self.importer).export())
 
+        nonempty = bool(
+            len(self.inner.registers) + len(self.inner.multiregs) + len(self.inner.windows)
+        )
         return rdl_addrmap if nonempty else None
 
 
