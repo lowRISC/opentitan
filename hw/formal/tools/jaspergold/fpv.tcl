@@ -77,6 +77,17 @@ if {[info exists ::env(PARAMS)]} {
     }
 }
 
+# Chains of successive A ##1 B ##1 C ... in sequences can take a long time to elaborate. There is a
+# new flag to elaborate called -optimize_implication_assert which improves this, but it only appears
+# from Jasper 2023.06. Call the get_version function to figure out whether we've got the right
+# version: it should be 2023.06, 2023.09, 2023.12 or something that starts with a later year
+# (202[4-9] or 20[3-9].)
+if {[regexp "^\(20\[3-9\]\[0-9\]\)\|\(202\[4-9\]\)\|\(2023\.\(0\[69\]\)\|12\)" [get_version]]} {
+  set oia_arg "-optimize_implication_assert"
+} else {
+  set oia_arg ""
+}
+
 if {$env(DUT_TOP) == "prim_count_tb"} {
     append elab_args " -param ResetValue $ResetValue"
 }
@@ -85,7 +96,7 @@ if {$env(DUT_TOP) == "prim_count_tb"} {
 # to the elaborate command.
 eval elaborate -top $env(DUT_TOP) \
                -enable_sva_isunknown -disable_auto_bbox \
-               ${elab_args}
+               ${oia_arg} ${elab_args}
 
 set stopat [regexp -all -inline {[^\s\']+} $env(STOPATS)]
 if {$stopat ne ""} {
