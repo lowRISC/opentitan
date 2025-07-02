@@ -596,3 +596,56 @@ status_t cryptolib_fi_p384_sign_impl(
 
   return OK_STATUS();
 }
+
+status_t cryptolib_fi_p384_verify_impl(
+    cryptolib_fi_asym_p384_verify_in_t uj_input,
+    cryptolib_fi_asym_p384_verify_out_t *uj_output) {
+  // Set up the message buffer.
+  uint32_t message_buf[kPentestP384Words];
+  memset(message_buf, 0, sizeof(message_buf));
+  memcpy(message_buf, uj_input.message, P384_CMD_BYTES);
+
+  const otcrypto_hash_digest_t message_digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = kPentestP384Words,
+      .data = (uint32_t *)message_buf,
+  };
+
+  // Setup the public key buffer.
+  p384_point_t pub_p384;
+  memcpy(pub_p384.x, uj_input.pubx, P384_CMD_BYTES);
+  memcpy(pub_p384.y, uj_input.puby, P384_CMD_BYTES);
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(p384_point_t),
+      .key = (uint32_t *)&pub_p384,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Setup the signature buffer.
+  p384_ecdsa_signature_t signature_p384;
+  memcpy(signature_p384.r, uj_input.r, P384_CMD_BYTES);
+  memcpy(signature_p384.s, uj_input.s, P384_CMD_BYTES);
+
+  otcrypto_const_word32_buf_t signature = {
+      .len = kPentestP384Words * 2,
+      .data = (uint32_t *)&signature_p384,
+  };
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
+                                 &verification_result));
+  pentest_set_trigger_low();
+
+  // Return data back to host.
+  uj_output->result = true;
+  if (verification_result != kHardenedBoolTrue) {
+    uj_output->result = false;
+  }
+  uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
