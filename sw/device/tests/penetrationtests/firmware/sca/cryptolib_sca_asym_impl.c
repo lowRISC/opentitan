@@ -211,6 +211,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
       .keyblob = private_keyblob,
       .checksum = 0,
   };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
 
   // Construct the public key object.
   uint32_t public_key_buf[kPentestP256Words * 2];
@@ -222,6 +223,7 @@ status_t cryptolib_sca_p256_ecdh_impl(
       .key_length = sizeof(public_key_buf),
       .key = public_key_buf,
   };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
 
   // Create a destination for the shared secret.
   uint32_t shared_secretblob[kPentestP256Words * 2];
@@ -492,6 +494,84 @@ status_t cryptolib_sca_p256_sign_impl(
 
   return OK_STATUS();
 }
+
+status_t cryptolib_sca_p384_ecdh_impl(
+    cryptolib_sca_asym_p384_ecdh_in_t uj_input,
+    cryptolib_sca_asym_p384_ecdh_out_t *uj_output) {
+  // Construct the private key object.
+  uint32_t private_keyblob[kPentestP384MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, uj_input.private_key, P384_CMD_BYTES);
+  memcpy(private_keyblob + kPentestP384MaskedPrivateKeyWords, 0,
+         P384_CMD_BYTES);
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEcdhP384,
+              .key_length = kPentestP384Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+      .checksum = 0,
+  };
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Construct the public key object.
+  uint32_t public_key_buf[kPentestP384Words * 2];
+  memset(public_key_buf, 0, sizeof(public_key_buf));
+  memcpy(public_key_buf, uj_input.public_x, P384_CMD_BYTES);
+  memcpy(public_key_buf + kPentestP384Words, uj_input.public_y, P384_CMD_BYTES);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
+  // Create a destination for the shared secret.
+  uint32_t shared_secretblob[kPentestP384Words * 2];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = kPentestP384Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+  pentest_set_trigger_low();
+
+  uint32_t share0[kPentestP384Words];
+  uint32_t share1[kPentestP384Words];
+  uint32_t ss[kPentestP384Words];
+  TRY(otcrypto_export_blinded_key(
+      shared_secret,
+      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
+      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  for (size_t i = 0; i < kPentestP384Words; i++) {
+    ss[i] = share0[i] ^ share1[i];
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  memset(uj_output->shared_key, 0, P384_CMD_BYTES);
+  memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
+
+  return OK_STATUS();
+}
+
 status_t cryptolib_sca_p384_sign_impl(
     cryptolib_sca_asym_p384_sign_in_t uj_input,
     cryptolib_sca_asym_p384_sign_out_t *uj_output) {
