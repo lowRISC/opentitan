@@ -2,18 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:prim_alert_rxtx_async_fpv:0.1"
-description: "ALERT_HANDLER rxtx async FPV target"
+
+name: "lowrisc:fpv:prim_diff_decode_fpv"
+description: "A binding with assertions for prim_diff_decode_fpv"
 filesets:
   files_formal:
     depend:
-      - lowrisc:prim:all
-      - lowrisc:prim:alert
-      - lowrisc:fpv:prim_diff_decode_fpv
+      - lowrisc:prim:diff_decode
     files:
-      - vip/prim_alert_rxtx_async_assert_fpv.sv
-      - tb/prim_alert_rxtx_async_tb.sv
-      - tb/prim_alert_rxtx_async_bind_fpv.sv
+      - tb/prim_diff_decode_bind_fpv.sv
+      - vip/prim_diff_decode_assert_fpv.sv
     file_type: systemVerilogSource
 
 targets:
@@ -23,8 +21,6 @@ targets:
     default_tool: icarus
     filesets:
       - files_formal
-    toplevel:
-      - prim_alert_rxtx_async_tb
 
   formal:
     <<: *default_target
