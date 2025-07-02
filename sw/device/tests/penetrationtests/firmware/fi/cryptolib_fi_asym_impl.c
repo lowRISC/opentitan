@@ -15,6 +15,7 @@
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -561,6 +562,81 @@ status_t cryptolib_fi_rsa_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_p256_ecdh_impl(
+    cryptolib_fi_asym_p256_ecdh_in_t uj_input,
+    cryptolib_fi_asym_p256_ecdh_out_t *uj_output) {
+  // Construct the private key object.
+  uint32_t private_keyblob[kPentestP256MaskedPrivateKeyWords * 2];
+  memset(private_keyblob, 0, sizeof(private_keyblob));
+  memcpy(private_keyblob, uj_input.private_key, P256_CMD_BYTES);
+  memcpy(private_keyblob + kPentestP256MaskedPrivateKeyWords, 0,
+         P256_CMD_BYTES);
+  otcrypto_blinded_key_t private_key = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeEcdhP256,
+              .key_length = kPentestP256Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(private_keyblob),
+      .keyblob = private_keyblob,
+      .checksum = 0,
+  };
+
+  // Construct the public key object.
+  uint32_t public_key_buf[kPentestP256Words * 2];
+  memset(public_key_buf, 0, sizeof(public_key_buf));
+  memcpy(public_key_buf, uj_input.public_x, P256_CMD_BYTES);
+  memcpy(public_key_buf + kPentestP256Words, uj_input.public_y, P256_CMD_BYTES);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = sizeof(public_key_buf),
+      .key = public_key_buf,
+  };
+
+  // Create a destination for the shared secret.
+  uint32_t shared_secretblob[kPentestP256Words * 2];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = kPentestP256Bytes,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+  };
+
+  pentest_set_trigger_high();
+  TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
+  pentest_set_trigger_low();
+
+  uint32_t share0[kPentestP256Words];
+  uint32_t share1[kPentestP256Words];
+  uint32_t ss[kPentestP256Words];
+  TRY(otcrypto_export_blinded_key(
+      shared_secret,
+      (otcrypto_word32_buf_t){.data = share0, .len = ARRAYSIZE(share0)},
+      (otcrypto_word32_buf_t){.data = share1, .len = ARRAYSIZE(share1)}));
+  for (size_t i = 0; i < kPentestP256Words; i++) {
+    ss[i] = share0[i] ^ share1[i];
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  memset(uj_output->shared_key, 0, P256_CMD_BYTES);
+  memcpy(uj_output->shared_key, ss, P256_CMD_BYTES);
 
   return OK_STATUS();
 }
