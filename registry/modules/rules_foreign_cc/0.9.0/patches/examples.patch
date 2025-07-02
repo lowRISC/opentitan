@@ -1,0 +1,24 @@
+diff --git a/examples/WORKSPACE.bazel b/examples/WORKSPACE.bazel
+index 5810797..09daa5c 100644
+--- a/examples/WORKSPACE.bazel
++++ b/examples/WORKSPACE.bazel
+@@ -1,19 +1,5 @@
+ workspace(name = "rules_foreign_cc_examples")
+ 
+-local_repository(
+-    name = "rules_foreign_cc",
+-    path = "..",
+-)
+-
+-load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+-
+-# Don't use preinstalled tools to ensure builds are as hermetic as possible
+-rules_foreign_cc_dependencies(register_preinstalled_tools = False)
+-
+-load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+-
+-bazel_skylib_workspace()
+-
+ load("//deps:repositories.bzl", "repositories")
+ 
+ repositories()
