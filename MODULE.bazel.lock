@@ -172,8 +172,6 @@
     "https://bcr.bazel.build/modules/rules_python/0.40.0/MODULE.bazel": "9d1a3cd88ed7d8e39583d9ffe56ae8a244f67783ae89b60caafc9f5cf318ada7",
     "https://bcr.bazel.build/modules/rules_python/1.2.0/MODULE.bazel": "5aeeb48b2a6c19d668b48adf2b8a2b209a6310c230db0ce77450f148a89846e4",
     "https://bcr.bazel.build/modules/rules_python/1.2.0/source.json": "5b7892685c9a843526fd5a31e7d7a93eb819c59fd7b7fc444b5b143558e1b073",
-    "https://bcr.bazel.build/modules/rules_rust/0.59.2/MODULE.bazel": "49f5bf030ff5254e61cd22c9c73da85b1089306493a153d78be285951bf131a2",
-    "https://bcr.bazel.build/modules/rules_rust/0.59.2/source.json": "6575677d9a3008a7cbd8b3fbc94aeb78c893c24a4543fece9540f7c26e8b8df1",
     "https://bcr.bazel.build/modules/rules_rust_bindgen/0.59.2/MODULE.bazel": "5313f37cf7876942505e7ed847ff2be8b7a6350406f8e3b68e9097a6c8e8af16",
     "https://bcr.bazel.build/modules/rules_rust_bindgen/0.59.2/source.json": "d346d5d6b8dad98a63a63fe831f19e4b7f4b163fa4e3bca95c92d147ba335aa4",
     "https://bcr.bazel.build/modules/rules_rust_mdbook/0.59.2/MODULE.bazel": "77bb743514b0ae36f1876f6b50650f2011b55a43bd8ae7558313adb06dc1d650",
