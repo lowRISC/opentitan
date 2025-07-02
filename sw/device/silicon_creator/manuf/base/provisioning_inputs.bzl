@@ -94,6 +94,8 @@ EARLGREY_SKUS = {
 def disqualified_for_signing(name, data):
     if "staging" in name:
         return True
+    if "emulation" in name:
+        return True
     if "em00" in data["otp"]:
         return True
     return False
