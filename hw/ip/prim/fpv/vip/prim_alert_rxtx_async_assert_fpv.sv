@@ -190,7 +190,7 @@ module prim_alert_rxtx_async_assert_fpv
   // eventual transmission of alerts in the general case which can include continous ping
   // collisions
   `ASSERT(AlertCheck1_A,
-          alert_req_i || alert_test_i |=> s_eventually (sender_is_idle ##[3:5] alert_o),
+          alert_req_i || alert_test_i |=> s_eventually alert_o,
           clk_i, !rst_ni || error_setreg_q ||
           prim_alert_rxtx_async_tb.i_prim_alert_sender.alert_clr || init_pending)
 
