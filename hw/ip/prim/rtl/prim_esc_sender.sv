@@ -23,7 +23,10 @@
 
 module prim_esc_sender
   import prim_esc_pkg::*;
-(
+#(
+  // Number of cycles a differential skew is tolerated on the differential response signal.
+  parameter int unsigned SkewCycles = 1
+) (
   input           clk_i,
   input           rst_ni,
   // this triggers a ping test. keep asserted until ping_ok_o is pulsed high.
@@ -56,7 +59,8 @@ module prim_esc_sender
   );
 
   prim_diff_decode #(
-    .AsyncOn(1'b0)
+    .AsyncOn(1'b0),
+    .SkewCycles(SkewCycles)
   ) u_decode_resp (
     .clk_i,
     .rst_ni,
