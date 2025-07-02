@@ -244,6 +244,22 @@ status_t handle_cryptolib_sca_asym_p256_point_mul(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_sca_asym_p256_ecdh(ujson_t *uj) {
+  cryptolib_sca_asym_p256_ecdh_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_p256_ecdh_in_t(uj, &uj_input));
+  /////////////// STUB START ///////////////
+  // Perform ECDH in P256.
+  // Trigger are over the API calls.
+
+  cryptolib_sca_asym_p256_ecdh_out_t uj_output;
+  memset(uj_output.shared_key, 0, P256_CMD_BYTES);
+  uj_output.cfg = 0;
+  /////////////// STUB END ///////////////
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_ecdh_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_sca_asym_p256_sign(ujson_t *uj) {
   cryptolib_sca_asym_p256_sign_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_p256_sign_in_t(uj, &uj_input));
@@ -329,6 +345,22 @@ status_t handle_cryptolib_sca_asym_p384_point_mul(ujson_t *uj) {
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_point_mul_out_t, uj,
           &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_p384_ecdh(ujson_t *uj) {
+  cryptolib_sca_asym_p384_ecdh_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_p384_ecdh_in_t(uj, &uj_input));
+  /////////////// STUB START ///////////////
+  // Perform ECDH in P384.
+  // Trigger are over the API calls.
+
+  cryptolib_sca_asym_p384_ecdh_out_t uj_output;
+  memset(uj_output.shared_key, 0, P384_CMD_BYTES);
+  uj_output.cfg = 0;
+  /////////////// STUB END ///////////////
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_ecdh_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -420,6 +452,23 @@ status_t handle_cryptolib_sca_asym_secp256k1_point_mul(ujson_t *uj) {
   uj_output.cfg = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_point_mul_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_secp256k1_ecdh(ujson_t *uj) {
+  cryptolib_sca_asym_secp256k1_ecdh_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_secp256k1_ecdh_in_t(uj, &uj_input));
+  /////////////// STUB START ///////////////
+  // Perform ECDH in secp256k1.
+  // Trigger are over the API calls.
+
+  cryptolib_sca_asym_secp256k1_ecdh_out_t uj_output;
+  memset(uj_output.shared_key, 0, SECP256K1_CMD_BYTES);
+  uj_output.cfg = 0;
+  /////////////// STUB END ///////////////
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_secp256k1_ecdh_out_t, uj,
           &uj_output);
 
   return OK_STATUS();
@@ -518,6 +567,22 @@ status_t handle_cryptolib_sca_asym_x25519_point_mul(ujson_t *uj) {
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_point_mul_out_t, uj,
           &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_asym_x25519_ecdh(ujson_t *uj) {
+  cryptolib_sca_asym_x25519_ecdh_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_asym_x25519_ecdh_in_t(uj, &uj_input));
+  /////////////// STUB START ///////////////
+  // Perform ECDH in x25519.
+  // Trigger are over the API calls.
+
+  cryptolib_sca_asym_x25519_ecdh_out_t uj_output;
+  memset(uj_output.shared_key, 0, X25519_CMD_BYTES);
+  uj_output.cfg = 0;
+  /////////////// STUB END ///////////////
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_x25519_ecdh_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -672,24 +737,32 @@ status_t handle_cryptolib_sca_asym(ujson_t *uj) {
       return handle_cryptolib_sca_asym_p256_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandP256PointMul:
       return handle_cryptolib_sca_asym_p256_point_mul(uj);
+    case kCryptoLibScaAsymSubcommandP256Ecdh:
+      return handle_cryptolib_sca_asym_p256_ecdh(uj);
     case kCryptoLibScaAsymSubcommandP256Sign:
       return handle_cryptolib_sca_asym_p256_sign(uj);
     case kCryptoLibScaAsymSubcommandP384BaseMulFvsr:
       return handle_cryptolib_sca_asym_p384_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandP384PointMul:
       return handle_cryptolib_sca_asym_p384_point_mul(uj);
+    case kCryptoLibScaAsymSubcommandP384Ecdh:
+      return handle_cryptolib_sca_asym_p384_ecdh(uj);
     case kCryptoLibScaAsymSubcommandP384Sign:
       return handle_cryptolib_sca_asym_p384_sign(uj);
     case kCryptoLibScaAsymSubcommandSecp256k1BaseMulFvsr:
       return handle_cryptolib_sca_asym_secp256k1_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandSecp256k1PointMul:
       return handle_cryptolib_sca_asym_secp256k1_point_mul(uj);
+    case kCryptoLibScaAsymSubcommandSecp256k1Ecdh:
+      return handle_cryptolib_sca_asym_secp256k1_ecdh(uj);
     case kCryptoLibScaAsymSubcommandSecp256k1Sign:
       return handle_cryptolib_sca_asym_secp256k1_sign(uj);
     case kCryptoLibScaAsymSubcommandX25519BaseMulFvsr:
       return handle_cryptolib_sca_asym_x25519_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandX25519PointMul:
       return handle_cryptolib_sca_asym_x25519_point_mul(uj);
+    case kCryptoLibScaAsymSubcommandX25519Ecdh:
+      return handle_cryptolib_sca_asym_x25519_ecdh(uj);
     case kCryptoLibScaAsymSubcommandEd25519BaseMulFvsr:
       return handle_cryptolib_sca_asym_ed25519_base_mul_fvsr(uj);
     case kCryptoLibScaAsymSubcommandEd25519Sign:
