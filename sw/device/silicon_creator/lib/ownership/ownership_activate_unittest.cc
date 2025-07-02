@@ -56,8 +56,12 @@ class OwnershipActivateTest : public rom_test::RomTest {
       case kOwnershipStateUnlockedEndorsed:
         // In UnlockedEndorsed, the hash of the owner key in page1 must be equal
         // to the value stored in boot_data.
-        EXPECT_CALL(hmac_, sha256(_, _, _))
-            .WillOnce(SetArgPointee<2>((hmac_digest_t){{
+        EXPECT_CALL(hmac_, sha256_init());
+        EXPECT_CALL(hmac_, sha256_update(_, _));
+        EXPECT_CALL(hmac_, sha256_update(_, _));
+        EXPECT_CALL(hmac_, sha256_process());
+        EXPECT_CALL(hmac_, sha256_final(_))
+            .WillOnce(SetArgPointee<0>((hmac_digest_t){{
                 bootdata_.next_owner[0] + modifier,
                 bootdata_.next_owner[1],
                 bootdata_.next_owner[2],
