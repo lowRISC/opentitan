@@ -67,11 +67,16 @@ module prim_alert_rxtx_async_assert_fpv
   logic error_setreg_d, error_setreg_q;
   assign error_setreg_d = error_present | error_setreg_q;
 
+  logic seen_skew_d, seen_skew_q;
+  assign seen_skew_d = seen_skew_q | |{ping_skew_i, ack_skew_i, alert_skew_i};
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
       error_setreg_q <= 1'b0;
+      seen_skew_q    <= 1'b0;
     end else begin
       error_setreg_q <= error_setreg_d;
+      seen_skew_q    <= seen_skew_d;
     end
   end
 
@@ -86,17 +91,35 @@ module prim_alert_rxtx_async_assert_fpv
   `ASSUME_FPV(PingEn_M, $rose(ping_req_i) |-> ping_req_i throughout
       (ping_ok_o || error_present)[->1] ##1 $fell(ping_req_i))
 
-  // Note: the sequence lengths of the handshake and the following properties needs to
-  // be parameterized accordingly if different clock ratios are to be used here.
-  // TODO: tighten bounds if possible
+  // The alert signal being sent from the alert sender
+  logic sender_alert_level;
+  assign sender_alert_level = i_prim_alert_sender.alert_tx_o.alert_p &
+                              ~i_prim_alert_sender.alert_tx_o.alert_n;
+
+  // The alert sender's view of the ack signal that was sent from the alert receiver.
+  logic sender_ack_level;
+  assign sender_ack_level = i_prim_alert_sender.alert_rx_i.ack_p &
+                            ~i_prim_alert_sender.alert_rx_i.ack_n;
+
+  // The ping signal being sent from the alert receiver
+  logic receiver_ping_level;
+  assign receiver_ping_level = i_prim_alert_receiver.alert_rx_o.ping_p &
+                               ~i_prim_alert_receiver.alert_rx_o.ping_n;
+
+  // The full alert handshake is as follows:
+  //
+  //  - The sender raises the alert signal and then holds it high
+  //  - The receiver sees the alert and raises the ack signal, holding that high.
+  //  - The sender sees the ack and drops the alert signal again
+  //  - The receiver sees that the alert has dropped and drops its ack.
+  //
+  // We monitor it from the point of view of the alert sender, so look at the alert signal that it
+  // transmits and the ack signal that it receives.
   sequence FullHandshake_S;
-    $rose(prim_alert_rxtx_async_tb.alert_pd)   ##[3:6]
-    $rose(prim_alert_rxtx_async_tb.ack_pd)     &&
-    $stable(prim_alert_rxtx_async_tb.alert_pd) ##[3:6]
-    $fell(prim_alert_rxtx_async_tb.alert_pd)   &&
-    $stable(prim_alert_rxtx_async_tb.ack_pd)   ##[3:6]
-    $fell(prim_alert_rxtx_async_tb.ack_pd)     &&
-    $stable(prim_alert_rxtx_async_tb.alert_pd);
+    $rose(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
+    $rose(sender_ack_level)   ##1 $stable(sender_ack_level)[*1:5]   ##0
+    $fell(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
+    $fell(sender_ack_level);
   endsequence
 
   // Handshake assertions
@@ -114,22 +137,23 @@ module prim_alert_rxtx_async_assert_fpv
   // error_setreg_d). Some of the assertions also have extra conditions (to stop injected skews
   // causing errors), which are for the same reason.
   `ASSERT(PingHs_A,
-          ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) && both_idle |->
-          ##[0:5] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_q || init_pending)
+          ##1 $changed(receiver_ping_level) && both_idle |=>
+          ##[0:4] FullHandshake_S,
+          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
+
   `ASSERT(AlertHs_A,
           alert_req_i && both_idle |->
           ##[0:5] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_q || init_pending)
+          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
   `ASSERT(AlertTestHs_A,
           alert_test_i && both_idle |->
           ##[0:5] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_q || init_pending)
+          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
   // Make sure we eventually get an ACK
   `ASSERT(AlertReqAck_A,
           alert_req_i && both_idle |->
           strong(##[1:$] alert_ack_o),
-          clk_i, !rst_ni || error_setreg_q || init_pending)
+          clk_i, !rst_ni || error_setreg_d || init_pending)
 
   // Transmission of pings
   //
