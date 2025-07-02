@@ -211,13 +211,11 @@ status_t handle_cryptolib_fi_asym_p384_ecdh(ujson_t *uj) {
   /////////////// STUB START ///////////////
   // Perform ecdh in P384.
   // Trigger are over the API calls.
-
   cryptolib_fi_asym_p384_ecdh_out_t uj_output;
-  memset(uj_output.shared_key, 0, P384_CMD_BYTES);
-  uj_output.cfg = 0;
+  TRY(cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_ecdh_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_ecdh_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
