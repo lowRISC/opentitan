@@ -196,12 +196,10 @@ module prim_alert_rxtx_async_assert_fpv
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
-          (!error_present [*2] ##1 !error_present && !sender_is_idle |=>
-           s_eventually(sender_is_idle)),
+          s_eventually(sender_is_idle),
           clk_i, !rst_ni || error_present || init_pending)
   `ASSERT(FsmLivenessReceiver_A,
-          (!error_present [*2] ##1 !error_present && receiver_is_idle |=>
-           s_eventually(receiver_is_idle)),
+          s_eventually(receiver_is_idle),
           clk_i, !rst_ni || error_present || init_pending)
 
   // check that the in-band reset moves sender FSM into Idle state.
