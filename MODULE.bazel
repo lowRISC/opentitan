@@ -43,16 +43,6 @@ bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
 bazel_dep(name = "rules_rust_mdbook", version = "0.59.2")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
-# Overrides and patches:
-single_version_override(
-    module_name = "rules_rust_bindgen",
-    patch_strip = 3,
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
-    ],
-    version = "0.59.2",
-)
-
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
 rust.repository_set(
