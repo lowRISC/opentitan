@@ -99,8 +99,20 @@ module prim_alert_rxtx_async_assert_fpv
     $stable(prim_alert_rxtx_async_tb.alert_pd);
   endsequence
 
-  // note: injected errors may lockup the FSMs, and hence the full HS can
-  // only take place if both FSMs are in a good state
+  // Handshake assertions
+  //
+  // These assertions track "handshakes". Normally this has the sender signalling something and the
+  // receiver responding, but the ping handshake goes the other way around. To avoid situations
+  // where the blocks are starting in the wrong state, the precondition for the assertions requires
+  // both sender and receiver to be in the idle state.
+  //
+  // Each assertion in the next block has a disable condition that disables the assertion if any
+  // error has been injected into the signals. Injecting errors onto the bus can stop the handshake
+  // working, but that isn't the behaviour we're trying to track.
+  //
+  // As such, we disable the assertion if there has ever been an injected level error (using
+  // error_setreg_d). Some of the assertions also have extra conditions (to stop injected skews
+  // causing errors), which are for the same reason.
   `ASSERT(PingHs_A,
           ##1 $changed(prim_alert_rxtx_async_tb.ping_pd) && both_idle |->
           ##[0:5] FullHandshake_S,
