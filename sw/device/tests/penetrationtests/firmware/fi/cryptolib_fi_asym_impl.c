@@ -8,10 +8,12 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
+#include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
@@ -531,6 +533,66 @@ status_t cryptolib_fi_p256_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_p384_sign_impl(
+    cryptolib_fi_asym_p384_sign_in_t uj_input,
+    cryptolib_fi_asym_p384_sign_out_t *uj_output) {
+  static const otcrypto_key_config_t kP384PrivateKeyConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = kPentestP384Bytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // Create the private key.
+  p384_masked_scalar_t private_key_masked;
+  otcrypto_blinded_key_t private_key = {
+      .config = kP384PrivateKeyConfig,
+      .keyblob_length = sizeof(private_key_masked),
+      .keyblob = (uint32_t *)&private_key_masked,
+  };
+  memset(private_key_masked.share0, 0, kP384MaskedScalarShareBytes);
+  memcpy(private_key_masked.share0, uj_input.scalar, kP384ScalarBytes);
+  memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  // Set up the message buffer.
+  uint32_t message_buf[kPentestP384Words];
+  memset(message_buf, 0, sizeof(message_buf));
+  memcpy(message_buf, uj_input.message, P384_CMD_BYTES);
+
+  const otcrypto_hash_digest_t message_digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = kPentestP384Words,
+      .data = (uint32_t *)message_buf,
+  };
+
+  // Set up the signature buffer.
+  uint32_t sig[kPentestP384Words * 2] = {0};
+  otcrypto_word32_buf_t signature_mut = {
+      .data = sig,
+      .len = ARRAYSIZE(sig),
+  };
+
+  // Trigger window.
+  TRY(otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut));
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  memset(uj_output->r, 0, P384_CMD_BYTES);
+  memset(uj_output->s, 0, P384_CMD_BYTES);
+  p384_ecdsa_signature_t *signature_p384 =
+      (p384_ecdsa_signature_t *)signature_mut.data;
+  memcpy(uj_output->r, signature_p384->r, kP384ScalarBytes);
+  memcpy(uj_output->s, signature_p384->s, kP384ScalarBytes);
+
+  // Return 0 for the public key.
+  memset(uj_output->pubx, 0, P384_CMD_BYTES);
+  memset(uj_output->puby, 0, P384_CMD_BYTES);
 
   return OK_STATUS();
 }
