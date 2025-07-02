@@ -17,7 +17,12 @@ module otp_macro
   parameter         MemInitFile   = "",
   // Vendor test partition offset and size (both in bytes)
   parameter  int    VendorTestOffset = 0,
-  parameter  int    VendorTestSize   = 0
+  parameter  int    VendorTestSize   = 0,
+  // RACL definitions
+  parameter bit  EnableRacl       = 1'b0,
+  parameter bit  RaclErrorRsp     = 1'b1,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[otp_macro_reg_pkg::NumRegsPrim] =
+    '{otp_macro_reg_pkg::NumRegsPrim{0}}
 ) (
   input                          clk_i,
   input                          rst_ni,
@@ -49,6 +54,10 @@ module otp_macro
   // Incoming request from OTP_CTRL
   input                          otp_ctrl_macro_req_t otp_i,
   output                         otp_ctrl_macro_rsp_t otp_o,
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t  racl_policies_i,
+  output top_racl_pkg::racl_error_log_t   racl_error_o,
 
   // DFT config and response port
   input                          otp_cfg_t cfg_i,
@@ -146,14 +155,20 @@ module otp_macro
 
   otp_macro_reg_pkg::otp_macro_prim_reg2hw_t reg2hw;
   otp_macro_reg_pkg::otp_macro_prim_hw2reg_t hw2reg;
-  otp_macro_prim_reg_top u_reg_top (
+  otp_macro_prim_reg_top #(
+    .EnableRacl       ( EnableRacl       ),
+    .RaclErrorRsp     ( RaclErrorRsp     ),
+    .RaclPolicySelVec ( RaclPolicySelVec )
+  ) u_reg_top (
     .clk_i,
     .rst_ni,
     .tl_i      (tl_h2d_gated ),
     .tl_o      (tl_d2h_gated ),
     .reg2hw    (reg2hw    ),
     .hw2reg    (hw2reg    ),
-    .intg_err_o(intg_err  )
+    .intg_err_o(intg_err  ),
+    .racl_policies_i,
+    .racl_error_o
   );
 
   logic unused_reg_sig;

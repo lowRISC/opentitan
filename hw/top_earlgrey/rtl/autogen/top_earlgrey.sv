@@ -1570,6 +1570,8 @@ module top_earlgrey #(
       .otp_o(otp_ctrl_otp_macro_rsp),
       .cfg_i('0),
       .cfg_rsp_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
       .prim_tl_i(otp_macro_prim_tl_req),
       .prim_tl_o(otp_macro_prim_tl_rsp),
       .scanmode_i,
