@@ -14,8 +14,8 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/rsa.h"
-#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -327,13 +327,7 @@ status_t cryptolib_sca_rsa_sign_impl(
     pentest_set_trigger_high();
   }
   // Hash the message.
-  if (hash_mode == kOtcryptoHashModeSha256) {
-    TRY(otcrypto_sha2_256(msg_buf, &msg_digest));
-  } else if (hash_mode == kOtcryptoHashModeSha384) {
-    TRY(otcrypto_sha2_384(msg_buf, &msg_digest));
-  } else {
-    TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
-  }
+  TRY(otcrypto_hash(msg_buf, msg_digest));
   if (trigger == 1) {
     pentest_set_trigger_low();
   }

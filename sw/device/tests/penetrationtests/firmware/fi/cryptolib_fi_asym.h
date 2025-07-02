@@ -23,9 +23,9 @@
 status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj);
 
 /**
- * The cryptolib fi drbg handler.
+ * The cryptolib fi rsa sign handler.
  *
- * This command signs or verifies using an RSA call accepting multiple
+ * This command signs using an RSA call accepting multiple
  * padding schemes and modes of operation.
  *
  * See cryptolib_fi_asym_commands.h for inputs and outputs.
@@ -35,6 +35,20 @@ status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj);
+
+/**
+ * The cryptolib fi rsa verify handler.
+ *
+ * This command verifies using an RSA call accepting multiple
+ * padding schemes and modes of operation.
+ *
+ * See cryptolib_fi_asym_commands.h for inputs and outputs.
+ * See fi_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj);
 
 /**
  * The cryptolib fi drbg handler.
