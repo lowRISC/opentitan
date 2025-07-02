@@ -151,8 +151,7 @@ module prim_alert_rxtx_async_assert_fpv
           clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
   // Make sure we eventually get an ACK
   `ASSERT(AlertReqAck_A,
-          alert_req_i && both_idle |->
-          strong(##[1:$] alert_ack_o),
+          alert_req_i && both_idle |=> s_eventually alert_ack_o,
           clk_i, !rst_ni || error_setreg_d || init_pending)
 
   // Transmission of pings
@@ -195,19 +194,19 @@ module prim_alert_rxtx_async_assert_fpv
   // eventual transmission of alerts in the general case which can include continous ping
   // collisions
   `ASSERT(AlertCheck1_A,
-      alert_req_i || alert_test_i |-> strong(##[1:$] sender_is_idle ##[3:5] alert_o),
-      clk_i, !rst_ni || error_setreg_q ||
-      prim_alert_rxtx_async_tb.i_prim_alert_sender.alert_clr || init_pending)
+          alert_req_i || alert_test_i |=> s_eventually (sender_is_idle ##[3:5] alert_o),
+          clk_i, !rst_ni || error_setreg_q ||
+          prim_alert_rxtx_async_tb.i_prim_alert_sender.alert_clr || init_pending)
 
   // basic liveness of FSMs in case no errors are present
   `ASSERT(FsmLivenessSender_A,
-      !error_present [*2] ##1 !error_present && !sender_is_idle |->
-      strong(##[1:$] sender_is_idle),
-      clk_i, !rst_ni || error_present || init_pending)
+          (!error_present [*2] ##1 !error_present && !sender_is_idle |=>
+           s_eventually(sender_is_idle)),
+          clk_i, !rst_ni || error_present || init_pending)
   `ASSERT(FsmLivenessReceiver_A,
-      !error_present [*2] ##1 !error_present && receiver_is_idle |->
-      strong(##[1:$] receiver_is_idle),
-      clk_i, !rst_ni || error_present || init_pending)
+          (!error_present [*2] ##1 !error_present && receiver_is_idle |=>
+           s_eventually(receiver_is_idle)),
+          clk_i, !rst_ni || error_present || init_pending)
 
   // check that the in-band reset moves sender FSM into Idle state.
   `ASSERT(InBandInitFromReceiverToSender_A,
