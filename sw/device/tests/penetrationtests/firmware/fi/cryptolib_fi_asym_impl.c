@@ -417,6 +417,154 @@ status_t cryptolib_fi_rsa_sign_impl(
   return OK_STATUS();
 }
 
+status_t cryptolib_fi_rsa_verify_impl(
+    cryptolib_fi_asym_rsa_verify_in_t uj_input,
+    cryptolib_fi_asym_rsa_verify_out_t *uj_output) {
+  size_t public_key_bytes;
+  size_t num_words;
+  otcrypto_rsa_size_t rsa_size;
+  switch (uj_input.n_len) {
+    case kPentestRsa2048NumBytes:
+      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
+      num_words = kPentestRsa2048NumWords;
+      rsa_size = kOtcryptoRsaSize2048;
+      break;
+    case kPentestRsa3072NumBytes:
+      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
+      num_words = kPentestRsa3072NumWords;
+      rsa_size = kOtcryptoRsaSize3072;
+      break;
+    case kPentestRsa4096NumBytes:
+      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
+      num_words = kPentestRsa4096NumWords;
+      rsa_size = kOtcryptoRsaSize4096;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA mode: %d", uj_input.n_len);
+      return INVALID_ARGUMENT();
+  }
+
+  otcrypto_hash_mode_t hash_mode;
+  size_t hash_digest_words;
+  switch (uj_input.hashing) {
+    case kPentestRsaHashmodeSha256:
+      hash_mode = kOtcryptoHashModeSha256;
+      hash_digest_words = kPentestSha256DigestWords;
+      break;
+    case kPentestRsaHashmodeSha384:
+      hash_mode = kOtcryptoHashModeSha384;
+      hash_digest_words = kPentestSha384DigestWords;
+      break;
+    case kPentestRsaHashmodeSha512:
+      hash_mode = kOtcryptoHashModeSha512;
+      hash_digest_words = kPentestSha512DigestWords;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
+      return INVALID_ARGUMENT();
+  }
+
+  otcrypto_key_mode_t key_mode;
+  otcrypto_rsa_padding_t padding_mode;
+  switch (uj_input.padding) {
+    case kPentestRsaPaddingPkcs:
+      padding_mode = kOtcryptoRsaPaddingPkcs;
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
+      break;
+    case kPentestRsaPaddingPss:
+      padding_mode = kOtcryptoRsaPaddingPss;
+      key_mode = kOtcryptoKeyModeRsaSignPss;
+      break;
+    default:
+      LOG_ERROR("Unsupported RSA padding mode: %d", uj_input.padding);
+      return INVALID_ARGUMENT();
+  };
+
+  // Create the modulus N buffer.
+  uint32_t n_buf[kPentestRsaMaxNWords];
+  memset(n_buf, 0, sizeof(n_buf));
+  memcpy(n_buf, uj_input.n, uj_input.n_len);
+
+  otcrypto_const_word32_buf_t modulus = {
+      .data = n_buf,
+      .len = num_words,
+  };
+
+  // Create the public key.
+  uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_bytes,
+      .key = public_key_data,
+  };
+  // Trigger window.
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, uj_input.e,
+                                        &public_key));
+  // Trigger window.
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_low();
+  }
+
+  // Create the signature buffer.
+  uint32_t sig_buf[num_words];
+  memset(sig_buf, 0, sizeof(sig_buf));
+  memcpy(sig_buf, uj_input.sig, uj_input.sig_len);
+
+  otcrypto_const_word32_buf_t sig = {
+      .data = sig_buf,
+      .len = num_words,
+  };
+
+  // Copy the message into the buffer.
+  uint8_t msg[uj_input.data_len];
+  memcpy(msg, uj_input.data, uj_input.data_len);
+  otcrypto_const_byte_buf_t msg_buf = {
+      .len = uj_input.data_len,
+      .data = msg,
+  };
+
+  // Buffer to store the digest.
+  uint32_t msg_digest_data[hash_digest_words];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+      .mode = hash_mode,
+  };
+
+  // Trigger window.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  // Hash the message.
+  TRY(otcrypto_hash(msg_buf, msg_digest));
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
+
+  hardened_bool_t verification_result;
+  // Trigger window.
+  if (uj_input.trigger == 2) {
+    pentest_set_trigger_high();
+  }
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig,
+                          &verification_result));
+  if (uj_input.trigger == 2) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  uj_output->result = true;
+  if (verification_result != kHardenedBoolTrue) {
+    uj_output->result = false;
+  }
+  uj_output->cfg = 0;
+
+  return OK_STATUS();
+}
+
 status_t cryptolib_fi_p256_sign_impl(
     cryptolib_fi_asym_p256_sign_in_t uj_input,
     cryptolib_fi_asym_p256_sign_out_t *uj_output) {
