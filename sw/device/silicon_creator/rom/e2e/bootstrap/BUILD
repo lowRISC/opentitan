@@ -9,14 +9,8 @@ load(
     "fpga_params",
     "opentitan_test",
 )
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-)
-load(
-    "//rules:const.bzl",
-    "CONST",
-)
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules:const.bzl", "CONST")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
