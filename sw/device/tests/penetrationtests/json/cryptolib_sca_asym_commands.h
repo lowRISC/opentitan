@@ -29,15 +29,19 @@ extern "C" {
     value(_, Prime) \
     value(_, P256BaseMulFvsr) \
     value(_, P256PointMul) \
+    value(_, P256Ecdh) \
     value(_, P256Sign) \
     value(_, P384BaseMulFvsr) \
     value(_, P384PointMul) \
+    value(_, P384Ecdh) \
     value(_, P384Sign) \
     value(_, Secp256k1BaseMulFvsr) \
     value(_, Secp256k1PointMul) \
+    value(_, Secp256k1Ecdh) \
     value(_, Secp256k1Sign) \
     value(_, X25519BaseMulFvsr) \
     value(_, X25519PointMul) \
+    value(_, X25519Ecdh) \
     value(_, Ed25519BaseMulFvsr) \
     value(_, Ed25519Sign) \
     value(_, Init)
@@ -129,6 +133,19 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymP256PointMulIn, cryptolib_sca_asym_p256_point
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymP256PointMulOut, cryptolib_sca_asym_p256_point_mul_out_t, CRYPTOLIBSCAASYM_P256_POINT_MUL_OUT);
 
+#define CRYPTOLIBSCAASYM_P256_ECDH_IN(field, string) \
+    field(private_key, uint8_t, P256_CMD_BYTES) \
+    field(public_x, uint8_t, P256_CMD_BYTES) \
+    field(public_y, uint8_t, P256_CMD_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymP256EcdhIn, cryptolib_sca_asym_p256_ecdh_in_t, CRYPTOLIBSCAASYM_P256_ECDH_IN);
+
+#define CRYPTOLIBSCAASYM_P256_ECDH_OUT(field, string) \
+    field(shared_key, uint8_t, P256_CMD_BYTES) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymP256EcdhOut, cryptolib_sca_asym_p256_ecdh_out_t, CRYPTOLIBSCAASYM_P256_ECDH_OUT);
+
 #define CRYPTOLIBSCAASYM_P256_SIGN_IN(field, string) \
     field(scalar, uint8_t, P256_CMD_BYTES) \
     field(message, uint8_t, P256_CMD_BYTES) \
@@ -169,6 +186,19 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymP384PointMulIn, cryptolib_sca_asym_p384_point
     field(y, uint8_t, P384_CMD_BYTES) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymP384PointMulOut, cryptolib_sca_asym_p384_point_mul_out_t, CRYPTOLIBSCAASYM_P384_POINT_MUL_OUT);
+
+#define CRYPTOLIBSCAASYM_P384_ECDH_IN(field, string) \
+    field(private_key, uint8_t, P384_CMD_BYTES) \
+    field(public_x, uint8_t, P384_CMD_BYTES) \
+    field(public_y, uint8_t, P384_CMD_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymP384EcdhIn, cryptolib_sca_asym_p384_ecdh_in_t, CRYPTOLIBSCAASYM_P384_ECDH_IN);
+
+#define CRYPTOLIBSCAASYM_P384_ECDH_OUT(field, string) \
+    field(shared_key, uint8_t, P384_CMD_BYTES) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymP384EcdhOut, cryptolib_sca_asym_p384_ecdh_out_t, CRYPTOLIBSCAASYM_P384_ECDH_OUT);
 
 #define CRYPTOLIBSCAASYM_P384_SIGN_IN(field, string) \
     field(scalar, uint8_t, P384_CMD_BYTES) \
@@ -211,6 +241,19 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymSECP256K1PointMulIn, cryptolib_sca_asym_secp2
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymSECP256K1PointMulOut, cryptolib_sca_asym_secp256k1_point_mul_out_t, CRYPTOLIBSCAASYM_SECP256K1_POINT_MUL_OUT);
 
+#define CRYPTOLIBSCAASYM_SECP256K1_ECDH_IN(field, string) \
+    field(private_key, uint8_t, SECP256K1_CMD_BYTES) \
+    field(public_x, uint8_t, SECP256K1_CMD_BYTES) \
+    field(public_y, uint8_t, SECP256K1_CMD_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymSECP256K1EcdhIn, cryptolib_sca_asym_secp256k1_ecdh_in_t, CRYPTOLIBSCAASYM_SECP256K1_ECDH_IN);
+
+#define CRYPTOLIBSCAASYM_SECP256K1_ECDH_OUT(field, string) \
+    field(shared_key, uint8_t, SECP256K1_CMD_BYTES) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymSECP256K1EcdhOut, cryptolib_sca_asym_secp256k1_ecdh_out_t, CRYPTOLIBSCAASYM_SECP256K1_ECDH_OUT);
+
 #define CRYPTOLIBSCAASYM_SECP256K1_SIGN_IN(field, string) \
     field(scalar, uint8_t, SECP256K1_CMD_BYTES) \
     field(message, uint8_t, SECP256K1_CMD_BYTES) \
@@ -251,6 +294,19 @@ UJSON_SERDE_STRUCT(CryptoLibScaAsymX25519PointMulIn, cryptolib_sca_asym_x25519_p
     field(y, uint8_t, X25519_CMD_BYTES) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaAsymX25519PointMulOut, cryptolib_sca_asym_x25519_point_mul_out_t, CRYPTOLIBSCAASYM_X25519_POINT_MUL_OUT);
+
+#define CRYPTOLIBSCAASYM_X25519_ECDH_IN(field, string) \
+    field(private_key, uint8_t, X25519_CMD_BYTES) \
+    field(public_x, uint8_t, X25519_CMD_BYTES) \
+    field(public_y, uint8_t, X25519_CMD_BYTES) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymX25519EcdhIn, cryptolib_sca_asym_x25519_ecdh_in_t, CRYPTOLIBSCAASYM_X25519_ECDH_IN);
+
+#define CRYPTOLIBSCAASYM_X25519_ECDH_OUT(field, string) \
+    field(shared_key, uint8_t, X25519_CMD_BYTES) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaAsymX25519EcdhOut, cryptolib_sca_asym_x25519_ecdh_out_t, CRYPTOLIBSCAASYM_X25519_ECDH_OUT);
 
 #define CRYPTOLIBSCAASYM_ED25519_BASE_MUL_IN(field, string) \
     field(scalar, uint8_t, ED25519_CMD_SCALAR_BYTES) \

@@ -74,6 +74,17 @@ status_t handle_cryptolib_sca_asym_p256_base_mul_fsvr(ujson_t *uj);
 status_t handle_cryptolib_sca_asym_p256_point_mul(ujson_t *uj);
 
 /**
+ * The cryptolib sca p256 ecdh handler.
+ *
+ * See cryptolib_sca_asymcommands.h for inputs and outputs.
+ * See sca_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_asym_p256_ecdh(ujson_t *uj);
+
+/**
  * The cryptolib sca p256 sign handler.
  *
  * This SCA penetration test triggers a sign on p256.
@@ -114,6 +125,17 @@ status_t handle_cryptolib_sca_asym_p384_base_mul_fvsr(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_sca_asym_p384_point_mul(ujson_t *uj);
+
+/**
+ * The cryptolib sca p384 ecdh handler.
+ *
+ * See cryptolib_sca_asymcommands.h for inputs and outputs.
+ * See sca_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_asym_p384_ecdh(ujson_t *uj);
 
 /**
  * The cryptolib sca p384 sign handler.
@@ -158,6 +180,17 @@ status_t handle_cryptolib_sca_asym_secp256k1_base_mul_fvsr(ujson_t *uj);
 status_t handle_cryptolib_sca_asym_secp256k1_point_mul(ujson_t *uj);
 
 /**
+ * The cryptolib sca secp256k1 ecdh handler.
+ *
+ * See cryptolib_sca_asymcommands.h for inputs and outputs.
+ * See sca_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_asym_secp256k1_ecdh(ujson_t *uj);
+
+/**
  * The cryptolib sca secp256k1 sign handler.
  *
  * This SCA penetration test triggers a sign on secp256k1.
@@ -198,6 +231,17 @@ status_t handle_cryptolib_sca_asym_x25519_base_mul_fvsr(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_sca_asym_x25519_point_mul(ujson_t *uj);
+
+/**
+ * The cryptolib sca x25519 ecdh handler.
+ *
+ * See cryptolib_sca_asymcommands.h for inputs and outputs.
+ * See sca_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_asym_x25519_ecdh(ujson_t *uj);
 
 /**
  * The cryptolib sca ed25519 base mul handler.
