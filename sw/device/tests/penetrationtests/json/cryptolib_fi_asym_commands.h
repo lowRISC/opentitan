@@ -26,6 +26,7 @@ extern "C" {
 #define CRYPTOLIBFIASYM_SUBCOMMAND(_, value) \
     value(_, RsaEnc) \
     value(_, RsaSign) \
+    value(_, RsaVerify) \
     value(_, Prime) \
     value(_, P256BaseMul) \
     value(_, P256PointMul) \
@@ -79,8 +80,6 @@ UJSON_SERDE_STRUCT(CryptoLibFiAsymRsaEncOut, cryptolib_fi_asym_rsa_enc_out_t, CR
     field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
     field(d, uint8_t, RSA_CMD_MAX_N_BYTES) \
     field(n_len, size_t) \
-    field(sig, uint8_t, RSA_CMD_MAX_SIGNATURE_BYTES) \
-    field(sig_len, size_t) \
     field(hashing, size_t) \
     field(padding, size_t) \
     field(cfg, size_t) \
@@ -95,6 +94,25 @@ UJSON_SERDE_STRUCT(CryptoLibFiAsymRsaSignIn, cryptolib_fi_asym_rsa_sign_in_t, CR
     field(sig_len, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiAsymRsaSignOut, cryptolib_fi_asym_rsa_sign_out_t, CRYPTOLIBFIASYM_RSA_SIGN_OUT);
+
+#define CRYPTOLIBFIASYM_RSA_VERIFY_IN(field, string) \
+    field(data, uint8_t, RSA_CMD_MAX_MESSAGE_BYTES) \
+    field(data_len, size_t) \
+    field(e, uint32_t) \
+    field(n, uint8_t, RSA_CMD_MAX_N_BYTES) \
+    field(n_len, size_t) \
+    field(sig, uint8_t, RSA_CMD_MAX_SIGNATURE_BYTES) \
+    field(sig_len, size_t) \
+    field(hashing, size_t) \
+    field(padding, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiAsymRsaVerifyIn, cryptolib_fi_asym_rsa_verify_in_t, CRYPTOLIBFIASYM_RSA_VERIFY_IN);
+
+#define CRYPTOLIBFIASYM_RSA_VERIFY_OUT(field, string) \
+    field(result, bool) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiAsymRsaVerifyOut, cryptolib_fi_asym_rsa_verify_out_t, CRYPTOLIBFIASYM_RSA_VERIFY_OUT);
 
 #define CRYPTOLIBFIASYM_PRIME_IN(field, string) \
     field(e, uint32_t) \

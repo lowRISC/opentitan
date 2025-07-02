@@ -49,6 +49,24 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
+  cryptolib_fi_asym_rsa_verify_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_asym_rsa_verify_in_t(uj, &uj_input));
+
+  /////////////// STUB START ///////////////
+  // Perform an RSA signing with hashing and padding options.
+  // You can give cfg a value such that the RSA generates its own private key
+  // and you can give a value such that RSA switches between signing and
+  // verifying against the given signature. Trigger are over the API calls.
+  cryptolib_fi_asym_rsa_verify_out_t uj_output;
+  uj_output.cfg = 0;
+  uj_output.result = true;
+  /////////////// STUB END ///////////////
+
+  RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_verify_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_fi_asym_prime(ujson_t *uj) {
   cryptolib_fi_asym_prime_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_fi_asym_prime_in_t(uj, &uj_input));
@@ -448,6 +466,8 @@ status_t handle_cryptolib_fi_asym(ujson_t *uj) {
       return handle_cryptolib_fi_asym_rsa_enc(uj);
     case kCryptoLibFiAsymSubcommandRsaSign:
       return handle_cryptolib_fi_asym_rsa_sign(uj);
+    case kCryptoLibFiAsymSubcommandRsaVerify:
+      return handle_cryptolib_fi_asym_rsa_verify(uj);
     case kCryptoLibFiAsymSubcommandPrime:
       return handle_cryptolib_fi_asym_prime(uj);
     case kCryptoLibFiAsymSubcommandP256BaseMul:
