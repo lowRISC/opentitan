@@ -52,13 +52,24 @@ if {$env(TASK) == "FpvSecCm"} {
     -f [glob *.scr]
 }
 
+# Chains of successive A ##1 B ##1 C ... in sequences can take a long time to elaborate. There is a
+# new flag to elaborate called -optimize_implication_assert which improves this, but it only appears
+# from Jasper 2023.06. Call the get_version function to figure out whether we've got the right
+# version.
+if {[regexp "^202\(\[4-9\]\|3.0\[69\]\)" [get_version]]} {
+  set oia_arg "-optimize_implication_assert"
+} else {
+  set oia_arg ""
+}
+
 if {$env(DUT_TOP) == "prim_count_tb"} {
   elaborate -top $env(DUT_TOP) \
             -enable_sva_isunknown \
             -disable_auto_bbox \
-            -param ResetValue $ResetValue
+            -param ResetValue $ResetValue \
+            ${oia_arg}
 } else {
-  elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox
+  elaborate -top $env(DUT_TOP) -enable_sva_isunknown -disable_auto_bbox ${oia_arg}
 }
 
 set stopat [regexp -all -inline {[^\s\']+} $env(STOPATS)]
