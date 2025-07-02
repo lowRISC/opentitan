@@ -34,6 +34,9 @@ module prim_alert_rxtx_async_assert_fpv
   input        alert_o
 );
 
+  default clocking @(posedge clk_i); endclocking
+  default disable iff !rst_ni;
+
   import prim_mubi_pkg::mubi4_test_true_strict;
 
   logic error_present;
@@ -106,22 +109,6 @@ module prim_alert_rxtx_async_assert_fpv
   assign receiver_ping_level = i_prim_alert_receiver.alert_rx_o.ping_p &
                                ~i_prim_alert_receiver.alert_rx_o.ping_n;
 
-  // The full alert handshake is as follows:
-  //
-  //  - The sender raises the alert signal and then holds it high
-  //  - The receiver sees the alert and raises the ack signal, holding that high.
-  //  - The sender sees the ack and drops the alert signal again
-  //  - The receiver sees that the alert has dropped and drops its ack.
-  //
-  // We monitor it from the point of view of the alert sender, so look at the alert signal that it
-  // transmits and the ack signal that it receives.
-  sequence FullHandshake_S;
-    $rose(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
-    $rose(sender_ack_level)   ##1 $stable(sender_ack_level)[*1:5]   ##0
-    $fell(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
-    $fell(sender_ack_level);
-  endsequence
-
   // Handshake assertions
   //
   // These assertions track "handshakes". Normally this has the sender signalling something and the
@@ -129,30 +116,39 @@ module prim_alert_rxtx_async_assert_fpv
   // where the blocks are starting in the wrong state, the precondition for the assertions requires
   // both sender and receiver to be in the idle state.
   //
-  // Each assertion in the next block has a disable condition that disables the assertion if any
-  // error has been injected into the signals. Injecting errors onto the bus can stop the handshake
-  // working, but that isn't the behaviour we're trying to track.
-  //
-  // As such, we disable the assertion if there has ever been an injected level error (using
-  // error_setreg_d). Some of the assertions also have extra conditions (to stop injected skews
-  // causing errors), which are for the same reason.
-  `ASSERT(PingHs_A,
-          ##1 $changed(receiver_ping_level) && both_idle |=>
-          ##[0:4] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
+  // The "if (1)" part is to provide a block that can hold the "default disable iff" setting.
+  if (1) begin : g_handshake_assertions
+    // Assertions about handshakes should be disabled if any error has been injected into the
+    // signals (either by forcing a bit or by including a nonzero skew). Injecting errors onto the
+    // bus can stop the handshake working, but that isn't the behaviour we're trying to reason
+    // about.
+    default disable iff !rst_ni || error_setreg_d || seen_skew_d || init_pending;
 
-  `ASSERT(AlertHs_A,
-          alert_req_i && both_idle |->
-          ##[0:5] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
-  `ASSERT(AlertTestHs_A,
-          alert_test_i && both_idle |->
-          ##[0:5] FullHandshake_S,
-          clk_i, !rst_ni || error_setreg_d || seen_skew_d || init_pending)
-  // Make sure we eventually get an ACK
-  `ASSERT(AlertReqAck_A,
-          alert_req_i && both_idle |=> s_eventually alert_ack_o,
-          clk_i, !rst_ni || error_setreg_d || init_pending)
+    // The full alert handshake is as follows:
+    //
+    //  - The sender raises the alert signal and then holds it high
+    //  - The receiver sees the alert and raises the ack signal, holding that high.
+    //  - The sender sees the ack and drops the alert signal again
+    //  - The receiver sees that the alert has dropped and drops its ack.
+    //
+    // We monitor it from the point of view of the alert sender, so look at the alert signal that it
+    // transmits and the ack signal that it receives.
+    sequence FullHandshake_S;
+      $rose(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
+      $rose(sender_ack_level)   ##1 $stable(sender_ack_level)[*1:5]   ##0
+      $fell(sender_alert_level) ##1 $stable(sender_alert_level)[*1:5] ##0
+      $fell(sender_ack_level);
+    endsequence
+
+    PingHs_A: assert property (##1 $changed(receiver_ping_level) && both_idle |=>
+                               ##[0:4] FullHandshake_S);
+
+    AlertHs_A: assert property (alert_req_i && both_idle |-> ##[0:5] FullHandshake_S);
+
+    AlertTestHs_A: assert property (alert_test_i && both_idle |-> ##[0:5] FullHandshake_S);
+
+    AlertReqAck_A: assert property (alert_req_i && both_idle |=> s_eventually alert_ack_o);
+  end
 
   // Transmission of pings
   //
