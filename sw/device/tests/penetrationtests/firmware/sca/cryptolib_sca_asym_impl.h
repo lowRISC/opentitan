@@ -61,6 +61,17 @@ status_t cryptolib_sca_rsa_sign_impl(
     size_t trigger);
 
 /**
+ * Wrapper to ECDH in P256 cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_p256_ecdh_impl(
+    cryptolib_sca_asym_p256_ecdh_in_t uj_input,
+    cryptolib_sca_asym_p256_ecdh_out_t *uj_output);
+
+/**
  * Wrapper to P256 Sign cryptolib implementation.
  *
  * @param uj_input An initialized uJSON context.

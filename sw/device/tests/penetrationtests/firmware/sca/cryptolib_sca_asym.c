@@ -247,16 +247,15 @@ status_t handle_cryptolib_sca_asym_p256_point_mul(ujson_t *uj) {
 status_t handle_cryptolib_sca_asym_p256_ecdh(ujson_t *uj) {
   cryptolib_sca_asym_p256_ecdh_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_asym_p256_ecdh_in_t(uj, &uj_input));
+
   /////////////// STUB START ///////////////
   // Perform ECDH in P256.
   // Trigger are over the API calls.
-
   cryptolib_sca_asym_p256_ecdh_out_t uj_output;
-  memset(uj_output.shared_key, 0, P256_CMD_BYTES);
-  uj_output.cfg = 0;
+  TRY(cryptolib_sca_p256_ecdh_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
-  RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_ecdh_out_t, uj, &uj_output);
 
+  RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_ecdh_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
