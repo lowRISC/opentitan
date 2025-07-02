@@ -64,7 +64,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x16 to x23, w0 to w26
+ * clobbered registers: x2, x3, x16 to x23, w0 to w29
  * clobbered flag groups: FG0
  */
 p256_sign:
@@ -106,6 +106,27 @@ p256_sign:
   /* Convert masked result back to affine coordinates.
      R = (x_a, y_a) = (w11, w12) */
   jal       x1, proj_to_affine
+
+  /* store result (affine coordinates) in dmem
+     dmem[x] <= x_a = w11
+     dmem[y] <= y_a = w12 */
+  li        x2, 11
+  la        x21, x
+  bn.sid    x2++, 0(x21)
+  la        x22, y
+  bn.sid    x2, 0(x22)
+
+  /* Compute both sides of the Weierstrauss equation.
+       w18 <= (x^3 + ax + b) mod p
+       w19 <= (y^2) mod p */
+  jal      x1, p256_isoncurve
+
+  /* Compare the two sides of the equation to check if the result
+     is a valid point as an FI countermeasure.
+     The check fails if both sides are not equal.
+     FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
+  bn.cmp   w18, w19
+  jal      x1, trigger_fault_if_fg0_not_z
 
   /* setup modulus n (curve order) and Barrett constant
      MOD <= w29 <= n = dmem[p256_n]; w28 <= u_n = dmem[p256_u_n]  */
