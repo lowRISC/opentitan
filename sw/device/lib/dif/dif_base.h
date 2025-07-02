@@ -110,8 +110,8 @@ typedef enum dif_toggle {
  * This enum may be used instead when describing an interrupt type.
  * Specifically, event interrupts require software to manually clear them by
  * writing to the interrupt status register (after handling the root cause),
- * while status interrupts clear immediately when the root cause of the iterrupt
- * has been handled.
+ * while status interrupts clear immediately when the root cause of the
+ * interrupt has been handled.
  */
 typedef enum dif_irq_type {
   /**

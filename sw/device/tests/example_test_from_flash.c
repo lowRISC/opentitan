@@ -8,7 +8,7 @@
  * boot stage. This template is intended to be copied and modified according to
  * the instructions below.
  *
- * Plese delete all instructional comments after editing this template.
+ * Please delete all instructional comments after editing this template.
  */
 
 /**
@@ -40,7 +40,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
 
 /**
  * Override any of the default OTTF exception handlers (by uncommenting and
- * implementing them) if this test requires non-default exeception handling
+ * implementing them) if this test requires non-default exception handling
  * logic. Delete those that do not need to be overridden.
  *
  * See `sw/device/lib/testing/test_framework/ottf_isrs.c` for implementation

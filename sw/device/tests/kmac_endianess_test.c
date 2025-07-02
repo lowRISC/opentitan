@@ -89,7 +89,7 @@ uint32_t big_to_little_endian(uint32_t big_endian) {
  * @return OK or error.
  */
 status_t test_endianess(void) {
-  // Intialize KMAC hardware.
+  // Initialize KMAC hardware.
   dif_kmac_t kmac;
   dif_kmac_operation_state_t kmac_operation_state;
   CHECK_DIF_OK(

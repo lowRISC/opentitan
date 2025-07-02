@@ -153,7 +153,7 @@ struct usb_testutils_ctx {
    */
   usb_testutils_link_handler_t link_callback;
   /**
-   * Context pointer for link event callkback
+   * Context pointer for link event callback
    */
   void *ctx_link;
 

@@ -263,7 +263,7 @@ bool rom_test_main(void) {
   }
 
   // Jump to the OTTF in flash. Within the flash binary, it is the
-  // responsibily of the OTTF to set up its own stack, and to never return.
+  // responsibility of the OTTF to set up its own stack, and to never return.
   LOG_INFO("Test ROM complete, jumping to flash (addr: %x)!", entry_point);
   ((ottf_entry_point *)entry_point)();
 

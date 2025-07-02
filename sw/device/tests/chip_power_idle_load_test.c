@@ -258,7 +258,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_pwm_configure(&pwm, config_));
 
-  // Confugure each of the PWM channels:
+  // Configure each of the PWM channels:
   dif_pwm_channel_config_t channel_config_ = default_ch_cfg_;
   for (int i = 0; i < PWM_PARAM_N_OUTPUTS; ++i) {
     CHECK_DIF_OK(

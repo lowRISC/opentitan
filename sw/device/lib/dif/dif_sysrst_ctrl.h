@@ -339,7 +339,7 @@ typedef struct dif_sysrst_ctrl_input_change_config {
  * auto-override feature.
  *
  * Upon detection of a Power Button high-to-low transition, the signals from
- * generic keys 0 through 2 may be overriden with specified values.
+ * generic keys 0 through 2 may be overridden with specified values.
  */
 typedef struct dif_sysrst_ctrl_auto_override_config {
   /**
@@ -537,7 +537,7 @@ dif_result_t dif_sysrst_ctrl_input_change_detect_configure(
 /**
  * Configures a System Reset Controller's output pin override feature.
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to configure the override feature for input pins will
  * return `kDifBadArg`.
  *
@@ -555,7 +555,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_configure(
  * Configures a System Reset Controller's key signal auto-override feature.
  *
  * Upon detection of a Power Button high-to-low transition, the signals from
- * generic keys 0 through 2 may be overriden with specified values.
+ * generic keys 0 through 2 may be overridden with specified values.
  *
  * @param sysrst_ctrl A System Reset Controller handle.
  * @param config Runtime configuration parameters.
@@ -635,7 +635,7 @@ dif_result_t dif_sysrst_ctrl_pins_get_inverted(
 /**
  * Sets allowable override values for a System Reset Controller's output pin.
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to set the allowable override values for input pins will
  * return `kDifBadArg`.
  *
@@ -653,7 +653,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_set_allowed(
 /**
  * Gets allowable override values for a System Reset Controller's output pin.
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to get the allowable override values for input pins will
  * return `kDifBadArg`.
  *
@@ -672,7 +672,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_get_allowed(
  * Sets the enablement of a System Reset Controller's output pin override
  * feature.
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to set the enablement of the override feature for input
  * pins will return `kDifBadArg`.
  *
@@ -690,7 +690,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_set_enabled(
  * Gets the enablement of a System Reset Controller's output pin override
  * feature.
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to get the enablement of the override feature for input
  * pins will return `kDifBadArg`.
  *
@@ -709,7 +709,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_override_get_enabled(
  * Sets the override value of a System Reset Controller's output pin (like
  * writing to a GPIO pin).
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to set the override value of an input pin will return
  * `kDifBadArg`.
  *
@@ -727,7 +727,7 @@ dif_result_t dif_sysrst_ctrl_output_pin_set_override(
  * Gets the override value of a System Reset Controller's output pin (like
  * writing to a GPIO pin).
  *
- * Note, only output (or inout) pins may be overriden, i.e., set to a specific
+ * Note, only output (or inout) pins may be overridden, i.e., set to a specific
  * value. Attempting to get the override value of an input pin will return
  * `kDifBadArg`.
  *

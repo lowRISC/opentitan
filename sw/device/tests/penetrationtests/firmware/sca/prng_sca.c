@@ -38,7 +38,7 @@ status_t handle_prng_sca_seed_prng(ujson_t *uj) {
 /**
  * PRNG SCA command handler.
  *
- * Command hanlder for the PRNG SCA command.
+ * Command handler for the PRNG SCA command.
  *
  * @param uj The received uJSON data.
  */

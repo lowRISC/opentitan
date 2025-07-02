@@ -89,7 +89,7 @@ const cshake_test_t cshake_tests[] = {
 bool test_main(void) {
   LOG_INFO("Running KMAC DIF cSHAKE test...");
 
-  // Intialize KMAC hardware.
+  // Initialize KMAC hardware.
   dif_kmac_t kmac;
   dt_kmac_t kKmacDt = (dt_kmac_t)0;
   static_assert(kDtKmacCount >= 1,

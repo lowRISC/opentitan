@@ -32,7 +32,7 @@ extern "C" {
  * without errors.
  *
  * By default, the pre-run and post-run hooks are weakly defined symbols that do
- * nothing. They can be overriden by silicon creators, through an external
+ * nothing. They can be overridden by silicon creators, through an external
  * repository. See the corresponding documentation and example in
  * `sw/device/silicon_creator/rom/hooks/`
  */
@@ -68,7 +68,7 @@ rom_state_run_cb(void *arg, rom_state_t *next_state);
 /**
  * A ROM state Control Flow Integrity (CFI) set of counters indexes.
  * Four CFI counters per ROM state are maintained in a single ROM state CFI
- * array, as defined and intialized by the ROM_STATE_CFI_TABLE_ENTRIES_ macro.
+ * array, as defined and initialized by the ROM_STATE_CFI_TABLE_ENTRIES_ macro.
  * This structure keeps track of those four ROM state indexes in that table.
  * The ROM state CFI counter, indexed by the `state_index` field in this
  * structure, gets incremented as the ROM state machine goes through the three

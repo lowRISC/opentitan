@@ -49,7 +49,7 @@ status_t handle_hmac_sca_batch_random(ujson_t *uj);
  * hmac.sca.single test
  *
  * This SCA penetration test triggers a single HMAC-SHA256 operation using the
- * provided key, mask, and message. The tag is returend to the host.
+ * provided key, mask, and message. The tag is returnend to the host.
  *
  * SCA traces are captured during trigger_high & trigger_low.
  *

@@ -82,7 +82,7 @@ void ottf_external_nmi_handler(uint32_t *exc_info) {
                                                 kDifRvCoreIbexNmiSourceAll));
 }
 
-// Specific handlee for the wdog bark NMI IRQ.
+// Specific handler for the wdog bark NMI IRQ.
 static void wdog_irq_handler(void) {
   bool is_pending;
 

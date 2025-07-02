@@ -57,7 +57,7 @@
    *
    * Since the C runtime is not initialized immediately after reset, the initial
    * interrupt vector must only call functions written in assembly. Once the C
-   * runtime is intialized, the interrupt vector should be replaced.
+   * runtime is initialized, the interrupt vector should be replaced.
    *
    * If the hardware is operating correctly, the assembly interrupt handlers
    * should never be called.

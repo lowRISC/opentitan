@@ -349,7 +349,7 @@ static status_t hmac_finalize(otcrypto_sha2_context_t *hash_ctx,
  * If the given test vector is a oneshot call, then it is run and the
  * result is compared. The process of the vector is already update to done.
  *
- * If the given test vector is a starming call, then this function calls
+ * If the given test vector is a streaming call, then this function calls
  * the necessary init, update or final call. In the final call, the result
  * is compared with the expected result.
  *

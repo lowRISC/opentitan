@@ -23,7 +23,7 @@ extern "C" {
  *
  * Loads the OTBN program that runs attestation and code-signature
  * verification. The program can later be cleared by wiping OTBN's IMEM and
- * DMEM, or by loading a diffierent OTBN application.
+ * DMEM, or by loading a different OTBN application.
  *
  * @return The result of the operation.
  */
@@ -67,7 +67,7 @@ rom_error_t otbn_boot_attestation_keygen(
  *
  * This routine may be used to generate DICE attestation keys, TPM identity
  * keys, or any other deterministic asymmetric ECC P256 keys required. DICE keys
- * should be contructed from the "attestation" keymgr key type, while TPM keys
+ * should be constructed from the "attestation" keymgr key type, while TPM keys
  * should be constructed form the "sealing" key type. The former are bound to
  * firmware updates, and change when ROM_EXT or Owner firmware is updated. The
  * latter remain stable across the lifetime of an ownership of the chip.

@@ -63,7 +63,7 @@ get_name_loop:
   lb t4, 0(t2)
   beqz t4, get_name_end
 
-  // Move the charater from the constant string into the given string.
+  // Move the character from the constant string into the given string.
   add t3, t1, t0
   lb t4, 0(t3)
   sb t4, 0(t2)

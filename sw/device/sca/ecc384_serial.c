@@ -96,7 +96,7 @@ uint32_t ecc384_msg[kEcc384NumWords] = {
     0x424e0000,  // 'BN'
 };
 
-// p384_ecdsa_sca has randomnization removed.
+// p384_ecdsa_sca has randomization removed.
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
 
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, mode);

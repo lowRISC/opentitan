@@ -409,7 +409,7 @@ rom_error_t dice_chain_attestation_owner(
       "Expect the keymgr binding value to be the same size as a sha256 digest");
 
   // Aggregate the owner firmware (BL0) measurement and the ownership
-  // measurement into a single attestation measurment.  The attestation
+  // measurement into a single attestation measurement.  The attestation
   // measurement is used to initialize the keymgr.
   hmac_digest_t attest_measurement;
   hmac_sha256_configure(false);

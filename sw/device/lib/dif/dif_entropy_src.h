@@ -289,12 +289,12 @@ typedef struct dif_entropy_src_alert_fail_counts {
    */
   uint16_t total_fails;
   /**
-   * The number of test failures, due to the specific test execeeding the high
+   * The number of test failures, due to the specific test exceeding the high
    * threshold, that cause alerts to be fired.
    */
   uint8_t high_fails[kDifEntropySrcTestNumVariants];
   /**
-   * The number of test failures, due to the specific test execeeding the low
+   * The number of test failures, due to the specific test exceeding the low
    * threshold, that cause alerts to be fired.
    *
    * Note, some health tests do not have a low threshold. For these tests, this
@@ -703,7 +703,7 @@ dif_result_t dif_entropy_src_observe_fifo_blocking_read(
  * @param entropy_src An entropy source handle.
  * @param[out] buf A buffer to fill with words from the pipeline.
  * @param[inout] len A pointer to the maximum number of words to reads. This
- * value is updated to contain the number of words acually read.
+ * value is updated to contain the number of words actually read.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT

@@ -190,7 +190,7 @@ void status_report(status_t value);
 // This global constant is available to all modules and is the constant zero.
 // This name intentionally violates the constant naming convention of
 // `kModuleId` because users are expected to provide an override in the form
-// of a preprocessor defintion: `#define MODULE_ID MAKE_MODULE_ID(...)`.
+// of a preprocessor definition: `#define MODULE_ID MAKE_MODULE_ID(...)`.
 extern const uint32_t MODULE_ID;
 
 // Operations on status codes:

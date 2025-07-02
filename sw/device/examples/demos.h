@@ -11,7 +11,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 
 /**
- * This header provides a small library of reuseable demos for use with
+ * This header provides a small library of reusable demos for use with
  * OpenTitan example code.
  */
 

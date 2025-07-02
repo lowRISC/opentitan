@@ -45,7 +45,7 @@ status_t status_create(absl_status_t code, uint32_t module_id, const char *file,
    *  | s |   Module Identifier   | Line Number | code  |
    *  +---+-------+-------+-------+-------------+-------+
    *
-   * The sign bit is set on all not-Ok statuses, thus proviging a covenient
+   * The sign bit is set on all not-Ok statuses, thus providing a convenient
    * overloaded return value from functions that may return an error.
    */
   if (module_id == 0) {
@@ -127,7 +127,7 @@ extern bool status_ok(status_t s);
 extern absl_status_t status_err(status_t s);
 
 // This is a weak implementation that does nothing. This way it can easily be
-// overidden and does not require every user of status to manually add a
+// overridden and does not require every user of status to manually add a
 // dependency.
 OT_WEAK
 void status_report(status_t value) { (void)value; }

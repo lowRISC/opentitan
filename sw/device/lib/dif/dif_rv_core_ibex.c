@@ -90,7 +90,7 @@ static uint32_t to_napot(uint32_t addr, size_t size) {
 /**
  * Split a natural power of two address into a start address and size.
  *
- * @param napot Address formated in NAPOT.
+ * @param napot Address formatted in NAPOT.
  * @param size  Pointer to receive the region size.
  * @return The region start address.
  */

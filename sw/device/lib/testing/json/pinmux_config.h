@@ -11,7 +11,7 @@ extern "C" {
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'p', 'x')
 
-//  Dependencies between usjon structure definitions can be a little tricky:
+//  Dependencies between ujson structure definitions can be a little tricky:
 //  - If not generating an implementation, we can just include the dependency.
 //  - If generating an implementation, we instead include the dependency in
 //    the C file before setting UJSON_SERDE_IMPL.

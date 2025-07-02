@@ -114,7 +114,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 // other fields of `keying_material` is not used, since it is
                 // not
-                // directy passed to KDF-KMAC function.
+                // directly passed to KDF-KMAC function.
                 .config =
                     {
                         .key_length = 24,
@@ -197,7 +197,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 // other fields of `keying_material` is not used, since it is
                 // not
-                // directy passed to KDF-KMAC function.
+                // directly passed to KDF-KMAC function.
                 .config =
                     {
                         .key_length = 32,
@@ -255,7 +255,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
             {
                 // other fields of `keying_material` is not used, since it is
                 // not
-                // directy passed to KDF-KMAC function.
+                // directly passed to KDF-KMAC function.
                 .config =
                     {
                         .key_length = 64,

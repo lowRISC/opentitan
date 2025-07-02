@@ -174,7 +174,7 @@ static bool pmp_addr_csr_write(pmp_region_index_t region, uint32_t value) {
 }
 
 /**
- * Retrievs configuration information for the requested `region`.
+ * Retrieves configuration information for the requested `region`.
  *
  * A single `pmpcfg` CSR packs configuration information for `N` regions.
  *

@@ -76,7 +76,7 @@ static dif_pinmux_t pinmux;
 static dif_uart_t uart;
 
 /**
- * Callbacks for processing USB reciept. The latter increments the
+ * Callbacks for processing USB receipt. The latter increments the
  * received character by one, to make them distinct.
  */
 static void usb_receipt_callback_0(uint8_t c) {

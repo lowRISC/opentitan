@@ -9,7 +9,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
-  // Set fast slew rate and strong drive strengh for SPI host0 pads.
+  // Set fast slew rate and strong drive strength for SPI host0 pads.
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {
       .slew_rate = 1,

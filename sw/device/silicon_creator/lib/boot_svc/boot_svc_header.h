@@ -67,7 +67,7 @@ OT_ASSERT_SIZE(boot_svc_header_t, CHIP_BOOT_SVC_MSG_HEADER_SIZE);
  *
  * This function assumes that message payload starts immediately after the
  * header and is exactly `length - sizeof(boot_svc_header_t)` bytes for digest
- * computation. Since this function also intializes the message digest as part
+ * computation. Since this function also initializes the message digest as part
  * of header initialization, it must be called after the message payload is
  * initialized.
  *

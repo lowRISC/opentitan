@@ -24,7 +24,7 @@ Ownership Transfer allows the owner of the chip to securely root an OpenTitan ch
   Normally the two pages are identical and serve as redundant backups.
   During an update or transfer, page 0 is the current configuration and page 1 is the next configuration.
 - Application Key: an ECDSA public/private key-pair used to authenticate the owner’s application firmware payload.
-- Tag/Length/Value (TLV): A structure encoding scheme for encoding heterogenious and variable-length data structures.
+- Tag/Length/Value (TLV): A structure encoding scheme for encoding heterogeneous and variable-length data structures.
 
 ## Ownership Transfer
 
@@ -587,7 +587,7 @@ See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 The EFLASH configuration describes the owner's desired flash configuration.
 - The flash region `start` and `size` are expressed in pages.
 - No flash region should span over the A and B halves of the flash.
-  This is to allow configuring the A and B havles differently during an ownership transfer operation.
+  This is to allow configuring the A and B halves differently during an ownership transfer operation.
 
 ```c
 typedef struct owner_flash_region {
@@ -615,7 +615,7 @@ typedef struct owner_flash_region {
 
 typedef struct owner_flash_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `FLSH`.
    * length: 8 + 12 * length(config).
    */
@@ -666,7 +666,7 @@ typedef struct owner_info_page {
 
 typedef struct owner_flash_info_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `INFO`.
    * length: 8 + 12 * length(config).
    */
@@ -693,7 +693,7 @@ The rescue configuration describes the owner's desired configuration of the ROM\
 ```c
 typedef struct owner_rescue_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `RSCU`.
    * length: 16 + sizeof(command_allow).
    */

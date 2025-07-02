@@ -34,7 +34,7 @@ typedef enum dif_hmac_mode {
 } dif_hmac_mode_t;
 
 /**
- * Supported byte endienness options.
+ * Supported byte endianness options.
  */
 typedef enum dif_hmac_endianness {
   /** Big endian byte ordering. */

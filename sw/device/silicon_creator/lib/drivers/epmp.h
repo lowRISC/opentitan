@@ -87,7 +87,7 @@ void epmp_set_napot(uint8_t entry, epmp_region_t region, epmp_perm_t perm);
 /**
  * Configures an ePMP entry for a TOR region.
  *
- * The region start and end may be abitrary addresses.  The start will be
+ * The region start and end may be arbitrary addresses.  The start will be
  * rounded down to a 4-byte address.  The end will be rounded up to a 4-byte
  * address.
  *

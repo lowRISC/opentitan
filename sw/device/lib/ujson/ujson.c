@@ -61,7 +61,7 @@ bool ujson_streq(const char *a, const char *b) {
   return *a == *b;
 }
 
-// Consumes whitespace returning first non-whitepsace character found.
+// Consumes whitespace returning first non-whitespace character found.
 static status_t consume_whitespace(ujson_t *uj) {
   int ch;
   do {

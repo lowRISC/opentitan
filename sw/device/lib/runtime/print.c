@@ -331,7 +331,7 @@ size_t base_fprintf(buffer_sink_t out, const char *format, ...) {
  *
  * @param out the sink to write bytes to.
  * @param format a pointer to the format string to consume a prefix of.
- * @param[out] bytes_written out param for the number of bytes writen to `out`.
+ * @param[out] bytes_written out param for the number of bytes written to `out`.
  * @return true if an unprocessed '%' was found.
  */
 static bool consume_until_percent(buffer_sink_t out, const char **format,
@@ -557,7 +557,7 @@ static size_t hex_dump(buffer_sink_t out, const char *bytes, size_t len,
  *
  * @param out the sink to write bytes to.
  * @param spec the specifier to use for stringifying.
- * @param[out] bytes_written out param for the number of bytes writen to `out`.
+ * @param[out] bytes_written out param for the number of bytes written to `out`.
  * @param args the list to pull an entry from.
  */
 static void process_specifier(buffer_sink_t out, format_specifier_t spec,
@@ -641,7 +641,7 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       // Pointers are formatted as 0x<hex digits>, where the width is always
       // set to the number necessary to represent a pointer on the current
       // platform, that is, the size of uintptr_t in nybbles. For example, on
-      // different architecutres the null pointer prints as
+      // different architectures the null pointer prints as
       // - rv32imc: 0x00000000 (four bytes, eight nybbles).
       // - amd64:   0x0000000000000000 (eight bytes, sixteen nybbles).
       *bytes_written += out.sink(out.data, "0x", 2);

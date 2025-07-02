@@ -355,7 +355,7 @@ status_t spi_flash_testutils_quad_enable(dif_spi_host_t *spih, uint8_t method,
     case 4:
       // QE is bit1 of status reg 2.
       // Set/clear via two-byte reads/writes via SR1 opcodes.
-      // Writing only one byte to SR1 does not affcet SR2.
+      // Writing only one byte to SR1 does not affect SR2.
       status = (uint32_t)TRY(spi_flash_testutils_read_status(
           spih, kSpiDeviceFlashOpReadStatus1, 2));
       status = bitfield_bit32_write(status, 9, enabled);

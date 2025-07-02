@@ -13,7 +13,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 
 /**
- * Some shared times in microsconds.
+ * Some shared times in microseconds.
  *
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but
  * the phase 1 (i.e. wipe secrets) should occur and last during the time the

@@ -208,7 +208,7 @@ inline uint32_t launder32(uint32_t val) {
   //
   // This is not actually a miscompilation: LLVM is treating the asm
   // statement as behaving like a random oracle determined entirely by its
-  // arguments; therefore, it is entitled to deduplicate both occurences of
+  // arguments; therefore, it is entitled to deduplicate both occurrences of
   // `LaunderPure(y)` (in this particular case, from bisecting the passes,
   // it appears to happen during register allocation).
   //
@@ -433,7 +433,7 @@ inline ct_bool32_t ct_seqz32(uint32_t a) {
   //   ~(a | -a) -> ~a & ~-a -> ~a & (a - 1)
   // via identities on page 16.
   //
-  // This forumula is also given on page 11 for a different purpose.
+  // This formula is also given on page 11 for a different purpose.
   return ct_sltz32(OT_SIGNED(~a & (a - 1)));
 }
 

@@ -57,7 +57,7 @@
 // more than 10ms of bus inactivity. Pull-up resistor must remain asserted.
 //
 // Resuming from Suspend state is achieved by the host at any time by any non-
-// signaling, for at leasat 20ms. This is followed by a standard, low-speed EOP
+// signaling, for at least 20ms. This is followed by a standard, low-speed EOP
 // (two low-speed bit times of SE0 followed by a J). Traffic, even if only SOF,
 // must be resumed within 3ms after entering the Idle state (J), to prevent
 // the device re-entering Suspend.
@@ -258,7 +258,7 @@ typedef enum {
  */
 typedef struct {
   /**
-   * Host-suppplied device address on the USB.
+   * Host-supplied device address on the USB.
    */
   uint8_t dev_address;
   /**
@@ -1485,7 +1485,7 @@ static status_t state_service(usbdev_suspend_ctx_t *ctx) {
 
       // There are three ways that we may exit from Deep Sleep in which
       // the AON/Wake module has been handling the bus:
-      // - Disconnecion (loss of VBUS/SENSE)
+      // - Disconnection (loss of VBUS/SENSE)
       // - Bus Reset (from host)
       // - Non-Idle state detected (Resume Signaling; this is inferred by
       //   neither of the other two conditions having occurred.)
@@ -1945,7 +1945,7 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
 
     // Keep going if we're advancing to the next phase.
     //  (NextPhase means that we advance whilst still active and can thus skip
-    //   device setup and configuratinon)
+    //   device setup and configuration)
   } while (ctx->test_state == kSuspendStateNextPhase ||    // from Resume
            ctx->test_state == kSuspendStateBusReset ||     // after Bus Reset
            ctx->test_state == kSuspendStatePowerOnReset);  // after Disconnect

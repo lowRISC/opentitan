@@ -179,7 +179,7 @@ status_t usb_testutils_controlep_config_wait(
       (USB_TESTUTILS_TEST_DSCR_LEN) >> 8, /* Descriptor length[1]    */ \
       (num)&0xff,                         /* Test number[0]          */ \
       (num) >> 8,                         /* Test number[1]          */ \
-      (arg0), (arg1), (arg2), (arg3),     /* Test-specific arugments */ \
+      (arg0), (arg1), (arg2), (arg3),     /* Test-specific arguments */ \
       0x1fu, 0x0cu, 0x75, 0xe7u           /* Tail signature */
 
 // KEEP BLANK LINE ABOVE, it is in the macro!

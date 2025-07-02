@@ -27,7 +27,7 @@
  *   what is written to OTP.
  *
  * Note: The test will skip all programming steps and succeed if the HW_CFG0/1
- * paritions are already locked. This is to facilitate test re-runs.
+ * partitions are already locked. This is to facilitate test re-runs.
  *
  * The caller should reset the device after calling this function and call
  * `manuf_individualize_device_hw_cfg_check()` afterwards to confirm that the

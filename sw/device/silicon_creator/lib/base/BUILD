@@ -57,7 +57,7 @@ cc_library(
     ],
     # This library provides a special symbol that the linker will find.
     # We want this to be a linker input to ensure the weak version in
-    # sec_mmio.c is overriden.
+    # sec_mmio.c is overridden.
     alwayslink = True,
 )
 
@@ -79,7 +79,7 @@ cc_library(
     ],
     # This library provides a special symbol that the linker will find.
     # We want this to be a linker input to ensure the weak version in
-    # epmp_state.c is overriden.
+    # epmp_state.c is overridden.
     alwayslink = True,
 )
 
@@ -91,7 +91,7 @@ cc_library(
     ],
     # This library provides a special symbol that the linker will find.
     # We want this to be a linker input to ensure the weak version in
-    # boot_measurements.c is overriden.
+    # boot_measurements.c is overridden.
     alwayslink = True,
 )
 

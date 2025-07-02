@@ -312,7 +312,7 @@ static status_t manage_flow_control(const dif_uart_t *uart,
                flow_control_state != kOttfConsoleFlowControlPause) {
       ctrl = kOttfConsoleFlowControlPause;
       // RX watermark interrupt is status type, so disable the interrupt whilst
-      // RX FIFO is above the watermark to avoid an inifite loop of ISRs.
+      // RX FIFO is above the watermark to avoid an infinite loop of ISRs.
       CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                             kDifToggleDisabled));
     } else {

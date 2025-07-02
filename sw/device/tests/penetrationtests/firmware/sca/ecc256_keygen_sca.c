@@ -116,7 +116,7 @@ uint32_t random_number[kEcc256CoordNumWords];
 uint32_t ecc256_fixed_number[kEcc256CoordNumWords];
 
 /**
- * Adds two integers storred in byte arrays.
+ * Adds two integers stored in byte arrays.
  *
  * Adds the integer stored in source array to the integer stored in
  * destination aray.

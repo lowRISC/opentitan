@@ -12,7 +12,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// These symbopls are provided by the riscv-compliance libraries.
+// These symbols are provided by the riscv-compliance libraries.
 extern void run_rvc_test(void);
 extern volatile uint32_t begin_signature[];
 extern volatile uint32_t end_signature[];

@@ -140,7 +140,7 @@ void init_spi_host(dif_spi_host_t *spi_host,
  * This peripheral is 'muxed', so configure the pinmux as well as pads.
  */
 void setup_pinmux_pads_spi_host1(void) {
-  // Set weak pull-ups, fast slew rate and strong drive strengh for the pads
+  // Set weak pull-ups, fast slew rate and strong drive strength for the pads
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {
       .slew_rate = 1,

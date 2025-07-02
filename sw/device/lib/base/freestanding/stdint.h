@@ -121,7 +121,7 @@ typedef __INTMAX_TYPE__ intmax_t;
 #define WCHAR_MIN (-__WCHAR_MAX__ - 1) /**< @hideinitializer */
 #define WCHAR_MAX __WCHAR_MAX__        /**< @hideinitializer */
 
-// NOTE: While GCC and Clang both provide macros for implememting the _C macros,
+// NOTE: While GCC and Clang both provide macros for implementing the _C macros,
 // they are inconsistent on which is correct, so we implement them ourselves
 // below.
 

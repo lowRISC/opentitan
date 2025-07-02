@@ -257,7 +257,7 @@ static void derive_sideload_otbn_key(const char *state_name,
  * an earlier key manager state, compare that the newly generated ones differ.
  *
  * @param state_name The current key manager state string.
- * @param prev_outputs Generated outptus from a previous key manager state.
+ * @param prev_outputs Generated outputs from a previous key manager state.
  * @param offset The offset at which to read or write in the retention SRAM.
  * @param write Indicating whether to write the new keys to the retention SRAM.
  * @param next_outputs The destination of the newly generated CDI outputs.

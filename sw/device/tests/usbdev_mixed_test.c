@@ -8,7 +8,7 @@
 // on the USB host. The test initializes the USB device and configures a set of
 // endpoints for data streaming using bulk transfers.
 //
-// The DPI model mimicks a USB host. After device initialization, it detects
+// The DPI model mimics a USB host. After device initialization, it detects
 // the assertion of the pullup and first assigns an address to the device.
 // For this test it will then repeatedly fetch data via IN requests to
 // each stream and propagate that data to the corresponding OUT endpoints.
@@ -272,7 +272,7 @@ bool test_main(void) {
       (uint8_t)(mixed_types >> 16))};
   memcpy(test_descriptor, desc, sizeof(test_descriptor));
 
-  // This also ctivates the DPI model by asserting the pull up, indicating
+  // This also activates the DPI model by asserting the pull up, indicating
   // device presence
   CHECK_STATUS_OK(usb_testutils_controlep_init(
       &usbdev_control, ctx->usbdev, 0, config_descriptors,

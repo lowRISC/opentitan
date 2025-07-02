@@ -93,7 +93,7 @@ typedef enum dif_spi_host_segment_type {
   kDifSpiHostSegmentTypeTx,
   /** The segment is a SPI receive (into a memory buffer). */
   kDifSpiHostSegmentTypeRx,
-  /** The segment is a simultaneous transmit and receieve. */
+  /** The segment is a simultaneous transmit and receive. */
   kDifSpiHostSegmentTypeBidirectional,
 } dif_spi_host_segment_type_t;
 

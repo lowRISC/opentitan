@@ -102,7 +102,7 @@ enum {
  * @param matching_addr When an incoming transaction matches the matching
  * region, it is redirected to the new address. If a transaction does not match,
  * then it is directly passed through.
- * @param remap_addr  The region where the matched transtaction will be
+ * @param remap_addr  The region where the matched transaction will be
  * redirected to.
  * @param size The size of the regions mapped.
  */
@@ -115,7 +115,7 @@ void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
  * @param matching_addr When an incoming transaction matches the matching
  * region, it is redirected to the new address. If a transaction does not match,
  * then it is directly passed through.
- * @param remap_addr  The region where the matched transtaction will be
+ * @param remap_addr  The region where the matched transaction will be
  * redirected to.
  * @param size The size of the regions mapped.
  */

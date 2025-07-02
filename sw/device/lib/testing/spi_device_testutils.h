@@ -130,7 +130,7 @@ status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux);
  *
  * @param spid A spid_device DIF handle.
  * @param info Pointer to an upload_info_t.
- * @return A status_t indicating success or failure in receving the uploaded
+ * @return A status_t indicating success or failure in receiving the uploaded
  *         command.
  */
 OT_WARN_UNUSED_RESULT

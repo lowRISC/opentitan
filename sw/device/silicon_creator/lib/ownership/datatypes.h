@@ -316,7 +316,7 @@ OT_ASSERT_SIZE(owner_flash_region_t, 12);
  */
 typedef struct owner_flash_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `FLSH`.
    * length: 8 + 12 * length(config).
    */
@@ -351,7 +351,7 @@ OT_ASSERT_SIZE(owner_info_page_t, 12);
 
 typedef struct owner_flash_info_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `INFO`.
    * length: 8 + 12 * length(config).
    */
@@ -373,7 +373,7 @@ OT_ASSERT_SIZE(owner_flash_info_config_t, 8);
  */
 typedef struct owner_rescue_config {
   /**
-   * Header identifiying this struct.
+   * Header identifying this struct.
    * tag: `RESQ`.
    * length: 16 + sizeof(command_allow).
    */

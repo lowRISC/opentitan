@@ -15,7 +15,7 @@
 
 static dif_lc_ctrl_t lc;
 
-// Symbol that tells if the transition should be done via SW (overriden by
+// Symbol that tells if the transition should be done via SW (overridden by
 // Host).
 static volatile const uint8_t kPerformTransitionBySW = 0;
 
@@ -52,7 +52,7 @@ bool execute_lc_ctrl_scrap_test(bool use_ext_clk) {
 
     LOG_INFO("Waiting for LC transtition done and reboot.");
 
-    // Release the access mutex to LC conroller's registers before
+    // Release the access mutex to LC controller's registers before
     // finishing the SW.
     CHECK_DIF_OK(dif_lc_ctrl_mutex_release(&lc));
 

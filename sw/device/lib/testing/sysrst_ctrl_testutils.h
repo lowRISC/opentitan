@@ -24,7 +24,7 @@
 void sysrst_ctrl_testutils_setup_dio(dif_pinmux_t *pinmux);
 
 /**
- * Release the flash WP and EC reset so that the output is not overidden to low
+ * Release the flash WP and EC reset so that the output is not overridden to low
  * by the block.
  *
  * This function will panic on error.

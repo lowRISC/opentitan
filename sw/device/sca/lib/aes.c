@@ -171,7 +171,7 @@ static void aes_key_expand(uint8_t *round_key, uint8_t *rcon) {
 
 void aes_key_schedule(uint32_t *round_keys, const uint8_t *key) {
   // Derives all round keys for AES128
-  // Each key is storred in 4 32-bit words in a transposed-state form.
+  // Each key is stored in 4 32-bit words in a transposed-state form.
   uint8_t rcon = 0;
   uint8_t key_temp[kAesNumKeyBytes];
   uint32_t key_temp_32[kAesNumStateWords];

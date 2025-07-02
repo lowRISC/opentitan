@@ -220,7 +220,7 @@ void hmac_hmac_sha384_init(const uint32_t *key_block, hmac_ctx_t *ctx);
 void hmac_hmac_sha512_init(const uint32_t *key_block, hmac_ctx_t *ctx);
 
 /**
- * Update the context with additional messsage data.
+ * Update the context with additional message data.
  *
  * This function can be used with all SHA2 and HMAC operations, and may be
  * called multiple times between init() and final().

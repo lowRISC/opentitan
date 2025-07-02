@@ -676,7 +676,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
    * 4. Provision Extension certs
    ****************************************************************************/
   // We start scanning the perso LTV buffer we received from the host from the
-  // beginnging. We assume that the endorsed UDS cert is the first certificate
+  // beginning. We assume that the endorsed UDS cert is the first certificate
   // in the buffer (even if preceeded by other types of perso LTV objects).
   perso_blob_from_host.next_free = 0;
   // Location where the next cert perso LTV object will be copied to in the
@@ -694,7 +694,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   size_t cert_offsets[3] = {uds_offset, cdi_0_offset, cdi_1_offset};
   size_t cert_offsets_count = 3;
   if (kDiceCertFormat == kDiceCertFormatX509TcbInfo) {
-    // Exract the UDS cert perso LTV object.
+    // Extract the UDS cert perso LTV object.
     TRY(extract_next_cert(&next_cert, &free_room));
     // Extract the two CDI cert perso LTV objects which were endorsed on-device
     // and sent to the host.
@@ -773,7 +773,7 @@ static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
 
 /**
  * Compare the OTP measurement used during certificate generation with the OTP
- * measurment calculated from the final OTP values. Ensure that the UDS
+ * measurement calculated from the final OTP values. Ensure that the UDS
  * certificate was generated using the correct OTP values.
  */
 static status_t check_otp_measurement_pre_lock(hmac_digest_t *measurement,

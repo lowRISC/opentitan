@@ -73,7 +73,7 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
  * 1. Randomly choose GPIO[num_gpio_pads-1:0] value using rand_testutils.
  * 2. Drive GPIO with the chosen value.
  * 3. Send the chosen values to SV/host via LOG_INFO.
- * 4. Configure PINMUX Retention value opposit to the chosen value for
+ * 4. Configure PINMUX Retention value opposite to the chosen value for
  *    GPIO[num_gpio_pads-1:0].
  * 5. Initiate sleep mode (assuming pinmux pin wake up has been configured.)
  * 6. WFI()

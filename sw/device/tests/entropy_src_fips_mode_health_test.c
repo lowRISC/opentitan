@@ -874,7 +874,7 @@ status_t execute_test(void) {
     // Step 5: Enable both EDNs in auto request mode
     CHECK_STATUS_OK(enable_realistic_csrng_edns_auto_mode());
 
-    // Step 6: Trigger the execution of a cryptographic hardware block to stess
+    // Step 6: Trigger the execution of a cryptographic hardware block to stress
     // test the entropy (e.g. AES, OTBN) to test EDN0
     // Step 7: Verify the entropy consuming endpoint(e.g. AES, OTBN)
     // finishes its operation
@@ -935,7 +935,7 @@ status_t execute_test(void) {
     // Step 16: Verify that ENTROPY_SRC triggers a recoverable alert and sets
     // the RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit
     CHECK_STATUS_OK(print_entropy_src_state(&entropy_src));
-    // Find if we get recoverable alert and untill we hit
+    // Find if we get recoverable alert and until we hit
     // recoverable alert we do not proceed
     LOG_INFO("Step 16: Wait for recoverable alert");
     LOG_INFO("Step 16:iter = %d", iter);

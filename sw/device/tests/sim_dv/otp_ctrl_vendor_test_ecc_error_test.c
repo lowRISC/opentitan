@@ -55,7 +55,7 @@ static void check_status(uint32_t expected_code,
 /**
  * A simple SW test to read from vendor test partition at a location that had
  * an ecc error injected. The expectation is that no error or fault will be
- * triggered. The ecc eror is injected in the associated SV sequence.
+ * triggered. The ecc error is injected in the associated SV sequence.
  */
 bool test_main(void) {
   static const uint32_t kTestPartition = 0;

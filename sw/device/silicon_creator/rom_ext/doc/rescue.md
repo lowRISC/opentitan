@@ -83,7 +83,7 @@ If a supported symbol is entered, the ROM_EXT will respond with the following me
 ok: new baudrate <symbol>
 ```
 
-If an unsupported symbol is entered, the ROM_EXT will responde with the following message:
+If an unsupported symbol is entered, the ROM_EXT will respond with the following message:
 ```
 error: unsupported baudrate <symbol>
 ```

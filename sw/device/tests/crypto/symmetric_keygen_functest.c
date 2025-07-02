@@ -72,7 +72,7 @@ static status_t entropy_complex_init_test(void) {
  *
  * Generates the key, runs basic statistical tests, and logs the output. This
  * test may fail sometimes because statistical tests are inherently
- * proababilistic.
+ * probabilistic.
  *
  * @param config Key configuration.
  */

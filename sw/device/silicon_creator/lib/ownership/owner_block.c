@@ -184,7 +184,7 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
         dfl.scrambling = kMultiBitBool4False;
 
       if (cfg.ecc != dfl.ecc || cfg.scrambling != dfl.scrambling) {
-        // The config region convering the ROM_EXT needs to match the
+        // The config region covering the ROM_EXT needs to match the
         // default config's ECC and scrambling settings.
         return kErrorOwnershipFlashConfigRomExt;
       }

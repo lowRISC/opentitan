@@ -5,7 +5,7 @@
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-// UDS (Creator) attestation key diverisfier constants.
+// UDS (Creator) attestation key diversifier constants.
 // Note: versions are always set to 0 so these keys are always valid from the
 // perspective of the keymgr hardware.
 const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
@@ -22,7 +22,7 @@ const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
         },
     .version = 0,
 };
-// CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
+// CDI_0 (OwnerIntermediate) attestation key diversifier constants.
 const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
     .salt =
         {
@@ -37,7 +37,7 @@ const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
         },
     .version = 0,
 };
-// CDI_1 (Owner) attestation key diverisfier constants.
+// CDI_1 (Owner) attestation key diversifier constants.
 const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
     .salt =
         {

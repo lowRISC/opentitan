@@ -132,7 +132,7 @@ bool test_main(void) {
   // application interfaces of CSRNG that connect to the EDNs, this interface
   // allows for probing the internal state of the CSRNG instance after
   // individual commands. This gives us higher visibility. If for some reason
-  // this phase isn't succesful, we don't even need to try it on the HW
+  // this phase isn't successful, we don't even need to try it on the HW
   // interfaces.
   LOG_INFO("Testing CSRNG SW application interface");
 

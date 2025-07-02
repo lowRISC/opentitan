@@ -520,12 +520,12 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   }
 
   // Calculate the number of bytes that will be in the next partial block.
-  // Reduce `len` modulo the block length preemptively to protect against
+  // Reduce `len` modulo the block length pre-emptively to protect against
   // integer overflow when adding to the partial length.
   size_t len_rem = len % block_bytelen;
   size_t leftover_len = (ctx->partial_block_bytelen + len_rem) % block_bytelen;
 
-  // Retore context will restore the context and also hit start or continue
+  // Restore context will restore the context and also hit start or continue
   // button as necessary.
   context_restore(ctx);
 
@@ -554,7 +554,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
 }
 
 status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest) {
-  // Retore context will restore the context and also hit start or continue
+  // Restore context will restore the context and also hit start or continue
   // button as necessary.
   context_restore(ctx);
 

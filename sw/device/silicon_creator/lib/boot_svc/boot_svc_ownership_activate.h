@@ -106,7 +106,7 @@ void boot_svc_ownership_activate_req_init(
 /**
  * Initialize an ownership activate response.
  *
- * @param status Reponse from the ROM_EXT after receiving the request.
+ * @param status Response from the ROM_EXT after receiving the request.
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_ownership_activate_res_init(

@@ -48,7 +48,7 @@ typedef struct uart_cfg_params {
  * Connect the uart pins to mio pins via pinmux based on the platform the test
  * is running.
  *
- * @param pimmux A pinmux handler.
+ * @param pinmux A pinmux handler.
  * @param uart_idx The index of the UART to configure.
  * @param platform The platform which the test is running.
  * @return The result of the operation.
@@ -61,7 +61,7 @@ status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
 /**
  * Disconnect the uart input pins from mio pads and wire it to zero.
  *
- * @param pimmux A pinmux handler.
+ * @param pinmux A pinmux handler.
  * @param uart_id The index of the UART to configure.
  * @return The result of the operation.
  */

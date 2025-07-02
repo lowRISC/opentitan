@@ -4,7 +4,7 @@
 
 #include "sw/device/tests/crypto/otcrypto_interface.h"
 
-// Simple main function so the linker doesn't discard the inerface struct.
+// Simple main function so the linker doesn't discard the interface struct.
 int main(void) {
   uint32_t digest_data[8];
   otcrypto_hash_digest_t digest = {.data = digest_data, .len = 8};

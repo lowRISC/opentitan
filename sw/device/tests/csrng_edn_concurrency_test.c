@@ -405,7 +405,7 @@ static void entropy_config(void) {
   //
   // Under normal operating conditions, producing one seed takes roughly 4 ms.
   // We wait for at most 32 ms for 6 seeds (2 for the EDNs, 1 for CSRNG, 3 to
-  // fill the esfinal FIFO). In the reduced_freq varaint of the test, raw
+  // fill the esfinal FIFO). In the reduced_freq variant of the test, raw
   // entropy may be generated at a lower rate. Depending on the configuration of
   // the EDNs, the constant entropy consumption of AST may prevent the esfinal
   // FIFO from filling up.

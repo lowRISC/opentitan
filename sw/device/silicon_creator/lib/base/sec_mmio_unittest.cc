@@ -174,7 +174,7 @@ TEST_F(SecMmioTest, CheckCount) {
   EXPECT_EQ(ctx_->check_count, 2);
 }
 
-// Negative test cases trigger assertions, which are caugth by `EXPECT_DEATH`
+// Negative test cases trigger assertions, which are caught by `EXPECT_DEATH`
 // calls.
 class SecMmioDeathTest : public SecMmioTest {};
 

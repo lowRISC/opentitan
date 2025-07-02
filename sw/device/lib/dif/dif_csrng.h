@@ -163,7 +163,7 @@ typedef enum dif_csrng_cmd_sts_error {
    */
   kDifCsrngCmdStsSuccess = 0,
   /**
-   * Indicates that an invalid apllication command has been issued.
+   * Indicates that an invalid application command has been issued.
    */
   kDifCsrngCmdStsInvalidAcmd = 1,
   /**
@@ -422,7 +422,7 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
  * Requests cryptographic entropy bits from the CSRNG.
  *
  * The prediction resistance flag as specified in SP 800-90Ar1 section
- * 10.2.1.1 is not directily supported by the hardware. It is the
+ * 10.2.1.1 is not directly supported by the hardware. It is the
  * responsibility of the caller to reseed as needed before calling
  * this function.
  *

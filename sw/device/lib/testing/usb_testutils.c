@@ -489,7 +489,7 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   // Provide buffers for any packet reception
   TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
 
-  // Preemptively enable SETUP reception on endpoint zero for the
+  // Pre-emptively enable SETUP reception on endpoint zero for the
   // Default Control Pipe; all other settings for that endpoint will be applied
   // once the callback handlers are registered by a call to _endpoint_setup()
   TRY(dif_usbdev_endpoint_setup_enable(ctx->dev, 0, kDifToggleEnabled));

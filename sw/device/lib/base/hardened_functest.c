@@ -52,7 +52,7 @@ void ottf_illegal_instr_fault_handler(uint32_t *exc_info) {
   switch (exc_seen) {
     case 0:
       // The first exception is when we hit `unimp` after failing the first
-      // comparison in the hardenend check. The exception handler has
+      // comparison in the hardened check. The exception handler has
       // already computed the correct return PC for us, so we can simply
       // increment the state and return.  This will cause execution to
       // continue at the inverted compare/branch instruction in the hardened
@@ -63,7 +63,7 @@ void ottf_illegal_instr_fault_handler(uint32_t *exc_info) {
       return;
     case 1:
       // The second exception is when we hit `unimp` after failing the second
-      // comparison in the hardenend check.
+      // comparison in the hardened check.
       exc_seen += 1;
       // Jump the PC over the comparison so we can exit the test function.  In
       // this case, the PC is again pointing at the inverse compare/branch after
@@ -129,7 +129,7 @@ bool test_main(void) {
 
   // Test each hardened check when the check is invalid.
   // Each of these tests is expected to hit the `unimp` instruction in the
-  // hardended sequence twice.  The exception handler will guide the test
+  // hardened sequence twice.  The exception handler will guide the test
   // through the hardened check so that we know we've examined both
   // compare/branch instructions in the hardened sequence.
   EXECUTE_TEST(result, bad_eq_test);

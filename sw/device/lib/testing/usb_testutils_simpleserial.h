@@ -40,7 +40,7 @@ status_t usb_testutils_simpleserial_send_byte(usb_testutils_ss_ctx_t *ssctx,
 /**
  * Initialize a simpleserial endpoint
  *
- * @param ssctx unintialized simpleserial instance context
+ * @param ssctx uninitialized simpleserial instance context
  * @param ctx initialized usbdev context
  * @param ep endpoint number for this instance
  * @param got_byte callback function for when a byte is received

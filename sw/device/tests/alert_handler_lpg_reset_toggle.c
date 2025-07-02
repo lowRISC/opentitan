@@ -462,7 +462,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
     } else {
       // For the simulation, only increment the test_step counter
-      // to procced to the next phase without resetting the device
+      // to proceed to the next phase without resetting the device
       test_step_cnt++;
     }
   }

@@ -75,7 +75,7 @@ typedef struct entropy_csrng_cmd {
 /**
  * Entropy complex configuration modes.
  *
- * Each enum value is used a confiugration index in `kEntropyComplexConfigs`.
+ * Each enum value is used a configuration index in `kEntropyComplexConfigs`.
  */
 typedef enum entropy_complex_config_id {
   /**
@@ -194,7 +194,7 @@ typedef struct entropy_src_config {
 /**
  * Entropy complex configuration settings.
  *
- * Contains configuration paramenters for entropy_src, csrng, edn0 and edn1.
+ * Contains configuration parameters for entropy_src, csrng, edn0 and edn1.
  */
 typedef struct entropy_complex_config {
   /**

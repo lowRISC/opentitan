@@ -54,7 +54,7 @@ static_assert(
     DIF_RSTMGR_ALERT_INFO_MAX_SIZE == RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
     "Alert info dump max size has grown, please update the public define!");
 #elif defined(OPENTITAN_IS_DARJEELING)
-// TODO: equivalent assertations are not yet defined for Darjeeling
+// TODO: equivalent assertions are not yet defined for Darjeeling
 #else
 #error "dif_rstmgr does not support this top"
 #endif

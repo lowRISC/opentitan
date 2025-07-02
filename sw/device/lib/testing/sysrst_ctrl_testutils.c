@@ -48,7 +48,7 @@ void sysrst_ctrl_testutils_release_dio(dif_sysrst_ctrl_t *sysrst_ctrl,
   // the documentation:
   // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#ec-and-power-on-reset
   // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#flash-write-protect-output
-  // We also need to disable the output override mecanism (i.e. "release the
+  // We also need to disable the output override mechanism (i.e. "release the
   // pin").
   if (release_ec) {
     dif_sysrst_ctrl_pin_config_t cfg_ec_reset = {

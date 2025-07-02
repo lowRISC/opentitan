@@ -30,7 +30,7 @@
  * 7      | 1    | 10         | 15       | True  | True    | True     |
  *
  * As you see, these regions intentionally overlap each other.
- * For any overlaping regions the lower region has priority.
+ * For any overlapping regions the lower region has priority.
  * To check this attribute, test will program higher region first.
  * Test programs Region 7, 3 and 0 in order and checks
  * write and read back based on each region's attribute.

@@ -216,7 +216,7 @@ typedef struct dif_adc_ctrl_filter_config {
    */
   uint16_t max_voltage;
   /**
-   * Where a filter hit is classfied as an (inclusive) in-range hit, or
+   * Where a filter hit is classified as an (inclusive) in-range hit, or
    * (exclusive) out-of-range hit.
    */
   bool in_range;

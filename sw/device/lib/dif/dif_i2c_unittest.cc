@@ -90,7 +90,7 @@ class I2cTest : public testing::Test, public MmioTest {
   dif_i2c_t i2c_ = {.base_addr = dev().region()};
 };
 
-// "Base" configs consisting of harware timings, in "slow" and "fast" variants.
+// "Base" configs consisting of hardware timings, in "slow" and "fast" variants.
 constexpr dif_i2c_timing_config_t kBaseConfigSlow = {
     .lowest_target_device_speed =
         kDifI2cSpeedStandard,  // Remove once we upgrade the host compiler.

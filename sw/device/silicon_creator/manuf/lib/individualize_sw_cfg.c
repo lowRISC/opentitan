@@ -32,7 +32,7 @@ static uint32_t
 /**
  * Writes OTP values to target OTP `partition`.
  *
- * The `kv` array is preferrably generated using the build infrastructure. See
+ * The `kv` array is preferably generated using the build infrastructure. See
  * individualize_preop.c and its build target for an example.
  *
  * @param otp OTP Controller instance.
@@ -111,7 +111,7 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
  * representing the provided partition.
  *
  * @param partition Target OTP partition.
- * @param field_offset An offest of the target OTP field.
+ * @param field_offset An offset of the target OTP field.
  * @param buffer A buffer containing the entire target OTP partition.
  * @return OK_STATUS if the expected OTP values are successfully written to the
  * `buffer`.

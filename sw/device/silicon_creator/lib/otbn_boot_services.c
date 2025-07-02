@@ -67,7 +67,7 @@ enum {
    */
   kOtbnBootModeAttestationEndorse = 0x5e8,
   /*
-   * Mode to save an attesation private key.
+   * Mode to save an attestation private key.
    *
    * Value taken from `boot.s`.
    */

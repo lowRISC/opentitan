@@ -166,7 +166,7 @@ class WatchdogStartTest : public AonTimerTest {
                        {AON_TIMER_WDOG_CTRL_ENABLE_BIT, false},
                    });
     EXPECT_WRITE32(AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
-    // below BARK/BITE are the call value - 1 to accomodate the AON_TIMER IP
+    // below BARK/BITE are the call value - 1 to accommodate the AON_TIMER IP
     // characteristic
     EXPECT_WRITE32(AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET, 0xA5A5A5A4);
     EXPECT_WRITE32(AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET, 0x5A5A5A59);

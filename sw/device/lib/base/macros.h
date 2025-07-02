@@ -73,7 +73,7 @@ extern "C++" {
  * it, between 0 and 31 arguments.
  *
  * This macro is based off of a well-known preprocessor trick. This
- * StackOverflow post expains the trick in detail:
+ * StackOverflow post explains the trick in detail:
  * https://stackoverflow.com/questions/2308243/macro-returning-the-number-of-arguments-it-is-given-in-c
  * TODO #2026: a dummy token is required for this to work correctly.
  *
@@ -425,7 +425,7 @@ extern "C++" {
 
 /**
  * A macro indicating whether software should assume reduced hardware
- * support (for the `top_englishbreakafst` toplevel).
+ * support (for the `top_englishbreakfast` toplevel).
  */
 #ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
 #define OT_IS_ENGLISH_BREAKFAST 1
