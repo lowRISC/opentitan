@@ -38,9 +38,8 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
 
   /////////////// STUB START ///////////////
   // Perform an RSA signing with hashing and padding options.
-  // You can give cfg a value such that the RSA generates its own private key
-  // and you can give a value such that RSA switches between signing and
-  // verifying against the given signature. Trigger are over the API calls.
+  // You can give cfg a value such that the RSA generates its own private key.
+  // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_sign_out_t uj_output;
   TRY(cryptolib_fi_rsa_sign_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
@@ -54,13 +53,10 @@ status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
   TRY(ujson_deserialize_cryptolib_fi_asym_rsa_verify_in_t(uj, &uj_input));
 
   /////////////// STUB START ///////////////
-  // Perform an RSA signing with hashing and padding options.
-  // You can give cfg a value such that the RSA generates its own private key
-  // and you can give a value such that RSA switches between signing and
-  // verifying against the given signature. Trigger are over the API calls.
+  // Perform an RSA verification with hashing and padding options.
+  // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_verify_out_t uj_output;
-  uj_output.cfg = 0;
-  uj_output.result = true;
+  TRY(cryptolib_fi_rsa_verify_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_verify_out_t, uj, &uj_output);
