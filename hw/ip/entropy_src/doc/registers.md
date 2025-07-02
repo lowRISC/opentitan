@@ -166,13 +166,13 @@ Register write enable for control and threshold registers
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SW_REGUPD", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                            |
-|:------:|:------:|:-------:|:----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |           | Reserved                                                                                                                                                                                                               |
-|   0    |  rw0c  |   0x1   | SW_REGUPD | When this bit true and the MODULE_ENABLE field is false, the REGWEN write enable bit read as true, and is distributed to all associated control and threshold registers. When false, these registers become read-only. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                            |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                               |
+|   0    |  rw0c  |   0x1   | DATA   | When this bit true and the MODULE_ENABLE field is false, the REGWEN write enable bit read as true, and is distributed to all associated control and threshold registers. When false, these registers become read-only. |
 
 ## REGWEN
 Register write enable for all control registers
@@ -316,14 +316,14 @@ Entropy data bits
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENTROPY_DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                        |
-|:------:|:------:|:-------:|:--------------------------------------------|
-|  31:0  |   ro   |    x    | [ENTROPY_DATA](#entropy_data--entropy_data) |
+|  Bits  |  Type  |  Reset  | Name                        |
+|:------:|:------:|:-------:|:----------------------------|
+|  31:0  |   ro   |    x    | [DATA](#entropy_data--data) |
 
-### ENTROPY_DATA . ENTROPY_DATA
+### ENTROPY_DATA . DATA
 A read of this register provides generated entropy bits to firmware.
 For this to work also [`CONF.ENTROPY_DATA_REG_ENABLE`](#conf) needs to be set to `kMultiBitBool4True`.
 In addition, the otp_en_entropy_src_fw_read input needs to be set to `kMultiBitBool8True`.
@@ -1205,14 +1205,14 @@ Firmware override observe FIFO read register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FW_OV_RD_DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:0  |   ro   |    x    | [FW_OV_RD_DATA](#fw_ov_rd_data--fw_ov_rd_data) |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:0  |   ro   |    x    | [DATA](#fw_ov_rd_data--data) |
 
-### FW_OV_RD_DATA . FW_OV_RD_DATA
+### FW_OV_RD_DATA . DATA
 A read of this register pops and returns the top of the observe FIFO.
 For this to work, the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) field needs to be set to `kMultiBitBool4True`
 In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
@@ -1227,14 +1227,14 @@ Firmware override FIFO write register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FW_OV_WR_DATA", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:0  |   wo   |    x    | [FW_OV_WR_DATA](#fw_ov_wr_data--fw_ov_wr_data) |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:0  |   wo   |    x    | [DATA](#fw_ov_wr_data--data) |
 
-### FW_OV_WR_DATA . FW_OV_WR_DATA
+### FW_OV_WR_DATA . DATA
 A write to this register will insert entropy back into the entropy source module flow.
 For this to work, both the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) and [`FW_OV_CONTROL.FW_OV_ENTROPY_INSERT`](#fw_ov_control) fields need to be set to `kMultiBitBool4True`.
 In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitBool8True`.
@@ -1249,13 +1249,13 @@ Observe FIFO threshold register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OBSERVE_FIFO_THRESH", "bits": 6, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "DATA", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                                             |
-|:------:|:------:|:-------:|:--------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:6  |        |         |                     | Reserved                                                                                                                                                                                |
-|  5:0   |   rw   |  0x10   | OBSERVE_FIFO_THRESH | This field will set the threshold that the depth of the observe FIFO will be compared with when setting the interrupt status bit. Note: a value of zero is reserved and not to be used. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                             |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:6  |        |         |        | Reserved                                                                                                                                                                                |
+|  5:0   |   rw   |  0x10   | DATA   | This field will set the threshold that the depth of the observe FIFO will be compared with when setting the interrupt status bit. Note: a value of zero is reserved and not to be used. |
 
 ## OBSERVE_FIFO_DEPTH
 Observe FIFO depth register
@@ -1266,13 +1266,13 @@ Observe FIFO depth register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OBSERVE_FIFO_DEPTH", "bits": 6, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "DATA", "bits": 6, "attr": ["ro"], "rotate": 0}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                 |
-|:------:|:------:|:-------:|:-------------------|:------------------------------------------------------------|
-|  31:6  |        |         |                    | Reserved                                                    |
-|  5:0   |   ro   |    x    | OBSERVE_FIFO_DEPTH | This field will hold the current depth of the observe FIFO. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                 |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------|
+|  31:6  |        |         |        | Reserved                                                    |
+|  5:0   |   ro   |    x    | DATA   | This field will hold the current depth of the observe FIFO. |
 
 ## DEBUG_STATUS
 Debug status register

@@ -866,53 +866,53 @@ package otp_ctrl_reg_pkg;
   parameter logic [0:0] OTP_CTRL_STATUS_DAI_IDLE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_CHECK_PENDING_RESVAL = 1'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_0_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_0_ERR_CODE_0_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_0_DATA_0_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_1_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_1_ERR_CODE_1_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_1_DATA_1_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_2_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_2_ERR_CODE_2_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_2_DATA_2_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_3_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_3_ERR_CODE_3_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_3_DATA_3_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_4_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_4_ERR_CODE_4_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_4_DATA_4_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_5_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_5_ERR_CODE_5_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_5_DATA_5_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_6_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_6_ERR_CODE_6_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_6_DATA_6_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_7_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_7_ERR_CODE_7_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_7_DATA_7_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_8_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_8_ERR_CODE_8_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_8_DATA_8_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_9_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_9_ERR_CODE_9_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_9_DATA_9_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_10_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_10_ERR_CODE_10_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_10_DATA_10_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_11_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_11_ERR_CODE_11_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_11_DATA_11_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_12_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_12_ERR_CODE_12_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_12_DATA_12_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_13_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_13_ERR_CODE_13_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_13_DATA_13_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_14_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_14_ERR_CODE_14_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_14_DATA_14_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_15_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_15_ERR_CODE_15_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_15_DATA_15_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_16_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_16_ERR_CODE_16_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_16_DATA_16_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_17_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_17_ERR_CODE_17_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_17_DATA_17_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_18_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_18_ERR_CODE_18_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_18_DATA_18_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_19_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_19_ERR_CODE_19_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_19_DATA_19_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_20_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_20_ERR_CODE_20_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_20_DATA_20_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_21_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_21_ERR_CODE_21_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_21_DATA_21_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_22_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_22_ERR_CODE_22_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_22_DATA_22_RESVAL = 3'h 0;
   parameter logic [2:0] OTP_CTRL_ERR_CODE_23_RESVAL = 3'h 0;
-  parameter logic [2:0] OTP_CTRL_ERR_CODE_23_ERR_CODE_23_RESVAL = 3'h 0;
+  parameter logic [2:0] OTP_CTRL_ERR_CODE_23_DATA_23_RESVAL = 3'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [2:0] OTP_CTRL_DIRECT_ACCESS_CMD_RESVAL = 3'h 0;
@@ -920,124 +920,88 @@ package otp_ctrl_reg_pkg;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_WR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_RESVAL = 1'h 0;
   parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_DIRECT_ACCESS_RDATA_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_DIRECT_ACCESS_RDATA_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_DIRECT_ACCESS_RDATA_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [1:0] OTP_CTRL_CHECK_TRIGGER_RESVAL = 2'h 0;
   parameter logic [0:0] OTP_CTRL_CHECK_TRIGGER_INTEGRITY_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_CHECK_TRIGGER_CONSISTENCY_RESVAL = 1'h 0;
   parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_VENDOR_TEST_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_VENDOR_TEST_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_VENDOR_TEST_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_CREATOR_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_CREATOR_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_CREATOR_SW_CFG_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_OWNER_SW_CFG_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_OWNER_SW_CFG_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_OWNER_SW_CFG_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_0_ROT_CREATOR_AUTH_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_1_ROT_CREATOR_AUTH_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_ROT_OWNER_AUTH_SLOT0_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_1_ROT_OWNER_AUTH_SLOT0_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_ROT_OWNER_AUTH_SLOT1_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_1_ROT_OWNER_AUTH_SLOT1_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_0_PLAT_INTEG_AUTH_SLOT0_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_1_PLAT_INTEG_AUTH_SLOT0_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_0_PLAT_INTEG_AUTH_SLOT1_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_1_PLAT_INTEG_AUTH_SLOT1_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_0_PLAT_OWNER_AUTH_SLOT0_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_1_PLAT_OWNER_AUTH_SLOT0_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_0_PLAT_OWNER_AUTH_SLOT1_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_1_PLAT_OWNER_AUTH_SLOT1_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_0_PLAT_OWNER_AUTH_SLOT2_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_1_PLAT_OWNER_AUTH_SLOT2_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_0_PLAT_OWNER_AUTH_SLOT3_DIGEST_0_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0]
-      OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_1_PLAT_OWNER_AUTH_SLOT3_DIGEST_1_RESVAL =
-      32'h 0;
+  parameter logic [31:0] OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_0_ROM_PATCH_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_1_ROM_PATCH_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_ROM_PATCH_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_0_HW_CFG0_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_1_HW_CFG0_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG0_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_0_HW_CFG1_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_1_HW_CFG1_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_HW_CFG1_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_0_SECRET0_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_1_SECRET0_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET0_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_0_SECRET1_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_1_SECRET1_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET1_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_SECRET2_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_SECRET2_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET2_DIGEST_1_DATA_1_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_0_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_0_SECRET3_DIGEST_0_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_0_DATA_0_RESVAL = 32'h 0;
   parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_1_RESVAL = 32'h 0;
-  parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_1_SECRET3_DIGEST_1_RESVAL = 32'h 0;
+  parameter logic [31:0] OTP_CTRL_SECRET3_DIGEST_1_DATA_1_RESVAL = 32'h 0;
 
   // Window parameters for core interface
   parameter logic [CoreAw-1:0] OTP_CTRL_SW_CFG_WINDOW_OFFSET = 15'h 4000;

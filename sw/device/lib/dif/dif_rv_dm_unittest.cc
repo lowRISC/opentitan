@@ -31,30 +31,26 @@ class RvDmTest : public testing::Test, public MmioTest {
 };
 
 TEST_F(RvDmTest, LateDebugEnable) {
-  EXPECT_READ32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
+  EXPECT_READ32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
   EXPECT_WRITE32(RV_DM_LATE_DEBUG_ENABLE_REG_OFFSET, kMultiBitBool32True);
   EXPECT_DIF_OK(dif_rv_dm_late_debug_configure(&rv_dm_, kDifToggleEnabled));
 
-  EXPECT_READ32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
+  EXPECT_READ32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
   EXPECT_WRITE32(RV_DM_LATE_DEBUG_ENABLE_REG_OFFSET, kMultiBitBool32False);
   EXPECT_DIF_OK(dif_rv_dm_late_debug_configure(&rv_dm_, kDifToggleDisabled));
 }
 
 TEST_F(RvDmTest, LateDebugEnableErrorDifLocked) {
-  EXPECT_READ32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
+  EXPECT_READ32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
   EXPECT_DIF_LOCKED(dif_rv_dm_late_debug_configure(&rv_dm_, kDifToggleEnabled));
 }
 
 TEST_F(RvDmTest, LockLateDebug) {
-  EXPECT_WRITE32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
+  EXPECT_WRITE32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                 {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_rv_dm_late_debug_lock(&rv_dm_));
 }
 
@@ -71,17 +67,15 @@ TEST_F(RvDmTest, BadArgs) {
 }
 
 TEST_F(RvDmTest, IsLateDebugLocked) {
-  EXPECT_READ32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
+  EXPECT_READ32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, true}});
 
   bool flag;
   EXPECT_DIF_OK(dif_rv_dm_late_debug_is_locked(&rv_dm_, &flag));
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(
-      RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
+  EXPECT_READ32(RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
+                {{RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false}});
   EXPECT_DIF_OK(dif_rv_dm_late_debug_is_locked(&rv_dm_, &flag));
   EXPECT_TRUE(flag);
 }

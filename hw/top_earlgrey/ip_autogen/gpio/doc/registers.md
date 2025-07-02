@@ -98,12 +98,12 @@ GPIO Input data read value
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DATA_IN", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description   |
-|:------:|:------:|:-------:|:--------|:--------------|
-|  31:0  |   ro   |    x    | DATA_IN |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## DIRECT_OUT
 GPIO direct output data write value
@@ -114,12 +114,12 @@ GPIO direct output data write value
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_OUT", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description   |
-|:------:|:------:|:-------:|:-----------|:--------------|
-|  31:0  |   rw   |    x    | DIRECT_OUT |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## MASKED_OUT_LOWER
 GPIO write data lower with mask.
@@ -184,12 +184,12 @@ Setting direct_oe[i] to 1 enables output mode for GPIO[i]
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_OE", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description   |
-|:------:|:------:|:-------:|:----------|:--------------|
-|  31:0  |   rw   |    x    | DIRECT_OE |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## MASKED_OE_LOWER
 GPIO write Output Enable lower with mask.
@@ -257,12 +257,12 @@ enables rising-edge interrupt detection on GPIO[i].
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INTR_CTRL_EN_RISING", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description   |
-|:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_RISING |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## INTR_CTRL_EN_FALLING
 GPIO interrupt enable for GPIO, falling edge.
@@ -276,12 +276,12 @@ enables falling-edge interrupt detection on GPIO[i].
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INTR_CTRL_EN_FALLING", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description   |
-|:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_FALLING |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## INTR_CTRL_EN_LVLHIGH
 GPIO interrupt enable for GPIO, level high.
@@ -295,12 +295,12 @@ enables level high interrupt detection on GPIO[i].
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INTR_CTRL_EN_LVLHIGH", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description   |
-|:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_LVLHIGH |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## INTR_CTRL_EN_LVLLOW
 GPIO interrupt enable for GPIO, level low.
@@ -314,12 +314,12 @@ enables level low interrupt detection on GPIO[i].
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INTR_CTRL_EN_LVLLOW", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description   |
-|:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   rw   |   0x0   | INTR_CTRL_EN_LVLLOW |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## CTRL_EN_INPUT_FILTER
 filter enable for GPIO input bits.
@@ -333,12 +333,12 @@ must be stable for 16 cycles before transitioning.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CTRL_EN_INPUT_FILTER", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description   |
-|:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |   0x0   | CTRL_EN_INPUT_FILTER |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## HW_STRAPS_DATA_IN_VALID
 Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid.
@@ -349,13 +349,13 @@ Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HW_STRAPS_DATA_IN_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                    | Description   |
-|:------:|:------:|:-------:|:------------------------|:--------------|
-|  31:1  |        |         |                         | Reserved      |
-|   0    |   ro   |   0x0   | HW_STRAPS_DATA_IN_VALID |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:1  |        |         |        | Reserved      |
+|   0    |   ro   |   0x0   | DATA   |               |
 
 ## HW_STRAPS_DATA_IN
 GPIO input data that was sampled as straps at most once after the block
@@ -373,12 +373,12 @@ sampled data is then stored in this register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HW_STRAPS_DATA_IN", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name              | Description   |
-|:------:|:------:|:-------:|:------------------|:--------------|
-|  31:0  |   ro   |   0x0   | HW_STRAPS_DATA_IN |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 
 <!-- END CMDGEN -->

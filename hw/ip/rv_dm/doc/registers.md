@@ -70,12 +70,12 @@ This register does not have any effect in the following cases:
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LATE_DEBUG_ENABLE", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |   Reset    | Name              | Description                                                                   |
-|:------:|:------:|:----------:|:------------------|:------------------------------------------------------------------------------|
-|  31:0  |   rw   | 0x69696969 | LATE_DEBUG_ENABLE | A value of kMuBi32True enables the debug module, all other values disable it. |
+|  Bits  |  Type  |   Reset    | Name   | Description                                                                   |
+|:------:|:------:|:----------:|:-------|:------------------------------------------------------------------------------|
+|  31:0  |   rw   | 0x69696969 | DATA   | A value of kMuBi32True enables the debug module, all other values disable it. |
 
 ## Summary of the **`mem`** interface's registers
 
@@ -382,13 +382,13 @@ In that case, the hart would write to this address while it was already halted.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HALTED", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:1  |        |         |        | Reserved      |
-|   0    |   wo   |   0x0   | HALTED |               |
+|   0    |   wo   |   0x0   | DATA   |               |
 
 ## GOING
 Written by a hart to acknowledge a command.
@@ -405,13 +405,13 @@ The debug module will transition to a state where it awaits the write to [`HALTE
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "GOING", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:1  |        |         |        | Reserved      |
-|   0    |   wo   |   0x0   | GOING  |               |
+|   0    |   wo   |   0x0   | DATA   |               |
 
 ## RESUMING
 Written by a hart to acknowledge a resume request.
@@ -426,13 +426,13 @@ This write tells the debug module that the command has been acknowledged, and th
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RESUMING", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description   |
-|:------:|:------:|:-------:|:---------|:--------------|
-|  31:1  |        |         |          | Reserved      |
-|   0    |   wo   |   0x0   | RESUMING |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:1  |        |         |        | Reserved      |
+|   0    |   wo   |   0x0   | DATA   |               |
 
 ## EXCEPTION
 An exception was triggered while the core was in debug mode.
@@ -443,13 +443,13 @@ An exception was triggered while the core was in debug mode.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EXCEPTION", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description   |
-|:------:|:------:|:-------:|:----------|:--------------|
-|  31:1  |        |         |           | Reserved      |
-|   0    |   wo   |   0x0   | EXCEPTION |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:1  |        |         |        | Reserved      |
+|   0    |   wo   |   0x0   | DATA   |               |
 
 ## WHERETO
 A jump instruction the hart executes to begin a command.
@@ -466,12 +466,12 @@ In the resume request case, the hart must execute the indicated instruction afte
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "WHERETO", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description   |
-|:------:|:------:|:-------:|:--------|:--------------|
-|  31:0  |   ro   |   0x0   | WHERETO |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## ABSTRACTCMD
 A ROM containing instructions for implementing abstract commands.
@@ -501,12 +501,12 @@ See the RISC-V Debug Specification for more information on the encoding of abstr
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ABSTRACTCMD", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description   |
-|:------:|:------:|:-------:|:------------|:--------------|
-|  31:0  |   ro   |   0x0   | ABSTRACTCMD |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## PROGRAM_BUFFER
 A buffer for the debugger to write small debug mode programs.
@@ -533,12 +533,12 @@ See the RISC-V Debug Specification for more information about the Program Buffer
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "PROGRAM_BUFFER", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | PROGRAM_BUFFER |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## DATAADDR
 Message Registers for passing arguments and/or return values for abstract commands.
@@ -558,12 +558,12 @@ See the RISC-V Debug Specification for more information about Message Registers 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DATAADDR", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description   |
-|:------:|:------:|:-------:|:---------|:--------------|
-|  31:0  |   rw   |   0x0   | DATAADDR |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## FLAGS
 Flags indicating what a hart in debug mode should do.
@@ -848,12 +848,12 @@ When a selected hart writes the [`RESUMING`](#resuming) register, the correspond
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FLAGS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
-|  31:0  |   ro   |   0x0   | FLAGS  |               |
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## ROM
 Access window into the debug ROM.

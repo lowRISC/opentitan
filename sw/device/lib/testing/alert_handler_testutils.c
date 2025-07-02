@@ -118,9 +118,8 @@ status_t alert_handler_testutils_configure_all(
 
   // Check that the provided ping timeout actually fits in the timeout
   // register, which is smaller than a native word length.
-  TRY_CHECK(
-      config.ping_timeout <=
-      ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK);
+  TRY_CHECK(config.ping_timeout <=
+            ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_DATA_MASK);
 
   // Configure and enable the requested alerts.
   for (int i = 0; i < config.alerts_len; ++i) {

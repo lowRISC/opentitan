@@ -94,7 +94,7 @@ static void alerts_configure_all(const dif_alert_handler_t *alert_handler,
   // Check that the provided ping timeout actually fits in the timeout
   // register, which is smaller than a native word length.
   CHECK(config.ping_timeout <=
-        ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK);
+        ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_DATA_MASK);
 
   // Configure and enable the requested alerts.
   for (int i = 0; i < config.alerts_len; ++i) {

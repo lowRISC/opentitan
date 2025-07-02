@@ -24,9 +24,8 @@ static bool checks_are_locked(const dif_otp_ctrl_t *otp, bool check_config) {
   ptrdiff_t reg_offset = check_config
                              ? OTP_CTRL_CHECK_REGWEN_REG_OFFSET
                              : OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET;
-  size_t regwen_bit =
-      check_config ? OTP_CTRL_CHECK_REGWEN_EN_BIT
-                   : OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT;
+  size_t regwen_bit = check_config ? OTP_CTRL_CHECK_REGWEN_EN_BIT
+                                   : OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT;
   uint32_t locked = mmio_region_read32(otp->base_addr, reg_offset);
   return !bitfield_bit32_read(locked, regwen_bit);
 }
@@ -87,8 +86,8 @@ dif_result_t dif_otp_ctrl_dai_lock(const dif_otp_ctrl_t *otp) {
     return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      0, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, false);
+  uint32_t reg =
+      bitfield_bit32_write(0, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
                       reg);
 
@@ -103,8 +102,7 @@ dif_result_t dif_otp_ctrl_dai_is_locked(const dif_otp_ctrl_t *otp,
 
   uint32_t reg = mmio_region_read32(otp->base_addr,
                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
-  *is_locked = !bitfield_bit32_read(
-      reg, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT);
+  *is_locked = !bitfield_bit32_read(reg, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT);
 
   return kDifOk;
 }
@@ -114,8 +112,7 @@ dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
     return kDifBadArg;
   }
 
-  uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_EN_BIT, false);
+  uint32_t reg = bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET, reg);
 
   return kDifOk;
@@ -136,8 +133,8 @@ dif_result_t dif_otp_ctrl_lock_check_trigger(const dif_otp_ctrl_t *otp) {
     return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(
-      0, OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false);
+  uint32_t reg =
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
                       reg);
 
@@ -160,26 +157,24 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
   switch (partition) {
     case kDifOtpCtrlPartitionVendorTest:
       *reg_offset = OTP_CTRL_VENDOR_TEST_READ_LOCK_REG_OFFSET;
-      *index = OTP_CTRL_VENDOR_TEST_READ_LOCK_VENDOR_TEST_READ_LOCK_BIT;
+      *index = OTP_CTRL_VENDOR_TEST_READ_LOCK_DATA_BIT;
       break;
     case kDifOtpCtrlPartitionCreatorSwCfg:
       *reg_offset = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_REG_OFFSET;
-      *index = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_CREATOR_SW_CFG_READ_LOCK_BIT;
+      *index = OTP_CTRL_CREATOR_SW_CFG_READ_LOCK_DATA_BIT;
       break;
     case kDifOtpCtrlPartitionOwnerSwCfg:
       *reg_offset = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET;
-      *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT;
+      *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_DATA_BIT;
       break;
 #if defined(OPENTITAN_IS_EARLGREY)
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET;
-      *index =
-          OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_BIT;
+      *index = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_DATA_BIT;
       break;
     case kDifOtpCtrlPartitionRotCreatorAuthState:
       *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_REG_OFFSET;
-      *index =
-          OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT;
+      *index = OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_DATA_BIT;
       break;
 #elif defined(OPENTITAN_IS_DARJEELING)
     case kDifOtpCtrlPartitionOwnershipSlotState:
@@ -374,8 +369,8 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
     if (i <= kDifOtpCtrlStatusCodeHasCauseLast) {
       bitfield_field32_t field;
       field = (bitfield_field32_t){
-          .mask = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_MASK,
-          .index = OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
+          .mask = OTP_CTRL_ERR_CODE_0_DATA_0_MASK,
+          .index = OTP_CTRL_ERR_CODE_0_DATA_0_OFFSET,
       };
 
       ptrdiff_t address =
@@ -384,28 +379,28 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
 
       dif_otp_ctrl_error_t err;
       switch (bitfield_field32_read(error_code, field)) {
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_NO_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_NO_ERROR:
           err = kDifOtpCtrlErrorOk;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ERROR:
           err = kDifOtpCtrlErrorMacroUnspecified;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ECC_CORR_ERROR:
           err = kDifOtpCtrlErrorMacroRecoverableRead;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_UNCORR_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_ECC_UNCORR_ERROR:
           err = kDifOtpCtrlErrorMacroUnrecoverableRead;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_WRITE_BLANK_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_MACRO_WRITE_BLANK_ERROR:
           err = kDifOtpCtrlErrorMacroBlankCheckFailed;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_ACCESS_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_ACCESS_ERROR:
           err = kDifOtpCtrlErrorLockedAccess;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_CHECK_FAIL_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_CHECK_FAIL_ERROR:
           err = kDifOtpCtrlErrorBackgroundCheckFailed;
           break;
-        case OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_FSM_STATE_ERROR:
+        case OTP_CTRL_ERR_CODE_0_DATA_0_VALUE_FSM_STATE_ERROR:
           err = kDifOtpCtrlErrorFsmBadState;
           break;
         default:

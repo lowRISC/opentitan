@@ -988,10 +988,10 @@ module flash_ctrl_core_reg_top (
   logic fault_status_host_gnt_err_qs;
   logic [19:0] err_addr_qs;
   logic ecc_single_err_cnt_we;
-  logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
-  logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_0_wd;
-  logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_1_qs;
-  logic [7:0] ecc_single_err_cnt_ecc_single_err_cnt_1_wd;
+  logic [7:0] ecc_single_err_cnt_data_0_qs;
+  logic [7:0] ecc_single_err_cnt_data_0_wd;
+  logic [7:0] ecc_single_err_cnt_data_1_qs;
+  logic [7:0] ecc_single_err_cnt_data_1_wd;
   logic [19:0] ecc_single_err_addr_0_qs;
   logic [19:0] ecc_single_err_addr_1_qs;
   logic phy_alert_cfg_we;
@@ -11421,19 +11421,19 @@ module flash_ctrl_core_reg_top (
 
   // Subregister 0 of Multireg ecc_single_err_cnt
   // R[ecc_single_err_cnt]: V(False)
-  //   F[ecc_single_err_cnt_0]: 7:0
+  //   F[data_0]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_ecc_single_err_cnt_ecc_single_err_cnt_0 (
+  ) u_ecc_single_err_cnt_data_0 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ecc_single_err_cnt_we),
-    .wd     (ecc_single_err_cnt_ecc_single_err_cnt_0_wd),
+    .wd     (ecc_single_err_cnt_data_0_wd),
 
     // from internal hardware
     .de     (hw2reg.ecc_single_err_cnt[0].de),
@@ -11445,22 +11445,22 @@ module flash_ctrl_core_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (ecc_single_err_cnt_ecc_single_err_cnt_0_qs)
+    .qs     (ecc_single_err_cnt_data_0_qs)
   );
 
-  //   F[ecc_single_err_cnt_1]: 15:8
+  //   F[data_1]: 15:8
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_ecc_single_err_cnt_ecc_single_err_cnt_1 (
+  ) u_ecc_single_err_cnt_data_1 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (ecc_single_err_cnt_we),
-    .wd     (ecc_single_err_cnt_ecc_single_err_cnt_1_wd),
+    .wd     (ecc_single_err_cnt_data_1_wd),
 
     // from internal hardware
     .de     (hw2reg.ecc_single_err_cnt[1].de),
@@ -11472,7 +11472,7 @@ module flash_ctrl_core_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (ecc_single_err_cnt_ecc_single_err_cnt_1_qs)
+    .qs     (ecc_single_err_cnt_data_1_qs)
   );
 
 
@@ -12833,9 +12833,9 @@ module flash_ctrl_core_reg_top (
   assign fault_status_phy_storage_err_wd = reg_wdata[8];
   assign ecc_single_err_cnt_we = addr_hit[99] & reg_we & !reg_error;
 
-  assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
+  assign ecc_single_err_cnt_data_0_wd = reg_wdata[7:0];
 
-  assign ecc_single_err_cnt_ecc_single_err_cnt_1_wd = reg_wdata[15:8];
+  assign ecc_single_err_cnt_data_1_wd = reg_wdata[15:8];
   assign phy_alert_cfg_we = addr_hit[102] & reg_we & !reg_error;
 
   assign phy_alert_cfg_alert_ack_wd = reg_wdata[0];
@@ -13644,8 +13644,8 @@ module flash_ctrl_core_reg_top (
       end
 
       addr_hit[99]: begin
-        reg_rdata_next[7:0] = ecc_single_err_cnt_ecc_single_err_cnt_0_qs;
-        reg_rdata_next[15:8] = ecc_single_err_cnt_ecc_single_err_cnt_1_qs;
+        reg_rdata_next[7:0] = ecc_single_err_cnt_data_0_qs;
+        reg_rdata_next[15:8] = ecc_single_err_cnt_data_1_qs;
       end
 
       addr_hit[100]: begin

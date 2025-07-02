@@ -298,12 +298,12 @@ hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TRANSITION_TOKEN", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description   |
-|:------:|:------:|:-------:|:-----------------|:--------------|
-|  31:0  |   rw   |    x    | TRANSITION_TOKEN |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## TRANSITION_TARGET
 This register exposes the decoded life cycle state.
@@ -371,12 +371,12 @@ them to the OTP macro wrapper - even if this register is programmed to a non-zer
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OTP_VENDOR_TEST_CTRL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description   |
-|:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |    x    | OTP_VENDOR_TEST_CTRL |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## OTP_VENDOR_TEST_STATUS
 Test/vendor-specific settings for the OTP macro wrapper.
@@ -389,12 +389,12 @@ In all other states, these values will read as zero.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OTP_VENDOR_TEST_STATUS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                   | Description   |
-|:------:|:------:|:-------:|:-----------------------|:--------------|
-|  31:0  |   ro   |    x    | OTP_VENDOR_TEST_STATUS |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## LC_STATE
 This register exposes the decoded life cycle state.
@@ -592,12 +592,12 @@ If this register reads all-zero, this is indicative that the value has not been 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DEVICE_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description   |
-|:------:|:------:|:-------:|:----------|:--------------|
-|  31:0  |   ro   |    x    | DEVICE_ID |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## MANUF_STATE
 This is a 256bit field used for keeping track of the manufacturing state.
@@ -621,12 +621,12 @@ This is a 256bit field used for keeping track of the manufacturing state.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MANUF_STATE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description   |
-|:------:|:------:|:-------:|:------------|:--------------|
-|  31:0  |   ro   |    x    | MANUF_STATE |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## Summary of the **`dmi`** interface's registers
 

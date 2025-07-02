@@ -61,22 +61,14 @@ static_assert(
     "Expected local alert causes to be multiregs with LSB at index 0!");
 
 // Accumulator threshold field sizes.
-static_assert(
-    ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_CLASSA_ACCUM_THRESH_SHADOWED_MASK <=
-        USHRT_MAX,
-    "Expected class A accumulator threshold field to be 16 bits.");
-static_assert(
-    ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_CLASSB_ACCUM_THRESH_SHADOWED_MASK <=
-        USHRT_MAX,
-    "Expected class B accumulator threshold field to be 16 bits.");
-static_assert(
-    ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_CLASSC_ACCUM_THRESH_SHADOWED_MASK <=
-        USHRT_MAX,
-    "Expected class C accumulator threshold field to be 16 bits.");
-static_assert(
-    ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_CLASSD_ACCUM_THRESH_SHADOWED_MASK <=
-        USHRT_MAX,
-    "Expected class D accumulator threshold field to be 16 bits.");
+static_assert(ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_DATA_MASK <= USHRT_MAX,
+              "Expected class A accumulator threshold field to be 16 bits.");
+static_assert(ALERT_HANDLER_CLASSB_ACCUM_THRESH_SHADOWED_DATA_MASK <= USHRT_MAX,
+              "Expected class B accumulator threshold field to be 16 bits.");
+static_assert(ALERT_HANDLER_CLASSC_ACCUM_THRESH_SHADOWED_DATA_MASK <= USHRT_MAX,
+              "Expected class C accumulator threshold field to be 16 bits.");
+static_assert(ALERT_HANDLER_CLASSD_ACCUM_THRESH_SHADOWED_DATA_MASK <= USHRT_MAX,
+              "Expected class D accumulator threshold field to be 16 bits.");
 
 /**
  * Macro for generating the case statements for local alert cause CSRs.
@@ -497,8 +489,7 @@ dif_result_t dif_alert_handler_configure_ping_timer(
     const dif_alert_handler_t *alert_handler, uint32_t ping_timeout,
     dif_toggle_t enabled, dif_toggle_t locked) {
   if (alert_handler == NULL ||
-      ping_timeout >
-          ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_PING_TIMEOUT_CYC_SHADOWED_MASK ||
+      ping_timeout > ALERT_HANDLER_PING_TIMEOUT_CYC_SHADOWED_DATA_MASK ||
       !dif_is_valid_toggle(enabled) || !dif_is_valid_toggle(locked)) {
     return kDifBadArg;
   }
@@ -823,11 +814,10 @@ dif_result_t dif_alert_handler_get_accumulator(
     return kDifBadArg;
   }
 
-#define ALERT_CLASS_ACCUM_CASE_(class_, value_)                                  \
-  case kDifAlertHandlerClass##class_:                                            \
-    reg_offset = ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_REG_OFFSET;             \
-    field =                                                                      \
-        ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_CLASS##class_##_ACCUM_CNT_FIELD; \
+#define ALERT_CLASS_ACCUM_CASE_(class_, value_)                      \
+  case kDifAlertHandlerClass##class_:                                \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_REG_OFFSET; \
+    field = ALERT_HANDLER_CLASS##class_##_ACCUM_CNT_DATA_FIELD;      \
     break;
 
   ptrdiff_t reg_offset;
@@ -906,10 +896,10 @@ dif_result_t dif_alert_handler_get_class_state(
     return kDifBadArg;
   }
 
-#define ALERT_CLASS_STATE_CASE_(class_, value_)                              \
-  case kDifAlertHandlerClass##class_:                                        \
-    reg_offset = ALERT_HANDLER_CLASS##class_##_STATE_REG_OFFSET;             \
-    field = ALERT_HANDLER_CLASS##class_##_STATE_CLASS##class_##_STATE_FIELD; \
+#define ALERT_CLASS_STATE_CASE_(class_, value_)                  \
+  case kDifAlertHandlerClass##class_:                            \
+    reg_offset = ALERT_HANDLER_CLASS##class_##_STATE_REG_OFFSET; \
+    field = ALERT_HANDLER_CLASS##class_##_STATE_DATA_FIELD;      \
     break;
 
   ptrdiff_t reg_offset;
@@ -924,28 +914,28 @@ dif_result_t dif_alert_handler_get_class_state(
 
   uint32_t reg = mmio_region_read32(alert_handler->base_addr, reg_offset);
   switch (bitfield_field32_read(reg, field)) {
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_IDLE:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_IDLE:
       *state = kDifAlertHandlerClassStateIdle;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TIMEOUT:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_TIMEOUT:
       *state = kDifAlertHandlerClassStateTimeout;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_FSMERROR:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_FSMERROR:
       *state = kDifAlertHandlerClassStateFsmError;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_TERMINAL:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_TERMINAL:
       *state = kDifAlertHandlerClassStateTerminal;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE0:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_PHASE0:
       *state = kDifAlertHandlerClassStatePhase0;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE1:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_PHASE1:
       *state = kDifAlertHandlerClassStatePhase1;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE2:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_PHASE2:
       *state = kDifAlertHandlerClassStatePhase2;
       break;
-    case ALERT_HANDLER_CLASSA_STATE_CLASSA_STATE_VALUE_PHASE3:
+    case ALERT_HANDLER_CLASSA_STATE_DATA_VALUE_PHASE3:
       *state = kDifAlertHandlerClassStatePhase3;
       break;
     default:

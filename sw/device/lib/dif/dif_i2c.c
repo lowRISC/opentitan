@@ -657,7 +657,7 @@ dif_result_t dif_i2c_read_byte(const dif_i2c_t *i2c, uint8_t *byte) {
 
   uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
   if (byte != NULL) {
-    *byte = (uint8_t)bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
+    *byte = (uint8_t)bitfield_field32_read(values, I2C_RDATA_DATA_FIELD);
   }
 
   return kDifOk;
@@ -672,7 +672,7 @@ dif_result_t dif_i2c_read_bytes(const dif_i2c_t *i2c, size_t size,
   while (size--) {
     spin_while_status_bit(i2c, I2C_STATUS_RXEMPTY_BIT, /*set*/ true);
     uint32_t values = mmio_region_read32(i2c->base_addr, I2C_RDATA_REG_OFFSET);
-    *(buffer++) = (uint8_t)bitfield_field32_read(values, I2C_RDATA_RDATA_FIELD);
+    *(buffer++) = (uint8_t)bitfield_field32_read(values, I2C_RDATA_DATA_FIELD);
   }
 
   return kDifOk;
@@ -788,7 +788,7 @@ dif_result_t dif_i2c_transmit_byte(const dif_i2c_t *i2c, uint8_t byte) {
   }
 
   uint32_t tx_byte = 0;
-  tx_byte = bitfield_field32_write(tx_byte, I2C_TXDATA_TXDATA_FIELD, byte);
+  tx_byte = bitfield_field32_write(tx_byte, I2C_TXDATA_DATA_FIELD, byte);
   mmio_region_write32(i2c->base_addr, I2C_TXDATA_REG_OFFSET, tx_byte);
 
   return kDifOk;

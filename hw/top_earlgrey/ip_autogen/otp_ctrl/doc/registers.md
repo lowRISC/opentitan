@@ -206,15 +206,15 @@ fatal_check_error alert.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ERR_CODE", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "DATA", "bits": 3, "attr": ["ro"], "rotate": 0}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            |
-|:------:|:------:|:-------:|:--------------------------------|
-|  31:3  |        |         | Reserved                        |
-|  2:0   |   ro   |   0x0   | [ERR_CODE](#err_code--err_code) |
+|  Bits  |  Type  |  Reset  | Name                    |
+|:------:|:------:|:-------:|:------------------------|
+|  31:3  |        |         | Reserved                |
+|  2:0   |   ro   |   0x0   | [DATA](#err_code--data) |
 
-### ERR_CODE . ERR_CODE
+### ERR_CODE . DATA
 
 | Value   | Name                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 |:--------|:------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -284,15 +284,15 @@ Address register for direct accesses.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_ADDRESS", "bits": 11, "attr": ["rw"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "DATA", "bits": 11, "attr": ["rw"], "rotate": 0}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                   |
-|:------:|:------:|:-------:|:-----------------------------------------------------------------------|
-| 31:11  |        |         | Reserved                                                               |
-|  10:0  |   rw   |   0x0   | [DIRECT_ACCESS_ADDRESS](#direct_access_address--direct_access_address) |
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+| 31:11  |        |         | Reserved                             |
+|  10:0  |   rw   |   0x0   | [DATA](#direct_access_address--data) |
 
-### DIRECT_ACCESS_ADDRESS . DIRECT_ACCESS_ADDRESS
+### DIRECT_ACCESS_ADDRESS . DATA
 This is the address for the OTP word to be read or written through
 the direct access interface. Note that the address is aligned to the access size
 internally, hence bits 1:0 are ignored for 32bit accesses, and bits 2:0 are ignored
@@ -319,12 +319,12 @@ partition is being written to.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_WDATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description   |
-|:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   rw   |   0x0   | DIRECT_ACCESS_WDATA |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |   0x0   | DATA   |               |
 
 ## DIRECT_ACCESS_RDATA
 Read data for direct accesses.
@@ -344,12 +344,12 @@ partition is read from.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_RDATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description   |
-|:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   ro   |   0x0   | DIRECT_ACCESS_RDATA |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## CHECK_TRIGGER_REGWEN
 Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
@@ -424,14 +424,14 @@ Timeout value for the integrity and consistency checks.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CHECK_TIMEOUT", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                           |
-|:------:|:------:|:-------:|:-----------------------------------------------|
-|  31:0  |   rw   |   0x0   | [CHECK_TIMEOUT](#check_timeout--check_timeout) |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:0  |   rw   |   0x0   | [DATA](#check_timeout--data) |
 
-### CHECK_TIMEOUT . CHECK_TIMEOUT
+### CHECK_TIMEOUT . DATA
 Timeout value in cycles for the for the integrity and consistency checks. If an integrity or consistency
 check does not complete within the timeout window, an error will be flagged in the [`STATUS`](#status) register,
 an otp_error interrupt will be raised, and an fatal_check_error alert will be sent out. The timeout should
@@ -451,14 +451,14 @@ Only applies to the HW_CFG* and SECRET* partitions once they are locked.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INTEGRITY_CHECK_PERIOD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                      |
-|:------:|:------:|:-------:|:--------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | [INTEGRITY_CHECK_PERIOD](#integrity_check_period--integrity_check_period) |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:0  |   rw   |   0x0   | [DATA](#integrity_check_period--data) |
 
-### INTEGRITY_CHECK_PERIOD . INTEGRITY_CHECK_PERIOD
+### INTEGRITY_CHECK_PERIOD . DATA
 The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
 the bit mask to be applied to the LFSR output in order to limit its range. The value of this
 register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
@@ -477,14 +477,14 @@ This applies to the LIFE_CYCLE partition and the HW_CFG* and SECRET* partitions 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CONSISTENCY_CHECK_PERIOD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                            |
-|:------:|:------:|:-------:|:--------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | [CONSISTENCY_CHECK_PERIOD](#consistency_check_period--consistency_check_period) |
+|  Bits  |  Type  |  Reset  | Name                                    |
+|:------:|:------:|:-------:|:----------------------------------------|
+|  31:0  |   rw   |   0x0   | [DATA](#consistency_check_period--data) |
 
-### CONSISTENCY_CHECK_PERIOD . CONSISTENCY_CHECK_PERIOD
+### CONSISTENCY_CHECK_PERIOD . DATA
 The pseudo-random period is generated using a 40bit LFSR internally, and this register defines
 the bit mask to be applied to the LFSR output in order to limit its range. The value of this
 register is left shifted by 8bits and the lower bits are set to 8'hFF in order to form the 40bit mask.
@@ -502,13 +502,13 @@ Runtime read lock for the VENDOR_TEST partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VENDOR_TEST_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                       |
-|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                       | Reserved                                                                                          |
-|   0    |  rw0c  |   0x1   | VENDOR_TEST_READ_LOCK | When cleared to 0, read access to the VENDOR_TEST partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                       |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                          |
+|   0    |  rw0c  |   0x1   | DATA   | When cleared to 0, read access to the VENDOR_TEST partition is locked. Write 0 to clear this bit. |
 
 ## CREATOR_SW_CFG_READ_LOCK
 Runtime read lock for the CREATOR_SW_CFG partition.
@@ -520,13 +520,13 @@ Runtime read lock for the CREATOR_SW_CFG partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CREATOR_SW_CFG_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                     | Description                                                                                          |
-|:------:|:------:|:-------:|:-------------------------|:-----------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                          | Reserved                                                                                             |
-|   0    |  rw0c  |   0x1   | CREATOR_SW_CFG_READ_LOCK | When cleared to 0, read access to the CREATOR_SW_CFG partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                          |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                             |
+|   0    |  rw0c  |   0x1   | DATA   | When cleared to 0, read access to the CREATOR_SW_CFG partition is locked. Write 0 to clear this bit. |
 
 ## OWNER_SW_CFG_READ_LOCK
 Runtime read lock for the OWNER_SW_CFG partition.
@@ -538,13 +538,13 @@ Runtime read lock for the OWNER_SW_CFG partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OWNER_SW_CFG_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                   | Description                                                                                        |
-|:------:|:------:|:-------:|:-----------------------|:---------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                        | Reserved                                                                                           |
-|   0    |  rw0c  |   0x1   | OWNER_SW_CFG_READ_LOCK | When cleared to 0, read access to the OWNER_SW_CFG partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                        |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                           |
+|   0    |  rw0c  |   0x1   | DATA   | When cleared to 0, read access to the OWNER_SW_CFG partition is locked. Write 0 to clear this bit. |
 
 ## ROT_CREATOR_AUTH_CODESIGN_READ_LOCK
 Runtime read lock for the ROT_CREATOR_AUTH_CODESIGN partition.
@@ -556,13 +556,13 @@ Runtime read lock for the ROT_CREATOR_AUTH_CODESIGN partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_CODESIGN_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 370}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                | Description                                                                                                     |
-|:------:|:------:|:-------:|:------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                                     | Reserved                                                                                                        |
-|   0    |  rw0c  |   0x1   | ROT_CREATOR_AUTH_CODESIGN_READ_LOCK | When cleared to 0, read access to the ROT_CREATOR_AUTH_CODESIGN partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                     |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                        |
+|   0    |  rw0c  |   0x1   | DATA   | When cleared to 0, read access to the ROT_CREATOR_AUTH_CODESIGN partition is locked. Write 0 to clear this bit. |
 
 ## ROT_CREATOR_AUTH_STATE_READ_LOCK
 Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.
@@ -574,13 +574,13 @@ Runtime read lock for the ROT_CREATOR_AUTH_STATE partition.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_STATE_READ_LOCK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             | Description                                                                                                  |
-|:------:|:------:|:-------:|:---------------------------------|:-------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                                  | Reserved                                                                                                     |
-|   0    |  rw0c  |   0x1   | ROT_CREATOR_AUTH_STATE_READ_LOCK | When cleared to 0, read access to the ROT_CREATOR_AUTH_STATE partition is locked. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                  |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                     |
+|   0    |  rw0c  |   0x1   | DATA   | When cleared to 0, read access to the ROT_CREATOR_AUTH_STATE partition is locked. Write 0 to clear this bit. |
 
 ## VENDOR_TEST_DIGEST
 Integrity digest for the VENDOR_TEST partition.
@@ -602,12 +602,12 @@ the digest becomes visible in this CSR.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VENDOR_TEST_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description   |
-|:------:|:------:|:-------:|:-------------------|:--------------|
-|  31:0  |   ro   |   0x0   | VENDOR_TEST_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## CREATOR_SW_CFG_DIGEST
 Integrity digest for the CREATOR_SW_CFG partition.
@@ -629,12 +629,12 @@ the digest becomes visible in this CSR.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CREATOR_SW_CFG_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description   |
-|:------:|:------:|:-------:|:----------------------|:--------------|
-|  31:0  |   ro   |   0x0   | CREATOR_SW_CFG_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## OWNER_SW_CFG_DIGEST
 Integrity digest for the OWNER_SW_CFG partition.
@@ -656,12 +656,12 @@ the digest becomes visible in this CSR.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OWNER_SW_CFG_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description   |
-|:------:|:------:|:-------:|:--------------------|:--------------|
-|  31:0  |   ro   |   0x0   | OWNER_SW_CFG_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## ROT_CREATOR_AUTH_CODESIGN_DIGEST
 Integrity digest for the ROT_CREATOR_AUTH_CODESIGN partition.
@@ -683,12 +683,12 @@ the digest becomes visible in this CSR.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_CODESIGN_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             | Description   |
-|:------:|:------:|:-------:|:---------------------------------|:--------------|
-|  31:0  |   ro   |   0x0   | ROT_CREATOR_AUTH_CODESIGN_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## ROT_CREATOR_AUTH_STATE_DIGEST
 Integrity digest for the ROT_CREATOR_AUTH_STATE partition.
@@ -710,12 +710,12 @@ the digest becomes visible in this CSR.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ROT_CREATOR_AUTH_STATE_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                          | Description   |
-|:------:|:------:|:-------:|:------------------------------|:--------------|
-|  31:0  |   ro   |   0x0   | ROT_CREATOR_AUTH_STATE_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## HW_CFG0_DIGEST
 Integrity digest for the HW_CFG0 partition.
@@ -735,12 +735,12 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HW_CFG0_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | HW_CFG0_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## HW_CFG1_DIGEST
 Integrity digest for the HW_CFG1 partition.
@@ -760,12 +760,12 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HW_CFG1_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | HW_CFG1_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## SECRET0_DIGEST
 Integrity digest for the SECRET0 partition.
@@ -785,12 +785,12 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SECRET0_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | SECRET0_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## SECRET1_DIGEST
 Integrity digest for the SECRET1 partition.
@@ -810,12 +810,12 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SECRET1_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | SECRET1_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## SECRET2_DIGEST
 Integrity digest for the SECRET2 partition.
@@ -835,12 +835,12 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SECRET2_DIGEST", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description   |
-|:------:|:------:|:-------:|:---------------|:--------------|
-|  31:0  |   ro   |   0x0   | SECRET2_DIGEST |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |   0x0   | DATA   |               |
 
 ## SW_CFG_WINDOW
 Any read to this window directly maps to the corresponding offset in the creator and owner software

@@ -11,8 +11,7 @@
 static bool late_debug_enable_is_locked(const dif_rv_dm_t *rv_dm) {
   uint32_t reg = mmio_region_read32(rv_dm->base_addr,
                                     RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET);
-  return !bitfield_bit32_read(
-      reg, RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT);
+  return !bitfield_bit32_read(reg, RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT);
 }
 
 dif_result_t dif_rv_dm_late_debug_configure(const dif_rv_dm_t *rv_dm,
@@ -42,9 +41,7 @@ dif_result_t dif_rv_dm_late_debug_lock(const dif_rv_dm_t *rv_dm) {
   }
   mmio_region_write32(
       rv_dm->base_addr, RV_DM_LATE_DEBUG_ENABLE_REGWEN_REG_OFFSET,
-      bitfield_bit32_write(
-          0, RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT,
-          false));
+      bitfield_bit32_write(0, RV_DM_LATE_DEBUG_ENABLE_REGWEN_EN_BIT, false));
   return kDifOk;
 }
 

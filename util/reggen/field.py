@@ -239,9 +239,10 @@ class Field:
         where = f"field {field_idx} of {reg_name} register"
         rd = check_keys(raw, where, list(REQUIRED_FIELDS.keys()), list(OPTIONAL_FIELDS.keys()))
 
+        # Unamed fields defaults to data + index if there's more then one field.
         raw_name = rd.get("name")
         if raw_name is None:
-            name = f"field{field_idx + 1}" if num_fields > 1 else reg_name
+            name = "DATA" + (f"_{field_idx + 1}" if num_fields > 1 else "")
         else:
             name = check_name(raw_name, f"name of {where}")
 

@@ -1211,12 +1211,10 @@ dif_result_t dif_flash_ctrl_get_ecc_errors(
 #error "Revise this function to handle more banks."
 #endif
   if (bank == 0) {
-    error_count_field =
-        FLASH_CTRL_ECC_SINGLE_ERR_CNT_ECC_SINGLE_ERR_CNT_0_FIELD;
+    error_count_field = FLASH_CTRL_ECC_SINGLE_ERR_CNT_DATA_0_FIELD;
     last_addr_reg_offset = FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_REG_OFFSET;
   } else {
-    error_count_field =
-        FLASH_CTRL_ECC_SINGLE_ERR_CNT_ECC_SINGLE_ERR_CNT_1_FIELD;
+    error_count_field = FLASH_CTRL_ECC_SINGLE_ERR_CNT_DATA_1_FIELD;
     last_addr_reg_offset = FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_REG_OFFSET;
   }
 
