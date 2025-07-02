@@ -45,15 +45,6 @@ bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
 single_version_override(
-    module_name = "rules_rust",
-    patch_strip = 1,
-    patches = [
-        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
-    ],
-    version = "0.59.2",
-)
-
-single_version_override(
     module_name = "rules_rust_bindgen",
     patch_strip = 3,
     patches = [
