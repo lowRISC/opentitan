@@ -436,7 +436,7 @@ package dma_reg_pkg;
   parameter logic [0:0] DMA_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] DMA_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [3:0] DMA_CFG_REGWEN_RESVAL = 4'h 6;
-  parameter logic [3:0] DMA_CFG_REGWEN_REGWEN_RESVAL = 4'h 6;
+  parameter logic [3:0] DMA_CFG_REGWEN_EN_RESVAL = 4'h 6;
 
   // Register index
   typedef enum int {
