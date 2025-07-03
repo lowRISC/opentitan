@@ -479,10 +479,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic es_rng_enable, es_rng_valid;
   logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
 
-  // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_edn_rsp;
-
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
@@ -735,9 +731,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .adc_chnsel_i          ( '0 ),
     .adc_d_o               (    ),
     .adc_d_val_o           (    ),
-    // entropy
-    .entropy_rsp_i         ( ast_edn_edn_rsp ),
-    .entropy_req_o         ( ast_edn_edn_req ),
     // rng
     .rng_en_i              ( es_rng_enable ),
     .rng_fips_i            ( es_rng_fips   ),
@@ -1045,8 +1038,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .sck_monitor_o                     ( sck_monitor                ),
     .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
-    .ast_edn_req_i                     ( ast_edn_edn_req            ),
-    .ast_edn_rsp_o                     ( ast_edn_edn_rsp            ),
     .ast_tl_req_o                      ( base_ast_bus               ),
     .ast_tl_rsp_i                      ( ast_base_bus               ),
     .obs_ctrl_i                        ( obs_ctrl                   ),
@@ -1341,8 +1332,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .sck_monitor_o                ( sck_monitor           ),
     .pwrmgr_ast_req_o             ( base_ast_pwr          ),
     .pwrmgr_ast_rsp_i             ( ast_base_pwr          ),
-    .ast_edn_req_i                ( ast_edn_edn_req       ),
-    .ast_edn_rsp_o                ( ast_edn_edn_rsp       ),
     .obs_ctrl_i                   ( obs_ctrl              ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
