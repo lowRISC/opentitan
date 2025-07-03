@@ -60,3 +60,23 @@ check_cov -waiver -add -source_file {../src/lowrisc_prim_diff_decode_0/rtl/prim_
 # To support the waiver above, this assertion makes sure that state_q can never transition to a
 # parasitic state. If that is no longer the case, this assertion will fail.
 assert -name PrimDiffDecodeNoParasiticState_A {dut.gen_alert_tx[0].u_prim_alert_sender.u_decode_ping.gen_async.state_q < 3}
+
+# Task for onehot0Check_A and EnableCheck_A assertions.
+task -create notOnehotInpt -copy {
+  .*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A
+  .*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1
+  .*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A
+  .*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A:precondition1
+} -regexp
+
+# This will let the preconditions for Onehot0check_A and EnableCheck_A happen.
+stopat -task notOnehotInpt dut.u_reg.reg_we_check
+
+# Disabling the affected assertions and related covers from the embedded task.
+cover -disable -regexp "\<embedded\>\::.*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A:precondition1"
+
+assert -disable -regexp "\<embedded\>\::.*\.u_prim_reg_we_check.u_prim_onehot_check.Onehot0Check_A"
+
+cover -disable -regexp "\<embedded\>\::.*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A:precondition1"
+
+assert -disable -regexp "\<embedded\>\::.*\.u_prim_reg_we_check.u_prim_onehot_check\..*\.EnableCheck_A"
