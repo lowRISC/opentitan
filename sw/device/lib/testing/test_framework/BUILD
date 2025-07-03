@@ -213,7 +213,10 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-    ],
+    ] + select({
+        "//sw/device:is_english_breakfast": [],
+        "//conditions:default": ["//sw/device/lib/dif:alert_handler"],
+    }),
 )
 
 # This target provides start files without providing the full OTTF, and can be
