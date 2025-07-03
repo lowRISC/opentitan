@@ -155,13 +155,13 @@ Register write enable for the hardware mutex register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLAIM_TRANSITION_IF_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                       | Description                                                                                                                                                                                              |
-|:------:|:------:|:-------:|:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                            | Reserved                                                                                                                                                                                                 |
-|   0    |  rw0c  |   0x1   | CLAIM_TRANSITION_IF_REGWEN | This bit is managed by software and is set to 1 by default. When cleared to 0, the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex register cannot be written to anymore. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                              |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                 |
+|   0    |  rw0c  |   0x1   | EN     | This bit is managed by software and is set to 1 by default. When cleared to 0, the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex register cannot be written to anymore. Write 0 to clear this bit. |
 
 ## CLAIM_TRANSITION_IF
 Hardware mutex to claim exclusive access to the transition interface.
@@ -197,15 +197,15 @@ Register write enable for all transition interface registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TRANSITION_REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                       |
-|:------:|:------:|:-------:|:-----------------------------------------------------------|
-|  31:1  |        |         | Reserved                                                   |
-|   0    |   ro   |   0x0   | [TRANSITION_REGWEN](#transition_regwen--transition_regwen) |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:1  |        |         | Reserved                     |
+|   0    |   ro   |   0x0   | [EN](#transition_regwen--en) |
 
-### TRANSITION_REGWEN . TRANSITION_REGWEN
+### TRANSITION_REGWEN . EN
 This bit is hardware-managed and only readable by software.
 By default, this bit is set to 0 by hardware.
 Once SW has claimed the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex, this bit will be set to 1.

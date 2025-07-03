@@ -836,6 +836,7 @@
         fields: [
           {
               bits:   "0",
+              name: "EN",
               desc: '''
               This bit is managed by software and is set to 1 by default.
               When cleared to 0, the !!CLAIM_TRANSITION_IF mutex register cannot be written to anymore. Write 0 to clear this bit.
@@ -881,6 +882,7 @@
         fields: [
           {
               bits:   "0",
+              name: "EN",
               desc: '''
               This bit is hardware-managed and only readable by software.
               By default, this bit is set to 0 by hardware.
