@@ -63,6 +63,7 @@ pub mod decoder {
         pub cpol: bool,
         pub cpha: bool,
         pub data_mode: SpiDataMode,
+        pub bits_per_word: u32,
     }
 
     impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, const CS: u8>
@@ -111,29 +112,33 @@ pub mod decoder {
                 .find(|sample| sample.clk() == sample_level || sample.cs() == Bit::High)
         }
 
-        fn decode_byte<I>(&self, samples: &mut I) -> Option<u8>
+        fn decode_word<I>(&self, samples: &mut I) -> Vec<u8>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
+            let bytes_per_word = self.bits_per_word.div_ceil(8) as usize;
             let mut byte = 0u8;
-            let mut bits = 8;
-            while bits > 0 {
-                let sample = self.sample_on_edge(samples)?;
+            let mut decoded_bits = 0u32;
+            let mut word: Vec<u8> = Vec::with_capacity(bytes_per_word);
+            while decoded_bits < self.bits_per_word {
+                let Some(sample) = self.sample_on_edge(samples) else {
+                    break;
+                };
                 if sample.cs() == Bit::High {
-                    return None;
+                    break;
                 }
                 match self.data_mode {
                     SpiDataMode::Single => {
                         byte <<= 1;
                         byte |= sample.d0() as u8;
-                        bits -= 1;
+                        decoded_bits += 1;
                     }
                     SpiDataMode::Dual => {
                         byte <<= 1;
                         byte |= sample.d1() as u8;
                         byte <<= 1;
                         byte |= sample.d0() as u8;
-                        bits -= 2;
+                        decoded_bits += 2;
                     }
                     SpiDataMode::Quad => {
                         byte <<= 1;
@@ -144,12 +149,20 @@ pub mod decoder {
                         byte |= sample.d1() as u8;
                         byte <<= 1;
                         byte |= sample.d0() as u8;
-                        bits -= 4;
+                        decoded_bits += 4;
                     }
                 }
+                if decoded_bits % 8 == 0 {
+                    word.push(byte);
+                    byte = 0x00;
+                }
             }
-
-            Some(byte)
+            if decoded_bits % 8 != 0 {
+                // For < 8 bits per word, we shift partial data back into the MSBs
+                byte <<= 8 - (decoded_bits % 8);
+                word.push(byte);
+            }
+            word
         }
 
         pub fn run(&mut self, samples: Vec<u8>) -> Result<Vec<u8>> {
@@ -162,11 +175,11 @@ pub mod decoder {
                 return Ok(bytes);
             }
             loop {
-                let byte = self.decode_byte(&mut samples);
-                if byte.is_none() && !self.wait_cs(&mut samples)? {
+                let word = self.decode_word(&mut samples);
+                if word.is_empty() && !self.wait_cs(&mut samples)? {
                     break;
                 }
-                bytes.push(byte.unwrap());
+                bytes.extend(word);
             }
             Ok(bytes)
         }
