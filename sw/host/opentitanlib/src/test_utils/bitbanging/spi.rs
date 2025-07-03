@@ -4,6 +4,7 @@
 
 use super::Bit;
 use anyhow::{bail, Context, Result};
+use std::iter::Peekable;
 
 pub enum SpiDataMode {
     Single,
@@ -69,25 +70,28 @@ pub mod decoder {
     {
         /// Loop sampling the cs until a low level is detected. Then the clock level is checked
         /// for correctness based on the cpol configuration.
-        fn wait_cs<I>(&self, samples: &mut I) -> Result<()>
+        fn wait_cs<I>(&self, samples: &mut Peekable<I>) -> Result<()>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
             let clk_idle_level = if self.cpol { Bit::High } else { Bit::Low };
-
-            let sample = samples
-                .by_ref()
-                .find(|sample| sample.cs() == Bit::Low)
-                .expect("Exhausted the samples");
-            if sample.clk() == clk_idle_level {
-                Ok(())
-            } else {
-                bail!(
-                    "Settings mismatch: Clock level when idle is {:?}, but cpol is {:?}",
-                    sample.clk(),
-                    self.cpol
-                )
+            let samples = samples.by_ref();
+            while let Some(sample) = samples.peek() {
+                if sample.cs() != Bit::Low {
+                    samples.next();
+                    continue;
+                }
+                if sample.clk() == clk_idle_level {
+                    return Ok(());
+                } else {
+                    bail!(
+                        "Settings mismatch: Clock level when idle is {:?}, but cpol is {:?}",
+                        sample.clk(),
+                        self.cpol
+                    )
+                }
             }
+            bail!("Exhausted the samples")
         }
         /// Returns a sample when a raise or fall clock edge is detected depending on the cpol and cpha configuration.
         fn sample_on_edge<I>(&self, samples: &mut I) -> Option<Sample<D0, D1, D2, D3, CLK, CS>>
@@ -144,7 +148,8 @@ pub mod decoder {
         pub fn run(&mut self, samples: Vec<u8>) -> Result<Vec<u8>> {
             let mut samples = samples
                 .into_iter()
-                .map(|raw| Sample::<D0, D1, D2, D3, CLK, CS> { raw });
+                .map(|raw| Sample::<D0, D1, D2, D3, CLK, CS> { raw })
+                .peekable();
             self.wait_cs(&mut samples)?;
             let mut bytes = Vec::new();
             while let Ok(byte) = self.decode_byte(&mut samples) {
