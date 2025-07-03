@@ -5311,6 +5311,7 @@ opentitan_test(
             --init-phase=deep-disconnect
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
+        tags = ["usbtests"],
     ),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
