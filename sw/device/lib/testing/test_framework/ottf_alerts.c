@@ -5,12 +5,15 @@
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
@@ -102,4 +105,19 @@ bool ottf_alerts_should_handle_irq(dt_instance_id_t devid,
                             kDtAlertHandler, kDtAlertHandlerIrqClassd);
 }
 
-void ottf_alert_isr(uint32_t *exc_info) { abort(); }
+void ottf_alert_isr(uint32_t *exc_info) {
+  dif_alert_handler_t alert_handler;
+  CHECK_DIF_OK(dif_alert_handler_init_from_dt(kDtAlertHandler, &alert_handler));
+
+  // Log all asserted alerts.
+  for (dif_alert_handler_alert_t alert = 0; alert < kDtAlertCount; alert++) {
+    bool is_cause = false;
+    CHECK_DIF_OK(
+        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
+    if (is_cause) {
+      LOG_ERROR("INFO: Alert %d is asserted", alert);
+    }
+  }
+
+  abort();
+}
