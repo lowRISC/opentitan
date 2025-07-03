@@ -9,19 +9,9 @@ bazel_dep(name = "abseil-cpp", version = "20240116.1")
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
 bazel_dep(name = "platforms", version = "0.0.11")
-bazel_dep(name = "rules_cc", version = "0.1.1")
+bazel_dep(name = "rules_cc", version = "0.1.2")
 bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
-
-# Overrides and patches:
-single_version_override(
-    module_name = "rules_cc",
-    patch_strip = 1,
-    patches = [
-        "@lowrisc_opentitan//third_party/cc/patches:remove_deprecation.patch",
-    ],
-    version = "0.1.1",
-)
 
 # Dev dependencies:
 bazel_dep(
