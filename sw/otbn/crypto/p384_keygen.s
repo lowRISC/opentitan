@@ -75,17 +75,24 @@ p384_random_scalar:
   bn.wsrr   w5, URND
   bn.xor    w9, w9, w5
 
-  /* Shift bits to get 448-bit seeds.
-     seed0 = [w7,w6], seed1 = [w9,w8]
+  /* Shift seed0 bits to get 448-bit seeds.
+     seed0 = [w7,w6]
      w7 <= w7[192:0]
-     w9 <= w9[192:0] */
+
+     N.B. This has been intentionally separated from the shift of the seed1
+     bits below in order to avoid transient side channel leakage from w7 and w9
+     interacting in the ALU datapath. */
   bn.rshi   w7, w31, w7 >> 64
-  bn.rshi   w9, w31, w9 >> 64
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
      no need to compute the high part):
      w14 <= 2^256 - n[255:0] = (2^384 - n) mod (2^256) = 2^384 - n */
   bn.sub    w14, w31, w12
+
+  /* Shift seed1 bits to get 448-bit seeds.
+     seed1 = [w9,w8]
+     w9 <= w9[192:0] */
+  bn.rshi   w9, w31, w9 >> 64
 
   /* Generate a random 127-bit number.
      w4 <= URND()[255:129] */
@@ -93,19 +100,31 @@ p384_random_scalar:
   bn.rshi   w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
-     w4 <= w4 + 1 = x */
-  bn.addi   w4, w4, 1
 
-  /* [w26,w25] <= ([w7,w6] * w4) mod n = (seed0 * x) mod n */
-  bn.mov    w16, w4
+     N.B. The dummy instruction below serves to clear flags revealing
+     information regarding the masking value in w4, as well as to separate
+     accesses of the multiplicative masking value in w4 from accesses below to
+     the value it masks.
+
+     w4 <= w4 + 1 = x
+     w16 <= w4 */
+  bn.addi   w4, w4, 1
+  bn.mov    w16, w4      /* prepare for p384_mulmod488x128_n call below */
+  bn.addi   w31, w31, 0  /* dummy instruction to clear flags */
+
+  /* N.B. After the call to p384_mulmod488x128_n below, we immediately move
+     the masking value in w4 back into the (clobbered) w16 so as to separate
+     accesses to w4 from the value it masks ([w9,w8]) below.
+
+     [w26,w25] <= ([w7,w6] * w4) mod n = (seed0 * x) mod n */
   bn.mov    w10, w6
   bn.mov    w11, w7
   jal       x1, p384_mulmod448x128_n
   bn.mov    w25, w16
+  bn.mov    w16, w4      /* prepare for next p384_mulmod488x128_n call below */
   bn.mov    w26, w17
 
   /* [w28,w27] <= ([w9,w8] * w4) mod n = (seed1 * x) mod n */
-  bn.mov    w16, w4
   bn.mov    w10, w8
   bn.mov    w11, w9
   jal       x1, p384_mulmod448x128_n
