@@ -187,7 +187,10 @@ cc_library(
         {
             "englishbreakfast": [],
         },
-        [":ottf_alerts"],
+        [
+            ":ottf_alerts",
+            "//sw/device/lib/dif:alert_handler",
+        ],
     ),
 )
 
