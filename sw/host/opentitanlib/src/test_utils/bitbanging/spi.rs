@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::Bit;
-use anyhow::{bail, Result};
+use serde::{Deserialize, Serialize};
 use std::iter::Peekable;
+use thiserror::Error;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SpiEndpoint {
@@ -18,6 +19,16 @@ pub enum SpiDataMode {
     Single,
     Dual,
     Quad,
+}
+
+#[derive(Error, Debug, PartialEq, Serialize, Deserialize)]
+pub enum SpiTransferDecodeError {
+    #[error("Settings mismatch: Clock level when idle is {0:?}, but cpol expects {1:?}")]
+    ClockPolarityMismatch(Bit, Bit),
+    #[error("Chip select was de-asserted while a SPI transaction was in progress")]
+    ChipSelectDeassertedEarly,
+    #[error("Not enough samples were given to complete the SPI transaction")]
+    UnfinishedTransaction,
 }
 
 pub mod encoder {}
@@ -80,7 +91,7 @@ pub mod decoder {
     {
         /// Iterate through samples until a low (active) CS level is found. Then, check
         /// the clock level based on CPOL config. Returns `true` if a low CS was found.
-        fn wait_cs<I>(&self, samples: &mut Peekable<I>) -> Result<bool>
+        fn wait_cs<I>(&self, samples: &mut Peekable<I>) -> Result<bool, SpiTransferDecodeError>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
@@ -94,34 +105,54 @@ pub mod decoder {
                 if sample.clk() == clk_idle_level {
                     return Ok(true);
                 } else {
-                    bail!(
-                        "Settings mismatch: Clock level when idle is {:?}, but cpol is {:?}",
+                    return Err(SpiTransferDecodeError::ClockPolarityMismatch(
                         sample.clk(),
-                        self.cpol
-                    )
+                        clk_idle_level,
+                    ));
                 }
             }
             Ok(false)
         }
-        /// Returns a sample when a raise or fall clock edge is detected depending on the cpol and cpha configuration.
-        fn sample_on_edge<I>(&self, samples: &mut I) -> Option<Sample<D0, D1, D2, D3, CLK, CS>>
+
+        /// Get the sample corresponding to the next data bit, directly after an edge
+        /// that depends on CPOL/CPHA configuration. Set `first_edge=true` to indicate
+        /// that this is the first edge sampled of this SPI word transmission.
+        fn sample_on_edge<I>(
+            &self,
+            samples: &mut I,
+            first_edge: bool,
+        ) -> Result<Option<Sample<D0, D1, D2, D3, CLK, CS>>, SpiTransferDecodeError>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
-            let (sample_level, wait_level) = if self.cpol == self.cpha {
-                (Bit::High, Bit::Low)
-            } else {
+            let (wait_level, sample_level) = if self.cpol == self.cpha {
                 (Bit::Low, Bit::High)
+            } else {
+                (Bit::High, Bit::Low)
             };
-            samples
-                .by_ref()
-                .find(|sample| sample.clk() == wait_level || sample.cs() == Bit::High)?;
-            samples
-                .by_ref()
-                .find(|sample| sample.clk() == sample_level || sample.cs() == Bit::High)
+            let mut last_sample = None;
+            for level in [wait_level, sample_level] {
+                let Some(sample) = samples
+                    .by_ref()
+                    .find(|sample| sample.clk() == level || sample.cs() == Bit::High)
+                else {
+                    if !first_edge {
+                        return Err(SpiTransferDecodeError::UnfinishedTransaction);
+                    }
+                    return Ok(None);
+                };
+                if sample.cs() == Bit::High {
+                    if !first_edge {
+                        return Err(SpiTransferDecodeError::ChipSelectDeassertedEarly);
+                    }
+                    return Ok(None);
+                }
+                last_sample = Some(sample);
+            }
+            Ok(last_sample)
         }
 
-        fn decode_word<I>(&self, samples: &mut I) -> Vec<u8>
+        fn decode_word<I>(&self, samples: &mut I) -> Result<Vec<u8>, SpiTransferDecodeError>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
@@ -130,12 +161,9 @@ pub mod decoder {
             let mut decoded_bits = 0u32;
             let mut word: Vec<u8> = Vec::with_capacity(bytes_per_word);
             while decoded_bits < self.bits_per_word {
-                let Some(sample) = self.sample_on_edge(samples) else {
+                let Some(sample) = self.sample_on_edge(samples, decoded_bits == 0)? else {
                     break;
                 };
-                if sample.cs() == Bit::High {
-                    break;
-                }
                 match self.data_mode {
                     SpiDataMode::Single => {
                         byte <<= 1;
@@ -175,10 +203,10 @@ pub mod decoder {
                 byte <<= 8 - (decoded_bits % 8);
                 word.push(byte);
             }
-            word
+            Ok(word)
         }
 
-        pub fn run(&mut self, samples: Vec<u8>) -> Result<Vec<u8>> {
+        pub fn run(&mut self, samples: Vec<u8>) -> Result<Vec<u8>, SpiTransferDecodeError> {
             let mut samples = samples
                 .into_iter()
                 .map(|raw| Sample::<D0, D1, D2, D3, CLK, CS> { raw })
@@ -188,7 +216,7 @@ pub mod decoder {
                 return Ok(bytes);
             }
             loop {
-                let word = self.decode_word(&mut samples);
+                let word = self.decode_word(&mut samples)?;
                 if word.is_empty() && !self.wait_cs(&mut samples)? {
                     break;
                 }
