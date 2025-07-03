@@ -145,8 +145,8 @@ However, if the ENTROPY_SRC block experiences internal back pressure, health tes
   Note that this may also happen in [Firmware Override: Observe mode](programmers_guide.md#firmware_override_-_observe).
   Firmware should thus explicitly check the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit to ensure the bits retrieved from the Observe FIFO are indeed contiguous.
 
-The reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
-This FIFO has pass-through mode enabled meaning it doesn't add latency to hardware pipeline.
+To reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
+This FIFO has pass-through mode enabled meaning it doesn't add latency to the hardware pipeline.
 It has a width of 32 bits.
 Its depth is configurable via compile-time Verilog parameter and should match the expected level of conditioner back pressure.
 The level of conditioner back pressure depends on the following factors:
