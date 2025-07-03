@@ -244,6 +244,7 @@ use_repo(pip, "ot_python_deps")
 # by repository rules. If you change this array, make sure to update
 # REPO_RULES_PIP_TRANSITIVE_DEPS below.
 REPO_RULES_PIP_DIRECT_DEPS = [
+    "jsonschema",  # In rules/scripts/bitstreams_workspace.py
 ]
 # This is the prefix used by rules_python for the pip repositories.
 REPO_RULES_PIP_DEPS_PREFIX = "ot_python_deps_{}".format(PYTHON_VERSION.replace(".", ""))
@@ -252,6 +253,11 @@ REPO_RULES_PIP_DEPS_PREFIX = "ot_python_deps_{}".format(PYTHON_VERSION.replace("
 # ./bazelisk.sh run //util/py/scripts:python_dependencies
 # and copy the output below.
 REPO_RULES_PIP_TRANSITIVE_DEPS = [
+    "attrs",
+    "jsonschema_specifications",
+    "referencing",
+    "rpds_py",
+    "typing_extensions",
 ]
 
 # Ask bazel to use all repositories created by rules_python so we
