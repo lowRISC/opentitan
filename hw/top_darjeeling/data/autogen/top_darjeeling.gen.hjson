@@ -2550,7 +2550,7 @@
           inst_name: alert_handler
           default: ""
           top_signame: edn0_edn
-          index: 4
+          index: 3
         }
         {
           name: esc_rx
@@ -3888,11 +3888,6 @@
           clock: io_div4
           group: secure
         }
-        clk_ast_es_i:
-        {
-          clock: main
-          group: secure
-        }
         clk_ast_rng_i:
         {
           clock: main
@@ -3917,11 +3912,6 @@
           name: lc_io_div4
           domain: "0"
         }
-        rst_ast_es_ni:
-        {
-          name: lc
-          domain: "0"
-        }
         rst_ast_rng_ni:
         {
           name: lc
@@ -3939,7 +3929,6 @@
         clk_ast_tlul_i: clkmgr_aon_clocks.clk_io_div4_infra
         clk_ast_adc_i: clkmgr_aon_clocks.clk_aon_peri
         clk_ast_alert_i: clkmgr_aon_clocks.clk_io_div4_secure
-        clk_ast_es_i: clkmgr_aon_clocks.clk_main_secure
         clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
       }
       param_decl: {}
@@ -5399,7 +5388,7 @@
           inst_name: aes
           default: ""
           top_signame: edn0_edn
-          index: 5
+          index: 4
         }
         {
           name: keymgr_key
@@ -5716,7 +5705,7 @@
           inst_name: kmac
           default: ""
           top_signame: edn0_edn
-          index: 3
+          index: 2
         }
         {
           name: idle
@@ -5946,7 +5935,7 @@
           inst_name: otbn
           default: ""
           top_signame: edn0_edn
-          index: 6
+          index: 5
         }
         {
           name: idle
@@ -6968,8 +6957,8 @@
           width: 8
           default: "'0"
           inst_name: edn0
-          end_idx: -1
-          top_type: one-to-N
+          end_idx: 7
+          top_type: partial-one-to-N
           top_signame: edn0_edn
           index: -1
         }
@@ -11533,7 +11522,7 @@
           inst_name: rv_core_ibex
           default: ""
           top_signame: edn0_edn
-          index: 7
+          index: 6
         }
         {
           name: icache_otp_key
@@ -11620,20 +11609,6 @@
       name: ast
       inter_signal_list:
       [
-        {
-          struct: edn
-          type: req_rsp
-          name: edn
-          act: rsp
-          package: edn_pkg
-          inst_name: ast
-          width: 1
-          default: ""
-          top_signame: edn0_edn
-          index: 2
-          external: true
-          conn_type: true
-        }
         {
           struct: lc_tx
           type: uni
@@ -11804,7 +11779,6 @@
       [
         keymgr_dpe.edn
         otp_ctrl.edn
-        ast.edn
         kmac.entropy
         alert_handler.edn
         aes.edn
@@ -12384,7 +12358,6 @@
     ]
     external:
     {
-      ast.edn: ""
       ast.lc_dft_en: ""
       ast.lc_hw_debug_en: ""
       ast.obs_ctrl: obs_ctrl
@@ -22430,7 +22403,7 @@
         inst_name: alert_handler
         default: ""
         top_signame: edn0_edn
-        index: 4
+        index: 3
       }
       {
         name: esc_rx
@@ -24189,7 +24162,7 @@
         inst_name: aes
         default: ""
         top_signame: edn0_edn
-        index: 5
+        index: 4
       }
       {
         name: keymgr_key
@@ -24287,7 +24260,7 @@
         inst_name: kmac
         default: ""
         top_signame: edn0_edn
-        index: 3
+        index: 2
       }
       {
         name: idle
@@ -24374,7 +24347,7 @@
         inst_name: otbn
         default: ""
         top_signame: edn0_edn
-        index: 6
+        index: 5
       }
       {
         name: idle
@@ -25025,8 +24998,8 @@
         width: 8
         default: "'0"
         inst_name: edn0
-        end_idx: -1
-        top_type: one-to-N
+        end_idx: 7
+        top_type: partial-one-to-N
         top_signame: edn0_edn
         index: -1
       }
@@ -27500,7 +27473,7 @@
         inst_name: rv_core_ibex
         default: ""
         top_signame: edn0_edn
-        index: 7
+        index: 6
       }
       {
         name: icache_otp_key
@@ -28619,20 +28592,6 @@
         index: -1
       }
       {
-        struct: edn
-        type: req_rsp
-        name: edn
-        act: rsp
-        package: edn_pkg
-        inst_name: ast
-        width: 1
-        default: ""
-        top_signame: edn0_edn
-        index: 2
-        external: true
-        conn_type: true
-      }
-      {
         struct: lc_tx
         type: uni
         name: lc_dft_en
@@ -28679,30 +28638,6 @@
     ]
     external:
     [
-      {
-        package: edn_pkg
-        struct: edn_req
-        signame: ast_edn_req_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: true
-        index: 2
-        netname: edn0_edn_req
-      }
-      {
-        package: edn_pkg
-        struct: edn_rsp
-        signame: ast_edn_rsp_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: true
-        index: 2
-        netname: edn0_edn_rsp
-      }
       {
         package: lc_ctrl_pkg
         struct: lc_tx
@@ -30596,7 +30531,7 @@
         signame: edn0_edn_req
         width: 8
         type: req_rsp
-        end_idx: -1
+        end_idx: 7
         act: rsp
         suffix: req
         default: "'0"
@@ -30607,7 +30542,7 @@
         signame: edn0_edn_rsp
         width: 8
         type: req_rsp
-        end_idx: -1
+        end_idx: 7
         act: rsp
         suffix: rsp
         default: ""

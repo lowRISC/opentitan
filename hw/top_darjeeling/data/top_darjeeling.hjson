@@ -580,10 +580,6 @@
           clock: "io_div4",
           group: "secure"
         }
-        clk_ast_es_i: {
-          clock: "main",
-          group: "secure"
-        }
         clk_ast_rng_i: {
           clock: "main",
           group: "secure"
@@ -601,10 +597,6 @@
         },
         rst_ast_alert_ni: {
           name: "lc_io_div4",
-          domain: "0",
-        },
-        rst_ast_es_ni: {
-          name: "lc",
           domain: "0",
         },
         rst_ast_rng_ni: {
@@ -1166,15 +1158,6 @@
   port: [
     { name: "ast",
       inter_signal_list: [
-        { struct: "edn",
-          type: "req_rsp",
-          name: "edn",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:  "rsp",
-          package: "edn_pkg",
-        },
-
         { struct: "lc_tx",
           type: "uni",
           name: "lc_dft_en",
@@ -1261,7 +1244,7 @@
       'otbn.lc_rma_ack'          : ['lc_ctrl.lc_flash_rma_ack'],
 
       // Edn connections
-      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'ast.edn', 'kmac.entropy',
+      'edn0.edn'              : ['keymgr_dpe.edn', 'otp_ctrl.edn', 'kmac.entropy',
                                  'alert_handler.edn', 'aes.edn', 'otbn.edn_urnd',
                                  'rv_core_ibex.edn'],
       'edn1.edn'              : ['otbn.edn_rnd'],
@@ -1411,7 +1394,6 @@
 
     // ext is to create port in the top.
     'external': {
-        'ast.edn'                              : '',
         'ast.lc_dft_en'                        : '',
         'ast.lc_hw_debug_en'                   : '',
         'ast.obs_ctrl'                         : 'obs_ctrl',

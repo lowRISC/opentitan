@@ -28,8 +28,6 @@ module ast
   input rst_ast_adc_ni,                       // Buffered AST ADC Reset
   input clk_ast_alert_i,                      // Buffered AST Alert Clock
   input rst_ast_alert_ni,                     // Buffered AST Alert Reset
-  input clk_ast_es_i,                         // Buffered AST Entropy Source Clock
-  input rst_ast_es_ni,                        // Buffered AST Entropy Source Reset
   input clk_ast_rng_i,                        // Buffered AST RNG Clock
   input rst_ast_rng_ni,                       // Buffered AST RNG Reset
   input clk_ast_tlul_i,                       // Buffered AST TLUL Clock
@@ -108,10 +106,6 @@ module ast
   input rng_fips_i,                           // RNG FIPS
   output logic rng_val_o,                     // RNG Valid
   output logic [EntropyStreams-1:0] rng_b_o,  // RNG Bit(s)
-
-  // entropy distribution interface
-  input edn_pkg::edn_rsp_t entropy_rsp_i,     // Entropy Response
-  output edn_pkg::edn_req_t entropy_req_o,    // Entropy Request
 
   // alerts
   input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
@@ -599,8 +593,6 @@ adc #(
 ///////////////////////////////////////
 // Entropy (Always ON)
 ///////////////////////////////////////
-localparam int EntropyRateWidth = 4;
-logic [EntropyRateWidth-1:0] entropy_rate;
 logic vcmain_pok_por_sys, rst_src_sys_n;
 
 // Sync clk_src_sys_jen_i to clk_sys
@@ -628,35 +620,6 @@ prim_flop_2sync #(
 );
 
 assign rst_src_sys_n = scan_mode ? scan_reset_n : vcmain_pok_por_sys;
-
-`ifndef SYNTHESIS
-logic [EntropyRateWidth-1:0] dv_entropy_rate_value;
-
-initial begin : erate_plusargs
-  dv_entropy_rate_value = EntropyRateWidth'($urandom_range(0, (2**EntropyRateWidth -1)));
-  void'($value$plusargs("entropy_rate_value=%0d", dv_entropy_rate_value));
-  `ASSERT_I(DvErateValueCheck, dv_entropy_rate_value inside {[0:(2**EntropyRateWidth -1)]})
-end
-
-assign entropy_rate = dv_entropy_rate_value;
-`else
-assign entropy_rate = EntropyRateWidth'(5);
-`endif
-
-ast_entropy #(
-  .EntropyRateWidth ( EntropyRateWidth )
-) u_entropy (
-  .entropy_rsp_i ( entropy_rsp_i ),
-  .entropy_rate_i ( entropy_rate[EntropyRateWidth-1:0] ),
-  .clk_ast_es_i ( clk_ast_es_i ),
-  .rst_ast_es_ni ( rst_ast_es_ni ),
-  .clk_src_sys_i ( clk_sys ),
-  .rst_src_sys_ni ( rst_src_sys_n ),
-  .clk_src_sys_val_i ( clk_src_sys_val_o ),
-  .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
-  .entropy_req_o ( entropy_req_o )
-);
-
 
 ///////////////////////////////////////
 // RNG (Always ON)
@@ -1005,9 +968,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
-//
-// ES
-`ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 // DPRAM/SPRAM

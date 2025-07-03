@@ -182,8 +182,6 @@ module top_darjeeling #(
 
 
   // Inter-module Signal External type
-  input  edn_pkg::edn_req_t       ast_edn_req_i,
-  output edn_pkg::edn_rsp_t       ast_edn_rsp_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
@@ -806,8 +804,6 @@ module top_darjeeling #(
   prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
 
   // define mixed connection to port
-  assign edn0_edn_req[2] = ast_edn_req_i;
-  assign ast_edn_rsp_o = edn0_edn_rsp[2];
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
@@ -815,6 +811,7 @@ module top_darjeeling #(
   assign racl_policies_o = racl_ctrl_racl_policies;
 
   // define partial inter-module tie-off
+  edn_pkg::edn_rsp_t unused_edn0_edn_rsp7;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp2;
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp3;
@@ -824,6 +821,7 @@ module top_darjeeling #(
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp7;
 
   // assign partial inter-module tie-off
+  assign unused_edn0_edn_rsp7 = edn0_edn_rsp[7];
   assign unused_edn1_edn_rsp1 = edn1_edn_rsp[1];
   assign unused_edn1_edn_rsp2 = edn1_edn_rsp[2];
   assign unused_edn1_edn_rsp3 = edn1_edn_rsp[3];
@@ -831,6 +829,7 @@ module top_darjeeling #(
   assign unused_edn1_edn_rsp5 = edn1_edn_rsp[5];
   assign unused_edn1_edn_rsp6 = edn1_edn_rsp[6];
   assign unused_edn1_edn_rsp7 = edn1_edn_rsp[7];
+  assign edn0_edn_req[7] = '0;
   assign edn1_edn_req[1] = '0;
   assign edn1_edn_req[2] = '0;
   assign edn1_edn_req[3] = '0;
@@ -1380,8 +1379,8 @@ module top_darjeeling #(
 
       // Inter-module signals
       .crashdump_o(alert_handler_crashdump),
-      .edn_o(edn0_edn_req[4]),
-      .edn_i(edn0_edn_rsp[4]),
+      .edn_o(edn0_edn_req[3]),
+      .edn_i(edn0_edn_rsp[3]),
       .esc_rx_i(alert_handler_esc_rx),
       .esc_tx_o(alert_handler_esc_tx),
       .tl_i(alert_handler_tl_req),
@@ -1850,8 +1849,8 @@ module top_darjeeling #(
       // Inter-module signals
       .idle_o(clkmgr_aon_idle[0]),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .edn_o(edn0_edn_req[5]),
-      .edn_i(edn0_edn_rsp[5]),
+      .edn_o(edn0_edn_req[4]),
+      .edn_i(edn0_edn_rsp[4]),
       .keymgr_key_i(keymgr_dpe_aes_key),
       .tl_i(aes_tl_req),
       .tl_o(aes_tl_rsp),
@@ -1911,8 +1910,8 @@ module top_darjeeling #(
       .keymgr_key_i(keymgr_dpe_kmac_key),
       .app_i(kmac_app_req),
       .app_o(kmac_app_rsp),
-      .entropy_o(edn0_edn_req[3]),
-      .entropy_i(edn0_edn_rsp[3]),
+      .entropy_o(edn0_edn_req[2]),
+      .entropy_i(edn0_edn_rsp[2]),
       .idle_o(clkmgr_aon_idle[2]),
       .en_masking_o(kmac_en_masking),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
@@ -1949,8 +1948,8 @@ module top_darjeeling #(
       .otbn_otp_key_i(otp_ctrl_otbn_otp_key_rsp),
       .edn_rnd_o(edn1_edn_req[0]),
       .edn_rnd_i(edn1_edn_rsp[0]),
-      .edn_urnd_o(edn0_edn_req[6]),
-      .edn_urnd_i(edn0_edn_rsp[6]),
+      .edn_urnd_o(edn0_edn_req[5]),
+      .edn_urnd_i(edn0_edn_rsp[5]),
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_imem_i(otbn_imem_ram_1p_cfg_i),
       .ram_cfg_dmem_i(otbn_dmem_ram_1p_cfg_i),
@@ -2822,8 +2821,8 @@ module top_darjeeling #(
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i(aon_timer_aon_nmi_wdog_timer_bark),
-      .edn_o(edn0_edn_req[7]),
-      .edn_i(edn0_edn_rsp[7]),
+      .edn_o(edn0_edn_req[6]),
+      .edn_i(edn0_edn_rsp[6]),
       .icache_otp_key_o(otp_ctrl_sram_otp_key_req[3]),
       .icache_otp_key_i(otp_ctrl_sram_otp_key_rsp[3]),
       .fpga_info_i(fpga_info_i),
