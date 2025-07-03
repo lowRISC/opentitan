@@ -221,4 +221,29 @@ module prim_alert_rxtx_async_assert_fpv
       ##[1:30] sender_is_idle,
       clk_i, !rst_ni || error_present)
 
+  // There is a single parasitic state in the FSM of prim_alert_sender (because state_e uses 3 bits
+  // to define 7 states). The sender rather sensibly uses state_d to get back to Idle in that case
+  // as an escape route. Using a stopat to check this is fiddly because then state_d won't *have*
+  // any effect. To make this work, assert that state_d is a known state. This shows that the escape
+  // route has been wired up correctly.
+  SenderStateDValid_A: assert property (i_prim_alert_sender.state_d inside
+                                        { i_prim_alert_sender.Idle,
+                                          i_prim_alert_sender.AlertHsPhase1,
+                                          i_prim_alert_sender.AlertHsPhase2,
+                                          i_prim_alert_sender.PingHsPhase1,
+                                          i_prim_alert_sender.PingHsPhase2,
+                                          i_prim_alert_sender.Pause0,
+                                          i_prim_alert_sender.Pause1 });
+
+  // As with the previous assertion, there are two parasitic states in the FSM of
+  // prim_alert_receiver (state_e uses 3 bits to define 6 states). Again, assert that state_d is a
+  // known state.
+  ReceiverStateDValid_A: assert property (i_prim_alert_receiver.state_d inside
+                                          { i_prim_alert_receiver.Idle,
+                                            i_prim_alert_receiver.HsAckWait,
+                                            i_prim_alert_receiver.Pause0,
+                                            i_prim_alert_receiver.Pause1,
+                                            i_prim_alert_receiver.InitReq,
+                                            i_prim_alert_receiver.InitAckWait });
+
 endmodule : prim_alert_rxtx_async_assert_fpv
