@@ -173,6 +173,7 @@
       hwaccess: "none",
       fields: [
         { bits: "0",
+          name: "EN",
           desc: '''
                 When true, the CTRL can be written by software.
                 When false, this field read-only. Defaults true, write zero to clear.
