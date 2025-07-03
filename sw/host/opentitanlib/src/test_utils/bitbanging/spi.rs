@@ -28,6 +28,253 @@ pub struct SpiBitbangConfig {
     pub cpha: bool, // Clock Phase
     pub data_mode: SpiDataMode,
     pub bits_per_word: u32,
+    // TODO: add DDR (Dual Data Rate) support
+}
+
+/// Additional delays required to synchronise with a SPI device, all
+/// measured in SPI clock cycles (2 bitbanging samples per cycle).
+#[derive(Clone, Debug)]
+pub struct SpiEncodingDelays {
+    pub inter_word_delay: u32,
+    pub cs_hold_delay: u32,
+    pub cs_release_delay: u32,
+}
+
+#[derive(Error, Debug, PartialEq, Serialize, Deserialize)]
+pub enum SpiTransferEncodeError {
+    #[error("CS must be asserted before bitbanging a SPI transaction.")]
+    CsNotAsserted,
+}
+
+/// An encoder for SPI transmissions, parameterized over bits in the output
+/// bitfields to use for transmission. Does not support encoding as a SPI
+/// device (only works as a SPI host).
+pub struct SpiBitbangEncoder<
+    const D0: u8,
+    const D1: u8,
+    const D2: u8,
+    const D3: u8,
+    const CLK: u8,
+    const CS: u8,
+> {
+    pub config: SpiBitbangConfig,
+    pub delays: SpiEncodingDelays,
+    first_word: bool,
+    cs_asserted: bool,
+}
+
+// Bits for unused pins should not be used (high-impedance), so default to low.
+const UNUSED: Bit = Bit::Low;
+const CS_LOW: Bit = Bit::Low;
+const CS_HIGH: Bit = Bit::High;
+
+impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, const CS: u8>
+    SpiBitbangEncoder<D0, D1, D2, D3, CLK, CS>
+{
+    pub fn new(config: SpiBitbangConfig, delays: SpiEncodingDelays) -> Self {
+        Self {
+            config,
+            delays,
+            first_word: true,
+            cs_asserted: false,
+        }
+    }
+
+    // Reset the state of the SPI bitbanging encoder.
+    pub fn reset(&mut self) {
+        self.first_word = true;
+        self.cs_asserted = false;
+    }
+
+    // A helper to change the data mode that is used for encoding.
+    pub fn set_data_mode(&mut self, mode: SpiDataMode) {
+        self.config.data_mode = mode;
+    }
+
+    /// Construct a sample bitmap for a set of values on SPI pins
+    fn sample(&self, d0: Bit, d1: Bit, d2: Bit, d3: Bit, clk: Bit, cs: Bit) -> u8 {
+        ((d0 as u8) << D0)
+            | ((d1 as u8) << D1)
+            | ((d2 as u8) << D2)
+            | ((d3 as u8) << D3)
+            | ((clk as u8) << CLK)
+            | ((cs as u8) << CS)
+    }
+
+    /// Encode up to 4 data bits into 2 bitbanging samples corresponding to 1 SPI clock
+    fn encode_data(&self, d0: Bit, d1: Bit, d2: Bit, d3: Bit, samples: &mut Vec<u8>) {
+        let clk_idle = Bit::from(self.config.cpol);
+        let clk_active = Bit::from(!self.config.cpol);
+        samples.extend(if self.config.cpha {
+            // CPHA=1, so output bits on (idle->active) edges
+            [
+                self.sample(d0, d1, d2, d3, clk_active, CS_LOW),
+                self.sample(d0, d1, d2, d3, clk_idle, CS_LOW),
+            ]
+        } else {
+            // CPHA=0, so output bits on (active->idle) edges
+            [
+                self.sample(d0, d1, d2, d3, clk_idle, CS_LOW),
+                self.sample(d0, d1, d2, d3, clk_active, CS_LOW),
+            ]
+        })
+    }
+
+    /// Encode 1 SPI word into bitbanging samples. This does not handle
+    /// additional logic for wait times and CPHA that must be considered
+    /// with the first word.
+    fn encode_word(
+        &mut self,
+        words: &[u8],
+        samples: &mut Vec<u8>,
+    ) -> Result<(), SpiTransferEncodeError> {
+        if !self.cs_asserted {
+            return Err(SpiTransferEncodeError::CsNotAsserted);
+        }
+        if self.first_word {
+            self.first_word = false;
+        }
+        let mut byte = 0x00u8;
+        let mut encoded_bits = 0u32; // Count of bits in the current word
+        let mut words = words.iter();
+        while encoded_bits < self.config.bits_per_word {
+            let bits = encoded_bits % 8;
+            if bits == 0 {
+                if let Some(&next_byte) = words.next() {
+                    byte = next_byte;
+                } else {
+                    break;
+                }
+            }
+            match self.config.data_mode {
+                SpiDataMode::Single => {
+                    let d0 = Bit::from((byte >> (7 - bits)) & 0x01);
+                    self.encode_data(d0, UNUSED, UNUSED, UNUSED, samples);
+                    encoded_bits += 1;
+                }
+                SpiDataMode::Dual => {
+                    let d1 = Bit::from((byte >> (7 - bits)) & 0x01);
+                    let d0 = Bit::from((byte >> (7 - (bits + 1))) & 0x01);
+                    self.encode_data(d0, d1, UNUSED, UNUSED, samples);
+                    encoded_bits += 2;
+                }
+                SpiDataMode::Quad => {
+                    let d3 = Bit::from((byte >> (7 - bits)) & 0x01);
+                    let d2 = Bit::from((byte >> (7 - (bits + 1))) & 0x01);
+                    let d1 = Bit::from((byte >> (7 - (bits + 2))) & 0x01);
+                    let d0 = Bit::from((byte >> (7 - (bits + 3))) & 0x01);
+                    self.encode_data(d0, d1, d2, d3, samples);
+                    encoded_bits += 4;
+                }
+            }
+        }
+
+        // If not enough data is given, pad with 0s until it fits.
+        while encoded_bits != 0 && encoded_bits < self.config.bits_per_word {
+            match self.config.data_mode {
+                SpiDataMode::Single => {
+                    self.encode_data(Bit::Low, UNUSED, UNUSED, UNUSED, samples);
+                    encoded_bits += 1;
+                }
+                SpiDataMode::Dual => {
+                    self.encode_data(Bit::Low, Bit::Low, UNUSED, UNUSED, samples);
+                    encoded_bits += 2;
+                }
+                SpiDataMode::Quad => {
+                    self.encode_data(Bit::Low, Bit::Low, Bit::Low, Bit::Low, samples);
+                    encoded_bits += 4;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// Encode a sequence of SPI words into GPIO bitbanging samples.
+    fn encode_words(
+        &mut self,
+        words: &[u8],
+        samples: &mut Vec<u8>,
+    ) -> Result<(), SpiTransferEncodeError> {
+        // Keep encoding words in the data while more exist
+        let clk_idle = Bit::from(self.config.cpol);
+        let bytes_per_word = self.config.bits_per_word.div_ceil(8) as usize;
+        for word in words.chunks(bytes_per_word) {
+            if !self.first_word {
+                // Optional delays between words
+                for _ in 0..(self.delays.inter_word_delay * 2) {
+                    samples.push(self.sample(UNUSED, UNUSED, UNUSED, UNUSED, clk_idle, CS_LOW))
+                }
+            }
+            self.encode_word(word, samples)?;
+        }
+        Ok(())
+    }
+
+    /// Output GPIO bitbanging samples for pulling CS low/high (active/inactive).
+    pub fn assert_cs(&mut self, assert: bool, samples: &mut Vec<u8>) {
+        if (assert && self.cs_asserted) || (!assert && !self.cs_asserted) {
+            return;
+        }
+        self.cs_asserted = assert;
+        let clk_idle = Bit::from(self.config.cpol);
+        let cs_low = self.sample(UNUSED, UNUSED, UNUSED, UNUSED, clk_idle, CS_LOW);
+        if assert {
+            // If CPHA=0, we omit the initial CS low sample here as that is
+            // combined with the first data write.
+            let wait_samples = match self.config.cpha {
+                true => self.delays.cs_hold_delay * 2 + 1,
+                false => self.delays.cs_hold_delay * 2,
+            };
+            for _ in 0..wait_samples {
+                samples.push(cs_low);
+            }
+            self.first_word = true;
+        } else {
+            // If CPHA=0, we must do a final transition of CLK back to idle before
+            // we de-assert the CS (not accounting for release delays).
+            let wait_samples = match self.config.cpha {
+                true => self.delays.cs_release_delay * 2,
+                false => self.delays.cs_release_delay * 2 + 1,
+            };
+            for _ in 0..wait_samples {
+                samples.push(cs_low);
+            }
+            samples.push(self.sample(UNUSED, UNUSED, UNUSED, UNUSED, clk_idle, CS_HIGH));
+        }
+    }
+
+    /// Encode a read transmission of several SPI words into GPIO bitbanging samples.
+    /// CS should already be asserted via `assert_cs` before calling.
+    pub fn encode_read(
+        &mut self,
+        words: usize,
+        samples: &mut Vec<u8>,
+    ) -> Result<(), SpiTransferEncodeError> {
+        self.encode_words(&vec![0; words], samples)
+    }
+
+    /// Encode a write transmission of several SPI words into GPIO bitbanging samples.
+    /// CS should already be asserted via `assert_cs` before calling.
+    pub fn encode_write(
+        &mut self,
+        data: &[u8],
+        samples: &mut Vec<u8>,
+    ) -> Result<(), SpiTransferEncodeError> {
+        self.encode_words(data, samples)
+    }
+
+    /// A helper function to encode a full SPI transmission, including logic for
+    /// asserting and later de-asserting the CS.
+    pub fn encode_transaction(
+        &mut self,
+        data: &[u8],
+        samples: &mut Vec<u8>,
+    ) -> Result<(), SpiTransferEncodeError> {
+        self.assert_cs(true, samples);
+        self.encode_words(data, samples)?;
+        self.assert_cs(false, samples);
+        Ok(())
+    }
 }
 
 /// A sample of SPI pins at a given instant. The const generics should all be
