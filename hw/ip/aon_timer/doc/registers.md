@@ -129,13 +129,13 @@ Watchdog Timer Write Enable Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "regwen", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                   |
 |:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------|
 |  31:1  |        |         |        | Reserved                                                                      |
-|   0    |  rw0c  |   0x1   | regwen | Once cleared, the watchdog configuration will be locked until the next reset. |
+|   0    |  rw0c  |   0x1   | EN     | Once cleared, the watchdog configuration will be locked until the next reset. |
 
 ## WDOG_CTRL
 Watchdog Timer Control register
