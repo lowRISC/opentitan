@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use super::Bit;
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, Result};
 use std::iter::Peekable;
 
 pub enum SpiDataMode {
@@ -68,9 +68,9 @@ pub mod decoder {
     impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, const CS: u8>
         Decoder<D0, D1, D2, D3, CLK, CS>
     {
-        /// Loop sampling the cs until a low level is detected. Then the clock level is checked
-        /// for correctness based on the cpol configuration.
-        fn wait_cs<I>(&self, samples: &mut Peekable<I>) -> Result<()>
+        /// Iterate through samples until a low (active) CS level is found. Then, check
+        /// the clock level based on CPOL config. Returns `true` if a low CS was found.
+        fn wait_cs<I>(&self, samples: &mut Peekable<I>) -> Result<bool>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
@@ -82,7 +82,7 @@ pub mod decoder {
                     continue;
                 }
                 if sample.clk() == clk_idle_level {
-                    return Ok(());
+                    return Ok(true);
                 } else {
                     bail!(
                         "Settings mismatch: Clock level when idle is {:?}, but cpol is {:?}",
@@ -91,7 +91,7 @@ pub mod decoder {
                     )
                 }
             }
-            bail!("Exhausted the samples")
+            Ok(false)
         }
         /// Returns a sample when a raise or fall clock edge is detected depending on the cpol and cpha configuration.
         fn sample_on_edge<I>(&self, samples: &mut I) -> Option<Sample<D0, D1, D2, D3, CLK, CS>>
@@ -103,46 +103,53 @@ pub mod decoder {
             } else {
                 (Bit::Low, Bit::High)
             };
-            samples.by_ref().find(|sample| sample.clk() == wait_level);
-            samples.by_ref().find(|sample| sample.clk() == sample_level)
+            samples
+                .by_ref()
+                .find(|sample| sample.clk() == wait_level || sample.cs() == Bit::High)?;
+            samples
+                .by_ref()
+                .find(|sample| sample.clk() == sample_level || sample.cs() == Bit::High)
         }
 
-        fn decode_byte<I>(&self, samples: &mut I) -> Result<u8>
+        fn decode_byte<I>(&self, samples: &mut I) -> Option<u8>
         where
             I: Iterator<Item = Sample<D0, D1, D2, D3, CLK, CS>>,
         {
-            let mut byte = 0u16;
+            let mut byte = 0u8;
             let mut bits = 8;
             while bits > 0 {
-                let sample = self.sample_on_edge(samples).context("Run out of samples")?;
+                let sample = self.sample_on_edge(samples)?;
+                if sample.cs() == Bit::High {
+                    return None;
+                }
                 match self.data_mode {
                     SpiDataMode::Single => {
                         byte <<= 1;
-                        byte |= sample.d0() as u16;
+                        byte |= sample.d0() as u8;
                         bits -= 1;
                     }
                     SpiDataMode::Dual => {
                         byte <<= 1;
-                        byte |= sample.d1() as u16;
+                        byte |= sample.d1() as u8;
                         byte <<= 1;
-                        byte |= sample.d0() as u16;
+                        byte |= sample.d0() as u8;
                         bits -= 2;
                     }
                     SpiDataMode::Quad => {
                         byte <<= 1;
-                        byte |= sample.d3() as u16;
+                        byte |= sample.d3() as u8;
                         byte <<= 1;
-                        byte |= sample.d2() as u16;
+                        byte |= sample.d2() as u8;
                         byte <<= 1;
-                        byte |= sample.d1() as u16;
+                        byte |= sample.d1() as u8;
                         byte <<= 1;
-                        byte |= sample.d0() as u16;
+                        byte |= sample.d0() as u8;
                         bits -= 4;
                     }
                 }
             }
 
-            Ok(byte as u8)
+            Some(byte)
         }
 
         pub fn run(&mut self, samples: Vec<u8>) -> Result<Vec<u8>> {
@@ -150,10 +157,16 @@ pub mod decoder {
                 .into_iter()
                 .map(|raw| Sample::<D0, D1, D2, D3, CLK, CS> { raw })
                 .peekable();
-            self.wait_cs(&mut samples)?;
             let mut bytes = Vec::new();
-            while let Ok(byte) = self.decode_byte(&mut samples) {
-                bytes.push(byte);
+            if !self.wait_cs(&mut samples)? {
+                return Ok(bytes);
+            }
+            loop {
+                let byte = self.decode_byte(&mut samples);
+                if byte.is_none() && !self.wait_cs(&mut samples)? {
+                    break;
+                }
+                bytes.push(byte.unwrap());
             }
             Ok(bytes)
         }
