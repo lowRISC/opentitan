@@ -6,6 +6,14 @@ use super::Bit;
 use anyhow::{bail, Result};
 use std::iter::Peekable;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum SpiEndpoint {
+    Host,   // i.e. "Controller"
+    Device, // i.e. "Peripheral"
+}
+
+/// The SPI data mode, indicating how many data lines to use for transmission.
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum SpiDataMode {
     Single,
     Dual,
@@ -64,6 +72,7 @@ pub mod decoder {
         pub cpha: bool,
         pub data_mode: SpiDataMode,
         pub bits_per_word: u32,
+        pub endpoint: SpiEndpoint,
     }
 
     impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, const CS: u8>
@@ -130,7 +139,11 @@ pub mod decoder {
                 match self.data_mode {
                     SpiDataMode::Single => {
                         byte <<= 1;
-                        byte |= sample.d0() as u8;
+                        // In single reads, devices read from COPI whilst hosts read from CIPO.
+                        byte |= match self.endpoint {
+                            SpiEndpoint::Device => sample.d0() as u8,
+                            SpiEndpoint::Host => sample.d1() as u8,
+                        };
                         decoded_bits += 1;
                     }
                     SpiDataMode::Dual => {
