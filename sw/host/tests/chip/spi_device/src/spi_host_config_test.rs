@@ -105,6 +105,7 @@ fn spi_host_config_test(
         cpol: ctx.cpol == 1,
         cpha: ctx.cpha == 1,
         data_mode: test_utils::bitbanging::spi::SpiDataMode::Single,
+        bits_per_word: 8,
     };
     let decoded = decoder.run(samples.to_owned())?;
     assert_eq!(
