@@ -294,6 +294,7 @@ impl UsbHub {
         let port_status_after = if set_feature { port_status_mask } else { 0u16 };
 
         let port_status = self.port_status(port, timeout)?;
+        log::info!("port status before {}: {:#x}", human_op, port_status);
         ensure!(port_status & port_status_mask == port_status_before,
                 "Trying to {} port {} but port has unexpected status {:#x}", human_op, port, port_status);
         // Perform operation.
@@ -305,6 +306,7 @@ impl UsbHub {
         loop {
             let port_status = self.port_status(port, timeout)?;
             if port_status & port_status_mask == port_status_after {
+                log::info!("port status after {}: {:#x}", human_op, port_status);
                 break;
             }
             if start.elapsed() >= timeout {
