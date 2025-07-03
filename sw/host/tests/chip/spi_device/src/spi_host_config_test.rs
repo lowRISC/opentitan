@@ -94,20 +94,22 @@ fn spi_host_config_test(
         waveform,
     )?;
 
-    let mut decoder = test_utils::bitbanging::spi::decoder::Decoder::<
+    let decoder = test_utils::bitbanging::spi::SpiBitbangDecoder::<
         SPI_PIN_D0,
         SPI_PIN_D1,
         0, // D2, not in use.
         0, // D3, not in use.
         SPI_PIN_SCL,
         SPI_PIN_CS,
-    > {
-        cpol: ctx.cpol == 1,
-        cpha: ctx.cpha == 1,
-        data_mode: test_utils::bitbanging::spi::SpiDataMode::Single,
-        bits_per_word: 8,
-        endpoint: test_utils::bitbanging::spi::SpiEndpoint::Device,
-    };
+    >::new(
+        test_utils::bitbanging::spi::SpiBitbangConfig {
+            cpol: ctx.cpol == 1,
+            cpha: ctx.cpha == 1,
+            data_mode: test_utils::bitbanging::spi::SpiDataMode::Single,
+            bits_per_word: 8,
+        },
+        test_utils::bitbanging::spi::SpiEndpoint::Device,
+    );
     let decoded = decoder.run(samples.to_owned())?;
     assert_eq!(
         decoded,
