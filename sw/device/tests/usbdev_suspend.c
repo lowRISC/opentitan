@@ -1835,7 +1835,7 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
 
       // Presently, the FPGA build is expected to be observed/monitored by a
       // developer, so verbose reporting is appropriate.
-      verbose = false;  // true;
+      verbose = true;  // true;
       break;
   }
 
