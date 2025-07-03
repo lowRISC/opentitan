@@ -507,6 +507,7 @@
       hwaccess: "none",
       fields: [
       {   bits: "0",
+          name: "EN",
           desc: '''
             Auxiliary Control Register configuration enable bit.
             If this is cleared to 0, the Auxiliary Control Register cannot be written until the next reset.
