@@ -11,8 +11,8 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_autogen_isr_testutils(
     name = "isr_testutils",
+    ips = ALL_IP_NAMES,
     target_compatible_with = [OPENTITAN_CPU],
-    top = "//hw/top:top_desc",
     deps = [
                "//hw/top:top_lib",
                "//sw/device/lib/dif:rv_plic",
