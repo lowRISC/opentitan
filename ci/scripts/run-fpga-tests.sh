@@ -53,5 +53,5 @@ ci/bazelisk.sh test \
     --test_output=all \
     --build_tests_only \
     --define "$fpga"=lowrisc \
-    --runs_per_test=3 \
+    --runs_per_test=50 \
     --target_pattern_file="${target_pattern_file}"
