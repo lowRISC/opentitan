@@ -376,13 +376,13 @@ Lock bit for Auxiliary Control Register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CTRL_AUX_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                                             |
-|:------:|:------:|:-------:|:----------------|:----------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                 | Reserved                                                                                                                                |
-|   0    |  rw0c  |   0x1   | CTRL_AUX_REGWEN | Auxiliary Control Register configuration enable bit. If this is cleared to 0, the Auxiliary Control Register cannot be written anymore. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                             |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                |
+|   0    |  rw0c  |   0x1   | EN     | Auxiliary Control Register configuration enable bit. If this is cleared to 0, the Auxiliary Control Register cannot be written anymore. |
 
 ## TRIGGER
 Trigger Register.
