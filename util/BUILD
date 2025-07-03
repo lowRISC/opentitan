@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:defs.bzl", "py_binary")
-load("//third_party/python:requirements.bzl", "all_requirements", "requirement")
+load("@ot_python_deps//:requirements.bzl", "all_requirements", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 

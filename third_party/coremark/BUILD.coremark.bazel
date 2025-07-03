@@ -16,9 +16,12 @@ cc_library(
     hdrs = [
         "coremark.h",
     ],
-    features = [
-        "-implicit_conversion_warnings",
-        "-strict_prototypes_warnings",
+    copts = [
+        "-Wno-implicit-fallthrough",
+        "-Wno-strict-prototypes",
+        "-Wno-implicit-int-conversion",
+        "-Wno-sign-conversion",
+        "-Wno-shorten-64-to-32",
     ],
     includes = ["."],
     deps = [

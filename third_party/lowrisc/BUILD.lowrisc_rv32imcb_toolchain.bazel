@@ -1,0 +1,67 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@bazel_skylib//rules/directory:directory.bzl", "directory")
+load("@bazel_skylib//rules/directory:subdirectory.bzl", "subdirectory")
+load("@rules_cc//cc/toolchains:tool.bzl", "cc_tool")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files(glob(["**"]))
+
+# Define certain binaries as `cc_tool`s so they can be used in a toolchain.
+# Each tool has access to all the other libraries and binaries in this repository
+# because some tools execute one another and access various libraries.
+[
+    cc_tool(
+        name = tool,
+        src = ":bin/riscv32-unknown-elf-{}".format(tool),
+        data = [":root"],
+    )
+    for tool in [
+        "clang",
+        "clang++",
+        "ar",
+        "objcopy",
+        "objdump",
+        "strip",
+    ]
+]
+
+directory(
+    name = "root",
+    srcs = glob(["**/*"]),
+)
+
+# System library include directories (for `-isystem`):
+
+subdirectory(
+    name = "lib-clang-include",
+    parent = ":root",
+    path = "lib/clang/16/include",
+)
+
+subdirectory(
+    name = "riscv32-unknown-elf-include",
+    parent = ":root",
+    path = "riscv32-unknown-elf/include",
+)
+
+subdirectory(
+    name = "cxx-include",
+    parent = ":root",
+    path = "riscv32-unknown-elf/include/c++/10.2.0",
+)
+
+subdirectory(
+    name = "cxx-backward",
+    parent = ":root",
+    path = "riscv32-unknown-elf/include/c++/10.2.0/backward",
+)
+
+subdirectory(
+    name = "cxx-riscv32-unknown-elf",
+    parent = ":root",
+    path = "riscv32-unknown-elf/include/c++/10.2.0/riscv32-unknown-elf",
+)
