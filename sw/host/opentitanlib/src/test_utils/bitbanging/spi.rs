@@ -484,3 +484,454 @@ impl<const D0: u8, const D1: u8, const D2: u8, const D3: u8, const CLK: u8, cons
         Ok(bytes)
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use anyhow::Result;
+    use std::cmp::Ordering;
+
+    fn spi_encode_decode(
+        config: SpiBitbangConfig,
+        delays: SpiEncodingDelays,
+        data: Option<&[u8]>,
+    ) -> Result<()> {
+        let bytes_per_word = config.bits_per_word.div_ceil(8) as usize;
+        let mut encoder = SpiBitbangEncoder::<0, 1, 2, 3, 4, 5>::new(config.clone(), delays);
+        let decoder =
+            SpiBitbangDecoder::<0, 1, 2, 3, 4, 5>::new(config.clone(), SpiEndpoint::Device);
+        let mut data = Vec::from(data.unwrap_or(b"Hello, this is a simple SPI test message."));
+        while data.len() % bytes_per_word != 0 {
+            data.push(0);
+        }
+        let mut samples = Vec::new();
+        encoder.encode_transaction(&data, &mut samples)?;
+        assert!(!samples.is_empty());
+        let decoded = decoder
+            .run(samples)
+            .expect("Should have decoded the bitbanged message");
+        assert_eq!(decoded, data);
+        Ok(())
+    }
+
+    #[test]
+    fn smoke() -> Result<()> {
+        // Encode and decode some test strings
+        let config = SpiBitbangConfig {
+            cpol: false,
+            cpha: false,
+            data_mode: SpiDataMode::Single,
+            bits_per_word: 8,
+        };
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 1,
+            cs_release_delay: 1,
+        };
+        spi_encode_decode(config.clone(), delays.clone(), None)?;
+        spi_encode_decode(config.clone(), delays.clone(), Some(b"abc def GHI JKL"))?;
+        spi_encode_decode(config.clone(), delays.clone(), Some(b"12345678"))?;
+
+        // Check bitbang encoding against a known sample.
+        let mut encoder = SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(config, delays);
+        let bytes = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
+        let mut samples = Vec::new();
+        encoder.encode_transaction(&bytes, &mut samples)?;
+        let expected = [
+            0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 0, 1, 0, 1, 0,
+            1, 4, 5, 4, 5, 0, 1, 4, 5, 0, 1, 0, 1, 0, 1, 4, 5, 0, 1, 4, 5, 0, 1, 4, 5, 4, 5, 0, 1,
+            0, 1, 4, 5, 4, 5, 4, 5, 4, 5, 0, 1, 0, 1, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 4, 5, 0, 1, 4,
+            5, 0, 1, 4, 5, 0, 1, 4, 5, 4, 5, 4, 5, 4, 5, 0, 1, 0, 1, 4, 5, 4, 5, 0, 1, 4, 5, 4, 5,
+            4, 5, 4, 5, 0, 1, 4, 5, 4, 5, 4, 5, 4, 5, 0, 0, 0, 2,
+        ];
+        assert_eq!(samples, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn communication_modes() -> Result<()> {
+        // Test encoding/decoding all possible modes both with and without
+        // additional CS delays on either end, and between words.
+        for config_bitmap in 0..32 {
+            let config = SpiBitbangConfig {
+                cpol: config_bitmap & 0x01 > 0,
+                cpha: (config_bitmap >> 1) & 0x01 > 0,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 8,
+            };
+            let delays = SpiEncodingDelays {
+                inter_word_delay: (config_bitmap >> 2) & 0x01,
+                cs_hold_delay: (config_bitmap >> 3) & 0x01,
+                cs_release_delay: (config_bitmap >> 4) & 0x01,
+            };
+            spi_encode_decode(config.clone(), delays.clone(), None)?;
+            spi_encode_decode(config, delays, Some(b"communication mode test message"))?;
+        }
+
+        // Use small transfers to test that the output matches what we expect.
+        let tests = [
+            // CPOL=0,CPHA=0 so bit #1 is output with CS low on idle (low) clock in 1st sample
+            ((false, false), vec![4, 5, 0, 1]),
+            // CPOL=0,CPHA=1 so bit #1 is output with active (high) clock in 2nd sample
+            ((false, true), vec![0, 5, 4, 1]),
+            // CPOL=1,CPHA=0 so bit #1 is output with CS low on idle (high) clock in 1st sample
+            ((true, false), vec![5, 4, 1, 0]),
+            // CPOL=1,CPHA=1 so bit #1 is output with active (low) clock in 2nd sample
+            ((true, true), vec![1, 4, 5, 0]),
+        ];
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 0,
+            cs_release_delay: 0,
+        };
+        for ((cpol, cpha), expected) in tests {
+            let config = SpiBitbangConfig {
+                cpol,
+                cpha,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 8,
+            };
+            let mut samples = Vec::new();
+            SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(config, delays.clone())
+                .encode_transaction(&[0xA5], &mut samples)?;
+            assert_eq!(samples[..4], expected);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn data_modes() -> Result<()> {
+        // Test encoding/decoding for each data channel mode.
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 1,
+            cs_release_delay: 1,
+        };
+        for data_mode in [SpiDataMode::Single, SpiDataMode::Dual, SpiDataMode::Quad] {
+            let config = SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode,
+                bits_per_word: 8,
+            };
+            spi_encode_decode(config.clone(), delays.clone(), None)?;
+            spi_encode_decode(
+                config,
+                delays.clone(),
+                Some(b"A slightly longer message that can be used to test SPI data modes"),
+            )?;
+        }
+
+        // Check that the number of transfers is being appropriately decreased.
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 0,
+            cs_release_delay: 0,
+        };
+        let tests = [
+            // (64 bits * 2 half clks) + 1 half clk to return to idle + 1 sample for CS high
+            (SpiDataMode::Single, 64 * 2 + 2),
+            (SpiDataMode::Dual, (64 / 2) * 2 + 2),
+            (SpiDataMode::Quad, (64 / 4) * 2 + 2),
+        ];
+        for (data_mode, expected_half_clocks) in tests {
+            let config = SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode,
+                bits_per_word: 8,
+            };
+            let mut samples = Vec::new();
+            SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(config, delays.clone()).encode_transaction(
+                &[0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF],
+                &mut samples,
+            )?;
+            assert_eq!(samples.len(), expected_half_clocks);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn bits_per_word() -> Result<()> {
+        // Test encoding/decoding for a variety of bits per SPI word.
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 1,
+            cs_release_delay: 1,
+        };
+        for bits_per_word in 1..=64 {
+            let config = SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode: SpiDataMode::Single,
+                bits_per_word,
+            };
+            // Use a message with [0, 1, 2, ..., 63] bitwise reversed into the MSBs, but for
+            // each test we first mask the data so that the unused ending LSBs are zeroed for
+            // non-byte-divisible word sizes, to allow comparison of decoded results.
+            let mut bytes = (0..64).map(|b: u8| b.reverse_bits()).collect::<Vec<u8>>();
+            let mut bits_in_current_word = 0;
+            for byte in bytes.iter_mut() {
+                let mask_size = bits_per_word - bits_in_current_word;
+                match mask_size.cmp(&8) {
+                    Ordering::Greater => {
+                        bits_in_current_word += 8;
+                    }
+                    Ordering::Equal => {
+                        bits_in_current_word = 0;
+                    }
+                    Ordering::Less => {
+                        let zero_mask = (0x01 << (8 - mask_size)) - 1;
+                        *byte &= !zero_mask;
+                        bits_in_current_word = 0;
+                    }
+                }
+            }
+            spi_encode_decode(config, delays.clone(), Some(&bytes))?;
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn encoding_delays() -> Result<()> {
+        // Test a variety of SPI encoding delays, with delays after setting CS low,
+        // before releasing CS, and between each SPI word transfer.
+        let tests = [
+            (
+                (0, 0, 0),
+                vec![4, 5, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 0, 1, 4, 5, 0, 2],
+            ),
+            (
+                (3, 0, 0),
+                vec![
+                    4, 5, 0, 1, 4, 5, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 4, 5, 0, 1, 4, 5, 0, 2,
+                ],
+            ),
+            (
+                (0, 3, 0),
+                vec![
+                    0, 0, 0, 0, 0, 0, 4, 5, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 0, 1, 4, 5, 0, 2,
+                ],
+            ),
+            (
+                (0, 0, 3),
+                vec![
+                    4, 5, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 0, 1, 4, 5, 0, 0, 0, 0, 0, 0, 0, 2,
+                ],
+            ),
+            (
+                (1, 2, 3),
+                vec![
+                    0, 0, 0, 0, 4, 5, 0, 1, 4, 5, 0, 1, 0, 0, 0, 1, 4, 5, 0, 1, 4, 5, 0, 0, 0, 0,
+                    0, 0, 0, 2,
+                ],
+            ),
+        ];
+        for ((inter_word_delay, cs_hold_delay, cs_release_delay), expected) in tests {
+            let delays = SpiEncodingDelays {
+                inter_word_delay,
+                cs_hold_delay,
+                cs_release_delay,
+            };
+            // Run an encode/decode test with these delays for each CPHA.
+            for cpha in [false, true] {
+                let config = SpiBitbangConfig {
+                    cpol: false,
+                    cpha,
+                    data_mode: SpiDataMode::Single,
+                    bits_per_word: 8,
+                };
+                spi_encode_decode(config, delays.clone(), None)?;
+            }
+            let config = SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 4,
+            };
+            let mut samples = Vec::new();
+            SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(config, delays)
+                .encode_transaction(&[0xA << 4, 0x5 << 4], &mut samples)?;
+            assert_eq!(samples, expected);
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn decoding_endpoints() -> Result<()> {
+        // Test decoding as both a SPI Host and Device
+        let config = SpiBitbangConfig {
+            cpol: false,
+            cpha: false,
+            data_mode: SpiDataMode::Single,
+            bits_per_word: 8,
+        };
+        let delays = SpiEncodingDelays {
+            inter_word_delay: 0,
+            cs_hold_delay: 1,
+            cs_release_delay: 1,
+        };
+        let bytes = [0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF];
+        let mut samples = Vec::new();
+        // Encode on COPI = D0 = bit 0.
+        SpiBitbangEncoder::<0, 1, 2, 3, 4, 5>::new(config.clone(), delays.clone())
+            .encode_transaction(&bytes, &mut samples)?;
+        // Decode as a SPI Device on COPI = Bit 0
+        let decoder =
+            SpiBitbangDecoder::<0, 1, 2, 3, 4, 5>::new(config.clone(), SpiEndpoint::Device);
+        let mut decoded = decoder
+            .run(samples.clone())
+            .expect("Should have decoded the bitbanged message");
+        assert_eq!(decoded, &bytes);
+        // Decode as a SPI Host on CIPO = Bit 0
+        let decoder = SpiBitbangDecoder::<1, 0, 2, 3, 4, 5>::new(config.clone(), SpiEndpoint::Host);
+        decoded = decoder
+            .run(samples)
+            .expect("Should have decoded the bitbanged message");
+        assert_eq!(decoded, &bytes);
+        Ok(())
+    }
+
+    #[test]
+    fn encode_host_reads() -> Result<()> {
+        // Encode a SPI host read
+        let mut encoder = SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(
+            SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 8,
+            },
+            SpiEncodingDelays {
+                inter_word_delay: 0,
+                cs_hold_delay: 0,
+                cs_release_delay: 0,
+            },
+        );
+        let mut samples = Vec::new();
+        encoder.assert_cs(true, &mut samples);
+        encoder.encode_read(5, &mut samples)?;
+        encoder.assert_cs(false, &mut samples);
+        // Only expect to see clock changes with CS low, no data.
+        let mut expected = vec![0];
+        expected.append(&mut [1, 0].repeat(8 * 5)); // clock cycles
+        expected.push(2); // CS high (inactive)
+        assert_eq!(samples, expected);
+        Ok(())
+    }
+
+    #[test]
+    fn encode_cs_assertions() -> Result<()> {
+        // Test errors surrounding CS assertions
+        let mut encoder = SpiBitbangEncoder::<2, 3, 4, 5, 0, 1>::new(
+            SpiBitbangConfig {
+                cpol: false,
+                cpha: true,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 8,
+            },
+            SpiEncodingDelays {
+                inter_word_delay: 0,
+                cs_hold_delay: 0,
+                cs_release_delay: 0,
+            },
+        );
+        let mut samples = vec![];
+        // No additional samples if already de-asserted
+        encoder.assert_cs(false, &mut samples);
+        assert_eq!(samples.len(), 0);
+        // Do not allow reads/writes if de-asserted
+        assert_eq!(
+            encoder.encode_write(&[0], &mut samples),
+            Err(SpiTransferEncodeError::CsNotAsserted)
+        );
+        assert_eq!(
+            encoder.encode_read(1, &mut samples),
+            Err(SpiTransferEncodeError::CsNotAsserted)
+        );
+        assert_eq!(samples.len(), 0);
+        // Samples are encoded on a CS assertion
+        encoder.assert_cs(true, &mut samples);
+        let mut sample_len = samples.len();
+        assert!(sample_len > 0);
+        // No additional samples if already asserted
+        encoder.assert_cs(true, &mut samples);
+        assert_eq!(samples.len(), sample_len);
+        // Samples are encoded on a CS de-assertion
+        encoder.assert_cs(false, &mut samples);
+        assert!(samples.len() > sample_len);
+        sample_len = samples.len();
+        // No additional samples again if already de-asserted
+        encoder.assert_cs(false, &mut samples);
+        assert_eq!(samples.len(), sample_len);
+        Ok(())
+    }
+
+    #[test]
+    fn spi_decoding_errors() -> Result<()> {
+        // Test clock polarity mismatch errors
+        assert_eq!(
+            SpiBitbangDecoder::<2, 3, 4, 5, 0, 1>::new(
+                SpiBitbangConfig {
+                    cpol: false,
+                    cpha: false,
+                    data_mode: SpiDataMode::Single,
+                    bits_per_word: 2,
+                },
+                SpiEndpoint::Device
+            )
+            .run(vec![3, 1, 0, 1, 0, 1, 0, 2]),
+            Err(SpiTransferDecodeError::ClockPolarityMismatch(
+                Bit::High,
+                Bit::Low
+            ))
+        );
+        assert_eq!(
+            SpiBitbangDecoder::<2, 3, 4, 5, 0, 1>::new(
+                SpiBitbangConfig {
+                    cpol: true,
+                    cpha: false,
+                    data_mode: SpiDataMode::Single,
+                    bits_per_word: 2,
+                },
+                SpiEndpoint::Device
+            )
+            .run(vec![2, 0, 1, 0, 1, 0, 1, 3]),
+            Err(SpiTransferDecodeError::ClockPolarityMismatch(
+                Bit::Low,
+                Bit::High
+            ))
+        );
+        // Test for errors when de-asserting the CS early at any point
+        // before a word transfer is finished.
+        let valid_samples = vec![4, 5, 0, 1, 4, 5, 0, 1, 0, 1, 4, 5, 0, 1, 4, 5, 0, 2];
+        let decoder = SpiBitbangDecoder::<2, 3, 4, 5, 0, 1>::new(
+            SpiBitbangConfig {
+                cpol: false,
+                cpha: false,
+                data_mode: SpiDataMode::Single,
+                bits_per_word: 8,
+            },
+            SpiEndpoint::Device,
+        );
+        assert!(decoder.run(valid_samples.clone()).is_ok());
+        for index in 1..(valid_samples.len() - 2) {
+            let mut invalid_samples = valid_samples.clone();
+            invalid_samples[index] |= 0x01 << 1;
+            assert_eq!(
+                decoder.run(invalid_samples),
+                Err(SpiTransferDecodeError::ChipSelectDeassertedEarly)
+            );
+        }
+        // Test errors with unfinished transactions.
+        for index in 2..(valid_samples.len() - 2) {
+            let mut invalid_samples = valid_samples.clone();
+            invalid_samples.truncate(index);
+            assert_eq!(
+                decoder.run(invalid_samples),
+                Err(SpiTransferDecodeError::UnfinishedTransaction)
+            )
+        }
+        Ok(())
+    }
+}
