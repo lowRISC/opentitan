@@ -25,8 +25,8 @@ static bool checks_are_locked(const dif_otp_ctrl_t *otp, bool check_config) {
                              ? OTP_CTRL_CHECK_REGWEN_REG_OFFSET
                              : OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET;
   size_t regwen_bit =
-      check_config ? OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT
-                   : OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT;
+      check_config ? OTP_CTRL_CHECK_REGWEN_EN_BIT
+                   : OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT;
   uint32_t locked = mmio_region_read32(otp->base_addr, reg_offset);
   return !bitfield_bit32_read(locked, regwen_bit);
 }
@@ -88,7 +88,7 @@ dif_result_t dif_otp_ctrl_dai_lock(const dif_otp_ctrl_t *otp) {
   }
 
   uint32_t reg = bitfield_bit32_write(
-      0, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false);
+      0, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
                       reg);
 
@@ -104,7 +104,7 @@ dif_result_t dif_otp_ctrl_dai_is_locked(const dif_otp_ctrl_t *otp,
   uint32_t reg = mmio_region_read32(otp->base_addr,
                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
   *is_locked = !bitfield_bit32_read(
-      reg, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT);
+      reg, OTP_CTRL_DIRECT_ACCESS_REGWEN_EN_BIT);
 
   return kDifOk;
 }
@@ -115,7 +115,7 @@ dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
   }
 
   uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, false);
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET, reg);
 
   return kDifOk;
@@ -137,7 +137,7 @@ dif_result_t dif_otp_ctrl_lock_check_trigger(const dif_otp_ctrl_t *otp) {
   }
 
   uint32_t reg = bitfield_bit32_write(
-      0, OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, false);
+      0, OTP_CTRL_CHECK_TRIGGER_REGWEN_EN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
                       reg);
 

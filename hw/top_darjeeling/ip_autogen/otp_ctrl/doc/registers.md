@@ -298,15 +298,15 @@ Register write enable for all direct access interface registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                |
-|:------:|:------:|:-------:|:--------------------------------------------------------------------|
-|  31:1  |        |         | Reserved                                                            |
-|   0    |  rw0c  |   0x1   | [DIRECT_ACCESS_REGWEN](#direct_access_regwen--direct_access_regwen) |
+|  Bits  |  Type  |  Reset  | Name                            |
+|:------:|:------:|:-------:|:--------------------------------|
+|  31:1  |        |         | Reserved                        |
+|   0    |  rw0c  |   0x1   | [EN](#direct_access_regwen--en) |
 
-### DIRECT_ACCESS_REGWEN . DIRECT_ACCESS_REGWEN
+### DIRECT_ACCESS_REGWEN . EN
 This bit controls whether the DAI registers can be written.
 Write 0 to it in order to clear the bit.
 
@@ -421,13 +421,13 @@ Register write enable for [`CHECK_TRIGGER.`](#check_trigger)
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CHECK_TRIGGER_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                             |
-|:------:|:------:|:-------:|:---------------------|:------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                      | Reserved                                                                                                                |
-|   0    |  rw0c  |   0x1   | CHECK_TRIGGER_REGWEN | When cleared to 0, the [`CHECK_TRIGGER`](#check_trigger) register cannot be written anymore. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                             |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                |
+|   0    |  rw0c  |   0x1   | EN     | When cleared to 0, the [`CHECK_TRIGGER`](#check_trigger) register cannot be written anymore. Write 0 to clear this bit. |
 
 ## CHECK_TRIGGER
 Command register for direct accesses.
@@ -467,13 +467,13 @@ Register write enable for [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) an
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CHECK_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |              | Reserved                                                                                                                                                                                           |
-|   0    |  rw0c  |   0x1   | CHECK_REGWEN | When cleared to 0, [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period) registers cannot be written anymore. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                        |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                           |
+|   0    |  rw0c  |   0x1   | EN     | When cleared to 0, [`INTEGRITY_CHECK_PERIOD`](#integrity_check_period) and [`CONSISTENCY_CHECK_PERIOD`](#consistency_check_period) registers cannot be written anymore. Write 0 to clear this bit. |
 
 ## CHECK_TIMEOUT
 Timeout value for the integrity and consistency checks.

@@ -822,6 +822,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         fields: [
           {
               bits:   "0",
+              name : "EN",
               desc: '''
               This bit controls whether the DAI registers can be written.
               Write 0 to it in order to clear the bit.
@@ -946,6 +947,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         hwaccess: "none",
         fields: [
           { bits:   "0",
+            name: "EN",
             desc: '''
             When cleared to 0, the !!CHECK_TRIGGER register cannot be written anymore.
             Write 0 to clear this bit.
@@ -989,6 +991,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         hwaccess: "none",
         fields: [
           { bits:   "0",
+            name : "EN",
             desc: '''
             When cleared to 0, !!INTEGRITY_CHECK_PERIOD and !!CONSISTENCY_CHECK_PERIOD registers cannot be written anymore.
             Write 0 to clear this bit.
