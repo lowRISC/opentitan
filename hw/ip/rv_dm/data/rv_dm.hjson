@@ -429,6 +429,7 @@
         hwaccess: "none",
         fields: [
         {   bits:   "0",
+            name: "EN",
             desc:   '''
                     !!LATE_DEBUG_ENABLE register configuration enable bit. If
                       this is cleared to 0, the !!LATE_DEBUG_ENABLE register

@@ -35,13 +35,13 @@ Lock bit for [`LATE_DEBUG_ENABLE`](#late_debug_enable) register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LATE_DEBUG_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                             |
-|:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                          | Reserved                                                                                                                                                                                |
-|   0    |  rw0c  |   0x1   | LATE_DEBUG_ENABLE_REGWEN | [`LATE_DEBUG_ENABLE`](#late_debug_enable) register configuration enable bit. If this is cleared to 0, the [`LATE_DEBUG_ENABLE`](#late_debug_enable) register cannot be written anymore. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                             |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                |
+|   0    |  rw0c  |   0x1   | EN     | [`LATE_DEBUG_ENABLE`](#late_debug_enable) register configuration enable bit. If this is cleared to 0, the [`LATE_DEBUG_ENABLE`](#late_debug_enable) register cannot be written anymore. |
 
 ## LATE_DEBUG_ENABLE
 Debug enable register.
