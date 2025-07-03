@@ -17,7 +17,9 @@
 `include "prim_assert.sv"
 
 module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
   // OpenTitan IP standardizes on level triggered interrupts,
   // hence LevelEdgeTrig is set to all-zeroes by default.
   // Note that in case of edge-triggered interrupts, CDC handling is not
@@ -222,6 +224,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,

@@ -11,6 +11,8 @@ module alert_handler
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 #(
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter int EscNumSeverities = 4,
   parameter int EscPingCountWidth = 16,
   // Compile time random constants, to be overriden by topgen.
@@ -187,7 +189,8 @@ module alert_handler
   // Target interrupt notification
   for (genvar k = 0 ; k < NAlerts ; k++) begin : gen_alerts
     prim_alert_receiver #(
-      .AsyncOn(AsyncOn[k])
+      .AsyncOn(AsyncOn[k]),
+      .SkewCycles(AlertSkewCycles)
     ) u_alert_receiver (
       .clk_i,
       .rst_ni,

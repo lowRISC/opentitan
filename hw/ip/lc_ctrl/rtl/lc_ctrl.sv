@@ -14,6 +14,8 @@ module lc_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   // Hardware revision numbers exposed in the CSRs.
   parameter logic [SiliconCreatorIdWidth-1:0] SiliconCreatorId = '0,
   parameter logic [ProductIdWidth-1:0]        ProductId        = '0,
@@ -640,6 +642,7 @@ module lc_ctrl
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1)
     ) u_prim_alert_sender (
       .clk_i,

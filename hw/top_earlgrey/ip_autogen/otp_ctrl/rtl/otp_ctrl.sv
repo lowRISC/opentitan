@@ -22,6 +22,8 @@ module otp_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
@@ -597,6 +599,7 @@ end
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertIsFatal[k])
     ) u_prim_alert_sender (
       .clk_i,

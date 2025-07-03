@@ -12,6 +12,8 @@ module csrng
 #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplCanright,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter int NHwApps = 2,
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivNonProduction = CsKeymgrDivWidth'(0),
   parameter cs_keymgr_div_t RndCnstCsKeymgrDivProduction = CsKeymgrDivWidth'(0)
@@ -121,6 +123,7 @@ module csrng
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i)
     ) u_prim_alert_sender (
       .clk_i,

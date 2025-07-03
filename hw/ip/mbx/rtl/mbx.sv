@@ -9,6 +9,8 @@ module mbx
   import mbx_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn                    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles                 = 1,
   parameter int unsigned                    CfgSramAddrWidth                = 32,
   parameter int unsigned                    CfgSramDataWidth                = 32,
   parameter int unsigned                    CfgObjectSizeWidth              = 11,
@@ -121,6 +123,7 @@ module mbx
 
   mbx_hostif #(
     .AlertAsyncOn         ( AlertAsyncOn         ),
+    .AlertSkewCycles      ( AlertSkewCycles      ),
     .CfgSramAddrWidth     ( CfgSramAddrWidth     ),
     .CfgSramDataWidth     ( CfgSramDataWidth     ),
     .CfgObjectSizeWidth   ( CfgObjectSizeWidth   ),

@@ -46,8 +46,9 @@ module prim_alert_rxtx_tb
   assign alert_tx_in.alert_n = alert_tx_out.alert_n ^ alert_err_ni;
 
   prim_alert_sender #(
-    .AsyncOn ( AsyncOn ),
-    .IsFatal ( IsFatal )
+    .AsyncOn    ( AsyncOn    ),
+    .SkewCycles ( SkewCycles ),
+    .IsFatal    ( IsFatal    )
   ) i_prim_alert_sender (
     .clk_i,
     .rst_ni,
