@@ -196,11 +196,13 @@ module prim_alert_rxtx_async_assert_fpv
   //
   // We want to disable the assertion if there is a reset or the alert complex is still
   // initialising. We also want to disable it if there has been an injected error: the alerts that
-  // should come out in that situation rely on the ping mechanism.
+  // should come out in that situation rely on the ping mechanism. This injected error will either
+  // be detected with error_setreg_q or seen_skew_q.
   //
   // Finally, we disable it if the sender clears its alert (because ack was dropped again at the end
   // of an alert handshake).
-  AlertCheck1_A: assert property (disable iff (!rst_ni || init_pending || error_setreg_q ||
+  AlertCheck1_A: assert property (disable iff (!rst_ni || init_pending ||
+                                               error_setreg_q || seen_skew_q ||
                                                i_prim_alert_sender.alert_clr)
                                   alert_req_i || alert_test_i |=> s_eventually alert_o);
 
