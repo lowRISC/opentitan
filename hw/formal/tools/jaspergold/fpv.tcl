@@ -108,6 +108,11 @@ if {$stopat ne ""} {
 # no initial phases if the scripts do not).
 set pre_phases 0
 
+# Also set the cov_tasks variable to just <embedded> (which says to include properties that were
+# read from SystemVerilog when calculating coverage). AFTER_LOAD scripts may add extra tasks
+# (because they needed e.g. a stopat).
+set cov_tasks "<embedded>"
+
 if {[info exists ::env(AFTER_LOAD)]} {
     set flist $env(AFTER_LOAD)
     foreach file $flist {
@@ -283,12 +288,14 @@ report
 #-------------------------------------------------------------------------
 
 if {$env(COV) == 1} {
-  check_cov -measure -all -time_limit 2h
-  # Waive the synthesis_optimized cover items
-  set file $env(JG_TCL_DIR)/synthesis_optimized.tcl
-  puts "Waiving items optimized in synthesis from $file"
-  source $file
-  check_cov -report -force -exclude { reset waived }
-  check_cov -report -no_return -report_file cover.html \
-      -html -force -exclude { reset waived }
+    check_cov -measure -tasks ${cov_tasks} -time_limit 2h
+
+    # Waive the synthesis_optimized cover items
+    set file $env(JG_TCL_DIR)/synthesis_optimized.tcl
+    puts "Waiving items optimized in synthesis from $file"
+    source $file
+
+    check_cov -report -task ${cov_tasks} -force -exclude { reset waived }
+    check_cov -report -no_return -report_file cover.html -task ${cov_tasks} \
+                      -html -force -exclude { reset waived }
 }
