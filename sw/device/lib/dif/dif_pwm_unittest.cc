@@ -360,7 +360,7 @@ class PwmLockTest : public PwmTest {};
 TEST_F(PwmLockTest, NullArgs) { EXPECT_DIF_BADARG(dif_pwm_lock(nullptr)); }
 
 TEST_F(PwmLockTest, Success) {
-  EXPECT_WRITE32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_REGWEN_BIT, 0}});
+  EXPECT_WRITE32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_EN_BIT, 0}});
   EXPECT_DIF_OK(dif_pwm_lock(&pwm_));
 }
 
@@ -375,11 +375,11 @@ TEST_F(PwmIsLockedTest, NullArgs) {
 TEST_F(PwmIsLockedTest, Success) {
   bool is_locked;
 
-  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_REGWEN_BIT, 1}});
+  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_EN_BIT, 1}});
   EXPECT_DIF_OK(dif_pwm_is_locked(&pwm_, &is_locked));
   EXPECT_FALSE(is_locked);
 
-  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_REGWEN_BIT, 0}});
+  EXPECT_READ32(PWM_REGWEN_REG_OFFSET, {{PWM_REGWEN_EN_BIT, 0}});
   EXPECT_DIF_OK(dif_pwm_is_locked(&pwm_, &is_locked));
   EXPECT_TRUE(is_locked);
 }
