@@ -7,8 +7,10 @@ pub mod pwm;
 pub mod spi;
 pub mod uart;
 
+use serde::{Deserialize, Serialize};
+
 #[repr(u8)]
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
 pub enum Bit {
     Low = 0,
     High = 1,
