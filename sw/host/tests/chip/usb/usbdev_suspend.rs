@@ -24,7 +24,7 @@ use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
-use usb::{UsbHub, UsbHubOp, UsbOpts};
+use usb::{UsbHub, UsbHubOp, UsbOpts, get_device_by_port_numbers};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -115,7 +115,7 @@ const TIME_RESETTING: u64 = 10;
 
 fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("suspending port {}", port);
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000))?;
     // Device shall suspend after 3ms of Idle state.
     delay_millis(TIME_SUSPENDING);
     log::info!("suspended");
@@ -124,17 +124,39 @@ fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
 
 fn resume(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("resuming device on port {}", port);
-    hub.op(UsbHubOp::Resume, port, Duration::from_millis(100))?;
+    hub.op(UsbHubOp::Resume, port, Duration::from_millis(1000))?;
     // Resume Signaling shall be performed for at least 20ms.
     delay_millis(TIME_RESUMING);
     log::info!("resumed");
     Ok(())
 }
 
+fn find_device(hub: &UsbHub, port: u8) -> Result<rusb::Device<rusb::Context>> {
+    // Build the port path to the device.
+    let mut ports = hub.device().port_numbers()?.clone();
+    ports.push(port);
+    // Try to find the device
+    get_device_by_port_numbers(&ports)
+}
+
 fn reset(hub: &UsbHub, port: u8) -> Result<()> {
     log::info!("resetting device on port {}", port);
-    // Reset Signaling shall be performed for at least 10ms.
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+    let device = find_device(hub, port)?;
+    // Resetting the device is a tricky: if we only send a hub operation, the kernel
+    // will not be aware of the reset and it will not try to configure the device afterwards.
+    // On the other hand, since we mess with the suspend/resume state of the device directly
+    // at the hub, this could also confuse the kernel and it might not succeed in sending
+    // a reset. Experimentally, we have observed however that requesting a reset from the
+    // kernel will at least trigger a re-enumeration if it fails. So to be really safe,
+    // we do both.
+    hub.op(UsbHubOp::Reset, port, Duration::from_millis(1000))?;
+
+    let res = device.open().context("could not find device under test").and_then(
+        |dev| dev.reset().context("could not reset device via the kernel"));
+    if res.is_err() {
+        log::info!("Ignoring failed reset via the kernel: {:?}", res);
+    }
+
     delay_millis(TIME_RESETTING);
     log::info!("reset");
     Ok(())
@@ -168,6 +190,7 @@ fn usbdev_suspend(
     // - Fairly arbitrary, may be modified quite freely.
     let time_disconnected: u64 = 1000;
 
+    opts.usb.apply_strappings(transport, true)?;
     // Enable VBUS sense on the board if necessary.
     if opts.usb.vbus_control_available() {
         opts.usb.enable_vbus(transport, true)?;
@@ -219,16 +242,20 @@ fn usbdev_suspend(
             // of being ready to receive the stimulus within a given test phase, because we have
             // neither this harness nor the device-side code has any control over how long it takes
             // the host to detect and configure the device.
-            UartConsole::wait_for(uart, r"Phase awaiting stimulus", opts.timeout)?;
+            UartConsole::wait_for(uart, r"Phase awaiting stimulus \([^)]*\)", opts.timeout)?;
 
             // All phase require a Suspend request and then wait for > 3 frames; some phases require
             // a longer delay so that the device-side code decides to enter a sleep state.
-            suspend(&hub, port)?;
-            if phase == SuspendPhase::Suspend {
-                delay_millis(time_suspended_short);
-            } else {
-                // Longer Suspended state, a cue to enter the sleep state.
-                delay_millis(time_suspended_long);
+            // However do not suspend if we have reached the Shutdown phase because the device will
+            // disconnect from the bus.
+            if phase != SuspendPhase::Shutdown {
+                suspend(&hub, port)?;
+                if phase == SuspendPhase::Suspend {
+                    delay_millis(time_suspended_short);
+                } else {
+                    // Longer Suspended state, a cue to enter the sleep state.
+                    delay_millis(time_suspended_long);
+                }
             }
 
             // Next test phase; initialize to final phase (safer default than the current phase).
