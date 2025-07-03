@@ -152,11 +152,17 @@ on a programmable basic between generate commands.
 The [`GENERATE_CMD`](#generate_cmd), [`RESEED_CMD`](#reseed_cmd), and [`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) registers must
 set up before the [`SW_CMD_REQ`](#sw_cmd_req) register command is issued.
 
+Note that the BOOT_REQ_MODE field takes precedence over this field: If both fields are set, EDN enters Boot-Time Request Mode.
+If none of the fields are set, EDN enters Software Port Mode upon enabling.
+
 ### CTRL . BOOT_REQ_MODE
 Setting this field to kMultiBitBool4True will enable the feature where the EDN block
 will automatically send a boot-time request to the CSRNG application interface.
 The purpose of this feature is to request entropy as fast as possible after reset,
 and during chip boot-time.
+
+Note that this takes precedence over the AUTO_REQ_MODE field: If both fields are set, EDN enters Boot-Time Request Mode.
+If none of the fields are set, EDN enters Software Port Mode upon enabling.
 
 ### CTRL . EDN_ENABLE
 Setting this field to kMultiBitBool4True enables the EDN module. The modules of the
@@ -175,9 +181,16 @@ EDN boot instantiate command register
 {"reg": [{"name": "BOOT_INS_CMD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                           |
-|:------:|:------:|:-------:|:-------------|:----------------------------------------------------------------------|
-|  31:0  |   rw   |  0x901  | BOOT_INS_CMD | This field is used as the value for Instantiate command at boot time. |
+|  Bits  |  Type  |  Reset  | Name                                        |
+|:------:|:------:|:-------:|:--------------------------------------------|
+|  31:0  |   rw   |  0x901  | [BOOT_INS_CMD](#boot_ins_cmd--boot_ins_cmd) |
+
+### BOOT_INS_CMD . BOOT_INS_CMD
+This field is used as the value for `Instantiate` command at boot time.
+
+See [Command Header](../../csrng/doc/theory_of_operation.md#command-header) for the meaning of the individual bits.
+Note that the hardware only supports a value of 0 for the `clen` field.
+`clen` values greater than 0 lead to hang condition and require EDN and CSRNG to get disabled and re-enabled.
 
 ## BOOT_GEN_CMD
 EDN boot generate command register
@@ -191,9 +204,16 @@ EDN boot generate command register
 {"reg": [{"name": "BOOT_GEN_CMD", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset   | Name         | Description                                                        |
-|:------:|:------:|:--------:|:-------------|:-------------------------------------------------------------------|
-|  31:0  |   rw   | 0xfff003 | BOOT_GEN_CMD | This field is used as the value for generate command at boot time. |
+|  Bits  |  Type  |  Reset   | Name                                        |
+|:------:|:------:|:--------:|:--------------------------------------------|
+|  31:0  |   rw   | 0xfff003 | [BOOT_GEN_CMD](#boot_gen_cmd--boot_gen_cmd) |
+
+### BOOT_GEN_CMD . BOOT_GEN_CMD
+This field is used as the value for `Generate` command at boot time.
+
+See [Command Header](../../csrng/doc/theory_of_operation.md#command-header) for the meaning of the individual bits.
+Note that the hardware only supports a value of 0 for the `clen` field.
+`clen` values greater than 0 lead to hang condition and require EDN and CSRNG to get disabled and re-enabled.
 
 ## SW_CMD_REQ
 EDN csrng app command request register
@@ -212,16 +232,13 @@ EDN csrng app command request register
 |  31:0  |   wo   |    x    | [SW_CMD_REQ](#sw_cmd_req--sw_cmd_req) |
 
 ### SW_CMD_REQ . SW_CMD_REQ
-Any CSRNG action can be initiated by writing a CSRNG command to this
-register. The application interface must wait for the "ack" to
-return before issuing new commands. This interface is intended
-to be controlled solely by software.
+Any CSRNG action can be initiated by writing a CSRNG command to this register.
+Before any write operation to this register, firmware must read [`SW_CMD_STS`](#sw_cmd_sts) to check whether EDN is ready to receive a new command or the next word of a previously started command.
 
-If [`CTRL.AUTO_REQ_MODE`](#ctrl) is set, only the first instantiate command has any
-effect.  After that command has been processed, writes to this register
-register will have no effect on operation.
-Note that CSRNG command format details can be found
-in the CSRNG documentation.
+While [`CTRL.AUTO_REQ_MODE`](#ctrl) is set, only the first instantiate command has any effect.
+After that command has been processed, writes to this register will have no effect on operation, until [`CTRL.AUTO_REQ_MODE`](#ctrl) is de-asserted and the state machine of EDN enters the `SwPortMode` state.
+
+Refer to the [CSRNG documentation](../../csrng/doc/theory_of_operation.md#general-command-format) for details on the command format.
 
 ## SW_CMD_STS
 EDN software command status register
@@ -340,11 +357,11 @@ This FIFO will be used to automatically send out a reseed command to the CSRNG
 application interface when in [`CTRL.AUTO_REQ_MODE.`](#ctrl) This command will be sent only after
 the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero.
 
-If more than 13 entires are written to the FIFO, the design will automatically generate
-a fatal alert.
+See [General Command Format](../../csrng/doc/theory_of_operation.md#general-command-format) for details about the command format.
 
-Note that CSRNG command format details can be found
-in the CSRNG documentation.
+Note that the number of additional data words provided must match the value of the `clen` field of the first word.
+Otherwise, undefined behavior may result.
+If more than 13 entries are written to the FIFO, they are ignored and EDN signals an `edn_fatal_err` interrupt as well as a fatal alert.
 
 ## GENERATE_CMD
 EDN csrng generate command register
@@ -368,11 +385,11 @@ This FIFO will be used to automatically send out a generate command to the CSRNG
 appl interface when in [`CTRL.AUTO_REQ_MODE.`](#ctrl) This command will be sent only after
 receiving a command ack from the previous command.
 
-If more than 13 entires are written to the FIFO, the design will automatically generate
-a fatal alert.
+See [General Command Format](../../csrng/doc/theory_of_operation.md#general-command-format) for details about the command format.
 
-Note that CSRNG command format details can be found
-in the CSRNG documentation.
+Note that the number of additional data words provided must match the value of the `clen` field of the first word.
+Otherwise, undefined behavior may result.
+If more than 13 entries are written to the FIFO, they are ignored and EDN signals an `edn_fatal_err` interrupt as well as a fatal alert.
 
 ## MAX_NUM_REQS_BETWEEN_RESEEDS
 EDN maximum number of requests between reseeds register
@@ -397,6 +414,8 @@ to CSRNG before a reseed request is made. This value only has meaning when in
 This register will be used by a counter that counts down, triggering an
 automatic reseed when it reaches zero.
 
+Note that this value must be chosen smaller than or equal to the value configured in the [`RESEED_INTERVAL` register of CSRNG](../../csrng/doc/registers.md#reseed-interval).
+
 ## RECOV_ALERT_STS
 Recoverable alert status register
 - Offset: `0x38`
@@ -412,7 +431,7 @@ Recoverable alert status register
 |  Bits  |  Type  |  Reset  | Name                      | Description                                                                                                                                                                                     |
 |:------:|:------:|:-------:|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 31:14  |        |         |                           | Reserved                                                                                                                                                                                        |
-|   13   |  rw0c  |   0x0   | CSRNG_ACK_ERR             | This bit is set when the CSRNG returns an acknowledgement where the status signal is high. Writing a zero resets this status bit.                                                               |
+|   13   |  rw0c  |   0x0   | CSRNG_ACK_ERR             | This bit is set when the CSRNG returns an acknowledgement where the status signal is non-zero. Writing a zero resets this status bit.                                                           |
 |   12   |  rw0c  |   0x0   | EDN_BUS_CMP_ALERT         | This bit is set when the interal entropy bus value is equal to the prior valid value on the bus, indicating a possible attack. Writing a zero resets this status bit.                           |
 |  11:4  |        |         |                           | Reserved                                                                                                                                                                                        |
 |   3    |  rw0c  |   0x0   | CMD_FIFO_RST_FIELD_ALERT  | This bit is set when the CMD_FIFO_RST field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.                  |
