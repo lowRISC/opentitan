@@ -65,8 +65,8 @@ prim_lfsr #(
 // just 4 LSBs of the LFSR above for Darjeeling. To remain compliant with the rate modulation
 // performed in DV, the rate counter for Darjeeling is modified to count 4 times slower. Both
 // models thus provide entropy at the same rate.
-localparam int SRateWidth = 12;
-localparam int SRateCntWidth = 14;
+localparam int SRateWidth = 6;
+localparam int SRateCntWidth = 6;
 
 logic srate_rng_val;
 logic [SRateWidth-1:0] srate_value;
@@ -77,30 +77,29 @@ logic [EntropyStreams-1:0] rng_b;
 
 `ifndef SYNTHESIS
 logic [SRateWidth-1:0] dv_srate_value;
-// 4-bit rng_b needs at least 5 clocks. While the limit for these min and max values is 5:500, the
-// default is set to a shorter window of 32:128 to avoid large runtimes.
-logic [SRateWidth-1:0] rng_srate_value_min = SRateWidth'(32);
-logic [SRateWidth-1:0] rng_srate_value_max = SRateWidth'(128);
+// 16-bit rng_b needs at least 3 clock up to 34
+logic [SRateWidth-1:0] rng_srate_value_min = SRateWidth'(3);
+logic [SRateWidth-1:0] rng_srate_value_max = SRateWidth'(34);
 
 initial begin : rng_plusargs
   void'($value$plusargs("rng_srate_value_min=%0d", rng_srate_value_min));
   void'($value$plusargs("rng_srate_value_max=%0d", rng_srate_value_max));
-  `ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[5:500]})
-  `ASSERT_I(DvRngSrateMaxCheck, rng_srate_value_max inside {[5:500]})
+  `ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[3:34]})
+  `ASSERT_I(DvRngSrateMaxCheck, rng_srate_value_max inside {[3:34]})
   `ASSERT_I(DvRngSrateBoundsCheck, rng_srate_value_max >= rng_srate_value_min)
   dv_srate_value =
       SRateWidth'($urandom_range(int'(rng_srate_value_min), int'(rng_srate_value_max)));
   void'($value$plusargs("rng_srate_value=%0d", dv_srate_value));
-  `ASSERT_I(DvSrateValueCheck, dv_srate_value inside {[5:500]})
+  `ASSERT_I(DvSrateValueCheck, dv_srate_value inside {[3:34]})
 end
 
 assign srate_value = dv_srate_value;
 `else
-assign srate_value = SRateWidth'(120);
+assign srate_value = SRateWidth'(3);
 `endif
 
 logic src_busy;
-assign srate_cnt_expired = (srate_cnt[SRateCntWidth-1:SRateCntWidth-SRateWidth] == srate_value);
+assign srate_cnt_expired = (srate_cnt == srate_value);
 
 always_ff @( posedge clk_i, negedge rst_n ) begin
   if ( !rst_n ) begin

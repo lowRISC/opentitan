@@ -666,8 +666,8 @@ ast_pkg::ast_dif_t ot1_alert_src;
 rng #(
   .EntropyStreams ( EntropyStreams )
 ) u_rng (
-  .clk_i ( clk_ast_tlul_i ),
-  .rst_ni ( rst_ast_tlul_ni ),
+  .clk_i ( clk_ast_rng_i ),
+  .rst_ni ( rst_ast_rng_ni ),
   .clk_ast_rng_i ( clk_ast_rng_i ),
   .rst_ast_rng_ni ( rst_ast_rng_ni ),
   .rng_en_i ( rng_en_i ),
