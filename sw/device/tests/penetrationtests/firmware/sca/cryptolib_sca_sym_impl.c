@@ -111,7 +111,12 @@ status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
   // Create keyblob.
   uint32_t keyblob[keyblob_num_words(config)];
   // Create blinded key.
-  TRY(keyblob_from_key_and_mask(key_buf, kAesKeyMask, config, keyblob));
+  uint32_t aes_key_mask[kPentestAesMaxKeyWords];
+  memset(aes_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
+  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
+    aes_key_mask[it] = pentest_ibex_rnd32_read();
+  }
+  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
   otcrypto_blinded_key_t aes_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
@@ -223,14 +228,21 @@ status_t cryptolib_sca_gcm_impl(
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
-  // Construct blinded key from the key and testing mask.
+  // Construct blinded key from the key and mask.
   uint32_t key_buf[kPentestAesMaxKeyWords];
   memset(key_buf, 0, AES_CMD_MAX_KEY_BYTES);
   memcpy(key_buf, key, key_len);
 
+  // Create random mask.
+  uint32_t aes_key_mask[kPentestAesMaxKeyWords];
+  memset(aes_key_mask, 0, AES_CMD_MAX_KEY_BYTES);
+  for (size_t it = 0; it < kPentestAesMaxKeyWords; it++) {
+    aes_key_mask[it] = pentest_ibex_rnd32_read();
+  }
+
   uint32_t keyblob[keyblob_num_words(config)];
-  TRY(keyblob_from_key_and_mask(key_buf, kAesKeyMask, config, keyblob));
-  LOG_INFO("GCM IMPl1");
+  TRY(keyblob_from_key_and_mask(key_buf, aes_key_mask, config, keyblob));
+
   // Construct the blinded key.
   otcrypto_blinded_key_t gcm_key = {
       .config = config,
@@ -241,7 +253,7 @@ status_t cryptolib_sca_gcm_impl(
 
   // Set the checksum.
   gcm_key.checksum = integrity_blinded_checksum(&gcm_key);
-  LOG_INFO("GCM IMPl1");
+
   // Prepare the input buffers.
   size_t iv_num_words = 4;
   uint32_t iv_data[iv_num_words];
@@ -354,7 +366,12 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
   // Create keyblob.
   uint32_t keyblob[keyblob_num_words(config)];
   // Create blinded key.
-  TRY(keyblob_from_key_and_mask(key_buf, kHmacMask, config, keyblob));
+  uint32_t hmac_key_mask[kPentestHmacMaxKeyWords];
+  memset(hmac_key_mask, 0, HMAC_CMD_MAX_KEY_BYTES);
+  for (size_t it = 0; it < kPentestHmacMaxKeyWords; it++) {
+    hmac_key_mask[it] = pentest_ibex_rnd32_read();
+  }
+  TRY(keyblob_from_key_and_mask(key_buf, hmac_key_mask, config, keyblob));
   otcrypto_blinded_key_t hmac_key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
