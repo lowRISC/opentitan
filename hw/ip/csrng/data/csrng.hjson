@@ -258,6 +258,7 @@
       fields: [
         {
             bits: "0",
+            name: "EN",
             desc: ''' When true, all writeable registers can be modified.
             When false, they become read-only.
             '''
@@ -525,6 +526,7 @@
       hwaccess: "none",
       fields: [
         { bits: "0",
+          name: "EN",
           desc: '''
                 INT_STATE_READ_ENABLE register configuration enable bit.
                 If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore.

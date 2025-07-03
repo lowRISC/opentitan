@@ -117,13 +117,13 @@ Register write enable for all control registers
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
 |:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
 |  31:1  |        |         |        | Reserved                                                                               |
-|   0    |  rw0c  |   0x1   | REGWEN | When true, all writeable registers can be modified. When false, they become read-only. |
+|   0    |  rw0c  |   0x1   | EN     | When true, all writeable registers can be modified. When false, they become read-only. |
 
 ## CTRL
 Control register
@@ -361,13 +361,13 @@ Internal state read enable REGWEN register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INT_STATE_READ_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 300}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                         | Description                                                                                                                                     |
-|:------:|:------:|:-------:|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                              | Reserved                                                                                                                                        |
-|   0    |  rw0c  |   0x1   | INT_STATE_READ_ENABLE_REGWEN | INT_STATE_READ_ENABLE register configuration enable bit. If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                     |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                        |
+|   0    |  rw0c  |   0x1   | EN     | INT_STATE_READ_ENABLE register configuration enable bit. If this is cleared to 0, the INT_STATE_READ_ENABLE register cannot be written anymore. |
 
 ## INT_STATE_NUM
 Internal state number register
