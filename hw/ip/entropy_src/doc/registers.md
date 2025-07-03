@@ -149,13 +149,13 @@ Register write enable for module enable register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ME_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                  |
-|:------:|:------:|:-------:|:----------|:-------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |           | Reserved                                                                                                     |
-|   0    |  rw0c  |   0x1   | ME_REGWEN | When true, the [`MODULE_ENABLE`](#module_enable) register can be modified. When false, it becomes read-only. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                  |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                     |
+|   0    |  rw0c  |   0x1   | EN     | When true, the [`MODULE_ENABLE`](#module_enable) register can be modified. When false, it becomes read-only. |
 
 ## SW_REGUPD
 Register write enable for control and threshold registers
@@ -183,15 +183,15 @@ Register write enable for all control registers
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                      |
-|:------:|:------:|:-------:|:--------------------------|
-|  31:1  |        |         | Reserved                  |
-|   0    |   ro   |   0x1   | [REGWEN](#regwen--regwen) |
+|  Bits  |  Type  |  Reset  | Name              |
+|:------:|:------:|:-------:|:------------------|
+|  31:1  |        |         | Reserved          |
+|   0    |   ro   |   0x1   | [EN](#regwen--en) |
 
-### REGWEN . REGWEN
+### REGWEN . EN
 This read-only write enable bit will allow write access to control and threshold registers that are associated with this bit, but only when the [`MODULE_ENABLE`](#module_enable) register is set to `kMultiBitBool4False` and the [`SW_REGUPD`](#sw_regupd) write enable bit is set to true.
 When read as false, these registers become read-only.
 
