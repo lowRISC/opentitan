@@ -361,5 +361,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
                [*`_SEC_CM_ALERT_MAX_CYC]))
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT_IN(RegWeOnehotCheck_A,
+                                                    u_reg,
+                                                    gen_alert_tx[0].u_prim_alert_sender.alert_req_i)
 endmodule
