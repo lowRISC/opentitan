@@ -17,6 +17,8 @@ module sram_ctrl
   parameter int NumRamInst                                 = 1,
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn             = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles          = 1,
   // Enables the execute from SRAM feature.
   parameter bit InstrExec                                  = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
@@ -204,6 +206,7 @@ module sram_ctrl
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(1)
   ) u_prim_alert_sender_parity (
     .clk_i,

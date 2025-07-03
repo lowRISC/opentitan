@@ -12,6 +12,8 @@ module pwrmgr
   import pwrmgr_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1,
   parameter int unsigned EscNumSeverities = 4,
   parameter int unsigned EscPingCountWidth = 16
 ) (
@@ -381,6 +383,7 @@ module pwrmgr
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i         ( clk_lc        ),

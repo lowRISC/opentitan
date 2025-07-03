@@ -13,6 +13,8 @@ module rv_core_ibex
   import rv_core_ibex_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned            AlertSkewCycles  = 1,
   parameter bit                     PMPEnable        = 1'b1,
   parameter int unsigned            PMPGranularity   = 0,
   parameter int unsigned            PMPNumRegions    = 16,
@@ -802,6 +804,7 @@ module rv_core_ibex
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[0]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_alert_sender (
       .clk_i,
