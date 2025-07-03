@@ -1,0 +1,11 @@
+{
+    "integrity": "sha256-Kk0HzWSwcZs5p8EiGKPlB2crgql7mMaonThWWJTPfFE=",
+    "patch_strip": 1,
+    "patches": {
+        "examples.patch": "sha256-RxT7rVHxO30W350sYu7ybi4rStwoB8b8mr34ZU9ciIk=",
+        "module_dot_bazel.patch": "sha256-VTNnq8ySdeo9pI4rrJ+EXa/9ZACgQQ4baUwoQpljzCM=",
+        "rules_foreign_cc.remove_log_output.patch": "sha256-Lf93uuKYgWVFchEhlQOUG4+jfmri/JkThPWspBocd8c="
+    },
+    "strip_prefix": "rules_foreign_cc-0.9.0",
+    "url": "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz"
+}
