@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import os
 import sys
 
 from sim.load_elf import load_elf
@@ -41,6 +42,11 @@ def main() -> int:
 
     collect_stats = args.dump_stats is not None
 
+    # Check if Bazel is requesting coverage output
+    coverage_dat = os.environ.get('COVERAGE_OUTPUT_FILE', None)
+    if coverage_dat:
+        collect_stats = True
+
     sim = StandaloneSim()
     exp_end_addr = load_elf(sim, args.elf)
     key0 = int((str("deadbeef") * 12), 16)
@@ -65,7 +71,12 @@ def main() -> int:
     if collect_stats:
         assert sim.stats is not None
         stat_analyzer = ExecutionStatAnalyzer(sim.stats, args.elf)
-        args.dump_stats.write(stat_analyzer.dump())
+        if args.dump_stats:
+            args.dump_stats.write(stat_analyzer.dump())
+        if coverage_dat:
+            with open(coverage_dat, 'w') as f:
+                f.write(stat_analyzer.dump_lcov_coverage())
+            print(f'Coverage dumped to {coverage_dat}')
 
     return 0
 
