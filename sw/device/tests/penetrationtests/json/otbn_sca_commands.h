@@ -28,6 +28,7 @@ extern "C" {
     value(_, Init) \
     value(_, InitKeyMgr) \
     value(_, InsnCarryFlag) \
+    value(_, CombiOps) \
     value(_, KeySideloadFvsr) \
     value(_, Rsa512Decrypt)
 C_ONLY(UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND));
@@ -86,6 +87,29 @@ UJSON_SERDE_STRUCT(PenetrationtestOtbnScaEcdsaP256Sign, penetrationtest_otbn_sca
     field(r, uint8_t, 32) \
     field(s, uint8_t, 32)
 UJSON_SERDE_STRUCT(PenetrationtestOtbnScaEcdsaP256Signature, penetrationtest_otbn_sca_ecdsa_p256_signature_t, OTBN_SCA_ECDSA_P256_SIGNATURE);
+
+#define OTBN_SCA_TEST_BATCH_OPS(field, string) \
+    field(num_iterations, uint32_t) \
+    field(fixed_data1, uint32_t) \
+    field(fixed_data2, uint32_t) \
+    field(print_flag, bool) \
+    field(trigger, uint32_t)
+UJSON_SERDE_STRUCT(OtbnScaTestBatchOps, otbn_sca_test_batch_ops_t, OTBN_SCA_TEST_BATCH_OPS);
+
+#define OTBN_SCA_OPS_RESULT(field, string) \
+    field(result1, uint32_t, 8) \
+    field(result2, uint32_t, 8) \
+    field(result3, uint32_t, 8) \
+    field(result4, uint32_t, 8) \
+    field(result5, uint32_t, 8) \
+    field(result6, uint32_t, 8) \
+    field(result7, uint32_t, 8) \
+    field(result8, uint32_t)
+UJSON_SERDE_STRUCT(OtbnScaOpsResult, otbn_sca_ops_result_t, OTBN_SCA_OPS_RESULT);
+
+#define OTBN_SCA_EMPTY(field, string) \
+    field(success, bool)
+UJSON_SERDE_STRUCT(OtbnScaEmpty, otbn_sca_empty_t, OTBN_SCA_EMPTY);
 
 // clang-format on
 

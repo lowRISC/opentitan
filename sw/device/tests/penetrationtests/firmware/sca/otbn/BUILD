@@ -19,3 +19,10 @@ otbn_binary(
         "otbn_key_sideload_sca.s",
     ],
 )
+
+otbn_binary(
+    name = "otbn_insn_combi_ops",
+    srcs = [
+        "otbn_insn_combi_ops.s",
+    ],
+)

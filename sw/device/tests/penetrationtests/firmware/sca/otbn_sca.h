@@ -147,6 +147,35 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj);
 status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj);
 
 /**
+ * Command handler for the otbn.sca.combi_ops test.
+ *
+ * Loads two fixed values to the OTBN and performs several operations.
+ * Each operation also has an output that the test sends back.
+ * Each 32-bit fixed value is copied eight times to fill a 256-bit register.
+ *
+ * The results are those of
+ * - the loading of the first input
+ * - the bn.mov instruction of the first input
+ * - the addition between the first and second input
+ * - the subtraction between the first and second input
+ * - the xor between the first and second input
+ * - the left shift by one of the first input
+ * - the multiplication (using bn.mulqacc) between the first 64-bits of each
+ * input
+ * - the comparison of the two inputs (8 means the comparison was succesful and
+ * 4 means it was not) The above is done under a trigger signal.
+ *
+ * A second trigger window can be chosen which is over the wiping of the OTBN.
+ *
+ * The print_flag can be set to false to print a small success value instead of
+ * the full response.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_combi_operations_batch(ujson_t *uj);
+
+/**
  * OTBN SCA command handler.
  *
  * Command handler for the OTBN SCA command.
