@@ -77,6 +77,15 @@ def _otbn_binary(ctx, additional_srcs = []):
     We achieve by having `otbn_build.py` emit a conventional RV32I library
     that other rules can depend on in their `deps`.
     """
+    binary = getattr(ctx.attr, "binary", None)
+    if binary != None:
+        # Found prebuilt binary target
+        return [
+            binary[DefaultInfo],
+            binary[OutputGroupInfo],
+            binary[CcInfo],
+        ]
+
     cc_toolchain = find_cc_toolchain(ctx)
     assembler = _get_assembler(cc_toolchain)
 
@@ -147,7 +156,7 @@ def _otbn_binary(ctx, additional_srcs = []):
         ),
     ]
 
-def _run_sim_test(ctx, exp, dexp, additional_srcs = []):
+def _run_sim_test(ctx, exp, dexp, testcase = None, additional_srcs = []):
     providers = _otbn_binary(ctx, additional_srcs)
 
     # Extract the output .elf file from the output group.
@@ -161,6 +170,11 @@ def _run_sim_test(ctx, exp, dexp, additional_srcs = []):
     if dexp != None:
         exp_content += "--expected_dmem {}".format(dexp.short_path)
         exp_files.append(dexp)
+    if testcase != None:
+        if exp != None or dexp != None:
+            fail("Testcase with legacy exp or dexp specified.")
+        exp_content += "--testcase {} ".format(testcase.short_path)
+        exp_files.append(testcase)
 
     # Create a simple script that runs the OTBN test wrapper on the .elf file
     # using the provided simulator path.
@@ -168,7 +182,7 @@ def _run_sim_test(ctx, exp, dexp, additional_srcs = []):
     simulator = ctx.executable._simulator
     ctx.actions.write(
         output = ctx.outputs.executable,
-        content = "{} {} {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
+        content = "{} {} -- {} {}".format(sim_test_wrapper.short_path, exp_content, simulator.short_path, elf.short_path),
     )
 
     # Runfiles include sources, the .elf file, the simulator and test wrapper
@@ -189,7 +203,27 @@ def _otbn_sim_test(ctx):
     them on the simulator. Tests are expected to count failures in the w0
     register; the test checks that w0=0 to determine if the test passed.
     """
-    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp)
+    return _run_sim_test(ctx, ctx.file.exp, ctx.file.dexp, testcase = ctx.file.testcase)
+
+def otbn_sim_test_suite(name, tests, **kwargs):
+    def testname(target):
+        target = target.rsplit("/", 1)[-1]
+        target = target.rsplit(":", 1)[-1]
+        target = target.split(".", 1)[0]
+        return name + "case_" + target
+
+    tests = {testname(t): t for t in tests}
+
+    for test_name, testcase in tests.items():
+        otbn_sim_test(name = test_name, testcase = testcase, **kwargs)
+
+    # manual test_suite to group all individual testcases
+    tags = kwargs.get("tags", []) + ["manual"]
+    native.test_suite(
+        name = name,
+        tests = tests.keys(),
+        tags = tags,
+    )
 
 def _otbn_autogen_sim_test_impl(ctx):
     """
@@ -333,8 +367,10 @@ otbn_sim_test = rv_rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
+        "binary": attr.label(providers = [DefaultInfo, OutputGroupInfo, CcInfo]),
         "exp": attr.label(allow_single_file = True),
         "dexp": attr.label(allow_single_file = True),
+        "testcase": attr.label(allow_single_file = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
