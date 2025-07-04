@@ -28,6 +28,7 @@ class OTBNSim:
         self.program: List[OTBNInsn] = []
         self.loop_warps: LoopWarps = {}
         self.stats: Optional[ExecutionStats] = None
+        self.symbols: Dict[str, int] = {}
         self._execute_generator: Optional[Iterator[None]] = None
         self._next_insn: Optional[OTBNInsn] = None
 
