@@ -166,6 +166,7 @@
       package: "rv_core_ibex_pkg",
     },
 
+% if enable_lc_ctrl:
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_cpu_en",
@@ -173,6 +174,7 @@
       package: "lc_ctrl_pkg",
     },
 
+% endif
     { struct:  "lc_tx",
       type:    "uni",
       name:    "pwrmgr_cpu_en",
@@ -642,9 +644,11 @@
         broad protection for all assets with the Ibex core.
       '''
     }
+% if enable_lc_ctrl:
     { name: "FETCH.CTRL.LC_GATED"
       desc: "Fetch enable so core execution can be halted."
     }
+% endif
     { name: "EXCEPTION.CTRL_FLOW.LOCAL_ESC"
       desc: '''
         A mechanism to detect and act on double faults. Local escalation shuts

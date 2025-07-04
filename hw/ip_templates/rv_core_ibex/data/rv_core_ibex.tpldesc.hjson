@@ -33,5 +33,11 @@
       type: "bool"
       default: false
     }
+    {
+      name: "enable_lc_ctrl"
+      desc: "Enable lc_ctrl connections"
+      type: "bool"
+      default: true
+    }
   ]
 }

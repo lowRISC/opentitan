@@ -71,12 +71,14 @@
       stage: V2S
       tests: []
     }
+% if enable_lc_ctrl:
     {
       name: sec_cm_fetch_ctrl_lc_gated
       desc: "Verify the countermeasure(s) FETCH.CTRL.LC_GATED."
       stage: V2S
       tests: []
     }
+% endif
     {
       name: sec_cm_exception_ctrl_flow_local_esc
       desc: "Verify the countermeasure(s) EXCEPTION.CTRL_FLOW.LOCAL_ESC."
