@@ -25,6 +25,23 @@ class kmac_common_vseq extends kmac_base_vseq;
       $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
       $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
     end
+
+    // Tests that inject faults after writing to CSRs trigger data integrity assertions.
+    if (common_seq_type inside {"tl_intg_err", "shadow_reg_errors_with_csr_rw"}) begin
+      $assertoff(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_3_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_4_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_5_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_6_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_7_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_8_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_9_rd_A");
+      $assertoff(0, "tb.dut.kmac_csr_assert.prefix_10_rd_A");
+    end
   endtask
 
   virtual task body();
