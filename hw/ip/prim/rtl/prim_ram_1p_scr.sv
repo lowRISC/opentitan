@@ -29,6 +29,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
+  parameter  bit EnableAddrScrPipeline = 0, // Add pipeline stage after address scrambler
+                                            // (read latency +1 cycle).
+  parameter  bit EnableWdataScrPipeline = 0, // Add pipeline stage after wdata scrambler
+                                             // (write latency +1 cycle).
+  parameter  bit EnableOutputPipeline = 0, // Add pipeline stage after memory macro output.
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
@@ -91,7 +96,6 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
 
   // Write currently pending inside this module.
-  output logic                             wr_collision_o,
   output logic                             write_pending_o,
 
   // When detecting multi-bit encoding errors, raise alert.
@@ -104,6 +108,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   import prim_mubi_pkg::mubi4_or_hi;
   import prim_mubi_pkg::mubi4_test_invalid;
   import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_loose;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4Width;
@@ -121,24 +126,40 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Pending Write and Address Registers //
   /////////////////////////////////////////
 
-  // Writes are delayed by one cycle, such the same keystream generation primitive (prim_prince) can
-  // be reused among reads and writes. Note however that with this arrangement, we have to introduce
-  // a mechanism to hold a pending write transaction in cases where that transaction is immediately
-  // followed by a read. The pending write transaction is written to memory as soon as there is no
-  // new read transaction incoming. The latter can be a special case if the incoming read goes to
-  // the same address as the pending write. To that end, we detect the address collision and return
-  // the data from the write holding register.
+  // Writes are delayed by one cycle, because the keystream generation primitive (prim_prince) takes
+  // one cycle to scramble the data to be written to the memory. Thus, a write results in a memory
+  // request one cycle later than a read. If another request arrives back-to-back after a write,
+  // that request will also take one cycle longer to complete than if it had been issued alone.
 
   // Read / write strobes
   mubi4_t read_en, read_en_buf;
   logic   read_en_b;
-  mubi4_t write_en_d, write_en_buf_d, write_en_q;
+  mubi4_t write_en_d, write_en_q, write_en_buf_d, write_en_pipelined;
   logic   write_en_b;
   logic [MuBi4Width-1:0] read_en_b_buf, write_en_buf_b_d;
-  assign gnt_o = req_i & key_valid_i;
+  logic macro_write;
 
-  assign read_en = mubi4_bool_to_mubi(gnt_o & ~write_i);
-  assign write_en_d = mubi4_bool_to_mubi(gnt_o & write_i);
+  // Grant requests if ...
+  assign gnt_o = req_i & key_valid_i & ( // the key is valid and ...
+      // it is a write request ...
+      write_i
+      // or it is a read request and doesn't collide with a write to the SRAM:
+      | ~(
+        // If address scrambling is pipelined, the read is applied at the SRAM in the next cycle;
+        // else it's applied in the same cycle.
+        EnableAddrScrPipeline ?
+          // Determine whether the SRAM will be written in the next cycle: If write data scrambling
+          // is also pipelined, the `write_en_q` register controls whether the SRAM will be written
+          // in the next cycle; else `write_en_buf_d` would do that, but in this branch we know that
+          // the current request is *not* a write, hence that gets hardcoded to `0`.
+          (EnableWdataScrPipeline ? mubi4_test_true_loose(write_en_q) : 0)
+          // Determine whether the SRAM will be written in the current cycle by a pending write.
+          : macro_write
+        )
+  );
+
+  assign read_en = mubi4_bool_to_mubi(gnt_o & ~write_i & ~intg_error_i);
+  assign write_en_d = mubi4_bool_to_mubi(gnt_o & write_i & ~intg_error_i);
 
   prim_buf #(
     .Width(MuBi4Width)
@@ -149,6 +170,18 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   assign read_en_buf = mubi4_t'(read_en_b_buf);
 
+  mubi4_t read_en_pipelined;
+  prim_flop #(
+    .Width(MuBi4Width),
+    .Depth(EnableAddrScrPipeline),
+    .ResetValue(MuBi4Width'(MuBi4False))
+  ) u_read_en_pipeline (
+    .clk_i,
+    .rst_ni,
+    .d_i(read_en_buf),
+    .q_o({read_en_pipelined})
+  );
+
   prim_buf #(
     .Width(MuBi4Width)
   ) u_write_en_d_buf (
@@ -158,57 +191,40 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   assign write_en_buf_d = mubi4_t'(write_en_buf_b_d);
 
-  mubi4_t write_pending_q;
-  mubi4_t addr_collision_d, addr_collision_q;
   logic [AddrWidth-1:0] addr_scr;
-  logic [AddrWidth-1:0] waddr_scr_q;
-  mubi4_t addr_match;
-  logic [MuBi4Width-1:0] addr_match_buf;
-
-  assign addr_match = (addr_scr == waddr_scr_q) ? MuBi4True : MuBi4False;
-  prim_buf #(
-    .Width(MuBi4Width)
-  ) u_addr_match_buf (
-    .in_i (addr_match),
-    .out_o(addr_match_buf)
-  );
-
-  assign addr_collision_d = mubi4_and_hi(mubi4_and_hi(mubi4_or_hi(write_en_q,
-      write_pending_q), read_en_buf), mubi4_t'(addr_match_buf));
+  logic [AddrWidth-1:0] waddr_scr_pipelined;
 
   // Macro requests and write strobe
-  // The macro operation is silenced if an integrity error is seen
-  logic intg_error_buf, intg_error_w_q;
-  prim_buf u_intg_error (
-    .in_i(intg_error_i),
-    .out_o(intg_error_buf)
-  );
+  assign macro_write = mubi4_test_true_loose(write_en_pipelined);
   logic macro_req;
-  assign macro_req   = ~intg_error_w_q & ~intg_error_buf &
-      mubi4_test_true_loose(mubi4_or_hi(mubi4_or_hi(read_en_buf, write_en_q), write_pending_q));
-  // We are allowed to write a pending write transaction to the memory if there is no incoming read.
-  logic macro_write;
-  assign macro_write = mubi4_test_true_loose(mubi4_or_hi(write_en_q, write_pending_q)) &
-    ~mubi4_test_true_loose(read_en_buf) & ~intg_error_w_q;
-  // New read write collision
-  logic rw_collision;
-  assign rw_collision = mubi4_test_true_loose(mubi4_and_hi(write_en_q, read_en_buf));
+  assign macro_req = mubi4_test_true_loose(read_en_pipelined) | macro_write;
+
+  // Assert that macro read and write requests are mutually exclusive.
+  `ASSERT(MacroReadWriteMutualExcl_A, !macro_write || !mubi4_test_true_loose(read_en_pipelined))
 
   // Write currently processed inside this module. Although we are sending an immediate d_valid
   // back to the host, the write could take longer due to the scrambling.
   assign write_pending_o = macro_write | mubi4_test_true_loose(write_en_buf_d);
 
-  // When a read is followed after a write with the same address, we return the data from the
-  // holding register.
-  assign wr_collision_o = mubi4_test_true_loose(addr_collision_q);
-
   ////////////////////////
   // Address Scrambling //
   ////////////////////////
 
-  // We only select the pending write address in case there is no incoming read transaction.
+  logic [AddrWidth-1:0] addr_scr_pipelined;
+  prim_flop #(
+    .Width(AddrWidth),
+    .Depth(EnableAddrScrPipeline),
+    .ResetValue('0)
+  ) u_addr_scr_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(addr_scr),
+    .q_o(addr_scr_pipelined)
+  );
+
+  // We select the stored write address if a write is pending.
   logic [AddrWidth-1:0] addr_mux;
-  assign addr_mux = (mubi4_test_true_loose(read_en_buf)) ? addr_scr : waddr_scr_q;
+  assign addr_mux = macro_write ? waddr_scr_pipelined : addr_scr_pipelined;
 
   // This creates a bijective address mapping using a substitution / permutation network.
   if (NumAddrScrRounds > 0) begin : gen_addr_scr
@@ -232,9 +248,18 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     assign addr_scr = addr_i;
   end
 
-  // We latch the non-scrambled address for error reporting.
-  logic [AddrWidth-1:0] raddr_q;
-  assign raddr_o = raddr_q;
+  // Flop the non-scrambled address for error reporting.
+  prim_flop_en #(
+    .Width(AddrWidth),
+    .Depth(EnableAddrScrPipeline + 1 + EnableOutputPipeline),
+    .ResetValue('0)
+  ) u_flop_raddr (
+    .clk_i,
+    .rst_ni,
+    .en_i(read_en_b),
+    .d_i(addr_i),
+    .q_o(raddr_o)
+  );
 
   //////////////////////////////////////////////
   // Keystream Generation for Data Scrambling //
@@ -280,9 +305,37 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     end
   end
 
+  logic read_en_q;
+  prim_flop #(
+    .Width (1),
+    .Depth (1), // matches latency of prim_prince
+    .ResetValue (1'b0)
+  ) u_flop_read_en (
+    .clk_i,
+    .rst_ni,
+    .d_i (mubi4_test_true_loose(read_en_buf)),
+    .q_o (read_en_q)
+  );
+
+  // Optionally pipeline keystream if the read data from RAM has a latency of more than one cycle.
+  logic [NumParScr*64-1:0] keystream_pipelined;
+  prim_flop_en #(
+    .Width (NumParScr*64),
+    .Depth (EnableAddrScrPipeline + EnableOutputPipeline),
+    .ResetValue ('0),
+    .EnSecBuf (1'b0)
+  ) u_flop_keystream (
+    .clk_i,
+    .rst_ni,
+    .en_i (read_en_q),
+    .d_i (keystream),
+    .q_o (keystream_pipelined)
+  );
+
   // Replicate keystream if needed
-  logic [Width-1:0] keystream_repl;
+  logic [Width-1:0] keystream_repl, keystream_pipelined_repl;
   assign keystream_repl = Width'({NumParKeystr{keystream}});
+  assign keystream_pipelined_repl = Width'({NumParKeystr{keystream_pipelined}});
 
   /////////////////////
   // Data Scrambling //
@@ -298,7 +351,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // behind the propagation delay of the SRAM macro and the per-byte diffusion step.
 
   logic [Width-1:0] rdata_scr, rdata;
-  logic [Width-1:0] wdata_scr_d, wdata_scr_q, wdata_q;
+  logic [Width-1:0] wdata_q;
+  logic [Width-1:0] wdata_scr;
   for (genvar k = 0; k < (Width + DiffWidth - 1) / DiffWidth; k++) begin : gen_diffuse_data
     // If the Width is not divisible by DiffWidth, we need to adjust the width of the last slice.
     localparam int LocalWidth = (Width - k * DiffWidth >= DiffWidth) ? DiffWidth :
@@ -319,7 +373,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     ) u_prim_subst_perm_enc (
       .data_i ( wdata_xor ),
       .key_i  ( '0        ),
-      .data_o ( wdata_scr_d[k*DiffWidth +: LocalWidth] )
+      .data_o ( wdata_scr[k*DiffWidth +: LocalWidth] )
     );
 
     // Read path. This is timing critical. The keystream XOR operation is performed last in order to
@@ -337,68 +391,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       .data_o ( rdata_xor )
     );
 
-    // Apply Keystream, replicate it if needed
+    // Apply Keystream to decipher read data.
     assign rdata[k*DiffWidth +: LocalWidth] = rdata_xor ^
-                                              keystream_repl[k*DiffWidth +: LocalWidth];
-  end
-
-  ////////////////////////////////////////////////
-  // Scrambled data register and forwarding mux //
-  ////////////////////////////////////////////////
-
-  // This is the scrambled data holding register for pending writes. This is needed in order to make
-  // back to back patterns of the form WR -> RD -> WR work:
-  //
-  // cycle:          0   |  1   | 2   | 3   |
-  // incoming op:    WR0 |  RD  | WR1 | -   |
-  // prince:         -   |  WR0 | RD  | WR1 |
-  // memory op:      -   |  RD  | WR0 | WR1 |
-  //
-  // The read transaction in cycle 1 interrupts the first write transaction which has already used
-  // the PRINCE primitive for scrambling. If this sequence is followed by another write back-to-back
-  // in cycle 2, we cannot use the PRINCE primitive a second time for the first write, and hence
-  // need an additional holding register that can buffer the scrambled data of the first write in
-  // cycle 1.
-
-  // Clear this if we can write the memory in this cycle. Set only if the current write cannot
-  // proceed due to an incoming read operation.
-  mubi4_t write_scr_pending_d;
-  assign write_scr_pending_d = (macro_write)  ? MuBi4False :
-                               (rw_collision) ? MuBi4True :
-                                                write_pending_q;
-
-  // Select the correct scrambled word to be written, based on whether the word in the scrambled
-  // data holding register is valid or not. Note that the write_scr_q register could in theory be
-  // combined with the wdata_q register. We don't do that here for timing reasons, since that would
-  // require another read data mux to inject the scrambled data into the read descrambling path.
-  logic [Width-1:0] wdata_scr;
-  assign wdata_scr = (mubi4_test_true_loose(write_pending_q)) ? wdata_scr_q : wdata_scr_d;
-
-  mubi4_t rvalid_q;
-  logic intg_error_r_q;
-  logic [Width-1:0] wmask_q;
-  always_comb begin : p_forward_mux
-    rdata_o = '0;
-    rvalid_o = 1'b0;
-    // Kill the read response in case an integrity error was seen.
-    if (!intg_error_r_q && mubi4_test_true_loose(rvalid_q)) begin
-      rvalid_o = 1'b1;
-      // In case of a collision, we forward the valid bytes of the write data from the unscrambled
-      // holding register.
-      if (mubi4_test_true_loose(addr_collision_q)) begin
-        for (int k = 0; k < Width; k++) begin
-          if (wmask_q[k]) begin
-            rdata_o[k] = wdata_q[k];
-          end else begin
-            rdata_o[k] = rdata[k];
-          end
-        end
-      // regular reads. note that we just return zero in case
-      // an integrity error was signalled.
-      end else begin
-        rdata_o = rdata;
-      end
-    end
+                                              keystream_pipelined_repl[k*DiffWidth +: LocalWidth];
   end
 
   ///////////////
@@ -406,9 +401,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   ///////////////
   logic ram_alert;
 
-  assign alert_o = mubi4_test_invalid(write_en_q) | mubi4_test_invalid(addr_collision_q) |
-                   mubi4_test_invalid(write_pending_q) | mubi4_test_invalid(rvalid_q) |
-                   ram_alert;
+  mubi4_t rvalid_pipelined;
+  assign alert_o = mubi4_test_invalid(write_en_pipelined) |
+                   mubi4_test_invalid(rvalid_pipelined) | ram_alert;
 
   prim_flop #(
     .Width(MuBi4Width),
@@ -422,63 +417,80 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   prim_flop #(
     .Width(MuBi4Width),
+    .Depth(EnableWdataScrPipeline),
     .ResetValue(MuBi4Width'(MuBi4False))
-  ) u_addr_collision_flop (
+  ) u_write_en_pipeline (
     .clk_i,
     .rst_ni,
-    .d_i(MuBi4Width'(addr_collision_d)),
-    .q_o({addr_collision_q})
+    .d_i(MuBi4Width'(write_en_q)),
+    .q_o({write_en_pipelined})
   );
 
   prim_flop #(
     .Width(MuBi4Width),
-    .ResetValue(MuBi4Width'(MuBi4False))
-  ) u_write_pending_flop (
-    .clk_i,
-    .rst_ni,
-    .d_i(MuBi4Width'(write_scr_pending_d)),
-    .q_o({write_pending_q})
-  );
-
-  prim_flop #(
-    .Width(MuBi4Width),
+    .Depth(EnableAddrScrPipeline + 1 + EnableOutputPipeline),
     .ResetValue(MuBi4Width'(MuBi4False))
   ) u_rvalid_flop (
     .clk_i,
     .rst_ni,
     .d_i(MuBi4Width'(read_en_buf)),
-    .q_o({rvalid_q})
+    .q_o({rvalid_pipelined})
   );
+
+  assign rdata_o = rdata;
+  assign rvalid_o = mubi4_test_true_loose(rvalid_pipelined);
 
   assign read_en_b = mubi4_test_true_loose(read_en_buf);
   assign write_en_b = mubi4_test_true_loose(write_en_buf_d);
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
-    if (!rst_ni) begin
-      intg_error_r_q      <= 1'b0;
-      intg_error_w_q      <= 1'b0;
-      raddr_q             <= '0;
-      waddr_scr_q         <= '0;
-      wmask_q             <= '0;
-      wdata_q             <= '0;
-      wdata_scr_q         <= '0;
-    end else begin
-      intg_error_r_q      <= intg_error_buf;
+  prim_flop_en #(
+    .Width(AddrWidth),
+    .Depth(1 + EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_waddr_scr_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(addr_scr),
+    .q_o(waddr_scr_pipelined)
+  );
 
-      if (read_en_b) begin
-        raddr_q <= addr_i;
-      end
-      if (write_en_b) begin
-        waddr_scr_q    <= addr_scr;
-        wmask_q        <= wmask_i;
-        wdata_q        <= wdata_i;
-        intg_error_w_q <= intg_error_buf;
-      end
-      if (rw_collision) begin
-        wdata_scr_q <= wdata_scr_d;
-      end
-    end
-  end
+  logic [Width-1:0] macro_wmask;
+  prim_flop_en #(
+    .Width(Width),
+    .Depth(1 + EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_wmask_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(wmask_i),
+    .q_o(macro_wmask)
+  );
+
+  prim_flop_en #(
+    .Width(Width),
+    .Depth(1),
+    .ResetValue('0)
+  ) u_wdata_flop (
+    .clk_i,
+    .rst_ni,
+    .en_i(write_en_b),
+    .d_i(wdata_i),
+    .q_o(wdata_q)
+  );
+
+  logic [Width-1:0] macro_wdata;
+  prim_flop #(
+    .Width(Width),
+    .Depth(EnableWdataScrPipeline),
+    .ResetValue('0)
+  ) u_wdata_scr_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(wdata_scr),
+    .q_o(macro_wdata)
+  );
 
   //////////////////
   // Memory Macro //
@@ -492,15 +504,15 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .EnableECC(1'b0),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
-    .EnableOutputPipeline(1'b0)
+    .EnableOutputPipeline(EnableOutputPipeline)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
     .req_i    ( macro_req   ),
     .write_i  ( macro_write ),
     .addr_i   ( addr_mux    ),
-    .wdata_i  ( wdata_scr   ),
-    .wmask_i  ( wmask_q     ),
+    .wdata_i  ( macro_wdata ),
+    .wmask_i  ( macro_wmask ),
     .rdata_o  ( rdata_scr   ),
     .rvalid_o ( ),
     .rerror_o,

@@ -40,6 +40,7 @@ if {$env(TASK) == "FpvSecCm"} {
     -bbox_m prim_onehot_check \
     -bbox_m prim_ram_1p \
     -bbox_m prim_ram_1p_scr \
+    -bbox_m prim_ram_1p_scr_1cyc \
     -f [glob *.scr]
 } elseif {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   analyze -sv09 \

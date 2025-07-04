@@ -131,7 +131,7 @@ module tb #(
   // RAMs
   for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams
     // Tag RAM instantiation
-    prim_ram_1p_scr #(
+    prim_ram_1p_scr_1cyc #(
       .Width            (TagSizeECC),
       .Depth            (IC_NUM_LINES),
       .DataBitsPerMask  (TagSizeECC),
@@ -165,7 +165,7 @@ module tb #(
     );
 
     // Data RAM instantiation
-    prim_ram_1p_scr #(
+    prim_ram_1p_scr_1cyc #(
       .Width              (LineSizeECC),
       .Depth              (IC_NUM_LINES),
       .DataBitsPerMask    (LineSizeECC),
