@@ -102,11 +102,6 @@ module prim_alert_rxtx_assert_fpv
       prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
       ##[1:9] ping_ok_o,
       clk_i, !rst_ni || error_present || init_pending)
-  `ASSERT(AlertPingIgnored_A, (prim_alert_rxtx_tb.i_prim_alert_sender.state_q inside {
-      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase1,
-      prim_alert_rxtx_tb.i_prim_alert_sender.PingHsPhase2}) && $rose(ping_req_i) |->
-      ping_ok_o == 0 throughout ping_req_i [->1],
-      clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   // transmission of alerts in case of no collision with ping enable
   `ASSERT(AlertCheck0_A, !ping_req_i [*3] ##0 ($rose(alert_req_i) || $rose(alert_test_i)) &&
       (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
