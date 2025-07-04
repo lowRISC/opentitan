@@ -4,6 +4,8 @@
 
 #include "sw/device/tests/penetrationtests/firmware/fi/ibex_fi.h"
 
+#include "sw/device/lib/arch/boot_stage.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/csr_registers.h"
 #include "sw/device/lib/base/memory.h"
@@ -24,8 +26,18 @@
 #include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
+// Generated
+#include "aes_regs.h"
+#include "alert_handler_regs.h"
+#include "csrng_regs.h"
+#include "edn_regs.h"
+#include "entropy_src_regs.h"
+#include "hmac_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "keymgr_regs.h"
 #include "otp_ctrl_regs.h"
+#include "rv_core_ibex_regs.h"
+#include "sram_ctrl_regs.h"
 
 enum {
   /**
@@ -2077,6 +2089,161 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) __attribute__((optnone)) {
   memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_csr_combi(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+
+  // Read the trigger data and the reference values
+  ibex_fi_csr_combi_in_t uj_data;
+  TRY(ujson_deserialize_ibex_fi_csr_combi_in_t(uj, &uj_data));
+
+  uint32_t read_csrs[IBEXFI_NUM_CSR_COMBI];
+  for (int i = 0; i < IBEXFI_NUM_CSR_COMBI; i++) {
+    read_csrs[i] = 0x1BADB002;
+  }
+
+  // Clear the `sha_en` bit to ensure the message length registers are
+  // writeable. Leave the rest of the configuration unchanged.
+  uint32_t cfg =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, false);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Write reference value into CSR.
+  if (uj_data.trigger & 0x1) {
+    PENTEST_ASM_TRIGGER_HIGH
+  }
+  abs_mmio_write32(TOP_EARLGREY_AES_BASE_ADDR + AES_IV_0_REG_OFFSET,
+                   uj_data.ref_values[0]);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET,
+                   uj_data.ref_values[1]);
+  abs_mmio_write32(
+      TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
+      uj_data.ref_values[2]);
+  abs_mmio_write32(
+      TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
+      uj_data.ref_values[3]);
+  abs_mmio_write32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET,
+                   uj_data.ref_values[4]);
+  abs_mmio_write32(
+      TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_RESEED_INTERVAL_REG_OFFSET,
+      uj_data.ref_values[5]);
+  abs_mmio_write32(TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET,
+                   uj_data.ref_values[6]);
+  abs_mmio_write32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
+                       SRAM_CTRL_READBACK_REG_OFFSET,
+                   uj_data.ref_values[7]);
+  abs_mmio_write32_shadowed(
+      TOP_EARLGREY_AES_BASE_ADDR + AES_CTRL_SHADOWED_REG_OFFSET,
+      uj_data.ref_values[8]);
+  abs_mmio_write32_shadowed(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                                KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
+                            uj_data.ref_values[9]);
+  abs_mmio_write32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET,
+                   uj_data.ref_values[10]);
+  abs_mmio_write32_shadowed(
+      TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+          ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET,
+      uj_data.ref_values[11]);
+  abs_mmio_write32_shadowed(
+      TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+          ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET,
+      uj_data.ref_values[12]);
+  abs_mmio_write32_shadowed(
+      TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+          ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET,
+      uj_data.ref_values[13]);
+  asm volatile("mv x9, %0" : : "r"(uj_data.ref_values[14]));
+  asm volatile("mv x19, %0" : : "r"(uj_data.ref_values[15]));
+  asm volatile("mv x29, %0" : : "r"(uj_data.ref_values[16]));
+  if (uj_data.trigger & 0x1) {
+    PENTEST_ASM_TRIGGER_LOW
+  }
+
+  if (uj_data.trigger & 0x2) {
+    PENTEST_ASM_TRIGGER_HIGH
+  }
+  asm volatile(NOP100);
+  if (uj_data.trigger & 0x2) {
+    PENTEST_ASM_TRIGGER_LOW
+  }
+
+  if (uj_data.trigger & 0x4) {
+    PENTEST_ASM_TRIGGER_HIGH
+  }
+  read_csrs[0] =
+      abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR + AES_IV_0_REG_OFFSET);
+  read_csrs[1] =
+      abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_0_REG_OFFSET);
+  read_csrs[2] = abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR +
+                                 HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
+  read_csrs[3] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                                 KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET);
+  read_csrs[4] =
+      abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR + KEYMGR_SALT_0_REG_OFFSET);
+
+  read_csrs[5] = abs_mmio_read32(TOP_EARLGREY_CSRNG_BASE_ADDR +
+                                 CSRNG_RESEED_INTERVAL_REG_OFFSET);
+  read_csrs[6] =
+      abs_mmio_read32(TOP_EARLGREY_CSRNG_BASE_ADDR + CSRNG_CTRL_REG_OFFSET);
+  read_csrs[7] = abs_mmio_read32(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR +
+                                 SRAM_CTRL_READBACK_REG_OFFSET);
+  read_csrs[8] = abs_mmio_read32(TOP_EARLGREY_AES_BASE_ADDR +
+                                 AES_CTRL_SHADOWED_REG_OFFSET);
+  read_csrs[9] = abs_mmio_read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                                 KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET);
+  read_csrs[10] =
+      abs_mmio_read32(TOP_EARLGREY_EDN0_BASE_ADDR + EDN_CTRL_REG_OFFSET);
+  read_csrs[11] =
+      abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+                      ALERT_HANDLER_CLASSA_TIMEOUT_CYC_SHADOWED_REG_OFFSET);
+  read_csrs[12] =
+      abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+                      ALERT_HANDLER_CLASSA_PHASE0_CYC_SHADOWED_REG_OFFSET);
+  read_csrs[13] =
+      abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+                      ALERT_HANDLER_CLASSA_ACCUM_THRESH_SHADOWED_REG_OFFSET);
+  asm volatile("mv %0, x9" : "=r"(read_csrs[14]));
+  asm volatile("mv %0, x19" : "=r"(read_csrs[15]));
+  asm volatile("mv %0, x29" : "=r"(read_csrs[16]));
+  if (uj_data.trigger & 0x4) {
+    PENTEST_ASM_TRIGGER_LOW
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  ibex_fi_csr_combi_out_t uj_output;
+  // Preset buffers to 0.
+  memset(uj_output.data_faulty, false, sizeof(uj_output.data_faulty));
+  memset(uj_output.output, 0, sizeof(uj_output.output));
+
+  for (size_t it = 0; it < IBEXFI_NUM_CSR_COMBI; it++) {
+    if (read_csrs[it] != uj_data.ref_values[it]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_output.data_faulty[it] = true;
+    }
+    uj_output.output[it] = read_csrs[it];
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send alerts back to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_csr_combi_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -4193,6 +4360,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_csr_read(uj);
     case kIbexFiSubcommandCharCsrWrite:
       return handle_ibex_fi_char_csr_write(uj);
+    case kIbexFiSubcommandCharCsrCombi:
+      return handle_ibex_fi_char_csr_combi(uj);
     case kIbexFiSubcommandCharFlashRead:
       return handle_ibex_fi_char_flash_read(uj);
     case kIbexFiSubcommandCharFlashWrite:
