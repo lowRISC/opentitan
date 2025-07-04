@@ -253,6 +253,7 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_carry_flag",
+        "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_combi_ops",
         "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_key_sideload_sca",
         "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
         "//sw/otbn/crypto:p256_ecdsa_sca",
