@@ -63,11 +63,6 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
-# RISC-V device toolchain
-COPY util/get-toolchain.py /tmp/get-toolchain.py
-RUN /tmp/get-toolchain.py -r ${RISCV_TOOLCHAIN_TAR_VERSION} \
-    && rm -f /tmp/get-toolchain.py
-
 # Install and configure clang and llvm tools for coverage measurements.
 # Note: Some commands listed below are missing in 13.0.1 and cause warnings during
 # build. These are kept intentionally since we plan to use them in the future, e.g.
