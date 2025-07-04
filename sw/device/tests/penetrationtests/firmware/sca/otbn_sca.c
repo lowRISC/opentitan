@@ -15,6 +15,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -24,6 +25,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
+
+#define MAX_BATCH_SIZE 256
+#define BYTES_IN_WDR 32
 
 static dif_otbn_t otbn;
 static dif_keymgr_t keymgr;
@@ -575,6 +579,125 @@ status_t handle_otbn_sca_insn_carry_flag(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t trigger_otbn_sca_combi_operations(
+    uint32_t value1, uint32_t value2, uint32_t result1[8], uint32_t result2[8],
+    uint32_t result3[8], uint32_t result4[8], uint32_t result5[8],
+    uint32_t result6[8], uint32_t result7[8], uint32_t *result8,
+    uint32_t trigger) {
+  // INSN Combi Ops OTBN App.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_insn_combi_ops);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, big_input_1);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, big_input_2);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_1);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_2);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_3);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_4);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_5);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_6);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_7);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_insn_combi_ops, result_8);
+
+  static const otbn_app_t kOtbnAppInsnCombiOps =
+      OTBN_APP_T_INIT(otbn_insn_combi_ops);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsValue1 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, big_input_1);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsValue2 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, big_input_2);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult1 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_1);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult2 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_2);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult3 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_3);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult4 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_4);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult5 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_5);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult6 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_6);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult7 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_7);
+  static const otbn_addr_t kOtbnVarInsnCombiOpsResult8 =
+      OTBN_ADDR_T_INIT(otbn_insn_combi_ops, result_8);
+
+  // Load app and write received big_num into DMEM.
+  otbn_load_app(kOtbnAppInsnCombiOps);
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarInsnCombiOpsValue1, &value1,
+                          sizeof(value1)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarInsnCombiOpsValue2, &value2,
+                          sizeof(value2)));
+
+  if (trigger & 0x1)
+    pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  if (trigger & 0x1)
+    pentest_set_trigger_low();
+
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult1, &result1[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult2, &result2[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult3, &result3[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult4, &result4[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult5, &result5[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult6, &result6[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult7, &result7[0],
+                         BYTES_IN_WDR));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarInsnCombiOpsResult8, &result8[0],
+                         sizeof(*result8)));
+
+  if (trigger & 0x2)
+    pentest_set_trigger_high();
+  otbn_dmem_sec_wipe();
+  if (trigger & 0x2)
+    pentest_set_trigger_low();
+
+  return OK_STATUS();
+}
+
+status_t handle_otbn_sca_combi_operations_batch(ujson_t *uj) {
+  // Get number of iterations and fixed data.
+  otbn_sca_test_batch_ops_t uj_data;
+  TRY(ujson_deserialize_otbn_sca_test_batch_ops_t(uj, &uj_data));
+  TRY_CHECK(uj_data.num_iterations < MAX_BATCH_SIZE);
+
+  otbn_sca_ops_result_t uj_output;
+
+  // SCA code target.
+  for (size_t it = 0; it < uj_data.num_iterations; it++) {
+    // Clear the results buffer.
+    memset(uj_output.result1, 0, sizeof(uj_output.result1));
+    memset(uj_output.result2, 0, sizeof(uj_output.result2));
+    memset(uj_output.result3, 0, sizeof(uj_output.result3));
+    memset(uj_output.result4, 0, sizeof(uj_output.result4));
+    memset(uj_output.result5, 0, sizeof(uj_output.result5));
+    memset(uj_output.result6, 0, sizeof(uj_output.result6));
+    memset(uj_output.result7, 0, sizeof(uj_output.result7));
+    uj_output.result8 = 0;
+    // Call the target code sequence.
+    TRY(trigger_otbn_sca_combi_operations(
+        uj_data.fixed_data1, uj_data.fixed_data2, uj_output.result1,
+        uj_output.result2, uj_output.result3, uj_output.result4,
+        uj_output.result5, uj_output.result6, uj_output.result7,
+        &uj_output.result8, uj_data.trigger));
+  }
+
+  // Write back last values to validate generated data if asked for.
+  if (uj_data.print_flag) {
+    RESP_OK(ujson_serialize_otbn_sca_ops_result_t, uj, &uj_output);
+  } else {
+    otbn_sca_empty_t uj_empty;
+    uj_empty.success = true;
+    RESP_OK(ujson_serialize_otbn_sca_empty_t, uj, &uj_empty);
+  }
+  return OK_STATUS();
+}
+
 status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   // Get fixed seed.
   penetrationtest_otbn_sca_fixed_seed_t uj_data;
@@ -702,6 +825,8 @@ status_t handle_otbn_sca(ujson_t *uj) {
       return handle_otbn_pentest_init_keymgr(uj);
     case kOtbnScaSubcommandInsnCarryFlag:
       return handle_otbn_sca_insn_carry_flag(uj);
+    case kOtbnScaSubcommandCombiOps:
+      return handle_otbn_sca_combi_operations_batch(uj);
     case kOtbnScaSubcommandKeySideloadFvsr:
       return handle_otbn_sca_key_sideload_fvsr(uj);
     case kOtbnScaSubcommandRsa512Decrypt:
