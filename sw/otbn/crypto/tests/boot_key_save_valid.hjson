@@ -1,0 +1,44 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  /**
+   * @param[in]  dmem[attestation_additional_seed]: DRBG output.
+   * @param[out]  dmem[d0]: First share of private key (320 bits).
+   * @param[out]  dmem[d1]: Second share of private key (320 bits).
+   */
+
+  "input": {
+    "dmem": {
+      "mode": "0x0000064d"  # MODE_ATTESTATION_KEY_SAVE
+
+      "attestation_additional_seed":
+        '''
+        0xdecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbad
+          decafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbad
+        '''
+    }
+  }
+  "output": {
+    "dmem": {
+      # Verified with:
+      # >>> d0 = 0x001cc542001cc542001cc542001cc542001cc542001cc542001cc542001cc542001cc542001cc542
+      # >>> d1 = 0xbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00d
+      # >>> consts = "deadbeef", "baadf00d", "decafbad"
+      # >>> key0, key1, seed = [int(e * 12, 16) for e in consts]
+      # >>> mask = 2^320 - 1
+      # >>> print((d0 + d1) % n == ((seed ^^ key0 ^^ key1) & mask) % n)
+
+      "d0":
+        '''
+          0x000000000000000000000000000000000000000000000000001cc542001cc542
+            001cc542001cc542001cc542001cc542001cc542001cc542001cc542001cc542
+        '''
+      "d1":
+        '''
+          0x000000000000000000000000000000000000000000000000baadf00dbaadf00d
+            baadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00dbaadf00d
+        '''
+    }
+  }
+}

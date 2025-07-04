@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_library", "otbn_sim_test")
+load("//rules:otbn.bzl", "otbn_consttime_test", "otbn_library", "otbn_sim_test", "otbn_sim_test_suite")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -383,6 +383,18 @@ otbn_sim_test(
     deps = [
         "//sw/otbn/crypto:p256_base",
         "//sw/otbn/crypto:p256_shared_key",
+    ],
+)
+
+otbn_sim_test_suite(
+    name = "p256_test",
+    binary = "//sw/otbn/crypto:run_p256",
+    tests = [
+        "p256_check_public_key_not_on_curve.hjson",
+        "p256_check_public_key_valid.hjson",
+        "p256_check_public_key_x_too_large.hjson",
+        "p256_check_public_key_y_too_large.hjson",
+        "p256_isoncurve_valid.hjson",
     ],
 )
 
@@ -1148,5 +1160,17 @@ otbn_consttime_test(
     subroutine = "X25519",
     deps = [
         ":x25519_test1",
+    ],
+)
+
+otbn_sim_test_suite(
+    name = "boot_test",
+    binary = "//sw/otbn/crypto:boot",
+    tests = [
+        "boot_key_endorse_valid.hjson",
+        "boot_key_save_valid.hjson",
+        "boot_keygen_valid.hjson",
+        "boot_mode_invalid.hjson",
+        "boot_sigverify_valid.hjson",
     ],
 )
