@@ -1,0 +1,34 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  /**
+   * Test case 1 in wycheproof ecdsa_secp256r1_sha256_p1363_test.json
+   *
+   * @param[in]  dmem[msg]: message to be verified (256 bits)
+   * @param[in]  dmem[r]:   r component of signature (256 bits)
+   * @param[in]  dmem[s]:   s component of signature (256 bits)
+   * @param[in]  dmem[x]:   affine x-coordinate of public key (256 bits)
+   * @param[in]  dmem[y]:   affine y-coordinate of public key (256 bits)
+   * @param[out] dmem[ok]:  success/failure of basic checks (32 bits)
+   * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
+   */
+
+  "input": {
+    "dmem": {
+      "mode": "0x000007d3", # MODE_SIGVERIFY
+
+      "msg": "0xbb5a52f42f9c9261ed4361f59422a1e30036e7c32b270c8807a419feca605023"
+      "x": "0x2927b10512bae3eddcfe467828128bad2903269919f7086069c8c4df6c732838"
+      "y": "0xc7787964eaac00e5921fb1498a60f4606766b3d9685001558d1a974e7341513e"
+      "r": "0x2ba3a8be6b94d5ec80a6d9d1190a436effe50d85a1eee859b8cc6af9bd5c2e18"
+      "s": "0x4cd60b855d442f5b3c7b11eb6c4e0ae7525fe710fab9aa7c77a67f79e6fadd76"
+    }
+  }
+  "output": {
+    "dmem": {
+      "ok": "0x00000739"  # HARDENED_TRUE
+      "x_r": "0x2ba3a8be6b94d5ec80a6d9d1190a436effe50d85a1eee859b8cc6af9bd5c2e18"
+    }
+  }
+}
