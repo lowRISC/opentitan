@@ -26,3 +26,8 @@ filegroup(
     name = "tpl_files",
     srcs = glob(["**/*.tpl"]),
 )
+
+filegroup(
+    name = "doc_files",
+    srcs = [":README.md"],
+)
