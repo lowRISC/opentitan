@@ -5,13 +5,15 @@
 module mbx_hostif
   import mbx_reg_pkg::*;
 #(
-    parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
-    parameter int unsigned                    CfgSramAddrWidth                  = 32,
-    parameter int unsigned                    CfgSramDataWidth                  = 32,
-    parameter int unsigned                    CfgObjectSizeWidth                = 11,
-    parameter bit                             EnableRacl                        = 1'b0,
-    parameter bit                             RaclErrorRsp                      = 1'b1,
-    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecCore[NumRegsCore] = '{NumRegsCore{0}}
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles                   = 1,
+  parameter int unsigned                    CfgSramAddrWidth                  = 32,
+  parameter int unsigned                    CfgSramDataWidth                  = 32,
+  parameter int unsigned                    CfgObjectSizeWidth                = 11,
+  parameter bit                             EnableRacl                        = 1'b0,
+  parameter bit                             RaclErrorRsp                      = 1'b1,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecCore[NumRegsCore] = '{NumRegsCore{0}}
 ) (
   input  logic                          clk_i,
   input  logic                          rst_ni,
@@ -87,8 +89,9 @@ module mbx_hostif
   localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn ( AlertAsyncOn[i] ),
-      .IsFatal ( IsFatal[i]      )
+      .AsyncOn   ( AlertAsyncOn[i] ),
+      .SkewCycles( AlertSkewCycles ),
+      .IsFatal   ( IsFatal[i]      )
     ) u_prim_alert_sender (
     .clk_i          ( clk_i         ),
     .rst_ni         ( rst_ni        ),

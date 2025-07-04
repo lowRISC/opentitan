@@ -12,13 +12,15 @@ module entropy_src
   import entropy_src_reg_pkg::*;
   import prim_mubi_pkg::mubi8_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int RngBusWidth                    = 4,
-  parameter int RngBusBitSelWidth              = 2,
-  parameter int HealthTestWindowWidth          = 18,
-  parameter int EsFifoDepth                    = 3,
-  parameter int DistrFifoDepth                 = 2,
-  parameter bit Stub                           = 1'b0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles          = 1,
+  parameter int RngBusWidth                       = 4,
+  parameter int RngBusBitSelWidth                 = 2,
+  parameter int HealthTestWindowWidth             = 18,
+  parameter int EsFifoDepth                       = 3,
+  parameter int DistrFifoDepth                    = 2,
+  parameter bit Stub                              = 1'b0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -272,6 +274,7 @@ module entropy_src
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i)
     ) u_prim_alert_sender (
       .clk_i,

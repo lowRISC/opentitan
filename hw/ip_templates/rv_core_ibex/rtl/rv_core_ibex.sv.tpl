@@ -13,6 +13,8 @@ module ${module_instance_name}
   import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned            AlertSkewCycles  = 1,
   parameter bit                     PMPEnable        = 1'b1,
   parameter int unsigned            PMPGranularity   = 0,
   parameter int unsigned            PMPNumRegions    = 16,
@@ -256,7 +258,8 @@ module ${module_instance_name}
   logic esc_irq_nm;
   prim_esc_receiver #(
     .N_ESC_SEV   (NEscalationSeverities),
-    .PING_CNT_DW (WidthPingCounter)
+    .PING_CNT_DW (WidthPingCounter),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver (
     .clk_i     ( clk_esc_i  ),
     .rst_ni    ( rst_esc_ni ),
@@ -827,6 +830,7 @@ module ${module_instance_name}
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[0]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_alert_sender (
       .clk_i,

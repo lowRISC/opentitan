@@ -85,6 +85,7 @@ module prim_alert_tb;
   prim_mubi_pkg::mubi4_t     init_trig = prim_mubi_pkg::MuBi4False;
   prim_alert_sender #(
     .AsyncOn(IsAsync),
+    .SkewCycles(1),
     .IsFatal(IsFatal)
   ) i_alert_sender (
     .clk_i(clk),
@@ -98,7 +99,8 @@ module prim_alert_tb;
   );
 
   prim_alert_receiver #(
-    .AsyncOn(IsAsync)
+    .AsyncOn(IsAsync),
+    .SkewCycles(1)
   ) i_alert_receiver (
     .clk_i(clk),
     .rst_ni(rst_n),

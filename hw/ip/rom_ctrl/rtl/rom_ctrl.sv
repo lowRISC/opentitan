@@ -10,6 +10,8 @@ module rom_ctrl
 #(
   parameter                       BootRomInitFile = "",
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
   parameter bit [63:0]            RndCnstScrNonce = '0,
   parameter bit [127:0]           RndCnstScrKey = '0,
   // ROM size in bytes
@@ -444,6 +446,7 @@ module rom_ctrl
   for (genvar i = 0; i < NumAlerts; i++) begin: gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i == AlertFatal)
     ) u_alert_sender (
       .clk_i,

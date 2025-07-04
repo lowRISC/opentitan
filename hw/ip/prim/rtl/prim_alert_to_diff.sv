@@ -14,7 +14,9 @@
 
 module prim_alert_to_diff #(
   // AsyncOn: Enables additional synchronization logic within the alert receiver.
-  parameter bit AsyncOn = 1'b0
+  parameter bit AsyncOn = 1'b0,
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned SkewCycles = 1
 ) (
   input logic                       clk_i,
   input logic                       rst_ni,
@@ -31,7 +33,8 @@ module prim_alert_to_diff #(
 
   // u_prim_alert_receiver: Instantiates the alert receiver module.
   prim_alert_receiver #(
-    .AsyncOn(AsyncOn)
+    .AsyncOn(AsyncOn),
+    .SkewCycles(SkewCycles)
   ) u_prim_alert_receiver (
     .clk_i,
     .rst_ni,

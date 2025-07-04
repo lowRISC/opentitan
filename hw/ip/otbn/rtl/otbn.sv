@@ -13,9 +13,11 @@ module otbn
   import otbn_pkg::*;
   import otbn_reg_pkg::*;
 #(
-  parameter bit                   Stub         = 1'b0,
-  parameter regfile_e             RegFile      = RegFileFF,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit                   Stub            = 1'b0,
+  parameter regfile_e             RegFile         = RegFileFF,
+  parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles = 1,
 
   // Default seed for URND PRNG
   parameter urnd_prng_seed_t RndCnstUrndPrngSeed = RndCnstUrndPrngSeedDefault,
@@ -1017,6 +1019,7 @@ module otbn
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(i == AlertFatal)
     ) u_prim_alert_sender (
       .clk_i,

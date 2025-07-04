@@ -16,6 +16,8 @@ module rv_dm
   import rv_dm_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn                      = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles                   = 1,
   parameter logic [31:0]                    IdcodeValue                       = 32'h 0000_0001,
   parameter bit                             UseDmiInterface                   = 1'b0,
   parameter bit                             SecVolatileRawUnlockEn            = 0,
@@ -162,6 +164,7 @@ module rv_dm
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,

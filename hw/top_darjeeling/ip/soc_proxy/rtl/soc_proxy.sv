@@ -10,7 +10,9 @@ module soc_proxy
   import soc_proxy_reg_pkg::*;
   import soc_proxy_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -343,6 +345,7 @@ module soc_proxy
   // Alert sender for integrity alerts
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[FatalAlertIntg]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(1)
   ) u_prim_fatal_alert_intg_sender (
     .clk_i,
@@ -359,6 +362,7 @@ module soc_proxy
   for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_sender
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[FatalAlertExternal0 + i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -376,6 +380,7 @@ module soc_proxy
   for (genvar i = 0; i < NumRecovExternalAlerts; i++) begin : gen_recov_alert_sender
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[RecovAlertExternal0 + i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b0)
     ) u_prim_alert_sender (
       .clk_i,

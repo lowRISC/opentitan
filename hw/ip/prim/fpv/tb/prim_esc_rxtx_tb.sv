@@ -35,7 +35,9 @@ module prim_esc_rxtx_tb
   assign esc_tx_in.esc_p  = esc_tx_out.esc_p  ^ esc_err_pi;
   assign esc_tx_in.esc_n  = esc_tx_out.esc_n  ^ esc_err_ni;
 
-  prim_esc_sender u_prim_esc_sender (
+  prim_esc_sender #(
+    .SkewCycles(1)
+  ) u_prim_esc_sender (
     .clk_i        ,
     .rst_ni       ,
     .ping_req_i   ,
@@ -47,7 +49,8 @@ module prim_esc_rxtx_tb
   );
 
   prim_esc_receiver #(
-    .TimeoutCntDw(TimeoutCntDw)
+    .TimeoutCntDw(TimeoutCntDw),
+    .SkewCycles(1)
   ) u_prim_esc_receiver (
     .clk_i    ,
     .rst_ni   ,

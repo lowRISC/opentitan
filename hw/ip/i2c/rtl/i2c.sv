@@ -10,6 +10,8 @@ module i2c
   import i2c_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles           = 1,
   parameter int unsigned                    InputDelayCycles          = 0,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
@@ -90,6 +92,7 @@ module i2c
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,

@@ -523,10 +523,11 @@ else:
 slice = f"{lo+w-1}:{lo}"
 %>\
   % if 'outgoing_alert' in m:
-    .AlertAsyncOn(AsyncOnOutgoingAlert${alert_group.capitalize()}[${slice}])${"," if m["param_list"] else ""}
+    .AlertAsyncOn(AsyncOnOutgoingAlert${alert_group.capitalize()}[${slice}]),
   % else:
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}]),
   % endif
+    .AlertSkewCycles(top_pkg::AlertSkewCycles)${"," if m["param_list"] else ""}
   % endif
     % for i in m["param_list"]:
     .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}

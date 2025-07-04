@@ -4,6 +4,8 @@
 
 module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned          AlertSkewCycles           = 1,
   parameter int unsigned          NumSubscribingIps         = 1,
   parameter int unsigned          NumExternalSubscribingIps = 1,
   parameter bit                   RaclErrorRsp              = 1'b1
@@ -94,8 +96,9 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
-      .AsyncOn ( AlertAsyncOn[i] ),
-      .IsFatal ( IsFatal[i]      )
+      .AsyncOn    ( AlertAsyncOn[i] ),
+      .SkewCycles ( AlertSkewCycles ),
+      .IsFatal    ( IsFatal[i]      )
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),

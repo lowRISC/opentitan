@@ -22,7 +22,9 @@ rg_srcs = get_rg_srcs(typed_clocks)
     import lc_ctrl_pkg::lc_tx_t;
     import prim_mubi_pkg::mubi4_t;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles = 1
 ) (
   // Primary module control clocks and resets
   // This drives the register interface
@@ -246,6 +248,7 @@ rg_srcs = get_rg_srcs(typed_clocks)
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(AlertFatal[i])
     ) u_prim_alert_sender (
       .clk_i,

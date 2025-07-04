@@ -13,6 +13,8 @@ module keymgr_dpe
   import keymgr_dpe_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned AlertSkewCycles       = 1,
   parameter bit KmacEnMasking                  = 1'b1,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
@@ -752,6 +754,7 @@ module keymgr_dpe
                             reg2hw.alert_test.fatal_fault_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[1]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(1)
   ) u_fault_alert (
     .clk_i,
@@ -769,6 +772,7 @@ module keymgr_dpe
                              reg2hw.alert_test.recov_operation_err.qe;
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
+    .SkewCycles(AlertSkewCycles),
     .IsFatal(0)
   ) u_op_err_alert (
     .clk_i,

@@ -10,6 +10,8 @@
 module aon_timer import aon_timer_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert signal
+  parameter int unsigned                    AlertSkewCycles           = 1,
   parameter bit                             EnableRacl                = 1'b0,
   parameter bit                             RaclErrorRsp              = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
@@ -131,6 +133,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
       .clk_i,

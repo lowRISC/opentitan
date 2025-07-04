@@ -14,6 +14,8 @@ module lc_ctrl
 #(
   // Enable asynchronous transitions on alerts.
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  // Number of cycles a differential skew is tolerated on the alert and escalation signal
+  parameter int unsigned AlertSkewCycles = 1,
   // Hardware revision numbers exposed in the CSRs.
   parameter logic [SiliconCreatorIdWidth-1:0] SiliconCreatorId = '0,
   parameter logic [ProductIdWidth-1:0]        ProductId        = '0,
@@ -640,6 +642,7 @@ module lc_ctrl
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
+      .SkewCycles(AlertSkewCycles),
       .IsFatal(1)
     ) u_prim_alert_sender (
       .clk_i,
@@ -672,7 +675,8 @@ module lc_ctrl
   logic esc_scrap_state0;
   prim_esc_receiver #(
     .N_ESC_SEV   (EscNumSeverities),
-    .PING_CNT_DW (EscPingCountWidth)
+    .PING_CNT_DW (EscPingCountWidth),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver0 (
     .clk_i,
     .rst_ni,
@@ -686,7 +690,8 @@ module lc_ctrl
   logic esc_scrap_state1;
   prim_esc_receiver #(
     .N_ESC_SEV   (EscNumSeverities),
-    .PING_CNT_DW (EscPingCountWidth)
+    .PING_CNT_DW (EscPingCountWidth),
+    .SkewCycles  (AlertSkewCycles)
   ) u_prim_esc_receiver1 (
     .clk_i,
     .rst_ni,
