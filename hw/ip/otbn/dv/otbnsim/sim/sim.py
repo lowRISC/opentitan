@@ -49,7 +49,7 @@ class OTBNSim:
         format.
 
         '''
-        self.state.dmem.load_le_words(data, has_validity)
+        self.state.dmem.load_le_words(data, has_validity, word_offset=0)
 
     def start(self, collect_stats: bool) -> None:
         '''Prepare to start the execution.
