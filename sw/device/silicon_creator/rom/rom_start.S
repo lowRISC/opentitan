@@ -275,10 +275,10 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // |                  | Pull-down      | Pull-down      | Pull-up          |
   li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
             PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
-  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
-           (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
+  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_BIT) | \
+           (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_BIT)
   sw   t0, (SW_STRAP_0_PAD * 4)(a0)
-  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
+  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_BIT)
   sw   t0, (SW_STRAP_1_PAD * 4)(a0)
   sw   t0, (SW_STRAP_2_PAD * 4)(a0)
   li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \

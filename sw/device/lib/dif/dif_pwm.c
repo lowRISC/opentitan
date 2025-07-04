@@ -86,25 +86,25 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
   uint16_t phase_cntr_ticks_per_beat =
       (uint16_t)(1 << (16 - duty_cycle_resolution - 1));
   uint32_t duty_cycle_reg =
-      bitfield_field32_write(0, PWM_DUTY_CYCLE_0_A_0_FIELD,
+      bitfield_field32_write(0, PWM_DUTY_CYCLE_0_A_FIELD,
                              phase_cntr_ticks_per_beat * config.duty_cycle_a);
   duty_cycle_reg =
-      bitfield_field32_write(duty_cycle_reg, PWM_DUTY_CYCLE_0_B_0_FIELD,
+      bitfield_field32_write(duty_cycle_reg, PWM_DUTY_CYCLE_0_B_FIELD,
                              phase_cntr_ticks_per_beat * config.duty_cycle_b);
 
   // Configure parameter register.
   uint32_t param_reg =
-      bitfield_field32_write(0, PWM_PWM_PARAM_0_PHASE_DELAY_0_FIELD,
+      bitfield_field32_write(0, PWM_PWM_PARAM_0_PHASE_DELAY_FIELD,
                              phase_cntr_ticks_per_beat * config.phase_delay);
   if (config.mode == kDifPwmModeHeartbeat) {
     param_reg =
-        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_HTBT_EN_0_BIT, true);
+        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_HTBT_EN_BIT, true);
   }
   // Blink behavior is modified by the heartbeat enable and to use heartbeat
   // mode we must therefore enable blinking too.
   if (config.mode == kDifPwmModeBlink || config.mode == kDifPwmModeHeartbeat) {
     param_reg =
-        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_BLINK_EN_0_BIT, true);
+        bitfield_bit32_write(param_reg, PWM_PWM_PARAM_0_BLINK_EN_BIT, true);
   }
 
   // Configure polarity register.
@@ -115,7 +115,7 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
   uint32_t blink_param_reg = 0;
   if (config.mode == kDifPwmModeHeartbeat || config.mode == kDifPwmModeBlink) {
     blink_param_reg = bitfield_field32_write(
-        blink_param_reg, PWM_BLINK_PARAM_0_X_0_FIELD, config.blink_parameter_x);
+        blink_param_reg, PWM_BLINK_PARAM_0_X_FIELD, config.blink_parameter_x);
     if (config.mode == kDifPwmModeHeartbeat) {
       if (config.blink_parameter_y >= beats_per_pulse_cycle) {
         return kDifBadArg;
@@ -123,12 +123,11 @@ dif_result_t dif_pwm_configure_channel(const dif_pwm_t *pwm,
       // Convert "beats" to "phase counter ticks", since this value is added to
       // the duty cycle (which hardware computes in "phase counter ticks").
       blink_param_reg = bitfield_field32_write(
-          blink_param_reg, PWM_BLINK_PARAM_0_Y_0_FIELD,
+          blink_param_reg, PWM_BLINK_PARAM_0_Y_FIELD,
           phase_cntr_ticks_per_beat * config.blink_parameter_y);
     } else if (config.mode == kDifPwmModeBlink) {
-      blink_param_reg =
-          bitfield_field32_write(blink_param_reg, PWM_BLINK_PARAM_0_Y_0_FIELD,
-                                 config.blink_parameter_y);
+      blink_param_reg = bitfield_field32_write(
+          blink_param_reg, PWM_BLINK_PARAM_0_Y_FIELD, config.blink_parameter_y);
     }
   } else if (config.mode != kDifPwmModeFirmware) {
     return kDifBadArg;

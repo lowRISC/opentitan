@@ -29,22 +29,22 @@ rom_error_t alert_configure(size_t index, alert_class_t cls,
     case kAlertClassA:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSA);
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_VALUE_CLASSA);
       break;
     case kAlertClassB:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSB);
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_VALUE_CLASSB);
       break;
     case kAlertClassC:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSC);
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_VALUE_CLASSC);
       break;
     case kAlertClassD:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_0_VALUE_CLASSD);
+          ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_CLASS_A_VALUE_CLASSD);
       break;
     case kAlertClassX:
       return kErrorOk;
@@ -83,22 +83,22 @@ rom_error_t alert_local_configure(size_t index, alert_class_t cls,
     case kAlertClassA:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSA);
+          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_VALUE_CLASSA);
       break;
     case kAlertClassB:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSB);
+          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_VALUE_CLASSB);
       break;
     case kAlertClassC:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSC);
+          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_VALUE_CLASSC);
       break;
     case kAlertClassD:
       abs_mmio_write32_shadowed(
           kBase + ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_REG_OFFSET + index,
-          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_0_VALUE_CLASSD);
+          ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_0_CLASS_LA_VALUE_CLASSD);
       break;
     case kAlertClassX:
       return kErrorOk;

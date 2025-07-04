@@ -155,13 +155,13 @@ Register write enable for the hardware mutex register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CLAIM_TRANSITION_IF_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                       | Description                                                                                                                                                                                              |
-|:------:|:------:|:-------:|:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                            | Reserved                                                                                                                                                                                                 |
-|   0    |  rw0c  |   0x1   | CLAIM_TRANSITION_IF_REGWEN | This bit is managed by software and is set to 1 by default. When cleared to 0, the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex register cannot be written to anymore. Write 0 to clear this bit. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                              |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                 |
+|   0    |  rw0c  |   0x1   | EN     | This bit is managed by software and is set to 1 by default. When cleared to 0, the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex register cannot be written to anymore. Write 0 to clear this bit. |
 
 ## CLAIM_TRANSITION_IF
 Hardware mutex to claim exclusive access to the transition interface.
@@ -197,15 +197,15 @@ Register write enable for all transition interface registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TRANSITION_REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                       |
-|:------:|:------:|:-------:|:-----------------------------------------------------------|
-|  31:1  |        |         | Reserved                                                   |
-|   0    |   ro   |   0x0   | [TRANSITION_REGWEN](#transition_regwen--transition_regwen) |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:1  |        |         | Reserved                     |
+|   0    |   ro   |   0x0   | [EN](#transition_regwen--en) |
 
-### TRANSITION_REGWEN . TRANSITION_REGWEN
+### TRANSITION_REGWEN . EN
 This bit is hardware-managed and only readable by software.
 By default, this bit is set to 0 by hardware.
 Once SW has claimed the [`CLAIM_TRANSITION_IF`](#claim_transition_if) mutex, this bit will be set to 1.
@@ -298,12 +298,12 @@ hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TRANSITION_TOKEN", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description   |
-|:------:|:------:|:-------:|:-----------------|:--------------|
-|  31:0  |   rw   |    x    | TRANSITION_TOKEN |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## TRANSITION_TARGET
 This register exposes the decoded life cycle state.
@@ -371,12 +371,12 @@ them to the OTP macro wrapper - even if this register is programmed to a non-zer
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OTP_VENDOR_TEST_CTRL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description   |
-|:------:|:------:|:-------:|:---------------------|:--------------|
-|  31:0  |   rw   |    x    | OTP_VENDOR_TEST_CTRL |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   rw   |    x    | DATA   |               |
 
 ## OTP_VENDOR_TEST_STATUS
 Test/vendor-specific settings for the OTP macro wrapper.
@@ -389,12 +389,12 @@ In all other states, these values will read as zero.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OTP_VENDOR_TEST_STATUS", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                   | Description   |
-|:------:|:------:|:-------:|:-----------------------|:--------------|
-|  31:0  |   ro   |    x    | OTP_VENDOR_TEST_STATUS |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## LC_STATE
 This register exposes the decoded life cycle state.
@@ -592,12 +592,12 @@ If this register reads all-zero, this is indicative that the value has not been 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DEVICE_ID", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description   |
-|:------:|:------:|:-------:|:----------|:--------------|
-|  31:0  |   ro   |    x    | DEVICE_ID |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## MANUF_STATE
 This is a 256bit field used for keeping track of the manufacturing state.
@@ -621,12 +621,12 @@ This is a 256bit field used for keeping track of the manufacturing state.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MANUF_STATE", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description   |
-|:------:|:------:|:-------:|:------------|:--------------|
-|  31:0  |   ro   |    x    | MANUF_STATE |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:0  |   ro   |    x    | DATA   |               |
 
 ## Summary of the **`dmi`** interface's registers
 

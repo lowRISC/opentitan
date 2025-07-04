@@ -261,13 +261,13 @@ I2C Read Data
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RDATA", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:8  |        |         |        | Reserved      |
-|  7:0   |   ro   |    x    | RDATA  |               |
+|  7:0   |   ro   |    x    | DATA   |               |
 
 ## FDATA
 I2C Host Format Data
@@ -689,13 +689,13 @@ I2C target transmit data
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TXDATA", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["wo"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description   |
 |:------:|:------:|:-------:|:-------|:--------------|
 |  31:8  |        |         |        | Reserved      |
-|  7:0   |   wo   |   0x0   | TXDATA |               |
+|  7:0   |   wo   |   0x0   | DATA   |               |
 
 ## HOST_TIMEOUT_CTRL
 I2C host clock generation timeout value (in units of input clock frequency).
@@ -712,13 +712,13 @@ Set this CSR to 0 to disable this behaviour.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HOST_TIMEOUT_CTRL", "bits": 20, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 20, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name              | Description   |
-|:------:|:------:|:-------:|:------------------|:--------------|
-| 31:20  |        |         |                   | Reserved      |
-|  19:0  |   rw   |   0x0   | HOST_TIMEOUT_CTRL |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+| 31:20  |        |         |        | Reserved      |
+|  19:0  |   rw   |   0x0   | DATA   |               |
 
 ## TARGET_TIMEOUT_CTRL
 I2C target internal stretching timeout control.
@@ -753,13 +753,13 @@ When it reaches its maximum value it will stay at that value.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TARGET_NACK_COUNT", "bits": 8, "attr": ["rc"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["rc"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name              | Description   |
-|:------:|:------:|:-------:|:------------------|:--------------|
-|  31:8  |        |         |                   | Reserved      |
-|  7:0   |   rc   |   0x0   | TARGET_NACK_COUNT |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:8  |        |         |        | Reserved      |
+|  7:0   |   rc   |   0x0   | DATA   |               |
 
 ## TARGET_ACK_CTRL
 Controls for mid-transfer (N)ACK phase handling
@@ -817,13 +817,13 @@ It is intended to be used with ACK Control Mode, so software may check the curre
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ACQ_FIFO_NEXT_DATA", "bits": 8, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "DATA", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description   |
-|:------:|:------:|:-------:|:-------------------|:--------------|
-|  31:8  |        |         |                    | Reserved      |
-|  7:0   |   ro   |    x    | ACQ_FIFO_NEXT_DATA |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+|  31:8  |        |         |        | Reserved      |
+|  7:0   |   ro   |    x    | DATA   |               |
 
 ## HOST_NACK_HANDLER_TIMEOUT
 Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.

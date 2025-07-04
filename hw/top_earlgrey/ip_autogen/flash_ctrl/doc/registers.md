@@ -1257,13 +1257,13 @@ Synchronous error address
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ERR_ADDR", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description   |
-|:------:|:------:|:-------:|:---------|:--------------|
-| 31:20  |        |         |          | Reserved      |
-|  19:0  |   ro   |   0x0   | ERR_ADDR |               |
+|  Bits  |  Type  |  Reset  | Name   | Description   |
+|:------:|:------:|:-------:|:-------|:--------------|
+| 31:20  |        |         |        | Reserved      |
+|  19:0  |   ro   |   0x0   | DATA   |               |
 
 ## ECC_SINGLE_ERR_CNT
 Count of single bit ECC errors
@@ -1274,14 +1274,14 @@ Count of single bit ECC errors
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ECC_SINGLE_ERR_CNT_0", "bits": 8, "attr": ["rw"], "rotate": -90}, {"name": "ECC_SINGLE_ERR_CNT_1", "bits": 8, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "DATA_0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "DATA_1", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                             |
-|:------:|:------:|:-------:|:---------------------|:----------------------------------------|
-| 31:16  |        |         |                      | Reserved                                |
-|  15:8  |   rw   |   0x0   | ECC_SINGLE_ERR_CNT_1 | This count will not wrap when saturated |
-|  7:0   |   rw   |   0x0   | ECC_SINGLE_ERR_CNT_0 | This count will not wrap when saturated |
+|  Bits  |  Type  |  Reset  | Name   | Description                             |
+|:------:|:------:|:-------:|:-------|:----------------------------------------|
+| 31:16  |        |         |        | Reserved                                |
+|  15:8  |   rw   |   0x0   | DATA_1 | This count will not wrap when saturated |
+|  7:0   |   rw   |   0x0   | DATA_0 | This count will not wrap when saturated |
 
 ## ECC_SINGLE_ERR_ADDR
 Latest address of ECC single err
@@ -1299,13 +1299,13 @@ Latest address of ECC single err
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ECC_SINGLE_ERR_ADDR", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                | Description                               |
-|:------:|:------:|:-------:|:--------------------|:------------------------------------------|
-| 31:20  |        |         |                     | Reserved                                  |
-|  19:0  |   ro   |   0x0   | ECC_SINGLE_ERR_ADDR | Latest single error address for this bank |
+|  Bits  |  Type  |  Reset  | Name   | Description                               |
+|:------:|:------:|:-------:|:-------|:------------------------------------------|
+| 31:20  |        |         |        | Reserved                                  |
+|  19:0  |   ro   |   0x0   | DATA   | Latest single error address for this bank |
 
 ## PHY_ALERT_CFG
 Phy alert configuration

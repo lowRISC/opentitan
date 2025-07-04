@@ -102,26 +102,20 @@ dif_result_t dif_adc_ctrl_configure_filter(const dif_adc_ctrl_t *adc_ctrl,
   case kDifAdcCtrlFilter##filter_:                                            \
     filter_ctrl_reg_offset =                                                  \
         ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_REG_OFFSET;                  \
-    min_voltage_field =                                                       \
-        ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_MIN_V_##filter_##_FIELD;     \
-    max_voltage_field =                                                       \
-        ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_MAX_V_##filter_##_FIELD;     \
-    in_range_bit =                                                            \
-        ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_COND_##filter_##_BIT;        \
-    enable_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+    min_voltage_field = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_MIN_V_FIELD; \
+    max_voltage_field = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_MAX_V_FIELD; \
+    in_range_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_COND_BIT;         \
+    enable_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_EN_BIT;             \
     break;
 
 #define DIF_ADC_CTRL_CHANNEL1_FILTER_CONFIG_CASE_(filter_)                    \
   case kDifAdcCtrlFilter##filter_:                                            \
     filter_ctrl_reg_offset =                                                  \
         ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_REG_OFFSET;                  \
-    min_voltage_field =                                                       \
-        ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_MIN_V_##filter_##_FIELD;     \
-    max_voltage_field =                                                       \
-        ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_MAX_V_##filter_##_FIELD;     \
-    in_range_bit =                                                            \
-        ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_COND_##filter_##_BIT;        \
-    enable_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+    min_voltage_field = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_MIN_V_FIELD; \
+    max_voltage_field = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_MAX_V_FIELD; \
+    in_range_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_COND_BIT;         \
+    enable_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_EN_BIT;             \
     break;
 
   switch (channel) {
@@ -251,14 +245,14 @@ static bool get_filter_offset(dif_adc_ctrl_channel_t channel,
 static bool get_filter_enable_bit(dif_adc_ctrl_channel_t channel,
                                   dif_adc_ctrl_filter_t filter,
                                   bitfield_bit32_index_t *enable_bit) {
-#define DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_(filter_)                     \
-  case kDifAdcCtrlFilter##filter_:                                             \
-    *enable_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+#define DIF_ADC_CTRL_CHANNEL0_FILTER_ENABLE_CASE_(filter_)         \
+  case kDifAdcCtrlFilter##filter_:                                 \
+    *enable_bit = ADC_CTRL_ADC_CHN0_FILTER_CTL_##filter_##_EN_BIT; \
     break;
 
-#define DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_(filter_)                     \
-  case kDifAdcCtrlFilter##filter_:                                             \
-    *enable_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_EN_##filter_##_BIT; \
+#define DIF_ADC_CTRL_CHANNEL1_FILTER_ENABLE_CASE_(filter_)         \
+  case kDifAdcCtrlFilter##filter_:                                 \
+    *enable_bit = ADC_CTRL_ADC_CHN1_FILTER_CTL_##filter_##_EN_BIT; \
     break;
 
   switch (channel) {
@@ -347,13 +341,13 @@ dif_result_t dif_adc_ctrl_get_triggered_value(const dif_adc_ctrl_t *adc_ctrl,
 
   uint32_t value_reg;
 
-#define DIF_ADC_CTRL_CHANNEL_TRIG_VALUE_CASE_(channel_)                           \
-  case kDifAdcCtrlChannel##channel_:                                              \
-    value_reg = mmio_region_read32(                                               \
-        adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET);       \
-    *value = (uint16_t)bitfield_field32_read(                                     \
-        value_reg,                                                                \
-        ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_INTR_##channel_##_FIELD); \
+#define DIF_ADC_CTRL_CHANNEL_TRIG_VALUE_CASE_(channel_)                     \
+  case kDifAdcCtrlChannel##channel_:                                        \
+    value_reg = mmio_region_read32(                                         \
+        adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET); \
+    *value = (uint16_t)bitfield_field32_read(                               \
+        value_reg,                                                          \
+        ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_INTR_FIELD);        \
     break;
 
   switch (channel) {
@@ -376,13 +370,12 @@ dif_result_t dif_adc_ctrl_get_latest_value(const dif_adc_ctrl_t *adc_ctrl,
 
   uint32_t value_reg;
 
-#define DIF_ADC_CTRL_CHANNEL_LATEST_VALUE_CASE_(channel_)                    \
-  case kDifAdcCtrlChannel##channel_:                                         \
-    value_reg = mmio_region_read32(                                          \
-        adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET);  \
-    *value = (uint16_t)bitfield_field32_read(                                \
-        value_reg,                                                           \
-        ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_##channel_##_FIELD); \
+#define DIF_ADC_CTRL_CHANNEL_LATEST_VALUE_CASE_(channel_)                   \
+  case kDifAdcCtrlChannel##channel_:                                        \
+    value_reg = mmio_region_read32(                                         \
+        adc_ctrl->base_addr, ADC_CTRL_ADC_CHN_VAL_##channel_##_REG_OFFSET); \
+    *value = (uint16_t)bitfield_field32_read(                               \
+        value_reg, ADC_CTRL_ADC_CHN_VAL_##channel_##_ADC_CHN_VALUE_FIELD);  \
     break;
 
   switch (channel) {

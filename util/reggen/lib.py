@@ -238,7 +238,7 @@ def get_basename(name: str) -> str:
     '''Strip trailing _number (used as multireg suffix) from name'''
     # TODO: This is a workaround, should solve this as part of parsing a
     # multi-reg.
-    match = re.search(r'_[0-9]+$', name)
+    match = re.search(r'(_[0-9]+)*$', name)
     assert match
     assert match.start() > 0
     return name[0:match.start()]

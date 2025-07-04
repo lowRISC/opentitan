@@ -75,7 +75,7 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
   };
   void ExpectAuxConfig(const AuxConfigOptions &options) {
     EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
-                  {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 1}});
+                  {{AES_CTRL_AUX_REGWEN_EN_BIT, 1}});
 
     EXPECT_WRITE32_SHADOWED(
         AES_CTRL_AUX_SHADOWED_REG_OFFSET,
@@ -84,7 +84,7 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
          {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, options.force_masks}});
 
     EXPECT_WRITE32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
-                   {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, !options.lock}});
+                   {{AES_CTRL_AUX_REGWEN_EN_BIT, !options.lock}});
   }
 };
 
@@ -652,7 +652,7 @@ TEST_F(CtrlAuxTest, LockedSuccess) {
   transaction_.ctrl_aux_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
-                {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
+                {{AES_CTRL_AUX_REGWEN_EN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
                 {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true},
                  {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, false}});
@@ -673,7 +673,7 @@ TEST_F(CtrlAuxTest, LockedErrorReseedOnKeyChange) {
   transaction_.ctrl_aux_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
-                {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
+                {{AES_CTRL_AUX_REGWEN_EN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
                 {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, false},
                  {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, false}});
@@ -694,7 +694,7 @@ TEST_F(CtrlAuxTest, LockedErrorForceMasks) {
   transaction_.ctrl_aux_lock = true;
 
   EXPECT_READ32(AES_CTRL_AUX_REGWEN_REG_OFFSET,
-                {{AES_CTRL_AUX_REGWEN_CTRL_AUX_REGWEN_BIT, 0}});
+                {{AES_CTRL_AUX_REGWEN_EN_BIT, 0}});
   EXPECT_READ32(AES_CTRL_AUX_SHADOWED_REG_OFFSET,
                 {{AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED_BIT, true},
                  {AES_CTRL_AUX_SHADOWED_FORCE_MASKS_BIT, true}});

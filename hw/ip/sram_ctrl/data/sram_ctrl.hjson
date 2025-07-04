@@ -443,6 +443,7 @@
         hwaccess: "none",
         fields: [
           { bits: "0"
+            name: "EN",
             desc: '''
                   When cleared to zero, !!CTRL can not be written anymore.
                   ''',
@@ -511,6 +512,7 @@
              "excl:CsrAllTests:CsrExclAll"]
         fields: [
           { bits: "0"
+            name: "EN",
             desc: '''
                   When cleared to zero, !!READBACK can not be written anymore.
                   ''',
