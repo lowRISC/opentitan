@@ -73,3 +73,13 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "python_dependencies",
+    srcs = ["python_dependencies.py"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//util/py/packages/lib:bazel",
+        "//util/py/packages/lib:run",
+    ],
+)
