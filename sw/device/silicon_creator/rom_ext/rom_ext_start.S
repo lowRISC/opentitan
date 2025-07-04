@@ -131,7 +131,7 @@ _rom_ext_start_boot:
    * In RISC-V, the stack grows downwards, so we load the address of the highest
    * word in the stack into sp.
    *
-   * If an exception fires, the handler is conventionaly only allowed to clobber
+   * If an exception fires, the handler is conventionally only allowed to clobber
    * memory at addresses below `sp`.
    */
   la   sp, _stack_end
@@ -183,7 +183,7 @@ _rom_ext_start_boot:
    * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
    * We set the handlers only after making sure that we can execute some code,
    * i.e. `crt_section_copy` and `crt_section_clear`, to avoid a double-fault
-   * condition. Any exceptions and interrupts occuring before this line will be
+   * condition. Any exceptions and interrupts occurring before this line will be
    * handled by the ROM.
    */
   la   t0, (_rom_ext_interrupt_vector + 1)

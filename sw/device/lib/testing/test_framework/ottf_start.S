@@ -128,8 +128,8 @@ _ottf_start:
    * In RISC-V, the stack grows downwards, so we load the address of the highest
    * word in the stack into sp.
    *
-   * If an exception fires, the handler is conventionaly only allowed to clobber
-   * memory at addresses below `sp`.
+   * If an exception fires, the handler is conventionally only allowed to
+   * clobber memory at addresses below `sp`.
    */
   la   sp, _stack_end
 

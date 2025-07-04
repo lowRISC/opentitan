@@ -180,7 +180,7 @@ typedef struct test {
    */
   uint32_t clk_index;
   /**
-   * Is the clock hinteable (==true) or gateable(==false).
+   * Is the clock hintable (==true) or gateable(==false).
    */
   bool is_hintable;
 } test_t;

@@ -110,7 +110,7 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
   // Number of bytes left to be transmitted
   // - for non-Isochronous streams this is just the total number of bytes to be
   //   transmitted, and there's a single signature at the start of the stream
-  // - for Isochronous this provideds a down count, and it will wrap around
+  // - for Isochronous this provides a down count, and it will wrap around
   //   upon reaching zero, in the event of packet loss and prolonged
   //   transmission
   uint32_t tx_left = s->transfer_bytes - (s->tx.bytes % s->transfer_bytes);
@@ -156,7 +156,7 @@ static uint8_t buffer_sig_create(usb_testutils_streams_ctx_t *ctx,
 // Note: Only Isochronous streams are expected to receive signatures; in order
 // to keep the device and host ends synchronized in the presence of packet-
 // dropping, a signature occurs at the start of each packet. Each signature
-// includes a packet sequence number and the intiial value of the sender's LFSR
+// includes a packet sequence number and the initial value of the sender's LFSR
 static bool buffer_sig_check(usb_testutils_streams_ctx_t *ctx,
                              usbdev_stream_t *s, const usbdev_stream_sig_t *sig,
                              uint8_t len) {

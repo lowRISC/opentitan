@@ -26,7 +26,7 @@ static void test_status_device_write(test_status_t test_status) {
 
 void test_status_set(test_status_t test_status) {
   // This function is used to convey info to test harness, which may poke at
-  // backdoor variables. Add a fence to provide corrrect synchronization.
+  // backdoor variables. Add a fence to provide correct synchronization.
   //
   // This technically should be a thread fence, but use a signal fence to avoid
   // emitting instructions as Ibex doesn't reorder memory accesses itself.

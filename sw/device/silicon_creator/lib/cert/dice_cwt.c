@@ -29,7 +29,7 @@ const dice_cert_format_t kDiceCertFormat = kDiceCertFormatCWTAndroid;
 
 enum config_desc_labels {
   kSecurityVersionLabel = -70005,
-  // Implementataion specific value,
+  // Implementation specific value,
   // less than -65536 and outside of [-70000, -70999]
   kOwnerManifestMeasurmentLabel = -71006,
 };

@@ -496,7 +496,7 @@ dif_result_t dif_spi_device_configure_flash_ex4b_command(
  * Configure the command properties of the hardware's WREN function.
  *
  * WREN is the command to enable writes and set the WEL bit of the status
- * register, for flash and passthroug modes.
+ * register, for flash and passthrough modes.
  *
  * @param spi A handle to a spi_device.
  * @param enable Whether to enable the function.
@@ -725,7 +725,7 @@ dif_result_t dif_spi_device_set_flash_status_registers(
  * the LSB being the busy bit.
  *
  * @param spi A handle to a spi device.
- * @param[out] value A pointer to where to write the values of the registesr.
+ * @param[out] value A pointer to where to write the values of the registers.
  * @return `kDifBadArg` if any pointer arguments are NULL. `kDifOk` otherwise.
  */
 OT_WARN_UNUSED_RESULT

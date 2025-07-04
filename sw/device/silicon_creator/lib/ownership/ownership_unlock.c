@@ -69,7 +69,7 @@ static rom_error_t unlock(boot_svc_msg_t *msg, boot_data_t *bootdata) {
       case kOwnershipUpdateModeSelf:
       case kOwnershipUpdateModeSelfVersion:
       default:
-        // The `unlock` funciton services UnlockAny and UnlockEndorsed requests,
+        // The `unlock` function services UnlockAny and UnlockEndorsed requests,
         // neither of which are valid for the `Self` mode.
         return kErrorOwnershipInvalidMode;
     }
@@ -111,7 +111,7 @@ static rom_error_t unlock_update(boot_svc_msg_t *msg, boot_data_t *bootdata) {
       case kOwnershipUpdateModeSelfVersion:
       case kOwnershipUpdateModeOpen:
       default:
-          // The `unlock_update` funciton services UnlockUpdate update requests,
+          // The `unlock_update` function services UnlockUpdate update requests,
           // which are valid for the `Open` and `Self` modes.
           ;
     }

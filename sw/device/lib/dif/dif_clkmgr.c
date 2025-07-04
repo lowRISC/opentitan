@@ -353,7 +353,7 @@ dif_result_t dif_clkmgr_measure_ctrl_get_enable(const dif_clkmgr_t *clkmgr,
 }
 
 // The earlgrey and englishbreakfast CSR differences mean they have a
-// different number of clock measuremen units. The ideal way to handle
+// different number of clock measurement units. The ideal way to handle
 // this difference is just generating the dif code, and we intend to do
 // that with multi-top. However, for the time being we need to rely on
 // macro trickery, just generating code for a specific measurement if

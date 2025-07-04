@@ -88,7 +88,7 @@ void boot_svc_next_boot_bl0_slot_req_init(
  * Initialize a Next Boot BL0 Slot Response message.
  *
  * @param primary_slot Slot that is primary.
- * @param status Reponse from the ROM_EXT after receiving the request.
+ * @param status Response from the ROM_EXT after receiving the request.
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_next_boot_bl0_slot_res_init(

@@ -22,7 +22,7 @@ static uint32_t get_status(const dif_hmac_t *hmac) {
 
 /**
  * Returns the number of entries in the FIFO of `hmac`. If the FIFO is empty,
- * this function will return 0, and if the FIFO is full, this funciton will
+ * this function will return 0, and if the FIFO is full, this function will
  * return `HMAC_FIFO_MAX`.
  *
  * @param hmac The HMAC device to check the FIFO size of.
@@ -53,7 +53,7 @@ static uint32_t get_fifo_available_space(const dif_hmac_t *hmac) {
  * @param[inout] device_config HMAC CFG register value to be updated;
  * @param config A per-transaction configuration.
  * @returns #kDifError if the config is invalid, #kDifOk if
- * `*device_config` was sucessfully updated.
+ * `*device_config` was successfully updated.
  */
 static dif_result_t dif_hmac_calculate_device_config_value(
     uint32_t *device_config, const dif_hmac_transaction_t config) {

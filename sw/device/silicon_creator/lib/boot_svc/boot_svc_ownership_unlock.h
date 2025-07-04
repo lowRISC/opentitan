@@ -116,7 +116,7 @@ void boot_svc_ownership_unlock_req_init(uint32_t unlock_mode, nonce_t nonce,
 /**
  * Initialize an ownership unlock response.
  *
- * @param status Reponse from the ROM_EXT after receiving the request.
+ * @param status Response from the ROM_EXT after receiving the request.
  * @param[out] msg Output buffer for the message.
  */
 void boot_svc_ownership_unlock_res_init(rom_error_t status,

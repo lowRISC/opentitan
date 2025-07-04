@@ -66,7 +66,7 @@ typedef struct dif_keymgr_dpe_advance_params {
   uint32_t slot_src_sel;
 
   /**
-   * The destination slot which recieves the derived child DPE context.
+   * The destination slot which receives the derived child DPE context.
    */
   uint32_t slot_dst_sel;
 

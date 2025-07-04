@@ -20,7 +20,7 @@ static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT ==
                   AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT,
               "Watchdog IRQ have different indexes in different registers!");
 
-// Note count is a 64-bit value that cannot be set atomically. It is recommened
+// Note count is a 64-bit value that cannot be set atomically. It is recommended
 // the counter is only cleared when the wakeup timer is disabled.
 static void aon_timer_wakeup_clear_counter(const dif_aon_timer_t *aon) {
   mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0);

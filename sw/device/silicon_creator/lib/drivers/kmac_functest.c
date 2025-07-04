@@ -116,7 +116,7 @@ rom_error_t kmac_shake256_test(void) {
     TRY(kmac_kmac256_sw_key(key, ARRAYSIZE(key)));               \
     kmac_kmac256_set_prefix(prefix, sizeof(prefix) - 1);         \
                                                                  \
-    /* Peform the operation. */                                  \
+    /* Perform the operation. */                                 \
     TRY(kmac_kmac256_start());                                   \
     kmac_kmac256_absorb(msg, sizeof(msg));                       \
     TRY(kmac_kmac256_final(output, ARRAYSIZE(output)));          \

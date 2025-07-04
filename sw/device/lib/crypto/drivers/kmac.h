@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 /**
- * The exposed costants to caller functions.
+ * The exposed constants to caller functions.
  */
 enum {
   // The total size of prefix registers (in bytes), after removing len encodings
@@ -69,7 +69,7 @@ status_t kmac_key_length_check(size_t key_len);
 /**
  * Set the "global" config of HWIP
  *
- * For the moment, we have a number of configuation options needs to be
+ * For the moment, we have a number of configuration options needs to be
  * configured at session level. This functions serves as a temporary
  * solution by setting default values to this configuration.
  * TODO: Define config struct and pass it as argument.

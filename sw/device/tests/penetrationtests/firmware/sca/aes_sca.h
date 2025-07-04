@@ -54,7 +54,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj);
  * using key set command before starting batch captures.
  *
  * Note that the host can partially verify this operation by checking the
- * contents of UART reponse that is sent at the end.
+ * contents of UART response that is sent at the end.
  *
  * The uJSON data contains:
  *  - data: The number of encryptions.
@@ -84,7 +84,7 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj);
  * using key set command before starting batch captures.
  *
  * Note that the host can partially verify this operation by checking the
- * contents of UART reponse that is sent at the end.
+ * contents of UART response that is sent at the end.
  *
  * The uJSON data contains:
  *  - data: The number of encryptions.

@@ -130,7 +130,7 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
 
 // Note: Words below are numbered starting from 1 to match JESD216F. Some fields
 // that are not supported by OpenTitan are merged for the sake of conciseness.
-// Unused/reserved fields that should be set to all 1s are ommitted due to the
+// Unused/reserved fields that should be set to all 1s are omitted due to the
 // definition of `BFPT_FIELD_VALUE()` above. See JESD216F for more details.
 
 // clang-format off

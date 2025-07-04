@@ -8,7 +8,7 @@
 // on the USB host. The test initializes the USB device and configures a set of
 // endpoints for data streaming using bulk transfers.
 //
-// The DPI model mimicks a USB host. After device initialization, it detects
+// The DPI model mimics a USB host. After device initialization, it detects
 // the assertion of the pullup and first assigns an address to the device.
 // For this test it will then repeatedly fetch data via IN requests to
 // each stream and propagate that data to the corresponding OUT endpoints.

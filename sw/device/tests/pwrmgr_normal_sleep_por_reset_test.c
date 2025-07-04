@@ -71,7 +71,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
 
   // Configure sysrst key combo
   // reset pulse : 50 us
-  // detect durration : 50 us
+  // detect duration : 50 us
 
   dif_sysrst_ctrl_key_combo_config_t sysrst_ctrl_key_combo_config = {
       .keys = kDifSysrstCtrlKeyAll,

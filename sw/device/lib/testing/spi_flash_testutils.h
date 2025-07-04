@@ -103,7 +103,7 @@ typedef enum spi_flash_status_bit {
  *
  * Issues a Read Status transaction using the requested opcode.
  * In the case of a multi-byte status, the bytes are assembled and returned
- * as a litte-endian word.
+ * as a little-endian word.
  *
  * @param spih A SPI host handle.
  * @param opcode The desired Read Status opcode.
@@ -119,7 +119,7 @@ status_t spi_flash_testutils_read_status(dif_spi_host_t *spih, uint8_t opcode,
  *
  * Issues a Write Status transaction using the requested opcode.
  * In the case of a multi-byte status, the status word bytes are
- * as a litte-endian word.
+ * as a little-endian word.
  *
  * @param spih A SPI host handle.
  * @param opcode The desired Write Status opcode.

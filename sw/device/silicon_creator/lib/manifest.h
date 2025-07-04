@@ -51,7 +51,7 @@ typedef struct manifest_usage_constraints {
    */
   lifecycle_device_id_t device_id;
   /**
-   * Device Silicon Creator manufacting status compared against the
+   * Device Silicon Creator manufacturing status compared against the
    * `CREATOR_SW_MANUF_STATUS` value stored in the `CREATOR_SW_CFG` partition in
    * OTP.
    *
@@ -376,7 +376,7 @@ typedef struct manifest_ext_header {
   /**
    * Identifier.
    *
-   * A high HW constant with a realively high HD from other extensions'
+   * A high HW constant with a relatively high HD from other extensions'
    * identifiers.
    */
   uint32_t identifier;
@@ -440,7 +440,7 @@ typedef struct manifest_ext_spx_signature {
 /**
  * Table of manifest extensions.
  *
- * Columns: Table index, type name, extenstion name, identifier, signed or not.
+ * Columns: Table index, type name, extension name, identifier, signed or not.
  */
 // clang-format off
 #define MANIFEST_EXTENSIONS(X) \
@@ -457,7 +457,7 @@ typedef struct manifest_ext_spx_signature {
  * manifest, and word aligned, and
  * - Entry point is inside the executable region and word aligned.
  *
- * @param manfiest A manifest.
+ * @param manifest A manifest.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -544,7 +544,7 @@ inline epmp_region_t manifest_code_region_get(const manifest_t *manifest) {
  * of a function pointer to accommodate for entry points with different
  * parameters and return types.
  *
- * @param manfiest A manifest.
+ * @param manifest A manifest.
  * return Entry point address.
  */
 OT_WARN_UNUSED_RESULT

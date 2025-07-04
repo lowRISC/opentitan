@@ -26,7 +26,7 @@ static owner_page_status_t owner_page_validity_check(size_t page) {
 
   // Any non-constrained words of the owner block device_id field are required
   // to be `kLockConstraintNone`.  We wipe the field and then fill in the
-  // relevant words from the lifecycle constroller.
+  // relevant words from the lifecycle controller.
   //
   // For node-locked owner configurations, this makes the device_id from the
   // lifecycle controller relevant to the cryptographic verification.
@@ -193,7 +193,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   flash_ctrl_info_perms_set(&kFlashCtrlInfoPageOwnerSlot1, perm);
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSlot1, cfg);
   // Set up the OwnerSecret page for ECC & Scrambling.  We won't
-  // turn on read/write/earse permissions until we need them.
+  // turn on read/write/erase permissions until we need them.
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageOwnerSecret, cfg);
 
   // We don't want to abort ownership setup if we fail to
@@ -288,7 +288,7 @@ void ownership_pages_lockdown(boot_data_t *bootdata, hardened_bool_t rescue) {
 #ifdef ROM_EXT_KLOBBER_ALLOWED
   if (rescue == kHardenedBoolTrue) {
     // If ROM_EXT_KLOBBER_ALLOWED and we're in rescue mode, we skip
-    // lockdown because the rescue protcol is permitted, on DEV chips
+    // lockdown because the rescue protocol is permitted, on DEV chips
     // only, to erase the ownership pages.  This exists to simulate
     // disaster scenarios and test the disaster recovery mechanisms.
     //

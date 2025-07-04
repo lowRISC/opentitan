@@ -227,7 +227,7 @@ bool test_main(void) {
     LOG_INFO("Test in post-sleep pin wakeup phase");
     uint32_t wakeup_cause;
     CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
-    // Get the wakeup dectector index from stored variable.
+    // Get the wakeup detector index from stored variable.
     if (kDeviceType == kDeviceSimDV) {
       wakeup_detector_selected = wakeup_detector_idx;
     } else {

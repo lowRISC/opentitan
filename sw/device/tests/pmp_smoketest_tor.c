@@ -26,7 +26,7 @@
  * we can use is 1.
  */
 
-// Usable PMP regions vary depending on different exectuion environments.
+// Usable PMP regions vary depending on different execution environments.
 // PMP regions with small or large indices are usually reserved by ROM/ROM_EXT
 // So use PMP region 6 & 7 for this test.
 #define PMP_LOAD_REGION_ID 7

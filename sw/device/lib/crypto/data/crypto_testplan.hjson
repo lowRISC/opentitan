@@ -8,7 +8,7 @@
       name: crypto_lib_hash_stress
       desc: '''Check that the hash algorithms are correct.
 
-            Run the hash algorithms Sha256, Sha384 and Sha512 and compare the digist against
+            Run the hash algorithms Sha256, Sha384 and Sha512 and compare the digest against
             the NIST test vector.
       '''
       stage: N.A.

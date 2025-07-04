@@ -37,7 +37,7 @@ static uint32_t flash_page_to_test;
 static void test_basic_io(void) {
   // The info partitions have no default access. Specifically set up a region.
   // rom_ext locks the access of certain info pages.
-  // Select info page 5 to avoid uncessary conflict.
+  // Select info page 5 to avoid unnecessary conflict.
   dif_flash_ctrl_info_region_t info_region = {
       .bank = 1, .partition_id = 0, .page = 5};
   dif_flash_ctrl_region_properties_t region_properties = {
@@ -131,8 +131,8 @@ static void test_basic_io(void) {
       /*delay=*/0));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
-  // If current platform uses sramble, you can't turn it off once you write your
-  // test with scrambled form. Add if / else to make sure not to revert
+  // If current platform uses scramble, you can't turn it off once you write
+  // your test with scrambled form. Add if / else to make sure not to revert
   // scrambled region by default.
   if (kBootStage == kBootStageOwner) {
     CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(

@@ -157,7 +157,7 @@ static void check_alert_state(dif_toggle_t fatal) {
  *  First configure fatality of the desired event.
  *  Then trigger the event from sensor_ctrl to ast.
  *  Next poll for setting of correct events inside sensor_ctrl status.
- *  When a recoverable event is triggerd, make sure only recoverable
+ *  When a recoverable event is triggered, make sure only recoverable
  *  status is seen, likewise for fatal events.
  *  Finally, check for correct capture of cause in alert handler.
  */

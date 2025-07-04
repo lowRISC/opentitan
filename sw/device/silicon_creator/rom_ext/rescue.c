@@ -113,7 +113,7 @@ static void change_speed(void) {
 }
 
 #ifdef ROM_EXT_KLOBBER_ALLOWED
-// In order to facilitate debuging and manual test flows for ownerhsip transfer,
+// In order to facilitate debuging and manual test flows for ownership transfer,
 // we allow the owner pages to be erased if and only if the chip is in the DEV
 // lifecycle state AND the ROM_EXT was specifically built to allow owner erase.
 //

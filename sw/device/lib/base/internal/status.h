@@ -66,7 +66,7 @@ extern "C" {
  *
  * Note: the result is pre-shifted into the module identifier position within
  * a `status_t`.
- * - The kStatusModuleId can simply be ORed in when constucting a `status_t`.
+ * - The kStatusModuleId can simply be ORed in when constructing a `status_t`.
  * - The value of MAKE_MODULE_ID can be used in constructing constants for
  *   types compatible with `status_t`.
  *

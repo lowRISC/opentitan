@@ -32,7 +32,7 @@
 /**
  * Encrypt one data block (16 Bytes) in ECB mode.
  *
- * @param       plain_text  Input block to enrypt
+ * @param       plain_text  Input block to encrypt
  * @param       round_keys  All round keys (pre-computed)
  * @param[out]  cipher_text Encrypted output block
  */

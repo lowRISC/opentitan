@@ -9,14 +9,14 @@
 #include <stdint.h>
 
 /**
- * Update to the location of vectors as specificed in the linker file
+ * Update to the location of vectors as specified in the linker file
  *
  * The address must be 256-byte aligned.
  */
 void irq_set_vector_offset(uintptr_t address);
 
 /**
- * Enable / disable ibex globlal interrupts
+ * Enable / disable ibex global interrupts
  */
 void irq_global_ctrl(bool en);
 

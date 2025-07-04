@@ -36,12 +36,12 @@
 #define ASSERT_DIF_BADARG(expr_) ASSERT_EQ(expr_, kDifBadArg)
 
 /**
- * Creates a test expectataion for `expr` to evaluate to `kDifLocked`.
+ * Creates a test expectation for `expr` to evaluate to `kDifLocked`.
  */
 #define EXPECT_DIF_LOCKED(expr_) EXPECT_EQ(expr_, kDifLocked)
 
 /**
- * Creates a test expectataion for `expr` to evaluate to `kDifOutOfRange`.
+ * Creates a test expectation for `expr` to evaluate to `kDifOutOfRange`.
  */
 #define EXPECT_DIF_OUTOFRANGE(expr_) EXPECT_EQ(expr_, kDifOutOfRange)
 

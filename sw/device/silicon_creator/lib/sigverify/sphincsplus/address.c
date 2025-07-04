@@ -18,7 +18,7 @@ static_assert(kSpxTreeHeight * (kSpxD - 1) <= 64,
  *
  * Use with the `kSpxOffset...` constant offsets.
  *
- * @param addr Adress in which to set a byte.
+ * @param addr Address in which to set a byte.
  * @param offset Byte-offset within the internal buffer.
  * @param value New value of byte.
  */

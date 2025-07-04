@@ -21,7 +21,7 @@ extern "C" {
  * This header contains "device-specific" declarations, i.e., information that
  * all devices are known to provide, but which is specific to the particular
  * choice of platform, which can range from a software simulation, like
- * Verilator or a DV testbench, to real harware, like an FPGA or ASIC.
+ * Verilator or a DV testbench, to real hardware, like an FPGA or ASIC.
  *
  * Definitions for these symbols can be found in other files in this directory,
  * which should be linked in depending on which platform an executable is
