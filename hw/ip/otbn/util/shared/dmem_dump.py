@@ -41,7 +41,7 @@ def parse_dmem_exp(dump: str) -> Dict[str, int]:
     return out
 
 
-def parse_actual_dmem(dump: bytes) -> bytes:
+def parse_actual_dmem(dump: bytes, le_words=False) -> bytes:
     '''Parse the dmem dump.
 
     Returns the dmem bytes except integrity info.
@@ -53,7 +53,11 @@ def parse_actual_dmem(dump: bytes) -> bytes:
         tmp = []
         # discard byte indicating integrity status
         for v in struct.iter_unpack("<BI", w[0]):
-            tmp += [x for x in struct.unpack("4B", v[1].to_bytes(4, "big"))]
+            if le_words:
+                # align with dmem.load_le_words
+                tmp += v[1].to_bytes(4, 'little')
+            else:
+                tmp += v[1].to_bytes(4, "big")
         dmem_bytes += tmp
     assert len(dmem_bytes) == get_memory_layout().dmem_size_bytes
     return bytes(dmem_bytes)
