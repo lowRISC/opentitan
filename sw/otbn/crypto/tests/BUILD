@@ -395,6 +395,7 @@ otbn_sim_test_suite(
         "p256_check_public_key_x_too_large.hjson",
         "p256_check_public_key_y_too_large.hjson",
         "p256_isoncurve_valid.hjson",
+        "p256_keygen_valid.hjson",
     ],
 )
 
