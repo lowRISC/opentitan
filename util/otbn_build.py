@@ -310,6 +310,7 @@ def main() -> int:
             '-O', 'elf32-littleriscv',
             '--set-section-flags=*=alloc,load,readonly',
             '--remove-section=.scratchpad', '--remove-section=.bss',
+            '--remove-section=.debug*',
             '--prefix-sections=.rodata.otbn', '--prefix-symbols', host_side_pfx
         ]
         for name, addr in get_otbn_syms(out_elf):
