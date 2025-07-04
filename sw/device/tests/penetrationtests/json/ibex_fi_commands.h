@@ -13,6 +13,7 @@ extern "C" {
 #define IBEXFI_SRAM_WORDS 64
 #define IBEXFI_MAX_FAULTY_ADDRESSES_DATA 13
 #define IBEXFI_MAX_RESULT_ARRAY 12
+#define IBEXFI_NUM_CSR_COMBI 17
 
 // clang-format off
 
@@ -34,6 +35,7 @@ extern "C" {
     value(_, CharCondBranchBne) \
     value(_, CharCsrRead) \
     value(_, CharCsrWrite) \
+    value(_, CharCsrCombi) \
     value(_, CharFlashRead) \
     value(_, CharFlashWrite) \
     value(_, CharHardenedCheckComplementBranch) \
@@ -150,6 +152,19 @@ UJSON_SERDE_STRUCT(IbexFiFlashRegion, ibex_fi_flash_region_t, IBEXFI_FLASH_REGIO
     field(alerts, uint32_t, 3) \
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiCombiData, ibex_fi_combi_data_t, IBEXFI_COMBI_DATA);
+
+#define IBEXFI_CSR_COMBI_IN(field, string) \
+    field(trigger, uint32_t) \
+    field(ref_values, uint32_t, IBEXFI_NUM_CSR_COMBI)
+UJSON_SERDE_STRUCT(IbexFiCsrCombiIn, ibex_fi_csr_combi_in_t, IBEXFI_CSR_COMBI_IN);
+
+#define IBEXFI_CSR_COMBI_OUT(field, string) \
+    field(err_status, uint32_t) \
+    field(alerts, uint32_t, 3) \
+    field(ast_alerts, uint32_t, 2) \
+    field(data_faulty, bool, IBEXFI_NUM_CSR_COMBI) \
+    field(output, uint32_t, IBEXFI_NUM_CSR_COMBI)
+UJSON_SERDE_STRUCT(IbexFiCsrCombiOut, ibex_fi_csr_combi_out_t, IBEXFI_CSR_COMBI_OUT);
 
 // clang-format on
 
