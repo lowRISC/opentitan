@@ -27,6 +27,8 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Show environment
+        run: ./ci/scripts/show-env.sh
 
       - name: Configure bitstream strategy
         id: strategy
