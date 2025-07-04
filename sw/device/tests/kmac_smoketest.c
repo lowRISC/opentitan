@@ -234,7 +234,7 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
     // SystemVerilog parameter).
     CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
-    CHECK((out == kExpect), "mismatch at alignment %u got 0x%u want 0x%x", i,
+    CHECK((out == kExpect), "mismatch at alignment %u got 0x%x want 0x%x", i,
           out, kExpect);
   }
 
@@ -260,7 +260,7 @@ void run_sha3_alignment_test(dif_kmac_t *kmac) {
     // SystemVerilog parameter).
     CHECK_DIF_OK(dif_kmac_poll_status(kmac, KMAC_STATUS_SHA3_IDLE_BIT));
 
-    CHECK((out == kExpect), "mismatch got 0x%u want 0x%x", out, kExpect);
+    CHECK((out == kExpect), "mismatch got 0x%x want 0x%x", out, kExpect);
   }
 }
 
