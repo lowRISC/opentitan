@@ -1,0 +1,35 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  /**
+   * @param[in]  dmem[attestation_additional_seed]: DRBG output.
+   * @param[out]  dmem[x]: Public key x-coordinate.
+   * @param[out]  dmem[y]: Public key y-coordinate.
+   */
+
+  "input": {
+    "dmem": {
+      "mode": "0x000002bf"  # MODE_ATTESTATION_KEYGEN
+
+      "attestation_additional_seed":
+        '''
+        0xdecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbad
+          decafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbaddecafbad
+        '''
+    }
+  }
+  "output": {
+    "dmem": {
+      # Verified with:
+      # >>> consts = "deadbeef", "baadf00d", "decafbad"
+      # >>> key0, key1, seed = [int(e * 12, 16) for e in consts]
+      # >>> mask = 2^320 - 1
+      # >>> P = ((seed ^^ key0 ^^ key1) & mask) * G
+      # >>> print(hex(P.x()), hex(P.y()))
+
+      "x": "0x5868cc1d58a1ea20ee1cf22393d92a695e69ea89e85cbce80e94f900015ac2c4"
+      "y": "0x17749c44e6401eda1e71722402d940dceeeee6b7277dac6cbc9a02a44f66aa6f"
+    }
+  }
+}
