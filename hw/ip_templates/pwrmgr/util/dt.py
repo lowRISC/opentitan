@@ -22,7 +22,7 @@ HEADER_EXT_TEMPLATE = """
  * Some instances can have several wakeup signals, e.g. the pinmux has two (`pin` and `usb`).
  * For such IPs, it is not sufficient to know the instance, we also need to know which
  * signal triggered the wakeup. The `wakeup` index can be used to distinguish between those.
- * This value should be casted to the `dt_<ip>_wakeup_t` type of the corresponding IP.
+ * This value should be cast to the `dt_<ip>_wakeup_t` type of the corresponding IP.
  * For example, if the `pwrmgr` has two `pinmux` wakeup sources as described above, it's
  * two wakeup sources will be described as follows:
  * ```c

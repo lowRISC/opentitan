@@ -290,7 +290,7 @@ class ${module_instance_name}_intr_with_filter_rand_intr_event_vseq extends ${mo
           new_intr_state_updates[pin] = 1'b1;
         end
       end
-      // Look for level triggerred interrupts
+      // Look for level triggered interrupts
       if (new_intr_state_updates[pin] == 1'b0) begin
         if ((crnt_exp_filtered_value[pin] == 1'b1 && intr_ctrl_en_lvlhigh[pin]) ||
             (crnt_exp_filtered_value[pin] == 1'b0 && intr_ctrl_en_lvllow[pin])) begin

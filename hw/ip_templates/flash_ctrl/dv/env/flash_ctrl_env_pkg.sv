@@ -33,7 +33,7 @@ package flash_ctrl_env_pkg;
     "recov_err", "fatal_std_err", "fatal_err", "fatal_prim_flash_alert", "recov_prim_flash_alert"
   };
 
-  // Some paths are added multiple times to accomodate
+  // Some paths are added multiple times to accommodate
   // indexing in the loop
   parameter string LIST_OF_READ_SEED_FORCE_PATHS[] = {
     "tb.dut.u_flash_hw_if.op",
@@ -468,7 +468,7 @@ package flash_ctrl_env_pkg;
     return FlashPartData;
   endfunction // get_part_name
 
-  // Struct convertion from rtl to dv.
+  // Struct conversion from rtl to dv.
   function automatic flash_bank_mp_info_page_cfg_t conv2env_mp_info(info_page_cfg_t info);
     flash_bank_mp_info_page_cfg_t env_info;
 

@@ -64,7 +64,7 @@ class ${module_instance_name}_ping_timeout_vseq extends ${module_instance_name}_
   endfunction
 
   // In this sequence, because we disable all external alerts, so to ensure local alerts are
-  // triggerd, we wait for interrupt pins to fire then wait for alert and escalation handshake
+  // triggered, we wait for interrupt pins to fire then wait for alert and escalation handshake
   // to finish.
   virtual task wait_alert_esc_done();
     wait (cfg.intr_vif.pins[NUM_ALERT_CLASSES-1:0]);

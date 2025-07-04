@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // The lowpower_wakeup race test randomly enables wakeups, info capture, and interrupts,
-// and sends wakeups in the temporal vecinity of low power entry. It also sends wakeups
+// and sends wakeups in the temporal vicinity of low power entry. It also sends wakeups
 // after wakeup processing starts.
 class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_lowpower_wakeup_race_vseq)

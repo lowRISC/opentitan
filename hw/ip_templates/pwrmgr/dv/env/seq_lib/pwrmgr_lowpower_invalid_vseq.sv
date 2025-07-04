@@ -42,7 +42,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
 
     // Spurious interrupt check can be executed by
     // residue of lowpower task. Since we cannot kill csr op
-    // by disable fork, we have to disable spurious interrup check.
+    // by disable fork, we have to disable spurious interrupt check.
     cfg.invalid_st_test = 1;
 
     wait_for_rom_and_active();

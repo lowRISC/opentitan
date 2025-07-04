@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence assert errors duing seed-reading process targeting
+// This sequence assert errors during seed-reading process targeting
 // some hw oriented fault status errors.
 // See 'check_status' tasks for what status errors are covered.
 class flash_ctrl_hw_read_seed_err_vseq extends flash_ctrl_err_base_vseq;

@@ -1,7 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-// Decription:
+// Description:
 // Create low power transition and wakeup a few times.
 // When PWRMGR.CONTROL.LOW_POWER_HINT is set and core_sleep is high,
 // issue random write to PWRMGR.CONTROL and check

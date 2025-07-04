@@ -124,7 +124,7 @@ interface pwrmgr_if (
   always_comb intr_status = `PATH_TO_DUT.reg2hw.intr_state.q;
 
   // This is only used to determine if an interrupt will be set in case of a reset while in
-  // low power.  tryIt is very hard to perdict if the reset or a wakeup happen first, so this
+  // low power.  tryIt is very hard to predict if the reset or a wakeup happen first, so this
   // signal is used to help instead.
   pwrmgr_pkg::pwrup_cause_e pwrup_cause;
   always_comb pwrup_cause = `PATH_TO_DUT.slow_pwrup_cause;

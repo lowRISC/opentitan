@@ -91,7 +91,7 @@ class flash_ctrl_error_mp_vseq extends flash_ctrl_base_vseq;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
   }
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
+  // Flash ctrl operation data queue - used for programming or reading the flash.
   constraint flash_op_data_c {
     solve flash_op before flash_op_data;
     if (flash_op.op inside {flash_ctrl_top_specific_pkg::FlashOpRead,

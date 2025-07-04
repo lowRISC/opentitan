@@ -8,13 +8,13 @@
 // (  i) programs random set of interrupt registers with random values
 // ( ii) programs CTRL_EN_INPUT_FILTER register to random value
 // (iii) DATA_IN and INTR_STATE are read back and their read data are checked
-//       aginst predicted values.
+//       against predicted values.
 // ( iv) random noise data (data with many frequent asynchronous toggling) is
 //       driven on gpio pins. After few cycles (less than FILTER_CYCLES), the
 //       are toggled to original values before noise was driven. This would make
 //       sure than noise filter does not see stable data on any pin long enough.
 // (  v) DATA_IN and INTR_STATE are read back and their read data are checked
-//       aginst predicted values.
+//       against predicted values.
 // ( vi) Non-noise data is driven multiple times (That is, gpio pins are kept
 //       stable for FILTER_CYCLES or longer). Every time after driving
 //       non-noise data, registers DATA_IN and INTR_STATE are read back and
@@ -50,7 +50,7 @@ class ${module_instance_name}_filter_stress_vseq extends ${module_instance_name}
 
       // program random set of interrupt registers
       pgm_intr_regs();
-      // Calclulate update on interrupt state with new interrupt registers'
+      // Calculate update on interrupt state with new interrupt registers'
       // programming
       update_intr_state(crnt_intr_status, stable_value, stable_value);
       // Read and check DATA_IN and INTR_STATE registers
@@ -179,7 +179,7 @@ class ${module_instance_name}_filter_stress_vseq extends ${module_instance_name}
         new_intr_state_updates = 1'b1;
       end
     end
-    // Look for level triggerred interrupts
+    // Look for level triggered interrupts
     if (new_intr_state_updates == 1'b0) begin
       if ((pin_crnt_exp_filtered_value == 1'b1 && intr_ctrl_en_lvlhigh[pin_idx]) ||
           (pin_crnt_exp_filtered_value == 1'b0 && intr_ctrl_en_lvllow[pin_idx])) begin
@@ -192,7 +192,7 @@ class ${module_instance_name}_filter_stress_vseq extends ${module_instance_name}
 
   task read_and_check(bit [NUM_GPIOS-1:0] predicted_data_in,
                       bit [NUM_GPIOS-1:0] predicted_intr_state);
-    // Read DATA_IN and check if predictaed and actual values match
+    // Read DATA_IN and check if predicted and actual values match
     csr_rd_check(.ptr(ral.data_in), .compare_value(predicted_data_in));
     // Read interrupt value after noise driving is finished
     csr_rd_check(.ptr(ral.intr_state), .compare_value(predicted_intr_state));
