@@ -4,6 +4,11 @@
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files([
+    "cryptolib_asym.h",
+    "cryptolib_sym.h",
+])
+
 cc_library(
     name = "extclk_sca_fi",
     srcs = ["extclk_sca_fi.c"],
