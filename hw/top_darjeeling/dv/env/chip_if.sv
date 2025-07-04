@@ -78,7 +78,7 @@ interface chip_if;
   // Identifier for logs.
   string MsgId = $sformatf("%m");
 
-  // Identifier for the envorinment to which this interface is passed on via uvm_config_db.
+  // Identifier for the environment to which this interface is passed on via uvm_config_db.
   string env_name = "env";
 
   // Directly connected to chip IOs.
@@ -567,7 +567,7 @@ interface chip_if;
 `else
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 `endif
-  // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
+  // clkmgr related: SW controlled clock gating control signals reflecting the actual status
   // of these clocks.
 `ifdef GATE_LEVEL
   wire aes_clk_is_enabled = 0;
@@ -700,7 +700,7 @@ interface chip_if;
         join_none
       end else begin
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
-        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
+        // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't recognize addresses of
         // sim_sram. `CPU_HIER.tl_d_* is the right place to avoid seeing sim_sram accesses
         force cpu_d_tl_if.h2d = `CPU_HIER.cored_tl_h_o;
         force cpu_d_tl_if.d2h = `CPU_HIER.cored_tl_h_i;

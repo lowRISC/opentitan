@@ -109,19 +109,19 @@ typedef enum logic [3-1:0] {
   RGLS_CLDPU = 3'd0,  // Cold power-up (MAIN Regulator ON, AON Regulator OFF, Power Switch Enabled)
   RGLS_VCMON = 3'd1,  // MAIN Regulator ON (AON Regulator OFF, Power Switch Enabled)
   RGLS_VCM2A = 3'd3,  // MAIN Regulator ON (AON Regulator rN,  Power Switch Enabled->Disabled)
-  RGLS_VCAON = 3'd7,  // AON Regulator ON (MAIN Regulator OFF, Power Switch Diabled)
-  RGLS_VCA2M = 3'd5,  // AON Regulator ON (MAIN Regulator ON,  Power Switch Diabled->Enabled)
+  RGLS_VCAON = 3'd7,  // AON Regulator ON (MAIN Regulator OFF, Power Switch Disabled)
+  RGLS_VCA2M = 3'd5,  // AON Regulator ON (MAIN Regulator ON,  Power Switch Disabled->Enabled)
   RGLS_BROUT = 3'd6   // Brownout (MAIN Regulator ON, AON Regulator OFF, Power Switch Enabled)
 } rgls_sm_e;
 
 rgls_sm_e rgls_sm;
 logic vcmain_pok_h, vcaon_pok_h, main_pd_str_h;
 
-// Hold state machin reset on brownout for minimum 13us.
+// Hold state machine reset on brownout for minimum 13us.
 logic rgls_rst_h_n;
 assign rgls_rst_h_n = vcc_pok_str_h_o;
 
-// Syncronizers
+// Synchronizers
 // First stage clk FE & second clk RE
 ///////////////////////////////////////
 logic vcc_pok_fe_h, vcc_pok_s_h;
@@ -147,13 +147,13 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
   end
 end
 
-// Regulators State Mashine
+// Regulators State Machine
 ////////////////////////////////////////
 always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
   if ( !rgls_rst_h_n ) begin
     vcmain_pok_h     <= 1'b0;        // VCMAIN Rail Disabled
     vcaon_pok_h      <= 1'b0;        // VCAON Rail Disabled
-    main_pd_str_h    <= 1'b0;        // Power Down Stratch off
+    main_pd_str_h    <= 1'b0;        // Power Down Stretch off
     //
     rglssm_vcmon_h_o <= 1'b0;        //
     rglssm_vmppr_h_o <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -168,7 +168,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_CLDPU: begin
         vcmain_pok_h       <= 1'b0;        // VCMAIN Rail Disabled
         vcaon_pok_h        <= 1'b0;        // VCAON Rail Disabled
-        main_pd_str_h      <= 1'b0;        // Power Down Stratch off
+        main_pd_str_h      <= 1'b0;        // Power Down Stretch off
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -192,7 +192,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_VCMON: begin
         vcmain_pok_h       <= 1'b1;        // VCMAIN Rail Enabled
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
-        main_pd_str_h      <= 1'b0;        // Power Down Stratch
+        main_pd_str_h      <= 1'b0;        // Power Down Stretch
         //
         rglssm_vcmon_h_o   <= 1'b1;        // (rgls_sm == RGLS_VCMON)
         rglssm_vmppr_h_o   <= 1'b0;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -208,7 +208,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
           fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_BROUT;  // Brownout
         end else if ( main_pd_h_i && !por_sync_h_i ) begin
-          main_pd_str_h    <= 1'b1;        // Power Down Stratch on
+          main_pd_str_h    <= 1'b1;        // Power Down Stretch on
           rglssm_vcmon_h_o <= 1'b0;        //
           rglssm_vmppr_h_o <= 1'b0;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
           fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
@@ -221,7 +221,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_VCM2A: begin
         vcmain_pok_h       <= 1'b1;        // VCMAIN Rail Enabled
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
-        main_pd_str_h      <= 1'b1;        // Power Down Stratch
+        main_pd_str_h      <= 1'b1;        // Power Down Stretch
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b0;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -248,7 +248,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_VCAON: begin
         vcmain_pok_h       <= 1'b0;        // VCMAIN Rail Disabled
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
-        main_pd_str_h      <= 1'b1;        // Power Down Stratch
+        main_pd_str_h      <= 1'b1;        // Power Down Stretch
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -268,7 +268,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_VCA2M: begin
         vcmain_pok_h       <= 1'b0;        // VCMAIN Rail Disable
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
-        main_pd_str_h      <= 1'b0;        // Power Down Stratch off
+        main_pd_str_h      <= 1'b0;        // Power Down Stretch off
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -292,7 +292,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       RGLS_BROUT: begin
         vcmain_pok_h       <= 1'b1;        // VCMAIN Rail Enabled
         vcaon_pok_h        <= 1'b1;        // VCAON Rail Enabled
-        main_pd_str_h      <= 1'b0;        // Powe Down Stratch off
+        main_pd_str_h      <= 1'b0;        // Power Down Stretch off
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b0;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -307,7 +307,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
       default: begin
         vcmain_pok_h       <= 1'b0;        // VCMAIN Rail Disabled
         vcaon_pok_h        <= 1'b0;        // VCAON Rail Disabled
-        main_pd_str_h      <= 1'b0;        // Powe Down Stratch off
+        main_pd_str_h      <= 1'b0;        // Power Down Stretch off
         //
         rglssm_vcmon_h_o   <= 1'b0;        //
         rglssm_vmppr_h_o   <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -334,7 +334,7 @@ assign vcaon_pok_1p1_h_o = vcaon_pok_h_o;  // For layout separation
 
 
 ///////////////////////////////////////
-// Streched VCC_POK During Brownout
+// Stretched VCC_POK During Brownout
 ///////////////////////////////////////
 localparam int VccPokStrNum = 4;  // (Min-Max) (3-4)x5us=(15-20)us
 

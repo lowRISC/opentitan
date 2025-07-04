@@ -278,7 +278,7 @@
 
             - Trigger an LC escalation signal by generating an alert.
             - Verify that all flash accesses are disabled when the escalation kicks in.
-            - Confirm flash accesses are disabled by erroing if the device executes the ISR.
+            - Confirm flash accesses are disabled by erroring if the device executes the ISR.
             - Use assertion based connectivity check to prove that this signal is connected to the
               flash ctrl.
 

@@ -172,7 +172,7 @@
             - Perform secure wipe operation.
             - Read digest registers. They should not match the previously calculated digest.
             - Process HMAC operation with initial known message.
-            - Compare MAC disgest against original result. The result must not match.
+            - Compare MAC digest against original result. The result must not match.
             '''
       features: ["HMAC.SECURE_WIPE"]
       stage: V3

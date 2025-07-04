@@ -41,7 +41,7 @@ set_output_delay -clock clk_spi 5 [get_ports SPI_DEV_D0] -add_delay
 set_output_delay -clock clk_spi 5 [get_ports SPI_DEV_D1] -add_delay
 
 # set clock sense on the input to spi buffers to help the tool understand the clocks are shifted versions of each other
-# This can also be accomplished through create_genearted_clocks.
+# This can also be accomplished through create_generated_clock.
 
 ## set clock sense approach
 ##set_clock_sense -negative \
@@ -60,7 +60,7 @@ set_output_delay -clock clk_spi 5 [get_ports SPI_DEV_D1] -add_delay
 ##  ] \
 ##  -clocks clk_spi
 
-## create_generated_clock appraoch
+## create_generated_clock approach
 ## create_generated_clock is preferred since the buffer cell used here is hand-instantiated, while the set_clock_sense point is simply a LUT
 create_generated_clock -name clk_spi_in  -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_fpga_buf.gen_bufr.bufr_i/O]
 create_generated_clock -name clk_spi_out -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_fpga_buf.gen_bufr.bufr_i/O] -invert

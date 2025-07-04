@@ -220,7 +220,7 @@ module chip_earlgrey_verilator (
   assign pad2ast = '0;
 
   logic clk_aon;
-  // reset is not used below becuase verilator uses only sync resets
+  // reset is not used below because verilator uses only sync resets
   // and also does not under 'x'.
   // if we allow the divider below to reset, clk_aon will be silenced,
   // and as a result all the clk_aon logic inside top_earlgrey does not

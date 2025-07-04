@@ -46,7 +46,7 @@ module soc_proxy
   input  logic [7:0] soc_lsio_trigger_i,
   output dma_pkg::lsio_trigger_t dma_lsio_trigger_o,
 
-  // Incomig TL ports get muxed
+  // Incoming TL ports get muxed
   input  tlul_pkg::tl_h2d_t dma_tl_h2d_i,
   output tlul_pkg::tl_d2h_t dma_tl_d2h_o,
   input  tlul_pkg::tl_h2d_t misc_tl_h2d_i,
@@ -220,7 +220,7 @@ module soc_proxy
 
   for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_handling
     // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    // Combinationally determine the alert on the input signals to generater an asynchronous
+    // Combinationally determine the alert on the input signals to generate an asynchronous
     // wakeup.
     assign fatal_alert_external_async[i] = soc_fatal_alert_p[i] | ~soc_fatal_alert_n[i];
 
@@ -288,7 +288,7 @@ module soc_proxy
 
   for (genvar i = 0; i < NumRecovExternalAlerts; i++) begin : gen_recov_alert_handling
     // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    // Combinationally determine the alert on the input signals to generater an asynchronous
+    // Combinationally determine the alert on the input signals to generate an asynchronous
     // wakeup.
     assign recov_alert_external_async[i] =  soc_recov_alert_i[i].alert_p |
                                            ~soc_recov_alert_i[i].alert_n;

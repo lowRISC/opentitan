@@ -803,7 +803,7 @@ module chip_englishbreakfast_cw305 #(
     // USB IO Pull-up Calibration Setting
     .usb_io_pu_cal_o       ( ),
 
-    // clocks' oschillator bypass for FPGA
+    // clocks' oscillator bypass for FPGA
     .clk_osc_byp_i         ( clks_osc_byp ),
 
     // adc

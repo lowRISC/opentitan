@@ -594,7 +594,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       //
       // To avoid this, we also glitch the corresponding input of the ibex_lockstep instance to
       // the opposite value. The ibex_lockstep instance is embedded inside prim_buf cells across
-      // which glitches don't progagate back. Also, the delay lines are embedded inside the
+      // which glitches don't propagate back. Also, the delay lines are embedded inside the
       // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously.
       //
       // It's further worth noting that:

@@ -58,7 +58,7 @@ package chip_env_pkg;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"
 
-  // LC token paramters
+  // LC token parameters
   // LC sends two 64-bit msg as input token.
   localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
   localparam uint TokenWidthByte = TokenWidthBit / 8;

@@ -314,7 +314,7 @@ module tb;
 
   `undef SIM_SRAM_IF
 
-  // Instantitate the memory backdoor util instances.
+  // Instantiate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     initial begin
       sram_ctrl_bkdr_util ram_main0, ram_ret0, ram_mbox0;

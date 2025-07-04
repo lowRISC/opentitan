@@ -88,7 +88,7 @@
 
             - Enable upload-related interrupts and configure the spi_device in passthrough mode.
             - Configure a command slot to enable upload for a flash program/erase command.
-            - Excecute two parallel threads:
+            - Execute two parallel threads:
               1. Upstream SPI host agent.
                 - Send a flash program/erase, then keep sending read_status to poll the busy bit.
                 - When the busy bit is low, issue a read command to read data from the downstream
@@ -159,7 +159,7 @@
 
                Notes for silicon targets:
                This test currently does not exercise any features of the spi_device block itself,
-               which is why the "features" list is empty. It may be reclassifed in the future.
+               which is why the "features" list is empty. It may be reclassified in the future.
              '''
       stage: V3
       si_stage: SV3

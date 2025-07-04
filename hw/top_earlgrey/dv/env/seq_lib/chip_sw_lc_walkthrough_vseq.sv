@@ -100,7 +100,7 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  // Reload flash bootstrap and reforce the sw symbols because RMA state wiped out flash.
+  // Reload flash bootstrap and reinforce the sw symbols because RMA state wiped out flash.
   virtual task reload_flash_after_rma_transfer();
     bit [7:0] selected_dest_state[];
     selected_dest_state = {dest_dec_state};

@@ -110,7 +110,7 @@ module chip_englishbreakfast_verilator (
   // for verilator purposes, make these two the same.
 
   logic clk_aon;
-  // reset is not used below becuase verilator uses only sync resets
+  // reset is not used below because verilator uses only sync resets
   // and also does not under 'x'.
   // if we allow the divider below to reset, clk_aon will be silenced,
   // and as a result all the clk_aon logic inside top_englishbreakfast does not

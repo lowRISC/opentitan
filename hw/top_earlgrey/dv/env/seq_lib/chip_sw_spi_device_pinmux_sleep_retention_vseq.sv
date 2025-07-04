@@ -81,7 +81,7 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
     // Request chip to wakeup via deassertion of IOA8
     cfg.chip_vif.mios_if.drive_pin(top_earlgrey_pkg::MioPadIoa8, 0);
 
-    // Pinmux then configurded to go to sleep ic CSB changes
+    // Pinmux then configured to go to sleep ic CSB changes
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "SYNC: Awaked")
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "SYNC: Flash mode")
@@ -124,7 +124,7 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "PASS!")
 
-    // Check spi transactions work as they should after devide is awoken
+    // Check spi transactions work as they should after device is awoken
   endtask : body
 
   // Checks the spi_output are set to value

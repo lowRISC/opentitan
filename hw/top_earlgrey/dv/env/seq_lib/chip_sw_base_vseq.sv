@@ -805,7 +805,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                           status_val);
 
       // Ensure that none of the other status bits are set. This failure is
-      // idicative of the jtag agent trying to access the TAP interface while
+      // indicative of the jtag agent trying to access the TAP interface while
       // the dut is exiting reset. Try monitoring the reset, or inserting
       // a delay before calling this function.
       `DV_CHECK_EQ((status_val) >> dummy.num(), 0,
@@ -1170,7 +1170,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // End the test with status.
   //
-  // SW test code finishes the test sequence usually by returing true or false
+  // SW test code finishes the test sequence usually by returning true or false
   // in the `test_main()` function. However, some tests may need vseq to
   // finish the tests. For example, `chip_sw_sleep_pin_mio_dio_val` checks the
   // PADs output value then finishes the test without waking up the SW again.

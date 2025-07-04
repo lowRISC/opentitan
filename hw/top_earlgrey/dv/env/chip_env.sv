@@ -16,7 +16,7 @@ class chip_env extends cip_base_env #(
   i2c_agent              m_i2c_agents[NUM_I2CS];
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
-  // spi host agent that transmits trasnactions to dut spi device
+  // spi host agent that transmits transactions to dut spi device
   spi_agent              m_spi_host_agent;
   pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
   pattgen_agent          m_pattgen_agent;

@@ -193,7 +193,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     check_pads_retention_type();
 
-    // If `chech_pad_retention_type()` runs without uvm_error and reach this point, the test passed
+    // If `check_pads_retention_type()` runs without uvm_error and reach this point, the test passed
     // full check
     // TODO: Cleanly exit the test with idle CPU.
     override_test_status_and_finish(.passed(1'b 1));

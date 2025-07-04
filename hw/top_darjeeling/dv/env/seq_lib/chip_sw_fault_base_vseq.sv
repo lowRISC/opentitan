@@ -5,7 +5,7 @@
 // This is base sequence for top level fault injection.
 // User can set following parameters
 // if_path : hierarchical path to inject fault
-// alert_id : alert to be triggerred. Use enum
+// alert_id : alert to be triggered. Use enum
 //            defined in hw/top_darjeeling/rtl/autogen/top_darjeeling_pkg.sv
 
 class chip_sw_fault_base_vseq extends chip_sw_base_vseq;

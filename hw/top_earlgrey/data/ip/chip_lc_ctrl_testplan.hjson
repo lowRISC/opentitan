@@ -278,7 +278,7 @@
     }
     {
       name: chip_sw_lc_walkthrough
-      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
+      desc: '''Walk through the life cycle stages from RAW state and resetting the chip each time.
 
              - Pre-load OTP image with RAW lc_state.
              - Initiate the LC transition to one of the test unlock state.

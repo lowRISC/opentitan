@@ -204,8 +204,8 @@
       desc: '''Verify alert_handler's ping mechanism works correctly during sleep and wake up.
 
             There are two scenarios to check:
-            - Configure alert_handler's ping timeout register to a reasonble value that won't cause
-              ping timeout in normal cases.
+            - Configure alert_handler's ping timeout register to a reasonable value that won't
+              cause ping timeout in normal cases.
               Then randomly enter and exit normal or deep sleep modes.
               Check that no local alerts triggered in alert_handler.
               This scenario ensures that ping mechanism won't send out spurious failure.
@@ -260,7 +260,7 @@
             interrupts once enabled.
 
             **Ping timeout calculation**
-            See timout calcuations described in the
+            See timeout calculations described in the
             `chip_sw_alert_handler_reverse_ping_in_deep_sleep` test.
 
             **Procedure**
