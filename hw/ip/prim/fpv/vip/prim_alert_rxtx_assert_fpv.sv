@@ -73,12 +73,15 @@ module prim_alert_rxtx_assert_fpv
       (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
       prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=> FullHandshake_S,
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
+
+  // If there is an alert request when both sides are in an idle state, then there will be an alert
+  // handshake which will finish with alert_ack_o being true.
   `ASSERT(AlertHs_A, alert_req_i &&
       (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
       prim_alert_rxtx_tb.i_prim_alert_sender.Idle) &&
       (prim_alert_rxtx_tb.i_prim_alert_receiver.state_q ==
       prim_alert_rxtx_tb.i_prim_alert_receiver.Idle) |=>
-      FullHandshake_S |-> alert_ack_o,
+      FullHandshake_S ##0 alert_ack_o,
       clk_i, !rst_ni || error_present || mubi4_test_true_strict(init_trig_i))
   `ASSERT(AlertTestHs_A, alert_test_i &&
       (prim_alert_rxtx_tb.i_prim_alert_sender.state_q ==
