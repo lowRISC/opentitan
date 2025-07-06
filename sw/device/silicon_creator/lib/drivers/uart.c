@@ -109,7 +109,7 @@ void uart_write(const void *data, size_t len) {
 
 void uart_write_hex(uint32_t val, size_t len, uint32_t after) {
   HARDENED_CHECK_LE(len, sizeof(uint32_t));
-  static const uint8_t kHexTable[16] = "0123456789abcdef";
+  OT_NONSTRING static const uint8_t kHexTable[16] = "0123456789abcdef";
   size_t i = len * 8;
   do {
     i -= 4;

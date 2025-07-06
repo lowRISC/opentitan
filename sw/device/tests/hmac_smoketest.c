@@ -19,7 +19,7 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
     .message_endianness = kDifHmacEndiannessLittle,
 };
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "

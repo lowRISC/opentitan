@@ -44,12 +44,12 @@ enum {
 
 // NOTE: all of the lengths of the strings below are given so that the NUL
 // terminator is left off; that way, `sizeof(kConst)` does not include it.
-static const char kDigitsLow[16] = "0123456789abcdef";
-static const char kDigitsHigh[16] = "0123456789ABCDEF";
+OT_NONSTRING static const char kDigitsLow[16] = "0123456789abcdef";
+OT_NONSTRING static const char kDigitsHigh[16] = "0123456789ABCDEF";
 
-static const char kErrorNul[17] = "%<unexpected nul>";
-static const char kUnknownSpec[15] = "%<unknown spec>";
-static const char kErrorTooWide[12] = "%<bad width>";
+OT_NONSTRING static const char kErrorNul[17] = "%<unexpected nul>";
+OT_NONSTRING static const char kUnknownSpec[15] = "%<unknown spec>";
+OT_NONSTRING static const char kErrorTooWide[12] = "%<bad width>";
 
 static size_t base_dev_null(void *data, const char *buf, size_t len) {
   OT_DISCARD(data);
@@ -583,7 +583,7 @@ size_t base_vfprintf(buffer_sink_t out, const char *format, va_list args) {
   return bytes_written;
 }
 
-const char kBaseHexdumpDefaultFmtAlphabet[256] =
+OT_NONSTRING const char kBaseHexdumpDefaultFmtAlphabet[256] =
     // clang-format off
   // First 32 characters are not printable.
   "................................"
@@ -646,7 +646,7 @@ size_t base_fhexdump_with(buffer_sink_t out, base_hexdump_fmt_t fmt,
     size_t line_bytes_written = 0;
     for (size_t word = 0; word < bytes_per_line; word += fmt.bytes_per_word) {
       if (len < line + word) {
-        char spaces[16] = "                ";
+        OT_NONSTRING char spaces[16] = "                ";
         while (line_bytes_written < chars_per_line) {
           size_t to_print = chars_per_line - line_bytes_written;
           if (to_print > sizeof(spaces)) {

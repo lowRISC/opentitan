@@ -13,7 +13,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static const char kData[142] =
+OT_NONSTRING static const char kData[142] =
     "Every one suspects himself of at least one of "
     "the cardinal virtues, and this is mine: I am "
     "one of the few honest people that I have ever "
