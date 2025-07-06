@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-static const char kHexTable[16] = "0123456789abcdef";
+OT_NONSTRING static const char kHexTable[16] = "0123456789abcdef";
 
 static void print_integer(unsigned value, bool is_signed) {
   char buf[12];
