@@ -625,6 +625,18 @@ extern "C++" {
 #define OT_USED __attribute__((used))
 
 /**
+ * An attribute used to indicate that a character array variable is not intended
+ * to be treated as a null-terminated string.
+ */
+#if defined(__clang__) && __clang_major__ >= 21
+#define OT_NONSTRING __attribute__((nonstring))
+#elif defined(__GNUC__) && !defined(__clang__)
+#define OT_NONSTRING __attribute__((nonstring))
+#else
+#define OT_NONSTRING
+#endif
+
+/**
  * OT_BUILD_FOR_STATIC_ANALYZER indicates whether we are compiling for the
  * purpose of static analysis. Currently, this macro only detects
  * Clang-Analyzer, which is used as a backend by Clang-Tidy.
