@@ -12,7 +12,7 @@
 
 #define MODULE_ID MAKE_MODULE_ID('h', 'm', 't')
 
-const char kHmacRefData[34] = "Sample message for keylen=blocklen";
+OT_NONSTRING const char kHmacRefData[34] = "Sample message for keylen=blocklen";
 
 const uint8_t kHmacRefLongKey[100] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B,
