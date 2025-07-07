@@ -32,3 +32,8 @@ MODULE.bazel.lock linguist-generated=true
 
 # Do not format vendored or generated files
 **/vendor/** rules-lint-ignored=true
+
+# Unfortunately buildifier ignores .bazelignore
+# and reformats the registry so we need to tell
+# rules_lint to ignore it.
+registry/** rules-lint-ignored=true
