@@ -565,76 +565,148 @@ impl Inner {
 }
 
 impl Conn {
+    /// Parse lines received from the HyperDebug console out of a buffer, emptying
+    /// the buffer and stripping line feeds & carriage returns.
+    fn find_hyperdebug_console_lines(
+        &self,
+        buf: &mut [u8],
+        len: &mut usize,
+    ) -> Result<Vec<String>> {
+        let mut lines = Vec::new();
+        let mut line_start = 0;
+        for i in 0..*len {
+            if buf[i] == b'\n' {
+                let mut line_end = i;
+                while line_end > line_start && buf[line_end - 1] == b'\r' {
+                    line_end -= 1; // Remove carriage returns
+                }
+                let line = std::str::from_utf8(&buf[line_start..line_end])
+                    .context("utf8 decoding from HyperDebug console")?;
+                lines.push(line.to_string());
+                line_start = i + 1;
+            }
+        }
+        if line_start > 0 {
+            buf.rotate_left(line_start);
+            *len -= line_start;
+        }
+        Ok(lines)
+    }
+
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
     fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
         let port: &mut TTYPort = &mut self.console_port.borrow_mut();
 
-        if self.first_use.get() {
-            // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
-            // partial input, before executing our command.
-            port.write(format!("\x03{}\n", cmd).as_bytes())
-                .context("writing to HyperDebug console")?;
-            self.first_use.set(false);
-        } else {
-            port.write(format!("{}\n", cmd).as_bytes())
-                .context("writing to HyperDebug console")?;
-        }
-
-        // Now process response from HyperDebug.  First we expect to see the echo of the command
-        // we just "typed". Then zero, one or more lines of useful output, which we want to pass
-        // to the callback, and then a prompt characters, indicating that the output is
-        // complete.
         let mut buf = [0u8; 128];
-        let mut seen_echo = false;
         let mut len: usize = 0;
-        loop {
-            // Read more data, appending to existing buffer.
-            match port.read(&mut buf[len..]) {
-                Ok(rc) => {
-                    len += rc;
-                    // See if we have one or more lines terminated with endline, if so, process
-                    // those and remove from the buffer by shifting the remaning data to the
-                    // front of the buffer.
-                    let mut line_start = 0;
-                    for i in 0..len {
-                        if buf[i] == b'\n' {
-                            // Found a complete line, process it
-                            let mut line_end = i;
-                            while line_end > line_start && buf[line_end - 1] == 13 {
-                                line_end -= 1;
-                            }
-                            let line = std::str::from_utf8(&buf[line_start..line_end])
-                                .context("utf8 decoding from HyperDebug console")?;
-                            if seen_echo {
-                                callback(line);
-                            } else if line.len() >= 2 && line[line.len() - 2..] == *"^C" {
-                                // Expected output from our sending of control character.
-                            } else if line.len() >= cmd.len()
-                                && line[line.len() - cmd.len()..] == *cmd
-                            {
-                                // A line ending with the command we sent, assume this is echo,
-                                // and that the actual command output will now follow.
-                                seen_echo = true;
-                            } else if !line.is_empty() {
-                                // Unexpected output before or instead of the echo of our command.
-                                log::info!("Unexpected output: {:?}", line)
-                            }
-                            line_start = i + 1;
-                        }
-                    }
-                    // If any lines were processed, remove from the buffer.
-                    if line_start > 0 {
-                        buf.rotate_left(line_start);
-                        len -= line_start;
-                    }
-                    if seen_echo && buf[0..len] == [b'>', b' '] {
-                        // We have seen echo of the command we sent, and now the last we got was a
-                        // command prompt, this is what we expect when the command has finished
-                        // successfully.
-                        return Ok(());
+
+        // For the first command, send Ctrl-C first to discard previous partial input.
+        if self.first_use.get() {
+            self.first_use.set(false);
+            port.write(b"\x03")
+                .context("writing to HyperDebug console")?;
+
+            // Process expected output from sending control character
+            let mut control_response_seen = false;
+            let mut response_prompt_seen = false;
+            while !response_prompt_seen {
+                len += port
+                    .read(&mut buf[len..])
+                    .context("reading from HyperDebug console")?;
+                for line in self.find_hyperdebug_console_lines(&mut buf, &mut len)? {
+                    if !control_response_seen && line.len() >= 2 && line[line.len() - 2..] == *"^C"
+                    {
+                        control_response_seen = true;
+                    } else if !line.is_empty() {
+                        // Unexpected output before or instead of the control response.
+                        log::info!("Unexpected output: {}", line);
                     }
                 }
-                Err(error) => return Err(error).context("reading from HyperDebug console"),
+                if control_response_seen {
+                    if buf[0..len] == [b'>', b' '] {
+                        response_prompt_seen = true;
+                        buf.rotate_left(len);
+                        len = 0;
+                    } else if len >= 2 {
+                        // Unexpected output before or instead of console prompt
+                        log::info!("Unexpected output: {:?}", &buf[0..len]);
+                    }
+                }
+            }
+        }
+
+        // The Hyperdebug USB console stream has an input buffer of `QUEUE_SIZE_USB_RX`,
+        // which is 64 bytes (USB packet size). Thus, for commands that are too large,
+        // bytes can be lost as they are placed into a full RX queue. So, for commands
+        // larger than 64 bytes, we split the command into chunks and wait for each
+        // individual chunk to be echoed before proceeding.
+        let cmd = format!("{}\n", cmd);
+        let mut cmd_chunks = cmd.as_bytes().chunks(64);
+
+        // Send all but the last chunk, as then we must handle the command response
+        for _ in 1..cmd_chunks.len() {
+            let cmd_chunk = cmd_chunks.next().unwrap();
+            port.write(cmd_chunk)
+                .context("writing to HyperDebug console")?;
+
+            // Process expected response echoing the partial command chunk.
+            let mut echo_seen = false;
+            while !echo_seen {
+                len += port
+                    .read(&mut buf[len..])
+                    .context("reading from HyperDebug console")?;
+                for line in self.find_hyperdebug_console_lines(&mut buf, &mut len)? {
+                    log::info!("Unexpected output: {:?}", line);
+                }
+                if len >= cmd_chunk.len() {
+                    if buf[len - cmd_chunk.len()..len] == *cmd_chunk {
+                        echo_seen = true;
+                        // Remove processed chunk from the buffer
+                        buf.rotate_left(len);
+                        len = 0;
+                    } else {
+                        // Unexpected output before or instead of command chunk echo.
+                        log::info!("Unexpected output: {:?}", &buf[0..len]);
+                    }
+                }
+            }
+        }
+
+        // Send the final command chunk
+        let cmd_chunk = cmd_chunks.next().unwrap();
+        port.write(cmd_chunk)
+            .context("writing to HyperDebug console")?;
+
+        // When comparing against the final command chunk, we skip the trailing
+        // line feed as this is handled by `find_hyperdebug_console_lines`.
+        let cmd_chunk = &cmd_chunk[..cmd_chunk.len() - 1];
+
+        // Process the response from HyperDebug. We expect to first see the finished echo of the
+        // command we just "typed". Following this, any number of lines of useful output, which
+        // we pass to the callback, and then prompt characters, indiciating that the output is
+        // complete.
+        let mut echo_seen = false;
+        loop {
+            len += port
+                .read(&mut buf[len..])
+                .context("reading from HyperDebug console")?;
+            for line in self.find_hyperdebug_console_lines(&mut buf, &mut len)? {
+                if echo_seen {
+                    callback(&line);
+                } else if line.len() >= cmd_chunk.len()
+                    && line[line.len() - cmd_chunk.len()..].as_bytes() == cmd_chunk
+                {
+                    echo_seen = true;
+                } else if !line.is_empty() {
+                    // Unexpected output before or instead of the echo of our command.
+                    log::info!("Unexpected output: {}", line);
+                }
+            }
+            if echo_seen && buf[0..len] == [b'>', b' '] {
+                // We have seen the echo of the command we sent, and after parsing all lines
+                // we are left with a command prompt, which is what we expect when the
+                // command has finished successfully.
+                return Ok(());
             }
         }
     }
