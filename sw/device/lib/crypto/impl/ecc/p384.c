@@ -92,12 +92,12 @@ enum {
   /*
    * The expected instruction counts for constant time functions.
    */
-  kModeKeygenInsCnt = 1899012,
-  kModeKeygenSideloadInsCnt = 1898905,
-  kModeEcdhInsCnt = 1910611,
-  kModeEcdhSideloadInsCnt = 1910759,
-  kModeEcdsaSignInsCnt = 1546541,
-  kModeEcdsaSignSideloadInsCnt = 1546689,
+  kModeKeygenInsCnt = 1935430,
+  kModeKeygenSideloadInsCnt = 1935323,
+  kModeEcdhInsCnt = 1947029,
+  kModeEcdhSideloadInsCnt = 1947177,
+  kModeEcdsaSignInsCnt = 1574769,
+  kModeEcdsaSignSideloadInsCnt = 1574917,
 };
 
 static status_t p384_masked_scalar_write(p384_masked_scalar_t *src,
@@ -217,7 +217,8 @@ status_t p384_keygen_start(void) {
 status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the masked private key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
@@ -252,7 +253,8 @@ status_t p384_sideload_keygen_start(void) {
 
 status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenSideloadInsCnt);
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
@@ -302,8 +304,15 @@ status_t p384_ecdsa_sideload_sign_start(
 }
 
 status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
+  }
 
   // Read signature R out of OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(
@@ -393,7 +402,7 @@ status_t p384_ecdh_start(p384_masked_scalar_t *private_key,
 
 status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read the status code out of DMEM (false if basic checks on the validity of
   // the signature and public key failed).
