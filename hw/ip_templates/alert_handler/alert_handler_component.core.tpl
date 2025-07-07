@@ -34,7 +34,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/alert_handler.vlt
+      - lint/${module_instance_name}.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
