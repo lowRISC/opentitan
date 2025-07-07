@@ -245,20 +245,6 @@ pub const AST_BASE_ADDR: usize = 0x30480000;
 /// `AST_BASE_ADDR + AST_SIZE_BYTES`.
 pub const AST_SIZE_BYTES: usize = 0x400;
 
-/// Peripheral base address for core device on soc_proxy in top darjeeling.
-///
-/// This should be used with #mmio_region_from_addr to access the memory-mapped
-/// registers associated with the peripheral (usually via a DIF).
-pub const SOC_PROXY_CORE_BASE_ADDR: usize = 0x22030000;
-
-/// Peripheral size for core device on soc_proxy in top darjeeling.
-///
-/// This is the size (in bytes) of the peripheral's reserved memory area. All
-/// memory-mapped registers associated with this peripheral should have an
-/// address between #SOC_PROXY_CORE_BASE_ADDR and
-/// `SOC_PROXY_CORE_BASE_ADDR + SOC_PROXY_CORE_SIZE_BYTES`.
-pub const SOC_PROXY_CORE_SIZE_BYTES: usize = 0x4;
-
 /// Peripheral base address for ctn device on soc_proxy in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1644,70 +1630,68 @@ pub enum AlertPeripheral {
     PinmuxAon = 12,
     /// aon_timer_aon
     AonTimerAon = 13,
-    /// soc_proxy
-    SocProxy = 14,
     /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 15,
+    SramCtrlRetAon = 14,
     /// rv_dm
-    RvDm = 16,
+    RvDm = 15,
     /// rv_plic
-    RvPlic = 17,
+    RvPlic = 16,
     /// aes
-    Aes = 18,
+    Aes = 17,
     /// hmac
-    Hmac = 19,
+    Hmac = 18,
     /// kmac
-    Kmac = 20,
+    Kmac = 19,
     /// otbn
-    Otbn = 21,
+    Otbn = 20,
     /// keymgr_dpe
-    KeymgrDpe = 22,
+    KeymgrDpe = 21,
     /// csrng
-    Csrng = 23,
+    Csrng = 22,
     /// entropy_src
-    EntropySrc = 24,
+    EntropySrc = 23,
     /// edn0
-    Edn0 = 25,
+    Edn0 = 24,
     /// edn1
-    Edn1 = 26,
+    Edn1 = 25,
     /// sram_ctrl_main
-    SramCtrlMain = 27,
+    SramCtrlMain = 26,
     /// sram_ctrl_mbox
-    SramCtrlMbox = 28,
+    SramCtrlMbox = 27,
     /// rom_ctrl0
-    RomCtrl0 = 29,
+    RomCtrl0 = 28,
     /// rom_ctrl1
-    RomCtrl1 = 30,
+    RomCtrl1 = 29,
     /// dma
-    Dma = 31,
+    Dma = 30,
     /// mbx0
-    Mbx0 = 32,
+    Mbx0 = 31,
     /// mbx1
-    Mbx1 = 33,
+    Mbx1 = 32,
     /// mbx2
-    Mbx2 = 34,
+    Mbx2 = 33,
     /// mbx3
-    Mbx3 = 35,
+    Mbx3 = 34,
     /// mbx4
-    Mbx4 = 36,
+    Mbx4 = 35,
     /// mbx5
-    Mbx5 = 37,
+    Mbx5 = 36,
     /// mbx6
-    Mbx6 = 38,
+    Mbx6 = 37,
     /// mbx_jtag
-    MbxJtag = 39,
+    MbxJtag = 38,
     /// mbx_pcie0
-    MbxPcie0 = 40,
+    MbxPcie0 = 39,
     /// mbx_pcie1
-    MbxPcie1 = 41,
+    MbxPcie1 = 40,
     /// soc_dbg_ctrl
-    SocDbgCtrl = 42,
+    SocDbgCtrl = 41,
     /// racl_ctrl
-    RaclCtrl = 43,
+    RaclCtrl = 42,
     /// ac_range_check
-    AcRangeCheck = 44,
+    AcRangeCheck = 43,
     /// rv_core_ibex
-    RvCoreIbex = 45,
+    RvCoreIbex = 44,
 }
 
 /// Alert Handler Alert Source.
@@ -1759,118 +1743,116 @@ pub enum AlertId {
     PinmuxAonFatalFault = 19,
     /// aon_timer_aon_fatal_fault
     AonTimerAonFatalFault = 20,
-    /// soc_proxy_fatal_alert_intg
-    SocProxyFatalAlertIntg = 21,
     /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 22,
+    SramCtrlRetAonFatalError = 21,
     /// rv_dm_fatal_fault
-    RvDmFatalFault = 23,
+    RvDmFatalFault = 22,
     /// rv_plic_fatal_fault
-    RvPlicFatalFault = 24,
+    RvPlicFatalFault = 23,
     /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 25,
+    AesRecovCtrlUpdateErr = 24,
     /// aes_fatal_fault
-    AesFatalFault = 26,
+    AesFatalFault = 25,
     /// hmac_fatal_fault
-    HmacFatalFault = 27,
+    HmacFatalFault = 26,
     /// kmac_recov_operation_err
-    KmacRecovOperationErr = 28,
+    KmacRecovOperationErr = 27,
     /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 29,
+    KmacFatalFaultErr = 28,
     /// otbn_fatal
-    OtbnFatal = 30,
+    OtbnFatal = 29,
     /// otbn_recov
-    OtbnRecov = 31,
+    OtbnRecov = 30,
     /// keymgr_dpe_recov_operation_err
-    KeymgrDpeRecovOperationErr = 32,
+    KeymgrDpeRecovOperationErr = 31,
     /// keymgr_dpe_fatal_fault_err
-    KeymgrDpeFatalFaultErr = 33,
+    KeymgrDpeFatalFaultErr = 32,
     /// csrng_recov_alert
-    CsrngRecovAlert = 34,
+    CsrngRecovAlert = 33,
     /// csrng_fatal_alert
-    CsrngFatalAlert = 35,
+    CsrngFatalAlert = 34,
     /// entropy_src_recov_alert
-    EntropySrcRecovAlert = 36,
+    EntropySrcRecovAlert = 35,
     /// entropy_src_fatal_alert
-    EntropySrcFatalAlert = 37,
+    EntropySrcFatalAlert = 36,
     /// edn0_recov_alert
-    Edn0RecovAlert = 38,
+    Edn0RecovAlert = 37,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 39,
+    Edn0FatalAlert = 38,
     /// edn1_recov_alert
-    Edn1RecovAlert = 40,
+    Edn1RecovAlert = 39,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 41,
+    Edn1FatalAlert = 40,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 42,
+    SramCtrlMainFatalError = 41,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 43,
+    SramCtrlMboxFatalError = 42,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 44,
+    RomCtrl0Fatal = 43,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 45,
+    RomCtrl1Fatal = 44,
     /// dma_fatal_fault
-    DmaFatalFault = 46,
+    DmaFatalFault = 45,
     /// mbx0_fatal_fault
-    Mbx0FatalFault = 47,
+    Mbx0FatalFault = 46,
     /// mbx0_recov_fault
-    Mbx0RecovFault = 48,
+    Mbx0RecovFault = 47,
     /// mbx1_fatal_fault
-    Mbx1FatalFault = 49,
+    Mbx1FatalFault = 48,
     /// mbx1_recov_fault
-    Mbx1RecovFault = 50,
+    Mbx1RecovFault = 49,
     /// mbx2_fatal_fault
-    Mbx2FatalFault = 51,
+    Mbx2FatalFault = 50,
     /// mbx2_recov_fault
-    Mbx2RecovFault = 52,
+    Mbx2RecovFault = 51,
     /// mbx3_fatal_fault
-    Mbx3FatalFault = 53,
+    Mbx3FatalFault = 52,
     /// mbx3_recov_fault
-    Mbx3RecovFault = 54,
+    Mbx3RecovFault = 53,
     /// mbx4_fatal_fault
-    Mbx4FatalFault = 55,
+    Mbx4FatalFault = 54,
     /// mbx4_recov_fault
-    Mbx4RecovFault = 56,
+    Mbx4RecovFault = 55,
     /// mbx5_fatal_fault
-    Mbx5FatalFault = 57,
+    Mbx5FatalFault = 56,
     /// mbx5_recov_fault
-    Mbx5RecovFault = 58,
+    Mbx5RecovFault = 57,
     /// mbx6_fatal_fault
-    Mbx6FatalFault = 59,
+    Mbx6FatalFault = 58,
     /// mbx6_recov_fault
-    Mbx6RecovFault = 60,
+    Mbx6RecovFault = 59,
     /// mbx_jtag_fatal_fault
-    MbxJtagFatalFault = 61,
+    MbxJtagFatalFault = 60,
     /// mbx_jtag_recov_fault
-    MbxJtagRecovFault = 62,
+    MbxJtagRecovFault = 61,
     /// mbx_pcie0_fatal_fault
-    MbxPcie0FatalFault = 63,
+    MbxPcie0FatalFault = 62,
     /// mbx_pcie0_recov_fault
-    MbxPcie0RecovFault = 64,
+    MbxPcie0RecovFault = 63,
     /// mbx_pcie1_fatal_fault
-    MbxPcie1FatalFault = 65,
+    MbxPcie1FatalFault = 64,
     /// mbx_pcie1_recov_fault
-    MbxPcie1RecovFault = 66,
+    MbxPcie1RecovFault = 65,
     /// soc_dbg_ctrl_fatal_fault
-    SocDbgCtrlFatalFault = 67,
+    SocDbgCtrlFatalFault = 66,
     /// soc_dbg_ctrl_recov_ctrl_update_err
-    SocDbgCtrlRecovCtrlUpdateErr = 68,
+    SocDbgCtrlRecovCtrlUpdateErr = 67,
     /// racl_ctrl_fatal_fault
-    RaclCtrlFatalFault = 69,
+    RaclCtrlFatalFault = 68,
     /// racl_ctrl_recov_ctrl_update_err
-    RaclCtrlRecovCtrlUpdateErr = 70,
+    RaclCtrlRecovCtrlUpdateErr = 69,
     /// ac_range_check_recov_ctrl_update_err
-    AcRangeCheckRecovCtrlUpdateErr = 71,
+    AcRangeCheckRecovCtrlUpdateErr = 70,
     /// ac_range_check_fatal_fault
-    AcRangeCheckFatalFault = 72,
+    AcRangeCheckFatalFault = 71,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 73,
+    RvCoreIbexFatalSwErr = 72,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 74,
+    RvCoreIbexRecovSwErr = 73,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 75,
+    RvCoreIbexFatalHwErr = 74,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 76,
+    RvCoreIbexRecovHwErr = 75,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -1898,62 +1880,61 @@ impl TryFrom<u32> for AlertId {
             18 => Ok(Self::ClkmgrAonFatalFault),
             19 => Ok(Self::PinmuxAonFatalFault),
             20 => Ok(Self::AonTimerAonFatalFault),
-            21 => Ok(Self::SocProxyFatalAlertIntg),
-            22 => Ok(Self::SramCtrlRetAonFatalError),
-            23 => Ok(Self::RvDmFatalFault),
-            24 => Ok(Self::RvPlicFatalFault),
-            25 => Ok(Self::AesRecovCtrlUpdateErr),
-            26 => Ok(Self::AesFatalFault),
-            27 => Ok(Self::HmacFatalFault),
-            28 => Ok(Self::KmacRecovOperationErr),
-            29 => Ok(Self::KmacFatalFaultErr),
-            30 => Ok(Self::OtbnFatal),
-            31 => Ok(Self::OtbnRecov),
-            32 => Ok(Self::KeymgrDpeRecovOperationErr),
-            33 => Ok(Self::KeymgrDpeFatalFaultErr),
-            34 => Ok(Self::CsrngRecovAlert),
-            35 => Ok(Self::CsrngFatalAlert),
-            36 => Ok(Self::EntropySrcRecovAlert),
-            37 => Ok(Self::EntropySrcFatalAlert),
-            38 => Ok(Self::Edn0RecovAlert),
-            39 => Ok(Self::Edn0FatalAlert),
-            40 => Ok(Self::Edn1RecovAlert),
-            41 => Ok(Self::Edn1FatalAlert),
-            42 => Ok(Self::SramCtrlMainFatalError),
-            43 => Ok(Self::SramCtrlMboxFatalError),
-            44 => Ok(Self::RomCtrl0Fatal),
-            45 => Ok(Self::RomCtrl1Fatal),
-            46 => Ok(Self::DmaFatalFault),
-            47 => Ok(Self::Mbx0FatalFault),
-            48 => Ok(Self::Mbx0RecovFault),
-            49 => Ok(Self::Mbx1FatalFault),
-            50 => Ok(Self::Mbx1RecovFault),
-            51 => Ok(Self::Mbx2FatalFault),
-            52 => Ok(Self::Mbx2RecovFault),
-            53 => Ok(Self::Mbx3FatalFault),
-            54 => Ok(Self::Mbx3RecovFault),
-            55 => Ok(Self::Mbx4FatalFault),
-            56 => Ok(Self::Mbx4RecovFault),
-            57 => Ok(Self::Mbx5FatalFault),
-            58 => Ok(Self::Mbx5RecovFault),
-            59 => Ok(Self::Mbx6FatalFault),
-            60 => Ok(Self::Mbx6RecovFault),
-            61 => Ok(Self::MbxJtagFatalFault),
-            62 => Ok(Self::MbxJtagRecovFault),
-            63 => Ok(Self::MbxPcie0FatalFault),
-            64 => Ok(Self::MbxPcie0RecovFault),
-            65 => Ok(Self::MbxPcie1FatalFault),
-            66 => Ok(Self::MbxPcie1RecovFault),
-            67 => Ok(Self::SocDbgCtrlFatalFault),
-            68 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            69 => Ok(Self::RaclCtrlFatalFault),
-            70 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
-            71 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
-            72 => Ok(Self::AcRangeCheckFatalFault),
-            73 => Ok(Self::RvCoreIbexFatalSwErr),
-            74 => Ok(Self::RvCoreIbexRecovSwErr),
-            75 => Ok(Self::RvCoreIbexFatalHwErr),
-            76 => Ok(Self::RvCoreIbexRecovHwErr),
+            21 => Ok(Self::SramCtrlRetAonFatalError),
+            22 => Ok(Self::RvDmFatalFault),
+            23 => Ok(Self::RvPlicFatalFault),
+            24 => Ok(Self::AesRecovCtrlUpdateErr),
+            25 => Ok(Self::AesFatalFault),
+            26 => Ok(Self::HmacFatalFault),
+            27 => Ok(Self::KmacRecovOperationErr),
+            28 => Ok(Self::KmacFatalFaultErr),
+            29 => Ok(Self::OtbnFatal),
+            30 => Ok(Self::OtbnRecov),
+            31 => Ok(Self::KeymgrDpeRecovOperationErr),
+            32 => Ok(Self::KeymgrDpeFatalFaultErr),
+            33 => Ok(Self::CsrngRecovAlert),
+            34 => Ok(Self::CsrngFatalAlert),
+            35 => Ok(Self::EntropySrcRecovAlert),
+            36 => Ok(Self::EntropySrcFatalAlert),
+            37 => Ok(Self::Edn0RecovAlert),
+            38 => Ok(Self::Edn0FatalAlert),
+            39 => Ok(Self::Edn1RecovAlert),
+            40 => Ok(Self::Edn1FatalAlert),
+            41 => Ok(Self::SramCtrlMainFatalError),
+            42 => Ok(Self::SramCtrlMboxFatalError),
+            43 => Ok(Self::RomCtrl0Fatal),
+            44 => Ok(Self::RomCtrl1Fatal),
+            45 => Ok(Self::DmaFatalFault),
+            46 => Ok(Self::Mbx0FatalFault),
+            47 => Ok(Self::Mbx0RecovFault),
+            48 => Ok(Self::Mbx1FatalFault),
+            49 => Ok(Self::Mbx1RecovFault),
+            50 => Ok(Self::Mbx2FatalFault),
+            51 => Ok(Self::Mbx2RecovFault),
+            52 => Ok(Self::Mbx3FatalFault),
+            53 => Ok(Self::Mbx3RecovFault),
+            54 => Ok(Self::Mbx4FatalFault),
+            55 => Ok(Self::Mbx4RecovFault),
+            56 => Ok(Self::Mbx5FatalFault),
+            57 => Ok(Self::Mbx5RecovFault),
+            58 => Ok(Self::Mbx6FatalFault),
+            59 => Ok(Self::Mbx6RecovFault),
+            60 => Ok(Self::MbxJtagFatalFault),
+            61 => Ok(Self::MbxJtagRecovFault),
+            62 => Ok(Self::MbxPcie0FatalFault),
+            63 => Ok(Self::MbxPcie0RecovFault),
+            64 => Ok(Self::MbxPcie1FatalFault),
+            65 => Ok(Self::MbxPcie1RecovFault),
+            66 => Ok(Self::SocDbgCtrlFatalFault),
+            67 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
+            68 => Ok(Self::RaclCtrlFatalFault),
+            69 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
+            70 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
+            71 => Ok(Self::AcRangeCheckFatalFault),
+            72 => Ok(Self::RvCoreIbexFatalSwErr),
+            73 => Ok(Self::RvCoreIbexRecovSwErr),
+            74 => Ok(Self::RvCoreIbexFatalHwErr),
+            75 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -1963,7 +1944,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 77] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 76] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2006,8 +1987,6 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 77] = [
     AlertPeripheral::PinmuxAon,
     // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
     AlertPeripheral::AonTimerAon,
-    // SocProxyFatalAlertIntg -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
     // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
     AlertPeripheral::SramCtrlRetAon,
     // RvDmFatalFault -> AlertPeripheral::RvDm

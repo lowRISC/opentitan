@@ -483,7 +483,6 @@
             pinmux_aon
             aon_timer_aon
             ast
-            soc_proxy.core
             soc_dbg_ctrl.core
             sram_ctrl_ret_aon
             rv_plic
@@ -3984,10 +3983,6 @@
       ]
       base_addrs:
       {
-        core:
-        {
-          hart: 0x22030000
-        }
         ctn:
         {
           hart: 0x40000000
@@ -4269,19 +4264,6 @@
           external: true
           top_signame: integrator_id
           conn_type: false
-          index: -1
-        }
-        {
-          name: core_tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: soc_proxy
-          default: ""
-          end_idx: -1
-          top_signame: soc_proxy_core_tl
           index: -1
         }
         {
@@ -12005,10 +11987,6 @@
       [
         peri.tl_main
       ]
-      soc_proxy.core_tl:
-      [
-        main.tl_soc_proxy__core
-      ]
       soc_proxy.ctn_tl:
       [
         main.tl_soc_proxy__ctn
@@ -12520,7 +12498,6 @@
           sram_ctrl_mbox.ram
           sram_ctrl_mbox.regs
           soc_proxy.ctn
-          soc_proxy.core
           dma
           mbx0.core
           mbx1.core
@@ -12558,7 +12535,6 @@
           sram_ctrl_mbox.ram
           sram_ctrl_mbox.regs
           soc_proxy.ctn
-          soc_proxy.core
           dma
           mbx0.core
           mbx1.core
@@ -12818,28 +12794,6 @@
               size_byte: 0x800000
             }
           ]
-        }
-        {
-          name: soc_proxy.core
-          type: device
-          clock: clk_main_i
-          reset: rst_main_ni
-          req_fifo_pass: false
-          rsp_fifo_pass: false
-          inst_type: soc_proxy
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x22030000
-              }
-              size_byte: 0x4
-            }
-          ]
-          xbar: false
-          stub: false
-          pipeline: true
         }
         {
           name: soc_proxy.ctn
@@ -13848,18 +13802,6 @@
           default: ""
           end_idx: -1
           top_signame: main_tl_peri
-          index: -1
-        }
-        {
-          name: tl_soc_proxy__core
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          inst_name: main
-          width: 1
-          default: ""
-          top_signame: soc_proxy_core_tl
           index: -1
         }
         {
@@ -18496,16 +18438,6 @@
       lpg_idx: 8
     }
     {
-      name: soc_proxy_fatal_alert_intg
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_intg alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
       name: sram_ctrl_ret_aon_fatal_error
       width: 1
       type: alert
@@ -20276,7 +20208,6 @@
     clkmgr_aon
     pinmux_aon
     aon_timer_aon
-    soc_proxy
     sram_ctrl_ret_aon
     rv_dm
     rv_plic
@@ -23204,19 +23135,6 @@
         external: true
         top_signame: integrator_id
         conn_type: false
-        index: -1
-      }
-      {
-        name: core_tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: soc_proxy
-        default: ""
-        end_idx: -1
-        top_signame: soc_proxy_core_tl
         index: -1
       }
       {
@@ -27433,18 +27351,6 @@
         index: -1
       }
       {
-        name: tl_soc_proxy__core
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        inst_name: main
-        width: 1
-        default: ""
-        top_signame: soc_proxy_core_tl
-        index: -1
-      }
-      {
         name: tl_soc_proxy__ctn
         struct: tl
         package: tlul_pkg
@@ -30892,28 +30798,6 @@
         act: req
         suffix: rsp
         default: tlul_pkg::TL_D2H_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: soc_proxy_core_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: soc_proxy_core_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
       }
       {
         package: tlul_pkg

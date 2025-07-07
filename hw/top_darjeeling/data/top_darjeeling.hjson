@@ -233,7 +233,6 @@
             "pinmux_aon",
             "aon_timer_aon",
             "ast"
-            "soc_proxy.core",
             "soc_dbg_ctrl.core",
             "sram_ctrl_ret_aon",
             "rv_plic",
@@ -626,7 +625,6 @@
       },
       domain: ["Aon", "0"],
       base_addrs: {
-        core: {hart: "0x22030000"},
         ctn:  {hart: "0x40000000"},
       },
       attr: "reggen_top",

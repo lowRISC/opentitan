@@ -14,7 +14,6 @@ filesets:
       - lowrisc:systems:soc_proxy_pkg
     files:
       - rtl/bat.sv
-      - rtl/soc_proxy_core_reg_top.sv
       - rtl/soc_proxy.sv
     file_type: systemVerilogSource
 
@@ -29,7 +28,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-      - lowrisc:lint:comportable
     files:
       - lint/soc_proxy.waiver
     file_type: waiver

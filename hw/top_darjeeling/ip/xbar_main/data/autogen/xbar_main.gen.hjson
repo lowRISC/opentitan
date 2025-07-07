@@ -72,7 +72,6 @@
       sram_ctrl_mbox.ram
       sram_ctrl_mbox.regs
       soc_proxy.ctn
-      soc_proxy.core
       dma
       mbx0.core
       mbx1.core
@@ -110,7 +109,6 @@
       sram_ctrl_mbox.ram
       sram_ctrl_mbox.regs
       soc_proxy.ctn
-      soc_proxy.core
       dma
       mbx0.core
       mbx1.core
@@ -370,28 +368,6 @@
           size_byte: 0x800000
         }
       ]
-    }
-    {
-      name: soc_proxy.core
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      req_fifo_pass: false
-      rsp_fifo_pass: false
-      inst_type: soc_proxy
-      addr_range:
-      [
-        {
-          base_addrs:
-          {
-            hart: 0x22030000
-          }
-          size_byte: 0x4
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: true
     }
     {
       name: soc_proxy.ctn
@@ -1400,18 +1376,6 @@
       default: ""
       end_idx: -1
       top_signame: main_tl_peri
-      index: -1
-    }
-    {
-      name: tl_soc_proxy__core
-      struct: tl
-      package: tlul_pkg
-      type: req_rsp
-      act: req
-      inst_name: main
-      width: 1
-      default: ""
-      top_signame: soc_proxy_core_tl
       index: -1
     }
     {

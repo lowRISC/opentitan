@@ -6,79 +6,10 @@
 
 package soc_proxy_reg_pkg;
 
-  // Param list
-  parameter int NumAlerts = 1;
-
   // Address widths within the block
-  parameter int CoreAw = 2;
   parameter int CtnAw = 1;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 1;
   parameter int NumRegsCtn = 0;
-
-  // Alert indices
-  typedef enum int {
-    AlertFatalAlertIntgIdx = 0,
-    AlertFatalAlertExternal0Idx = 1,
-    AlertFatalAlertExternal1Idx = 2,
-    AlertFatalAlertExternal2Idx = 3,
-    AlertFatalAlertExternal3Idx = 4,
-    AlertFatalAlertExternal4Idx = 5,
-    AlertFatalAlertExternal5Idx = 6,
-    AlertFatalAlertExternal6Idx = 7,
-    AlertFatalAlertExternal7Idx = 8,
-    AlertFatalAlertExternal8Idx = 9,
-    AlertFatalAlertExternal9Idx = 10,
-    AlertFatalAlertExternal10Idx = 11,
-    AlertFatalAlertExternal11Idx = 12,
-    AlertFatalAlertExternal12Idx = 13,
-    AlertFatalAlertExternal13Idx = 14,
-    AlertFatalAlertExternal14Idx = 15,
-    AlertFatalAlertExternal15Idx = 16,
-    AlertFatalAlertExternal16Idx = 17,
-    AlertFatalAlertExternal17Idx = 18,
-    AlertFatalAlertExternal18Idx = 19,
-    AlertFatalAlertExternal19Idx = 20,
-    AlertFatalAlertExternal20Idx = 21,
-    AlertFatalAlertExternal21Idx = 22,
-    AlertFatalAlertExternal22Idx = 23,
-    AlertFatalAlertExternal23Idx = 24,
-    AlertRecovAlertExternal0Idx = 25,
-    AlertRecovAlertExternal1Idx = 26,
-    AlertRecovAlertExternal2Idx = 27,
-    AlertRecovAlertExternal3Idx = 28
-  } soc_proxy_alert_idx_t;
-
-  ///////////////////////////////////////////////
-  // Typedefs for registers for core interface //
-  ///////////////////////////////////////////////
-
-  typedef struct packed {
-    logic        q;
-    logic        qe;
-  } soc_proxy_reg2hw_alert_test_reg_t;
-
-  // Register -> HW type for core interface
-  typedef struct packed {
-    soc_proxy_reg2hw_alert_test_reg_t alert_test; // [1:0]
-  } soc_proxy_core_reg2hw_t;
-
-  // Register offsets for core interface
-  parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 2'h 0;
-
-  // Reset values for hwext registers and their fields for core interface
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_INTG_RESVAL = 1'h 0;
-
-  // Register index for core interface
-  typedef enum int {
-    SOC_PROXY_ALERT_TEST
-  } soc_proxy_core_id_e;
-
-  // Register width information to check illegal writes for core interface
-  parameter logic [3:0] SOC_PROXY_CORE_PERMIT [1] = '{
-    4'b 0001  // index[0] SOC_PROXY_ALERT_TEST
-  };
 
 endpackage
