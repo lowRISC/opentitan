@@ -54,5 +54,6 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
     --test_output=all \
     --build_tests_only \
     --define "$fpga"=lowrisc \
+    --runs_per_test=10 \
     --flaky_test_attempts=2 \
     --target_pattern_file="${target_pattern_file}"
