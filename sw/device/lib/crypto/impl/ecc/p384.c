@@ -166,7 +166,7 @@ status_t p384_keygen_start(void) {
 status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
                               p384_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM_WIPE_DMEM(otbn_busy_wait_for_done());
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
 
   // Read the masked private key from OTBN dmem.
   HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP384MaskedScalarShareWords, kOtbnVarD0,
