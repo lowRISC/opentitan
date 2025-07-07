@@ -4198,6 +4198,13 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_host_config_test",
     ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device:spi_host_config_test",
+    ),
     deps = [
         ":spi_host_flash_test_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
