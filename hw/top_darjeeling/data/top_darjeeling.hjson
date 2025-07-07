@@ -1493,7 +1493,6 @@
         'soc_proxy.soc_recov_alert'            : 'soc_recov_alert',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
         'soc_proxy.soc_rst_req_async'          : 'soc_rst_req_async',
-        'soc_proxy.soc_intr_async'             : 'soc_intr_async',
         'soc_proxy.soc_lsio_trigger'           : 'soc_lsio_trigger',
         'soc_proxy.soc_gpi_async'              : 'soc_gpi_async',
         'soc_proxy.soc_gpo_async'              : 'soc_gpo_async',

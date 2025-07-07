@@ -4188,21 +4188,6 @@
           index: -1
         }
         {
-          name: soc_intr_async
-          desc: Interrupt request from SoC, asynchronous, level-encoded
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: soc_proxy
-          default: ""
-          package: ""
-          external: true
-          top_signame: soc_intr_async
-          conn_type: false
-          index: -1
-        }
-        {
           name: soc_gpi_async
           desc: GPI from SoC, async
           struct: logic
@@ -12059,7 +12044,6 @@
       soc_proxy.soc_recov_alert: soc_recov_alert
       soc_proxy.soc_wkup_async: soc_wkup_async
       soc_proxy.soc_rst_req_async: soc_rst_req_async
-      soc_proxy.soc_intr_async: soc_intr_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
       soc_proxy.soc_gpi_async: soc_gpi_async
       soc_proxy.soc_gpo_async: soc_gpo_async
@@ -12456,7 +12440,7 @@
               {
                 hart: 0x22030000
               }
-              size_byte: 0x20
+              size_byte: 0x8
             }
           ]
           xbar: false
@@ -19612,18 +19596,6 @@
       outgoing: false
     }
     {
-      name: soc_proxy_external
-      width: 32
-      type: interrupt
-      module_name: soc_proxy
-      desc: soc_proxy external interrupt
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-      plic: rv_plic
-      outgoing: false
-    }
-    {
       name: hmac_hmac_done
       width: 1
       type: interrupt
@@ -20858,7 +20830,6 @@
     spi_host0
     pwrmgr_aon
     aon_timer_aon
-    soc_proxy
     hmac
     kmac
     otbn
@@ -23788,21 +23759,6 @@
         package: ""
         external: true
         top_signame: soc_rst_req_async
-        conn_type: false
-        index: -1
-      }
-      {
-        name: soc_intr_async
-        desc: Interrupt request from SoC, asynchronous, level-encoded
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: soc_proxy
-        default: ""
-        package: ""
-        external: true
-        top_signame: soc_intr_async
         conn_type: false
         index: -1
       }
@@ -30312,18 +30268,6 @@
         conn_type: false
         index: -1
         netname: soc_rst_req_async
-      }
-      {
-        package: ""
-        struct: logic
-        signame: soc_intr_async_i
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_intr_async
       }
       {
         package: ""

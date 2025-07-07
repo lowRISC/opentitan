@@ -13,8 +13,6 @@ SoC Proxy is a simple comportable IP module that facilitates the breakout of sig
 - 2 Wakeup requests
   - Internal wakeup request, should be asserted whenever an external alert or IRQ is seen
   - External wakeup request
-- 32 Interrupts
-  - External interrupt requests
 
 ## SoC-facing interfaces
 

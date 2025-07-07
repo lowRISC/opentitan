@@ -7910,9 +7910,7 @@ opentitan_test(
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:soc_proxy",
-        "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing/test_framework:ottf_main",

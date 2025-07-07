@@ -386,7 +386,7 @@
           {
             hart: 0x22030000
           }
-          size_byte: 0x20
+          size_byte: 0x8
         }
       ]
       xbar: false

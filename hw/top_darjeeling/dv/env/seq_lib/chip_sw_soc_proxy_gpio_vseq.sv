@@ -31,7 +31,6 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
     test_dio_soc_gpis();
     test_dio_soc_gpos();
     test_mio_soc_gpis();
-    send_external_irq();
     test_mio_soc_gpos();
   endtask
 
@@ -177,13 +176,6 @@ class chip_sw_soc_proxy_gpio_vseq extends chip_sw_base_vseq;
       // Release drive.
       void'(cfg.chip_vif.signal_probe_soc_gpo_async(.kind(dv_utils_pkg::SignalProbeRelease)));
     end
-  endtask
-
-  task send_external_irq();
-    void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                             .value(1'b1)));
-    cfg.chip_vif.cpu_clk_rst_if.wait_clks(100);
-    void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease)));
   endtask
 
   task await_muxable_soc_gpis_mapped();

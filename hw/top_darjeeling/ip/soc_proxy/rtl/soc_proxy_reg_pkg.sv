@@ -7,14 +7,13 @@
 package soc_proxy_reg_pkg;
 
   // Param list
-  parameter int unsigned NumExternalIrqs = 32;
   parameter int NumAlerts = 29;
 
   // Address widths within the block
-  parameter int CoreAw = 5;
+  parameter int CoreAw = 3;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 5;
+  parameter int NumRegsCore = 2;
 
   // Alert indices
   typedef enum int {
@@ -52,19 +51,6 @@ package soc_proxy_reg_pkg;
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////
-
-  typedef struct packed {
-    logic [31:0] q;
-  } soc_proxy_reg2hw_intr_state_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-  } soc_proxy_reg2hw_intr_enable_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-    logic        qe;
-  } soc_proxy_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -185,34 +171,16 @@ package soc_proxy_reg_pkg;
     } fatal_alert_intg;
   } soc_proxy_reg2hw_alert_test_reg_t;
 
-  typedef struct packed {
-    logic [31:0] d;
-    logic        de;
-  } soc_proxy_hw2reg_intr_state_reg_t;
-
   // Register -> HW type for core interface
   typedef struct packed {
-    soc_proxy_reg2hw_intr_state_reg_t intr_state; // [154:123]
-    soc_proxy_reg2hw_intr_enable_reg_t intr_enable; // [122:91]
-    soc_proxy_reg2hw_intr_test_reg_t intr_test; // [90:58]
     soc_proxy_reg2hw_alert_test_reg_t alert_test; // [57:0]
   } soc_proxy_core_reg2hw_t;
 
-  // HW -> register type for core interface
-  typedef struct packed {
-    soc_proxy_hw2reg_intr_state_reg_t intr_state; // [32:0]
-  } soc_proxy_core_hw2reg_t;
-
   // Register offsets for core interface
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_STATE_OFFSET = 5'h 0;
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_ENABLE_OFFSET = 5'h 4;
-  parameter logic [CoreAw-1:0] SOC_PROXY_INTR_TEST_OFFSET = 5'h 8;
-  parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 5'h c;
-  parameter logic [CoreAw-1:0] SOC_PROXY_DUMMY_OFFSET = 5'h 10;
+  parameter logic [CoreAw-1:0] SOC_PROXY_ALERT_TEST_OFFSET = 3'h 0;
+  parameter logic [CoreAw-1:0] SOC_PROXY_DUMMY_OFFSET = 3'h 4;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [31:0] SOC_PROXY_INTR_TEST_RESVAL = 32'h 0;
-  parameter logic [31:0] SOC_PROXY_INTR_TEST_EXTERNAL_RESVAL = 32'h 0;
   parameter logic [28:0] SOC_PROXY_ALERT_TEST_RESVAL = 29'h 0;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_INTG_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_0_RESVAL = 1'h 0;
@@ -246,20 +214,14 @@ package soc_proxy_reg_pkg;
 
   // Register index for core interface
   typedef enum int {
-    SOC_PROXY_INTR_STATE,
-    SOC_PROXY_INTR_ENABLE,
-    SOC_PROXY_INTR_TEST,
     SOC_PROXY_ALERT_TEST,
     SOC_PROXY_DUMMY
   } soc_proxy_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] SOC_PROXY_CORE_PERMIT [5] = '{
-    4'b 1111, // index[0] SOC_PROXY_INTR_STATE
-    4'b 1111, // index[1] SOC_PROXY_INTR_ENABLE
-    4'b 1111, // index[2] SOC_PROXY_INTR_TEST
-    4'b 1111, // index[3] SOC_PROXY_ALERT_TEST
-    4'b 0001  // index[4] SOC_PROXY_DUMMY
+  parameter logic [3:0] SOC_PROXY_CORE_PERMIT [2] = '{
+    4'b 1111, // index[0] SOC_PROXY_ALERT_TEST
+    4'b 0001  // index[1] SOC_PROXY_DUMMY
   };
 
 endpackage
