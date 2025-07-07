@@ -3455,16 +3455,6 @@ cc_library(
     name = "pwrmgr_sleep_all_wake_ups_impl",
     srcs = ["pwrmgr_sleep_all_wake_ups_impl.c"],
     hdrs = ["pwrmgr_sleep_all_wake_ups_impl.h"],
-    defines = flatten(
-        [
-            opentitan_if_ip(
-                ip,
-                ["HAS_" + ip.upper()],
-                [],
-            )
-            for ip in PWRMGR_SUPPORTED_IPS
-        ],
-    ),
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
@@ -3835,11 +3825,6 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_darjeeling:sim_dv": None,
         },
-    ),
-    local_defines = opentitan_if_ip(
-        "usbdev",
-        ["OT_HAS_USBDEV"],
-        [],
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [

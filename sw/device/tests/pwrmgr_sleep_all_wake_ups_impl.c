@@ -17,24 +17,27 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 
-#ifdef HAS_ADC_CTRL
+#if OPENTITAN_HAS_ADC_CTRL
 #include "dt/dt_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
-#endif
-#ifdef HAS_SENSOR_CTRL
+#endif  // OPENTITAN_HAS_ADC_CTRL
+
+#if OPENTITAN_HAS_SENSOR_CTRL
 #include "dt/dt_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_sensor_ctrl.h"
 
 #include "sensor_ctrl_regs.h"
-#endif
-#ifdef HAS_SYSRST_CTRL
+#endif  // OPENTITAN_HAS_SENSOR_CTRL
+
+#if OPENTITAN_HAS_SYSRST_CTRL
 #include "dt/dt_sysrst_ctrl.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
-#endif
-#ifdef HAS_USBDEV
+#endif  // OPENTITAN_HAS_SYSRST_CTRL
+
+#if OPENTITAN_HAS_USBDEV
 #include "dt/dt_usbdev.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
-#endif
+#endif  // OPENTITAN_HAS_USBDEV
 
 static const uint32_t kPinmuxWkupDetector5 = 5;
 static const uint32_t kSensorCtrlEventIdx = 0;
@@ -58,7 +61,7 @@ dif_rv_plic_t rv_plic;
   dif_##__mod_name##_t __difname;                                             \
   CHECK_DIF_OK(dif_##__mod_name##_init_from_dt(__dt, &__difname));
 
-#ifdef HAS_SYSRST_CTRL
+#if OPENTITAN_HAS_SYSRST_CTRL
 /**
  * sysrst_ctrl config for test #1
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
@@ -99,9 +102,9 @@ static void sysrst_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
 }
-#endif /* HAS_SYSRST_CTRL */
+#endif  // OPENTITAN_HAS_SYSRST_CTRL
 
-#ifdef HAS_ADC_CTRL
+#if OPENTITAN_HAS_ADC_CTRL
 
 static bool adc_ctrl_skip(dt_pwrmgr_wakeup_src_t src) {
   return kDeviceType != kDeviceSimDV;
@@ -156,7 +159,7 @@ static void adc_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
       &adc_ctrl, kDifAdcCtrlFilter5, kDifToggleDisabled));
 }
-#endif /* HAS_ADC_CTRL */
+#endif /* OPENTITAN_HAS_ADC_CTRL */
 
 /**
  * pinmux config for test #3
@@ -209,7 +212,7 @@ static void pinmux_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
 }
 
-#ifdef HAS_USBDEV
+#if OPENTITAN_HAS_USBDEV
 /**
  * usb config for test #4
  * . Fake low power entry through usb
@@ -252,7 +255,7 @@ static void usb_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(dif_usbdev_set_wake_enable(&usbdev, kDifToggleDisabled));
   CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
 }
-#endif /* HAS_USBDEV */
+#endif /* OPENTITAN_HAS_USBDEV */
 
 /**
  * aon timer config for test #5
@@ -278,7 +281,7 @@ static void aontimer_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(dif_aon_timer_clear_wakeup_cause(&aon_timer));
 }
 
-#ifdef HAS_SENSOR_CTRL
+#if OPENTITAN_HAS_SENSOR_CTRL
 /**
  * sensor ctrl config for test #6
  * setup event trigger0
@@ -322,10 +325,10 @@ static void sensor_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
   CHECK(events == 0, "Expected recoverable events to be clear, got 0x%x",
         events);
 }
-#endif /* HAS_SENSOR_CTRL */
+#endif /* OPENTITAN_HAS_SENSOR_CTRL */
 
 const test_wakeup_sources_t kTestWakeupSources[] = {
-#ifdef HAS_SYSRST_CTRL
+#if OPENTITAN_HAS_SYSRST_CTRL
     {
         .name = "SYSRST_CTRL",
         .dev_type = kDtDeviceTypeSysrstCtrl,
@@ -335,8 +338,8 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = sysrst_ctrl_wakeup_check,
         .clear = sysrst_ctrl_wakeup_clear,
     },
-#endif /* HAS_SYSRST_CTRL */
-#ifdef HAS_ADC_CTRL
+#endif /* OPENTITAN_HAS_SYSRST_CTRL */
+#if OPENTITAN_HAS_ADC_CTRL
     {
         .name = "ADC_CTRL",
         .dev_type = kDtDeviceTypeAdcCtrl,
@@ -346,7 +349,7 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = adc_ctrl_wakeup_check,
         .clear = adc_ctrl_wakeup_clear,
     },
-#endif /* HAS_ADC_CTRL */
+#endif /* OPENTITAN_HAS_ADC_CTRL */
     {
         .name = "PINMUX",
         .dev_type = kDtDeviceTypePinmux,
@@ -356,7 +359,7 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = pinmux_wakeup_check,
         .clear = pinmux_wakeup_clear,
     },
-#ifdef HAS_USBDEV
+#if OPENTITAN_HAS_USBDEV
     {
         .name = "USB",
         .dev_type = kDtDeviceTypePinmux,
@@ -366,7 +369,7 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = usb_wakeup_check,
         .clear = usb_wakeup_clear,
     },
-#endif /* HAS_USBDEV */
+#endif /* OPENTITAN_HAS_USBDEV */
     {
         .name = "AONTIMER",
         .dev_type = kDtDeviceTypeAonTimer,
@@ -376,7 +379,7 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = aontimer_wakeup_check,
         .clear = aontimer_wakeup_clear,
     },
-#ifdef HAS_SENSOR_CTRL
+#if OPENTITAN_HAS_SENSOR_CTRL
     {
         .name = "SENSOR_CTRL",
         .dev_type = kDtDeviceTypeSensorCtrl,
@@ -386,7 +389,7 @@ const test_wakeup_sources_t kTestWakeupSources[] = {
         .check = sensor_ctrl_wakeup_check,
         .clear = sensor_ctrl_wakeup_clear,
     },
-#endif /* HAS_SENSOR_CTRL */
+#endif /* OPENTITAN_HAS_SENSOR_CTRL */
 };
 
 const test_wakeup_sources_t *get_wakeup_source(
