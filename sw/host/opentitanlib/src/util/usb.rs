@@ -392,7 +392,7 @@ impl UsbHub {
     }
 
     // Perform an operation.
-    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
         let (feature_index, set_feature, human_op) = match op {
             UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
             UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
@@ -413,19 +413,24 @@ impl UsbHub {
         let port_status_before = if set_feature { 0u16 } else { port_status_mask };
         let port_status_after = if set_feature { port_status_mask } else { 0u16 };
 
-        let port_status = self.port_status(port, timeout)?;
-        ensure!(
-            port_status & port_status_mask == port_status_before,
-            "Trying to {} port {} but port has unexpected status {:#x}",
-            human_op,
-            port,
-            port_status
-        );
+        if check_status {
+            let port_status = self.port_status(port, timeout)?;
+            ensure!(
+                port_status & port_status_mask == port_status_before,
+                "Trying to {} port {} but port has unexpected status {:#x}",
+                human_op,
+                port,
+                port_status
+            );
+        }
         // Perform operation.
         let _ =
             self.handle
                 .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
         // Wait until port has changed status.
+        if !check_status {
+            return Ok(());
+        }
         let start = Instant::now();
         loop {
             let port_status = self.port_status(port, timeout)?;

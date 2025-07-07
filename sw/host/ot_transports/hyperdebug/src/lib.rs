@@ -919,7 +919,7 @@ impl<T: Flavor> Hyperdebug<T> {
             };
             let hub = self.dut_usb_parent_hub()?;
             log::info!("Powering {msg} port {port} on hyperdebug parent hub (CW USB workaround)");
-            hub.op(op, port, Duration::from_secs(1)).context(format!(
+            hub.op(op, port, Duration::from_secs(1), true).context(format!(
                 "failed to disable port {port} on hyperdebug parent hub (CW USB workaround)"
             ))?;
         }
