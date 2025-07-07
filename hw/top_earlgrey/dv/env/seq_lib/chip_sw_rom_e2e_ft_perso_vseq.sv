@@ -10,11 +10,9 @@ class chip_sw_rom_e2e_ft_perso_vseq extends
   virtual task body();
     super.body();
 
-    // Drive SW straps for bootstrap.
-    `uvm_info(`gfn, "Driving SW straps high for bootstrap.", UVM_LOW)
-    cfg.chip_vif.sw_straps_if.drive(3'h7);
     `uvm_info(`gfn, "Initializing SPI flash bootstrap.", UVM_LOW)
     spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
+    cfg.use_spi_load_bootstrap = 1'b0;
     `uvm_info(`gfn, "SPI flash bootstrap done.", UVM_LOW)
 
     // Wait for SRAM initialization to complete a second time (after bootstrap).
