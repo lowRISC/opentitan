@@ -7,26 +7,15 @@
 `include "prim_assert.sv"
 
 module soc_proxy
-  import soc_proxy_reg_pkg::*;
   import soc_proxy_pkg::*;
-#(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  // Number of cycles a differential skew is tolerated on the alert signal
-  parameter int unsigned AlertSkewCycles = 1
-) (
+(
   input  logic clk_i,
   input  logic rst_ni,
   input  logic clk_aon_i,
   input  logic rst_por_ni,
 
-  input  tlul_pkg::tl_h2d_t core_tl_i,
-  output tlul_pkg::tl_d2h_t core_tl_o,
-
   input  tlul_pkg::tl_h2d_t ctn_tl_i,
   output tlul_pkg::tl_d2h_t ctn_tl_o,
-
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
   output logic wkup_external_req_o,
 
@@ -113,40 +102,6 @@ module soc_proxy
   assign cio_soc_gpo_en_o = {NumSocGpio{1'b1}};
   assign cio_soc_gpo_o    = soc_gpo_async_i;
 
-  // Register node
-  soc_proxy_core_reg2hw_t reg2hw;
-  soc_proxy_core_hw2reg_t hw2reg;
-  logic reg_top_intg_err;
-  soc_proxy_core_reg_top u_reg (
-    .clk_i,
-    .rst_ni,
-    .tl_i       (core_tl_i),
-    .tl_o       (core_tl_o),
-    .reg2hw,
-    .hw2reg,
-    .intg_err_o (reg_top_intg_err)
-  );
-
-  // Aggregate integrity alerts
-  logic intg_err;
-  assign intg_err = reg_top_intg_err;
-
-  // Alert sender for integrity alerts
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[FatalAlertIntg]),
-    .SkewCycles(AlertSkewCycles),
-    .IsFatal(1)
-  ) u_prim_fatal_alert_intg_sender (
-    .clk_i,
-    .rst_ni,
-    .alert_test_i(alert_test[FatalAlertIntg]),
-    .alert_req_i(intg_err),
-    .alert_ack_o(),
-    .alert_state_o(),
-    .alert_rx_i(alert_rx_i[FatalAlertIntg]),
-    .alert_tx_o(alert_tx_o[FatalAlertIntg])
-  );
-
   // Synchronize external wakeup request
   prim_flop_2sync #(
     .Width(1)
@@ -208,14 +163,6 @@ module soc_proxy
   };
 
   // All outputs should be known value after reset
-  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(DmaLsioTriggerKnown_A, dma_lsio_trigger_o)
-  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_o.d_valid)
-  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_o.a_ready)
-
-  // Assertions
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
-                                                 u_reg,
-                                                 alert_tx_o[FatalAlertIntg])
 
 endmodule

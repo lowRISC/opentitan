@@ -28,7 +28,6 @@
   ]
 
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "device", name: "ctn" }
   ]
 
@@ -38,12 +37,6 @@
   available_output_list: [
     { name: "soc_gpo", width: 16, desc: "soc general purpose output" }
   ],
-
-  alert_list: [
-    { name: "fatal_alert_intg"
-      desc: "Fatal bus integrity alert"
-    }
-  ]
 
   wakeup_list: [
     { name: "wkup_external_req"
@@ -180,9 +173,6 @@
   regwidth: "32"
 
   registers: {
-    core: [
-      // no CSRs defined yet
-    ]
     ctn: [
       // no CSRs defined here
     ]
