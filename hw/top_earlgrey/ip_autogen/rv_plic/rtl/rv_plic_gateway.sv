@@ -35,15 +35,14 @@ module rv_plic_gateway #(
 
   assign set = src_i & ~(src_q & le_i);
 
-  // Interrupt pending is set by source (depends on le_i), cleared by claim_i.
-  // Until interrupt is claimed, set doesn't affect ip_o.
-  // RISC-V PLIC spec mentioned it can have counter for edge triggered
-  // But skipped the feature as counter consumes substantial logic size.
+  // The interrupt pending signal for interrupt k stays true until it is claimed (claim_i[k]). It is
+  // newly asserted if the interrupt is interrupt asserted (src_i[k]) (restricted to positive edges
+  // if le_i[k] is true) when the interrupt isn't already active (~ia[k]).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ip_o <= '0;
     end else begin
-      ip_o <= (ip_o | (set & ~ia & ~ip_o)) & (~(ip_o & claim_i));
+      ip_o <= (ip_o & ~claim_i) | (set & ~ia);
     end
   end
 
