@@ -28,7 +28,6 @@ module soc_proxy
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
 
   output logic rst_req_external_o,
@@ -54,11 +53,6 @@ module soc_proxy
 
   output tlul_pkg::tl_h2d_t ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t ctn_tl_d2h_i,
-
-  input  soc_alert_req_t [NumFatalExternalAlerts-1:0] soc_fatal_alert_i,
-  output soc_alert_rsp_t [NumFatalExternalAlerts-1:0] soc_fatal_alert_o,
-  input  soc_alert_req_t [NumRecovExternalAlerts-1:0] soc_recov_alert_i,
-  output soc_alert_rsp_t [NumRecovExternalAlerts-1:0] soc_recov_alert_o,
 
   input  logic soc_wkup_async_i,
 
@@ -133,207 +127,6 @@ module soc_proxy
     .intg_err_o (reg_top_intg_err)
   );
 
-  // Alert test
-  logic [NumAlerts-1:0] alert_test;
-  assign alert_test[FatalAlertIntg] = reg2hw.alert_test.fatal_alert_intg.qe &
-                                      reg2hw.alert_test.fatal_alert_intg.q;
-  assign alert_test[FatalAlertExternal0] = reg2hw.alert_test.fatal_alert_external_0.qe &
-                                           reg2hw.alert_test.fatal_alert_external_0.q;
-  assign alert_test[FatalAlertExternal1] = reg2hw.alert_test.fatal_alert_external_1.qe &
-                                           reg2hw.alert_test.fatal_alert_external_1.q;
-  assign alert_test[FatalAlertExternal2] = reg2hw.alert_test.fatal_alert_external_2.qe &
-                                           reg2hw.alert_test.fatal_alert_external_2.q;
-  assign alert_test[FatalAlertExternal3] = reg2hw.alert_test.fatal_alert_external_3.qe &
-                                           reg2hw.alert_test.fatal_alert_external_3.q;
-  assign alert_test[FatalAlertExternal4] = reg2hw.alert_test.fatal_alert_external_4.qe &
-                                           reg2hw.alert_test.fatal_alert_external_4.q;
-  assign alert_test[FatalAlertExternal5] = reg2hw.alert_test.fatal_alert_external_5.qe &
-                                           reg2hw.alert_test.fatal_alert_external_5.q;
-  assign alert_test[FatalAlertExternal6] = reg2hw.alert_test.fatal_alert_external_6.qe &
-                                           reg2hw.alert_test.fatal_alert_external_6.q;
-  assign alert_test[FatalAlertExternal7] = reg2hw.alert_test.fatal_alert_external_7.qe &
-                                           reg2hw.alert_test.fatal_alert_external_7.q;
-  assign alert_test[FatalAlertExternal8] = reg2hw.alert_test.fatal_alert_external_8.qe &
-                                           reg2hw.alert_test.fatal_alert_external_8.q;
-  assign alert_test[FatalAlertExternal9] = reg2hw.alert_test.fatal_alert_external_9.qe &
-                                           reg2hw.alert_test.fatal_alert_external_9.q;
-  assign alert_test[FatalAlertExternal10] = reg2hw.alert_test.fatal_alert_external_10.qe &
-                                            reg2hw.alert_test.fatal_alert_external_10.q;
-  assign alert_test[FatalAlertExternal11] = reg2hw.alert_test.fatal_alert_external_11.qe &
-                                            reg2hw.alert_test.fatal_alert_external_11.q;
-  assign alert_test[FatalAlertExternal12] = reg2hw.alert_test.fatal_alert_external_12.qe &
-                                            reg2hw.alert_test.fatal_alert_external_12.q;
-  assign alert_test[FatalAlertExternal13] = reg2hw.alert_test.fatal_alert_external_13.qe &
-                                            reg2hw.alert_test.fatal_alert_external_13.q;
-  assign alert_test[FatalAlertExternal14] = reg2hw.alert_test.fatal_alert_external_14.qe &
-                                            reg2hw.alert_test.fatal_alert_external_14.q;
-  assign alert_test[FatalAlertExternal15] = reg2hw.alert_test.fatal_alert_external_15.qe &
-                                            reg2hw.alert_test.fatal_alert_external_15.q;
-  assign alert_test[FatalAlertExternal16] = reg2hw.alert_test.fatal_alert_external_16.qe &
-                                            reg2hw.alert_test.fatal_alert_external_16.q;
-  assign alert_test[FatalAlertExternal17] = reg2hw.alert_test.fatal_alert_external_17.qe &
-                                            reg2hw.alert_test.fatal_alert_external_17.q;
-  assign alert_test[FatalAlertExternal18] = reg2hw.alert_test.fatal_alert_external_18.qe &
-                                            reg2hw.alert_test.fatal_alert_external_18.q;
-  assign alert_test[FatalAlertExternal19] = reg2hw.alert_test.fatal_alert_external_19.qe &
-                                            reg2hw.alert_test.fatal_alert_external_19.q;
-  assign alert_test[FatalAlertExternal20] = reg2hw.alert_test.fatal_alert_external_20.qe &
-                                            reg2hw.alert_test.fatal_alert_external_20.q;
-  assign alert_test[FatalAlertExternal21] = reg2hw.alert_test.fatal_alert_external_21.qe &
-                                            reg2hw.alert_test.fatal_alert_external_21.q;
-  assign alert_test[FatalAlertExternal22] = reg2hw.alert_test.fatal_alert_external_22.qe &
-                                            reg2hw.alert_test.fatal_alert_external_22.q;
-  assign alert_test[FatalAlertExternal23] = reg2hw.alert_test.fatal_alert_external_23.qe &
-                                            reg2hw.alert_test.fatal_alert_external_23.q;
-
-  assign alert_test[RecovAlertExternal0] = reg2hw.alert_test.recov_alert_external_0.qe &
-                                           reg2hw.alert_test.recov_alert_external_0.q;
-  assign alert_test[RecovAlertExternal1] = reg2hw.alert_test.recov_alert_external_1.qe &
-                                           reg2hw.alert_test.recov_alert_external_1.q;
-  assign alert_test[RecovAlertExternal2] = reg2hw.alert_test.recov_alert_external_2.qe &
-                                           reg2hw.alert_test.recov_alert_external_2.q;
-  assign alert_test[RecovAlertExternal3] = reg2hw.alert_test.recov_alert_external_3.qe &
-                                           reg2hw.alert_test.recov_alert_external_3.q;
-
-  // Handle fatal external alert requests
-  logic [NumFatalExternalAlerts-1:0] fatal_alert_external, fatal_alert_external_async;
-  logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_p, soc_fatal_alert_n;
-  logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_ack_p_d, soc_fatal_alert_ack_n_d;
-
-  // Acknowledge alert based on request.
-  // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
-  always_comb begin
-    for(int i = 0; i < NumFatalExternalAlerts; i++) begin
-      // Acknowledge alert based on request.
-      // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
-      if (soc_fatal_alert_p[i] ^ soc_fatal_alert_n[i]) begin
-        soc_fatal_alert_ack_p_d[i] = soc_fatal_alert_p[i];
-        soc_fatal_alert_ack_n_d[i] = soc_fatal_alert_n[i];
-      end else begin
-        soc_fatal_alert_ack_p_d[i] = soc_fatal_alert_o[i].ack_p;
-        soc_fatal_alert_ack_n_d[i] = soc_fatal_alert_o[i].ack_n;
-      end
-    end
-  end
-
-  for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_handling
-    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    // Combinationally determine the alert on the input signals to generater an asynchronous
-    // wakeup.
-    assign fatal_alert_external_async[i] = soc_fatal_alert_p[i] | ~soc_fatal_alert_n[i];
-
-    // Synchronize external differentially encoded alert to internal clk domain
-    prim_flop_2sync #(
-      .Width(1),
-      .ResetValue(1'b0)
-    ) u_prim_flop_2sync_fatal_alert_p (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_fatal_alert_i[i].alert_p),
-      .q_o    (soc_fatal_alert_p[i])
-    );
-    prim_flop_2sync #(
-      .Width(1),
-      .ResetValue(1'b1)
-    ) u_prim_flop_2sync_fatal_alert_n (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_fatal_alert_i[i].alert_n),
-      .q_o    (soc_fatal_alert_n[i])
-    );
-    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    assign fatal_alert_external[i] = soc_fatal_alert_p[i] | ~soc_fatal_alert_n[i];
-
-    prim_flop #(
-      .Width(1),
-      .ResetValue(1'b0)
-    ) u_prim_flop_fatal_ack_p (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_fatal_alert_ack_p_d[i]),
-      .q_o    (soc_fatal_alert_o[i].ack_p)
-    );
-
-    prim_flop #(
-      .Width(1),
-      .ResetValue(1'b1)
-    ) u_prim_flop_fatal_ack_n (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_fatal_alert_ack_n_d[i]),
-      .q_o    (soc_fatal_alert_o[i].ack_n)
-    );
-  end
-
-  // Handle recoverable external alert requests
-  logic [NumRecovExternalAlerts-1:0] recov_alert_external, recov_alert_external_async;
-  logic [NumRecovExternalAlerts-1:0] soc_recov_alert_p, soc_recov_alert_n;
-  logic [NumRecovExternalAlerts-1:0] soc_recov_alert_ack_p_d, soc_recov_alert_ack_n_d;
-
-  // Acknowledge alert based on request.
-  // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
-  always_comb begin
-    for(int i = 0; i < NumRecovExternalAlerts; i++) begin
-      if (soc_recov_alert_p[i] ^ soc_recov_alert_n[i]) begin
-        soc_recov_alert_ack_p_d[i] = soc_recov_alert_p[i];
-        soc_recov_alert_ack_n_d[i] = soc_recov_alert_n[i];
-      end else begin
-        soc_recov_alert_ack_p_d[i] = soc_recov_alert_o[i].ack_p;
-        soc_recov_alert_ack_n_d[i] = soc_recov_alert_o[i].ack_n;
-      end
-    end
-  end
-
-  for (genvar i = 0; i < NumRecovExternalAlerts; i++) begin : gen_recov_alert_handling
-    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    // Combinationally determine the alert on the input signals to generater an asynchronous
-    // wakeup.
-    assign recov_alert_external_async[i] =  soc_recov_alert_i[i].alert_p |
-                                           ~soc_recov_alert_i[i].alert_n;
-
-    // Synchronize external differentially encoded alert to internal clk domain
-    prim_flop_2sync #(
-      .Width(1),
-      .ResetValue(1'b0)
-    ) u_prim_flop_2sync_recov_alert_p (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_recov_alert_i[i].alert_p),
-      .q_o    (soc_recov_alert_p[i])
-    );
-    prim_flop_2sync #(
-      .Width(1),
-      .ResetValue(1'b1)
-    ) u_prim_flop_2sync_recov_alert_n (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_recov_alert_i[i].alert_n),
-      .q_o    (soc_recov_alert_n[i])
-    );
-    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
-    assign recov_alert_external[i] = soc_recov_alert_p[i] | ~soc_recov_alert_n[i];
-
-    prim_flop #(
-      .Width(1),
-      .ResetValue(1'b0)
-    ) u_prim_flop_recov_ack_p (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_recov_alert_ack_p_d[i]),
-      .q_o    (soc_recov_alert_o[i].ack_p)
-    );
-
-    prim_flop #(
-      .Width(1),
-      .ResetValue(1'b1)
-    ) u_prim_flop_recov_ack_n (
-      .clk_i,
-      .rst_ni,
-      .d_i    (soc_recov_alert_ack_n_d[i]),
-      .q_o    (soc_recov_alert_o[i].ack_n)
-    );
-  end
-
   // Aggregate integrity alerts
   logic intg_err;
   assign intg_err = reg_top_intg_err;
@@ -354,42 +147,6 @@ module soc_proxy
     .alert_tx_o(alert_tx_o[FatalAlertIntg])
   );
 
-  // Alert senders for fatal external alerts
-  for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_sender
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[FatalAlertExternal0 + i]),
-      .SkewCycles(AlertSkewCycles),
-      .IsFatal(1'b1)
-    ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_test_i(alert_test[FatalAlertExternal0 + i]),
-      .alert_req_i(fatal_alert_external[i]),
-      .alert_ack_o(),
-      .alert_state_o(),
-      .alert_rx_i(alert_rx_i[FatalAlertExternal0 + i]),
-      .alert_tx_o(alert_tx_o[FatalAlertExternal0 + i])
-    );
-  end
-
-  // Alert senders for recoverable external alerts
-  for (genvar i = 0; i < NumRecovExternalAlerts; i++) begin : gen_recov_alert_sender
-    prim_alert_sender #(
-      .AsyncOn(AlertAsyncOn[RecovAlertExternal0 + i]),
-      .SkewCycles(AlertSkewCycles),
-      .IsFatal(1'b0)
-    ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
-      .alert_test_i(alert_test[RecovAlertExternal0 + i]),
-      .alert_req_i(recov_alert_external[i]),
-      .alert_ack_o(),
-      .alert_state_o(),
-      .alert_rx_i(alert_rx_i[RecovAlertExternal0 + i]),
-      .alert_tx_o(alert_tx_o[RecovAlertExternal0 + i])
-    );
-  end
-
   // Synchronize external wakeup request
   prim_flop_2sync #(
     .Width(1)
@@ -398,22 +155,6 @@ module soc_proxy
     .rst_ni (rst_por_ni),
     .d_i    (soc_wkup_async_i),
     .q_o    (wkup_external_req_o)
-  );
-
-  // Generate internal wakeup signal combinatorially from asynchronous signals
-  logic async_wkup;
-  assign async_wkup = |{fatal_alert_external_async, recov_alert_external_async};
-
-  // Synchronize wakeup signal onto AON domain and filter out potential glitches
-  prim_filter #(
-    .AsyncOn(1'b1),
-    .Cycles(3)
-  ) u_prim_filter_wkup (
-    .clk_i    (clk_aon_i),
-    .rst_ni   (rst_por_ni),
-    .enable_i (1'b1),
-    .filter_i (async_wkup),
-    .filter_o (wkup_internal_req_o)
   );
 
   // Synchronize reset request onto AON domain and filter out potential glitches
@@ -476,11 +217,5 @@ module soc_proxy
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_reg,
                                                  alert_tx_o[FatalAlertIntg])
-
-  // Assert that there's one index for each alert defined in the Hjson.
-  `ASSERT_INIT(AlertSourcesComplete_A, NumAlertSources == NumAlerts)
-
-  // Assert that the number of internal and external alerts sum up to the total number of alerts.
-  `ASSERT_INIT(AlertNumsSumCorrect_A, NumInternalAlerts + NumExternalAlerts == NumAlertSources)
 
 endmodule
