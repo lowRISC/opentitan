@@ -363,7 +363,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
       return;
     end
 
-    if (channel == AddrChannel) begin
+    if (channel == AChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         string csr_name = csr.get_name();
@@ -463,7 +463,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
 
     if (!write) begin
       // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
-      if (channel == DataChannel) begin
+      if (channel == DChannel) begin
         if (cfg.en_cov) begin
           if (csr.get_name() == "intr_state") begin
             bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();

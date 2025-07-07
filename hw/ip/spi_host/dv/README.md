@@ -231,8 +231,8 @@ It creates the following analysis ports to retrieve the data monitored by corres
 
 **TL_UL AGENT**
 
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 
 **SPI_AGENT**
 

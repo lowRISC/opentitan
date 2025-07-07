@@ -50,7 +50,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    if (!write && channel == AddrChannel) begin
+    if (!write && channel == AChannel) begin
       if (!uvm_re_match("intr_state*", csr_name)) begin
         for (int i = 0; i < NUM_HARTS; i++) begin
           if (csr_name == $sformatf("intr_state%0d", i)) begin
@@ -66,10 +66,10 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
       end
     end
 
-    // grab write transactions from address channel; grab completed transactions from data channel
+    // grab write transactions from A channel; grab completed transactions from D channel
 
     // if incoming access is a write to a valid csr, then make updates right away
-    if (write && channel == AddrChannel) begin
+    if (write && channel == AChannel) begin
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
       // process the csr req
@@ -212,8 +212,8 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
       endcase
     end
 
-    if (channel == DataChannel) begin
-      // Check all interrupts in DataChannel of every Read/Write except when ctimecmp updated
+    if (channel == DChannel) begin
+      // Check all interrupts in DChannel of every Read/Write except when ctimecmp updated
       // during timer active. This scenario is checked in base sequence by reading the intr_state.
       // Ignored checking here because sticky intr_pin update has one cycle delay.
       if (!ctimecmp_update_on_fly) check_interrupt_pin();
@@ -311,7 +311,7 @@ class rv_timer_scoreboard extends cip_base_scoreboard #(.CFG_T (rv_timer_env_cfg
                 // and wait until the step and/or timecmp/mtime are re-configured
                 if ( !(step[a_i] == 0 && (compare_val[a_i][a_j] - timer_val[a_i]) > 0)) begin
                   `uvm_info(`gfn, $sformatf("Timer expired check for interrupt"), UVM_MEDIUM)
-                  // Update exp val and predict it in read address_channel
+                  // Update exp val and predict it when we see it read on the A channel
                   intr_status_exp[a_i][a_j] = 1'b1;
                   `uvm_info(`gfn,
                             $sformatf("check_interrupt_pin#1 - intr_status_exp = %p",

@@ -198,10 +198,10 @@ class i2c_reference_model extends uvm_component;
     bit do_read_check = 1'b1;
 
     bit write = item.is_write();
-    bit tl_get           = (!write && channel == AddrChannel);
-    bit tl_putdata       =  (write && channel == AddrChannel); // write
-    bit tl_accessackdata = (!write && channel == DataChannel); // read
-    bit tl_accessack     =  (write && channel == DataChannel);
+    bit tl_get           = (!write && channel == AChannel);
+    bit tl_putdata       =  (write && channel == AChannel); // write
+    bit tl_accessackdata = (!write && channel == DChannel); // read
+    bit tl_accessack     =  (write && channel == DChannel);
 
     if (tl_putdata) begin
       // Incoming access is a write to a valid csr, so update the RAL right away

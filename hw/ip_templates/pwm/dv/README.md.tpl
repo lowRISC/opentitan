@@ -118,7 +118,7 @@ ${"####"} Scoreboard
 The `pwm_scoreboard` is primarily used for transaction-by-transaction checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * item_fifo[NUM_PWM_CHANNELS]: the FIFO w.r.t channels receives the dut items sent by the pwm_monitor
-* exp_item                   : It is used to store the expected item constructed from tl address and data channels.
+* exp_item                   : It is used to store the expected item constructed from tl A and D channels.
 
 when a channel is configured to start sending pulses the first expected item is generated.
 Because of the way the PWM IP is designed the first and the last pulse might not match the configuration settings.

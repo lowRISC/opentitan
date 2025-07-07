@@ -103,8 +103,8 @@ ${"###"} Self-checking strategy
 ${"####"} Scoreboard
 The `otp_ctrl_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 * alert_fifos: alert handshakes
 * sram_fifos: sram requests
 * otbn_fifo: otbn request

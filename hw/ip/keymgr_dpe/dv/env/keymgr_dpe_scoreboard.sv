@@ -440,10 +440,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     keymgr_dpe_pkg::keymgr_dpe_ops_e op = get_operation();
 
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -617,7 +617,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         end
       end
       "intr_test": begin
-        if (write && channel == AddrChannel) begin
+        if (write && channel == AChannel) begin
           bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
           bit [NumKeyMgrDpeIntr-1:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
 

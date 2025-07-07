@@ -491,8 +491,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     spi_segment_item rd_segment;
     spi_segment_item wr_segment;
 
-    bit cmd_phase_write =  (write && channel == AddrChannel);
-    bit data_phase_read = (!write && channel == DataChannel);
+    bit cmd_phase_write =  (write && channel == AChannel);
+    bit data_phase_read = (!write && channel == DChannel);
     // If the access was inside the TXFIFO window...
     if ((csr_addr & csr_addr_mask) inside {[SPI_HOST_TX_FIFO_START :
                                             SPI_HOST_TX_FIFO_END]}) begin

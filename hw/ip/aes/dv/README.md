@@ -114,10 +114,10 @@ The functional coverage plan can be found here [coverage_plan](#testplan)
 #### Scoreboard
 The `aes_scoreboard` is primarily used for end to end checking.
 It creates the following analysis FIFOs to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 
-These 2 FIFOs provide transaction items at the end of the address channel and data channel respectively.
+These 2 FIFOs provide transaction items at the end of the A and D channel, respectively.
 Each FIFO is monitored and incoming transactions are stored.
 Whenever a transaction is finished the sequence item is handed over to a reference model that will generate the expected response.
 At the same time the scoreboard is waiting for the result of the AES module to compute.

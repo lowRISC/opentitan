@@ -78,8 +78,8 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    // grab completed transactions from data channel; ignore packets from address channel
-    if (channel == AddrChannel) begin
+    // grab completed transactions from D channel; ignore packets from A channel
+    if (channel == AChannel) begin
       // Clock period in nano seconds (timeunit)
       real clk_period = cfg.clk_rst_vif.clk_period_ps / 1000;
       time crnt_time = $time;
@@ -214,7 +214,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
         `uvm_info(`gfn, "Calling gpio_predict_and_compare on reg write", UVM_HIGH)
         gpio_predict_and_compare(csr);
       end // if (write)
-    end else begin // if (channel == DataChannel)
+    end else begin // if (channel == DChannel)
       if (write == 0) begin
 % for cnt_idx in range(num_inp_period_counters):
         if (csr.get_name() == "inp_prd_cnt_val_${cnt_idx}") begin

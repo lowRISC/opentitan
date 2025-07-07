@@ -30,7 +30,7 @@ class dma_env extends cip_base_env #(
     cfg.tl_agent_dma_ctn_cfg.synchronise_ports = 1'b1;
     cfg.tl_agent_dma_sys_cfg.synchronise_ports  = 1'b1;
 
-    // The SoC System bus does not have a TL-style 'ready' signal on the address channel.
+    // The SoC System bus does not have a TL-style 'ready' signal on the A channel.
     cfg.tl_agent_dma_sys_cfg.a_ready_delay_min = 0;
     cfg.tl_agent_dma_sys_cfg.a_ready_delay_max = 0;
 

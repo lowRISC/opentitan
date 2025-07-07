@@ -86,8 +86,8 @@ The detailed covergroups are documented under alert_handler [testplan](#testplan
 #### Scoreboard
 The `alert_handler_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_a_chan_fifo: tl address channel
-* tl_d_chan_fifo: tl data channel
+* `tl_a_chan_fifo`: TileLink A channel
+* `tl_d_chan_fifo`: TileLink D channel
 * alert_fifo:     An array of `alert_fifo` that connects to corresponding alert_monitors
 * esc_fifo:       An array of `esc_fifo` that connects to corresponding esc_monitors
 

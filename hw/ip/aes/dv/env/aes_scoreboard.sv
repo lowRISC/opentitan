@@ -187,7 +187,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // Handle a write to a named CSR on the A channel
-  function void on_addr_channel_write(string csr_name, logic [31:0] wdata);
+  function void on_a_channel_write(string csr_name, logic [31:0] wdata);
     alert_test_t alert_test;
     // add individual case item for each csr
     case (1)
@@ -250,14 +250,14 @@ class aes_scoreboard extends cip_base_scoreboard #(
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
-    if (channel == AddrChannel) begin
+    if (channel == AChannel) begin
       string csr_name = csr.get_name();
       `uvm_info(`gfn, $sformatf("\n\t ----| ITEM received reg name : %s",csr.get_name()), UVM_FULL)
 
       // if incoming access is a write to a valid csr, then make updates right away
       if (write) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
-        on_addr_channel_write(csr_name, item.a_data);
+        on_a_channel_write(csr_name, item.a_data);
       end
 
       ///////////////////////////////////////
@@ -350,7 +350,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     //////////////////////////////////////////////////////////////////////////////
 
     `uvm_info(`gfn, $sformatf("\n\t ---| channel  %h", channel), UVM_DEBUG)
-    if (!write && channel == DataChannel) begin
+    if (!write && channel == DChannel) begin
       if (do_read_check) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))

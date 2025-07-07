@@ -40,8 +40,8 @@ package tl_agent_pkg;
   } tl_level_e;
 
   typedef enum {
-    AddrChannel,
-    DataChannel
+    AChannel,
+    DChannel
   } tl_channels_e;
 
   function automatic void enable_logging(string file_name="tl_agent.log");

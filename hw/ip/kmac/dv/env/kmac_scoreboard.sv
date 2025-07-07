@@ -631,10 +631,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     uvm_reg_addr_t csr_addr       = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     bit [TL_AW-1:0] csr_addr_mask = ral.get_addr_mask();
 
-    bit addr_phase_read   = (!write && channel == AddrChannel);
-    bit addr_phase_write  = (write && channel == AddrChannel);
-    bit data_phase_read   = (!write && channel == DataChannel);
-    bit data_phase_write  = (write && channel == DataChannel);
+    bit addr_phase_read   = (!write && channel == AChannel);
+    bit addr_phase_write  = (write && channel == AChannel);
+    bit data_phase_read   = (!write && channel == DChannel);
+    bit data_phase_write  = (write && channel == DChannel);
 
     // Indicates that the msgfifo access is now over. Clear it at the beginning of this transaction
     // as this flag is used somewhere else and needs to be actually raised for a non-null simulation
