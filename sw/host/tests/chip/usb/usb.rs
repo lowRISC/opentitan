@@ -43,6 +43,12 @@ pub struct UsbOpts {
     // VBUS disconnect timeout: how long to wait after setting the pin.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
     pub vbus_sense_wait: Duration,
+
+    /// Disable strict USB hub operation checks. The operations will be performed
+    /// but the code will not try to ensure that there were successful or even make
+    /// sense.
+    #[arg(long)]
+    pub relaxed_hub_op: bool,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
