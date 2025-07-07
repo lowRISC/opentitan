@@ -284,7 +284,7 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
 
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP256ScalarWords];
-  HARDENED_TRY_WIPE_DMEM_WIPE_DMEM(otbn_dmem_read(kP256ScalarWords, kOtbnVarXr, x_r));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(kP256ScalarWords, kOtbnVarXr, x_r));
 
   *result = hardened_memeq(x_r, signature->r, kP256ScalarWords);
 
