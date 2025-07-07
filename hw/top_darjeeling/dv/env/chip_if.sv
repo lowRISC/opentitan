@@ -976,21 +976,6 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_edn_1_fsm_state,
       edn_1_fsm_state, 9)
 
-  // Signal probe function for `wkup_internal_req_o` of SOC_PROXY_HIER
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_proxy_wkup_internal_req,
-                                   `SOC_PROXY_HIER.wkup_internal_req_o,
-                                   1)
-
-  // Signal probe function for `soc_fatal_alert_req` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_req,
-                                   `TOP_HIER.soc_fatal_alert_req_i,
-                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
-
-  // Signal probe function for `soc_fatal_alert_rsp` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_fatal_alert_rsp,
-                                   `TOP_HIER.soc_fatal_alert_rsp_o,
-                                   2 * soc_proxy_pkg::NumFatalExternalAlerts)
-
   // Signal probe function for `soc_gpi_async_o` of TOP_HIER.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpi_async,
                                    `TOP_HIER.soc_gpi_async_o,
@@ -1000,16 +985,6 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_gpo_async,
                                    `TOP_HIER.soc_gpo_async_i,
                                    soc_proxy_pkg::NumSocGpio)
-
-  // Signal probe function for `soc_recov_alert_req` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_req,
-                                   `TOP_HIER.soc_recov_alert_req_i,
-                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
-
-  // Signal probe function for `soc_recov_alert_rsp` of TOP_HIER.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_soc_recov_alert_rsp,
-                                   `TOP_HIER.soc_recov_alert_rsp_o,
-                                   2 * soc_proxy_pkg::NumRecovExternalAlerts)
 
   // Signal probe function for `boot_status.light_reset_req` of TOP_HIER.
   // This shall only be used as a probe, not a driver.

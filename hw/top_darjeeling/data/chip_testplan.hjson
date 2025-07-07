@@ -2538,23 +2538,6 @@
       tests: ["chip_sw_soc_proxy_smoketest"]
     }
     {
-      name: chip_sw_soc_proxy_external_alerts
-      desc: '''Verify that external alerts are forwarded to Alert Handler.
-
-               For each of the external alerts (fatal and recoverable):
-               - In DV env, trigger the external alert.
-               - In DV env, ensure that an internal wakeup is requested.
-               Then:
-               - For recoverable alerts:
-                 - In SW, ensure that the alert shows up in Alert Handler's registers.
-               - For fatal alerts:
-                 - In DV env, ensure that Alert Handler escalates so that Power Manager triggers a reset.
-                 - In SW, ensure that the reset cause is an escalation by Alert Handler.
-            '''
-      stage: V2
-      tests: ["chip_sw_soc_proxy_external_alerts"]
-    }
-    {
       name: chip_sw_soc_proxy_external_wakeup_requests
       desc: '''Verify that external wakeup requests are forwarded to Power Manager.
 

@@ -815,7 +815,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write soc_proxy's alert_test reg and check alert_cause.
-  for (dif_soc_proxy_alert_t i = 0; i < 29; ++i) {
+  for (dif_soc_proxy_alert_t i = 0; i < 1; ++i) {
     CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
 
     // Verify that alert handler received it.
