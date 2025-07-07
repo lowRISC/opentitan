@@ -110,7 +110,7 @@ bitstreams_repo = repository_rule(
             default = 18 * 3600,  # Refresh every 18h
         ),
         "python_interpreter": attr.label(
-            default = "@python3_host//:python",
+            default = "@ot_py_for_repo//:python",
             allow_single_file = True,
             doc = "Python interpreter to use.",
         ),
