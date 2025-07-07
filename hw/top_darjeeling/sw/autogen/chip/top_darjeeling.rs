@@ -1761,172 +1761,116 @@ pub enum AlertId {
     AonTimerAonFatalFault = 20,
     /// soc_proxy_fatal_alert_intg
     SocProxyFatalAlertIntg = 21,
-    /// soc_proxy_fatal_alert_external_0
-    SocProxyFatalAlertExternal0 = 22,
-    /// soc_proxy_fatal_alert_external_1
-    SocProxyFatalAlertExternal1 = 23,
-    /// soc_proxy_fatal_alert_external_2
-    SocProxyFatalAlertExternal2 = 24,
-    /// soc_proxy_fatal_alert_external_3
-    SocProxyFatalAlertExternal3 = 25,
-    /// soc_proxy_fatal_alert_external_4
-    SocProxyFatalAlertExternal4 = 26,
-    /// soc_proxy_fatal_alert_external_5
-    SocProxyFatalAlertExternal5 = 27,
-    /// soc_proxy_fatal_alert_external_6
-    SocProxyFatalAlertExternal6 = 28,
-    /// soc_proxy_fatal_alert_external_7
-    SocProxyFatalAlertExternal7 = 29,
-    /// soc_proxy_fatal_alert_external_8
-    SocProxyFatalAlertExternal8 = 30,
-    /// soc_proxy_fatal_alert_external_9
-    SocProxyFatalAlertExternal9 = 31,
-    /// soc_proxy_fatal_alert_external_10
-    SocProxyFatalAlertExternal10 = 32,
-    /// soc_proxy_fatal_alert_external_11
-    SocProxyFatalAlertExternal11 = 33,
-    /// soc_proxy_fatal_alert_external_12
-    SocProxyFatalAlertExternal12 = 34,
-    /// soc_proxy_fatal_alert_external_13
-    SocProxyFatalAlertExternal13 = 35,
-    /// soc_proxy_fatal_alert_external_14
-    SocProxyFatalAlertExternal14 = 36,
-    /// soc_proxy_fatal_alert_external_15
-    SocProxyFatalAlertExternal15 = 37,
-    /// soc_proxy_fatal_alert_external_16
-    SocProxyFatalAlertExternal16 = 38,
-    /// soc_proxy_fatal_alert_external_17
-    SocProxyFatalAlertExternal17 = 39,
-    /// soc_proxy_fatal_alert_external_18
-    SocProxyFatalAlertExternal18 = 40,
-    /// soc_proxy_fatal_alert_external_19
-    SocProxyFatalAlertExternal19 = 41,
-    /// soc_proxy_fatal_alert_external_20
-    SocProxyFatalAlertExternal20 = 42,
-    /// soc_proxy_fatal_alert_external_21
-    SocProxyFatalAlertExternal21 = 43,
-    /// soc_proxy_fatal_alert_external_22
-    SocProxyFatalAlertExternal22 = 44,
-    /// soc_proxy_fatal_alert_external_23
-    SocProxyFatalAlertExternal23 = 45,
-    /// soc_proxy_recov_alert_external_0
-    SocProxyRecovAlertExternal0 = 46,
-    /// soc_proxy_recov_alert_external_1
-    SocProxyRecovAlertExternal1 = 47,
-    /// soc_proxy_recov_alert_external_2
-    SocProxyRecovAlertExternal2 = 48,
-    /// soc_proxy_recov_alert_external_3
-    SocProxyRecovAlertExternal3 = 49,
     /// sram_ctrl_ret_aon_fatal_error
-    SramCtrlRetAonFatalError = 50,
+    SramCtrlRetAonFatalError = 22,
     /// rv_dm_fatal_fault
-    RvDmFatalFault = 51,
+    RvDmFatalFault = 23,
     /// rv_plic_fatal_fault
-    RvPlicFatalFault = 52,
+    RvPlicFatalFault = 24,
     /// aes_recov_ctrl_update_err
-    AesRecovCtrlUpdateErr = 53,
+    AesRecovCtrlUpdateErr = 25,
     /// aes_fatal_fault
-    AesFatalFault = 54,
+    AesFatalFault = 26,
     /// hmac_fatal_fault
-    HmacFatalFault = 55,
+    HmacFatalFault = 27,
     /// kmac_recov_operation_err
-    KmacRecovOperationErr = 56,
+    KmacRecovOperationErr = 28,
     /// kmac_fatal_fault_err
-    KmacFatalFaultErr = 57,
+    KmacFatalFaultErr = 29,
     /// otbn_fatal
-    OtbnFatal = 58,
+    OtbnFatal = 30,
     /// otbn_recov
-    OtbnRecov = 59,
+    OtbnRecov = 31,
     /// keymgr_dpe_recov_operation_err
-    KeymgrDpeRecovOperationErr = 60,
+    KeymgrDpeRecovOperationErr = 32,
     /// keymgr_dpe_fatal_fault_err
-    KeymgrDpeFatalFaultErr = 61,
+    KeymgrDpeFatalFaultErr = 33,
     /// csrng_recov_alert
-    CsrngRecovAlert = 62,
+    CsrngRecovAlert = 34,
     /// csrng_fatal_alert
-    CsrngFatalAlert = 63,
+    CsrngFatalAlert = 35,
     /// entropy_src_recov_alert
-    EntropySrcRecovAlert = 64,
+    EntropySrcRecovAlert = 36,
     /// entropy_src_fatal_alert
-    EntropySrcFatalAlert = 65,
+    EntropySrcFatalAlert = 37,
     /// edn0_recov_alert
-    Edn0RecovAlert = 66,
+    Edn0RecovAlert = 38,
     /// edn0_fatal_alert
-    Edn0FatalAlert = 67,
+    Edn0FatalAlert = 39,
     /// edn1_recov_alert
-    Edn1RecovAlert = 68,
+    Edn1RecovAlert = 40,
     /// edn1_fatal_alert
-    Edn1FatalAlert = 69,
+    Edn1FatalAlert = 41,
     /// sram_ctrl_main_fatal_error
-    SramCtrlMainFatalError = 70,
+    SramCtrlMainFatalError = 42,
     /// sram_ctrl_mbox_fatal_error
-    SramCtrlMboxFatalError = 71,
+    SramCtrlMboxFatalError = 43,
     /// rom_ctrl0_fatal
-    RomCtrl0Fatal = 72,
+    RomCtrl0Fatal = 44,
     /// rom_ctrl1_fatal
-    RomCtrl1Fatal = 73,
+    RomCtrl1Fatal = 45,
     /// dma_fatal_fault
-    DmaFatalFault = 74,
+    DmaFatalFault = 46,
     /// mbx0_fatal_fault
-    Mbx0FatalFault = 75,
+    Mbx0FatalFault = 47,
     /// mbx0_recov_fault
-    Mbx0RecovFault = 76,
+    Mbx0RecovFault = 48,
     /// mbx1_fatal_fault
-    Mbx1FatalFault = 77,
+    Mbx1FatalFault = 49,
     /// mbx1_recov_fault
-    Mbx1RecovFault = 78,
+    Mbx1RecovFault = 50,
     /// mbx2_fatal_fault
-    Mbx2FatalFault = 79,
+    Mbx2FatalFault = 51,
     /// mbx2_recov_fault
-    Mbx2RecovFault = 80,
+    Mbx2RecovFault = 52,
     /// mbx3_fatal_fault
-    Mbx3FatalFault = 81,
+    Mbx3FatalFault = 53,
     /// mbx3_recov_fault
-    Mbx3RecovFault = 82,
+    Mbx3RecovFault = 54,
     /// mbx4_fatal_fault
-    Mbx4FatalFault = 83,
+    Mbx4FatalFault = 55,
     /// mbx4_recov_fault
-    Mbx4RecovFault = 84,
+    Mbx4RecovFault = 56,
     /// mbx5_fatal_fault
-    Mbx5FatalFault = 85,
+    Mbx5FatalFault = 57,
     /// mbx5_recov_fault
-    Mbx5RecovFault = 86,
+    Mbx5RecovFault = 58,
     /// mbx6_fatal_fault
-    Mbx6FatalFault = 87,
+    Mbx6FatalFault = 59,
     /// mbx6_recov_fault
-    Mbx6RecovFault = 88,
+    Mbx6RecovFault = 60,
     /// mbx_jtag_fatal_fault
-    MbxJtagFatalFault = 89,
+    MbxJtagFatalFault = 61,
     /// mbx_jtag_recov_fault
-    MbxJtagRecovFault = 90,
+    MbxJtagRecovFault = 62,
     /// mbx_pcie0_fatal_fault
-    MbxPcie0FatalFault = 91,
+    MbxPcie0FatalFault = 63,
     /// mbx_pcie0_recov_fault
-    MbxPcie0RecovFault = 92,
+    MbxPcie0RecovFault = 64,
     /// mbx_pcie1_fatal_fault
-    MbxPcie1FatalFault = 93,
+    MbxPcie1FatalFault = 65,
     /// mbx_pcie1_recov_fault
-    MbxPcie1RecovFault = 94,
+    MbxPcie1RecovFault = 66,
     /// soc_dbg_ctrl_fatal_fault
-    SocDbgCtrlFatalFault = 95,
+    SocDbgCtrlFatalFault = 67,
     /// soc_dbg_ctrl_recov_ctrl_update_err
-    SocDbgCtrlRecovCtrlUpdateErr = 96,
+    SocDbgCtrlRecovCtrlUpdateErr = 68,
     /// racl_ctrl_fatal_fault
-    RaclCtrlFatalFault = 97,
+    RaclCtrlFatalFault = 69,
     /// racl_ctrl_recov_ctrl_update_err
-    RaclCtrlRecovCtrlUpdateErr = 98,
+    RaclCtrlRecovCtrlUpdateErr = 70,
     /// ac_range_check_recov_ctrl_update_err
-    AcRangeCheckRecovCtrlUpdateErr = 99,
+    AcRangeCheckRecovCtrlUpdateErr = 71,
     /// ac_range_check_fatal_fault
-    AcRangeCheckFatalFault = 100,
+    AcRangeCheckFatalFault = 72,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 101,
+    RvCoreIbexFatalSwErr = 73,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 102,
+    RvCoreIbexRecovSwErr = 74,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 103,
+    RvCoreIbexFatalHwErr = 75,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 104,
+    RvCoreIbexRecovHwErr = 76,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -1955,89 +1899,61 @@ impl TryFrom<u32> for AlertId {
             19 => Ok(Self::PinmuxAonFatalFault),
             20 => Ok(Self::AonTimerAonFatalFault),
             21 => Ok(Self::SocProxyFatalAlertIntg),
-            22 => Ok(Self::SocProxyFatalAlertExternal0),
-            23 => Ok(Self::SocProxyFatalAlertExternal1),
-            24 => Ok(Self::SocProxyFatalAlertExternal2),
-            25 => Ok(Self::SocProxyFatalAlertExternal3),
-            26 => Ok(Self::SocProxyFatalAlertExternal4),
-            27 => Ok(Self::SocProxyFatalAlertExternal5),
-            28 => Ok(Self::SocProxyFatalAlertExternal6),
-            29 => Ok(Self::SocProxyFatalAlertExternal7),
-            30 => Ok(Self::SocProxyFatalAlertExternal8),
-            31 => Ok(Self::SocProxyFatalAlertExternal9),
-            32 => Ok(Self::SocProxyFatalAlertExternal10),
-            33 => Ok(Self::SocProxyFatalAlertExternal11),
-            34 => Ok(Self::SocProxyFatalAlertExternal12),
-            35 => Ok(Self::SocProxyFatalAlertExternal13),
-            36 => Ok(Self::SocProxyFatalAlertExternal14),
-            37 => Ok(Self::SocProxyFatalAlertExternal15),
-            38 => Ok(Self::SocProxyFatalAlertExternal16),
-            39 => Ok(Self::SocProxyFatalAlertExternal17),
-            40 => Ok(Self::SocProxyFatalAlertExternal18),
-            41 => Ok(Self::SocProxyFatalAlertExternal19),
-            42 => Ok(Self::SocProxyFatalAlertExternal20),
-            43 => Ok(Self::SocProxyFatalAlertExternal21),
-            44 => Ok(Self::SocProxyFatalAlertExternal22),
-            45 => Ok(Self::SocProxyFatalAlertExternal23),
-            46 => Ok(Self::SocProxyRecovAlertExternal0),
-            47 => Ok(Self::SocProxyRecovAlertExternal1),
-            48 => Ok(Self::SocProxyRecovAlertExternal2),
-            49 => Ok(Self::SocProxyRecovAlertExternal3),
-            50 => Ok(Self::SramCtrlRetAonFatalError),
-            51 => Ok(Self::RvDmFatalFault),
-            52 => Ok(Self::RvPlicFatalFault),
-            53 => Ok(Self::AesRecovCtrlUpdateErr),
-            54 => Ok(Self::AesFatalFault),
-            55 => Ok(Self::HmacFatalFault),
-            56 => Ok(Self::KmacRecovOperationErr),
-            57 => Ok(Self::KmacFatalFaultErr),
-            58 => Ok(Self::OtbnFatal),
-            59 => Ok(Self::OtbnRecov),
-            60 => Ok(Self::KeymgrDpeRecovOperationErr),
-            61 => Ok(Self::KeymgrDpeFatalFaultErr),
-            62 => Ok(Self::CsrngRecovAlert),
-            63 => Ok(Self::CsrngFatalAlert),
-            64 => Ok(Self::EntropySrcRecovAlert),
-            65 => Ok(Self::EntropySrcFatalAlert),
-            66 => Ok(Self::Edn0RecovAlert),
-            67 => Ok(Self::Edn0FatalAlert),
-            68 => Ok(Self::Edn1RecovAlert),
-            69 => Ok(Self::Edn1FatalAlert),
-            70 => Ok(Self::SramCtrlMainFatalError),
-            71 => Ok(Self::SramCtrlMboxFatalError),
-            72 => Ok(Self::RomCtrl0Fatal),
-            73 => Ok(Self::RomCtrl1Fatal),
-            74 => Ok(Self::DmaFatalFault),
-            75 => Ok(Self::Mbx0FatalFault),
-            76 => Ok(Self::Mbx0RecovFault),
-            77 => Ok(Self::Mbx1FatalFault),
-            78 => Ok(Self::Mbx1RecovFault),
-            79 => Ok(Self::Mbx2FatalFault),
-            80 => Ok(Self::Mbx2RecovFault),
-            81 => Ok(Self::Mbx3FatalFault),
-            82 => Ok(Self::Mbx3RecovFault),
-            83 => Ok(Self::Mbx4FatalFault),
-            84 => Ok(Self::Mbx4RecovFault),
-            85 => Ok(Self::Mbx5FatalFault),
-            86 => Ok(Self::Mbx5RecovFault),
-            87 => Ok(Self::Mbx6FatalFault),
-            88 => Ok(Self::Mbx6RecovFault),
-            89 => Ok(Self::MbxJtagFatalFault),
-            90 => Ok(Self::MbxJtagRecovFault),
-            91 => Ok(Self::MbxPcie0FatalFault),
-            92 => Ok(Self::MbxPcie0RecovFault),
-            93 => Ok(Self::MbxPcie1FatalFault),
-            94 => Ok(Self::MbxPcie1RecovFault),
-            95 => Ok(Self::SocDbgCtrlFatalFault),
-            96 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            97 => Ok(Self::RaclCtrlFatalFault),
-            98 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
-            99 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
-            100 => Ok(Self::AcRangeCheckFatalFault),
-            101 => Ok(Self::RvCoreIbexFatalSwErr),
-            102 => Ok(Self::RvCoreIbexRecovSwErr),
-            103 => Ok(Self::RvCoreIbexFatalHwErr),
-            104 => Ok(Self::RvCoreIbexRecovHwErr),
+            22 => Ok(Self::SramCtrlRetAonFatalError),
+            23 => Ok(Self::RvDmFatalFault),
+            24 => Ok(Self::RvPlicFatalFault),
+            25 => Ok(Self::AesRecovCtrlUpdateErr),
+            26 => Ok(Self::AesFatalFault),
+            27 => Ok(Self::HmacFatalFault),
+            28 => Ok(Self::KmacRecovOperationErr),
+            29 => Ok(Self::KmacFatalFaultErr),
+            30 => Ok(Self::OtbnFatal),
+            31 => Ok(Self::OtbnRecov),
+            32 => Ok(Self::KeymgrDpeRecovOperationErr),
+            33 => Ok(Self::KeymgrDpeFatalFaultErr),
+            34 => Ok(Self::CsrngRecovAlert),
+            35 => Ok(Self::CsrngFatalAlert),
+            36 => Ok(Self::EntropySrcRecovAlert),
+            37 => Ok(Self::EntropySrcFatalAlert),
+            38 => Ok(Self::Edn0RecovAlert),
+            39 => Ok(Self::Edn0FatalAlert),
+            40 => Ok(Self::Edn1RecovAlert),
+            41 => Ok(Self::Edn1FatalAlert),
+            42 => Ok(Self::SramCtrlMainFatalError),
+            43 => Ok(Self::SramCtrlMboxFatalError),
+            44 => Ok(Self::RomCtrl0Fatal),
+            45 => Ok(Self::RomCtrl1Fatal),
+            46 => Ok(Self::DmaFatalFault),
+            47 => Ok(Self::Mbx0FatalFault),
+            48 => Ok(Self::Mbx0RecovFault),
+            49 => Ok(Self::Mbx1FatalFault),
+            50 => Ok(Self::Mbx1RecovFault),
+            51 => Ok(Self::Mbx2FatalFault),
+            52 => Ok(Self::Mbx2RecovFault),
+            53 => Ok(Self::Mbx3FatalFault),
+            54 => Ok(Self::Mbx3RecovFault),
+            55 => Ok(Self::Mbx4FatalFault),
+            56 => Ok(Self::Mbx4RecovFault),
+            57 => Ok(Self::Mbx5FatalFault),
+            58 => Ok(Self::Mbx5RecovFault),
+            59 => Ok(Self::Mbx6FatalFault),
+            60 => Ok(Self::Mbx6RecovFault),
+            61 => Ok(Self::MbxJtagFatalFault),
+            62 => Ok(Self::MbxJtagRecovFault),
+            63 => Ok(Self::MbxPcie0FatalFault),
+            64 => Ok(Self::MbxPcie0RecovFault),
+            65 => Ok(Self::MbxPcie1FatalFault),
+            66 => Ok(Self::MbxPcie1RecovFault),
+            67 => Ok(Self::SocDbgCtrlFatalFault),
+            68 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
+            69 => Ok(Self::RaclCtrlFatalFault),
+            70 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
+            71 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
+            72 => Ok(Self::AcRangeCheckFatalFault),
+            73 => Ok(Self::RvCoreIbexFatalSwErr),
+            74 => Ok(Self::RvCoreIbexRecovSwErr),
+            75 => Ok(Self::RvCoreIbexFatalHwErr),
+            76 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2047,7 +1963,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 105] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 77] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2091,62 +2007,6 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 105] = [
     // AonTimerAonFatalFault -> AlertPeripheral::AonTimerAon
     AlertPeripheral::AonTimerAon,
     // SocProxyFatalAlertIntg -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal0 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal1 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal2 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal3 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal4 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal5 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal6 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal7 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal8 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal9 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal10 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal11 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal12 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal13 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal14 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal15 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal16 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal17 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal18 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal19 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal20 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal21 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal22 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyFatalAlertExternal23 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal0 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal1 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal2 -> AlertPeripheral::SocProxy
-    AlertPeripheral::SocProxy,
-    // SocProxyRecovAlertExternal3 -> AlertPeripheral::SocProxy
     AlertPeripheral::SocProxy,
     // SramCtrlRetAonFatalError -> AlertPeripheral::SramCtrlRetAon
     AlertPeripheral::SramCtrlRetAon,
@@ -2648,8 +2508,7 @@ impl TryFrom<u32> for MuxedPads {
 pub enum PowerManagerWakeUps {
     PinmuxAonPinWkupReq = 0,
     AonTimerAonWkupReq = 1,
-    SocProxyWkupInternalReq = 2,
-    SocProxyWkupExternalReq = 3,
+    SocProxyWkupExternalReq = 2,
 }
 
 /// Reset Manager Software Controlled Resets

@@ -2946,7 +2946,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 4
+          width: 3
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -4076,18 +4076,6 @@
           index: -1
         }
         {
-          name: wkup_internal_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: soc_proxy
-          default: ""
-          package: ""
-          top_signame: pwrmgr_aon_wakeups
-          index: 2
-        }
-        {
           name: wkup_external_req
           struct: logic
           type: uni
@@ -4097,7 +4085,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 3
+          index: 2
         }
         {
           name: rst_req_external
@@ -4206,36 +4194,6 @@
           inst_name: soc_proxy
           default: ""
           top_signame: dma_lsio_trigger
-          index: -1
-        }
-        {
-          name: soc_fatal_alert
-          desc: Differential fatal alert from SoC, synchronous
-          struct: soc_alert
-          package: soc_proxy_pkg
-          type: req_rsp
-          act: rsp
-          width: 24
-          inst_name: soc_proxy
-          default: ""
-          external: true
-          top_signame: soc_fatal_alert
-          conn_type: false
-          index: -1
-        }
-        {
-          name: soc_recov_alert
-          desc: Differential recoverable alert from SoC, synchronous
-          struct: soc_alert
-          package: soc_proxy_pkg
-          type: req_rsp
-          act: rsp
-          width: 4
-          inst_name: soc_proxy
-          default: ""
-          external: true
-          top_signame: soc_recov_alert
-          conn_type: false
           index: -1
         }
         {
@@ -12000,7 +11958,6 @@
       [
         pinmux_aon.pin_wkup_req
         aon_timer_aon.wkup_req
-        soc_proxy.wkup_internal_req
         soc_proxy.wkup_external_req
       ]
       pwrmgr_aon.rstreqs:
@@ -12479,8 +12436,6 @@
       rv_core_ibex.fpga_info: fpga_info
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
-      soc_proxy.soc_fatal_alert: soc_fatal_alert
-      soc_proxy.soc_recov_alert: soc_recov_alert
       soc_proxy.soc_wkup_async: soc_wkup_async
       soc_proxy.soc_rst_req_async: soc_rst_req_async
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
@@ -18321,11 +18276,6 @@
       module: aon_timer_aon
     }
     {
-      name: wkup_internal_req
-      width: "1"
-      module: soc_proxy
-    }
-    {
       name: wkup_external_req
       width: "1"
       module: soc_proxy
@@ -18552,286 +18502,6 @@
       async: "1"
       module_name: soc_proxy
       desc: soc_proxy fatal_alert_intg alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_0 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_1 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_2 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_3 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_4
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_4 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_5
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_5 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_6
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_6 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_7
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_7 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_8
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_8 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_9
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_9 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_10
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_10 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_11
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_11 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_12
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_12 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_13
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_13 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_14
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_14 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_15
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_15 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_16
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_16 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_17
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_17 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_18
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_18 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_19
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_19 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_20
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_20 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_21
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_21 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_22
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_22 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_23
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy fatal_alert_external_23 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_0 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_1 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_2 alert
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      desc: soc_proxy recov_alert_external_3 alert
       lpg_name: infra_lc_0
       lpg_idx: 10
     }
@@ -22662,7 +22332,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 4
+        width: 3
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -23341,18 +23011,6 @@
         index: -1
       }
       {
-        name: wkup_internal_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: soc_proxy
-        default: ""
-        package: ""
-        top_signame: pwrmgr_aon_wakeups
-        index: 2
-      }
-      {
         name: wkup_external_req
         struct: logic
         type: uni
@@ -23362,7 +23020,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 3
+        index: 2
       }
       {
         name: rst_req_external
@@ -23471,36 +23129,6 @@
         inst_name: soc_proxy
         default: ""
         top_signame: dma_lsio_trigger
-        index: -1
-      }
-      {
-        name: soc_fatal_alert
-        desc: Differential fatal alert from SoC, synchronous
-        struct: soc_alert
-        package: soc_proxy_pkg
-        type: req_rsp
-        act: rsp
-        width: 24
-        inst_name: soc_proxy
-        default: ""
-        external: true
-        top_signame: soc_fatal_alert
-        conn_type: false
-        index: -1
-      }
-      {
-        name: soc_recov_alert
-        desc: Differential recoverable alert from SoC, synchronous
-        struct: soc_alert
-        package: soc_proxy_pkg
-        type: req_rsp
-        act: rsp
-        width: 4
-        inst_name: soc_proxy
-        default: ""
-        external: true
-        top_signame: soc_recov_alert
-        conn_type: false
         index: -1
       }
       {
@@ -29921,54 +29549,6 @@
         netname: ctn_misc_tl_d2h
       }
       {
-        package: soc_proxy_pkg
-        struct: soc_alert_req
-        signame: soc_fatal_alert_req_i
-        width: 24
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_fatal_alert_req
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_rsp
-        signame: soc_fatal_alert_rsp_o
-        width: 24
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: soc_fatal_alert_rsp
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_req
-        signame: soc_recov_alert_req_i
-        width: 4
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: soc_recov_alert_req
-      }
-      {
-        package: soc_proxy_pkg
-        struct: soc_alert_rsp
-        signame: soc_recov_alert_rsp_o
-        width: 4
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: soc_recov_alert_rsp
-      }
-      {
         package: ""
         struct: logic
         signame: soc_wkup_async_i
@@ -31075,7 +30655,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 4
+        width: 3
         type: uni
         end_idx: -1
         act: rcv
