@@ -75,6 +75,7 @@ DIFS = {
     "rv_dm": {},
     "rv_plic": {},
     "rv_timer": {},
+    "soc_dbg_ctrl": {},
     "soc_proxy": {},
     "spi_device": {},
     "spi_host": {
