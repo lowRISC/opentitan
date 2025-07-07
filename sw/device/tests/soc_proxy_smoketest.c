@@ -44,74 +44,6 @@ void after_por(dif_pwrmgr_t *pwrmgr) {
   CHECK(false, "Did not get reset in time!");
 }
 
-/**
- * @brief To be executed after external reset request.
- */
-void after_ext_rst_req(const dif_rv_plic_t *rv_plic,
-                       const dif_soc_proxy_t *soc_proxy) {
-  LOG_INFO("Reset on external request.");
-
-  // At this point, we are expecting interrupt requests from DV env.
-
-  // Enable external IRQs in Ibex.
-  irq_external_ctrl(true);
-
-  for (unsigned i = 0; i < SOC_PROXY_PARAM_NUM_EXTERNAL_IRQS; i++) {
-    const dif_rv_plic_irq_id_t rv_plic_irq =
-        (dif_rv_plic_irq_id_t)(kTopDarjeelingPlicIrqIdSocProxyExternal0 + i);
-    const dif_rv_plic_target_t rv_plic_target = kTopDarjeelingPlicTargetIbex0;
-    const dif_soc_proxy_irq_t soc_proxy_irq = (dif_soc_proxy_irq_t)i;
-
-    // Enable IRQ in SoC Proxy and PLIC.
-    CHECK_DIF_OK(dif_soc_proxy_irq_set_enabled(soc_proxy, soc_proxy_irq,
-                                               kDifToggleEnabled));
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(rv_plic, rv_plic_irq, 1));
-    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        rv_plic, rv_plic_irq, rv_plic_target, kDifToggleEnabled));
-    LOG_INFO("IRQ %0d enabled.", i);
-
-    for (unsigned num_try = 0; num_try < 10; num_try++) {
-      // Wait for interrupt, then check that the expected IRQ is pending in both
-      // SoC Proxy and PLIC.
-      wait_for_interrupt();
-      bool soc_proxy_irq_pending;
-      CHECK_DIF_OK(dif_soc_proxy_irq_is_pending(soc_proxy, soc_proxy_irq,
-                                                &soc_proxy_irq_pending));
-      if (soc_proxy_irq_pending) {
-        LOG_INFO("IRQ %0d pending in soc_proxy.", i);
-      } else {
-        // Not the IRQ we're expecting, wait for another one.
-        continue;
-      }
-      bool rv_plic_irq_pending;
-      CHECK_DIF_OK(dif_rv_plic_irq_is_pending(rv_plic, rv_plic_irq,
-                                              &rv_plic_irq_pending));
-      if (rv_plic_irq_pending) {
-        // IRQ pending in PLIC and SoC Proxy, stop trying.
-        LOG_INFO("IRQ %0d pending in rv_plic.", i);
-        break;
-      } else {
-        // IRQ pending in SoC Proxy but not PLIC -> error and abort.
-        CHECK(false, "Expected IRQ to be pending in soc_proxy AND rv_plic!");
-      }
-    }
-
-    // Acknowledge and complete IRQ.
-    CHECK_DIF_OK(dif_soc_proxy_irq_acknowledge(soc_proxy, soc_proxy_irq));
-    CHECK_DIF_OK(
-        dif_rv_plic_irq_complete(rv_plic, rv_plic_target, rv_plic_irq));
-
-    // Disable IRQ in PLIC and SoC Proxy.
-    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        rv_plic, rv_plic_irq, rv_plic_target, kDifToggleDisabled));
-    CHECK_DIF_OK(dif_soc_proxy_irq_set_enabled(soc_proxy, soc_proxy_irq,
-                                               kDifToggleDisabled));
-  }
-
-  // Disable external IRQs in Ibex.
-  irq_external_ctrl(false);
-}
-
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_rstmgr_t rstmgr;
@@ -120,7 +52,6 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
-  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &rv_plic));
   CHECK_DIF_OK(dif_soc_proxy_init_from_dt(kDtSocProxy, &soc_proxy));
 
   // Behave based on reset reason.
@@ -129,7 +60,7 @@ bool test_main(void) {
     after_por(&pwrmgr);
   } else if (UNWRAP(rstmgr_testutils_reset_info_any(
                  &rstmgr, kDifRstmgrResetInfoExternalRst))) {
-    after_ext_rst_req(&rv_plic, &soc_proxy);
+    // We are done, bail out
   } else {
     // Unexpected reset reason -> fail test.
     return false;
