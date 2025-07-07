@@ -7,22 +7,6 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  task await_soc_proxy_wkup_internal_req();
-    `uvm_info(`gfn, $sformatf("Waiting for internal wakeup request."), UVM_MEDIUM)
-    `DV_SPINWAIT_EXIT(
-      // Wait thread: wait for internal wakeup request.
-      forever begin
-        cfg.chip_vif.cpu_clk_rst_if.wait_clks(1);
-        if (cfg.chip_vif.signal_probe_soc_proxy_wkup_internal_req(
-                .kind(dv_utils_pkg::SignalProbeSample)) == 1'b1) break;
-      end
-      ,
-      // Exit thread: allow at most 20 AON clock cycles for internal wakeup request.
-      cfg.chip_vif.aon_clk_por_rst_if.wait_clks(20);
-      `dv_error("Internal wakeup request did not follow within required time!")
-    )
-  endtask
-
   virtual task dut_init(string reset_kind = "HARD");
     // We want to control the SoC external reset request signal directly.
     cfg.monitor_internal_resets = 1'b0;
