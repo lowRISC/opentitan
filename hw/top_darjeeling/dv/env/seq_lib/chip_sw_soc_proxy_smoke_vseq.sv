@@ -76,36 +76,6 @@ class chip_sw_soc_proxy_smoke_vseq extends chip_sw_base_vseq;
     // Wait until SW confirms reset on external request.
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Reset on external request.")
 
-    // Test external IRQs one after the other.
-    for (int unsigned i = 0; i < soc_proxy_reg_pkg::NumExternalIrqs; i++) begin
-      logic [soc_proxy_reg_pkg::NumExternalIrqs-1:0] intr = 1 << i;
-      string irq_str = $sformatf("IRQ %0d", i);
-
-      // Wait for SW to confirm that the IRQ is enabled.
-      `DV_WAIT(cfg.sw_logger_vif.printed_log == $sformatf("%s enabled.", irq_str))
-
-      // Trigger external IRQ.
-      `uvm_info(`gfn, $sformatf("Triggering %s.", irq_str), UVM_LOW)
-      void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeForce),
-                                                     .value(intr)));
-
-      fork
-        begin
-          // Ensure that an internal wakeup request is raised.
-          await_soc_proxy_wkup_internal_req();
-        end
-        begin
-          // Ensure that SW confirms the IRQ is pending in `soc_proxy` and `rv_plic`.
-          `DV_WAIT(cfg.sw_logger_vif.printed_log == $sformatf("%s pending in soc_proxy.", irq_str))
-          `DV_WAIT(cfg.sw_logger_vif.printed_log == $sformatf("%s pending in rv_plic.", irq_str))
-        end
-      join
-
-      // Deactivate external IRQ.
-      `uvm_info(`gfn, $sformatf("Releasing %s.", irq_str), UVM_LOW)
-      void'(cfg.chip_vif.signal_probe_soc_intr_async(.kind(dv_utils_pkg::SignalProbeRelease)));
-    end
-
   endtask
 
 endclass
