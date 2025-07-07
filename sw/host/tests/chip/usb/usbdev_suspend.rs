@@ -113,18 +113,28 @@ const TIME_SUSPENDING: u64 = 4;
 const TIME_RESUMING: u64 = 20;
 const TIME_RESETTING: u64 = 10;
 
-fn suspend(hub: &UsbHub, port: u8) -> Result<()> {
+fn suspend(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("suspending port {}", port);
-    hub.op(UsbHubOp::Suspend, port, Duration::from_millis(1000))?;
+    hub.op(
+        UsbHubOp::Suspend,
+        port,
+        Duration::from_millis(1000),
+        check_status,
+    )?;
     // Device shall suspend after 3ms of Idle state.
     delay_millis(TIME_SUSPENDING);
     log::info!("suspended");
     Ok(())
 }
 
-fn resume(hub: &UsbHub, port: u8) -> Result<()> {
+fn resume(hub: &UsbHub, port: u8, check_status: bool) -> Result<()> {
     log::info!("resuming device on port {}", port);
-    hub.op(UsbHubOp::Resume, port, Duration::from_millis(1000))?;
+    hub.op(
+        UsbHubOp::Resume,
+        port,
+        Duration::from_millis(1000),
+        check_status,
+    )?;
     // Resume Signaling shall be performed for at least 20ms.
     delay_millis(TIME_RESUMING);
     log::info!("resumed");
@@ -249,7 +259,7 @@ fn usbdev_suspend(
             // However do not suspend if we have reached the Shutdown phase because the device will
             // disconnect from the bus.
             if phase != SuspendPhase::Shutdown {
-                suspend(&hub, port)?;
+                suspend(&hub, port, !opts.usb.relaxed_hub_op)?;
                 if phase == SuspendPhase::Suspend {
                     delay_millis(time_suspended_short);
                 } else {
@@ -263,13 +273,13 @@ fn usbdev_suspend(
             match phase {
                 // Basic test of Suspend-Resume functionality without entering a sleep state.
                 SuspendPhase::Suspend => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     delay_millis(10);
                     next_phase = SuspendPhase::SleepResume;
                 }
                 // Suspend, enter Normal Sleep, and then awaken in response to Resume signaling.
                 SuspendPhase::SleepResume => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::SleepReset;
                 }
                 // Suspend, enter Normal Sleep, and then awaken in response to a Bus Reset.
@@ -285,13 +295,13 @@ fn usbdev_suspend(
                         connect(&opts.usb, transport)?;
                     } else {
                         log::info!("Skipping VBUS Disconnection because support unavailable");
-                        resume(&hub, port)?;
+                        resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     }
                     next_phase = SuspendPhase::DeepResume;
                 }
                 // Suspend, enter Deep Sleep, and then awaken in response to Resume Signaling.
                 SuspendPhase::DeepResume => {
-                    resume(&hub, port)?;
+                    resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     next_phase = SuspendPhase::DeepReset;
                 }
                 // Suspend, enter Deep Sleep, and then awaken in response to a Bus Reset.
@@ -307,7 +317,7 @@ fn usbdev_suspend(
                         connect(&opts.usb, transport)?;
                     } else {
                         log::info!("Skipping VBUS Disconnection because support unavailable");
-                        resume(&hub, port)?;
+                        resume(&hub, port, !opts.usb.relaxed_hub_op)?;
                     }
                     next_phase = SuspendPhase::Shutdown;
                 }

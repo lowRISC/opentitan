@@ -43,6 +43,12 @@ pub struct UsbOpts {
     // VBUS disconnect timeout: how long to wait after setting the pin.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "200ms")]
     pub vbus_sense_wait: Duration,
+
+    /// Disable strict USB hub operation checks. The operations will be performed
+    /// but the code will not try to ensure that there were successful or even make
+    /// sense.
+    #[arg(long)]
+    pub relaxed_hub_op: bool,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
@@ -280,7 +286,7 @@ impl UsbHub {
     }
 
     // Perform an operation.
-    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration) -> Result<()> {
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
         let (feature_index, set_feature, human_op) = match op {
             UsbHubOp::Suspend => (PORT_SUSPEND, true, "suspend"),
             UsbHubOp::Resume => (PORT_SUSPEND, false, "resume"),
@@ -299,25 +305,39 @@ impl UsbHub {
         let port_status_before = if set_feature { 0u16 } else { port_status_mask };
         let port_status_after = if set_feature { port_status_mask } else { 0u16 };
 
-        let port_status = self.port_status(port, timeout)?;
-        ensure!(port_status & port_status_mask == port_status_before,
-                "Trying to {} port {} but port has unexpected status {:#x}", human_op, port, port_status);
+        if check_status {
+            let port_status = self.port_status(port, timeout)?;
+            ensure!(
+                port_status & port_status_mask == port_status_before,
+                "Trying to {} port {} but port has unexpected status {:#x}",
+                human_op,
+                port,
+                port_status
+            );
+        }
         // Perform operation.
         let _ =
             self.handle
                 .write_control(req_type, req, feature_index, port as u16, &[], timeout)?;
         // Wait until port has changed status.
-        let start = Instant::now();
-        loop {
-            let port_status = self.port_status(port, timeout)?;
-            if port_status & port_status_mask == port_status_after {
-                break;
+        if check_status {
+            let start = Instant::now();
+            loop {
+                let port_status = self.port_status(port, timeout)?;
+                if port_status & port_status_mask == port_status_after {
+                    break;
+                }
+                if start.elapsed() >= timeout {
+                    bail!(
+                        "Trying to {} port {} but port did not change status (last status was {:x})",
+                        human_op,
+                        port,
+                        port_status
+                    );
+                }
             }
-            if start.elapsed() >= timeout {
-                bail!("Trying to {} port {} but port did not change status (last status was {:x})", human_op, port, port_status);
-            }
+            log::info!("{} performed in {:#?}", human_op, start.elapsed());
         }
-        log::info!("{} performed in {:#?}", human_op, start.elapsed());
 
         Ok(())
     }
