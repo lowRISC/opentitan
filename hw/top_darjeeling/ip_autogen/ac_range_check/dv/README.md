@@ -20,7 +20,7 @@ The `ac_range_check` UVM DV testbench has been constructed based on the [CIP tes
 
 ### Block diagram
 ![Block diagram](./doc/tb.svg)
-Note: this diagram is editable from [this address](https://docs.google.com/drawings/d/1mZR9z-vssPHhJmbmX_ZZXELSP20vFc28m5TPbK4eVvE/edit?usp=sharing).
+Note: this diagram is editable from [this address](https://docs.google.com/drawings/d/1-0r4V6H8RwLeiAa3ng73vcDZdCbeeuFDYPZcX-QXRYo/edit?usp=sharing).
 
 ### Top level testbench
 Top level testbench is located at `hw/top_darjeeling/ip_autogen/ac_range_check/dv/tb/tb.sv`.
