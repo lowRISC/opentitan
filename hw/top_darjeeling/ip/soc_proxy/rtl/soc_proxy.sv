@@ -28,8 +28,6 @@ module soc_proxy
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  output logic [NumExternalIrqs-1:0] intr_external_o,
-
   output logic wkup_internal_req_o,
   output logic wkup_external_req_o,
 
@@ -67,9 +65,7 @@ module soc_proxy
   input  logic soc_rst_req_async_i,
 
   output logic [NumSocGpio-1:0] soc_gpi_async_o,
-  input  logic [NumSocGpio-1:0] soc_gpo_async_i,
-
-  input  logic [NumExternalIrqs-1:0] soc_intr_async_i
+  input  logic [NumSocGpio-1:0] soc_gpo_async_i
 );
   localparam int unsigned TLUL_HOST_CNT = 3;
 
@@ -394,35 +390,6 @@ module soc_proxy
     );
   end
 
-  // Synchronize external interrupt signals
-  logic [NumExternalIrqs-1:0] soc_intr;
-  for (genvar i = 0; i < NumExternalIrqs; i++) begin : gen_sync_external_irqs
-    prim_flop_2sync #(
-      .Width(1)
-    ) u_prim_flop_2sync (
-      .clk_i,
-      .rst_ni,
-      .d_i(soc_intr_async_i[i]),
-      .q_o(soc_intr[i])
-    );
-  end
-
-  // Handle external interrupts
-  prim_intr_hw #(
-    .Width(NumExternalIrqs)
-  ) u_prim_intr_hw (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (soc_intr),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.d),
-    .intr_o                 (intr_external_o)
-  );
-
   // Synchronize external wakeup request
   prim_flop_2sync #(
     .Width(1)
@@ -435,7 +402,7 @@ module soc_proxy
 
   // Generate internal wakeup signal combinatorially from asynchronous signals
   logic async_wkup;
-  assign async_wkup = |{fatal_alert_external_async, recov_alert_external_async, soc_intr_async_i};
+  assign async_wkup = |{fatal_alert_external_async, recov_alert_external_async};
 
   // Synchronize wakeup signal onto AON domain and filter out potential glitches
   prim_filter #(
