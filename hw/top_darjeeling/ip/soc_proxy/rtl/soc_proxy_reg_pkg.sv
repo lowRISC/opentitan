@@ -7,7 +7,7 @@
 package soc_proxy_reg_pkg;
 
   // Param list
-  parameter int NumAlerts = 29;
+  parameter int NumAlerts = 1;
 
   // Address widths within the block
   parameter int CoreAw = 3;
@@ -17,35 +17,7 @@ package soc_proxy_reg_pkg;
 
   // Alert indices
   typedef enum int {
-    AlertFatalAlertIntgIdx = 0,
-    AlertFatalAlertExternal0Idx = 1,
-    AlertFatalAlertExternal1Idx = 2,
-    AlertFatalAlertExternal2Idx = 3,
-    AlertFatalAlertExternal3Idx = 4,
-    AlertFatalAlertExternal4Idx = 5,
-    AlertFatalAlertExternal5Idx = 6,
-    AlertFatalAlertExternal6Idx = 7,
-    AlertFatalAlertExternal7Idx = 8,
-    AlertFatalAlertExternal8Idx = 9,
-    AlertFatalAlertExternal9Idx = 10,
-    AlertFatalAlertExternal10Idx = 11,
-    AlertFatalAlertExternal11Idx = 12,
-    AlertFatalAlertExternal12Idx = 13,
-    AlertFatalAlertExternal13Idx = 14,
-    AlertFatalAlertExternal14Idx = 15,
-    AlertFatalAlertExternal15Idx = 16,
-    AlertFatalAlertExternal16Idx = 17,
-    AlertFatalAlertExternal17Idx = 18,
-    AlertFatalAlertExternal18Idx = 19,
-    AlertFatalAlertExternal19Idx = 20,
-    AlertFatalAlertExternal20Idx = 21,
-    AlertFatalAlertExternal21Idx = 22,
-    AlertFatalAlertExternal22Idx = 23,
-    AlertFatalAlertExternal23Idx = 24,
-    AlertRecovAlertExternal0Idx = 25,
-    AlertRecovAlertExternal1Idx = 26,
-    AlertRecovAlertExternal2Idx = 27,
-    AlertRecovAlertExternal3Idx = 28
+    AlertFatalAlertIntgIdx = 0
   } soc_proxy_alert_idx_t;
 
   ///////////////////////////////////////////////
@@ -53,127 +25,13 @@ package soc_proxy_reg_pkg;
   ///////////////////////////////////////////////
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-      logic        qe;
-    } recov_alert_external_3;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } recov_alert_external_2;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } recov_alert_external_1;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } recov_alert_external_0;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_23;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_22;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_21;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_20;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_19;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_18;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_17;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_16;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_15;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_14;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_13;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_12;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_11;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_10;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_9;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_8;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_7;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_6;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_5;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_4;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_3;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_2;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_1;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_external_0;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_alert_intg;
+    logic        q;
+    logic        qe;
   } soc_proxy_reg2hw_alert_test_reg_t;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    soc_proxy_reg2hw_alert_test_reg_t alert_test; // [57:0]
+    soc_proxy_reg2hw_alert_test_reg_t alert_test; // [1:0]
   } soc_proxy_core_reg2hw_t;
 
   // Register offsets for core interface
@@ -181,36 +39,8 @@ package soc_proxy_reg_pkg;
   parameter logic [CoreAw-1:0] SOC_PROXY_DUMMY_OFFSET = 3'h 4;
 
   // Reset values for hwext registers and their fields for core interface
-  parameter logic [28:0] SOC_PROXY_ALERT_TEST_RESVAL = 29'h 0;
+  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_INTG_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_0_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_1_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_2_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_3_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_4_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_5_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_6_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_7_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_8_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_9_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_10_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_11_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_12_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_13_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_14_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_15_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_16_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_17_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_18_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_19_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_20_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_21_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_22_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_FATAL_ALERT_EXTERNAL_23_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_0_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_1_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_2_RESVAL = 1'h 0;
-  parameter logic [0:0] SOC_PROXY_ALERT_TEST_RECOV_ALERT_EXTERNAL_3_RESVAL = 1'h 0;
 
   // Register index for core interface
   typedef enum int {
@@ -220,7 +50,7 @@ package soc_proxy_reg_pkg;
 
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] SOC_PROXY_CORE_PERMIT [2] = '{
-    4'b 1111, // index[0] SOC_PROXY_ALERT_TEST
+    4'b 0001, // index[0] SOC_PROXY_ALERT_TEST
     4'b 0001  // index[1] SOC_PROXY_DUMMY
   };
 

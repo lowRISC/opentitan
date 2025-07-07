@@ -98,12 +98,6 @@
     { name: "PWRMGR.LOW_POWER.AON_TIMER_AON_WKUP_REQ_WAKEUP_REQUEST"
       desc: "Wakeup request wkup_req from aon_timer_aon."
     }
-    { name: "PWRMGR.LOW_POWER.SOC_PROXY_WKUP_INTERNAL_REQ_WAKEUP_ENABLE"
-      desc: "Enable wakeup request wkup_internal_req from soc_proxy."
-    }
-    { name: "PWRMGR.LOW_POWER.SOC_PROXY_WKUP_INTERNAL_REQ_WAKEUP_REQUEST"
-      desc: "Wakeup request wkup_internal_req from soc_proxy."
-    }
     { name: "PWRMGR.LOW_POWER.SOC_PROXY_WKUP_EXTERNAL_REQ_WAKEUP_ENABLE"
       desc: "Enable wakeup request wkup_external_req from soc_proxy."
     }
@@ -219,7 +213,7 @@
     },
 
     { struct:  "logic",
-      width:   4,
+      width:   3,
       type:    "uni",
       name:    "wakeups",
       act:     "rcv",
@@ -296,7 +290,7 @@
     { name: "NumWkups",
       desc: "Number of wakeups",
       type: "int",
-      default: "4",
+      default: "3",
       local: "true"
     },
 
@@ -314,17 +308,10 @@
       local: "true"
     },
 
-    { name: "SOC_PROXY_WKUP_INTERNAL_REQ_IDX",
-      desc: "Vector index for soc_proxy wkup_internal_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
-      type: "int",
-      default: "2",
-      local: "true"
-    },
-
     { name: "SOC_PROXY_WKUP_EXTERNAL_REQ_IDX",
       desc: "Vector index for soc_proxy wkup_external_req, applies for WAKEUP_EN, WAKE_STATUS and WAKE_INFO",
       type: "int",
-      default: "3",
+      default: "2",
       local: "true"
     },
 
@@ -765,11 +752,11 @@
       hwqe: "true",
       resval: "0"
       fields: [
-        { bits: "3:0",
+        { bits: "2:0",
           name: "REASONS",
           desc: "Various peripheral wake reasons"
         },
-        { bits: "4",
+        { bits: "3",
           name: "FALL_THROUGH",
           desc: '''
             The fall through wakeup reason indicates that despite setting a WFI and providing a low power
@@ -778,7 +765,7 @@
             The power manager detects this condition, halts low power entry and reports as a wakeup reason
           ''',
         },
-        { bits: "5",
+        { bits: "4",
           name: "ABORT",
           desc: '''
             The abort wakeup reason indicates that despite setting a WFI and providing a low power
