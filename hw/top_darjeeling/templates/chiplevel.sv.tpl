@@ -1065,7 +1065,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .soc_fatal_alert_rsp_o             (                            ),
     .soc_recov_alert_req_i             ( soc_recov_alert_req        ),
     .soc_recov_alert_rsp_o             (                            ),
-    .soc_intr_async_i                  ( '0                         ),
     .soc_wkup_async_i                  ( 1'b0                       ),
     .soc_rst_req_async_i               ( soc_rst_req_async          ),
     .soc_lsio_trigger_i                ( '0                         ),

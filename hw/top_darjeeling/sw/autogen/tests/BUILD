@@ -23,7 +23,7 @@ package(default_visibility = ["//visibility:public"])
 NR_IRQ_PERIPH_PER_TEST = 10
 
 # Total numbers of tests (the last will contain only remaining IRQs)
-NR_IRQ_PERIPH_TESTS = 3
+NR_IRQ_PERIPH_TESTS = 2
 
 [
     opentitan_test(
@@ -72,7 +72,6 @@ NR_IRQ_PERIPH_TESTS = 3
             "//sw/device/lib/dif/autogen:pwrmgr",
             "//sw/device/lib/dif/autogen:rv_plic",
             "//sw/device/lib/dif/autogen:rv_timer",
-            "//sw/device/lib/dif/autogen:soc_proxy",
             "//sw/device/lib/dif/autogen:spi_device",
             "//sw/device/lib/dif/autogen:spi_host",
             "//sw/device/lib/dif/autogen:uart",

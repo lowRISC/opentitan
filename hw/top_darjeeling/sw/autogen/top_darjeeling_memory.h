@@ -374,7 +374,7 @@
  * address between #TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR and
  * `TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR + TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x10
+#define TOP_DARJEELING_SOC_PROXY_CORE_SIZE_BYTES 0x4
 /**
  * Peripheral base address for ctn device on soc_proxy in top darjeeling.
  *
