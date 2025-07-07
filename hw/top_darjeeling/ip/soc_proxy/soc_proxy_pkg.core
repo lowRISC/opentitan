@@ -7,10 +7,7 @@ description: "SoC Proxy Package"
 
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:tlul:headers
     files:
-      - rtl/soc_proxy_reg_pkg.sv
       - rtl/soc_proxy_pkg.sv
     file_type: systemVerilogSource
 

@@ -130,7 +130,6 @@ opentitan_test(
         "//sw/device/lib/dif/autogen:rv_plic",
         "//sw/device/lib/dif/autogen:rv_timer",
         "//sw/device/lib/dif/autogen:soc_dbg_ctrl",
-        "//sw/device/lib/dif/autogen:soc_proxy",
         "//sw/device/lib/dif/autogen:spi_device",
         "//sw/device/lib/dif/autogen:spi_host",
         "//sw/device/lib/dif/autogen:sram_ctrl",
