@@ -35,7 +35,6 @@
 #include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_soc_dbg_ctrl_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_soc_proxy_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.h"
@@ -86,7 +85,6 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
 static dif_soc_dbg_ctrl_t soc_dbg_ctrl;
-static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_sram_ctrl_t sram_ctrl_main;
@@ -206,9 +204,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_soc_dbg_ctrl_init(base_addr, &soc_dbg_ctrl));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_PROXY_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_soc_proxy_init(base_addr, &soc_proxy));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
@@ -805,21 +800,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdSocDbgCtrlFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write soc_proxy's alert_test reg and check alert_cause.
-  for (dif_soc_proxy_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_soc_proxy_alert_force(&soc_proxy, kDifSocProxyAlertFatalAlertIntg + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSocProxyFatalAlertIntg + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
