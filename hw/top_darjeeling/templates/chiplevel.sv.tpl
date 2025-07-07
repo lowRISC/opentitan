@@ -1001,13 +1001,6 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_otp_ext_volt
   };
 
-  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
-  soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
-  assign soc_fatal_alert_req =
-      {soc_proxy_pkg::NumFatalExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
-  assign soc_recov_alert_req =
-      {soc_proxy_pkg::NumRecovExternalAlerts{soc_proxy_pkg::SOC_ALERT_REQ_DEFAULT}};
-
   // The power manager waits until the external reset request is removed by the SoC before
   // proceeding to boot after an internal reset request. DV may also drive this signal briefly and
   // asynchronously to request a reset on behalf of the simulated SoC.
@@ -1061,10 +1054,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .pwrmgr_boot_status_o              ( pwrmgr_boot_status         ),
     .ctn_misc_tl_h2d_i                 ( ctn_misc_tl_h2d_i          ),
     .ctn_misc_tl_d2h_o                 ( ctn_misc_tl_d2h_o          ),
-    .soc_fatal_alert_req_i             ( soc_fatal_alert_req        ),
-    .soc_fatal_alert_rsp_o             (                            ),
-    .soc_recov_alert_req_i             ( soc_recov_alert_req        ),
-    .soc_recov_alert_rsp_o             (                            ),
     .soc_wkup_async_i                  ( 1'b0                       ),
     .soc_rst_req_async_i               ( soc_rst_req_async          ),
     .soc_lsio_trigger_i                ( '0                         ),
