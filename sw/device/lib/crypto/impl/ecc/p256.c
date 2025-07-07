@@ -78,6 +78,15 @@ enum {
       (kOtbnWideWordNumWords -
        (kP256MaskedScalarShareWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
+  /*
+   * The expected instruction counts for constant time functions.
+   */
+  kModeKeygenInsCnt = 564222,
+  kModeKeygenSideloadInsCnt = 564107,
+  kModeEcdhInsCnt = 571605,
+  kModeEcdhSideloadInsCnt = 571665,
+  kModeEcdsaSignInsCnt = 597419,
+  kModeEcdsaSignSideloadInsCnt = 597479,
 };
 
 static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
@@ -124,6 +133,7 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
                               p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
 
   // Read the masked private key from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256MaskedScalarShareWords, kOtbnVarD0,
@@ -142,6 +152,7 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenSideloadInsCnt);
 
   // Read the public key from OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarX, public_key->x));
@@ -211,8 +222,15 @@ status_t p256_ecdsa_sideload_sign_start(
 }
 
 status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
+  }
 
   // Read signature R out of OTBN dmem.
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarR, result->r));
@@ -300,8 +318,15 @@ status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
 }
 
 status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
+  uint32_t ins_cnt;
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+  ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) == kModeEcdhSideloadInsCnt) {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhSideloadInsCnt);
+  } else {
+    HARDENED_CHECK_EQ(ins_cnt, kModeEcdhInsCnt);
+  }
 
   // Read the code indicating if the public key is valid.
   uint32_t ok;
