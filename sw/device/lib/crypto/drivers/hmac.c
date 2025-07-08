@@ -464,6 +464,44 @@ status_t hmac_hmac_sha256_cl(const uint32_t *key_block, const uint8_t *msg,
                  kHmacSha256DigestWords, tag);
 }
 
+status_t hmac_hmac_sha256_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha256BlockWords];
+  uint32_t i_key_pad[kHmacSha256BlockWords];
+  memset(o_key_pad, 0, kHmacSha256BlockBytes);
+  memset(i_key_pad, 0, kHmacSha256BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  for (size_t it = 0; it < kHmacSha256BlockWords; it++) {
+    o_key_pad[it] = key_block[it] ^ 0x5c5c5c5c;
+    i_key_pad[it] = key_block[it] ^ 0x36363636;
+  }
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha256BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha256BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha256BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha256DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha256(i_key_pad_msg, kHmacSha256BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha256BlockBytes + kHmacSha256DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha256BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha256BlockBytes, h_i_key_pad_msg,
+         kHmacSha256DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha256(o_key_pad_hash,
+                          kHmacSha256BlockBytes + kHmacSha256DigestBytes, tag);
+}
+
 status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
@@ -472,12 +510,88 @@ status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
                  kHmacSha384DigestWords, tag);
 }
 
+status_t hmac_hmac_sha384_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha384BlockWords];
+  uint32_t i_key_pad[kHmacSha384BlockWords];
+  memset(o_key_pad, 0, kHmacSha384BlockBytes);
+  memset(i_key_pad, 0, kHmacSha384BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  for (size_t it = 0; it < kHmacSha384BlockWords; it++) {
+    o_key_pad[it] = key_block[it] ^ 0x5c5c5c5c;
+    i_key_pad[it] = key_block[it] ^ 0x36363636;
+  }
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha384BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha384BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha384BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha384DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha384(i_key_pad_msg, kHmacSha384BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha384BlockBytes + kHmacSha384DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha384BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha384BlockBytes, h_i_key_pad_msg,
+         kHmacSha384DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha384(o_key_pad_hash,
+                          kHmacSha384BlockBytes + kHmacSha384DigestBytes, tag);
+}
+
 status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag) {
   // Always configure the key length as the underlying message block size.
   uint32_t cfg = cfg_get(/*hmac_en=*/true, kDigestLengthSha512, kKeyLength1024);
   return oneshot(cfg, key_block, kHmacSha512BlockWords, msg, msg_len,
                  kHmacSha512DigestWords, tag);
+}
+
+status_t hmac_hmac_sha512_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag) {
+  uint32_t o_key_pad[kHmacSha512BlockWords];
+  uint32_t i_key_pad[kHmacSha512BlockWords];
+  memset(o_key_pad, 0, kHmacSha512BlockBytes);
+  memset(i_key_pad, 0, kHmacSha512BlockBytes);
+
+  // XOR the key K with the outer (opad) and inner (ipad) padding.
+  for (size_t it = 0; it < kHmacSha512BlockWords; it++) {
+    o_key_pad[it] = key_block[it] ^ 0x5c5c5c5c;
+    i_key_pad[it] = key_block[it] ^ 0x36363636;
+  }
+
+  // Concatenate the message with the inner padded key.
+  uint8_t i_key_pad_msg[kHmacSha512BlockBytes + msg_len];
+  memset(i_key_pad_msg, 0, sizeof(i_key_pad_msg));
+  memcpy(i_key_pad_msg, i_key_pad, kHmacSha512BlockBytes);
+  memcpy(i_key_pad_msg + kHmacSha512BlockBytes, msg, msg_len);
+
+  // h_i_key_pad_msg = H(i_key_pad || m).
+  uint32_t h_i_key_pad_msg[kHmacSha512DigestWords];
+  memset(h_i_key_pad_msg, 0, sizeof(h_i_key_pad_msg));
+  HARDENED_TRY(hmac_hash_sha512(i_key_pad_msg, kHmacSha512BlockBytes + msg_len,
+                                h_i_key_pad_msg));
+
+  // Concatenate the outer padded key with h_i_key_pad_msg.
+  uint8_t o_key_pad_hash[kHmacSha512BlockBytes + kHmacSha512DigestBytes];
+  memset(o_key_pad_hash, 0, sizeof(o_key_pad_hash));
+  memcpy(o_key_pad_hash, o_key_pad, kHmacSha512BlockBytes);
+  memcpy(o_key_pad_hash + kHmacSha512BlockBytes, h_i_key_pad_msg,
+         kHmacSha512DigestBytes);
+
+  // hmac = H(o_key_pad || h_i_key_pad_msg).
+  return hmac_hash_sha512(o_key_pad_hash,
+                          kHmacSha512BlockBytes + kHmacSha512DigestBytes, tag);
 }
 
 /**
