@@ -39,6 +39,10 @@
       build_opts: ["+define+IS_FATAL"]
     }
     {
+      name: fatal_alert_with_3_cycles_skew
+      build_opts: ["+define+IS_FATAL", "+defines+IS_3_CYCLE_SKEW"]
+    }
+    {
       name: sync_fatal_alert
       build_opts: ["+define+IS_FATAL", "+define+IS_SYNC"]
     }
@@ -54,6 +58,10 @@
       build_mode: fatal_alert
     }
     {
+      name: prim_async_fatal_alert_with_3_cycles_skew
+      build_mode: fatal_alert_with_3_cycles_skew
+    }
+    {
       name: prim_sync_alert
       build_mode: sync_alert
     }
@@ -66,7 +74,7 @@
   regressions: [
     {
       name: smoke
-      tests: ["prim_async_alert"]
+      tests: ["prim_async_alert", "prim_async_fatal_alert_with_3_cycles_skew"]
     }
   ]
   overrides: [
