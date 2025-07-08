@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// The code below uses cfmakeraw, which comes from unistd.h. With glibc, it is
+// only provided if the _DEFAULT_SOURCE feature test macro is defined (because
+// it came from BSD in the first place, so needs pulling in explicitly).
+#define _DEFAULT_SOURCE
+
 #include "uartdpi.h"
 
 #ifdef __linux__
