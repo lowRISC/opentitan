@@ -26,6 +26,11 @@
       desc:    "Number of range registers",
       type:    "int",
       default: "32",
+      dtgen:
+      {
+        type: "uint8"
+        name: "num_ranges"
+      }
     }
     {
       name:    "nr_role_bits",

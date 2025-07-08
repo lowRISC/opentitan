@@ -12,4 +12,13 @@
     topname: darjeeling
     uniquified_modules: {}
   }
+  dtgen:
+  {
+    num_ranges:
+    {
+      type: uint8
+      name: num_ranges
+      doc: Number of range registers
+    }
+  }
 }
