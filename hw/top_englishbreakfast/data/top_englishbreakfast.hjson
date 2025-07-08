@@ -757,9 +757,6 @@
         // hardwired connections
         'rv_core_ibex.hart_id', 'rv_core_ibex.boot_addr',
 
-        // lc_ctrl.lc_cpu_en - always enabled for English Breakfast
-        'rv_core_ibex.lc_cpu_en'
-
         // Xbars
 
         // Pinmux JTAG signals for the tool-inserted DFT TAP
