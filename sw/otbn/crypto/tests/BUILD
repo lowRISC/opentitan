@@ -418,6 +418,7 @@ otbn_sim_test(
         "//sw/otbn/crypto:p384_base",
         "//sw/otbn/crypto:p384_base_mult",
         "//sw/otbn/crypto:p384_internal_mult",
+        "//sw/otbn/crypto:p384_isoncurve",
     ],
 )
 
