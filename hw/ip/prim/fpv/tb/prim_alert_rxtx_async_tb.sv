@@ -37,6 +37,8 @@ module prim_alert_rxtx_async_tb
   localparam bit AsyncOn = 1'b1;
   localparam bit IsFatal = 1'b0;
 
+  localparam int unsigned SkewCycles = 1;
+
   logic ping_pd;
   logic ping_nd;
   logic ack_pd;
