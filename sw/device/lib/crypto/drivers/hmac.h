@@ -123,6 +123,29 @@ status_t hmac_hmac_sha256(const uint32_t *key_block, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag);
 
 /**
+ * Redundant implementation for a one-shot HMAC-SHA256 hash computation.
+ *
+ * The key should be pre-processed into a buffer the size of a full message
+ * block, according to FIPS 198-1, section 4.
+ *
+ * To be used together with hmac_hmac_sha256() to mitigate FI attacks. This
+ * implementation is different to hmac_hmac_sha256() as it manually assembles
+ * the HMAC functionality using SHA256. By using two different HMAC
+ * implementations, injecting two identical faults affect different parts during
+ * the HMAC compuation, which can be detected.
+ *
+ * @param key_block Input key block (`kHmacSha256BlockWords` words).
+ * @param msg Input message.
+ * @param msg_len Message length in bytes.
+ * @param[out] tag Authentication tag (`kHmacSha256DigestWords` bytes).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha256_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag);
+
+/**
  * One-shot HMAC-SHA384 hash computation.
  *
  * The key should be pre-processed into a buffer the size of a full message
@@ -139,6 +162,29 @@ status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag);
 
 /**
+ * Redundant implementation for a one-shot HMAC-SHA384 hash computation.
+ *
+ * The key should be pre-processed into a buffer the size of a full message
+ * block, according to FIPS 198-1, section 4.
+ *
+ * To be used together with hmac_hmac_sha384() to mitigate FI attacks. This
+ * implementation is different to hmac_hmac_sha384() as it manually assembles
+ * the HMAC functionality using SHA384. By using two different HMAC
+ * implementations, injecting two identical faults affect different parts during
+ * the HMAC compuation, which can be detected.
+ *
+ * @param key_block Input key block (`kHmacSha384BlockWords` words).
+ * @param msg Input message.
+ * @param msg_len Message length in bytes.
+ * @param[out] tag Authentication tag (`kHmacSha384DigestWords` bytes).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha384_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag);
+
+/**
  * One-shot HMAC-SHA512 hash computation.
  *
  * The key should be pre-processed into a buffer the size of a full message
@@ -153,6 +199,29 @@ status_t hmac_hmac_sha384(const uint32_t *key_block, const uint8_t *msg,
 OT_WARN_UNUSED_RESULT
 status_t hmac_hmac_sha512(const uint32_t *key_block, const uint8_t *msg,
                           size_t msg_len, uint32_t *tag);
+
+/**
+ * Redundant implementation for a one-shot HMAC-SHA512 hash computation.
+ *
+ * The key should be pre-processed into a buffer the size of a full message
+ * block, according to FIPS 198-1, section 4.
+ *
+ * To be used together with hmac_hmac_sha512() to mitigate FI attacks. This
+ * implementation is different to hmac_hmac_sha512() as it manually assembles
+ * the HMAC functionality using SHA512. By using two different HMAC
+ * implementations, injecting two identical faults affect different parts during
+ * the HMAC compuation, which can be detected.
+ *
+ * @param key_block Input key block (`kHmacSha512BlockWords` words).
+ * @param msg Input message.
+ * @param msg_len Message length in bytes.
+ * @param[out] tag Authentication tag (`kHmacSha512DigestWords` bytes).
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hmac_hmac_sha512_redundant(const uint32_t *key_block,
+                                    const uint8_t *msg, size_t msg_len,
+                                    uint32_t *tag);
 
 /**
  * Initializes the context for a streaming SHA256 hash computation.
