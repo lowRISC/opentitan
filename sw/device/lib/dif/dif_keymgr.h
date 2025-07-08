@@ -446,7 +446,7 @@ typedef struct dif_keymgr_versioned_key_params {
    */
   uint32_t version;
   /**
-   * Coumpund Device Identifier type (sealing or attestation).
+   * Compound Device Identifier type (sealing or attestation).
    */
   dif_keymgr_cdi_type_t cdi_type;
 } dif_keymgr_versioned_key_params_t;
@@ -475,7 +475,7 @@ dif_result_t dif_keymgr_generate_versioned_key(
  * When a key is generated to be sideloaded to a hardware peripheral, key
  * manager stores it in a set of storage registers. Calling this function with
  * `state` set to `kDifKeymgrToggleEnabled` causes key manager to clear sideload
- * keys continously using random values from the entropty source. Callers must
+ * keys continuously using random values from the entropy source. Callers must
  * disable clearing of sideload keys to resume normal sideload operation.
  *
  * @param keymgr A key manager handle.

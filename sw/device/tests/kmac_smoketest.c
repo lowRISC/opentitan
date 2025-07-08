@@ -294,12 +294,12 @@ void run_shake_test(dif_kmac_t *kmac) {
 bool test_main(void) {
   LOG_INFO("Running KMAC DIF test...");
 
-  // Intialize KMAC hardware.
+  // Initialize KMAC hardware.
   dif_kmac_t kmac;
   CHECK_DIF_OK(dif_kmac_init_from_dt(kTestKmac, &kmac));
 
-  // Configure KMAC hardware using software entropy. The seed has been randomnly
-  // chosen and is genrated using enerated using
+  // Configure KMAC hardware using software entropy. The seed has been randomly
+  // chosen and is generated using
   // ./util/design/gen-lfsr-seed.py --width 192 --seed 2034386436 --prefix ""
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,

@@ -272,11 +272,11 @@ void ecc256_ecdsa_keygen_fvsr_seed_batch(const uint8_t *data, size_t data_len) {
 }
 
 /**
- * Adds two integers storred in byte arrays.
+ * Adds two integers stored in byte arrays.
  *
  * Adds the integer stored in source array to the integer stored in
  * destination aray.
- * The user needs to ensure that dest_len isenough to store the result
+ * The user needs to ensure that dest_len is enough to store the result
  * without overflow.
  *
  * @param[in] dest  Location of the first input array and the result.

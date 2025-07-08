@@ -184,7 +184,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
       wait_for_interrupt();
       // Print out LcRmaToken to avoid SW compile error saying kLcRmaToken is
-      // unused in certain state trasition tests.
+      // unused in certain state transition tests.
       LOG_INFO("LC RMA token start with %08x", kLcRmaToken[0]);
       // Unreachable
       return false;

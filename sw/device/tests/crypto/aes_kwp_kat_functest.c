@@ -37,7 +37,7 @@ static aes_key_t make_aes_key(const uint32_t *key, size_t key_words) {
  *
  * This test uses the internal AES-KWP implementation rather than the cryptolib
  * API, since the cryptolib API pre-formats the key input and stores
- * configuration information along with the key, which makes it insuitable for
+ * configuration information along with the key, which makes it unsuitable for
  * known-answer tests.
  *
  * @param kek Key to wrap with (key encryption key).
@@ -70,7 +70,7 @@ static status_t aes_kwp_wrap_kat(const uint32_t *kek, size_t kek_words,
  *
  * This test uses the internal AES-KWP implementation rather than the cryptolib
  * API, since the cryptolib API pre-formats the key input and stores
- * configuration information along with the key, which makes it insuitable for
+ * configuration information along with the key, which makes it unsuitable for
  * known-answer tests.
  *
  * @param kek Key to wrap with (key encryption key).

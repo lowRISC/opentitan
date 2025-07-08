@@ -22,7 +22,7 @@ extern "C" {
  * Computes the 64-bit quotient `a / b` by way of schoolbook long division.
  *
  * This function is intentionally very slow: 64-bit divisions should not be
- * a frequent occurence, and faster algorithms result in unreasonable code-size
+ * a frequent occurrence, and faster algorithms result in unreasonable code-size
  * expenditure.
  *
  * Performing division with the / operator in C code that runs on a 32-bit

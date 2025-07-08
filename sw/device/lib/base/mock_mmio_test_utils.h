@@ -85,7 +85,7 @@ Int ToInt(Int val) {
 }
 
 /**
- * Converts the argument into an unsinged integer of type `Int`.
+ * Converts the argument into an unsigned integer of type `Int`.
  *
  * This overload assumes that `str` is a valid pointer to a buffer of at least
  * `sizeof(Int)` bytes, which are memcpy'd out as an `Int`. This enables

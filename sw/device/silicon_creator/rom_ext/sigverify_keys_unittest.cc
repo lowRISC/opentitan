@@ -121,7 +121,7 @@ TEST_F(BadKeyIdTypeDeathTest, BadKeyType) {
 }
 
 /**
- * Base class for paramaterized tests below.
+ * Base class for parameterized tests below.
  */
 class KeyValidityTest : public SigverifyKeys,
                         public testing::WithParamInterface<size_t> {};

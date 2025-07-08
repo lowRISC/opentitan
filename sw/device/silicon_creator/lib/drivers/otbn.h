@@ -90,7 +90,7 @@ typedef struct sc_otbn_app {
   /**
    * The first word after OTBN instruction memory.
    *
-   * This address satifies `imem_len = imem_end - imem_start`.
+   * This address satisfies `imem_len = imem_end - imem_start`.
    */
   const uint32_t *imem_end;
   /**

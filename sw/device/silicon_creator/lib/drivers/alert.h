@@ -93,7 +93,7 @@ typedef struct AlertClassConfig {
    */
   alert_escalate_t escalation;
   /**
-   * The accumlation threshold for this alert class.
+   * The accumulation threshold for this alert class.
    */
   uint32_t accum_threshold;
   /**
@@ -147,7 +147,7 @@ rom_error_t alert_class_configure(alert_class_t cls,
  * Enable the ping timer mechanism.
  *
  * TODO(#23393): Do not call this function in the ROM unless there is an OTP
- * configuation to control whether or not to enable the ping mechanism.
+ * configuration to control whether or not to enable the ping mechanism.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t alert_ping_enable(void);

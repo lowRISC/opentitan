@@ -51,7 +51,7 @@ static status_t initialize_clkmgr(dif_clkmgr_hintable_clock_t clock) {
 }
 
 // This waits for the process to end with a looming hint, checks the hint status
-// shows the clock is disabled, and reanable it. The check for process
+// shows the clock is disabled, and re-enable it. The check for process
 // completion cannot be done using hmac registers since the clock will be
 // disabled as soon as the process ends, so we just wait for the clkmgr hint
 // status to indicate the clock is off, implying the process actually ended.

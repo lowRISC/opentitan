@@ -42,7 +42,7 @@ the MML bit after arranging the ePMP to the preferred configuration.
 
 NOTE: if the ROM\_EXT stage is booted in the virtual slot, then ePMP entries
 9/10/11 will be used to map the virtual window's code/data segments.  Since
-these entries are unlocked _and_ since the ROM\_EXT is no longer requred
+these entries are unlocked _and_ since the ROM\_EXT is no longer required
 after owner code boots, these entries can be reclaimed for owner use.
 
 ### OTP

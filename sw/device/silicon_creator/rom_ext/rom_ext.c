@@ -68,7 +68,7 @@ extern char _rom_ext_immutable_size[];
 // Life cycle state of the chip.
 lifecycle_state_t lc_state;
 
-// Owner configuration details parsed from the onwer info pages.
+// Owner configuration details parsed from the owner info pages.
 owner_config_t owner_config;
 
 // Owner application keys.
@@ -353,7 +353,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
         digest_region.start, digest_region.length, &act_digest);
   } else {
-    // TODO: consider whether an SPX+-only verify is sufficent.
+    // TODO: consider whether an SPX+-only verify is sufficient.
     return kErrorOwnershipInvalidAlgorithm;
   }
 }
@@ -391,7 +391,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
     HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
     // If we're in LockedOwner, initialize the sealing binding with the
-    // diversification constant associated with key applicaiton key that
+    // diversification constant associated with key application key that
     // validated the owner firmware payload.
     static_assert(
         sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),

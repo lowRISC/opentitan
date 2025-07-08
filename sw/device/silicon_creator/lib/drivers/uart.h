@@ -50,7 +50,7 @@ int uart_getchar(uint32_t timeout_ms);
 /**
  * Write a buffer to the UART.
  *
- * Writes the complete buffer to the UART and wait for transmision to complete.
+ * Writes the complete buffer to the UART and wait for transmission to complete.
  *
  * @param data Pointer to buffer to write.
  * @param len Length of the buffer to write.
@@ -71,7 +71,7 @@ void uart_write_hex(uint32_t val, size_t len, uint32_t after);
 /**
  * Write an immediate value to the UART a byte at a time.
  *
- * This function is used to print a few imporant user-facing strings
+ * This function is used to print a few important user-facing strings
  * from the ROM, but without having to dereference pointers.  The
  * string to be written is encoded as ASCII in an integer in little-endian
  * order (ie: the string is reversed).  A maximum of eight bytes can be printed

@@ -14,8 +14,8 @@
 
 /**
  * @file
- * @brief This header provides functions for controlling the excution of a hart,
- * such as halt-like functionality.
+ * @brief This header provides functions for controlling the execution of a
+ * hart, such as halt-like functionality.
  */
 
 /**

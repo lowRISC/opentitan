@@ -177,7 +177,7 @@ static void simple_serial_select_trigger_type(const uint8_t *trigger,
 }
 
 /**
- * Handler for uninmplemented simple serial commands.
+ * Handler for unimplemented simple serial commands.
  *
  * Sends an error packet over UART.
  *

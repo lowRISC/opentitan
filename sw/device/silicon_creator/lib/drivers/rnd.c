@@ -36,7 +36,7 @@ static_assert(kNumHealthRegisters ==
               "Unexpected entropy_src health register count.");
 
 // Ensure the relative offsets of OTP versus entropy_src registers are
-// equivalent. This is imporant as rom_start.S uses a copy function to
+// equivalent. This is important as rom_start.S uses a copy function to
 // copy the values from OTP into the entropy_src.
 #define ASSERT_REG_OFFSET(otp_offset_, entropy_src_offset_)                         \
   static_assert(                                                                    \

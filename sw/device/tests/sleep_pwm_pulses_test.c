@@ -68,7 +68,7 @@ static const dif_pwm_channel_t kPwmChannel[PWM_PARAM_N_OUTPUTS] = {
 };
 
 // Duty cycle in the unit of beat
-// These are random numbers betwen [1,beats_per_pulse_cycle)
+// These are random numbers between [1,beats_per_pulse_cycle)
 // make 'static volatile' to overwrite from
 // hw/top_earlgrey/dv/env/seq_lib/chip_sw_pwm_pulses_vseq.sv
 // via backdoor

@@ -212,8 +212,8 @@ typedef struct dif_alert_handler_class_config {
    */
   dif_toggle_t auto_lock_accumulation_counter;
   /**
-   * The threshold for the class accmulator which indicates the number of alerts
-   * that must fire because the class's escalation protocol will trigger.
+   * The threshold for the class accumulator which indicates the number of
+   * alerts that must fire because the class's escalation protocol will trigger.
    */
   uint16_t accumulator_threshold;
   /**
@@ -611,7 +611,7 @@ dif_result_t dif_alert_handler_local_alert_acknowledge(
  *
  * If `automatic_locking` has been set in a class's configuration, this
  * function may suddenly begin returning `false` instead of `true` without
- * software invervention, if escalation has been triggered.
+ * software intervention, if escalation has been triggered.
  *
  * @param alert_handler An alert handler handle.
  * @param alert_class The class to check.

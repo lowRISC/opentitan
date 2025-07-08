@@ -79,7 +79,7 @@ status_t usb_logging_data(uint8_t stream, const uint8_t *data, unsigned len);
 status_t usb_logging_flush(uint8_t stream);
 
 /**
- * Finalize USB logging streams, optionally waiing until all buffered logging
+ * Finalize USB logging streams, optionally waiting until all buffered logging
  * data has been transmitted to the host.
  *
  * @param  wait       Whether to wait for all buffered data to be transmitted.

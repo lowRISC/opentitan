@@ -28,7 +28,7 @@ namespace {
 
 using ::testing::StartsWith;
 
-// A test fixture for automatiocally capturing stdout.
+// A test fixture for automatically capturing stdout.
 class PrintfTest : public testing::Test {
  protected:
   void SetUp() override {

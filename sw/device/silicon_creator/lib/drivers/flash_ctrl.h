@@ -60,8 +60,8 @@ typedef enum flash_ctrl_partition {
  * Table of flash information pages.
  *
  * Columns: Name, bank index, page index.
- * We use an X macro to faciliate writing enums, switch statements, and unit
- * tests using the contants here. All information pages in this table are of
+ * We use an X macro to facilitate writing enums, switch statements, and unit
+ * tests using the constants here. All information pages in this table are of
  * type 0 since silicon creator code does not need to access information pages
  * of other types.
  */
@@ -633,7 +633,7 @@ void flash_ctrl_creator_info_pages_lockdown(void);
 /**
  * Certificate info page configurations and permissions.
  *
- * Certificate info pages are fully accessable by the creator code (ROM +
+ * Certificate info pages are fully accessible by the creator code (ROM +
  * ROM_EXT), but read-only for owner code.
  */
 extern const flash_ctrl_cfg_t kCertificateInfoPageCfg;
@@ -643,7 +643,7 @@ extern const flash_ctrl_perms_t kCertificateInfoPageOwnerAccess;
 /**
  * Configures certificate flash info pages for access by the silicon creator.
  *
- * Flash info pages that hold device certificates are fully accessable by the
+ * Flash info pages that hold device certificates are fully accessible by the
  * silicon creator, but are restricted to read-only access by the ROM_EXT before
  * handing over execution to the owner boot stage.
  *

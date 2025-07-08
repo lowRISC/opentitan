@@ -375,7 +375,7 @@ void increment_counter(void) __attribute__((optnone)) {
 }
 
 static status_t init_ref_otp_data(void) {
-  // Fetch faulty-free reference values from OTP paritions.
+  // Fetch faulty-free reference values from OTP partitions.
   if (!otp_ref_init) {
     // Read VENDOR_TEST partition.
     TRY(otp_ctrl_testutils_dai_read32_array(
@@ -2294,7 +2294,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_complement_branch(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile(
     "beq" " %0, %1, .L_HARDENED_%=;" \
@@ -2338,7 +2338,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_unimp(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp;" \
@@ -2379,7 +2379,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_2_unimps(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp;" \
@@ -2420,7 +2420,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_3_unimps(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp;" \
@@ -2461,7 +2461,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_4_unimps(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp; unimp;" \
@@ -2502,7 +2502,7 @@ status_t handle_ibex_fi_char_hardened_check_eq_5_unimps(ujson_t *uj)
   hardened_bool_t value2 = HARDENED_BOOL_FALSE;
 
   PENTEST_ASM_TRIGGER_HIGH
-  // The HARDENED_CHECK macro from hardened.h is solved explicitely.
+  // The HARDENED_CHECK macro from hardened.h is solved explicitly.
   // clang-format off
   asm volatile("beq" " %0, %1, .L_HARDENED_%=;" \
     "unimp; unimp; unimp; unimp; unimp;" \

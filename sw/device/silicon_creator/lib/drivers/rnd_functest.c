@@ -55,7 +55,7 @@ static void configure_random_health_checks(void) {
   dif_entropy_src_health_test_config_t configs[kDifEntropySrcTestNumVariants];
   for (uint32_t test_id = kDifEntropySrcTestRepetitionCount;
        test_id < kDifEntropySrcTestNumVariants; ++test_id) {
-    // Randomize threshold values without aiming to disrrupt the default
+    // Randomize threshold values without aiming to disrupt the default
     // entropy_src health test behavior.
     uint32_t meaningless_threshold =
         rand_testutils_gen32_range(/*min=*/0, /*max=*/16);

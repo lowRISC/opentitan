@@ -59,7 +59,7 @@ typedef struct dif_rv_timer_tick_params {
 } dif_rv_timer_tick_params_t;
 
 /**
- * Generates an aproximate `dif_rv_timer_tick_params_t` given the device
+ * Generates an approximate `dif_rv_timer_tick_params_t` given the device
  * clock frequency and desired counter frequency (both given in Hertz).
  *
  * For the purposes of this function, "counter frequency" is the frequency

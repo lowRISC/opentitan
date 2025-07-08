@@ -98,7 +98,7 @@ def main():
     parser.add_argument('--cust_str_len',
                         required=True,
                         type=int,
-                        help='Customizatoin string length (in bits).')
+                        help='Customization string length (in bits).')
     parser.add_argument('--digest_len',
                         required=True,
                         type=int,

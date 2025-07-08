@@ -187,7 +187,7 @@ static dif_i2c_id_t i2c_id = {
 // The enables get saved by the ISR, then restored in normal context.
 static volatile dif_i2c_irq_enable_snapshot_t i2c_irq_enables;
 
-// This gets set in the ISR and reset in normal context. It's used to indcate
+// This gets set in the ISR and reset in normal context. It's used to indicate
 // that the I2C routine needs to do some processing.
 static volatile bool i2c_event = false;
 
