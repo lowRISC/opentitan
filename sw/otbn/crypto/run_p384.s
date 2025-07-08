@@ -139,7 +139,7 @@ copy_share:
  * @param[out]   dmem[x]: Public key x-coordinate
  * @param[out]   dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_random:
@@ -151,7 +151,7 @@ keypair_random:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
 
   /* Copy the secret key shares into Ibex-visible memory.
        dmem[d0_io] <= dmem[d0]
@@ -320,7 +320,7 @@ shared_key:
  * @param[out]  dmem[x]: Public key x-coordinate
  * @param[out]  dmem[y]: Public key y-coordinate
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x18 to x23, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_from_seed:
@@ -340,7 +340,7 @@ keypair_from_seed:
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
        dmem[y] <= (d*G).y */
-  jal       x1, p384_base_mult
+  jal       x1, p384_base_mult_checked
 
   ecall
 
