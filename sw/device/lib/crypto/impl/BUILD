@@ -303,6 +303,7 @@ cc_library(
         ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],
