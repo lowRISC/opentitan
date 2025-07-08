@@ -4,6 +4,7 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen_library")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_PLATFORM")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -13,6 +14,7 @@ rust_bindgen_library(
         "--allowlist-function=xmodem_.*",
     ],
     cc_lib = "//sw/device/silicon_creator/lib:xmodem_testlib",
+    cc_lib_platform = OPENTITAN_PLATFORM,
     header = "//sw/device/silicon_creator/lib:xmodem_testlib.h",
     rustc_flags = [
         "--allow=non_snake_case",
