@@ -212,6 +212,16 @@ void hmac_sha256_restore(const hmac_context_t *ctx) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
 }
 
-extern void hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest);
-extern void hmac_sha256_init(void);
-extern void hmac_sha256_final(hmac_digest_t *digest);
+void hmac_sha256_init(void) {
+  hmac_sha256_configure(false);
+  hmac_sha256_start();
+}
+
+void hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest) {
+  hmac_hmac_sha256_configure(big_endian_digest, key);
+  hmac_sha256_start();
+}
+
+void hmac_sha256_final(hmac_digest_t *digest) {
+  hmac_sha256_final_truncated(digest->digest, ARRAYSIZE(digest->digest));
+}

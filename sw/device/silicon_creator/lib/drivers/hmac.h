@@ -107,18 +107,12 @@ void hmac_sha256_start(void);
 /**
  * Configures and starts HMAC in SHA256 mode with little-endian output.
  */
-inline void hmac_sha256_init(void) {
-  hmac_sha256_configure(false);
-  hmac_sha256_start();
-}
+void hmac_sha256_init(void);
 
 /**
  * Configures and starts HMAC in HMAC mode with little-endian output.
  */
-inline void hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest) {
-  hmac_hmac_sha256_configure(big_endian_digest, key);
-  hmac_sha256_start();
-}
+void hmac_hmac_sha256_init(hmac_key_t key, bool big_endian_digest);
 
 /**
  * Sends `len` bytes from `data` to the SHA2-256 function.
@@ -169,9 +163,7 @@ void hmac_sha256_final_truncated(uint32_t *digest, size_t len);
  *
  * @param[out] digest Buffer to copy digest to.
  */
-inline void hmac_sha256_final(hmac_digest_t *digest) {
-  hmac_sha256_final_truncated(digest->digest, ARRAYSIZE(digest->digest));
-}
+void hmac_sha256_final(hmac_digest_t *digest);
 
 /**
  * Convenience single-shot function for computing the SHA-256 digest of a
