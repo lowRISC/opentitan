@@ -259,7 +259,6 @@
             '''
       swaccess: "ro"
       hwaccess: "hwo"
-      hwqe: "true"
       fields: [
         { bits: "31:0"
           name: "address"
