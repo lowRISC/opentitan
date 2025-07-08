@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("//rules:rv.bzl", "rv_rule")
 
 """Rust generation rules for `ujson`."""
 
@@ -55,7 +56,7 @@ def _ujson_rust(ctx):
         DefaultInfo(files = depset([module]), runfiles = ctx.runfiles([module])),
     ]
 
-ujson_rust = rule(
+ujson_rust = rv_rule(
     implementation = _ujson_rust,
     attrs = {
         "srcs": attr.label_list(
