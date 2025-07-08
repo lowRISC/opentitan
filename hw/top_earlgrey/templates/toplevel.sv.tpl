@@ -364,11 +364,6 @@ module top_${top["name"]} #(
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM;
 % endif
 
-  ## Not all top levels have a lifecycle controller.
-  ## For those that do not, always enable ibex.
-% if not lib.find_module(top["module"], 'lc_ctrl'):
-  assign rv_core_ibex_lc_cpu_en = lc_ctrl_pkg::On;
-% endif
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (

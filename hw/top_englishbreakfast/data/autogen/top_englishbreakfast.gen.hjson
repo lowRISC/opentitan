@@ -4834,9 +4834,8 @@
           type: uni
           act: rcv
           width: 1
+          default: lc_ctrl_pkg::On
           inst_name: rv_core_ibex
-          default: ""
-          top_signame: rv_core_ibex_lc_cpu_en
           index: -1
         }
         {
@@ -5255,7 +5254,6 @@
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
-      rv_core_ibex.lc_cpu_en
       pinmux_aon.dft_jtag
       sram_ctrl_main.otp_en_sram_ifetch
     ]
@@ -11655,9 +11653,8 @@
         type: uni
         act: rcv
         width: 1
+        default: lc_ctrl_pkg::On
         inst_name: rv_core_ibex
-        default: ""
-        top_signame: rv_core_ibex_lc_cpu_en
         index: -1
       }
       {
@@ -13479,15 +13476,6 @@
         struct: logic
         signame: rv_core_ibex_boot_addr
         width: 32
-        type: uni
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        signame: rv_core_ibex_lc_cpu_en
-        width: 1
         type: uni
         end_idx: -1
         default: ""

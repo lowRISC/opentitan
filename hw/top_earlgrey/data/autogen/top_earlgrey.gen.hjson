@@ -10165,8 +10165,8 @@
           type: uni
           act: rcv
           width: 1
+          default: lc_ctrl_pkg::On
           inst_name: rv_core_ibex
-          default: ""
           top_signame: lc_ctrl_lc_cpu_en
           index: -1
         }
@@ -24463,8 +24463,8 @@
         type: uni
         act: rcv
         width: 1
+        default: lc_ctrl_pkg::On
         inst_name: rv_core_ibex
-        default: ""
         top_signame: lc_ctrl_lc_cpu_en
         index: -1
       }

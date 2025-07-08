@@ -376,7 +376,6 @@ module top_englishbreakfast #(
   logic       rv_core_ibex_irq_timer;
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
-  lc_ctrl_pkg::lc_tx_t       rv_core_ibex_lc_cpu_en;
   jtag_pkg::jtag_req_t       pinmux_aon_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_dft_jtag_rsp;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
@@ -403,7 +402,6 @@ module top_englishbreakfast #(
 
   assign rv_core_ibex_boot_addr = ADDR_SPACE_ROM_CTRL__ROM;
 
-  assign rv_core_ibex_lc_cpu_en = lc_ctrl_pkg::On;
 
   // Struct breakout module tool-inserted DFT TAP signals
   pinmux_jtag_breakout u_dft_tap_breakout (
@@ -1332,7 +1330,7 @@ module top_englishbreakfast #(
       .esc_rx_o(),
       .debug_req_i('0),
       .crash_dump_o(rv_core_ibex_crash_dump),
-      .lc_cpu_en_i(rv_core_ibex_lc_cpu_en),
+      .lc_cpu_en_i(lc_ctrl_pkg::On),
       .pwrmgr_cpu_en_i(pwrmgr_aon_fetch_en),
       .pwrmgr_o(rv_core_ibex_pwrmgr),
       .nmi_wdog_i('0),

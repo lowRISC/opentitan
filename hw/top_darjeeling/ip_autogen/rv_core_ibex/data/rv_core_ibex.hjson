@@ -167,6 +167,7 @@
       name:    "lc_cpu_en",
       act:     "rcv",
       package: "lc_ctrl_pkg",
+      default: "lc_ctrl_pkg::On",
     },
 
     { struct:  "lc_tx",
