@@ -242,7 +242,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
-    // And finally, check that unsetting calib_rdy causes meaesure_ctrl_regwen to be set to 1.
+    // And finally, check that unsetting calib_rdy causes measure_ctrl_regwen to be set to 1.
     check_measure_ctrl_regwen_for_calib_rdy();
   endtask
 

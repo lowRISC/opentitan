@@ -77,7 +77,7 @@ The fast FSM notifies the reset manager to release the life cycle reset stage, w
 Once OTP sensing completes, the life cycle controller is initialized.
 The initialization of the life cycle controller puts the device into its allowed operating state.
 
-Once life cycle initialization is done, the fast FSM acknowledges the slow FSM rquest and initiates strap sampling.
+Once life cycle initialization is done, the fast FSM acknowledges the slow FSM request and initiates strap sampling.
 Once strap sampling is complete, the sequence continues once the rom controller finishes its checks.
 Note that `flash_ctrl` initialization is explicitly not done here, please see [sections below](#flash-handling) for more details.
 The processor is allowed to start executing, the fast FSM transitions to `Active` state and waits for a software low power entry request.

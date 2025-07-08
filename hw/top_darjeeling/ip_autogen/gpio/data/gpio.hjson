@@ -110,7 +110,7 @@
     {
       name: "GPIO.IN.FILTER"
       desc: '''GPIO module provides noise filter control.
-      It can be enabled with programing GPIO.CTRL_EN_INPUT_FILTER.
+      It can be enabled with programming GPIO.CTRL_EN_INPUT_FILTER.
       Once it enables, input value must be stable for 16cycles before transitioning
       '''
     }

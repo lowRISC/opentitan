@@ -105,7 +105,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // With heavy concurrency, derr can be injected where read transaction
   // is issued and outstanding.
   // This can change error expectation of the first transaction.
-  // To handle this cornercase, don't assert derr on outstanding read location.
+  // To handle this corner-case, don't assert derr on outstanding read location.
   int derr_otd[rd_cache_t];
 
   // Integrity ecc err
@@ -1157,7 +1157,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     end
   endfunction // inc_otd_tbl
 
-  // Descrease outstanding table entry.
+  // Decrease outstanding table entry.
   function void dec_otd_tbl(bit bank, addr_t addr, flash_dv_part_e part);
     rd_cache_t ent;
     ent.bank = bank;

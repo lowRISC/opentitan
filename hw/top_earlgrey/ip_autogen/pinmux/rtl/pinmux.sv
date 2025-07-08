@@ -12,7 +12,7 @@ module pinmux
   import pinmux_reg_pkg::*;
   import prim_pad_wrapper_pkg::*;
 #(
-  // Taget-specific pinmux configuration passed down from the
+  // Target-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
   parameter bit SecVolatileRawUnlockEn = 0,
@@ -618,7 +618,7 @@ module pinmux
       .wkup_mode_i        ( wkup_mode_e'(reg2hw.wkup_detector[k].mode.q) ),
       .wkup_cnt_th_i      ( reg2hw.wkup_detector_cnt_th[k].q             ),
       .pin_value_i        ( pin_value                                    ),
-      // wakeup request pulse on clk_aon, will be synced back to the bus domain insie the CSR node.
+      // wakeup request pulse on clk_aon, will be synced back to the bus domain inside the CSR node.
       .aon_wkup_pulse_o   ( hw2reg.wkup_cause[k].de                      )
     );
 

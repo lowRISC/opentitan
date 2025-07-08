@@ -3,7 +3,7 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_env:0.1")}
-description: "GPIO DV UVM environmnt"
+description: "GPIO DV UVM environment"
 filesets:
   files_dv:
     depend:

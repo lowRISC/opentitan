@@ -383,7 +383,7 @@
     }
     { name: "PHY_ACK.CTRL.CONSISTENCY",
       desc: '''
-        If the host or controller ever receive an unexpeced transaction acknowledge, it is an error.
+        If the host or controller ever receive an unexpected transaction acknowledge, it is an error.
       '''
     }
     { name: "FIFO.CTR.REDUN",
@@ -558,13 +558,13 @@
 
     // Maximum FIFO depth allowed
     { name:      "MaxFifoDepth",
-      desc:      "Maximum depth for read / program fifos",
+      desc:      "Maximum depth for read / program FIFOs",
       type:      "int"
       default:   "${max_fifo_depth}",
     },
 
     { name:      "MaxFifoWidth",
-      desc:      "Maximum depth for read / program fifos",
+      desc:      "Maximum depth for read / program FIFOs",
       type:      "int"
       default:   "${max_fifo_width}",
     },
@@ -614,7 +614,7 @@
     }
     {
       name: "FLASH_CTRL.INIT.SCRAMBLING_KEYS"
-      desc: "When flash_ctrl.INIT is set, flash controller requests scrambling keys from otp contoller."
+      desc: "When flash_ctrl.INIT is set, flash controller requests scrambling keys from otp controller."
     }
     {
       name: "FLASH_CTRL.MEM_PROTECTION"
@@ -1569,7 +1569,7 @@
             swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a program error.
-              This could be a program integrity eror, see !!STD_FAULT_STATUS for more details.
+              This could be a program integrity error, see !!STD_FAULT_STATUS for more details.
             '''
           },
           { bits: "4",

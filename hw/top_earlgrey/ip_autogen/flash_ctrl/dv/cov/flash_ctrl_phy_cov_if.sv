@@ -50,7 +50,7 @@ interface flash_ctrl_phy_cov_if
   end
 
   // command interval counter
-  // couter will be saturated when it hits maxium
+  // counter will be saturated when it hits maximum
   bit [31:0] idle_cnt;
   always @(posedge clk_i) begin
     if (!rst_ni || !rd_buf_en) idle_cnt <= 0;

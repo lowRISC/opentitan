@@ -15,7 +15,7 @@ module alert_handler
   parameter int unsigned AlertSkewCycles = 1,
   parameter int EscNumSeverities = 4,
   parameter int EscPingCountWidth = 16,
-  // Compile time random constants, to be overriden by topgen.
+  // Compile time random constants, to be overridden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (

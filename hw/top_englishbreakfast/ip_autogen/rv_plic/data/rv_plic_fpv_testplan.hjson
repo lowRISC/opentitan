@@ -8,7 +8,7 @@
     {
       name: LevelTriggeredIp_A
       desc: '''If interrupt pending (`ip`) is triggered, and the level indicator is set to
-            level triggered (`le=0`), then in the prvious clock cycle, the interrupt source
+            level triggered (`le=0`), then in the previous clock cycle, the interrupt source
             (`intr_src_i) should be set to 1.'''
       stage: V2
       tests: ["rv_plic_assert"]
@@ -43,7 +43,7 @@
       name: TriggerIrqForwardCheck_A
       desc: '''If interrupt is enabled (`ie=1`), interrupt pending is set (`ip=1`), interrupt
             input has the highest priority among the rest of the inputs, and its priority is
-            above the threshold. Then in the next clock clcye, the `irq_o` should be triggered,
+            above the threshold. Then in the next clock cycle, the `irq_o` should be triggered,
             and the `irq_id_o` will reflect the input ID.'''
       stage: V2
       tests: ["rv_plic_assert"]

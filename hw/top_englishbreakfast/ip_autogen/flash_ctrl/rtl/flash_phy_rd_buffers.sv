@@ -6,7 +6,7 @@
 //
 // This module implements the read buffers
 // These buffers are straightforward flip flop storage.
-// There are 3 inputs, alloc, upate and wipe.
+// There are 3 inputs, alloc, update and wipe.
 //
 // Alloc happens when a buffer is allocated, the state transitions to WIP.
 //

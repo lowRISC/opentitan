@@ -150,7 +150,7 @@ module ${module_instance_name}
       // Hold by default
       inp_prd_cnt_d[i] = inp_prd_cnt_q[i];
 
-      // Clearing takes precendence
+      // Clearing takes precedence
       if (inp_prd_cnt_clr[i]) begin
         inp_prd_cnt_d[i] = '0;
       end else if (inp_prd_cnt_inc[i] && inp_prd_cnt_q[i] != '1) begin

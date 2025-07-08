@@ -8,7 +8,7 @@ module pinmux_strap_sampling
   import prim_pad_wrapper_pkg::*;
   import lc_ctrl_pkg::*;
 #(
-  // Taget-specific pinmux configuration passed down from the
+  // Target-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg
 ) (
@@ -265,7 +265,7 @@ module pinmux_strap_sampling
   assign dft_strap_test_o.straps = dft_strap_q;
 
 
-  // During dft enabled states, we continously sample all straps unless
+  // During dft enabled states, we continuously sample all straps unless
   // told not to do so by external dft logic
   logic tap_sampling_en;
   logic dft_hold_tap_sel;
@@ -291,7 +291,7 @@ module pinmux_strap_sampling
     if (strap_en_q && tap_sampling_en) begin
       dft_strap_sample_en = 1'b1;
     end
-    // In DFT-enabled life cycle states we continously
+    // In DFT-enabled life cycle states we continuously
     // sample the TAP straps to be able to switch back and
     // forth between different TAPs.
     if (strap_en_q || tap_sampling_en) begin

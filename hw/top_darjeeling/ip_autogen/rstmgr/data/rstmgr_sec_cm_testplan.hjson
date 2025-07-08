@@ -68,7 +68,7 @@
       name: sec_cm_leaf_rst_shadow
       desc: '''Verify the countermeasure(s) LEAF.RST.SHADOW.
             After power up, create glitch to a shadow leaf reset module.
-            Check if normal leaf reset module is not triggerred.
+            Check if normal leaf reset module is not triggered.
             Do over all {shadow, normal} leaf reset module pairs
             '''
       stage: V2S

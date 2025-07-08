@@ -530,7 +530,7 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
   //
   // The ping timer is 16 bits so ideally we should see alert_ping -> esc_ping ->  alert_ping ...
   // with the max length of 16'hFFFF clock cycle. However alert_ping is randomly selected so we
-  // can not guarantee the random alert index is valid (exists), enabld, and locked.
+  // can not guarantee the random alert index is valid (exists), enabled, and locked.
   // However, esc ping timer should are always expected to trigger.
   // So the max wait time is 'hFFFF*2.
   // This task also used the probed design signal instead of detected ping requests from monitor.

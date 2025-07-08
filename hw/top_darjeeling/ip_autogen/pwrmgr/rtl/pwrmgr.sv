@@ -353,7 +353,7 @@ module pwrmgr
   assign hw2reg.fault_status.esc_timeout.de     = esc_timeout_lc_q;
   assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
 
-  // The main power domain glitch automatically causes a reset, so regsitering
+  // The main power domain glitch automatically causes a reset, so registering
   // an alert is functionally pointless.  However, if an attacker somehow manages/
   // to silence the reset, this gives us one potential back-up path through alert_handler.
   // Allow capture of main_pd fault status whenever the system is live.
@@ -488,7 +488,7 @@ module pwrmgr
   assign hw2reg.cfg_cdc_sync.d = 1'b0;
 
   ////////////////////////////
-  ///  Wakup and reset capture
+  ///  Wakeup and reset capture
   ////////////////////////////
 
   // reset and wakeup requests are captured into the slow clock domain and then

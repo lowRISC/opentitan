@@ -1234,7 +1234,7 @@ The flash life cycle management interface encountered a program resolution error
 
 ### FAULT_STATUS . prog_err
 The flash life cycle management interface encountered a program error.
-This could be a program integrity eror, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
+This could be a program integrity error, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
 
 ### FAULT_STATUS . rd_err
 The flash life cycle management interface encountered a read error.
