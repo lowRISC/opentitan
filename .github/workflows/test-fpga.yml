@@ -1,0 +1,42 @@
+name: Test FPGA
+on:
+  workflow_dispatch:
+    inputs:
+  push:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  chip_earlgrey_cw340:
+    name: Earl Grey for CW340
+    uses: ./.github/workflows/bitstream.yml
+    secrets: inherit
+    with:
+      top_name: earlgrey
+      design_suffix: cw340
+
+  execute_sival_rom_ext_fpga_tests_cw340:
+    name: CW340 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_sival_rom_ext
+
+  execute_manuf_fpga_tests_cw340:
+    name: CW340 Manufacturing Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_manuf_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "manuf,-hyper310"

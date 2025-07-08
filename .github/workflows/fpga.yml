@@ -37,7 +37,9 @@ on:
 jobs:
   fpga:
     name: FPGA test
-    runs-on: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
+    runs-on:
+      group: FPGA Staging
+      labels: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
     timeout-minutes: ${{ inputs.timeout }}
     steps:
       - uses: actions/checkout@v4

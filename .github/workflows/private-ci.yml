@@ -5,11 +5,6 @@
 name: Private CI
 
 on:
-  push:
-    branches-ignore:
-      - "backport-*"
-    tags:
-      - "*"
   pull_request_target:
     branches:
       - "*"
