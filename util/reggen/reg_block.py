@@ -20,9 +20,6 @@ from reggen.params import ReggenParams
 from reggen.register import Register
 from reggen.window import Window
 
-from systemrdl.component import Addrmap
-from systemrdl.importer import RDLImporter
-
 
 @dataclass
 class RegBlock:
@@ -743,22 +740,3 @@ class RegBlock:
         # Note that the scrubbing above assigns .alias_target to .name.
         for alias_name, reg in name_to_flat_reg_copy.items():
             self._rename_flat_reg(alias_name, reg.name)
-
-    def to_systemrdl(self, importer: RDLImporter) -> Addrmap | None:
-        nonempty = False
-
-        name = self.name or 'none'
-        rdl_addrmap_t = importer.create_addrmap_definition(name)
-        rdl_addrmap = importer.instantiate_addrmap(rdl_addrmap_t, name, 0)
-
-        # registers and multiregs
-        for name, flat_reg in self.name_to_flat_reg.items():
-            nonempty = True
-            importer.add_child(rdl_addrmap, flat_reg.to_systemrdl(importer))
-
-        # windows
-        for window in self.windows:
-            nonempty = True
-            importer.add_child(rdl_addrmap, window.to_systemrdl(importer))
-
-        return rdl_addrmap if nonempty else None
