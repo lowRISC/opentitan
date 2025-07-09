@@ -80,7 +80,6 @@ py_library(
         ":lib",
         ":params",
         "//util/design/mubi:prim_mubi",
-        requirement("peakrdl_systemrdl"),
     ],
 )
 
@@ -325,10 +324,25 @@ py_library(
 )
 
 py_library(
-    name = "gen_systemrdl",
-    srcs = ["gen_systemrdl.py"],
+    name = "exporter",
+    srcs = ["exporter.py"],
     deps = [
         ":ip_block",
+    ],
+)
+
+py_library(
+    name = "systemrdl_exporter",
+    srcs = ["systemrdl_exporter.py"],
+    deps = [
+        ":access",
+        ":exporter",
+        ":field",
+        ":ip_block",
+        ":multi_register",
+        ":reg_block",
+        ":register",
+        ":window",
         requirement("peakrdl_systemrdl"),
     ],
 )
