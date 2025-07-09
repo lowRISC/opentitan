@@ -8,9 +8,6 @@ from reggen.access import SWAccess
 from reggen.lib import check_keys, check_str, check_bool, check_int
 from reggen.params import ReggenParams
 
-from systemrdl.component import Mem
-from systemrdl.importer import RDLImporter
-
 REQUIRED_FIELDS = {
     'name': ['s', "name of the window"],
     'desc': ['t', "description of the window"],
@@ -158,11 +155,3 @@ class Window:
             rd['name'] = self.name
 
         return {'window': rd}
-
-    def to_systemrdl(self, importer: RDLImporter) -> Mem:
-        rdl_mem_t = importer.create_mem_definition(self.name)
-        importer.assign_property(rdl_mem_t, 'memwidth', self.size_in_bytes // self.items)
-        return importer.instantiate_mem(rdl_mem_t,
-                                        self.name,
-                                        self.offset,
-                                        [self.items])
