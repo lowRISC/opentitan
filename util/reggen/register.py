@@ -15,9 +15,6 @@ from reggen.lib import (check_keys, check_str, check_name, check_bool,
 from reggen.params import ReggenParams
 from reggen.reg_base import RegBase
 
-from systemrdl.importer import RDLImporter
-import systemrdl.component
-
 import re
 
 REQUIRED_FIELDS = {
@@ -747,12 +744,3 @@ class Register(RegBase):
 
             # Scrub field contents.
             fld.scrub_alias(where)
-
-    def to_systemrdl(self, importer: RDLImporter) -> systemrdl.component.Reg:
-        rdl_t = importer.create_reg_definition(self.name)
-        for rfield in self.fields:
-            importer.add_child(rdl_t, rfield.to_systemrdl(importer))
-
-        return importer.instantiate_reg(rdl_t,
-                                        self.name,
-                                        self.offset)
