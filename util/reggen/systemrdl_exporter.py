@@ -10,13 +10,28 @@ from typing import TextIO
 
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
+from reggen.register import Register
 from reggen.exporter import Exporter
 
+import systemrdl.component
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
 from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
 from peakrdl_systemrdl import exporter
+
+
+@dataclass
+class Register2Systemrdl:
+    inner: Register
+    importer: RDLImporter
+
+    def export(self) -> systemrdl.component.Reg:
+        rdl_t = self.importer.create_reg_definition(self.inner.name)
+        for rfield in self.inner.fields:
+            self.importer.add_child(rdl_t, rfield.to_systemrdl(self.importer))
+
+        return self.importer.instantiate_reg(rdl_t, self.inner.name, self.inner.offset)
 
 
 @dataclass
@@ -34,7 +49,9 @@ class RegBlock2Systemrdl:
         # registers and multiregs
         for name, flat_reg in self.inner.name_to_flat_reg.items():
             nonempty = True
-            self.importer.add_child(rdl_addrmap, flat_reg.to_systemrdl(self.importer))
+            self.importer.add_child(
+                rdl_addrmap, Register2Systemrdl(flat_reg, self.importer).export()
+            )
 
         # windows
         for window in self.inner.windows:
