@@ -346,10 +346,8 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
       .key_mode = key_mode,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
-
-  // Create buffer to store key.
 
   // Create buffer to store key.
   uint32_t key_buf[kPentestHmacMaxKeyWords];
