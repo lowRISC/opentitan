@@ -42,7 +42,7 @@ module uartdpi #(
   function automatic void initialize();
     string plusarg_name = {"UARTDPI_LOG_", NAME};
     if (!$value$plusargs({plusarg_name, "=%s"}, log_file_path)) begin
-      $error($sformatf("No %s plusarg found.", plusarg_name));
+      $display($sformatf("No %s plusarg found.", plusarg_name));
     end
     ctx = uartdpi_create(NAME, log_file_path, EXIT_STRING);
   endfunction
