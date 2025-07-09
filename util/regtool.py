@@ -13,7 +13,7 @@ from pathlib import Path
 
 from reggen import (
     gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
-    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_systemrdl, gen_tock, version,
+    gen_rust, gen_sec_cm_testplan, gen_selfdoc, systemrdl_exporter, gen_tock, version,
 )
 from reggen.ip_block import IpBlock
 
@@ -316,7 +316,7 @@ def main():
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
                                          src_copy, version_stamp)
             elif fmt == 'systemrdl':
-                return gen_systemrdl.gen(obj, outfile)
+                return systemrdl_exporter.SystemrdlExporter(obj).export(outfile)
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 

@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import TextIO
 
 from reggen.ip_block import IpBlock
+from reggen.exporter import Exporter
 
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.messages import FileSourceRef  # type: ignore[attr-defined]
@@ -16,9 +17,10 @@ from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
 from peakrdl_systemrdl import exporter
 
+
 @dataclass
-class IpBlock2Systemrdl: 
-    inner : IpBlock
+class IpBlock2Systemrdl:
+    inner: IpBlock
     importer: RDLImporter
 
     def export(self) -> Addrmap | None:
@@ -37,25 +39,27 @@ class IpBlock2Systemrdl:
             num_children += 1
 
         if num_children > 1:
-            rdl_addrmap.properties['bridge'] = True
+            rdl_addrmap.properties["bridge"] = True
 
         return rdl_addrmap if num_children else None
 
-def gen(block: IpBlock, outfile: TextIO) -> int:
-    comp = RDLCompiler()
-    imp = RDLImporter(comp)
-    imp.default_src_ref = FileSourceRef(outfile.name)
 
-    rdl_addrmap = IpBlock2Systemrdl(block, imp).export()
-    if rdl_addrmap is None:
-        raise RuntimeError("Block has no registers or windows.")
+class SystemrdlExporter(Exporter):
+    def export(self, outfile: TextIO) -> int:
+        comp = RDLCompiler()
+        imp = RDLImporter(comp)
+        imp.default_src_ref = FileSourceRef(outfile.name)
 
-    imp.register_root_component(rdl_addrmap)
+        rdl_addrmap = IpBlock2Systemrdl(self.block, imp).export()
+        if rdl_addrmap is None:
+            raise RuntimeError("Block has no registers or windows.")
 
-    # At this point, we actually have to close outfile and then pass its path
-    # to exp.export (which expects a path rather than a stream).
-    outfile.close()
+        imp.register_root_component(rdl_addrmap)
 
-    exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+        # At this point, we actually have to close outfile and then pass its path
+        # to exp.export (which expects a path rather than a stream).
+        outfile.close()
 
-    return 0
+        exporter.SystemRDLExporter().export(comp.elaborate(), outfile.name)
+
+        return 0
