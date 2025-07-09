@@ -15,6 +15,7 @@ from reggen.window import Window
 from reggen.field import Field
 from reggen.access import SWAccess, SwAccess, HWAccess, HwAccess
 from reggen.exporter import Exporter
+from reggen.systemrdl.udp import register_udps
 
 import systemrdl.component
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
@@ -97,6 +98,9 @@ class Field2Systemrdl:
 
         if self.inner.desc:
             self.importer.assign_property(field, "desc", self.inner.desc)
+
+        if self.inner.mubi:
+            self.importer.assign_property(field, "mubi", self.inner.mubi)
 
         return field
 
@@ -185,6 +189,8 @@ class IpBlock2Systemrdl:
 class SystemrdlExporter(Exporter):
     def export(self, outfile: TextIO) -> int:
         comp = RDLCompiler()
+        register_udps(comp)
+
         imp = RDLImporter(comp)
         imp.default_src_ref = FileSourceRef(outfile.name)
 
