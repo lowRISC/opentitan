@@ -46,15 +46,16 @@ module ${module_instance_name}_gateway #(
     end
   end
 
-  // Interrupt active is to control ip_o. If ip_o is set then until completed
-  // by target, ip_o shouldn't be set by source even claim_i can clear ip_o.
-  // ia can be cleared only when ia was set. If `set` and `complete_i` happen
-  // at the same time, always `set` wins.
+  // The Interrupt Active signal is high for interrupts that are active. Interrupt k becomes active
+  // (so ia[k] is true) if the interrupt is asserted when it is not already active. An active
+  // interrupt is initially pending (ip_o[k] is high) and stops being pending when claimed by the
+  // target setting claim_i[k]. After the interrupt has been claimed, it is marked inactive when the
+  // target signals completion (by setting complete_i[k]).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ia <= '0;
     end else begin
-      ia <= (ia | (set & ~ia)) & (~(ia & complete_i & ~ip_o));
+      ia <= (~ia & set) | (ia & ~(complete_i & ~ip_o));
     end
   end
 
