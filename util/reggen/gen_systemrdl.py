@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-'''Generate a SystemRDL description of the block'''
+"""Generate a SystemRDL description of the block"""
 
 from typing import TextIO
 
@@ -22,7 +22,7 @@ def gen(block: IpBlock, outfile: TextIO) -> int:
 
     rdl_addrmap = block.to_systemrdl(imp)
     if rdl_addrmap is None:
-        raise RuntimeError('Block has no registers or windows.')
+        raise RuntimeError("Block has no registers or windows.")
 
     imp.register_root_component(rdl_addrmap)
 
