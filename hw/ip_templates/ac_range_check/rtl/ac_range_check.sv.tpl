@@ -29,6 +29,7 @@ module ${module_instance_name}
   input  tlul_pkg::tl_h2d_t                         tl_i,
   output tlul_pkg::tl_d2h_t                         tl_o,
   // Inter module signals
+  // SEC_CM: INTERSIG.MUBI
   input prim_mubi_pkg::mubi8_t                      range_check_overwrite_i,
   // Incoming TLUL interface
   input  tlul_pkg::tl_h2d_t                         ctn_tl_h2d_i,
@@ -45,6 +46,8 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
   logic reg_intg_error, shadowed_storage_err, shadowed_update_err;
   // SEC_CM: BUS.INTEGRITY
+  // SEC_CM: CTRL.MUBI
+  // SEC_CM: CTRL.REGWEN_MUBI
   ${module_instance_name}_reg_top #(
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
@@ -280,6 +283,7 @@ module ${module_instance_name}
   logic log_first_deny;
   assign log_first_deny = deny_cnt_incr & (deny_cnt == 0);
 
+  // SEC_CM: CTR.REDUN
   prim_count #(
     .Width(DenyCountWidth)
   ) u_deny_count (
