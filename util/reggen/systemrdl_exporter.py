@@ -11,6 +11,7 @@ from typing import TextIO
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
 from reggen.register import Register
+from reggen.window import Window
 from reggen.field import Field
 from reggen.access import SWAccess, SwAccess, HWAccess, HwAccess
 from reggen.exporter import Exporter
@@ -101,6 +102,21 @@ class Field2Systemrdl:
 
 
 @dataclass
+class Window2Systemrdl:
+    inner: Window
+    importer: RDLImporter
+
+    def export(self) -> systemrdl.component.Mem:
+        rdl_mem_t = self.importer.create_mem_definition(self.inner.name)
+        self.importer.assign_property(
+            rdl_mem_t, "memwidth", self.inner.size_in_bytes // self.inner.items
+        )
+        return self.importer.instantiate_mem(
+            rdl_mem_t, self.inner.name, self.inner.offset, [self.inner.items]
+        )
+
+
+@dataclass
 class Register2Systemrdl:
     inner: Register
     importer: RDLImporter
@@ -135,7 +151,7 @@ class RegBlock2Systemrdl:
         # windows
         for window in self.inner.windows:
             nonempty = True
-            self.importer.add_child(rdl_addrmap, window.to_systemrdl(self.importer))
+            self.importer.add_child(rdl_addrmap, Window2Systemrdl(window, self.importer).export())
 
         return rdl_addrmap if nonempty else None
 
