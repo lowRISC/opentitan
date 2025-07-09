@@ -46,15 +46,14 @@ module rv_plic_gateway #(
     end
   end
 
-  // Interrupt active is to control ip_o. If ip_o is set then until completed
-  // by target, ip_o shouldn't be set by source even claim_i can clear ip_o.
-  // ia can be cleared only when ia was set. If `set` and `complete_i` happen
-  // at the same time, always `set` wins.
+  // Interrupt k becomes active (ia[k]) if the interrupt is asserted when it is not already active.
+  // Once it is active, it can only be cleared by the pending flag (ip_o[k]) being cleared before
+  // seeing a message reporting that handling the interrupt is complete (complete_i[k]).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ia <= '0;
     end else begin
-      ia <= (ia | (set & ~ia)) & (~(ia & complete_i & ~ip_o));
+      ia <= (set & ~ia) | (ia & ~(complete_i & ~ip_o));
     end
   end
 
