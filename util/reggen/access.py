@@ -47,24 +47,6 @@ class HwAccess(JsonEnum):
     NONE = 4  # No access allowed
 
 
-# Maps reggen software access property to SystemRDL properties. Each line in this table is
-# a set of RDL properties where:
-#   sw: Software read and write access.
-#   onread: Side effect when software reads.
-#   onwrite: Side effect when software writes.
-
-SWACCESS_RDL_MAP = {
-    SwAccess.RO: {"sw": AccessType.r},
-    SwAccess.RC: {"sw": AccessType.r, "onread": OnReadType.rclr},
-    SwAccess.R0W1C: {"sw": AccessType.w, "onwrite": OnWriteType.woclr},
-    SwAccess.RW: {"sw": AccessType.rw},
-    SwAccess.WO: {"sw": AccessType.w},
-    SwAccess.W1C: {"sw": AccessType.w, "onwrite": OnWriteType.woset},
-    SwAccess.W0C: {"sw": AccessType.w, "onwrite": OnWriteType.wzc},
-    SwAccess.W1S: {"sw": AccessType.w, "onwrite": OnWriteType.woset},
-    SwAccess.NONE: {"sw": AccessType.r},
-}
-
 # swaccess permitted values
 # text description, access enum, wr access enum, rd access enum, ok in window
 # yapf: disable
@@ -158,9 +140,6 @@ class SWAccess:
 
         """
         return self.value[1] != SwAccess.RC and self.allows_write()
-
-    def to_systemrdl(self) -> dict[str, object]:
-        return SWACCESS_RDL_MAP[self.value[1]]
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, SWAccess):
