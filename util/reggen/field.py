@@ -21,8 +21,6 @@ from reggen.lib import (
 )
 from reggen.params import ReggenParams
 
-from systemrdl.importer import RDLImporter
-import systemrdl.component
 
 REQUIRED_FIELDS = {"bits": ["b", "bit or bit range (msb:lsb)"]}
 
@@ -471,30 +469,3 @@ class Field:
         self.resval = 0
         self.tags = []
         self.alias_target = None
-
-    def to_systemrdl(self, importer: RDLImporter) -> systemrdl.component.Field:
-        rdl_t = importer.create_field_definition(self.name)
-        field = importer.instantiate_field(
-            rdl_t, self.name.upper(), self.bits.lsb, self.bits.width()
-        )
-
-        swaccess = self.swaccess.to_systemrdl()
-        importer.assign_property(field, "sw", swaccess["sw"])
-        if "onread" in swaccess:
-            importer.assign_property(field, "onread", swaccess["onread"])
-        if "onwrite" in swaccess:
-            importer.assign_property(field, "onwrite", swaccess["onwrite"])
-
-        hwaccess = self.hwaccess.to_systemrdl()
-        importer.assign_property(field, "hw", hwaccess["hw"])
-
-        if self.resval is not None:
-            importer.assign_property(field, "reset", self.resval)
-
-        if self.hwqe:
-            importer.assign_property(field, "swmod", self.hwqe)
-
-        if self.desc:
-            importer.assign_property(field, "desc", self.desc)
-
-        return field

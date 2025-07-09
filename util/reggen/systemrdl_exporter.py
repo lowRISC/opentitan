@@ -11,6 +11,7 @@ from typing import TextIO
 from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
 from reggen.register import Register
+from reggen.field import Field
 from reggen.exporter import Exporter
 
 import systemrdl.component
@@ -22,6 +23,39 @@ from peakrdl_systemrdl import exporter
 
 
 @dataclass
+class Field2Systemrdl:
+    inner: Field
+    importer: RDLImporter
+
+    def export(self) -> systemrdl.component.Field:
+        rdl_t = self.importer.create_field_definition(self.inner.name)
+        field = self.importer.instantiate_field(
+            rdl_t, self.inner.name.upper(), self.inner.bits.lsb, self.inner.bits.width()
+        )
+
+        swaccess = self.inner.swaccess.to_systemrdl()
+        self.importer.assign_property(field, "sw", swaccess["sw"])
+        if "onread" in swaccess:
+            self.importer.assign_property(field, "onread", swaccess["onread"])
+        if "onwrite" in swaccess:
+            self.importer.assign_property(field, "onwrite", swaccess["onwrite"])
+
+        hwaccess = self.inner.hwaccess.to_systemrdl()
+        self.importer.assign_property(field, "hw", hwaccess["hw"])
+
+        if self.inner.resval is not None:
+            self.importer.assign_property(field, "reset", self.inner.resval)
+
+        if self.inner.hwqe:
+            self.importer.assign_property(field, "swmod", self.inner.hwqe)
+
+        if self.inner.desc:
+            self.importer.assign_property(field, "desc", self.inner.desc)
+
+        return field
+
+
+@dataclass
 class Register2Systemrdl:
     inner: Register
     importer: RDLImporter
@@ -29,7 +63,7 @@ class Register2Systemrdl:
     def export(self) -> systemrdl.component.Reg:
         rdl_t = self.importer.create_reg_definition(self.inner.name)
         for rfield in self.inner.fields:
-            self.importer.add_child(rdl_t, rfield.to_systemrdl(self.importer))
+            self.importer.add_child(rdl_t, Field2Systemrdl(rfield, self.importer).export())
 
         return self.importer.instantiate_reg(rdl_t, self.inner.name, self.inner.offset)
 
