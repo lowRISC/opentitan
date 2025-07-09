@@ -15,6 +15,7 @@ from reggen.window import Window
 from reggen.field import Field
 from reggen.access import SWAccess, SwAccess, HWAccess, HwAccess
 from reggen.exporter import Exporter
+from reggen.systemrdl.udp import register_udps
 
 import systemrdl.component
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
@@ -73,6 +74,11 @@ class Field2Systemrdl:
     inner: Field
     importer: RDLImporter
 
+    def _get_mubi_name(self) -> str:
+        alignment = 4
+        aligned_width = (self.inner.bits.width() + alignment - 1) & ~(alignment - 1)
+        return f"MultiBitBool{aligned_width}"
+
     def export(self) -> systemrdl.component.Field:
         rdl_t = self.importer.create_field_definition(self.inner.name)
         field = self.importer.instantiate_field(
@@ -97,6 +103,11 @@ class Field2Systemrdl:
 
         if self.inner.desc:
             self.importer.assign_property(field, "desc", self.inner.desc)
+
+        if self.inner.mubi:
+            mubi_enum_name = self._get_mubi_name()
+            enum = self.importer.compiler.namespace.lookup_type(mubi_enum_name)
+            self.importer.assign_property(field, "encode", enum)
 
         return field
 
@@ -185,6 +196,8 @@ class IpBlock2Systemrdl:
 class SystemrdlExporter(Exporter):
     def export(self, outfile: TextIO) -> int:
         comp = RDLCompiler()
+        register_udps(comp)
+
         imp = RDLImporter(comp)
         imp.default_src_ref = FileSourceRef(outfile.name)
 
