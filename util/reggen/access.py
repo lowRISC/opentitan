@@ -9,8 +9,6 @@ from enum import Enum
 
 from reggen.lib import check_str
 
-from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
-
 
 class JsonEnum(Enum):
     def for_json(x) -> str:
@@ -72,22 +70,13 @@ SWACCESS_PERMITTED = {
 }
 # yapf: enable
 
+
 # hwaccess permitted values
 HWACCESS_PERMITTED = {
     "hro": ("Read Only", HwAccess.HRO),
     "hrw": ("Read/Write", HwAccess.HRW),
     "hwo": ("Write Only", HwAccess.HWO),
     "none": ("No Access Needed", HwAccess.NONE),
-}
-
-# Maps reggen hardware access property to SystemRDL properties. Each line in this table is
-# a set of RDL properties where:
-#    hw: Hardware read and write access
-HWACCESS_RDL_MAP = {
-    HwAccess.HRO: {"hw": AccessType.r},
-    HwAccess.HRW: {"hw": AccessType.rw},
-    HwAccess.HWO: {"hw": AccessType.w},
-    HwAccess.NONE: {"hw": AccessType.rw},
 }
 
 
@@ -163,9 +152,6 @@ class HWAccess:
 
     def allows_write(self) -> bool:
         return self.key in ["hrw", "hwo"]
-
-    def to_systemrdl(self) -> dict[str, object]:
-        return HWACCESS_RDL_MAP[self.value[1]]
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, HWAccess):

@@ -12,7 +12,7 @@ from reggen.ip_block import IpBlock
 from reggen.reg_block import RegBlock
 from reggen.register import Register
 from reggen.field import Field
-from reggen.access import SWAccess, SwAccess
+from reggen.access import SWAccess, SwAccess, HWAccess, HwAccess
 from reggen.exporter import Exporter
 
 import systemrdl.component
@@ -22,6 +22,24 @@ from systemrdl.importer import RDLImporter
 from systemrdl.component import Addrmap
 from systemrdl.rdltypes import AccessType, OnReadType, OnWriteType  # type: ignore[attr-defined]
 from peakrdl_systemrdl import exporter
+
+
+@dataclass
+class HWAccess2Systemrdl:
+    inner: HWAccess
+
+    # Maps reggen hardware access property to SystemRDL properties. Each line in this table is
+    # a set of RDL properties where:
+    #    hw: Hardware read and write access
+    MAP = {
+        HwAccess.HRO: {"hw": AccessType.r},
+        HwAccess.HRW: {"hw": AccessType.rw},
+        HwAccess.HWO: {"hw": AccessType.w},
+        HwAccess.NONE: {"hw": AccessType.rw},
+    }
+
+    def export(self) -> dict[str, object]:
+        return self.MAP[self.inner.value[1]]
 
 
 @dataclass
@@ -67,7 +85,7 @@ class Field2Systemrdl:
         if "onwrite" in swaccess:
             self.importer.assign_property(field, "onwrite", swaccess["onwrite"])
 
-        hwaccess = self.inner.hwaccess.to_systemrdl()
+        hwaccess = HWAccess2Systemrdl(self.inner.hwaccess).export()
         self.importer.assign_property(field, "hw", hwaccess["hw"])
 
         if self.inner.resval is not None:
