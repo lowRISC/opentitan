@@ -10,14 +10,59 @@ module ${module_instance_name}_gateway #(
   input clk_i,
   input rst_ni,
 
+  // Incoming interrupt requests from the interrupt sources.
   input [N_SOURCE-1:0] src_i,
-  input [N_SOURCE-1:0] le_i,      // Level0 Edge1
 
-  input [N_SOURCE-1:0] claim_i, // $onehot0(claim_i)
-  input [N_SOURCE-1:0] complete_i, // $onehot0(complete_i)
+  // Control whether each interrupt is level or edge triggered. It is considered level triggered if
+  // its bit of le_i is zero and edge triggered if the bit is 1.
+  input [N_SOURCE-1:0] le_i,
 
+  // Interrupts being claimed by a target. This should be onehot0 (so only one interrupt can be
+  // claimed at once).
+  input [N_SOURCE-1:0] claim_i,
+
+  // Interrupts being marked complete by a target. This should be onehot0 (so only one interrupt can
+  // be claimed at once). It has no effect on an interrupt that has not already been claimed.
+  input [N_SOURCE-1:0] complete_i,
+
+  // The "interrupt pending" flag. If a bit of ip_o is true, the target should be notified that the
+  // interrupt needs handling.
   output logic [N_SOURCE-1:0] ip_o
 );
+
+  // Interrupt handling should look like the following script:
+  //
+  //   1. An interrupt starts neither active nor pending (so the relevant bits of ia and ip_o are
+  //      zero).
+  //
+  //   2. The interrupt source asserts the interrupt through src_i. If le_i requests edge
+  //      triggering, this requires a posedge on src_i.
+  //
+  //   3. The gateway sets the ip_o flag to tell the target that the interrupt is pending.
+  //
+  //   4. The target claims the interrupt, which appears as claim_i being set.
+  //
+  //   5. The gateway clears the ip_o flag, but remembers that the interrupt is being handled. As
+  //      such, further changes in src_i will not cause a new (overlapping) interrupt.
+  //
+  //   6. The target finishes handling the interrupt and sets complete_i.
+  //
+  //   7. The gateway will now allow changes in src_i to cause the interrupt to become pending
+  //      again.
+  //
+  // This is translated into hardware signals as follows:
+  //
+  //   - The interrupt assertion in src_i is detected with the "set" signal. This enables posedge
+  //     detection if le_i is true for the interrupt.
+  //
+  //   - Once the interrupt is asserted, it is marked pending in a bit of ip_o. It is also marked
+  //     "active" (which implies the target hasn't yet got as far as completion) by setting a bit of
+  //     the ia signal.
+  //
+  //   - When the target claims the interrupt, the bit in ip_o is cleared, but the the bit in ia
+  //     stays high.
+  //
+  //   - Finally, when the target completes the interrupt, the bit in ia is cleared.
 
   logic [N_SOURCE-1:0] ia;    // Interrupt Active
 
