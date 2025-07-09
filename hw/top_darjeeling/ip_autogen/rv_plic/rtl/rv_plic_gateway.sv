@@ -103,4 +103,8 @@ module rv_plic_gateway #(
     end
   end
 
+  // Check the claim_i and complete_i input ports are being driven with onehot0 values.
+  `ASSERT(ClaimOneHot0_A,    $onehot0(claim_i))
+  `ASSERT(CompleteOneHot0_A, $onehot0(complete_i))
+
 endmodule
