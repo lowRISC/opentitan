@@ -37,6 +37,10 @@ on:
         default: "//... @manufacturer_test_hooks//..."
         type: string
         description: Bazel target(s) to look for tests in
+      add_default_filters:
+        default: true
+        type: boolean
+        description: Include additional test filters for "manual", "broken", and "skip_in_ci" tests.
 
 jobs:
   fpga:
@@ -68,10 +72,15 @@ jobs:
           . util/build_consts.sh
           module load "xilinx/vivado/${{ inputs.vivado_version }}"
 
+          tag_filters="${{ inputs.tag_filters }}"
+          if ${{ inputs.add_default_filters }}; then
+            tag_filters+=",-manual,-broken,-skip_in_ci"
+          fi
+
           # Execute a query to find all targets that match the test tags and store them in a file.
           ci/scripts/run-bazel-test-query.sh \
             target_pattern_file.txt \
-            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            "$tag_filters" \
             ${{ inputs.targets }}
 
           # Run FPGA tests
