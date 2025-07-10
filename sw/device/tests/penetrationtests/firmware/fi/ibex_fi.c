@@ -145,6 +145,10 @@ const uint32_t ref_values[kNumRefValues] = {
     0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
     0xFEEDFACE, 0xFEEEFEEE};
 
+// variables to hold register values
+uint32_t registers_saved[IBEXFI_NUM_REGS];
+uint32_t registers_dumped[IBEXFI_NUM_REGS];
+
 /**
  * Initialize the register file with the ref_values.
  *
@@ -333,15 +337,15 @@ OT_ALWAYS_INLINE void restore_all_regs(uint32_t buffer[]) {
 
 // Save the current register file content and initialize it with pre-defined
 // values.
-#define INIT_REGISTER_FILE                         \
-  uint32_t registers_saved[IBEXFI_NUM_REGS] = {0}; \
-  save_all_regs(registers_saved);                  \
-  init_reg_ref_values();                           \
+#define INIT_REGISTER_FILE                              \
+  memset(registers_saved, 0, sizeof(registers_dumped)); \
+  save_all_regs(registers_saved);                       \
+  init_reg_ref_values();                                \
   uint32_t registers_dumped[IBEXFI_NUM_REGS];
 
 // Init the temporary registers with reference values.
-#define INIT_TMP_REGISTER_FILE                      \
-  uint32_t registers_dumped[IBEXFI_NUM_REGS] = {0}; \
+#define INIT_TMP_REGISTER_FILE                           \
+  memset(registers_dumped, 0, sizeof(registers_dumped)); \
   init_tmp_reg_ref_values();
 
 // Save the current register file content and restore it wit the saved
@@ -1290,48 +1294,13 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // Dump the register file after the FI trigger window.
   DUMP_TMP_REGISTER_FILE
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
-
-  // Read ERR_STATUS register.
-  dif_rv_core_ibex_error_status_t codes;
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-
-  // Generate the test response.
-  ibex_fi_faulty_data_t uj_test_output_1;
-  // Return errors and alerts.
-  uj_test_output_1.err_status = codes;
-  memcpy(uj_test_output_1.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  memcpy(uj_test_output_1.ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
-  // Preset buffers to 0.
-  memset(uj_test_output_1.data_faulty, false,
-         sizeof(uj_test_output_1.data_faulty));
-  memset(uj_test_output_1.data, 0, sizeof(uj_test_output_1.data));
-  memset(uj_test_output_1.registers, 0, sizeof(uj_test_output_1.registers));
-  // Return register file dump back to host.
-  memcpy(uj_test_output_1.registers, registers_dumped,
-         sizeof(registers_dumped));
-  // Check the content of x5, x6, x12-x17, x28-x31.
-  size_t compare_regs[12] = {kRegX5,  kRegX6,  kRegX12, kRegX13,
-                             kRegX14, kRegX15, kRegX16, kRegX17,
-                             kRegX28, kRegX29, kRegX30, kRegX31};
-  size_t expected_values[12] = {0xaf, 0xaf, 0xa0, 0x0f, 0x01, 0x03,
-                                0x0a, 0x1c, 0xa2, 0x05, 0xc4, 0x07};
-  for (size_t it = 0; it < 12; it++) {
-    if (registers_dumped[compare_regs[it]] != expected_values[it]) {
-      // If there is a mismatch, set data_faulty to true and return the
-      // faulty value.
-      uj_test_output_1.data_faulty[it] = true;
-      uj_test_output_1.data[it] = registers_dumped[compare_regs[it]];
-    }
-  }
+  uint32_t registers_dumped_test_1[IBEXFI_NUM_REGS];
+  memcpy(registers_dumped_test_1, registers_dumped, sizeof(registers_dumped));
 
   //////////////// TEST 2
 
-  uint32_t counter = 0;
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
 
   asm volatile("addi x5, x0, 0");
   asm volatile("addi x6, x0, 0");
@@ -1346,6 +1315,8 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   asm volatile("addi x29, x0, 0");
   asm volatile("addi x30, x0, 0");
   asm volatile("addi x31, x0, 0");
+
+  uint32_t counter = 0;
 
   // FI code target.
   PENTEST_ASM_TRIGGER_HIGH
@@ -1370,28 +1341,13 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // Dump the register file after the FI trigger window.
   DUMP_TMP_REGISTER_FILE
 
-  // Get registered alerts from alert handler.
-  reg_alerts = pentest_get_triggered_alerts();
-  // Get fatal and recoverable AST alerts from sensor controller.
-  sensor_alerts = pentest_get_sensor_alerts();
-
-  // Read ERR_STATUS register.
-  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-
-  ibex_fi_test_result_t uj_test_output_2;
-  memset(uj_test_output_2.registers, 0, sizeof(uj_test_output_2.registers));
-  // Return register file dump back to host.
-  memcpy(uj_test_output_2.registers, registers_dumped,
-         sizeof(registers_dumped));
-  // Return counter back to host.
-  uj_test_output_2.result = counter;
-  // Return errors and alerts.
-  uj_test_output_2.err_status = codes;
-  memcpy(uj_test_output_2.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  memcpy(uj_test_output_2.ast_alerts, sensor_alerts.alerts,
-         sizeof(sensor_alerts.alerts));
+  uint32_t registers_dumped_test_2[IBEXFI_NUM_REGS];
+  memcpy(registers_dumped_test_2, registers_dumped, sizeof(registers_dumped));
 
   ////////// TEST 3
+
+  // Initialize the register file before the FI trigger window.
+  INIT_TMP_REGISTER_FILE
 
   // Init x5 register we are using for the increment.
   asm volatile(INITX5);
@@ -1432,33 +1388,79 @@ status_t handle_ibex_fi_char_combi(ujson_t *uj) __attribute__((optnone)) {
   // Dump the register file after the FI trigger window.
   DUMP_TMP_REGISTER_FILE
 
+  uint32_t registers_dumped_test_3[IBEXFI_NUM_REGS];
+  memcpy(registers_dumped_test_3, registers_dumped, sizeof(registers_dumped));
+
   // Get registered alerts from alert handler.
   reg_alerts = pentest_get_triggered_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
-  sensor_alerts = pentest_get_sensor_alerts();
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  dif_rv_core_ibex_error_status_t codes;
 
   // Read ERR_STATUS register.
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
-  // Return result and registers back to host.
-  ibex_fi_test_result_t uj_test_output_3;
-  memset(uj_test_output_3.registers, 0, sizeof(uj_test_output_3.registers));
-  // Return register file dump back to host.
-  memcpy(uj_test_output_3.registers, registers_dumped,
-         sizeof(registers_dumped));
-  // Return x5 back to host.
-  uj_test_output_3.result = registers_dumped[kRegX5];
+  ibex_fi_combi_data_t uj_test_output;
 
-  // Send loop counters & ERR_STATUS to host.
-  uj_test_output_3.err_status = codes;
-  memcpy(uj_test_output_3.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  memcpy(uj_test_output_3.ast_alerts, sensor_alerts.alerts,
+  // Return errors and alerts.
+  uj_test_output.err_status = codes;
+  memcpy(uj_test_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_test_output.ast_alerts, sensor_alerts.alerts,
          sizeof(sensor_alerts.alerts));
 
-  // Send over all responses
-  RESP_OK(ujson_serialize_ibex_fi_faulty_data_t, uj, &uj_test_output_1);
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_test_output_2);
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_test_output_3);
+  // Return the results for the first test.
+  // Preset buffers to 0.
+  memset(uj_test_output.data_faulty_test_1, false,
+         sizeof(uj_test_output.data_faulty_test_1));
+  memset(uj_test_output.data_test_1, 0, sizeof(uj_test_output.data_test_1));
+  memset(uj_test_output.registers_test_1, 0,
+         sizeof(uj_test_output.registers_test_1));
+  // Return register file from the first test dump back to host.
+  memcpy(uj_test_output.registers_test_1, registers_dumped_test_1,
+         sizeof(registers_dumped_test_1));
+  // Check the content of x5, x6, x12-x17, x28-x31.
+  size_t compare_regs[12] = {kRegX5,  kRegX6,  kRegX12, kRegX13,
+                             kRegX14, kRegX15, kRegX16, kRegX17,
+                             kRegX28, kRegX29, kRegX30, kRegX31};
+  size_t expected_values[12] = {0xaf, 0xaf, 0xa0, 0x0f, 0x01, 0x03,
+                                0x0a, 0x1c, 0xa2, 0x05, 0xc4, 0x07};
+  for (size_t it = 0; it < 12; it++) {
+    if (registers_dumped_test_1[compare_regs[it]] != expected_values[it]) {
+      // If there is a mismatch, set data_faulty to true and return the
+      // faulty value.
+      uj_test_output.data_faulty_test_1[it] = true;
+      uj_test_output.data_test_1[it] =
+          registers_dumped_test_1[compare_regs[it]];
+    }
+  }
+
+  // Return the results from the second test.
+  memset(uj_test_output.registers_test_2, 0,
+         sizeof(uj_test_output.registers_test_2));
+  // Return register file dump back to host.
+  memcpy(uj_test_output.registers_test_2, registers_dumped_test_2,
+         sizeof(registers_dumped_test_2));
+  // Return counter back to host.
+  uj_test_output.result_test_2 = counter;
+
+  // Return the results from the third test.
+  // Return result and registers back to host.
+  memset(uj_test_output.registers_test_3, 0,
+         sizeof(uj_test_output.registers_test_3));
+  // Return register file dump back to host.
+  memcpy(uj_test_output.registers_test_3, registers_dumped_test_3,
+         sizeof(registers_dumped_test_3));
+  // Return x5 back to host.
+  uj_test_output.result_test_3 = registers_dumped_test_3[kRegX5];
+  // Send loop counters & ERR_STATUS to host.
+  uj_test_output.err_status = codes;
+  memcpy(uj_test_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  memcpy(uj_test_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  // Send over the response
+  RESP_OK(ujson_serialize_ibex_fi_combi_data_t, uj, &uj_test_output);
 
   return OK_STATUS();
 }
