@@ -46,6 +46,7 @@ cc_library(
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",

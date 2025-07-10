@@ -63,6 +63,9 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
       uj_alert_data.signals, uj_alert_data.duration_cycles,
       uj_alert_data.ping_timeout);
 
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
