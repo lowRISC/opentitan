@@ -60,6 +60,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymAesIn, cryptolib_sca_sym_aes_in_t, CRYPTOLIBSC
 #define CRYPTOLIBSCASYM_AES_OUT(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymAesOut, cryptolib_sca_sym_aes_out_t, CRYPTOLIBSCASYM_AES_OUT);
 
@@ -77,6 +78,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymCmacIn, cryptolib_sca_sym_cmac_in_t, CRYPTOLIB
 #define CRYPTOLIBSCASYM_CMAC_OUT(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymCmacOut, cryptolib_sca_sym_cmac_out_t, CRYPTOLIBSCASYM_CMAC_OUT);
 
@@ -98,6 +100,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymGcmIn, cryptolib_sca_sym_gcm_in_t, CRYPTOLIBSC
     field(data_len, uint32_t) \
     field(tag, uint8_t, AES_CMD_MAX_MSG_BYTES) \
     field(tag_len, uint32_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymGcmOut, cryptolib_sca_sym_gcm_out_t, CRYPTOLIBSCASYM_GCM_OUT);
 
@@ -118,6 +121,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymTdesIn, cryptolib_sca_sym_tdes_in_t, CRYPTOLIB
 #define CRYPTOLIBSCASYM_TDES_OUT(field, string) \
     field(data, uint8_t, TDES_CMD_MAX_MSG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymTdesOut, cryptolib_sca_sym_tdes_out_t, CRYPTOLIBSCASYM_TDES_OUT);
 
@@ -136,6 +140,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymHmacIn, cryptolib_sca_sym_hmac_in_t, CRYPTOLIB
 #define CRYPTOLIBSCASYM_HMAC_OUT(field, string) \
     field(data, uint8_t, HMAC_CMD_MAX_TAG_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymHmacOut, cryptolib_sca_sym_hmac_out_t, CRYPTOLIBSCASYM_HMAC_OUT);
 
@@ -153,6 +158,7 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgIn, cryptolib_sca_sym_drbg_in_t, CRYPTOLIB
 #define CRYPTOLIBSCASYM_DRBG_OUT(field, string) \
     field(data, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
     field(data_len, size_t) \
+    field(status, size_t) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgOut, cryptolib_sca_sym_drbg_out_t, CRYPTOLIBSCASYM_DRBG_OUT);
 
