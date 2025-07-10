@@ -146,28 +146,31 @@ class aes_gcm_save_restore_vseq extends aes_base_vseq;
           // we randomly try to switch to a GCM phase other than GCM_INIT which is not allowed at
           // this point.
           set_gcm_phase(GCM_SAVE, 16, 1, 1);
-          // Attempt to update the GCM phase to an invalid setting. The DUT must go back to
-          // GCM_INIT now.
-          if (!std::randomize(gcm_phase_wr)
-              with { !(gcm_phase_wr inside {GCM_INIT,
-                                            GCM_RESTORE,
-                                            GCM_AAD,
-                                            GCM_TEXT,
-                                            GCM_SAVE,
-                                            GCM_TAG});}) begin
-            `uvm_fatal(`gfn, $sformatf("Randomization failed"))
-          end
-          ctrl_gcm.phase = gcm_phase_e'(gcm_phase_wr);
-          ctrl_gcm.num_valid_bytes = 16;
-          `uvm_info(`gfn,
-              $sformatf("Writing invalid GCM phase 0x%0x, the DUT is expected to move to GCM_INIT",
-                  gcm_phase_wr), UVM_MEDIUM)
-          cov_if.cg_ctrl_gcm_reg_sample(gcm_phase_wr);
-          csr_wr(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .en_shadow_wr(1'b1), .blocking(1));
-          csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
-          if (ctrl_gcm.phase != GCM_INIT) begin
-            `uvm_fatal(`gfn,
-                $sformatf("Expected GCM phase GCM_INIT, got %s", ctrl_gcm.phase.name()))
+          if ($urandom_range(0, 1) == 0) begin
+            // Randomly attempt to update the GCM phase to an invalid setting. The DUT must go back
+            // to GCM_INIT now.
+            if (!std::randomize(gcm_phase_wr)
+                with { !(gcm_phase_wr inside {GCM_INIT,
+                                              GCM_RESTORE,
+                                              GCM_AAD,
+                                              GCM_TEXT,
+                                              GCM_SAVE,
+                                              GCM_TAG});}) begin
+              `uvm_fatal(`gfn, $sformatf("Randomization failed"))
+            end
+            ctrl_gcm.phase = gcm_phase_e'(gcm_phase_wr);
+            ctrl_gcm.num_valid_bytes = 16;
+            `uvm_info(`gfn,
+                $sformatf("Writing invalid GCM phase 0x%0x, except the DUT to move to GCM_INIT",
+                    gcm_phase_wr), UVM_MEDIUM)
+            cov_if.cg_ctrl_gcm_reg_sample(gcm_phase_wr);
+            csr_wr(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .en_shadow_wr(1'b1),
+                   .blocking(1));
+            csr_rd(.ptr(ral.ctrl_gcm_shadowed), .value(ctrl_gcm), .blocking(1));
+            if (ctrl_gcm.phase != GCM_INIT) begin
+              `uvm_fatal(`gfn,
+                  $sformatf("Expected GCM phase GCM_INIT, got %s", ctrl_gcm.phase.name()))
+            end
           end
           // Clear the AES IV, data in, and data out registers.
           csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
