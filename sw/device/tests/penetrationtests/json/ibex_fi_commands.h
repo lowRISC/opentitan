@@ -123,6 +123,23 @@ UJSON_SERDE_STRUCT(IbexFiFaultyAddressData, ibex_fi_faulty_addresses_data_t, IBE
     field(ast_alerts, uint32_t, 2)
 UJSON_SERDE_STRUCT(IbexFiRfDump, ibex_fi_rf_dump_t, IBEXFI_RF_DUMP);
 
+#define IBEXFI_FLASH_REGION(field, string) \
+    field(flash_region, uint32_t)
+UJSON_SERDE_STRUCT(IbexFiFlashRegion, ibex_fi_flash_region_t, IBEXFI_FLASH_REGION);
+
+#define IBEXFI_COMBI_DATA(field, string) \
+    field(registers_test_1, uint32_t, IBEXFI_NUM_REGS) \
+    field(data_faulty_test_1, bool, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(data_test_1, uint32_t, IBEXFI_MAX_FAULTY_ADDRESSES_DATA) \
+    field(registers_test_2, uint32_t, IBEXFI_NUM_REGS) \
+    field(result_test_2, uint32_t) \
+    field(registers_test_3, uint32_t, IBEXFI_NUM_REGS) \
+    field(result_test_3, uint32_t) \
+    field(err_status, uint32_t) \
+    field(alerts, uint32_t, 3) \
+    field(ast_alerts, uint32_t, 2)
+UJSON_SERDE_STRUCT(IbexFiCombiData, ibex_fi_combi_data_t, IBEXFI_COMBI_DATA);
+
 // clang-format on
 
 #ifdef __cplusplus

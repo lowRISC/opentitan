@@ -168,9 +168,7 @@
     "test_case_id": 32,
     "command": "CharCombi",
     "expected_output": [
-      "{\"data_faulty\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}",
-      "{\"result\":13,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}",
-      "{\"result\":15,\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
+      "{\"data_faulty_test_1\":[false,false,false,false,false,false,false,false,false,false,false,false,false],\"data_test_1\":[0,0,0,0,0,0,0,0,0,0,0,0,0],\"result_test_2\":13,\"result_test_3\":15,\"registers_test_1\":[0,0,0,0,0,175,175,0,0,0,0,0,160,15,1,3,10,28,0,0,0,0,0,0,0,0,0,0,162,5,196,7],\"registers_test_2\":[0,0,0,0,0,1,2,3,0,0,0,0,4,5,6,7,8,9,0,0,0,0,0,0,0,0,0,0,10,11,12,13],\"registers_test_3\":[0,0,0,0,0,15,3131746989,3134333474,0,0,0,0,3405697037,3405709037,3435973836,3452816845,219540062,3735883980,0,0,0,0,0,0,0,0,0,0,4261281277,4276215469,4277009102,4277075694],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"
     ]
   },
   {
