@@ -25,11 +25,11 @@ StepRes = Tuple[Optional[OTBNInsn], List[Trace]]
 class OTBNSim:
     def __init__(self) -> None:
         self.state = OTBNState()
-        self.program = []  # type: List[OTBNInsn]
-        self.loop_warps = {}  # type: LoopWarps
-        self.stats = None  # type: Optional[ExecutionStats]
-        self._execute_generator = None  # type: Optional[Iterator[None]]
-        self._next_insn = None  # type: Optional[OTBNInsn]
+        self.program: List[OTBNInsn] = []
+        self.loop_warps: LoopWarps = {}
+        self.stats: Optional[ExecutionStats] = None
+        self._execute_generator: Optional[Iterator[None]] = None
+        self._next_insn: Optional[OTBNInsn] = None
 
     def load_program(self, program: List[OTBNInsn]) -> None:
         self.program = program.copy()
@@ -137,12 +137,12 @@ class OTBNSim:
 
         return changes
 
-    def _delayed_insn_cnt_zero(self) -> None:
+    def _delayed_insn_cnt_zero(self, delay_if_locking: int) -> None:
         '''Zero INSN_CNT if we are in a wiping state and are going to lock
         after wipe.
 
-        This is delayed by a cycle (using the zero_insn_cnt_next flag) to match
-        the timing in the RTL.
+        This is delayed by delay_if_locking (using state.time_to_insn_cnt_zero)
+        to match the timing in the RTL.
         '''
         assert self.state.get_fsm_state() in [FsmState.PRE_WIPE,
                                               FsmState.WIPING]
@@ -156,12 +156,23 @@ class OTBNSim:
         if self.state.ext_regs.read('INSN_CNT', True) == 0:
             return
 
-        if self.state.zero_insn_cnt_next or not self.state.lock_immediately:
+        # In this case, we know we want to zero INSN_CNT. There might be an
+        # operation to do so that has already been enqueued. If not (or if it
+        # would be waiting longer than delay_if_locking), switch to a new
+        # counter.
+        if self.state.time_to_insn_cnt_zero is None:
+            self.state.time_to_insn_cnt_zero = delay_if_locking
+        count = min(self.state.time_to_insn_cnt_zero, delay_if_locking)
+
+        if count == 0:
+            # If _time_to_insn_cnt_zero is now zero, it means that this is the
+            # cycle to update insn_cnt.
             self.state.ext_regs.write('INSN_CNT', 0, True)
-            self.state.zero_insn_cnt_next = False
-        if self.state.lock_immediately:
-            # Zero INSN_CNT in the *next* cycle to match RTL control flow.
-            self.state.zero_insn_cnt_next = True
+            self.state.time_to_insn_cnt_zero = None
+        else:
+            # If _time_to_insn_cnt_zero isn't zero, we should decrement it
+            # (maybe we'll update insn_cnt next cycle).
+            self.state.time_to_insn_cnt_zero = count - 1
 
     def step(self, verbose: bool) -> StepRes:
         '''Run a single cycle.
@@ -215,7 +226,7 @@ class OTBNSim:
         # If we are IDLE and get an RMA request, we want to start a secure
         # wipe, which will eventually put us into the LOCKED state.
         if self.state.rma_req == LcTx.ON and not is_locked:
-            self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
             self.state.set_fsm_state(FsmState.PRE_WIPE)
             self.state.lock_after_wipe = True
             self.state.wipe_rounds_done = 0
@@ -363,6 +374,20 @@ class OTBNSim:
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
         '''Step the simulation when waiting for a URND seed for wipe'''
 
+        # This is a bit of a hack to model a bug in the design where the STATUS
+        # register has a value of 0xff for a single cycle before it becomes
+        # BUSY_SEC_WIPE_INT.
+        #
+        # This happens when responding to an RMA request in _step_idle. If we
+        # update the register to be BUSY_SEC_WIPE_INT on each cycle (and the
+        # first one we are here in particular!), we will get analogous
+        # behaviour.
+        #
+        # TODO(#23903): Fix the bug in the design then drop this code (and
+        # change the STATUS value in _step_idle from LOCKED to
+        # BUSY_SEC_WIPE_INT).
+        self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+
         # If we get an RMA request before we've managed to run any rounds of
         # wiping then we are waiting for our first URND seed. The entropy
         # complex might not be up, so we don't want to wait for a seed. Handle
@@ -378,7 +403,7 @@ class OTBNSim:
             self.state.ext_regs.write('WIPE_START', 0, True)
 
         # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero()
+        self._delayed_insn_cnt_zero(0)
 
         if self.state.wsrs.URND.running:
             # Reflect wiping in STATUS register if it has not been updated yet.
@@ -418,7 +443,7 @@ class OTBNSim:
             self.state.lock_after_wipe = True
 
         # Zero INSN_CNT once if we're going to lock after wipe.
-        self._delayed_insn_cnt_zero()
+        self._delayed_insn_cnt_zero(1)
 
         if self.state.wipe_cycles == 1:
             # This is the penultimate clock cycle of a wipe round. We want to

@@ -39,7 +39,7 @@ class Reg:
         self._width = width
 
         self._uval = uval
-        self._next_uval = None  # type: Optional[int]
+        self._next_uval: Optional[int] = None
 
     def read_unsigned(self, backdoor: bool = False) -> int:
         return self._uval
@@ -99,7 +99,7 @@ class RegFile:
         self._name_pfx = name_pfx
         self._width = width
         self._registers = [Reg(self, i, width, 0) for i in range(depth)]
-        self._pending_writes = set()  # type: Set[int]
+        self._pending_writes: Set[int] = set()
 
     def mark_written(self, idx: int) -> None:
         '''Mark a register as having been written'''

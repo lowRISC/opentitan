@@ -129,8 +129,8 @@ class RGReg:
     def __init__(self, fields: List[RGField], double_flopped: bool):
         self.fields = fields
         self.double_flopped = double_flopped
-        self._changes = []  # type: List[ExtRegChange]
-        self._next_changes = []  # type: List[ExtRegChange]
+        self._changes: List[ExtRegChange] = []
+        self._next_changes: List[ExtRegChange] = []
 
     @staticmethod
     def from_register(reg: Register, double_flopped: bool) -> 'RGReg':
@@ -254,7 +254,7 @@ class OTBNExtRegs:
     def __init__(self) -> None:
         _, reg_block = load_registers()
 
-        self.regs = {}  # type: Dict[str, RGReg]
+        self.regs: Dict[str, RGReg] = {}
         self._dirty = 0
 
         assert isinstance(reg_block, RegBlock)
