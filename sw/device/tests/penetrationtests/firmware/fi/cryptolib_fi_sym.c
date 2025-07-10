@@ -47,6 +47,7 @@ status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj) {
   memset(uj_output.data, 0, AES_CMD_MAX_MSG_BYTES);
   uj_output.data_len = AES_CMD_MAX_MSG_BYTES;
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_sym_cmac_out_t, uj, &uj_output);
 
@@ -82,6 +83,7 @@ status_t handle_cryptolib_fi_sym_tdes(ujson_t *uj) {
   memset(uj_output.data, 0, TDES_CMD_MAX_MSG_BYTES);
   uj_output.data_len = TDES_CMD_MAX_MSG_BYTES;
   uj_output.cfg = 0;
+  uj_output.status = 0;
   /////////////// STUB END ///////////////
   RESP_OK(ujson_serialize_cryptolib_fi_sym_tdes_out_t, uj, &uj_output);
 
