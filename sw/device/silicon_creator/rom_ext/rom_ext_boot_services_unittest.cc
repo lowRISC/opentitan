@@ -310,6 +310,8 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
   boot_svc_msg.header.digest = hmac_digest_t{0x1234};
   boot_svc_msg.header.length = sizeof(boot_svc_ownership_unlock_req_t);
 
+  boot_svc_msg.ownership_unlock_req.din[0] = 0xdead;
+  boot_svc_msg.ownership_unlock_req.din[1] = 0xbeef;
   boot_svc_msg.ownership_unlock_req.unlock_mode = kBootSvcUnlockAbort;
 
   boot_data.ownership_state = kOwnershipStateUnlockedAny;
@@ -327,7 +329,11 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipUnlock) {
                        kUnlock, _, _, _, _))
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(mock_lifecycle_, DeviceId(_))
-      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){
+          0,
+          boot_svc_msg.ownership_unlock_req.din[0],
+          boot_svc_msg.ownership_unlock_req.din[1],
+      }));
 
   EXPECT_CALL(mock_rnd_, Uint32()).WillRepeatedly(Return(5));
 
@@ -353,6 +359,8 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
   boot_svc_msg.header.digest = hmac_digest_t{0x1234};
   boot_svc_msg.header.length = sizeof(boot_svc_ownership_activate_req_t);
 
+  boot_svc_msg.ownership_activate_req.din[0] = 0xdead;
+  boot_svc_msg.ownership_activate_req.din[1] = 0xbeef;
   boot_svc_msg.ownership_activate_req.erase_previous = 1;
   boot_svc_msg.ownership_activate_req.primary_bl0_slot = 0;
   boot_svc_msg.ownership_activate_req.nonce = {0x55555555, 0xAAAAAAAA};
@@ -380,7 +388,11 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
       .WillOnce(Return(kErrorOk));
 
   EXPECT_CALL(mock_lifecycle_, DeviceId(_))
-      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
+      .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){
+          0,
+          boot_svc_msg.ownership_activate_req.din[0],
+          boot_svc_msg.ownership_activate_req.din[1],
+      }));
 
   // Once the new owner page is determined to be valid, the page will be sealed.
   EXPECT_CALL(mock_ownership_key_, seal_page(1));
