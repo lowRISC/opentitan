@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
     files:
       - csr_utils_pkg.sv
+      - csr_base_seq.sv: {is_include_file: true}
       - csr_seq_lib.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
