@@ -270,7 +270,7 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
     m_csr_seq = csr_base_seq::type_id::create("m_csr_seq");
     m_csr_seq.models = models;
     m_csr_seq.external_checker = cfg.en_scb;
-    m_csr_seq.num_test_csrs = num_test_csrs;
+    m_csr_seq.max_num_test_csrs = num_test_csrs;
     m_csr_seq.start(null);
   endtask
 
