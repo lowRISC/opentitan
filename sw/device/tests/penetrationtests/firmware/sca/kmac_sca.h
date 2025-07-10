@@ -30,6 +30,7 @@ typedef enum kmac_sca_error {
 status_t handle_kmac_pentest_seed_lfsr(ujson_t *uj);
 status_t handle_kmac_sca_fixed_key_set(ujson_t *uj);
 status_t handle_kmac_sca_batch(ujson_t *uj);
+status_t handle_kmac_sca_batch_daisy_chain(ujson_t *uj);
 status_t handle_kmac_sca_single_absorb(ujson_t *uj);
 status_t handle_kmac_sca_set_key(ujson_t *uj);
 status_t handle_kmac_pentest_init(ujson_t *uj);
