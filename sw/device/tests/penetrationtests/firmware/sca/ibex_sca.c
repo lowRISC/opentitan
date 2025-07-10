@@ -179,6 +179,9 @@ status_t handle_ibex_pentest_init(ujson_t *uj) {
   // This is not used, but just set so it receives input,
   TRY(otbn_load_app(kOtbnAppP256Ecdsa));
 
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);

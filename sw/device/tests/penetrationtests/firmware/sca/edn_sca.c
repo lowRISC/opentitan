@@ -152,6 +152,9 @@ status_t handle_edn_sca_init(ujson_t *uj) {
   // reseed during the trigger window.
   TRY(pentest_configure_entropy_source_max_reseed_interval());
 
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
