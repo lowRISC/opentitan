@@ -135,13 +135,14 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status =
+  otcrypto_status_t status_out =
       otcrypto_aes(&key, iv, mode, op, input, padding, output);
   pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->data_len = padded_len_bytes;
-  uj_output->cfg = (size_t)status.value;
+  uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, output_buf, uj_output->data_len);
 
@@ -188,14 +189,15 @@ status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
   if (uj_input.trigger == 1) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status = otcrypto_drbg_generate(nonce, output);
+  otcrypto_status_t status_out = otcrypto_drbg_generate(nonce, output);
   if (uj_input.trigger == 1) {
     pentest_set_trigger_low();
   }
 
   // Return data back to host.
   uj_output->data_len = uj_input.entropy_len;
-  uj_output->cfg = (size_t)status.value;
+  uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
   memset(uj_output->data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(uj_output->data, output_data, uj_output->data_len);
 
@@ -291,12 +293,13 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status = otcrypto_aes_gcm_encrypt(
+  otcrypto_status_t status_out = otcrypto_aes_gcm_encrypt(
       &key, plaintext, iv, aad, tag_len, actual_ciphertext, actual_tag);
   pentest_set_trigger_low();
 
   // Return data back to host.
-  uj_output->cfg = (size_t)status.value;
+  uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
   // Ciphertext.
   uj_output->data_len = uj_input.data_len;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
@@ -380,12 +383,13 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status = otcrypto_hmac(&key, input_message, tag);
+  otcrypto_status_t status_out = otcrypto_hmac(&key, input_message, tag);
   pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->data_len = tag_bytes;
-  uj_output->cfg = (size_t)status.value;
+  uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
   memset(uj_output->data, 0, HMAC_CMD_MAX_TAG_BYTES);
   memcpy(uj_output->data, tag_buf, uj_output->data_len);
 
