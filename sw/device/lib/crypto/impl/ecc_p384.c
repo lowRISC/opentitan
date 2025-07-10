@@ -41,6 +41,29 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
                                                    verification_result);
 }
 
+otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t message_digest,
+    otcrypto_word32_buf_t signature) {
+  // Signature generation.
+  HARDENED_TRY(
+      otcrypto_ecdsa_p384_sign(private_key, message_digest, signature));
+
+  // Verify signature before releasing it.
+  otcrypto_const_word32_buf_t signature_check = {
+      .data = signature.data,
+      .len = signature.len,
+  };
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_ecdsa_p384_verify(
+      public_key, message_digest, signature_check, &verification_result));
+
+  // Trap if signature verification failed.
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_ecdh_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   HARDENED_TRY(otcrypto_ecdh_p384_keygen_async_start(private_key));
