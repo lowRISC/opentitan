@@ -97,7 +97,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
       .key_mode = key_mode,
       .key_length = uj_input.key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   // Create buffer to store key.
