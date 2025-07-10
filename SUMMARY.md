@@ -407,7 +407,10 @@
 
 # Software
 - [Introduction](./sw/README.md)
+
 - [Build Software](./sw/doc/build_software.md)
+  - [External dependencies](./third_party/README.md)
+  - [RISC-V toolchain](./toolchain/README.md)
 
 - [Device Software](./sw/device/README.md)
   - [Build & Test Rules](./rules/opentitan/README.md)

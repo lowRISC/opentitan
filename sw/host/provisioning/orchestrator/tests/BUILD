@@ -12,7 +12,7 @@ load(
     "orchestrator_cw340_test_settings_transition",
     "orchestrator_hyper310_test_settings_transition",
 )
-load("//third_party/python:requirements.bzl", "requirement")
+load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -76,10 +76,10 @@ sh_test(
     data = [
         ":orchestrator_hyper310_zip",
         "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
-        "@rules_python//python:current_py_toolchain",
+        "@python3",
     ],
     env = {
-        "PYTHON": "$(PYTHON3)",
+        "PYTHON": "$(location @python3//:python3)",
         "PACKAGE": "npcr12",
     },
     tags = [
@@ -88,7 +88,6 @@ sh_test(
         "hyper310",
         "manuf",
     ],
-    toolchains = ["@rules_python//python:current_py_toolchain"],
 )
 
 sh_test(
@@ -96,10 +95,10 @@ sh_test(
     srcs = ["e2e_multistage.sh"],
     data = [
         ":orchestrator_hyper310_zip",
-        "@rules_python//python:current_py_toolchain",
+        "@python3",
     ],
     env = {
-        "PYTHON": "$(PYTHON3)",
+        "PYTHON": "$(location @python3//:python3)",
     },
     tags = [
         "changes_otp",
@@ -107,7 +106,6 @@ sh_test(
         "hyper310",
         "manuf",
     ],
-    toolchains = ["@rules_python//python:current_py_toolchain"],
 )
 
 sh_test(
@@ -117,10 +115,10 @@ sh_test(
     data = [
         ":orchestrator_hyper310_zip",
         "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
-        "@rules_python//python:current_py_toolchain",
+        "@python3",
     ],
     env = {
-        "PYTHON": "$(PYTHON3)",
+        "PYTHON": "$(location @python3//:python3)",
         "PACKAGE": "npcr12",
     },
     tags = [
@@ -129,7 +127,6 @@ sh_test(
         "hyper310",
         "manuf",
     ],
-    toolchains = ["@rules_python//python:current_py_toolchain"],
 )
 
 [
@@ -139,11 +136,11 @@ sh_test(
         srcs = ["e2e.sh"],
         data = [
             ":orchestrator_{}_zip".format(fpga),
-            "@rules_python//python:current_py_toolchain",
+            "@python3",
             cfg["orchestrator_cfg"],
         ],
         env = {
-            "PYTHON": "$(PYTHON3)",
+            "PYTHON": "$(location @python3//:python3)",
             "SKU_CONFIG_PATH": "$(location {})".format(cfg["orchestrator_cfg"]),
             "FPGA": "{}".format(fpga),
         },
@@ -154,7 +151,6 @@ sh_test(
         ] + [fpga] + ([
             "manual",
         ] if cfg.get("offline", False) else []),
-        toolchains = ["@rules_python//python:current_py_toolchain"],
     )
     for sku, cfg in EARLGREY_SKUS.items()
     for fpga in [

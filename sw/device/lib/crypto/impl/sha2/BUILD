@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 
 cc_library(
     name = "sha256",
