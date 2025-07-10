@@ -39,9 +39,13 @@ cc_library(
 DIFS = {
     "adc_ctrl": {},
     "aes": {},
-    "alert_handler": {},
+    "alert_handler": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "aon_timer": {},
-    "clkmgr": {},
+    "clkmgr": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "csrng": {
         "deps": [":csrng_shared"],
     },
@@ -55,16 +59,22 @@ DIFS = {
     "hmac": {},
     "i2c": {},
     "keymgr": {},
-    "keymgr_dpe": {},
+    "keymgr_dpe": {
+        "no_ut": True,
+    },
     "kmac": {},
     "lc_ctrl": {},
     "mbx": {
         "deps": ["//sw/device/lib/base:abs_mmio"],
     },
     "otbn": {},
-    "otp_ctrl": {},
+    "otp_ctrl": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "pattgen": {},
-    "pinmux": {},
+    "pinmux": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "pwm": {},
     "pwrmgr": {
         "ut_target_compatible_with": opentitan_require_top("earlgrey"),
@@ -73,10 +83,16 @@ DIFS = {
     "rstmgr": {},
     "rv_core_ibex": {},
     "rv_dm": {},
-    "rv_plic": {},
+    "rv_plic": {
+        "ut_target_compatible_with": opentitan_require_top("earlgrey"),
+    },
     "rv_timer": {},
-    "soc_dbg_ctrl": {},
-    "soc_proxy": {},
+    "soc_dbg_ctrl": {
+        "no_ut": True,
+    },
+    "soc_proxy": {
+        "no_ut": True,
+    },
     "spi_device": {},
     "spi_host": {
         "ut_deps": ["//sw/device/lib/base:global_mock"],
@@ -125,6 +141,7 @@ DIFS = {
         ] + cfg.get("ut_deps", []),
     )
     for (ip, cfg) in DIFS.items()
+    if not cfg.get("no_ut", False)
 ]
 
 cc_library(
