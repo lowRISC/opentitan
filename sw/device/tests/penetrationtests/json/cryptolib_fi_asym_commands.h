@@ -170,6 +170,8 @@ UJSON_SERDE_STRUCT(CryptoLibFiAsymP256EcdhOut, cryptolib_fi_asym_p256_ecdh_out_t
 
 #define CRYPTOLIBFIASYM_P256_SIGN_IN(field, string) \
     field(scalar, uint8_t, P256_CMD_BYTES) \
+    field(pubx, uint8_t, P256_CMD_BYTES) \
+    field(puby, uint8_t, P256_CMD_BYTES) \
     field(message, uint8_t, P256_CMD_BYTES) \
     field(cfg, size_t) \
     field(trigger, size_t)
@@ -238,6 +240,8 @@ UJSON_SERDE_STRUCT(CryptoLibFiAsymP384EcdhOut, cryptolib_fi_asym_p384_ecdh_out_t
 
 #define CRYPTOLIBFIASYM_P384_SIGN_IN(field, string) \
     field(scalar, uint8_t, P384_CMD_BYTES) \
+    field(pubx, uint8_t, P384_CMD_BYTES) \
+    field(puby, uint8_t, P384_CMD_BYTES) \
     field(message, uint8_t, P384_CMD_BYTES) \
     field(cfg, size_t) \
     field(trigger, size_t)
