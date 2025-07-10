@@ -5,7 +5,6 @@
     "mode": "{\"fpga_mode\": 0}",
     "input": "{\"enable_icache\": true,\"enable_dummy_instr\": true,\"dummy_instr_count\": 3,\"enable_jittery_clock\": false,\"enable_sram_readback\": false}",
     "sensors": "{\"sensor_ctrl_enable\": true, \"sensor_ctrl_en_fatal\": [false, false, false, false, false, false, false, false, false, false, false]}",
-    "alerts":"{\"alert_classes\":[2,2,2,2,0,0,2,2,2,2,0,0,0,0,0,1,0,0,0,2,2,2,0,0,0,1,0,2,2,2,2,0,1,0,0,1,0,0,0,1,0,0,1,0,0,1,0,0,1,1,0,1,0,1,0,1,0,1,0,0,0,0,1,0,1], \"accumulation_threshold\": 2, \"signals\": [4294967295, 0, 2, 3], \"duration_cycles\": [0, 2400000,48,48], \"ping_timeout\": 1200}",
     "expected_output": [
       "{\"device_id\":[0,0,0,0,0,0,0,0],\"rom_digest\":[0,0,0,0,0,0,0,0],\"icache_en\":true,\"dummy_instr_en\":true,\"clock_jitter_locked\":false,\"clock_jitter_en\":false,\"sram_main_readback_locked\":false,\"sram_main_readback_en\":false,\"sram_ret_readback_locked\":false,\"sram_ret_readback_en\":false}",
       "{\"config_version\":1,\"sram_exec_mode\":0,\"ownership_key_alg\":0,\"update_mode\":0,\"min_security_version_bl0\":0,\"lock_constraint\":0}",
