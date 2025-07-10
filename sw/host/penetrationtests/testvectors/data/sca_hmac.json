@@ -33,5 +33,14 @@
     "input": "{\"num_iterations\":50}",
     "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
     "expected_output": ["{\"tag\":[123,85,194,131,222,60,217,26,56,173,239,45,80,10,109,185,213,248,123,244,64,116,98,36,78,163,186,244,73,168,5,175]}"]
+  },
+  {
+    "test_case_id": 5,
+    "command": "BatchDaisy",
+    "key": "{\"key\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "message": "{\"message\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]}",
+    "input": "{\"num_iterations\":50}",
+    "triggers": "{\"start_trigger\": false,\"msg_trigger\": false,\"process_trigger\": false,\"finish_trigger\": true}",
+    "expected_output": ["{\"tag\":[103,74,140,170,39,205,122,108,114,107,25,70,181,31,0,125,179,2,234,65,247,94,174,120,184,254,188,131,192,57,253,167]}"]
   }
 ]

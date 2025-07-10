@@ -213,6 +213,35 @@ status_t handle_hmac_sca_batch_random(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_hmac_sca_batch_daisy_chain(ujson_t *uj) {
+  penetrationtest_hmac_sca_key_t uj_key;
+  penetrationtest_hmac_sca_message_t uj_message;
+  penetrationtest_hmac_sca_num_it_t uj_it;
+  penetrationtest_hmac_sca_triggers_t uj_triggers;
+
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_key_t(uj, &uj_key));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_message_t(uj, &uj_message));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_num_it_t(uj, &uj_it));
+  TRY(ujson_deserialize_penetrationtest_hmac_sca_triggers_t(uj, &uj_triggers));
+
+  // Invoke HMAC for each data set.
+  uint32_t tag_buf[kTagLengthWord];
+  uint8_t message_buf[HMACSCA_CMD_MAX_MESSAGE_BYTES];
+  memcpy(message_buf, uj_message.message, sizeof(uj_message.message));
+  for (size_t it = 0; it < uj_it.num_iterations; it++) {
+    TRY(trigger_hmac(uj_key.key, message_buf, tag_buf, uj_triggers));
+    // Copy the output of the HMAC to the input
+    memcpy(message_buf, tag_buf, HMACSCA_CMD_MAX_MESSAGE_BYTES);
+  }
+
+  // Send the last tag to host via UART.
+  penetrationtest_hmac_sca_tag_t uj_tag;
+  memcpy(uj_tag.tag, tag_buf, kTagLength);
+  RESP_OK(ujson_serialize_penetrationtest_hmac_sca_tag_t, uj, &uj_tag);
+
+  return OK_STATUS();
+}
+
 status_t handle_hmac_sca_single(ujson_t *uj) {
   penetrationtest_hmac_sca_key_t uj_key;
   penetrationtest_hmac_sca_message_t uj_message;
@@ -252,6 +281,8 @@ status_t handle_hmac_sca(ujson_t *uj) {
       return handle_hmac_sca_batch_fvsr(uj);
     case kHmacScaSubcommandBatchRandom:
       return handle_hmac_sca_batch_random(uj);
+    case kHmacScaSubcommandBatchDaisy:
+      return handle_hmac_sca_batch_daisy_chain(uj);
     case kHmacScaSubcommandSingle:
       return handle_hmac_sca_single(uj);
     default:

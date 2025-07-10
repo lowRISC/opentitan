@@ -19,6 +19,7 @@ extern "C" {
     value(_, Init) \
     value(_, BatchFvsr) \
     value(_, BatchRandom) \
+    value(_, BatchDaisy) \
     value(_, Single)
 C_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(HmacScaSubcommand, hmac_sca_subcommand_t, HMACSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
