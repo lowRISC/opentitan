@@ -138,13 +138,13 @@ class aes_message_item extends uvm_sequence_item;
   constraint data_c {
     message_length inside { [message_len_min:message_len_max] };
     (message_length % 16) dist {0     :/ 1,
-                                [1:$] :/ 1};
+                                [1:$] :/ 2};
   }
 
   constraint aad_c {
     aad_length inside { [aad_len_min:aad_len_max] };
     (aad_length % 16) dist {0     :/ 1,
-                            [1:$] :/ 1};
+                            [1:$] :/ 2};
   }
 
   constraint has_config_error_c {
