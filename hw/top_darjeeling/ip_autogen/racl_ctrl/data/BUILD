@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["top_darjeeling_racl_ctrl.ipconfig.hjson"])
+
 filegroup(
     name = "doc_files",
     srcs = ["racl_ctrl.hjson"],
