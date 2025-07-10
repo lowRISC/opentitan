@@ -53,7 +53,7 @@ jobs:
           job-patterns: ${{ inputs.bitstream }}
 
       - name: Update hyperdebug firmware
-        if: inputs.interface == 'hyper310'
+        if: inputs.interface == 'hyper310' || inputs.interface == 'cw340'
         run: |
           ./bazelisk.sh run \
               //sw/host/opentitantool:opentitantool -- \
