@@ -15,7 +15,6 @@ required_tools=(
     isort
     flake8
     ninja
-    doxygen
 )
 
 optional_tools=(
