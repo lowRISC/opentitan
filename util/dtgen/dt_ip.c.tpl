@@ -47,9 +47,11 @@ static const ${helper.inst_dt_map.render_var_def(dt_array_name, helper.inst_dt_v
   })
 
 dt_${device_name}_t dt_${device_name}_from_instance_id(dt_instance_id_t inst_id) {
+% if helper.first_inst_id:
   if (inst_id >= ${helper.first_inst_id.as_c_enum()} && inst_id <= ${helper.last_inst_id.as_c_enum()}) {
     return (dt_${device_name}_t)(inst_id - ${helper.first_inst_id.as_c_enum()});
   }
+% endif
   return (dt_${device_name}_t)0;
 }
 
