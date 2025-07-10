@@ -270,6 +270,11 @@ def generate_ipgen(top: ConfigT, module: ConfigT, params: ParamsT,
     ipgen_render(module["template_type"], topname, params, out_path)
 
 
+def get_ipgen_params(module: ConfigT) -> ParamsT:
+    """Return ipgen params, if defined for this module"""
+    return deepcopy(module.get("ipgen_param", {}))
+
+
 def _get_alert_handler_params(top: ConfigT) -> ParamsT:
     """Returns parameters for alert_hander ipgen from top config."""
     # default values
@@ -327,8 +332,8 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
 
     n_esc_sev = module["param_decl"]["EscNumSeverities"]
     ping_cnt_dw = module["param_decl"]["EscPingCountWidth"]
-
-    return {
+    params = get_ipgen_params(module)
+    params.update({
         "module_instance_name": module["type"],
         "n_alerts": n_alerts,
         "esc_cnt_dw": esc_cnt_dw,
@@ -339,7 +344,8 @@ def _get_alert_handler_params(top: ConfigT) -> ParamsT:
         "ping_cnt_dw": ping_cnt_dw,
         "n_lpg": n_lpgs,
         "lpg_map": lpg_map,
-    }
+    })
+    return params
 
 
 def generate_alert_handler(top: ConfigT, module: ConfigT,
@@ -415,12 +421,14 @@ def _get_rv_plic_params(top: ConfigT, name: str) -> ParamsT:
     if num_targets < 1:
         log.warning(f"{name} specifies no targets, is it needed?")
 
-    return {
+    params = get_ipgen_params(module)
+    params.update({
         "module_instance_name": name,
         "src": num_srcs,
         "target": num_targets,
         "prio": 3,
-    }
+    })
+    return params
 
 
 def generate_plic(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -504,7 +512,10 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     log.info("n_dio_periph_out: %d" % n_dio_periph_out)
     log.info("n_dio_pads:       %d" % n_dio_pads)
 
-    return {
+    # Get the pinmux instance
+    pinmux_module = lib.find_module(top["module"], "pinmux")
+    params = get_ipgen_params(pinmux_module)
+    params.update({
         "n_wkup_detect": num_wkup_detect,
         "wkup_cnt_width": wkup_cnt_width,
         "n_mio_pads": n_mio_pads,
@@ -515,7 +526,8 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
-    }
+    })
+    return params
 
 
 def generate_pinmux(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -527,7 +539,9 @@ def generate_pinmux(top: ConfigT, module: ConfigT, out_path: Path) -> None:
 # generate clkmgr with ipgen
 def generate_clkmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
     log.info("Generating clkmgr with ipgen")
-    params = get_clkmgr_params(top)
+    clkmgr = lib.find_module(top["module"], "clkmgr")
+    params = get_ipgen_params(clkmgr)
+    params.update(get_clkmgr_params(top))
     log.info("clkmgr params:")
     for k, v in params.items():
         log.info(f"{k}: {v}")
@@ -565,7 +579,9 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
     assert isinstance(clocks, Clocks)
     src_clks = [obj.name for obj in clocks.srcs.values() if not obj.aon]
 
-    return {
+    pwrmgr = lib.find_module(top["module"], "pwrmgr")
+    params = get_ipgen_params(pwrmgr)
+    params.update({
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
         "NumRstReqs": n_rstreqs,
@@ -573,8 +589,9 @@ def _get_pwrmgr_params(top: ConfigT) -> ParamsT:
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
         "has_aon_clk": any(obj.aon for obj in clocks.srcs.values()),
-        "src_clks": src_clks,
-    }
+        "src_clks": src_clks
+    })
+    return params
 
 
 def generate_pwrmgr(top: ConfigT, module: ConfigT, out_path: Path) -> None:
@@ -624,7 +641,9 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
 
-    return {
+    rstmgr = lib.find_module(top["module"], "rstmgr")
+    params = get_ipgen_params(rstmgr)
+    params.update({
         "clk_freqs": clk_freqs,
         "reqs": top["reset_requests"],
         "power_domains": top["power"]["domains"],
@@ -635,7 +654,8 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
         "with_alert_handler": with_alert_handler,
-    }
+    })
+    return params
 
 
 # generate rstmgr with ipgen
@@ -657,7 +677,8 @@ def _get_flash_ctrl_params(top: ConfigT) -> ParamsT:
         raise ValueError(
             "In _get_flash_ctrl_params for design with no flash_ctrl")
 
-    params = vars(flash_mems[0]["memory"]["mem"]["config"])
+    params = get_ipgen_params(flash_mems[0])
+    params.update(vars(flash_mems[0]["memory"]["mem"]["config"]))
     # Additional parameters not provided in the top config.
     params.update({
         "metadata_width": 12,
@@ -703,10 +724,13 @@ def _get_otp_ctrl_params(top: ConfigT,
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
     otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, seed).config
     enable_flash_keys = has_flash_keys(otp_mmap["partitions"], otp_mmap_path)
-    return {
+    otp_ctrl = lib.find_module(top["module"], "otp_ctrl")
+    params = get_ipgen_params(otp_ctrl)
+    params.update({
         "otp_mmap": otp_mmap,
         "enable_flash_key": enable_flash_keys,
-    }
+    })
+    return params
 
 
 def generate_otp_ctrl(top: ConfigT,
@@ -733,11 +757,11 @@ def _get_ac_range_check_params(top: ConfigT) -> ParamsT:
     # Get the AC Range Check instance
     module = lib.find_module(top['module'], 'ac_range_check')
     uniquified_modules.add_module(module["template_type"], module["type"])
-    params = {
-        "num_ranges": module["ipgen_param"]["num_ranges"],
-        "module_instance_name": module["type"]
-    }
+    params = get_ipgen_params(module)
     params.update(racl_params)
+    params.update({
+        "module_instance_name": module["type"]
+    })
     return params
 
 
@@ -770,15 +794,16 @@ def _get_racl_params(top: ConfigT) -> ParamsT:
             num_subscribing_ips[group] += 1
 
     uniquified_modules.add_module(module["template_type"], module["type"])
-
-    return {
+    params = get_ipgen_params(module)
+    params.update({
         "module_instance_name": module["type"],
         "nr_role_bits": top["racl"]["nr_role_bits"],
         "nr_ctn_uid_bits": top["racl"]["nr_ctn_uid_bits"],
         "nr_policies": top["racl"]["nr_policies"],
         'nr_subscribing_ips': num_subscribing_ips[racl_group],
         "policies": policies
-    }
+    })
+    return params
 
 
 # Generate RACL collateral
@@ -797,14 +822,10 @@ def _get_gpio_params(top: ConfigT) -> ParamsT:
     module = lib.find_module(top["module"], "gpio")
     uniquified_modules.add_module(module["template_type"], module["type"])
 
-    params = {
-        # TODO(#26553): Remove the following code once topgen automatically
-        # incorporates template parameters.
-        "num_inp_period_counters":
-        module.get("ipgen_param", {}).get("num_inp_period_counters", 0),
-        "module_instance_name":
-        module["type"]
-    }
+    params = get_ipgen_params(module)
+    params.update({
+        "module_instance_name": module["type"]
+    })
     return params
 
 
