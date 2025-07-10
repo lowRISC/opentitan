@@ -34,6 +34,8 @@ module prim_alert_rxtx_tb
   localparam bit AsyncOn = 1'b0;
   localparam bit IsFatal = 1'b0;
 
+  localparam int unsigned SkewCycles = 1;
+
   alert_rx_t alert_rx_out, alert_rx_in;
   alert_tx_t alert_tx_out, alert_tx_in;
 
