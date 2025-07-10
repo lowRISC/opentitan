@@ -165,7 +165,7 @@ module tlul_socket_m1 #(
 
   assign arb_ready = drsp_fifo_o.a_ready;
 
-  if (tlul_pkg::ArbiterImpl == "PPC") begin : gen_arb_ppc
+  if (tlul_pkg::ArbiterImpl == tlul_pkg::PPCArbiter) begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N          (M),
       .DW         ($bits(tlul_pkg::tl_h2d_t))
@@ -181,7 +181,7 @@ module tlul_socket_m1 #(
       .data_o    ( arb_data    ),
       .ready_i   ( arb_ready   )
     );
-  end else if (tlul_pkg::ArbiterImpl == "BINTREE") begin : gen_tree_arb
+  end else if (tlul_pkg::ArbiterImpl == tlul_pkg::BintreeArbiter) begin : gen_tree_arb
     prim_arbiter_tree #(
       .N          (M),
       .DW         ($bits(tlul_pkg::tl_h2d_t))
