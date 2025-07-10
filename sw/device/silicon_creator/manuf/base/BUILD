@@ -285,9 +285,9 @@ manifest(d = {
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.PERSO_INITIAL),
     "visibility": ["//visibility:private"],
-    "version_major": ROM_EXT_VERSION.MAJOR,
-    # Release: 2025-07-01-RC00
-    "version_minor": "2025070100",
+    "version_major": "0",
+    # Release: 2025-07-10-RC00
+    "version_minor": "2025071000",
     "security_version": "0xFFFFFFFF",
 })
 
