@@ -12,12 +12,6 @@
 // register and field access policies. Also, we use csr_rd_check task instead of csr_mirror to take
 // field exclusions into account.
 //
-// CSRs to be tested is accumulated and shuffled from the supplied reg models.
-// What / how many CSRs to test can be further controlled in 3 ways -
-// 1. Externally add specific CSRs to test_csrs queue (highest prio)
-// 2. Set num_test_csrs test a randomly picked set of CSRs from the supplied models
-// 3. Set / pass via plusarg, num_csr_chunks / test_csr_chunk
-//
 // Exclusions are to be provided using the csr_excl_item item (see class for more details).
 
 //--------------------------------------------------------------------------------------------------
