@@ -10,18 +10,13 @@
 #
 # Keep it sorted.
 autoconf
-bison
 brotli
 build-essential
-clang-format
 cmake
 curl
-doxygen
 file
-flex
 g++
 git
-golang
 lcov
 libelf1
 libelf-dev
@@ -33,11 +28,9 @@ libpcsclite-dev
 libssl-dev
 libudev-dev
 libusb-1.0-0
-lld
 lrzsz
 lsb-release
 make
-ninja-build
 openssl
 perl
 pkgconf
