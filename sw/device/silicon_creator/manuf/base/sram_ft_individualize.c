@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -174,6 +175,7 @@ static status_t provision(ujson_t *uj) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(entropy_complex_init());
   CHECK_STATUS_OK(configure_ate_gpio_indicators());
   ujson_t uj;
 #ifndef ATE
