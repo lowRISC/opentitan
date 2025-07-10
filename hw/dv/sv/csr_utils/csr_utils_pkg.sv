@@ -855,6 +855,7 @@ package csr_utils_pkg;
   endfunction
 
   // sources
+  `include "csr_base_seq.sv"
   `include "csr_seq_lib.sv"
 
 endpackage
