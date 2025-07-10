@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -182,6 +183,7 @@ bool test_main(void) {
   // Initialize AST, DIF handles, pinmux, and UART.
   manually_init_ast(ast_cfg_data);
   CHECK_STATUS_OK(peripheral_handles_init());
+  CHECK_STATUS_OK(entropy_complex_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
