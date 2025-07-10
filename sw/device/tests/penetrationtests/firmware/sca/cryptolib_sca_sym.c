@@ -670,6 +670,9 @@ status_t handle_cryptolib_sca_sym_init(ujson_t *uj) {
       &uj_output.sram_ret_readback_locked, &uj_output.sram_main_readback_en,
       &uj_output.sram_ret_readback_en));
 
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);

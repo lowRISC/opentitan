@@ -204,6 +204,9 @@ status_t handle_otp_fi_init(ujson_t *uj) {
   TRY_CHECK(kOtpFiHwCfg0Size <= OTPFI_MAX_HW_CFG0_SIZE);
   TRY_CHECK(kOtpFiLifeCycleSize <= OTPFI_MAX_LC_SIZE);
 
+  // Read rom digest.
+  TRY(pentest_read_rom_digest(uj_output.rom_digest));
+
   // Read device ID and return to host.
   TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_info_t, uj, &uj_output);
