@@ -57,6 +57,7 @@ jobs:
       board: cw310
       interface: cw310
       tag_filters: cw310_sival
+      add_extra_filters: false
 
   execute_fpga_cw310_sival_rom_ext_tests:
     name: CW310 SiVal ROM_EXT Tests
@@ -69,6 +70,7 @@ jobs:
       board: cw310
       interface: cw310
       tag_filters: cw310_sival_rom_ext
+      add_extra_filters: false
 
   execute_fpga_cw340_sival_tests:
     name: CW340 SiVal Tests
@@ -81,6 +83,7 @@ jobs:
       board: cw340
       interface: cw340
       tag_filters: cw340_sival
+      add_extra_filters: false
 
   execute_fpga_cw340_sival_rom_ext_tests:
     name: CW340 SiVal ROM_EXT Tests
@@ -93,6 +96,7 @@ jobs:
       board: cw340
       interface: cw340
       tag_filters: cw340_sival_rom_ext
+      add_extra_filters: false
 
   execute_fpga_cw340_sival_rom_ext_slow_tests:
     name: CW340 SiVal ROM_EXT Tests
@@ -105,6 +109,7 @@ jobs:
       board: cw340
       interface: cw340
       tag_filters: cw340_sival_rom_ext,slow_test
+      add_extra_filters: false
 
   execute_fpga_cw310_rom_e2e_tests:
     name: CW310 ROM E2E Tests
@@ -116,8 +121,9 @@ jobs:
       bitstream: chip_earlgrey_cw310
       board: cw310
       interface: cw310
-      tag_filters: cw310_rom_ext,cw310_rom_with_fake_keys,fpga_cw310_sival
       targets: "//sw/device/silicon_creator/rom/e2e/..."
+      tag_filters: cw310_rom_ext,cw310_rom_with_fake_keys,fpga_cw310_sival
+      add_extra_filters: false
 
   execute_fpga_cw310_bob_tests:
     name: CW310 BoB (SPI and I2C) Tests
@@ -130,6 +136,7 @@ jobs:
       board: cw310
       interface: cw310
       tag_filters: "cw310_sival,pmod"
+      add_extra_filters: false
 
   slow_otbn_crypto_tests:
     name: Slow OTBN Crypto Tests

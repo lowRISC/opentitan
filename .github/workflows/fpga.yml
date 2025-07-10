@@ -37,6 +37,10 @@ on:
         default: "//... @manufacturer_test_hooks//..."
         type: string
         description: Bazel target(s) to look for tests in
+      add_extra_filters:
+        default: true
+        type: boolean
+        description: Include additional test filters on top of the given tags
 
 jobs:
   fpga:
@@ -71,7 +75,7 @@ jobs:
           # Execute a query to find all targets that match the test tags and store them in a file.
           ci/scripts/run-bazel-test-query.sh \
             target_pattern_file.txt \
-            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            "${{ inputs.tag_filters }}${{ inputs.add_extra_filters && ',-manual,-broken,-skip_in_ci'}}" \
             ${{ inputs.targets }}
 
           # Run FPGA tests
