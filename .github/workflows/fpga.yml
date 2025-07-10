@@ -33,6 +33,10 @@ on:
       vivado_version:
         default: "2021.1"
         type: string
+      targets:
+        default: "//... @manufacturer_test_hooks//..."
+        type: string
+        description: Bazel target(s) to look for tests in
 
 jobs:
   fpga:
@@ -68,7 +72,7 @@ jobs:
           ci/scripts/run-bazel-test-query.sh \
             target_pattern_file.txt \
             "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
-            //... @manufacturer_test_hooks//...
+            ${{ inputs.targets }}
 
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
