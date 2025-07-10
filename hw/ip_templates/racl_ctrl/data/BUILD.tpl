@@ -4,7 +4,9 @@
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["top_${topname}_${module_instance_name}.ipconfig.hjson"])
+
 filegroup(
     name = "doc_files",
-    srcs = ["racl_ctrl.hjson"],
+    srcs = ["${module_instance_name}.hjson"],
 )
