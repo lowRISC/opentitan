@@ -199,12 +199,15 @@ TEST_F(OwnershipUnlockTest, UnlockEndorsed) {
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(lifecycle_, DeviceId(_))
       .WillOnce(SetArgPointee<0>((lifecycle_device_id_t){0}));
-  EXPECT_CALL(hmac_, sha256(_, _, _))
-      .WillOnce([&](const void *, size_t, hmac_digest_t *digest) {
-        for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
-          digest->digest[i] = i;
-        }
-      });
+  EXPECT_CALL(hmac_, sha256_init());
+  EXPECT_CALL(hmac_, sha256_update(_, _));
+  EXPECT_CALL(hmac_, sha256_update(_, _));
+  EXPECT_CALL(hmac_, sha256_process());
+  EXPECT_CALL(hmac_, sha256_final(_)).WillOnce([&](hmac_digest_t *digest) {
+    for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
+      digest->digest[i] = i;
+    }
+  });
   EXPECT_CALL(rnd_, Uint32()).WillRepeatedly(Return(5));
   EXPECT_CALL(hdr_, Finalize(_, _, _));
 
