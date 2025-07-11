@@ -151,6 +151,9 @@ class BaseRegister2Systemrdl:
         rdl_t.external = self.inner.hwext
         if self.inner.hwre:
             self.importer.assign_property(rdl_t, "hwre", self.inner.hwre)
+
+        if self.inner.shadowed:
+            self.importer.assign_property(rdl_t, "shadowed", self.inner.shadowed)
         return rdl_t
 
 
