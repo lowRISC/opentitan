@@ -7,7 +7,6 @@
 # util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson
 # -o hw/top_englishbreakfast
 
-load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
 load("//hw/top_englishbreakfast/ip/ast:defs.bzl", "AST")
@@ -27,29 +26,23 @@ load("//hw/ip/sram_ctrl:defs.bzl", "SRAM_CTRL")
 load("//hw/ip/uart:defs.bzl", "UART")
 load("//hw/ip/usbdev:defs.bzl", "USBDEV")
 
-ENGLISHBREAKFAST = opentitan_top(
-    name = "englishbreakfast",
-    hjson = "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.gen.hjson",
-    top_lib = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast",
-    top_ld = "//hw/top_englishbreakfast/sw/autogen:top_englishbreakfast_memory",
-    ips = [
-        AES,
-        AON_TIMER,
-        AST,
-        CLKMGR,
-        FLASH_CTRL,
-        GPIO,
-        PINMUX,
-        PWRMGR,
-        ROM_CTRL,
-        RSTMGR,
-        RV_CORE_IBEX,
-        RV_PLIC,
-        RV_TIMER,
-        SPI_DEVICE,
-        SPI_HOST,
-        SRAM_CTRL,
-        UART,
-        USBDEV,
-    ],
-)
+ENGLISHBREAKFAST_IPS = [
+    AES,
+    AON_TIMER,
+    AST,
+    CLKMGR,
+    FLASH_CTRL,
+    GPIO,
+    PINMUX,
+    PWRMGR,
+    ROM_CTRL,
+    RSTMGR,
+    RV_CORE_IBEX,
+    RV_PLIC,
+    RV_TIMER,
+    SPI_DEVICE,
+    SPI_HOST,
+    SRAM_CTRL,
+    UART,
+    USBDEV,
+]
