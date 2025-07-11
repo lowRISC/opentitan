@@ -325,6 +325,7 @@ otbn_sim_test(
     exp = "p256_isoncurve_proj_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
         "//sw/otbn/crypto:p256_isoncurve_proj",
     ],
 )
@@ -370,6 +371,8 @@ otbn_sim_test(
     exp = "p256_ecdh_shared_key_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )
@@ -382,6 +385,8 @@ otbn_sim_test(
     exp = "p256_arithmetic_to_boolean_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )
@@ -394,6 +399,8 @@ otbn_sim_test(
     exp = "p256_arithmetic_to_boolean_mod_test.exp",
     deps = [
         "//sw/otbn/crypto:p256_base",
+        "//sw/otbn/crypto:p256_isoncurve",
+        "//sw/otbn/crypto:p256_isoncurve_proj",
         "//sw/otbn/crypto:p256_shared_key",
     ],
 )

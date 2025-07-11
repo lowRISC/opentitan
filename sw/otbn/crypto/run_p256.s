@@ -390,6 +390,12 @@ x:
 y:
   .zero 32
 
+/* Public key z-coordinate. */
+.globl z
+.balign 32
+z:
+  .zero 32
+
 /* Private key input/output buffer. */
 .globl d0_io
 .balign 32
