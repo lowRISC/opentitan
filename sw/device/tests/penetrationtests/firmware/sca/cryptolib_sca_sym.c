@@ -32,10 +32,10 @@ static status_t trigger_cryptolib_aes(
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   *data_out_len = AES_CMD_MAX_MSG_BYTES;
   *cfg_out = 0;
-  *status = 0;
-  cryptolib_sca_aes_impl(data_in, data_in_len, key, key_len, iv, data_out,
-                         data_out_len, padding, mode, op_enc, cfg_in, cfg_out,
-                         status, trigger);
+  *status = (size_t)cryptolib_sca_aes_impl(
+                data_in, data_in_len, key, key_len, iv, data_out, data_out_len,
+                padding, mode, op_enc, cfg_in, cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -73,9 +73,10 @@ static status_t trigger_cryptolib_gcm(
   // Perform a GCM encryption with aad and generate a tag.
   // Then, verify that tag again, before sending the output.
   // Trigger are over the API calls.
-  TRY(cryptolib_sca_gcm_impl(data_in, data_in_len, aad, aad_len, key, key_len,
-                             iv, data_out, data_out_len, tag, tag_len, cfg_in,
-                             cfg_out, status, trigger));
+  *status = (size_t)cryptolib_sca_gcm_impl(
+                data_in, data_in_len, aad, aad_len, key, key_len, iv, data_out,
+                data_out_len, tag, tag_len, cfg_in, cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -112,9 +113,10 @@ static status_t trigger_cryptolib_hmac(
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
-  cryptolib_sca_hmac_impl(data_in, data_in_len, key, key_len, data_out,
-                          data_out_len, padding, mode, cfg_in, cfg_out, status,
-                          trigger);
+  *status = (size_t)cryptolib_sca_hmac_impl(data_in, data_in_len, key, key_len,
+                                            data_out, data_out_len, padding,
+                                            mode, cfg_in, cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -129,8 +131,10 @@ static status_t trigger_cryptolib_drbg_generate(
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
-  TRY(cryptolib_sca_drbg_generate_impl(nonce, nonce_len, data_out, data_out_len,
-                                       mode, cfg_in, cfg_out, status, trigger));
+  *status = (size_t)cryptolib_sca_drbg_generate_impl(nonce, nonce_len, data_out,
+                                                     data_out_len, mode, cfg_in,
+                                                     cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -840,17 +844,16 @@ status_t handle_cryptolib_sca_sym_drbg_reseed(ujson_t *uj) {
   // Perform a DRBG reseed encryption.
   // Triggers are over the API calls.
   size_t cfg_out;
-  size_t status;
-  cryptolib_sca_drbg_reseed_impl(
+  status_t status = cryptolib_sca_drbg_reseed_impl(
       uj_input.entropy, uj_input.entropy_len, uj_input.nonce,
       uj_input.nonce_len, uj_input.reseed_interval, uj_input.mode, uj_input.cfg,
-      &cfg_out, &status, uj_input.trigger);
+      &cfg_out, uj_input.trigger);
 
   /////////////// STUB END ///////////////
 
   cryptolib_sca_sym_drbg_reseed_out_t uj_output;
   uj_output.cfg = cfg_out;
-  uj_output.status = status;
+  uj_output.status = (size_t)status.value;
   RESP_OK(ujson_serialize_cryptolib_sca_sym_drbg_reseed_out_t, uj, &uj_output);
 
   return OK_STATUS();

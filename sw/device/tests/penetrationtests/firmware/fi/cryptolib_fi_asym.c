@@ -27,7 +27,8 @@ status_t handle_cryptolib_fi_asym_rsa_enc(ujson_t *uj) {
   // You can give cfg a value such that the RSA generates its own private key.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_enc_out_t uj_output;
-  TRY(cryptolib_fi_rsa_enc_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_enc_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_enc_out_t, uj, &uj_output);
@@ -43,7 +44,8 @@ status_t handle_cryptolib_fi_asym_rsa_sign(ujson_t *uj) {
   // You can give cfg a value such that the RSA generates its own private key.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_sign_out_t uj_output;
-  TRY(cryptolib_fi_rsa_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_sign_out_t, uj, &uj_output);
@@ -58,7 +60,8 @@ status_t handle_cryptolib_fi_asym_rsa_verify(ujson_t *uj) {
   // Perform an RSA verification with hashing and padding options.
   // Trigger are over the API calls.
   cryptolib_fi_asym_rsa_verify_out_t uj_output;
-  TRY(cryptolib_fi_rsa_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_rsa_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_rsa_verify_out_t, uj, &uj_output);
@@ -133,7 +136,8 @@ status_t handle_cryptolib_fi_asym_p256_ecdh(ujson_t *uj) {
   // Perform ecdh in P256.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_ecdh_out_t uj_output;
-  TRY(cryptolib_fi_p256_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_ecdh_out_t, uj, &uj_output);
@@ -148,7 +152,8 @@ status_t handle_cryptolib_fi_asym_p256_sign(ujson_t *uj) {
   // Perform a P256 signature.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_sign_out_t uj_output;
-  TRY(cryptolib_fi_p256_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_sign_out_t, uj, &uj_output);
@@ -163,7 +168,8 @@ status_t handle_cryptolib_fi_asym_p256_verify(ujson_t *uj) {
   // Perform a P256 verification.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p256_verify_out_t uj_output;
-  TRY(cryptolib_fi_p256_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p256_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p256_verify_out_t, uj, &uj_output);
@@ -219,7 +225,8 @@ status_t handle_cryptolib_fi_asym_p384_ecdh(ujson_t *uj) {
   // Perform ecdh in P384.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_ecdh_out_t uj_output;
-  TRY(cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_ecdh_out_t, uj, &uj_output);
@@ -234,7 +241,8 @@ status_t handle_cryptolib_fi_asym_p384_sign(ujson_t *uj) {
   // Perform a p384 signature.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_sign_out_t uj_output;
-  TRY(cryptolib_fi_p384_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_sign_out_t, uj, &uj_output);
@@ -249,7 +257,8 @@ status_t handle_cryptolib_fi_asym_p384_verify(ujson_t *uj) {
   // Perform a p384 verification.
   // Trigger are over the API calls.
   cryptolib_fi_asym_p384_verify_out_t uj_output;
-  TRY(cryptolib_fi_p384_verify_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_p384_verify_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_asym_p384_verify_out_t, uj, &uj_output);
