@@ -224,8 +224,8 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
-    otcrypto_status_t status_out = otcrypto_rsa_decrypt(
-        &private_key, hash_mode, ciphertext, label_buf, plaintext, &msg_len);
+    TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
+                             plaintext, &msg_len));
     if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
@@ -233,7 +233,6 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     // Return data back to host.
     uj_output->data_len = msg_len;
     uj_output->cfg = 0;
-    uj_output->status = (size_t)status_out.value;
     memset(uj_output->data, 0, RSA_CMD_MAX_MESSAGE_BYTES);
     memcpy(uj_output->data, plaintext_buf, msg_len);
     // Return received n and d back to host.
@@ -405,8 +404,7 @@ status_t cryptolib_fi_rsa_sign_impl(
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out =
-      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf);
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -415,7 +413,6 @@ status_t cryptolib_fi_rsa_sign_impl(
   // Return data back to host.
   uj_output->sig_len = uj_input.n_len;
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
   memcpy(uj_output->sig, sig, uj_output->sig_len);
   // Return received n and d back to host.
@@ -560,8 +557,8 @@ status_t cryptolib_fi_rsa_verify_impl(
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out = otcrypto_rsa_verify(
-      &public_key, msg_digest, padding_mode, sig, &verification_result);
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig,
+                          &verification_result));
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
   }
@@ -572,7 +569,6 @@ status_t cryptolib_fi_rsa_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
 
   return OK_STATUS();
 }
@@ -632,8 +628,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
   };
 
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret);
+  TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
 
   uint32_t share0[kPentestP256Words];
@@ -649,7 +644,6 @@ status_t cryptolib_fi_p256_ecdh_impl(
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->shared_key, 0, P256_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P256_CMD_BYTES);
 
@@ -720,15 +714,11 @@ status_t cryptolib_fi_p256_sign_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut);
-  if (uj_input.trigger == 1) {
-    pentest_set_trigger_low();
-  }
+  TRY(otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->r, 0, P256_CMD_BYTES);
   memset(uj_output->s, 0, P256_CMD_BYTES);
   p256_ecdsa_signature_t *signature_p256 =
@@ -783,8 +773,8 @@ status_t cryptolib_fi_p256_verify_impl(
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
   pentest_set_trigger_high();
-  otcrypto_status_t status_out = otcrypto_ecdsa_p256_verify(
-      &public_key, message_digest, signature, &verification_result);
+  TRY(otcrypto_ecdsa_p256_verify(&public_key, message_digest, signature,
+                                 &verification_result));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -793,7 +783,6 @@ status_t cryptolib_fi_p256_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
 
   return OK_STATUS();
 }
@@ -853,8 +842,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
   };
 
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret);
+  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
 
   uint32_t share0[kPentestP384Words];
@@ -870,7 +858,6 @@ status_t cryptolib_fi_p384_ecdh_impl(
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->shared_key, 0, P384_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
 
@@ -941,15 +928,11 @@ status_t cryptolib_fi_p384_sign_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut);
-  if (uj_input.trigger == 1) {
-    pentest_set_trigger_low();
-  }
+  TRY(otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->r, 0, P384_CMD_BYTES);
   memset(uj_output->s, 0, P384_CMD_BYTES);
   p384_ecdsa_signature_t *signature_p384 =
@@ -1004,8 +987,8 @@ status_t cryptolib_fi_p384_verify_impl(
   hardened_bool_t verification_result = kHardenedBoolFalse;
 
   pentest_set_trigger_high();
-  otcrypto_status_t status_out = otcrypto_ecdsa_p384_verify(
-      &public_key, message_digest, signature, &verification_result);
+  TRY(otcrypto_ecdsa_p384_verify(&public_key, message_digest, signature,
+                                 &verification_result));
   pentest_set_trigger_low();
 
   // Return data back to host.
@@ -1014,7 +997,6 @@ status_t cryptolib_fi_p384_verify_impl(
     uj_output->result = false;
   }
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
 
   return OK_STATUS();
 }
