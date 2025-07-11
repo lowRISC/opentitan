@@ -692,6 +692,20 @@ status_t cryptolib_fi_p256_sign_impl(
   memcpy(pub_p256.y, uj_input.puby, P256_CMD_BYTES);
   public_key.checksum = integrity_unblinded_checksum(&public_key);
 
+  // Create a key pair if requested.
+  // This will overwrite the private and public key above.
+  if (uj_input.cfg == 1) {
+    // Trigger window 0.
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_high();
+    }
+    TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+    pentest_set_trigger_low();
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_low();
+    }
+  }
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP256Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -710,11 +724,16 @@ status_t cryptolib_fi_p256_sign_impl(
       .len = ARRAYSIZE(sig),
   };
 
-  // Trigger window.
-  pentest_set_trigger_high();
+  // Trigger window 1.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  // Sign the message.
   TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
                                       signature_mut));
-  pentest_set_trigger_low();
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -899,6 +918,20 @@ status_t cryptolib_fi_p384_sign_impl(
   memcpy(pub_p384.y, uj_input.puby, P384_CMD_BYTES);
   public_key.checksum = integrity_unblinded_checksum(&public_key);
 
+  // Create a key pair if requested.
+  // This will overwrite the private and public key above.
+  if (uj_input.cfg == 1) {
+    // Trigger window 0.
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_high();
+    }
+    TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
+    pentest_set_trigger_low();
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_low();
+    }
+  }
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP384Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -917,11 +950,15 @@ status_t cryptolib_fi_p384_sign_impl(
       .len = ARRAYSIZE(sig),
   };
 
-  // Trigger window.
-  pentest_set_trigger_high();
+  // Trigger window 1.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
   TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
                                       signature_mut));
-  pentest_set_trigger_low();
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
 
   // Return data back to host.
   uj_output->cfg = 0;
