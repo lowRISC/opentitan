@@ -655,7 +655,7 @@
 - [topgen: Top Generator](./util/topgen/README.md)
 - [vendor: Vendoring In Tool](./util/doc/vendor.md)
 - [i2csvg: Generate SVGs of I2C Commands](./util/i2csvg/README.md)
-
+- [dtgen: Generate Device Tables](./util/dtgen/README.md)
 
 # Contributing
 
