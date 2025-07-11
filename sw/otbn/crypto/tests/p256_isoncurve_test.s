@@ -63,3 +63,16 @@ y:
   .word 0x43dd09ea
   .word 0x1f31c143
   .word 0x42a1c697
+
+/* point affine z-coordinate */
+.globl z
+.balign 32
+z:
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
