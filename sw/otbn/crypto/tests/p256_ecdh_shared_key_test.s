@@ -95,6 +95,12 @@ y:
   .word 0x1f31c143
   .word 0x42a1c697
 
+/* Public key z-coordinate. */
+.globl z
+.balign 32
+z:
+  .zero 32
+
 /* affine x-coordinate value before A2B */
 .globl x_a
 .balign 32

@@ -106,3 +106,9 @@ x_l:
   .word 0x8a29dc16
   .word 0xf7109d54
   .word 0x762c5d06
+
+/* Public key z-coordinate. */
+.globl z
+.balign 32
+z:
+  .zero 32
