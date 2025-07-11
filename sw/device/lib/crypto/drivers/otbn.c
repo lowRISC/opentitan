@@ -132,10 +132,11 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
 
   random_order_t order;
   random_order_init(&order, num_words);
-  size_t iter_cnt = 0;
+  size_t iter_cnt = 0, r_iter_cnt = order.max - 1;
   // Collect output.
   // Start from a random index less than `num_words`.
-  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
     size_t idx = launderw(random_order_advance(&order));
     barrierw(idx);
 
@@ -156,6 +157,7 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
     write_32(read_32(src), dst);
   }
   HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 }
 
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
