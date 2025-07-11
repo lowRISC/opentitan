@@ -682,6 +682,27 @@ status_t cryptolib_fi_p256_sign_impl(
   memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
+  // Allocate space for a public key.
+  uint32_t pk[kPentestP256Words * 2] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Create a key pair if requested.
+  if (uj_input.cfg == 1) {
+    // Trigger window 0.
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_high();
+    }
+    TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+    pentest_set_trigger_low();
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_low();
+    }
+  }
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP256Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -700,11 +721,16 @@ status_t cryptolib_fi_p256_sign_impl(
       .len = ARRAYSIZE(sig),
   };
 
-  // Trigger window.
-  pentest_set_trigger_high();
+  // Trigger window 1.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
+  // Sign the message.
   otcrypto_status_t status =
       otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut);
-  pentest_set_trigger_low();
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
 
   // Return data back to host.
   uj_output->cfg = (size_t)status.value;
@@ -715,9 +741,10 @@ status_t cryptolib_fi_p256_sign_impl(
   memcpy(uj_output->r, signature_p256->r, kP256ScalarBytes);
   memcpy(uj_output->s, signature_p256->s, kP256ScalarBytes);
 
-  // Return 0 the public key.
-  memset(uj_output->pubx, 0, P256_CMD_BYTES);
-  memset(uj_output->puby, 0, P256_CMD_BYTES);
+  // Return the public key.
+  p256_point_t *pub_p256 = (p256_point_t *)public_key.key;
+  memcpy(uj_output->pubx, pub_p256->x, P256_CMD_BYTES);
+  memcpy(uj_output->puby, pub_p256->y, P256_CMD_BYTES);
 
   return OK_STATUS();
 }
@@ -876,6 +903,27 @@ status_t cryptolib_fi_p384_sign_impl(
   memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
+  // Allocate space for a public key.
+  uint32_t pk[kPentestP384Words * 2] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+
+  // Create a key pair if requested.
+  if (uj_input.cfg == 1) {
+    // Trigger window 0.
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_high();
+    }
+    TRY(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
+    pentest_set_trigger_low();
+    if (uj_input.trigger == 0) {
+      pentest_set_trigger_low();
+    }
+  }
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP384Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -894,11 +942,15 @@ status_t cryptolib_fi_p384_sign_impl(
       .len = ARRAYSIZE(sig),
   };
 
-  // Trigger window.
-  pentest_set_trigger_high();
+  // Trigger window 1.
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_high();
+  }
   otcrypto_status_t status =
       otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut);
-  pentest_set_trigger_low();
+  if (uj_input.trigger == 1) {
+    pentest_set_trigger_low();
+  }
 
   // Return data back to host.
   uj_output->cfg = (size_t)status.value;
@@ -909,9 +961,10 @@ status_t cryptolib_fi_p384_sign_impl(
   memcpy(uj_output->r, signature_p384->r, kP384ScalarBytes);
   memcpy(uj_output->s, signature_p384->s, kP384ScalarBytes);
 
-  // Return 0 for the public key.
-  memset(uj_output->pubx, 0, P384_CMD_BYTES);
-  memset(uj_output->puby, 0, P384_CMD_BYTES);
+  // Return the public key.
+  p384_point_t *pub_p384 = (p384_point_t *)public_key.key;
+  memcpy(uj_output->pubx, pub_p384->x, P384_CMD_BYTES);
+  memcpy(uj_output->puby, pub_p384->y, P384_CMD_BYTES);
 
   return OK_STATUS();
 }
