@@ -230,6 +230,46 @@ status_t handle_cryptolib_sca_sym_aes_fvsr_key(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_sca_sym_aes_daisy_chain(ujson_t *uj) {
+  cryptolib_sca_sym_aes_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_aes_in_t(uj, &uj_input));
+
+  // Fix the key
+  uint8_t key[AES_CMD_MAX_KEY_BYTES];
+  // Pad with zero
+  memset(key, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key, uj_input.key, uj_input.key_len);
+
+  // Invoke AES for each data set.
+  uint8_t data_in_buf[AES_CMD_MAX_MSG_BYTES];
+  uint8_t data_out_buf[AES_CMD_MAX_MSG_BYTES];
+  size_t data_out_len;
+  size_t cfg_out;
+  size_t status;
+  // Pad with zeros
+  memset(data_in_buf, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_aes(
+        data_in_buf, uj_input.data_len, key, uj_input.key_len, uj_input.iv,
+        data_out_buf, &data_out_len, uj_input.padding, uj_input.mode,
+        uj_input.op_enc, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
+    // Copy output to input
+    memset(data_in_buf, 0, uj_input.data_len);
+    memcpy(data_in_buf, data_out_buf, uj_input.data_len);
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_sym_aes_out_t uj_output;
+  memcpy(uj_output.data, data_out_buf, AES_CMD_MAX_MSG_BYTES);
+  uj_output.data_len = data_out_len;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_aes_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_sca_sym_cmac_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_sym_cmac_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_sym_cmac_in_t(uj, &uj_input));
@@ -307,6 +347,46 @@ status_t handle_cryptolib_sca_sym_cmac_fvsr_key(ujson_t *uj) {
                                batch_keys[it], uj_input.key_len, uj_input.iv,
                                data_out_buf, &data_out_len, uj_input.cfg,
                                &cfg_out, &status, uj_input.trigger));
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_sym_cmac_out_t uj_output;
+  memcpy(uj_output.data, data_out_buf, AES_CMD_MAX_MSG_BYTES);
+  uj_output.data_len = data_out_len;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_cmac_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_sym_cmac_daisy_chain(ujson_t *uj) {
+  cryptolib_sca_sym_cmac_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_cmac_in_t(uj, &uj_input));
+
+  // Fix the key
+  uint8_t key[AES_CMD_MAX_KEY_BYTES];
+  // Pad with zero
+  memset(key, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key, uj_input.key, uj_input.key_len);
+
+  // Invoke CMAC for each data set.
+  uint8_t data_in_buf[AES_CMD_MAX_MSG_BYTES];
+  uint8_t data_out_buf[AES_CMD_MAX_MSG_BYTES];
+  size_t data_out_len;
+  size_t cfg_out;
+  size_t status;
+  // Pad with zeros
+  memset(data_in_buf, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_cmac(data_in_buf, uj_input.data_len, key,
+                               uj_input.key_len, uj_input.iv, data_out_buf,
+                               &data_out_len, uj_input.cfg, &cfg_out, &status,
+                               uj_input.trigger));
+    // Copy output to input
+    memset(data_in_buf, 0, uj_input.data_len);
+    memcpy(data_in_buf, data_out_buf, uj_input.data_len);
   }
 
   // Send the last data_out to host via UART.
@@ -420,6 +500,50 @@ status_t handle_cryptolib_sca_sym_gcm_fvsr_key(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_sca_sym_gcm_daisy_chain(ujson_t *uj) {
+  cryptolib_sca_sym_gcm_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_gcm_in_t(uj, &uj_input));
+
+  // Fix the key
+  uint8_t key[AES_CMD_MAX_KEY_BYTES];
+  // Pad with zero
+  memset(key, 0, AES_CMD_MAX_KEY_BYTES);
+  memcpy(key, uj_input.key, uj_input.key_len);
+
+  // Invoke GCM for each data set.
+  uint8_t data_in_buf[AES_CMD_MAX_MSG_BYTES];
+  uint8_t data_out_buf[AES_CMD_MAX_MSG_BYTES];
+  size_t data_out_len;
+  uint8_t tag_buf[AES_CMD_MAX_MSG_BYTES];
+  size_t tag_len = 16;
+  size_t cfg_out;
+  size_t status;
+  // Pad with zeros
+  memset(data_in_buf, 0, AES_CMD_MAX_MSG_BYTES);
+  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_gcm(
+        data_in_buf, uj_input.data_len, uj_input.aad, uj_input.aad_len, key,
+        uj_input.key_len, uj_input.iv, data_out_buf, &data_out_len, tag_buf,
+        &tag_len, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
+    // Copy output to input
+    memset(data_in_buf, 0, uj_input.data_len);
+    memcpy(data_in_buf, data_out_buf, uj_input.data_len);
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_sym_gcm_out_t uj_output;
+  memcpy(uj_output.data, data_out_buf, AES_CMD_MAX_MSG_BYTES);
+  uj_output.data_len = data_out_len;
+  memcpy(uj_output.tag, tag_buf, AES_CMD_MAX_MSG_BYTES);
+  uj_output.tag_len = tag_len;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_gcm_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_sca_sym_tdes_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_sym_tdes_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_sym_tdes_in_t(uj, &uj_input));
@@ -512,6 +636,46 @@ status_t handle_cryptolib_sca_sym_tdes_fvsr_key(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_sca_sym_tdes_daisy_chain(ujson_t *uj) {
+  cryptolib_sca_sym_tdes_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_tdes_in_t(uj, &uj_input));
+
+  // Fix the key
+  uint8_t key[TDES_CMD_MAX_KEY_BYTES];
+  // Pad with zero
+  memset(key, 0, TDES_CMD_MAX_KEY_BYTES);
+  memcpy(key, uj_input.key, uj_input.key_len);
+
+  // Invoke TDES for each data set.
+  uint8_t data_in_buf[TDES_CMD_MAX_MSG_BYTES];
+  uint8_t data_out_buf[TDES_CMD_MAX_MSG_BYTES];
+  size_t data_out_len;
+  size_t cfg_out;
+  size_t status;
+  // Pad with zeros
+  memset(data_in_buf, 0, TDES_CMD_MAX_MSG_BYTES);
+  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_tdes(
+        data_in_buf, uj_input.data_len, key, uj_input.key_len, uj_input.iv,
+        data_out_buf, &data_out_len, uj_input.padding, uj_input.mode,
+        uj_input.op_enc, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
+    // Copy output to input
+    memset(data_in_buf, 0, uj_input.data_len);
+    memcpy(data_in_buf, data_out_buf, uj_input.data_len);
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_sym_tdes_out_t uj_output;
+  memcpy(uj_output.data, data_out_buf, TDES_CMD_MAX_MSG_BYTES);
+  uj_output.data_len = data_out_len;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_tdes_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_sca_sym_hmac_fvsr_plaintext(ujson_t *uj) {
   cryptolib_sca_sym_hmac_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_sca_sym_hmac_in_t(uj, &uj_input));
@@ -589,6 +753,46 @@ status_t handle_cryptolib_sca_sym_hmac_fvsr_key(ujson_t *uj) {
         batch_data_in[it], uj_input.data_len, batch_keys[it], uj_input.key_len,
         data_out_buf, &data_out_len, uj_input.padding, uj_input.mode,
         uj_input.cfg, &cfg_out, &status, uj_input.trigger));
+  }
+
+  // Send the last data_out to host via UART.
+  cryptolib_sca_sym_hmac_out_t uj_output;
+  memcpy(uj_output.data, data_out_buf, HMAC_CMD_MAX_TAG_BYTES);
+  uj_output.data_len = data_out_len;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_hmac_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj) {
+  cryptolib_sca_sym_hmac_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_hmac_in_t(uj, &uj_input));
+
+  // Fix the key
+  uint8_t key[HMAC_CMD_MAX_KEY_BYTES];
+  // Pad with zero
+  memset(key, 0, HMAC_CMD_MAX_KEY_BYTES);
+  memcpy(key, uj_input.key, uj_input.key_len);
+
+  // Invoke HMAC for each data set.
+  uint8_t data_in_buf[HMAC_CMD_MAX_MSG_BYTES];
+  uint8_t data_out_buf[HMAC_CMD_MAX_MSG_BYTES];
+  size_t data_out_len;
+  size_t cfg_out;
+  size_t status;
+  // Pad with zeros
+  memset(data_in_buf, 0, HMAC_CMD_MAX_MSG_BYTES);
+  memcpy(data_in_buf, uj_input.data, uj_input.data_len);
+  for (size_t it = 0; it < uj_input.num_iterations; it++) {
+    TRY(trigger_cryptolib_hmac(data_in_buf, uj_input.data_len, key,
+                               uj_input.key_len, data_out_buf, &data_out_len,
+                               uj_input.padding, uj_input.mode, uj_input.cfg,
+                               &cfg_out, &status, uj_input.trigger));
+    // Copy output to input
+    memset(data_in_buf, 0, HMAC_CMD_MAX_MSG_BYTES);
+    memcpy(data_in_buf, data_out_buf, uj_input.data_len);
   }
 
   // Send the last data_out to host via UART.
@@ -703,22 +907,32 @@ status_t handle_cryptolib_sca_sym(ujson_t *uj) {
       return handle_cryptolib_sca_sym_aes_fvsr_plaintext(uj);
     case kCryptoLibScaSymSubcommandAesFvsrKey:
       return handle_cryptolib_sca_sym_aes_fvsr_key(uj);
+    case kCryptoLibScaSymSubcommandAesDaisy:
+      return handle_cryptolib_sca_sym_aes_daisy_chain(uj);
     case kCryptoLibScaSymSubcommandCmacFvsrPlaintext:
       return handle_cryptolib_sca_sym_cmac_fvsr_plaintext(uj);
     case kCryptoLibScaSymSubcommandCmacFvsrKey:
       return handle_cryptolib_sca_sym_cmac_fvsr_key(uj);
+    case kCryptoLibScaSymSubcommandCmacDaisy:
+      return handle_cryptolib_sca_sym_cmac_daisy_chain(uj);
     case kCryptoLibScaSymSubcommandGcmFvsrPlaintext:
       return handle_cryptolib_sca_sym_gcm_fvsr_plaintext(uj);
     case kCryptoLibScaSymSubcommandGcmFvsrKey:
       return handle_cryptolib_sca_sym_gcm_fvsr_key(uj);
+    case kCryptoLibScaSymSubcommandGcmDaisy:
+      return handle_cryptolib_sca_sym_gcm_daisy_chain(uj);
     case kCryptoLibScaSymSubcommandTdesFvsrPlaintext:
       return handle_cryptolib_sca_sym_tdes_fvsr_plaintext(uj);
     case kCryptoLibScaSymSubcommandTdesFvsrKey:
       return handle_cryptolib_sca_sym_tdes_fvsr_key(uj);
+    case kCryptoLibScaSymSubcommandTdesDaisy:
+      return handle_cryptolib_sca_sym_tdes_daisy_chain(uj);
     case kCryptoLibScaSymSubcommandHmacFvsrPlaintext:
       return handle_cryptolib_sca_sym_hmac_fvsr_plaintext(uj);
     case kCryptoLibScaSymSubcommandHmacFvsrKey:
       return handle_cryptolib_sca_sym_hmac_fvsr_key(uj);
+    case kCryptoLibScaSymSubcommandHmacDaisy:
+      return handle_cryptolib_sca_sym_hmac_daisy_chain(uj);
     case kCryptoLibScaSymSubcommandDrbgFvsr:
       return handle_cryptolib_sca_sym_drbg_fvsr(uj);
     case kCryptoLibScaSymSubcommandInit:
