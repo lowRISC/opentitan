@@ -25,24 +25,31 @@ extern "C" {
 
 #define CRYPTOLIBSCAASYM_SUBCOMMAND(_, value) \
     value(_, RsaDecFvsr) \
+    value(_, RsaDecDaisy) \
     value(_, RsaSignFvsr) \
+    value(_, RsaSignDaisy) \
     value(_, Prime) \
     value(_, P256BaseMulFvsr) \
+    value(_, P256BaseMulDaisy) \
     value(_, P256PointMul) \
     value(_, P256Ecdh) \
     value(_, P256Sign) \
     value(_, P384BaseMulFvsr) \
+    value(_, P384BaseMulDaisy) \
     value(_, P384PointMul) \
     value(_, P384Ecdh) \
     value(_, P384Sign) \
     value(_, Secp256k1BaseMulFvsr) \
+    value(_, Secp256k1BaseMulDaisy) \
     value(_, Secp256k1PointMul) \
     value(_, Secp256k1Ecdh) \
     value(_, Secp256k1Sign) \
     value(_, X25519BaseMulFvsr) \
+    value(_, X25519BaseMulDaisy) \
     value(_, X25519PointMul) \
     value(_, X25519Ecdh) \
     value(_, Ed25519BaseMulFvsr) \
+    value(_, Ed25519BaseMulDaisy) \
     value(_, Ed25519Sign) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaAsymSubcommand, cryptolib_sca_asym_subcommand_t, CRYPTOLIBSCAASYM_SUBCOMMAND));

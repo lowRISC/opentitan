@@ -30,14 +30,19 @@ extern "C" {
 #define CRYPTOLIBSCASYM_SUBCOMMAND(_, value) \
     value(_, AesFvsrPlaintext) \
     value(_, AesFvsrKey) \
+    value(_, AesDaisy) \
     value(_, CmacFvsrPlaintext) \
     value(_, CmacFvsrKey) \
+    value(_, CmacDaisy) \
     value(_, GcmFvsrPlaintext) \
     value(_, GcmFvsrKey) \
+    value(_, GcmDaisy) \
     value(_, TdesFvsrPlaintext) \
     value(_, TdesFvsrKey) \
+    value(_, TdesDaisy) \
     value(_, HmacFvsrPlaintext) \
     value(_, HmacFvsrKey) \
+    value(_, HmacDaisy) \
     value(_, DrbgFvsr) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcommand_t, CRYPTOLIBSCASYM_SUBCOMMAND));
