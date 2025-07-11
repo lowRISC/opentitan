@@ -137,12 +137,12 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     };
 
     // Trigger window.
-    if (uj_input.trigger == 0) {
+    if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
     otcrypto_status_t status_out = otcrypto_rsa_encrypt(
         &public_key, hash_mode, input_message, label_buf, ciphertext);
-    if (uj_input.trigger == 0) {
+    if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
 
@@ -193,12 +193,12 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
     };
 
     // Trigger window.
-    if (uj_input.trigger == 0) {
+    if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_high();
     }
     TRY(otcrypto_rsa_private_key_from_exponents(
         rsa_size, modulus, uj_input.e, d_share0, d_share1, &private_key));
-    if (uj_input.trigger == 0) {
+    if (uj_input.trigger & kPentestTrigger1) {
       pentest_set_trigger_low();
     }
 
@@ -221,12 +221,12 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
 
     size_t msg_len;
     // Trigger window.
-    if (uj_input.trigger == 1) {
+    if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_high();
     }
     otcrypto_status_t status_out = otcrypto_rsa_decrypt(
         &private_key, hash_mode, ciphertext, label_buf, plaintext, &msg_len);
-    if (uj_input.trigger == 1) {
+    if (uj_input.trigger & kPentestTrigger2) {
       pentest_set_trigger_low();
     }
 
@@ -355,12 +355,12 @@ status_t cryptolib_fi_rsa_sign_impl(
   };
 
   // Trigger window.
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   TRY(otcrypto_rsa_private_key_from_exponents(
       rsa_size, modulus, uj_input.e, d_share0, d_share1, &private_key));
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 
@@ -380,7 +380,7 @@ status_t cryptolib_fi_rsa_sign_impl(
       .mode = hash_mode,
   };
   // Trigger window.
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
   // Hash the message.
@@ -391,7 +391,7 @@ status_t cryptolib_fi_rsa_sign_impl(
   } else {
     TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
@@ -402,13 +402,13 @@ status_t cryptolib_fi_rsa_sign_impl(
   };
 
   // Trigger window.
-  if (uj_input.trigger == 2) {
+  if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out =
       otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf);
   // Trigger window.
-  if (uj_input.trigger == 2) {
+  if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
   }
 
@@ -509,13 +509,13 @@ status_t cryptolib_fi_rsa_verify_impl(
       .key = public_key_data,
   };
   // Trigger window.
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   TRY(otcrypto_rsa_public_key_construct(rsa_size, modulus, uj_input.e,
                                         &public_key));
   // Trigger window.
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 
@@ -546,7 +546,7 @@ status_t cryptolib_fi_rsa_verify_impl(
   };
 
   // Trigger window.
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
   // Hash the message.
@@ -557,18 +557,18 @@ status_t cryptolib_fi_rsa_verify_impl(
   } else {
     TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
   hardened_bool_t verification_result;
   // Trigger window.
-  if (uj_input.trigger == 2) {
+  if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out = otcrypto_rsa_verify(
       &public_key, msg_digest, padding_mode, sig, &verification_result);
-  if (uj_input.trigger == 2) {
+  if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
   }
 

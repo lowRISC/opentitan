@@ -123,15 +123,14 @@ static status_t trigger_cryptolib_hmac(
 static status_t trigger_cryptolib_drbg_generate(
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
-    size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger) {
+    size_t mode, size_t cfg_in, size_t *cfg_out, size_t *status,
+    size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
   TRY(cryptolib_sca_drbg_generate_impl(nonce, nonce_len, data_out, data_out_len,
-                                       reseed_interval, mode, cfg_in, cfg_out,
-                                       status, trigger));
+                                       mode, cfg_in, cfg_out, status, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
