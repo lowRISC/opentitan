@@ -1816,7 +1816,7 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
       host_resumes = true;
       host_resets = true;
       host_disconnects = true;
-      verbose = false;
+      verbose = true;
       break;
 
     default:
@@ -1835,7 +1835,7 @@ bool usbdev_suspend_test(usbdev_suspend_phase_t init_phase,
 
       // Presently, the FPGA build is expected to be observed/monitored by a
       // developer, so verbose reporting is appropriate.
-      verbose = false;  // true;
+      verbose = true;  // true;
       break;
   }
 
