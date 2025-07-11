@@ -36,14 +36,12 @@ status_t cryptolib_sca_aes_impl(
     size_t *status, size_t trigger);
 
 /**
- * Wrapper to DRBG cryptolib implementation.
+ * Wrapper to DRBG generate cryptolib implementation.
  *
- * @param entropy Used in the instantiation of DRBG.
- * @param entropy_len Length in bytes.
  * @param nonce Used in the generate command of DRBG.
  * @param nonce_len  Length in bytes.
  * @param[out] data_out Generated data.
- * @param[out] data_out_len Length in bytes.
+ * @param data_out_len Length in bytes.
  * @param reseed_interval Intervall when a reseed is triggered.
  * @param mode Mode.
  * @param cfg_in Input config.
@@ -51,14 +49,31 @@ status_t cryptolib_sca_aes_impl(
  * @param trigger Trigger config.
  * @return OK or error.
  */
-status_t cryptolib_sca_drbg_impl(uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES],
-                                 size_t entropy_len,
-                                 uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES],
-                                 size_t nonce_len,
-                                 uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES],
-                                 size_t *data_out_len, size_t reseed_interval,
-                                 size_t mode, size_t cfg_in, size_t *cfg_out,
-                                 size_t *status, size_t trigger);
+status_t cryptolib_sca_drbg_generate_impl(
+    uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
+    uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
+    size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
+    size_t *status, size_t trigger);
+
+/**
+ * Wrapper to DRBG reseed/instantiate cryptolib implementation.
+ *
+ * @param entropy Used in the instantiation of DRBG.
+ * @param entropy_len Length in bytes.
+ * @param nonce Used in the generate command of DRBG.
+ * @param nonce_len  Length in bytes.
+ * @param reseed_interval Intervall when a reseed is triggered.
+ * @param mode Mode.
+ * @param cfg_in Input config.
+ * @param cfg_out Output config.
+ * @param trigger Trigger config.
+ * @return OK or error.
+ */
+status_t cryptolib_sca_drbg_reseed_impl(
+    uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES], size_t entropy_len,
+    uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
+    size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
+    size_t *status, size_t trigger);
 
 /**
  * Wrapper to AES-GCM cryptolib implementation.

@@ -105,18 +105,33 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_fi_sym_drbg(ujson_t *uj) {
-  cryptolib_fi_sym_drbg_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_fi_sym_drbg_in_t(uj, &uj_input));
+status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj) {
+  cryptolib_fi_sym_drbg_generate_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_drbg_generate_in_t(uj, &uj_input));
 
   /////////////// STUB START ///////////////
   // Perform a DRBG call to generate random output.
   // Trigger are over the API calls.
-  cryptolib_fi_sym_drbg_out_t uj_output;
-  TRY(cryptolib_fi_drbg_impl(uj_input, &uj_output));
+  cryptolib_fi_sym_drbg_generate_out_t uj_output;
+  TRY(cryptolib_fi_drbg_generate_impl(uj_input, &uj_output));
   /////////////// STUB END ///////////////
 
-  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_out_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_generate_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj) {
+  cryptolib_fi_sym_drbg_reseed_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_drbg_reseed_in_t(uj, &uj_input));
+
+  /////////////// STUB START ///////////////
+  // Perform a DRBG call to reseed/instantiate the DRBG.
+  // Trigger are over the API calls.
+  cryptolib_fi_sym_drbg_reseed_out_t uj_output;
+  TRY(cryptolib_fi_drbg_reseed_impl(uj_input, &uj_output));
+  /////////////// STUB END ///////////////
+
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_reseed_out_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -197,8 +212,10 @@ status_t handle_cryptolib_fi_sym(ujson_t *uj) {
       return handle_cryptolib_fi_sym_tdes(uj);
     case kCryptoLibFiSymSubcommandHmac:
       return handle_cryptolib_fi_sym_hmac(uj);
-    case kCryptoLibFiSymSubcommandDrbg:
-      return handle_cryptolib_fi_sym_drbg(uj);
+    case kCryptoLibFiSymSubcommandDrbgGenerate:
+      return handle_cryptolib_fi_sym_drbg_generate(uj);
+    case kCryptoLibFiSymSubcommandDrbgReseed:
+      return handle_cryptolib_fi_sym_drbg_reseed(uj);
     case kCryptoLibFiSymSubcommandInit:
       return handle_cryptolib_fi_sym_init(uj);
     default:

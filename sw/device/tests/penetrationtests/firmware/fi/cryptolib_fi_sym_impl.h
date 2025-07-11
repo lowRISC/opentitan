@@ -20,14 +20,26 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
                                cryptolib_fi_sym_aes_out_t *uj_output);
 
 /**
- * Wrapper to DRBG cryptolib implementation.
+ * Wrapper to DRBG generate cryptolib implementation.
  *
  * @param uj_input An initialized uJSON context.
  * @param uj_output An initialized uJSON context.
  * @return OK or error.
  */
-status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
-                                cryptolib_fi_sym_drbg_out_t *uj_output);
+status_t cryptolib_fi_drbg_generate_impl(
+    cryptolib_fi_sym_drbg_generate_in_t uj_input,
+    cryptolib_fi_sym_drbg_generate_out_t *uj_output);
+
+/**
+ * Wrapper to DRBG reseed/instantiate cryptolib implementation.
+ *
+ * @param uj_input An initialized uJSON context.
+ * @param uj_output An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t cryptolib_fi_drbg_reseed_impl(
+    cryptolib_fi_sym_drbg_reseed_in_t uj_input,
+    cryptolib_fi_sym_drbg_reseed_out_t *uj_output);
 
 /**
  * Wrapper to AES-GCM cryptolib implementation.
