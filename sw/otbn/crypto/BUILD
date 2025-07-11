@@ -104,6 +104,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p256_isoncurve_proj",
+    srcs = [
+        "p256_isoncurve_proj.s",
+    ],
+)
+
+otbn_library(
     name = "p256_sign",
     srcs = [
         "p256_sign.s",
