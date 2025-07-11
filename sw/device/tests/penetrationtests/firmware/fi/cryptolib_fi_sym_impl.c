@@ -169,11 +169,11 @@ status_t cryptolib_fi_drbg_generate_impl(
   };
 
   // Trigger window 0.
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out = otcrypto_drbg_generate(nonce, output);
-  if (uj_input.trigger == 1) {
+  if (uj_input.trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
@@ -199,11 +199,11 @@ status_t cryptolib_fi_drbg_reseed_impl(
   };
 
   // Trigger window 0.
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out = otcrypto_drbg_instantiate(entropy);
-  if (uj_input.trigger == 0) {
+  if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 

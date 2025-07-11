@@ -52,8 +52,8 @@ status_t cryptolib_sca_aes_impl(
 status_t cryptolib_sca_drbg_generate_impl(
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
-    size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger);
+    size_t mode, size_t cfg_in, size_t *cfg_out, size_t *status,
+    size_t trigger);
 
 /**
  * Wrapper to DRBG reseed/instantiate cryptolib implementation.
