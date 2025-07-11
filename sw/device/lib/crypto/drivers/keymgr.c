@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -154,18 +155,76 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
   hardened_memshred(key->share1, kKeymgrOutputShareNumWords);
 
+  // Instantiate decoy buffers.
+  uint32_t decoys_src[8];
+  uint32_t decoys_dst[8];
+  uintptr_t decoy_src_addr = (uintptr_t)&decoys_src;
+  uintptr_t decoy_dst_addr = (uintptr_t)&decoys_dst;
+
+  random_order_t order;
+  random_order_init(&order, kKeymgrOutputShareNumWords);
+  size_t iter_cnt = 0, r_iter_cnt = order.max - 1;
+
   // Collect output.
-  // TODO: for SCA hardening, randomize the order of these reads.
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
-    key->share0[i] =
-        abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
-                        (i * sizeof(uint32_t)));
+  // For SCA hardening, randomize the order of these reads.
+  // Start from a random index less than `kKeymgrOutputShareNumWords`.
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uintptr_t data_src = kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
+                         (idx * sizeof(uint32_t));
+    uintptr_t decoy_src =
+        decoy_src_addr + (idx % (sizeof(decoys_src) / sizeof(uint32_t)));
+
+    uintptr_t data_dst = (uintptr_t)key->share0 + idx * sizeof(uint32_t);
+    uintptr_t decoy_dst =
+        decoy_dst_addr + (idx % (sizeof(decoys_dst) / sizeof(uint32_t)));
+
+    void *src = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), kKeymgrOutputShareNumWords), data_src,
+                 decoy_src));
+    void *dst = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), kKeymgrOutputShareNumWords), data_dst,
+                 decoy_dst));
+
+    // Write the word to `*dst`.
+    write_32(read_32(src), dst);
   }
-  for (size_t i = 0; i < kKeymgrOutputShareNumWords; i++) {
-    key->share1[i] =
-        abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
-                        (i * sizeof(uint32_t)));
+  HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
+
+  random_order_init(&order, kKeymgrOutputShareNumWords);
+  iter_cnt = 0;
+  r_iter_cnt = order.max - 1;
+  // Start from a random index less than `kKeymgrOutputShareNumWords`.
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1,
+                               r_iter_cnt = launderw(r_iter_cnt) - 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uintptr_t data_src = kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
+                         (idx * sizeof(uint32_t));
+    uintptr_t decoy_src =
+        decoy_src_addr + (idx % (sizeof(decoys_src) / sizeof(uint32_t)));
+
+    uintptr_t data_dst = (uintptr_t)key->share1 + idx * sizeof(uint32_t);
+    uintptr_t decoy_dst =
+        decoy_dst_addr + (idx % (sizeof(decoys_dst) / sizeof(uint32_t)));
+
+    void *src = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), kKeymgrOutputShareNumWords), data_src,
+                 decoy_src));
+    void *dst = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), kKeymgrOutputShareNumWords), data_dst,
+                 decoy_dst));
+
+    // Write the word to `*dst`.
+    write_32(read_32(src), dst);
   }
+  HARDENED_CHECK_EQ(iter_cnt, order.max);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   return OTCRYPTO_OK;
 }
