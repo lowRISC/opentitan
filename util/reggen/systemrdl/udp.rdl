@@ -9,3 +9,10 @@ property mubi {
   component = field;
   default = false;
 };
+
+/* ‘true’ if hardware uses ‘re’ signal, which is latched signal of software read pulse. */
+property hwre {
+  type = boolean;
+  component = reg;
+  default = false;
+};
