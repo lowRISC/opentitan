@@ -4,6 +4,8 @@
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["top_darjeeling_ac_range_check.ipconfig.hjson"])
+
 filegroup(
     name = "doc_files",
     srcs = glob([
