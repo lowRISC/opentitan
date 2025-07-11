@@ -15,6 +15,8 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/runtime/print_spi_device.h"
+#include "sw/device/lib/runtime/print_uart.h"
 #include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"

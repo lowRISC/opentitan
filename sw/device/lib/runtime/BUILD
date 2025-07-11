@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_ip")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
@@ -92,7 +93,45 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+    ] + opentitan_if_ip(
+        "uart",
+        [":print_uart"],
+        [],
+    ) + opentitan_if_ip(
+        "spi_device",
+        [":print_spi_device"],
+        [],
+    ),
+)
+
+cc_library(
+    name = "print_spi_device",
+    srcs = ["print_spi_device.c"],
+    hdrs = [
+        "print.h",
+        "print_spi_device.h",
+    ],
+    target_compatible_with = opentitan_require_ip("spi_device"),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:spi_device",
+    ],
+)
+
+cc_library(
+    name = "print_uart",
+    srcs = ["print_uart.c"],
+    hdrs = [
+        "print.h",
+        "print_uart.h",
+    ],
+    target_compatible_with = opentitan_require_ip("uart"),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
     ],
 )
