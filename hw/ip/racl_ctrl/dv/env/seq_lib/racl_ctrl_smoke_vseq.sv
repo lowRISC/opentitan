@@ -10,6 +10,10 @@ class racl_ctrl_smoke_vseq extends racl_ctrl_base_vseq;
 
   extern function new (string name="");
   extern task body();
+
+  // Write random values to the policy registers. This performs two times as many writes as there
+  // are registers (but doesn't guarantee anything about the distribution of writes to registers)
+  extern local task write_policy_regs();
 endclass
 
 function racl_ctrl_smoke_vseq::new (string name="");
@@ -17,13 +21,20 @@ function racl_ctrl_smoke_vseq::new (string name="");
 endfunction
 
 task racl_ctrl_smoke_vseq::body();
+  fork
+    super.body();
+    write_policy_regs();
+  join
+endtask
+
+task racl_ctrl_smoke_vseq::write_policy_regs();
   dv_base_reg regs[$];
   cfg.regs.get_policy_registers(regs);
   repeat (2 * regs.size()) begin
     int unsigned i = $urandom_range(0, regs.size() - 1);
     // Write an arbitrary random value to the register. Not every bit will correspond to a role,
-    // because the encoding uses bits 0..n; 16..16+n. But extra bits will be ignored anyway, so it
-    // doesn't really matter.
+    // because the encoding uses bits 0..n; 16..16+n for some n. But extra bits will be ignored
+    // anyway, so it doesn't really matter.
     bit [31:0] val = $urandom;
 
     // Write val to the register. If the register was shadowed, we'll need to do it twice.
