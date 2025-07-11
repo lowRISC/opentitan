@@ -349,7 +349,8 @@ class TopHelper:
         # List all muxed pads directly from the top.
         pads = [pad for pad in self.top['pinout']['pads'] if pad['connection'] == 'muxed']
         # List direct pads from the pinmux to avoid pins which are not relevant.
-        pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
+        if 'ios' in self.top['pinmux']:
+            pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
 
         # List all pads and put them in an enum.
         self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
@@ -1014,20 +1015,21 @@ This value is undefined if the block is not connected to the Alert Handler."""
             periph_ios = OrderedDict()
             for (sig, (port, idx)) in self._device_signals.items():
                 found = False
-                for conn in self.top["pinmux"]["ios"]:
-                    if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
-                        continue
-                    if found:
-                        logging.warning(
-                            f"multiple connections found for device {modname}, signal {sig}")
-                    found = True
-                    periph_ios[Name.from_snake_case(sig)] = \
-                        self._create_periph_io_desc(modname, port, conn)
-                # If no connections were found, create a manual one to fake it.
-                if not found:
-                    logging.warning(f"no connection found for device {modname}, signal {sig}")
-                    periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
-            inst_desc[self.PERIPH_IO_FIELD_NAME] = periph_ios
+                if "ios" in self.top["pinmux"]:
+                    for conn in self.top["pinmux"]["ios"]:
+                        if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
+                            continue
+                        if found:
+                            logging.warning(
+                                f"multiple connections found for device {modname}, signal {sig}")
+                        found = True
+                        periph_ios[Name.from_snake_case(sig)] = \
+                            self._create_periph_io_desc(modname, port, conn)
+                    # If no connections were found, create a manual one to fake it.
+                    if not found:
+                        logging.warning(f"no connection found for device {modname}, signal {sig}")
+                        periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
+                    inst_desc[self.PERIPH_IO_FIELD_NAME] = periph_ios
         # Add extension fields.
         for (ext, ext_field_name) in self._extension_structs.items():
             ext_fields = ext.fill_dt_ip(m)
