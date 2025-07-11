@@ -269,7 +269,7 @@ package lc_ctrl_reg_pkg;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 69;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_MUTEX_RESVAL = 8'h 69;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;
-  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_TRANSITION_REGWEN_RESVAL = 1'h 0;
+  parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_EN_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_TRANSITION_CMD_RESVAL = 1'h 0;
   parameter logic [1:0] LC_CTRL_TRANSITION_CTRL_RESVAL = 2'h 0;
   parameter logic [31:0] LC_CTRL_TRANSITION_TOKEN_0_RESVAL = 32'h 0;

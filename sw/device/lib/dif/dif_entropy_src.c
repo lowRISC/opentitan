@@ -156,8 +156,7 @@ dif_result_t dif_entropy_src_fw_override_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_fw_override_config_t config, dif_toggle_t enabled) {
   if (entropy_src == NULL ||
-      config.buffer_threshold >
-          ENTROPY_SRC_OBSERVE_FIFO_THRESH_OBSERVE_FIFO_THRESH_MASK ||
+      config.buffer_threshold > ENTROPY_SRC_OBSERVE_FIFO_THRESH_DATA_MASK ||
       config.buffer_threshold == 0 || !dif_is_valid_toggle(enabled)) {
     return kDifBadArg;
   }

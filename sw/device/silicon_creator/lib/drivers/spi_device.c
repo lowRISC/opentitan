@@ -481,23 +481,23 @@ typedef struct cmd_info {
 static void cmd_info_set(cmd_info_t cmd_info) {
   // CMD_INFO registers share the same layout, the code below uses the macros of
   // the CMD_INFO_0 register.
-  uint32_t reg = bitfield_field32_write(0, SPI_DEVICE_CMD_INFO_0_OPCODE_0_FIELD,
+  uint32_t reg = bitfield_field32_write(0, SPI_DEVICE_CMD_INFO_0_OPCODE_FIELD,
                                         cmd_info.op_code);
   reg = bitfield_field32_write(
-      reg, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_FIELD,
-      cmd_info.address ? SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDR3B
-                       : SPI_DEVICE_CMD_INFO_0_ADDR_MODE_0_VALUE_ADDRDISABLED);
+      reg, SPI_DEVICE_CMD_INFO_0_ADDR_MODE_FIELD,
+      cmd_info.address ? SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDR3B
+                       : SPI_DEVICE_CMD_INFO_0_ADDR_MODE_VALUE_ADDRDISABLED);
   if (cmd_info.dummy_cycles > 0) {
     // `DUMMY_SIZE` field is zero-based.
-    reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_0_FIELD,
+    reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_0_DUMMY_SIZE_FIELD,
                                  cmd_info.dummy_cycles - 1);
-    reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_0_BIT, true);
+    reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_DUMMY_EN_BIT, true);
   }
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_UPLOAD_0_BIT,
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_UPLOAD_BIT,
                              cmd_info.handled_in_sw);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_BUSY_BIT,
                              cmd_info.handled_in_sw);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, true);
+  reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_VALID_BIT, true);
   abs_mmio_write32(spi_device_reg_base() + cmd_info.reg_offset, reg);
 }
 

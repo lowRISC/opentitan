@@ -179,6 +179,7 @@
         hwaccess: "none"
         fields: [
           { name: "regwen"
+            name: "EN",
             desc: '''
                   Once cleared the mailbox inbound/outbound base/limit registers will be locked until the next reset.
 

@@ -55,13 +55,13 @@ Register write enable for all control registers
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "DATA", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                           |
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:1  |        |         |        | Reserved                                                                                                                                                                                                                              |
-|   0    |  rw0c  |   0x1   | REGWEN | When true, all writable registers can be modified. When false, they become read-only. Defaults true, write zero to clear. This can be cleared after initial configuration at boot in order to lock in the supplied register settings. |
+|   0    |  rw0c  |   0x1   | DATA   | When true, all writable registers can be modified. When false, they become read-only. Defaults true, write zero to clear. This can be cleared after initial configuration at boot in order to lock in the supplied register settings. |
 
 ## CFG
 Configuration register

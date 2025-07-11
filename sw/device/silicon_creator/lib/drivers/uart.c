@@ -82,7 +82,7 @@ static void putchar_nonblocking(uint8_t byte) {
   // If the transmit FIFO is full, wait.
   while (uart_tx_full()) {
   }
-  uint32_t reg = bitfield_field32_write(0, UART_WDATA_WDATA_FIELD, byte);
+  uint32_t reg = bitfield_field32_write(0, UART_WDATA_DATA_FIELD, byte);
   abs_mmio_write32(uart_reg_base() + UART_WDATA_REG_OFFSET, reg);
 }
 

@@ -147,13 +147,13 @@ Used to lock the inbound/outbound base/limit configuration registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "regwen", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN", "bits": 4, "attr": ["rw0c"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                  |
 |:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:4  |        |         |        | Reserved                                                                                                                                                     |
-|  3:0   |  rw0c  |   0x6   | regwen | Once cleared the mailbox inbound/outbound base/limit registers will be locked until the next reset. Default Value = kMultiBitBool4True -> Unlocked at reset. |
+|  3:0   |  rw0c  |   0x6   | EN     | Once cleared the mailbox inbound/outbound base/limit registers will be locked until the next reset. Default Value = kMultiBitBool4True -> Unlocked at reset. |
 
 ## ADDRESS_RANGE_VALID
 Used to mark the inbound/outbound base/limit configuration registers to have a valid configuration.
