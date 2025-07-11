@@ -120,19 +120,18 @@ static status_t trigger_cryptolib_hmac(
   return OK_STATUS();
 }
 
-static status_t trigger_cryptolib_drbg(
-    uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES], size_t entropy_len,
+static status_t trigger_cryptolib_drbg_generate(
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
-    uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t *data_out_len,
+    uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
     size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
     size_t *status, size_t trigger) {
   /////////////// STUB START ///////////////
   // Perform a TDES encryption or decryption.
   // Adjust the mode of operation and the padding mode.
   // Triggers are over the API calls.
-  TRY(cryptolib_sca_drbg_impl(entropy, entropy_len, nonce, nonce_len, data_out,
-                              data_out_len, reseed_interval, mode, cfg_in,
-                              cfg_out, status, trigger));
+  TRY(cryptolib_sca_drbg_generate_impl(nonce, nonce_len, data_out, data_out_len,
+                                       reseed_interval, mode, cfg_in, cfg_out,
+                                       status, trigger));
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -806,48 +805,54 @@ status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_cryptolib_sca_sym_drbg_fvsr(ujson_t *uj) {
-  cryptolib_sca_sym_drbg_in_t uj_input;
-  TRY(ujson_deserialize_cryptolib_sca_sym_drbg_in_t(uj, &uj_input));
-
-  uint8_t batch_entropy[uj_input.num_iterations][DRBG_CMD_MAX_ENTROPY_BYTES];
-  uint8_t batch_nonce[uj_input.num_iterations][DRBG_CMD_MAX_NONCE_BYTES];
-
-  // First generate all FvsR data sets. When sample_fixed,
-  // the provided entropy is used and the nonce is random. When
-  // not sample_fixed, a random entropy and a random nonce is
-  // generated.
-  bool sample_fixed = true;
-  for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    if (sample_fixed) {
-      memcpy(batch_entropy[it], uj_input.entropy, uj_input.entropy_len);
-    } else {
-      prng_rand_bytes(batch_entropy[it], uj_input.entropy_len);
-    }
-    prng_rand_bytes(batch_nonce[it], uj_input.nonce_len);
-    sample_fixed = prng_rand_byte() & 0x1;
-  }
+status_t handle_cryptolib_sca_sym_drbg_generate_batch(ujson_t *uj) {
+  cryptolib_sca_sym_drbg_generate_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_drbg_generate_in_t(uj, &uj_input));
 
   // Invoke DRBG for each data set.
   uint8_t data_out_buf[DRBG_CMD_MAX_OUTPUT_BYTES];
-  size_t data_out_len;
+  uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES];
   size_t cfg_out;
   size_t status;
   for (size_t it = 0; it < uj_input.num_iterations; it++) {
-    TRY(trigger_cryptolib_drbg(
-        batch_entropy[it], uj_input.entropy_len, batch_nonce[it],
-        uj_input.nonce_len, data_out_buf, &data_out_len,
-        uj_input.reseed_interval, uj_input.mode, uj_input.cfg, &cfg_out,
-        &status, uj_input.trigger));
+    prng_rand_bytes(nonce, uj_input.nonce_len);
+    TRY(trigger_cryptolib_drbg_generate(
+        nonce, uj_input.nonce_len, data_out_buf, uj_input.data_len,
+        uj_input.mode, uj_input.cfg, &cfg_out, &status, uj_input.trigger));
   }
 
   // Send the last data_out to host via UART.
-  cryptolib_sca_sym_drbg_out_t uj_output;
-  memcpy(uj_output.data, data_out_buf, DRBG_CMD_MAX_OUTPUT_BYTES);
-  uj_output.data_len = data_out_len;
+  cryptolib_sca_sym_drbg_generate_out_t uj_output;
+  memset(uj_output.data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
+  memcpy(uj_output.data, data_out_buf, uj_input.data_len);
   uj_output.cfg = cfg_out;
   uj_output.status = status;
-  RESP_OK(ujson_serialize_cryptolib_sca_sym_drbg_out_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_drbg_generate_out_t, uj,
+          &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_sca_sym_drbg_reseed(ujson_t *uj) {
+  cryptolib_sca_sym_drbg_reseed_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_sca_sym_drbg_reseed_in_t(uj, &uj_input));
+
+  /////////////// STUB START ///////////////
+  // Perform a DRBG reseed encryption.
+  // Triggers are over the API calls.
+  size_t cfg_out;
+  size_t status;
+  cryptolib_sca_drbg_reseed_impl(
+      uj_input.entropy, uj_input.entropy_len, uj_input.nonce,
+      uj_input.nonce_len, uj_input.reseed_interval, uj_input.mode, uj_input.cfg,
+      &cfg_out, &status, uj_input.trigger);
+
+  /////////////// STUB END ///////////////
+
+  cryptolib_sca_sym_drbg_reseed_out_t uj_output;
+  uj_output.cfg = cfg_out;
+  uj_output.status = status;
+  RESP_OK(ujson_serialize_cryptolib_sca_sym_drbg_reseed_out_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -933,8 +938,10 @@ status_t handle_cryptolib_sca_sym(ujson_t *uj) {
       return handle_cryptolib_sca_sym_hmac_fvsr_key(uj);
     case kCryptoLibScaSymSubcommandHmacDaisy:
       return handle_cryptolib_sca_sym_hmac_daisy_chain(uj);
-    case kCryptoLibScaSymSubcommandDrbgFvsr:
-      return handle_cryptolib_sca_sym_drbg_fvsr(uj);
+    case kCryptoLibScaSymSubcommandDrbgGenerateBatch:
+      return handle_cryptolib_sca_sym_drbg_generate_batch(uj);
+    case kCryptoLibScaSymSubcommandDrbgReseed:
+      return handle_cryptolib_sca_sym_drbg_reseed(uj);
     case kCryptoLibScaSymSubcommandInit:
       return handle_cryptolib_sca_sym_init(uj);
     default:

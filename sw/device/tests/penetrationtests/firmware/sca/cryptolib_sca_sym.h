@@ -214,7 +214,7 @@ status_t handle_cryptolib_sca_sym_hmac_fvsr_key(ujson_t *uj);
 status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj);
 
 /**
- * cryptolib drbg sca fvsr test
+ * cryptolib drbg generate sca batch test
  *
  * This SCA penetration test triggers num_iterations cryptolib DRBG operations
  * using a Fixed vs Random (FvsR) dataset. This dataset is generated on the
@@ -225,7 +225,19 @@ status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_sca_sym_drbg_fvsr(ujson_t *uj);
+status_t handle_cryptolib_sca_sym_drbg_generate_batch(ujson_t *uj);
+
+/**
+ * cryptolib drbg sca reseed
+ *
+ * This reseeds the DRBG with the gievn entropy.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_drbg_reseed(ujson_t *uj);
 
 /**
  * Initialize CryptoLib command handler.
