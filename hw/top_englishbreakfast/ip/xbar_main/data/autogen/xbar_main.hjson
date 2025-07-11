@@ -51,7 +51,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_flash_ctrl__prim"
+      name:   "tl_flash_macro_wrapper"
       act:    "req"
       package: "tlul_pkg"
     }

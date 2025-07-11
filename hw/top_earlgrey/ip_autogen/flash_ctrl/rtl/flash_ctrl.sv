@@ -39,13 +39,10 @@ module flash_ctrl
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
-  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
 
   // Bus Interface
   input        tlul_pkg::tl_h2d_t core_tl_i,
   output       tlul_pkg::tl_d2h_t core_tl_o,
-  input        tlul_pkg::tl_h2d_t prim_tl_i,
-  output       tlul_pkg::tl_d2h_t prim_tl_o,
   input        tlul_pkg::tl_h2d_t mem_tl_i,
   output       tlul_pkg::tl_d2h_t mem_tl_o,
 
@@ -59,13 +56,6 @@ module flash_ctrl
   output       pwrmgr_pkg::pwr_flash_t pwrmgr_o,
   output       keymgr_flash_t keymgr_o,
 
-  // IOs
-  input cio_tck_i,
-  input cio_tms_i,
-  input cio_tdi_i,
-  output logic cio_tdo_en_o,
-  output logic cio_tdo_o,
-
   // Interrupts
   output logic intr_corr_err_o,   // Correctable errors encountered
   output logic intr_prog_empty_o, // Program fifo is empty
@@ -74,23 +64,14 @@ module flash_ctrl
   output logic intr_rd_lvl_o,     // Read fifo is full
   output logic intr_op_done_o,    // Requested flash operation (wr/erase) done
 
+  // Flash macro interface
+  output flash_phy_macro_pkg::flash_phy_macro_req_t flash_macro_o,
+  input  flash_phy_macro_pkg::flash_phy_macro_rsp_t flash_macro_i,
+  input  flash_phy_macro_pkg::flash_macro_status_t flash_macro_status_i,
+
   // Alerts
   input  prim_alert_pkg::alert_rx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o,
-
-  // Observability
-  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
-  output logic [7:0] fla_obs_o,
-
-  // Flash test interface
-  input scan_en_i,
-  input prim_mubi_pkg::mubi4_t scanmode_i,
-  input scan_rst_ni,
-  input prim_mubi_pkg::mubi4_t flash_bist_enable_i,
-  input flash_power_down_h_i,
-  input flash_power_ready_h_i,
-  inout [1:0] flash_test_mode_a_io,
-  inout flash_test_voltage_h_io
+  output prim_alert_pkg::alert_tx_t [flash_ctrl_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
   //////////////////////////////////////////////////////////
@@ -901,12 +882,6 @@ module flash_ctrl
   assign flash_phy_req.rand_data_key = rand_data_key;
   assign flash_phy_req.alert_trig = reg2hw.phy_alert_cfg.alert_trig.q;
   assign flash_phy_req.alert_ack = reg2hw.phy_alert_cfg.alert_ack.q;
-  assign flash_phy_req.jtag_req.tck = cio_tck_i;
-  assign flash_phy_req.jtag_req.tms = cio_tms_i;
-  assign flash_phy_req.jtag_req.tdi = cio_tdi_i;
-  assign flash_phy_req.jtag_req.trst_n = '0;
-  assign cio_tdo_o = flash_phy_rsp.jtag_rsp.tdo;
-  assign cio_tdo_en_o = flash_phy_rsp.jtag_rsp.tdo_oe;
   assign flash_rd_err = flash_phy_rsp.rd_err;
   assign flash_rd_data = flash_phy_rsp.rd_data;
   assign flash_phy_busy = flash_phy_rsp.init_busy;
@@ -935,12 +910,11 @@ module flash_ctrl
 
   logic [NumAlerts-1:0] alert_srcs;
   logic [NumAlerts-1:0] alert_tests;
-  logic fatal_prim_flash_alert, recov_prim_flash_alert;
 
   // An excessive number of recoverable errors may also indicate an attack
   logic recov_err;
   assign recov_err = (sw_ctrl_done & |sw_ctrl_err) |
-                     flash_phy_rsp.macro_err |
+                     flash_macro_status_i.flash_err |
                      update_err;
 
   logic fatal_err;
@@ -953,8 +927,8 @@ module flash_ctrl
   assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(fatal_std_err);
 
   assign alert_srcs = {
-    recov_prim_flash_alert,
-    fatal_prim_flash_alert,
+    flash_macro_status_i.recov_alert,
+    flash_macro_status_i.fatal_alert,
     fatal_err,
     fatal_std_err,
     recov_err
@@ -1085,7 +1059,7 @@ module flash_ctrl
   assign hw2reg.err_code.prog_win_err.de    = sw_ctrl_err.prog_win_err;
   assign hw2reg.err_code.prog_type_err.de   = sw_ctrl_err.prog_type_err;
   assign hw2reg.err_code.update_err.de      = update_err;
-  assign hw2reg.err_code.macro_err.de       = flash_phy_rsp.macro_err;
+  assign hw2reg.err_code.macro_err.de       = flash_macro_status_i.flash_err;
   assign hw2reg.err_addr.d                  = {ctrl_err_addr, {BusByteWidth{1'h0}}};
   assign hw2reg.err_addr.de                 = sw_ctrl_err.mp_err |
                                               sw_ctrl_err.rd_err |
@@ -1356,21 +1330,10 @@ module flash_ctrl
     .host_rdata_o      (flash_host_rdata),
     .flash_ctrl_i      (flash_phy_req),
     .flash_ctrl_o      (flash_phy_rsp),
-    .tl_i              (prim_tl_i),
-    .tl_o              (prim_tl_o),
-    .obs_ctrl_i,
-    .fla_obs_o,
-    .lc_nvm_debug_en_i,
-    .flash_bist_enable_i,
-    .flash_power_down_h_i,
-    .flash_power_ready_h_i,
-    .flash_test_mode_a_io,
-    .flash_test_voltage_h_io,
-    .fatal_prim_flash_alert_o(fatal_prim_flash_alert),
-    .recov_prim_flash_alert_o(recov_prim_flash_alert),
-    .scanmode_i,
-    .scan_en_i,
-    .scan_rst_ni
+    .flash_macro_req_o (flash_macro_o),
+    .flash_macro_rsp_i (flash_macro_i),
+    .prog_type_avail_i (flash_macro_status_i.prog_type_avail),
+    .init_busy_i       (flash_macro_status_i.init_busy)
   );
 
   /////////////////////////////////
@@ -1380,9 +1343,6 @@ module flash_ctrl
   `ASSERT_KNOWN(TlDValidKnownO_A,       core_tl_o.d_valid )
   `ASSERT_KNOWN(TlAReadyKnownO_A,       core_tl_o.a_ready )
   `ASSERT_KNOWN_IF(RspPayLoad_A,        core_tl_o, core_tl_o.d_valid)
-  `ASSERT_KNOWN(PrimTlDValidKnownO_A,   prim_tl_o.d_valid )
-  `ASSERT_KNOWN(PrimTlAReadyKnownO_A,   prim_tl_o.a_ready )
-  `ASSERT_KNOWN_IF(PrimRspPayLoad_A,    prim_tl_o, prim_tl_o.d_valid)
   `ASSERT_KNOWN(MemTlDValidKnownO_A,    mem_tl_o.d_valid )
   `ASSERT_KNOWN(MemTlAReadyKnownO_A,    mem_tl_o.a_ready )
   `ASSERT_KNOWN_IF(MemRspPayLoad_A,     mem_tl_o, mem_tl_o.d_valid)
@@ -1398,8 +1358,6 @@ module flash_ctrl
   `ASSERT_KNOWN(IntrRdLvlKnownO_A,      intr_rd_lvl_o    )
   `ASSERT_KNOWN(IntrOpDoneKnownO_A,     intr_op_done_o   )
   `ASSERT_KNOWN(IntrErrO_A,             intr_corr_err_o  )
-  `ASSERT_KNOWN(TdoKnown_A,             cio_tdo_o        )
-  `ASSERT(TdoEnIsOne_A,                 cio_tdo_en_o === 1'b1)
 
   // combined indication that an operation has started
   // This is used only for assertions
