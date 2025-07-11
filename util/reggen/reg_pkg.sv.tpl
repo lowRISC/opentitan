@@ -385,6 +385,15 @@ package ${lblock}${"_" + block.alias_impl if block.alias_impl else ""}_reg_pkg;
 % for iface_name, rb in block.reg_blocks.items():
   parameter int NumRegs${iface_name.title() if iface_name else ""} = ${len(rb.flat_regs)};
 % endfor
+% if len(block.alerts):
+
+  // Alert indices
+  typedef enum int {
+% for idx, alert in enumerate(block.alerts):
+    Alert${lib.Name.to_camel_case(alert.name)}Idx = ${idx}${"" if idx == len(block.alerts) - 1 else ","}
+% endfor
+  } ${block.name.lower()}_alert_idx_t;
+% endif
 <%
   just_default = len(block.reg_blocks) == 1 and None in block.reg_blocks
 %>\

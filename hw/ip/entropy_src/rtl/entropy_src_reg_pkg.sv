@@ -16,6 +16,12 @@ package entropy_src_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 56;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovAlertIdx = 0,
+    AlertFatalAlertIdx = 1
+  } entropy_src_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

@@ -19,6 +19,11 @@ package spi_host_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 12;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } spi_host_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

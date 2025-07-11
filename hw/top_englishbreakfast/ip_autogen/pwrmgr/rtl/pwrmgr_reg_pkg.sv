@@ -26,6 +26,11 @@ package pwrmgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 17;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } pwrmgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

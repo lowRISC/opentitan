@@ -17,6 +17,12 @@ package soc_dbg_ctrl_reg_pkg;
   parameter int NumRegsCore = 7;
   parameter int NumRegsJtag = 6;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertRecovCtrlUpdateErrIdx = 1
+  } soc_dbg_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

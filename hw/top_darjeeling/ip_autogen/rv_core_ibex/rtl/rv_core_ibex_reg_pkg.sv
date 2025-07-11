@@ -18,6 +18,14 @@ package rv_core_ibex_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegsCfg = 265;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalSwErrIdx = 0,
+    AlertRecovSwErrIdx = 1,
+    AlertFatalHwErrIdx = 2,
+    AlertRecovHwErrIdx = 3
+  } rv_core_ibex_alert_idx_t;
+
   //////////////////////////////////////////////
   // Typedefs for registers for cfg interface //
   //////////////////////////////////////////////

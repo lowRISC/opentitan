@@ -21,6 +21,12 @@ package kmac_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 57;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovOperationErrIdx = 0,
+    AlertFatalFaultErrIdx = 1
+  } kmac_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

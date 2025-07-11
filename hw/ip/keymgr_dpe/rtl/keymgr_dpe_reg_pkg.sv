@@ -20,6 +20,12 @@ package keymgr_dpe_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 53;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovOperationErrIdx = 0,
+    AlertFatalFaultErrIdx = 1
+  } keymgr_dpe_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

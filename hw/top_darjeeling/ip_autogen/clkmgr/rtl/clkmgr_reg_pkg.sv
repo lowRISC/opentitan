@@ -18,6 +18,12 @@ package clkmgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 16;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovFaultIdx = 0,
+    AlertFatalFaultIdx = 1
+  } clkmgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
