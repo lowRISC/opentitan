@@ -678,6 +678,19 @@ status_t cryptolib_fi_p256_sign_impl(
   memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
+  // Create the public key.
+  p256_point_t pub_p256;
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(p256_point_t),
+      .key = (uint32_t *)&pub_p256,
+  };
+  memset(pub_p256.x, 0, kP256CoordBytes);
+  memcpy(pub_p256.x, uj_input.pubx, P256_CMD_BYTES);
+  memset(pub_p256.y, 0, kP256CoordBytes);
+  memcpy(pub_p256.y, uj_input.puby, P256_CMD_BYTES);
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP256Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -698,7 +711,8 @@ status_t cryptolib_fi_p256_sign_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  TRY(otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut));
+  TRY(otcrypto_ecdsa_p256_sign_verify(&private_key, &public_key, message_digest,
+                                      signature_mut));
 
   // Return data back to host.
   uj_output->cfg = 0;
@@ -869,6 +883,19 @@ status_t cryptolib_fi_p384_sign_impl(
   memset(private_key_masked.share1, 0, kP384MaskedScalarShareBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
+  // Create the public key.
+  p384_point_t pub_p384;
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(p384_point_t),
+      .key = (uint32_t *)&pub_p384,
+  };
+  memset(pub_p384.x, 0, kP384CoordBytes);
+  memcpy(pub_p384.x, uj_input.pubx, P384_CMD_BYTES);
+  memset(pub_p384.y, 0, kP384CoordBytes);
+  memcpy(pub_p384.y, uj_input.puby, P384_CMD_BYTES);
+  public_key.checksum = integrity_unblinded_checksum(&public_key);
+
   // Set up the message buffer.
   uint32_t message_buf[kPentestP384Words];
   memset(message_buf, 0, sizeof(message_buf));
@@ -888,7 +915,8 @@ status_t cryptolib_fi_p384_sign_impl(
   };
 
   // Trigger window.
-  TRY(otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut));
+  TRY(otcrypto_ecdsa_p384_sign_verify(&private_key, &public_key, message_digest,
+                                      signature_mut));
 
   // Return data back to host.
   uj_output->cfg = 0;
