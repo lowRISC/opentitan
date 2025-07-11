@@ -35,7 +35,7 @@ status_t cryptolib_sca_rsa_dec_impl(
     uint32_t e, uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t data_out[RSA_CMD_MAX_MESSAGE_BYTES],
     size_t *data_out_len, size_t hashing, size_t padding, size_t cfg_in,
-    size_t *cfg_out, size_t *status, size_t trigger) {
+    size_t *cfg_out, size_t trigger) {
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
   size_t num_words;
@@ -175,8 +175,8 @@ status_t cryptolib_sca_rsa_dec_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out = otcrypto_rsa_decrypt(
-      &private_key, hash_mode, ciphertext, label_buf, plaintext, &msg_len);
+  TRY(otcrypto_rsa_decrypt(&private_key, hash_mode, ciphertext, label_buf,
+                           plaintext, &msg_len));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
@@ -184,7 +184,6 @@ status_t cryptolib_sca_rsa_dec_impl(
   // Return data back to host.
   *data_out_len = msg_len;
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   memset(data_out, 0, RSA_CMD_MAX_MESSAGE_BYTES);
   memcpy(data_out, plaintext_buf, msg_len);
 
@@ -275,7 +274,7 @@ status_t cryptolib_sca_rsa_sign_impl(
     uint8_t n[RSA_CMD_MAX_N_BYTES], uint8_t d[RSA_CMD_MAX_N_BYTES],
     size_t *n_len, uint8_t sig[RSA_CMD_MAX_SIGNATURE_BYTES], size_t *sig_len,
     size_t hashing, size_t padding, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger) {
+    size_t trigger) {
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
   size_t num_words;
@@ -431,8 +430,7 @@ status_t cryptolib_sca_rsa_sign_impl(
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out =
-      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig);
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig));
   // Trigger window.
   if (trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -441,7 +439,6 @@ status_t cryptolib_sca_rsa_sign_impl(
   // Return data back to host.
   *sig_len = *n_len;
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   memset(sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
   memcpy(sig, sig_buf, *sig_len);
 
@@ -512,15 +509,11 @@ status_t cryptolib_sca_p256_sign_impl(
 
   // Trigger window 1.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut);
-  if (uj_input.trigger == 1) {
-    pentest_set_trigger_low();
-  }
+  TRY(otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->r, 0, P256_CMD_BYTES);
   memset(uj_output->s, 0, P256_CMD_BYTES);
   p256_ecdsa_signature_t *signature_p256 =
@@ -591,8 +584,7 @@ status_t cryptolib_sca_p384_ecdh_impl(
   };
 
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret);
+  TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
   pentest_set_trigger_low();
 
   uint32_t share0[kPentestP384Words];
@@ -608,7 +600,6 @@ status_t cryptolib_sca_p384_ecdh_impl(
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->shared_key, 0, P384_CMD_BYTES);
   memcpy(uj_output->shared_key, ss, P384_CMD_BYTES);
 
@@ -679,15 +670,11 @@ status_t cryptolib_sca_p384_sign_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut);
-  if (uj_input.trigger == 1) {
-    pentest_set_trigger_low();
-  }
+  TRY(otcrypto_ecdsa_p384_sign(&private_key, message_digest, signature_mut));
+  pentest_set_trigger_low();
 
   // Return data back to host.
   uj_output->cfg = 0;
-  uj_output->status = (size_t)status_out.value;
   memset(uj_output->r, 0, P384_CMD_BYTES);
   memset(uj_output->s, 0, P384_CMD_BYTES);
   p384_ecdsa_signature_t *signature_p384 =
