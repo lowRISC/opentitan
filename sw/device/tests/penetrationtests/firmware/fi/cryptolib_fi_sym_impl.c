@@ -147,26 +147,9 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   return OK_STATUS();
 }
 
-status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
-                                cryptolib_fi_sym_drbg_out_t *uj_output) {
-  // Entropy buffer used for the instantiation of the DRBG.
-  uint8_t entropy_buf[uj_input.entropy_len];
-  memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
-
-  otcrypto_const_byte_buf_t entropy = {
-      .len = uj_input.entropy_len,
-      .data = entropy_buf,
-  };
-
-  // Trigger window 0.
-  if (uj_input.trigger == 0) {
-    pentest_set_trigger_high();
-  }
-  TRY(otcrypto_drbg_instantiate(entropy));
-  if (uj_input.trigger == 0) {
-    pentest_set_trigger_low();
-  }
-
+status_t cryptolib_fi_drbg_generate_impl(
+    cryptolib_fi_sym_drbg_generate_in_t uj_input,
+    cryptolib_fi_sym_drbg_generate_out_t *uj_output) {
   // Nonce buffer used for the generate command of the DRBG.
   uint8_t nonce_buf[uj_input.nonce_len];
   memcpy(nonce_buf, uj_input.nonce, uj_input.nonce_len);
@@ -177,7 +160,7 @@ status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
   };
 
   // Buffer for the output entropy data.
-  uint32_t output_data[uj_input.entropy_len];
+  uint32_t output_data[uj_input.data_len];
   otcrypto_word32_buf_t output = {
       .data = output_data,
       .len = ARRAYSIZE(output_data),
@@ -193,11 +176,38 @@ status_t cryptolib_fi_drbg_impl(cryptolib_fi_sym_drbg_in_t uj_input,
   }
 
   // Return data back to host.
-  uj_output->data_len = uj_input.entropy_len;
   uj_output->cfg = 0;
   uj_output->status = (size_t)status_out.value;
   memset(uj_output->data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
-  memcpy(uj_output->data, output_data, uj_output->data_len);
+  memcpy(uj_output->data, output_data, uj_input.data_len);
+
+  return OK_STATUS();
+}
+
+status_t cryptolib_fi_drbg_reseed_impl(
+    cryptolib_fi_sym_drbg_reseed_in_t uj_input,
+    cryptolib_fi_sym_drbg_reseed_out_t *uj_output) {
+  // Entropy buffer used for the instantiation of the DRBG.
+  uint8_t entropy_buf[uj_input.entropy_len];
+  memcpy(entropy_buf, uj_input.entropy, uj_input.entropy_len);
+
+  otcrypto_const_byte_buf_t entropy = {
+      .len = uj_input.entropy_len,
+      .data = entropy_buf,
+  };
+
+  // Trigger window 0.
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_high();
+  }
+  otcrypto_status_t status_out = otcrypto_drbg_instantiate(entropy);
+  if (uj_input.trigger == 0) {
+    pentest_set_trigger_low();
+  }
+
+  // Return data back to host.
+  uj_output->cfg = 0;
+  uj_output->status = (size_t)status_out.value;
 
   return OK_STATUS();
 }

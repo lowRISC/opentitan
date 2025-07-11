@@ -43,7 +43,8 @@ extern "C" {
     value(_, HmacFvsrPlaintext) \
     value(_, HmacFvsrKey) \
     value(_, HmacDaisy) \
-    value(_, DrbgFvsr) \
+    value(_, DrbgGenerateBatch) \
+    value(_, DrbgReseed) \
     value(_, Init)
 C_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcommand_t, CRYPTOLIBSCASYM_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(CryptoLibScaSymSubcommand, cryptolib_sca_sym_subcommand_t, CRYPTOLIBSCASYM_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
@@ -149,23 +150,37 @@ UJSON_SERDE_STRUCT(CryptoLibScaSymHmacIn, cryptolib_sca_sym_hmac_in_t, CRYPTOLIB
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibScaSymHmacOut, cryptolib_sca_sym_hmac_out_t, CRYPTOLIBSCASYM_HMAC_OUT);
 
-#define CRYPTOLIBSCASYM_DRBG_IN(field, string) \
-    field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
-    field(entropy_len, size_t) \
+#define CRYPTOLIBSCASYM_DRBG_GENERATE_IN(field, string) \
+    field(data_len, size_t) \
+    field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
     field(nonce_len, size_t) \
-    field(reseed_interval, size_t) \
     field(mode, size_t) \
     field(cfg, size_t) \
     field(num_iterations, size_t) \
     field(trigger, size_t)
-UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgIn, cryptolib_sca_sym_drbg_in_t, CRYPTOLIBSCASYM_DRBG_IN);
+UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgGenerateIn, cryptolib_sca_sym_drbg_generate_in_t, CRYPTOLIBSCASYM_DRBG_GENERATE_IN);
 
-#define CRYPTOLIBSCASYM_DRBG_OUT(field, string) \
+#define CRYPTOLIBSCASYM_DRBG_RESEED_IN(field, string) \
+    field(entropy, uint8_t, DRBG_CMD_MAX_ENTROPY_BYTES) \
+    field(entropy_len, size_t) \
+    field(nonce, uint8_t, DRBG_CMD_MAX_NONCE_BYTES) \
+    field(nonce_len, size_t) \
+    field(reseed_interval, size_t) \
+    field(mode, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgReseedIn, cryptolib_sca_sym_drbg_reseed_in_t, CRYPTOLIBSCASYM_DRBG_RESEED_IN);
+
+#define CRYPTOLIBSCASYM_DRBG_GENERATE_OUT(field, string) \
     field(data, uint8_t, DRBG_CMD_MAX_OUTPUT_BYTES) \
-    field(data_len, size_t) \
     field(status, size_t) \
     field(cfg, size_t)
-UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgOut, cryptolib_sca_sym_drbg_out_t, CRYPTOLIBSCASYM_DRBG_OUT);
+UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgGenerateOut, cryptolib_sca_sym_drbg_generate_out_t, CRYPTOLIBSCASYM_DRBG_GENERATE_OUT);
+
+#define CRYPTOLIBSCASYM_DRBG_RESEED_OUT(field, string) \
+    field(status, size_t) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibScaSymDrbgReseedOut, cryptolib_sca_sym_drbg_reseed_out_t, CRYPTOLIBSCASYM_DRBG_RESEED_OUT);
 
 // clang-format on
 
