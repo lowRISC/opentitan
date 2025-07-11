@@ -140,12 +140,12 @@ status_t cryptolib_sca_rsa_dec_impl(
   };
 
   // Trigger window.
-  if (trigger == 0) {
+  if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, e, d_share0,
                                               d_share1, &private_key));
-  if (trigger == 0) {
+  if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 
@@ -172,12 +172,12 @@ status_t cryptolib_sca_rsa_dec_impl(
 
   size_t msg_len;
   // Trigger window.
-  if (trigger == 1) {
+  if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out = otcrypto_rsa_decrypt(
       &private_key, hash_mode, ciphertext, label_buf, plaintext, &msg_len);
-  if (trigger == 1) {
+  if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
@@ -381,12 +381,12 @@ status_t cryptolib_sca_rsa_sign_impl(
   };
 
   // Trigger window.
-  if (trigger == 0) {
+  if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   TRY(otcrypto_rsa_private_key_from_exponents(rsa_size, modulus, e, d_share0,
                                               d_share1, &private_key));
-  if (trigger == 0) {
+  if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 
@@ -406,7 +406,7 @@ status_t cryptolib_sca_rsa_sign_impl(
       .mode = hash_mode,
   };
   // Trigger window.
-  if (trigger == 1) {
+  if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
   // Hash the message.
@@ -417,7 +417,7 @@ status_t cryptolib_sca_rsa_sign_impl(
   } else {
     TRY(otcrypto_sha2_512(msg_buf, &msg_digest));
   }
-  if (trigger == 1) {
+  if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
@@ -428,13 +428,13 @@ status_t cryptolib_sca_rsa_sign_impl(
   };
 
   // Trigger window.
-  if (trigger == 2) {
+  if (trigger & kPentestTrigger3) {
     pentest_set_trigger_high();
   }
   otcrypto_status_t status_out =
       otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, rsa_sig);
   // Trigger window.
-  if (trigger == 2) {
+  if (trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
   }
 
