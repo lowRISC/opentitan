@@ -177,6 +177,12 @@ module rv_core_ibex
   tl_h2d_t tl_d_ibex2fifo;
   tl_d2h_t tl_d_fifo2ibex;
 
+  // TLUL LC Gate interfaces
+  tl_h2d_t tl_d_fifo2gate;
+  tl_d2h_t tl_d_gate2fifo;
+
+  logic tlul_lc_gate_core_d_error;
+
 `ifdef RVFI
   logic        rvfi_valid;
   logic [63:0] rvfi_order;
@@ -233,7 +239,7 @@ module rv_core_ibex
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
-  assign fatal_core_event = alert_major_internal | double_fault;
+  assign fatal_core_event = alert_major_internal | double_fault | tlul_lc_gate_core_d_error;
   assign recov_core_event = alert_minor;
 
   // configurations for address translation
@@ -287,8 +293,10 @@ module rv_core_ibex
   logic irq_nm;
   assign irq_nm = |(reg2hw.nmi_state & reg2hw.nmi_enable);
 
-  lc_ctrl_pkg::lc_tx_t [0:0] lc_cpu_en;
-  prim_lc_sync u_lc_sync (
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_cpu_en;
+  prim_lc_sync #(
+    .NumCopies(2)
+  ) u_lc_sync (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_cpu_en_i),
@@ -702,12 +710,32 @@ module rv_core_ibex
     .rst_ni,
     .tl_h_i      (tl_d_ibex2fifo),
     .tl_h_o      (tl_d_fifo2ibex),
-    .tl_d_o      (cored_tl_h_o),
-    .tl_d_i      (cored_tl_h_i),
+    .tl_d_o      (tl_d_fifo2gate),
+    .tl_d_i      (tl_d_gate2fifo),
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
+
+  // Gate any pending requests on escalation
+  tlul_lc_gate #(
+    .Outstanding(NumOutstandingReqs),
+    .NumGatesPerDirection(1),
+    // Don't return an error. Only interested in blocking a request at this stage
+    .ReturnBlankResp(1)
+  ) u_tlul_lc_gate_cored (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i       (tl_d_fifo2gate),
+    .tl_d2h_o       (tl_d_gate2fifo),
+    .tl_h2d_o       (cored_tl_h_o),
+    .tl_d2h_i       (cored_tl_h_i),
+    .flush_req_i    (1'b0),
+    .flush_ack_o    (),
+    .resp_pending_o (),
+    .lc_en_i        (lc_cpu_en[1]),
+    .err_o          (tlul_lc_gate_core_d_error)
+  );
 
 `ifdef RVFI
   ibex_tracer ibex_tracer_i (
@@ -1065,6 +1093,8 @@ module rv_core_ibex
       instr_intg_err)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
       u_core.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt, alert_tx_o[2])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CoredTlLcGateFsm_A,
+      u_tlul_lc_gate_cored.u_state_regs, alert_tx_o[2])
 
 `endif // ifdef INC_ASSERT
 endmodule
