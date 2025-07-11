@@ -15,56 +15,6 @@
 // Exclusions are to be provided using the csr_excl_item item (see class for more details).
 
 //--------------------------------------------------------------------------------------------------
-// Class: csr_hw_reset_seq
-// Brief Description: This sequence reads all CSRs and checks it against the reset value provided
-// in the RAL specification. Note that this does not sufficiently qualify as the CSR HW reset test.
-// The 'full' CSR HW reset test is constructed externally by running the csr_write_seq below first,
-// issuing reset and only then running this sequence.
-//--------------------------------------------------------------------------------------------------
-class csr_hw_reset_seq extends csr_base_seq;
-  `uvm_object_utils(csr_hw_reset_seq)
-
-  `uvm_object_new
-
-  virtual task body();
-    foreach (test_csrs[i]) begin
-      uvm_reg_data_t compare_mask;
-
-      // check if parent block or register is excluded from init check
-      if (is_excl(test_csrs[i], CsrExclInitCheck, CsrHwResetTest)) begin
-        `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclInitCheck exclusion",
-                                  test_csrs[i].get_full_name()), UVM_MEDIUM)
-        continue;
-      end
-
-      `uvm_info(`gtn, $sformatf("Verifying reset value of register %0s",
-                                test_csrs[i].get_full_name()), UVM_MEDIUM)
-
-      compare_mask = get_mask_excl_fields(test_csrs[i], CsrExclInitCheck, CsrHwResetTest);
-      // Read CSR twice, one from backdoor (if path available), the other from frontdoor.
-      if (test_csrs[i].has_hdl_path()) begin
-        // Reading from backdoor can ensure that we deposit value into the storage rather than just
-        // a net. If we mistakenly deposit to a net, reset can't clear it and this check will fail.
-        csr_rd_check(.ptr           (test_csrs[i]),
-                     .backdoor      (1),
-                     .compare       (!external_checker),
-                     .compare_vs_ral(1'b1),
-                     .compare_mask  (compare_mask));
-      end
-
-      // Read and check value via frontdoor.
-      csr_rd_check(.ptr           (test_csrs[i]),
-                   .backdoor      (0),
-                   .blocking      (0),
-                   .compare       (!external_checker),
-                   .compare_vs_ral(1'b1),
-                   .compare_mask  (compare_mask));
-    end
-  endtask
-
-endclass
-
-//--------------------------------------------------------------------------------------------------
 // Class: csr_write_seq
 // Brief Description: This sequence writes a random value to all CSRs. It does not perform any
 // checks. It is run as the first step of the CSR HW reset test.
