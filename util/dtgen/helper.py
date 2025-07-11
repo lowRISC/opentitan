@@ -387,6 +387,12 @@ class TopHelper:
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
             self.clock_enum.add_constant(clock_name, "clock {}".format(clock["name"]))
+
+        # Unmanaged clocks
+        for clock in self.top['unmanaged_clocks']:
+            clock_name = Name.from_snake_case(clock)
+            self.clock_enum.add_constant(clock_name)
+
         self.clock_enum.add_count_constant("Number of clocks")
 
         # List of all reset nodes and put them in an enum.
@@ -395,6 +401,12 @@ class TopHelper:
         for reset_node in self.top["resets"]["nodes"]:
             reset_name = Name.from_snake_case(reset_node["name"])
             self.reset_enum.add_constant(reset_name, "Reset node {}".format(reset_node["name"]))
+
+        # Unmanaged resets
+        for reset in self.top['unmanaged_resets']:
+            reset_name = Name.from_snake_case(reset)
+            self.reset_enum.add_constant(reset_name)
+
         self.reset_enum.add_count_constant("Number of resets")
 
         # Create structure to describe a peripheral I/O and a pad.
