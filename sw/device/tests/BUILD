@@ -7699,21 +7699,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "soc_proxy_external_alerts",
-    srcs = ["soc_proxy_external_alerts.c"],
-    exec_env = DARJEELING_TEST_ENVS,
-    deps = [
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:soc_proxy",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:alert_handler_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "soc_proxy_external_wakeup",
     srcs = ["soc_proxy_external_wakeup.c"],
     exec_env = DARJEELING_TEST_ENVS,
