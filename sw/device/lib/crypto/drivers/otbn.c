@@ -126,13 +126,18 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
   // Start from a random index less than `num_words`.
   size_t i = ((uint64_t)ibex_rnd32_read() * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = num_words - 1;
+  for (; launder32(iter_cnt) < num_words;
+       iter_cnt = launderw(iter_cnt) + 1,
+       r_iter_cnt = launderw(r_iter_cnt) - 1) {
     abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
+    // This modulo operation should compile to constant-time instructions (e.g.,
+    // ADDI + REMU, ADDI + AND) to avoid data-dependent timing variations.
     i = (i + kStep) % num_words;
     HARDENED_CHECK_LT(i, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 }
 
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,

@@ -159,23 +159,34 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   // Start from a random index less than `kKeymgrOutputShareNumWords`.
   size_t i = ((uint64_t)ibex_rnd32_read() * kKeymgrOutputShareNumWords) >> 32;
   enum { kStep = 1 };
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = kKeymgrOutputShareNumWords - 1;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords;
+       iter_cnt = launderw(iter_cnt) + 1,
+       r_iter_cnt = launderw(r_iter_cnt) - 1) {
     key->share0[i] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
+    // This modulo operation should compile to constant-time instructions (e.g.,
+    // ADDI + REMU, ADDI + AND) to avoid data-dependent timing variations.
     i = (i + kStep) % kKeymgrOutputShareNumWords;
   }
   HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
   i = ((uint64_t)ibex_rnd32_read() * kKeymgrOutputShareNumWords) >> 32;
   iter_cnt = 0;
-  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords; ++iter_cnt) {
+  r_iter_cnt = kKeymgrOutputShareNumWords - 1;
+  for (; launder32(iter_cnt) < kKeymgrOutputShareNumWords;
+       iter_cnt = launderw(iter_cnt) + 1,
+       r_iter_cnt = launderw(r_iter_cnt) - 1) {
     key->share1[i] =
         abs_mmio_read32(kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET +
                         (i * sizeof(uint32_t)));
+    // This modulo operation should compile to constant-time instructions (e.g.,
+    // ADDI + REMU, ADDI + AND) to avoid data-dependent timing variations.
     i = (i + kStep) % kKeymgrOutputShareNumWords;
   }
   HARDENED_CHECK_EQ(iter_cnt, kKeymgrOutputShareNumWords);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   return OTCRYPTO_OK;
 }

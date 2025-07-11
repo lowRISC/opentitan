@@ -71,19 +71,30 @@ static status_t aes_write_key(aes_key_t key) {
   // Start from a random index less than `key.key_len`.
   size_t i = ((uint64_t)ibex_rnd32_read() * key.key_len) >> 32;
   enum { kStep = 1 };
-  size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
+  size_t iter_cnt = 0, r_iter_cnt = key.key_len - 1;
+  for (; launder32(iter_cnt) < key.key_len;
+       iter_cnt = launderw(iter_cnt) + 1,
+       r_iter_cnt = launderw(r_iter_cnt) - 1) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
+    // This modulo operation should compile to constant-time instructions (e.g.,
+    // ADDI + REMU, ADDI + AND) to avoid data-dependent timing variations.
     i = (i + kStep) % key.key_len;
   }
   HARDENED_CHECK_EQ(iter_cnt, key.key_len);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
   i = ((uint64_t)ibex_rnd32_read() * key.key_len) >> 32;
   iter_cnt = 0;
-  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
+  r_iter_cnt = key.key_len - 1;
+  for (; launder32(iter_cnt) < key.key_len;
+       iter_cnt = launderw(iter_cnt) + 1,
+       r_iter_cnt = launderw(r_iter_cnt) - 1) {
     abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
+    // This modulo operation should compile to constant-time instructions (e.g.,
+    // ADDI + REMU, ADDI + AND) to avoid data-dependent timing variations.
     i = (i + kStep) % key.key_len;
   }
   HARDENED_CHECK_EQ(iter_cnt, key.key_len);
+  HARDENED_CHECK_EQ(r_iter_cnt, UINT32_MAX);
 
   // Write random words to remaining key registers.
   for (; iter_cnt < kAesKeyWordLenMax; iter_cnt++) {
