@@ -103,6 +103,32 @@ status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj);
 status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj);
 
 /**
+ * The cryptolib fi trng generate handler.
+ *
+ * This command generates randomness from the trng.
+ *
+ * See cryptolib_fi_sym_commands.h for inputs and outputs.
+ * See fi_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_sym_trng_generate(ujson_t *uj);
+
+/**
+ * The cryptolib fi trng init handler.
+ *
+ * This command instantiates the TRNG.
+ *
+ * See cryptolib_fi_sym_commands.h for inputs and outputs.
+ * See fi_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_sym_trng_init(ujson_t *uj);
+
+/**
  * Initialize CryptoLib command handler.
  *
  * This command is designed to setup the CryptoLib FI firmware.

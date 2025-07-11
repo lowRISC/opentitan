@@ -135,6 +135,39 @@ status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_fi_sym_trng_generate(ujson_t *uj) {
+  cryptolib_fi_sym_trng_generate_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_trng_generate_in_t(uj, &uj_input));
+
+  /////////////// STUB START ///////////////
+  // Perform a TRNG call to generate random output.
+  // Trigger are over the API calls.
+  cryptolib_fi_sym_trng_generate_out_t uj_output;
+  uj_output.cfg = 0;
+  uj_output.status = 0;
+  memset(uj_output.data, 0, TRNG_CMD_MAX_OUTPUT_BYTES);
+  /////////////// STUB END ///////////////
+
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_trng_generate_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_cryptolib_fi_sym_trng_init(ujson_t *uj) {
+  cryptolib_fi_sym_drbg_reseed_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_drbg_reseed_in_t(uj, &uj_input));
+
+  /////////////// STUB START ///////////////
+  // Perform a DRBG call to reseed/instantiate the DRBG.
+  // Trigger are over the API calls.
+  cryptolib_fi_sym_drbg_reseed_out_t uj_output;
+  uj_output.cfg = 0;
+  uj_output.status = 0;
+  /////////////// STUB END ///////////////
+
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_reseed_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_fi_sym_init(ujson_t *uj) {
   penetrationtest_cpuctrl_t uj_cpuctrl_data;
   TRY(ujson_deserialize_penetrationtest_cpuctrl_t(uj, &uj_cpuctrl_data));
@@ -216,6 +249,10 @@ status_t handle_cryptolib_fi_sym(ujson_t *uj) {
       return handle_cryptolib_fi_sym_drbg_generate(uj);
     case kCryptoLibFiSymSubcommandDrbgReseed:
       return handle_cryptolib_fi_sym_drbg_reseed(uj);
+    case kCryptoLibFiSymSubcommandTrngGenerate:
+      return handle_cryptolib_fi_sym_trng_generate(uj);
+    case kCryptoLibFiSymSubcommandTrngInit:
+      return handle_cryptolib_fi_sym_trng_init(uj);
     case kCryptoLibFiSymSubcommandInit:
       return handle_cryptolib_fi_sym_init(uj);
     default:

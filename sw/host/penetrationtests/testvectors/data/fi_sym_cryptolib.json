@@ -61,5 +61,13 @@
     "expected_output": [
       "{\"status\":1849, \"cfg\": 0}"
     ]
+  },
+  {
+    "test_case_id": 8,
+    "command": "TrngInit",
+    "input": "{\"mode\": 0, \"cfg\": 0, \"trigger\": 1}",
+    "expected_output": [
+      "{\"status\":0, \"cfg\": 0}"
+    ]
   }
 ]
