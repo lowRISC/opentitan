@@ -77,7 +77,7 @@ status_t handle_cryptolib_fi_sym_tdes(ujson_t *uj);
 status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj);
 
 /**
- * The cryptolib fi drbg handler.
+ * The cryptolib fi drbg generate handler.
  *
  * This command generates randomness using a DRBG call.
  *
@@ -87,7 +87,20 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_cryptolib_fi_sym_drbg(ujson_t *uj);
+status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj);
+
+/**
+ * The cryptolib fi drbg reseed handler.
+ *
+ * This command reseeds/instantiates the DRBG call.
+ *
+ * See cryptolib_fi_sym_commands.h for inputs and outputs.
+ * See fi_cryptolib.json for examples of its use.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj);
 
 /**
  * Initialize CryptoLib command handler.
