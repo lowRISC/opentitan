@@ -21,13 +21,15 @@
 
 #define MODULE_ID MAKE_MODULE_ID('c', 's', 'i')
 
-status_t cryptolib_sca_aes_impl(
-    uint8_t data_in[AES_CMD_MAX_MSG_BYTES], size_t data_in_len,
-    uint8_t key[AES_CMD_MAX_KEY_BYTES], size_t key_len,
-    uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
-    uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
-    size_t padding, size_t mode, bool op_enc, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger) {
+status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
+                                size_t data_in_len,
+                                uint8_t key[AES_CMD_MAX_KEY_BYTES],
+                                size_t key_len,
+                                uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
+                                uint8_t data_out[AES_CMD_MAX_MSG_BYTES],
+                                size_t *data_out_len, size_t padding,
+                                size_t mode, bool op_enc, size_t cfg_in,
+                                size_t *cfg_out, size_t trigger) {
   // Set the AES mode.
   otcrypto_aes_mode_t aes_mode;
   otcrypto_key_mode_t key_mode;
@@ -139,14 +141,12 @@ status_t cryptolib_sca_aes_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output);
+  TRY(otcrypto_aes(&aes_key, aes_iv, aes_mode, op, input, aes_padding, output));
   pentest_set_trigger_low();
 
   // Return data back to host.
   *data_out_len = padded_len_bytes;
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(data_out, output_buf, padded_len_bytes);
 
@@ -156,8 +156,7 @@ status_t cryptolib_sca_aes_impl(
 status_t cryptolib_sca_drbg_generate_impl(
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
-    size_t mode, size_t cfg_in, size_t *cfg_out, size_t *status,
-    size_t trigger) {
+    size_t mode, size_t cfg_in, size_t *cfg_out, size_t trigger) {
   // Nonce buffer used for the generate command of the DRBG.
   uint8_t nonce_buf[nonce_len];
   memcpy(nonce_buf, nonce, nonce_len);
@@ -178,14 +177,13 @@ status_t cryptolib_sca_drbg_generate_impl(
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out = otcrypto_drbg_generate(nonce_in, output);
+  TRY(otcrypto_drbg_generate(nonce_in, output));
   if (trigger & kPentestTrigger2) {
     pentest_set_trigger_low();
   }
 
   // Return data back to host.
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   memset(data_out, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
   memcpy(data_out, output_data, data_out_len);
 
@@ -196,7 +194,7 @@ status_t cryptolib_sca_drbg_reseed_impl(
     uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES], size_t entropy_len,
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger) {
+    size_t trigger) {
   // Entropy buffer used for the instantiation of the DRBG.
   uint8_t entropy_buf[entropy_len];
   memcpy(entropy_buf, entropy, entropy_len);
@@ -210,14 +208,13 @@ status_t cryptolib_sca_drbg_reseed_impl(
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
-  otcrypto_status_t status_out = otcrypto_drbg_instantiate(entropy_in);
+  TRY(otcrypto_drbg_instantiate(entropy_in));
   if (trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
 
   // Return data back to host.
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
 
   return OK_STATUS();
 }
@@ -229,7 +226,7 @@ status_t cryptolib_sca_gcm_impl(
     uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
     uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
     uint8_t tag[AES_CMD_MAX_MSG_BYTES], size_t *tag_len, size_t cfg_in,
-    size_t *cfg_out, size_t *status, size_t trigger) {
+    size_t *cfg_out, size_t trigger) {
   // Construct the blinded key configuration.
   otcrypto_key_config_t config = {
       .version = kOtcryptoLibVersion1,
@@ -316,14 +313,12 @@ status_t cryptolib_sca_gcm_impl(
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out =
-      otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
-                               gcm_tag_len, actual_ciphertext, actual_tag);
+  TRY(otcrypto_aes_gcm_encrypt(&gcm_key, plaintext, gcm_iv, gcm_aad,
+                               gcm_tag_len, actual_ciphertext, actual_tag));
   pentest_set_trigger_low();
 
   // Return data back to host.
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   // Ciphertext.
   *data_out_len = data_in_len;
   memset(data_out, 0, AES_CMD_MAX_MSG_BYTES);
@@ -342,7 +337,7 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES],
                                  size_t *data_out_len, size_t padding,
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
-                                 size_t *status, size_t trigger) {
+                                 size_t trigger) {
   // Set the HMAC mode.
   otcrypto_key_mode_t key_mode;
   unsigned int tag_bytes;
@@ -409,13 +404,12 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
 
   // Trigger window.
   pentest_set_trigger_high();
-  otcrypto_status_t status_out = otcrypto_hmac(&hmac_key, input_message, tag);
+  TRY(otcrypto_hmac(&hmac_key, input_message, tag));
   pentest_set_trigger_low();
 
   // Return data back to host.
   *data_out_len = tag_bytes;
   *cfg_out = 0;
-  *status = (size_t)status_out.value;
   memset(data_out, 0, HMAC_CMD_MAX_TAG_BYTES);
   memcpy(data_out, tag_buf, tag_bytes);
 
