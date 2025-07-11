@@ -8,14 +8,14 @@
 //  N:  Number of request ports
 //  DW: Data width (SECDED is not included)
 //  Aw: Address width
-//  ArbiterImpl: can be either PPC or BINTREE.
+//  ArbiterImpl: The arbiter to use (as defined in tlul_pkg)
 `include "prim_assert.sv"
 
 module prim_sram_arbiter #(
   parameter int unsigned N  = 4,
   parameter int unsigned SramDw = 32,
   parameter int unsigned SramAw = 12,
-  parameter ArbiterImpl = "PPC",
+  parameter tlul_pkg::arbiter_impl_e ArbiterImpl = tlul_pkg::PPCArbiter,
   parameter bit EnMask = 1'b 0 // Disable wmask if 0
 ) (
   input clk_i,
@@ -82,7 +82,7 @@ module prim_sram_arbiter #(
   end
 
 
-  if (ArbiterImpl == "PPC") begin : gen_arb_ppc
+  if (ArbiterImpl == tlul_pkg::PPCArbiter) begin : gen_arb_ppc
     prim_arbiter_ppc #(
       .N (N),
       .DW(ARB_DW)
@@ -98,7 +98,7 @@ module prim_sram_arbiter #(
       .data_o    ( sram_packed ),
       .ready_i   ( 1'b1        )
     );
-  end else if (ArbiterImpl == "BINTREE") begin : gen_tree_arb
+  end else if (ArbiterImpl == tlul_pkg::BintreeArbiter) begin : gen_tree_arb
     prim_arbiter_tree #(
       .N (N),
       .DW(ARB_DW)
