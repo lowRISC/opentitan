@@ -7,7 +7,7 @@ from typing import Any
 from systemrdl.udp import UDPDefinition
 from systemrdl import RDLCompiler  # type: ignore[attr-defined]
 from systemrdl.node import Node
-from systemrdl.component import Field
+from systemrdl.component import Reg
 
 
 class UDPBoolean(UDPDefinition):
@@ -19,6 +19,11 @@ class UDPBoolean(UDPDefinition):
             self.msg.error("The type of {self.name} must be bool.", self.get_src_ref(node))
 
 
+class Hwre(UDPBoolean):
+    name = "Hwre"
+    valid_components = {Reg}
+
+
 OPENTITAN_UDPS = Path(__file__).parent / "udp.rdl"
 
 
@@ -26,4 +31,5 @@ def register_udps(compiler: RDLCompiler) -> None:
     """
     Register opentitan specific UDPs (User Defined Properties)
     """
+    compiler.register_udp(Hwre)
     compiler.compile_file(OPENTITAN_UDPS)
