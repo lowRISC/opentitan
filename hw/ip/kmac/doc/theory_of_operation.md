@@ -143,69 +143,29 @@ Default design parameters assume the system characteristics as below:
 - `kmac_pkg::RegLatency`: The register write takes 5 cycles.
 - `kmac_pkg::Sha3Latency`: Keccak round latency takes 96 cycles, which is the masked version of the Keccak round.
 
-#### FIFO Depth and Empty status
+#### Empty and Full status
 
-If the SW is slow and the SHA3 engine pops the data fast enough, the Message FIFO's depth may remain **0**.
-The Message FIFO's `fifo_empty` status bit, however, is lowered for a cycle.
+Under normal operating conditions, the SHA3 engine will process data a lot faster than software can push it to the Message FIFO.
+The Message FIFO depth observable from [`STATUS.fifo_depth`](registers.md#status--fifo_depth) will remain **0** while the [`STATUS.fifo_empty`](registers.md#status--fifo_empty) status bit is lowered for one clock cycle whenever software provides new data.
 
 However, if the SHA3 engine is currently busy or if the KMAC block is waiting for fresh entropy from EDN, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
 Resolving these conditions may take hundreds of cycles or more.
 After the SHA3 engine starts popping the data again, the Message FIFO will eventually run empty again and the `fifo_empty` status interrupt will fire.
 Note that the `fifo_empty` status interrupt will not fire if i) one of the hardware application interfaces is using the KMAC block, ii) the SHA3 core is not in the `Absorb` state, or iii) after software has written the `Process` command.
 
-The recommended approach for software to write messages is:
+If software pushes data to the Message FIFO while it is full, the write operation is blocked until there is again space in the FIFO.
+This means the processor is effectively stalled.
+If the SHA3 engine is currently running and software fills up the Message FIFO, the resulting stall won't take more than 100 clock cycles.
+The stall mechanism prevents data loss and the upper bound on the wait time avoids software needing to poll the [`STATUS.fifo_depth`](registers.md#status--fifo_depth) field before writing data.
 
-1. Check the FIFO depth [`STATUS.fifo_depth`](registers.md#status). This represents the number of entry slots currently occupied in the FIFO.
-2. Calculate the remaining size as `<max number of fifo entries> - <STATUS.fifo_depth>) * <entry size>`.
-3. Write data to fill the remaining size.
-4. Repeat until all data is written.
-   In case the FIFO runs full (check [`STATUS.fifo_full`](registers.md#status)), software can optionally wait for the `fifo_empty` status interrupt before continuing.
+However, the FIFO can also become full because the KMAC block is waiting for fresh entropy from EDN.
+Resolving this condition can take much longer, and it can even result in deadlocking the system if the following conditions are met:
+1. Software attempts to push data to the Message FIFO while it is full.
+1. The fresh entropy is not delivered and the value of the [`ENTROPY_PERIOD`](registers.md#entropy_period) register is 0, meaning the wait timer never expires.
 
-In code, this looks something like:
-```c
-/**
- * Absorb input data into the Keccak computation.
- *
- * Assumes that the KMAC block is in the "absorb" state; it is the caller's
- * responsibility to check before calling.
- *
- * @param in Input buffer.
- * @param in_len Length of input buffer (bytes).
- * @return Number of bytes written.
- */
-size_t kmac_absorb(const uint8_t *in, size_t in_len) {
-    // Read FIFO depth from the status register.
-    uint32_t status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
-    uint32_t fifo_depth =
-        bitfield_field32_read(status, KMAC_STATUS_FIFO_DEPTH_FIELD);
+The entropy not getting delivered in time can in particular happen if the entropy complex or parts of it are disabled, e.g., [to save power](../../csrng/doc/programmers_guide.md#running-csrng-with-entropy_src-disabled).
+Refer to [Preventing potential deadlocks in EDN mode](programmers_guide.md#preventing-potential-deadlocks-in-edn-mode) for guidance on how to safely avoid this scenario.
 
-    // Calculate the remaining space in the FIFO using auto-generated KMAC
-    // parameters and take the minimum of that space and the input length.
-    size_t free_entries = (KMAC_PARAM_NUM_ENTRIES_MSG_FIFO - fifo_depth);
-    size_t max_len = free_entries * KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY;
-    size_t write_len = (in_len < max_len) ? in_len : max_len;
-
-    // Note: this example uses byte-writes for simplicity, but in practice it
-    // would be more efficient to use word-writes for aligned full words and
-    // byte-writes only as needed at the beginning and end of the input.
-    for (size_t i = 0; i < write_len; i++) {
-      abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, in[i]);
-    }
-
-    return write_len;
-}
-```
-
-The method recommended above is always safe.
-However, in specific contexts, it may be okay to skip polling `STATUS.fifo_depth`.
-Normally, KMAC will process data faster than software can write it, and back pressure on the FIFO interface, should ensure that writes from software will simply block until KMAC can process messages.
-The only reason for polling, then, is to prevent a specific deadlock scenario:
-1. Software has configured KMAC to wait forever for entropy.
-2. There is a problem with the EDN, so entropy is never coming.
-3. The FIFO is full and KMAC is waiting for entropy to process it.
-
-If either the entropy wait timer is nonzero or `kmac_en` is false (so KMAC will not be refreshing entropy), it is safe to write to the FIFO without polling `STATUS.fifo_depth`.
-However, this should be done carefully, and tests should always cover the scenario in which EDN is locked up.
 
 #### Masking
 
