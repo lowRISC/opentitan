@@ -150,6 +150,9 @@ class Register2Systemrdl:
 
         reg_type.external = self.inner.hwext
 
+        if self.inner.hwre:
+            self.importer.assign_property(reg_type, "hwre", self.inner.hwre)
+
         reg = self.importer.instantiate_reg(
             reg_type,
             self.inner.name,
