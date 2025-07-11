@@ -78,7 +78,7 @@ static const char lang_id[] = {
 // clang-format off
 static const char str_vendor[] = { USB_STRING_DSCR('G','o','o','g','l','e'), };
 static const char str_opentitan[] = { USB_STRING_DSCR('O','p','e','n','T','i','t','a','n'), };
-static const char str_resq[] = { USB_STRING_DSCR('R','e','s','c','u','e') };
+static const char str_resq[] = { USB_STRING_DSCR('R','e','s','c','u','e',' ','S','l','o','t','A')};
 static const char str_resb[] = { USB_STRING_DSCR('R','e','s','c','u','e',' ','S','l','o','t','B')};
 static const char str_otid[] = { USB_STRING_DSCR('D','e','v','i','c','e','I','D') };
 static const char str_blog[] = { USB_STRING_DSCR('B','o','o','t','L','o','g') };
@@ -86,7 +86,7 @@ static const char str_bsvc[] = { USB_STRING_DSCR('B','o','o','t','S','e','r','v'
 static const char str_ownr[] = { USB_STRING_DSCR('O','w','n','e','r','s','h','i','p') };
 
 // Located in RAM so we can fill in the OpenTitan device ID.
-static char str_serialnumber[2 + 32];
+static char str_serialnumber[2 + 4 + 32];
 
 static const char *string_desc[] = {
     lang_id,
@@ -110,9 +110,17 @@ static void set_serialnumber(void) {
   const char hex[] = "0123456789ABCDEF";
 
   char *sn = str_serialnumber;
-  *sn++ = 2 + 32;
+  // Length: descriptor header (2) + 2 * (len("0x") + len(64-bit integer)).
+  *sn++ = 2 + 4 + 32;
+  // Descriptor type: 3 (string descriptor).
   *sn++ = 3;
-  for (size_t w = 1; w < 3; ++w) {
+  // Leading "0x".
+  *sn++ = '0';
+  *sn++ = 0;
+  *sn++ = 'x';
+  *sn++ = 0;
+  // The device identification number, printed in hex as a uint64_t.
+  for (size_t w = 2; w > 0; --w) {
     uint8_t byte = (uint8_t)(dev.device_id[w] >> 24);
     *sn++ = hex[byte >> 4];
     *sn++ = 0;
