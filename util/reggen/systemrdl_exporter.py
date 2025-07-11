@@ -149,6 +149,8 @@ class BaseRegister2Systemrdl:
             self.importer.add_child(rdl_t, Field2Systemrdl(rfield, self.importer).export())
 
         rdl_t.external = self.inner.hwext
+        if self.inner.hwre:
+            self.importer.assign_property(rdl_t, "hwre", self.inner.hwre)
         return rdl_t
 
 

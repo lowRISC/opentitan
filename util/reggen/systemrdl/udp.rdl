@@ -67,3 +67,9 @@ enum MultiBitBool32{
   False = 0x69696969;
 };
 
+/* ‘true’ if hardware uses ‘re’ signal, which is latched signal of software read pulse. */
+property hwre {
+  type = boolean;
+  component = reg;
+  default = false;
+};
