@@ -8,7 +8,10 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -121,25 +124,45 @@ static status_t otbn_assert_idle(void) {
  */
 static void otbn_write(uint32_t dest_addr, const uint32_t *src,
                        size_t num_words) {
-  // TODO: replace 0 with a random index like the silicon_creator driver
-  // (requires an interface to Ibex's RND valid bit and data register).
-  size_t i = ((uint64_t)0 * (uint64_t)num_words) >> 32;
-  enum { kStep = 1 };
+  // Instantiate decoy buffers.
+  uint32_t decoys_src[8];
+  uint32_t decoys_dst[8];
+  uintptr_t decoy_src_addr = (uintptr_t)&decoys_src;
+  uintptr_t decoy_dst_addr = (uintptr_t)&decoys_dst;
+
+  random_order_t order;
+  random_order_init(&order, num_words);
   size_t iter_cnt = 0;
-  for (; launder32(iter_cnt) < num_words; ++iter_cnt) {
-    abs_mmio_write32(dest_addr + i * sizeof(uint32_t), src[i]);
-    i += kStep;
-    if (launder32(i) >= num_words) {
-      i -= num_words;
-    }
-    HARDENED_CHECK_LT(i, num_words);
+  // Collect output.
+  // Start from a random index less than `num_words`.
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uintptr_t data_src = (uintptr_t)src + (idx * sizeof(uint32_t));
+    uintptr_t decoy_src =
+        decoy_src_addr + (idx % (sizeof(decoys_src) / sizeof(uint32_t)));
+
+    uintptr_t data_dst = (uintptr_t)dest_addr + idx * sizeof(uint32_t);
+    uintptr_t decoy_dst =
+        decoy_dst_addr + (idx % (sizeof(decoys_dst) / sizeof(uint32_t)));
+
+    void *src = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), num_words), data_src, decoy_src));
+    void *dst = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), num_words), data_dst, decoy_dst));
+
+    // Write the word to `*dst`.
+    write_32(read_32(src), dst);
   }
-  HARDENED_CHECK_EQ(iter_cnt, num_words);
+  HARDENED_CHECK_EQ(iter_cnt, order.max);
 }
 
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest) {
   HARDENED_TRY(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
+  // Ensure the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
   otbn_write(kBase + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
   return OTCRYPTO_OK;
 }

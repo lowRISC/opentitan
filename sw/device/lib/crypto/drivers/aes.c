@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -69,22 +70,68 @@ static status_t aes_write_key(aes_key_t key) {
   // corresponding parts too close together, which could risk power
   // side-channel leakage in the ALU.
   // TODO: randomize iteration order.
-  size_t i = 0;
-  for (; i < key.key_len; ++i) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
+  // Instantiate decoy buffers.
+  uint32_t decoys_src[8];
+  uint32_t decoys_dst[8];
+  uintptr_t decoy_src_addr = (uintptr_t)&decoys_src;
+  uintptr_t decoy_dst_addr = (uintptr_t)&decoys_dst;
+
+  random_order_t order;
+  random_order_init(&order, key.key_len);
+  size_t iter_cnt = 0;
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uintptr_t data_src = (uintptr_t)key.key_shares[0] + idx * sizeof(uint32_t);
+    uintptr_t decoy_src =
+        decoy_src_addr + (idx % (sizeof(decoys_src) / sizeof(uint32_t)));
+
+    uintptr_t data_dst = share0 + idx * sizeof(uint32_t);
+    uintptr_t decoy_dst =
+        decoy_dst_addr + (idx % (sizeof(decoys_dst) / sizeof(uint32_t)));
+
+    void *src = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), key.key_len), data_src, decoy_src));
+    void *dst = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), key.key_len), data_dst, decoy_dst));
+
+    // Write the word to `*dst`.
+    write_32(read_32(src), dst);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
-  for (i = 0; i < key.key_len; ++i) {
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
+  HARDENED_CHECK_EQ(iter_cnt, order.max);
+
+  random_order_init(&order, key.key_len);
+  iter_cnt = 0;
+  for (; iter_cnt < order.max; iter_cnt = launderw(iter_cnt) + 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uintptr_t data_src = (uintptr_t)key.key_shares[1] + idx * sizeof(uint32_t);
+    uintptr_t decoy_src =
+        decoy_src_addr + (idx % (sizeof(decoys_src) / sizeof(uint32_t)));
+
+    uintptr_t data_dst = share1 + idx * sizeof(uint32_t);
+    uintptr_t decoy_dst =
+        decoy_dst_addr + (idx % (sizeof(decoys_dst) / sizeof(uint32_t)));
+
+    void *src = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), key.key_len), data_src, decoy_src));
+    void *dst = (void *)launderw(
+        ct_cmovw(ct_sltuw(launderw(idx), key.key_len), data_dst, decoy_dst));
+
+    // Write the word to `*dst`.
+    write_32(read_32(src), dst);
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
+  HARDENED_CHECK_EQ(iter_cnt, order.max);
 
   // Write random words to remaining key registers.
-  for (; i < kAesKeyWordLenMax; i++) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), ibex_rnd32_read());
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
+  iter_cnt = key.key_len;
+  for (; iter_cnt < kAesKeyWordLenMax; iter_cnt++) {
+    abs_mmio_write32(share0 + iter_cnt * sizeof(uint32_t), ibex_rnd32_read());
+    abs_mmio_write32(share1 + iter_cnt * sizeof(uint32_t), ibex_rnd32_read());
   }
-  HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+  HARDENED_CHECK_EQ(iter_cnt, kAesKeyWordLenMax);
 
   return spin_until(AES_STATUS_IDLE_BIT);
 }
