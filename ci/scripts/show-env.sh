@@ -14,8 +14,6 @@ required_tools=(
     yapf
     isort
     flake8
-    ninja
-    doxygen
 )
 
 optional_tools=(
