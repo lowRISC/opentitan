@@ -18,6 +18,9 @@ class csr_hw_reset_seq extends csr_base_seq;
   // Read the given CSR if it is not excluded and check its value matches the expected reset value.
   // If the register has an HDL path, use two reads, starting with a backdoor one.
   extern local task test_one_csr(uvm_reg csr);
+
+  // Return true if the CSR should be skipped by this sequence
+  extern protected function bit csr_excluded(uvm_reg csr);
 endclass
 
 function csr_hw_reset_seq::new (string name="");
@@ -31,19 +34,12 @@ task csr_hw_reset_seq::body();
 endtask
 
 task csr_hw_reset_seq::test_one_csr(uvm_reg csr);
-  uvm_reg_data_t compare_mask;
+  uvm_reg_data_t compare_mask = get_mask_excl_fields(csr, CsrExclInitCheck, CsrHwResetTest);
 
-  // check if parent block or register is excluded from init check
-  if (is_excl(csr, CsrExclInitCheck, CsrHwResetTest)) begin
-    `uvm_info(`gtn, $sformatf("Skipping register %0s due to CsrExclInitCheck exclusion",
-                              csr.get_full_name()), UVM_MEDIUM)
-    return;
-  end
+  `uvm_info(`gtn,
+            $sformatf("Verifying reset value of register %0s", csr.get_full_name()),
+            UVM_MEDIUM)
 
-  `uvm_info(`gtn, $sformatf("Verifying reset value of register %0s",
-                            csr.get_full_name()), UVM_MEDIUM)
-
-  compare_mask = get_mask_excl_fields(csr, CsrExclInitCheck, CsrHwResetTest);
   // Read CSR twice, one from backdoor (if path available), the other from frontdoor.
   if (csr.has_hdl_path()) begin
     // Reading from backdoor can ensure that we deposit value into the storage rather than just a
@@ -63,3 +59,7 @@ task csr_hw_reset_seq::test_one_csr(uvm_reg csr);
                .compare_vs_ral(1'b1),
                .compare_mask  (compare_mask));
 endtask
+
+function bit csr_hw_reset_seq::csr_excluded(uvm_reg csr);
+  return is_excl(csr, CsrExclInitCheck, CsrHwResetTest);
+endfunction
