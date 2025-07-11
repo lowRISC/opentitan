@@ -132,6 +132,7 @@ otbn_binary(
     deps = [
         ":p256_base",
         ":p256_isoncurve",
+        ":p256_isoncurve_proj",
         ":p256_shared_key",
         ":p256_sign",
         ":p256_verify",
