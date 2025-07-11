@@ -76,3 +76,13 @@ property hwre {
   component = reg;
   default = false;
 };
+
+/* If it is true, the register will be implemented using the prim_subreg_shadow module.
+ * Shadow registers are a mechanism to guard sensitive registers against this specific
+ * type of attack. They come at a cost of increased area, and a modified SW interaction.
+ */
+property shadowed {
+  type = boolean;
+  component = reg;
+  default = false;
+};

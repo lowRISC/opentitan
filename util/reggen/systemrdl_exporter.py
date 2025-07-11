@@ -153,6 +153,9 @@ class Register2Systemrdl:
         if self.inner.hwre:
             self.importer.assign_property(reg_type, "hwre", self.inner.hwre)
 
+        if self.inner.shadowed:
+            self.importer.assign_property(reg_type, "shadowed", self.inner.shadowed)
+
         reg = self.importer.instantiate_reg(
             reg_type,
             self.inner.name,
