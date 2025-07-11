@@ -98,6 +98,11 @@ class csr_base_seq extends uvm_reg_sequence #(uvm_sequence #(uvm_reg_item));
   extern function bit is_excl(uvm_object obj,
                               csr_excl_type_e csr_excl_type,
                               csr_test_type_e csr_test_type);
+
+  // Return true if this CSR should be excluded by the current sequence. The base class always
+  // returns false, but this allows more specialised sequences to work over more evenly sized
+  // chunks.
+  extern virtual protected function bit csr_excluded(uvm_reg csr);
 endclass
 
 function csr_base_seq::new (string name="");
@@ -128,10 +133,22 @@ function void csr_base_seq::set_csr_test_range();
 
   int unsigned start_idx, end_idx;
 
-  // extract all csrs from the model
+  // Extract all csrs from the model. If this sequence has specialised the csr_excluded function,
+  // some CSRs might be skipped. This should help to keep chunks with similar testing times.
   all_csrs.delete();
   foreach (models[i]) begin
-    models[i].get_registers(all_csrs);
+    uvm_reg model_csrs[$];
+    models[i].get_registers(model_csrs);
+    foreach (model_csrs[j]) begin
+      if (!csr_excluded(model_csrs[j])) begin
+        all_csrs.push_back(model_csrs[j]);
+      end else begin
+        `uvm_info(`gtn,
+                  $sformatf("Skipping register %0s due to exclusion",
+                            model_csrs[j].get_full_name()),
+                  UVM_MEDIUM)
+      end
+    end
   end
 
   num_csrs = all_csrs.size();
@@ -282,4 +299,8 @@ function bit csr_base_seq::is_excl(uvm_object obj,
   end else begin
     return csr_excl.is_excl(obj, csr_excl_type, csr_test_type);
   end
+endfunction
+
+function bit csr_base_seq::csr_excluded(uvm_reg csr);
+  return 1'b0;
 endfunction
