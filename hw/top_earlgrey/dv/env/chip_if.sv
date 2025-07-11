@@ -1029,28 +1029,32 @@ interface chip_if;
     ext_clk_if.set_active(0, 0);
   endfunction
 
-  // Verifies an LC control signal broadcast by the LC controller.
-  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
-    lc_ctrl_pkg::lc_tx_t value;
+  // Get the requested LC control signal that was broadcast by the LC controller
+  function automatic lc_ctrl_pkg::lc_tx_t get_lc_ctrl_enable_signal(lc_ctrl_signal_e signal);
     case (signal)
-      LcCtrlSignalDftEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
-      LcCtrlSignalNvmDebugEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
-      LcCtrlSignalHwDebugEn:    value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
-      LcCtrlSignalCpuEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
+      LcCtrlSignalDftEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_dft_en_o);
+      LcCtrlSignalNvmDebugEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_nvm_debug_en_o);
+      LcCtrlSignalHwDebugEn:    return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_hw_debug_en_o);
+      LcCtrlSignalCpuEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_cpu_en_o);
       LcCtrlSignalCreatorSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o);
       end
       LcCtrlSignalOwnerSeedEn: begin
-        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
+        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o);
       end
-      LcCtrlSignalIsoRdEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
-      LcCtrlSignalIsoWrEn:      value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
-      LcCtrlSignalSeedRdEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
-      LcCtrlSignalKeyMgrEn:     value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
-      LcCtrlSignalEscEn:        value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
-      LcCtrlSignalCheckBypEn:   value = lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
+      LcCtrlSignalIsoRdEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_rd_en_o);
+      LcCtrlSignalIsoWrEn:      return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_iso_part_sw_wr_en_o);
+      LcCtrlSignalSeedRdEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_seed_hw_rd_en_o);
+      LcCtrlSignalKeyMgrEn:     return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_keymgr_en_o);
+      LcCtrlSignalEscEn:        return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_escalate_en_o);
+      LcCtrlSignalCheckBypEn:   return lc_ctrl_pkg::lc_tx_t'(`LC_CTRL_HIER.lc_check_byp_en_o);
       default:                  `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
     endcase
+  endfunction
+
+  // Verifies an LC control signal broadcast by the LC controller.
+  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
+    lc_ctrl_pkg::lc_tx_t value = get_lc_ctrl_enable_signal(signal);
     if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
       `uvm_info(MsgId, $sformatf("LC control signal %0s: value = %0s matched",
                                  signal.name(), value.name()), UVM_HIGH)
