@@ -20,6 +20,12 @@ package rstmgr_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 28;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertFatalCnstyFaultIdx = 1
+  } rstmgr_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

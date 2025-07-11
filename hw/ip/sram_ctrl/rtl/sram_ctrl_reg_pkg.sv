@@ -17,6 +17,11 @@ package sram_ctrl_reg_pkg;
   parameter int NumRegsRegs = 9;
   parameter int NumRegsRam = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalErrorIdx = 0
+  } sram_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

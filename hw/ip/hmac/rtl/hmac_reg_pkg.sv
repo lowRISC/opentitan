@@ -17,6 +17,11 @@ package hmac_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 59;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } hmac_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

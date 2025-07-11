@@ -36,6 +36,15 @@ package flash_ctrl_reg_pkg;
   parameter int NumRegsPrim = 21;
   parameter int NumRegsMem = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovErrIdx = 0,
+    AlertFatalStdErrIdx = 1,
+    AlertFatalErrIdx = 2,
+    AlertFatalPrimFlashAlertIdx = 3,
+    AlertRecovPrimFlashAlertIdx = 4
+  } flash_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

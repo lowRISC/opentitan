@@ -18,6 +18,39 @@ package soc_proxy_reg_pkg;
   parameter int NumRegsCore = 4;
   parameter int NumRegsCtn = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalAlertIntgIdx = 0,
+    AlertFatalAlertExternal0Idx = 1,
+    AlertFatalAlertExternal1Idx = 2,
+    AlertFatalAlertExternal2Idx = 3,
+    AlertFatalAlertExternal3Idx = 4,
+    AlertFatalAlertExternal4Idx = 5,
+    AlertFatalAlertExternal5Idx = 6,
+    AlertFatalAlertExternal6Idx = 7,
+    AlertFatalAlertExternal7Idx = 8,
+    AlertFatalAlertExternal8Idx = 9,
+    AlertFatalAlertExternal9Idx = 10,
+    AlertFatalAlertExternal10Idx = 11,
+    AlertFatalAlertExternal11Idx = 12,
+    AlertFatalAlertExternal12Idx = 13,
+    AlertFatalAlertExternal13Idx = 14,
+    AlertFatalAlertExternal14Idx = 15,
+    AlertFatalAlertExternal15Idx = 16,
+    AlertFatalAlertExternal16Idx = 17,
+    AlertFatalAlertExternal17Idx = 18,
+    AlertFatalAlertExternal18Idx = 19,
+    AlertFatalAlertExternal19Idx = 20,
+    AlertFatalAlertExternal20Idx = 21,
+    AlertFatalAlertExternal21Idx = 22,
+    AlertFatalAlertExternal22Idx = 23,
+    AlertFatalAlertExternal23Idx = 24,
+    AlertRecovAlertExternal0Idx = 25,
+    AlertRecovAlertExternal1Idx = 26,
+    AlertRecovAlertExternal2Idx = 27,
+    AlertRecovAlertExternal3Idx = 28
+  } soc_proxy_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

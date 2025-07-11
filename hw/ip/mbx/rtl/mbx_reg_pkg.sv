@@ -17,6 +17,12 @@ package mbx_reg_pkg;
   parameter int NumRegsCore = 17;
   parameter int NumRegsSoc = 4;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0,
+    AlertRecovFaultIdx = 1
+  } mbx_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////
