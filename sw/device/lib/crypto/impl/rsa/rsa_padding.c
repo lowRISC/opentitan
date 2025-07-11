@@ -408,6 +408,72 @@ static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
               h);
 }
 
+/**
+ * Helper function to check the OAEP padding and find the index of the start of
+ * the message.
+ *
+ * This function locates the start of the message in DB = lhash || 0x00..0x00 ||
+ * 0x01 || M by searching for the 0x01 byte in constant time. In case of a
+ * padding check failure this function returns an error.
+ *
+ * @param db A pointer to the data buffer.
+ * @param lhash A encoded message hash.
+ * @param digest_wordlen The length of the digest in number of words.
+ * @param digest_bytelen The length of the digest in number of bytes.
+ * @param encoded_message_bytes A pointer to a byte array containing the encoded
+ * message.
+ * @param db_bytelen The length of the data buffer in number of bytes.
+ * @param[out] message_start_idx The index of the start of the message.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t oaep_check_padding_and_find_message_start(
+    uint32_t *db, uint32_t *lhash, uint32_t digest_wordlen,
+    size_t digest_bytelen, unsigned char *encoded_message_bytes,
+    size_t db_bytelen, volatile uint32_t *message_start_idx) {
+  unsigned char *db_bytes = (unsigned char *)db;
+  // Locate the start of the message in DB = lhash || 0x00..0x00 || 0x01 || M
+  // by searching for the 0x01 byte in constant time.
+  ct_bool32_t decode_failure = 0;
+  for (size_t i = digest_bytelen; i < db_bytelen; i++) {
+    uint32_t byte = 0;
+    memcpy(&byte, db_bytes + i, 1);
+    ct_bool32_t is_one = ct_seq32(byte, 0x01);
+    ct_bool32_t is_before_message = ct_seqz32(*message_start_idx);
+    ct_bool32_t is_message_start = is_one & is_before_message;
+    *message_start_idx = ct_cmov32(is_message_start, i + 1, *message_start_idx);
+    ct_bool32_t is_zero = ct_seqz32(byte);
+    ct_bool32_t padding_failure = is_before_message & (~is_zero) & (~is_one);
+    decode_failure |= padding_failure;
+  }
+  HARDENED_CHECK_LE(*message_start_idx, db_bytelen);
+
+  // If we never found a message start index, we should fail. However, don't
+  // fail yet to avoid leaking timing information.
+  ct_bool32_t message_start_not_found = ct_seqz32(*message_start_idx);
+  decode_failure |= message_start_not_found;
+
+  // Check that the first part of DB is equal to lhash.
+  hardened_bool_t lhash_matches = hardened_memeq(lhash, db, digest_wordlen);
+  ct_bool32_t lhash_match = ct_seq32(lhash_matches, kHardenedBoolTrue);
+  ct_bool32_t lhash_mismatch = ~lhash_match;
+  decode_failure |= lhash_mismatch;
+
+  // Check that the leading byte is 0.
+  uint32_t leading_byte = 0;
+  memcpy(&leading_byte, encoded_message_bytes, 1);
+  ct_bool32_t leading_byte_nonzero = ~ct_seqz32(leading_byte);
+  decode_failure |= leading_byte_nonzero;
+
+  // Now, decode_failure is all-zero if the decode succeeded and all-one if the
+  // decode failed.
+  if (launder32(decode_failure) != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(decode_failure, 0);
+
+  return OTCRYPTO_OK;
+}
+
 status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 size_t encoded_message_len,
@@ -706,53 +772,23 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
 
   // Locate the start of the message in DB = lhash || 0x00..0x00 || 0x01 || M
   // by searching for the 0x01 byte in constant time.
-  unsigned char *db_bytes = (unsigned char *)db;
-  uint32_t message_start_idx = 0;
-  ct_bool32_t decode_failure = 0;
-  for (size_t i = digest_bytelen; i < db_bytelen; i++) {
-    uint32_t byte = 0;
-    memcpy(&byte, db_bytes + i, 1);
-    ct_bool32_t is_one = ct_seq32(byte, 0x01);
-    ct_bool32_t is_before_message = ct_seqz32(message_start_idx);
-    ct_bool32_t is_message_start = is_one & is_before_message;
-    message_start_idx = ct_cmov32(is_message_start, i + 1, message_start_idx);
-    ct_bool32_t is_zero = ct_seqz32(byte);
-    ct_bool32_t padding_failure = is_before_message & (~is_zero) & (~is_one);
-    decode_failure |= padding_failure;
-  }
-  HARDENED_CHECK_LE(message_start_idx, db_bytelen);
+  volatile uint32_t message_start_idx0 = 0;
+  volatile uint32_t message_start_idx1 = 0;
+  HARDENED_TRY(oaep_check_padding_and_find_message_start(
+      db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
+      db_bytelen, &message_start_idx0));
+  // Re-check the padding as an FI hardening measure.
+  HARDENED_TRY(oaep_check_padding_and_find_message_start(
+      db, lhash, digest_wordlen, digest_bytelen, encoded_message_bytes,
+      db_bytelen, &message_start_idx1));
 
-  // If we never found a message start index, we should fail. However, don't
-  // fail yet to avoid leaking timing information.
-  ct_bool32_t message_start_not_found = ct_seqz32(message_start_idx);
-  decode_failure |= message_start_not_found;
-
-  // Check that the first part of DB is equal to lhash.
-  hardened_bool_t lhash_matches = hardened_memeq(lhash, db, digest_wordlen);
-  ct_bool32_t lhash_match = ct_seq32(lhash_matches, kHardenedBoolTrue);
-  ct_bool32_t lhash_mismatch = ~lhash_match;
-  decode_failure |= lhash_mismatch;
-
-  // Check that the leading byte is 0.
-  uint32_t leading_byte = 0;
-  memcpy(&leading_byte, encoded_message_bytes, 1);
-  ct_bool32_t leading_byte_nonzero = ~ct_seqz32(leading_byte);
-  decode_failure |= leading_byte_nonzero;
-
-  // Now, decode_failure is all-zero if the decode succeeded and all-one if the
-  // decode failed.
-  if (launder32(decode_failure) != 0) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(decode_failure, 0);
-
-  // TODO: re-check the padding as an FI hardening measure?
+  HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
 
   // If we get here, then the encoded message has a proper format and it is
   // safe to copy the message into the output buffer.
-  *message_bytelen = db_bytelen - message_start_idx;
+  *message_bytelen = db_bytelen - message_start_idx0;
   if (*message_bytelen > 0) {
-    memcpy(message, db_bytes + message_start_idx, *message_bytelen);
+    memcpy(message, (char *)db + message_start_idx0, *message_bytelen);
   }
   return OTCRYPTO_OK;
 }
