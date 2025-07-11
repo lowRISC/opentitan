@@ -27,9 +27,10 @@ status_t trigger_cryptolib_sca_asym_rsa_dec(
   // Perform an RSA decryption.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
-  TRY(cryptolib_sca_rsa_dec_impl(data, data_len, mode, e, n, d, n_len, data_out,
-                                 data_out_len, hashing, padding, cfg_in,
-                                 cfg_out, status, trigger));
+  *status = (size_t)cryptolib_sca_rsa_dec_impl(
+                data, data_len, mode, e, n, d, n_len, data_out, data_out_len,
+                hashing, padding, cfg_in, cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -141,9 +142,10 @@ status_t handle_cryptolib_sca_asym_rsa_sign(
   // Perform an RSA sign.
   // Adjust the hashing and the padding mode.
   // Triggers are over the API calls.
-  TRY(cryptolib_sca_rsa_sign_impl(data, data_len, e, n, d, n_len, sig, sig_len,
-                                  hashing, padding, cfg_in, cfg_out, status,
-                                  trigger));
+  *status = (size_t)cryptolib_sca_rsa_sign_impl(data, data_len, e, n, d, n_len,
+                                                sig, sig_len, hashing, padding,
+                                                cfg_in, cfg_out, trigger)
+                .value;
   /////////////// STUB END ///////////////
 
   return OK_STATUS();
@@ -385,7 +387,8 @@ status_t handle_cryptolib_sca_asym_p256_ecdh(ujson_t *uj) {
   // Perform ECDH in P256.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p256_ecdh_out_t uj_output;
-  TRY(cryptolib_sca_p256_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_p256_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_ecdh_out_t, uj, &uj_output);
@@ -400,7 +403,8 @@ status_t handle_cryptolib_sca_asym_p256_sign(ujson_t *uj) {
   // Perform a P256 signature.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p256_sign_out_t uj_output;
-  TRY(cryptolib_sca_p256_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_p256_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p256_sign_out_t, uj, &uj_output);
@@ -527,7 +531,8 @@ status_t handle_cryptolib_sca_asym_p384_ecdh(ujson_t *uj) {
   // Perform ECDH in P384.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p384_ecdh_out_t uj_output;
-  TRY(cryptolib_sca_p384_ecdh_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_p384_ecdh_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_ecdh_out_t, uj, &uj_output);
@@ -542,7 +547,8 @@ status_t handle_cryptolib_sca_asym_p384_sign(ujson_t *uj) {
   // Perform a p384 signature.
   // Trigger are over the API calls.
   cryptolib_sca_asym_p384_sign_out_t uj_output;
-  TRY(cryptolib_sca_p384_sign_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_sca_p384_sign_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_sca_asym_p384_sign_out_t, uj, &uj_output);

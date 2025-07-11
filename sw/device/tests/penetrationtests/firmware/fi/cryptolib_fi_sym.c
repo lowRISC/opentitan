@@ -26,7 +26,7 @@ status_t handle_cryptolib_fi_sym_aes(ujson_t *uj) {
   // The total size of this test can be large due to all these options.
   // Triggers are over the API calls.
   cryptolib_fi_sym_aes_out_t uj_output;
-  TRY(cryptolib_fi_aes_impl(uj_input, &uj_output));
+  uj_output.status = (size_t)cryptolib_fi_aes_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_aes_out_t, uj, &uj_output);
@@ -63,7 +63,7 @@ status_t handle_cryptolib_fi_sym_gcm(ujson_t *uj) {
   // Then, verify that tag again, before sending the output.
   // Trigger are over the API calls.
   cryptolib_fi_sym_gcm_out_t uj_output;
-  TRY(cryptolib_fi_gcm_impl(uj_input, &uj_output));
+  uj_output.status = (size_t)cryptolib_fi_gcm_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_gcm_out_t, uj, &uj_output);
@@ -98,7 +98,7 @@ status_t handle_cryptolib_fi_sym_hmac(ujson_t *uj) {
   // Perform an HMAC call.
   // Trigger are over the API calls.
   cryptolib_fi_sym_hmac_out_t uj_output;
-  TRY(cryptolib_fi_hmac_impl(uj_input, &uj_output));
+  uj_output.status = (size_t)cryptolib_fi_hmac_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_hmac_out_t, uj, &uj_output);
@@ -113,7 +113,8 @@ status_t handle_cryptolib_fi_sym_drbg_generate(ujson_t *uj) {
   // Perform a DRBG call to generate random output.
   // Trigger are over the API calls.
   cryptolib_fi_sym_drbg_generate_out_t uj_output;
-  TRY(cryptolib_fi_drbg_generate_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_drbg_generate_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_generate_out_t, uj, &uj_output);
@@ -128,7 +129,8 @@ status_t handle_cryptolib_fi_sym_drbg_reseed(ujson_t *uj) {
   // Perform a DRBG call to reseed/instantiate the DRBG.
   // Trigger are over the API calls.
   cryptolib_fi_sym_drbg_reseed_out_t uj_output;
-  TRY(cryptolib_fi_drbg_reseed_impl(uj_input, &uj_output));
+  uj_output.status =
+      (size_t)cryptolib_fi_drbg_reseed_impl(uj_input, &uj_output).value;
   /////////////// STUB END ///////////////
 
   RESP_OK(ujson_serialize_cryptolib_fi_sym_drbg_reseed_out_t, uj, &uj_output);

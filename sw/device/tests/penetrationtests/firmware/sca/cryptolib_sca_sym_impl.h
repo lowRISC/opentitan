@@ -27,13 +27,15 @@
  * @param trigger Trigger config.
  * @return OK or error.
  */
-status_t cryptolib_sca_aes_impl(
-    uint8_t data_in[AES_CMD_MAX_MSG_BYTES], size_t data_in_len,
-    uint8_t key[AES_CMD_MAX_KEY_BYTES], size_t key_len,
-    uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
-    uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
-    size_t padding, size_t mode, bool op_enc, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger);
+status_t cryptolib_sca_aes_impl(uint8_t data_in[AES_CMD_MAX_MSG_BYTES],
+                                size_t data_in_len,
+                                uint8_t key[AES_CMD_MAX_KEY_BYTES],
+                                size_t key_len,
+                                uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
+                                uint8_t data_out[AES_CMD_MAX_MSG_BYTES],
+                                size_t *data_out_len, size_t padding,
+                                size_t mode, bool op_enc, size_t cfg_in,
+                                size_t *cfg_out, size_t trigger);
 
 /**
  * Wrapper to DRBG generate cryptolib implementation.
@@ -52,8 +54,7 @@ status_t cryptolib_sca_aes_impl(
 status_t cryptolib_sca_drbg_generate_impl(
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     uint8_t data_out[DRBG_CMD_MAX_OUTPUT_BYTES], size_t data_out_len,
-    size_t mode, size_t cfg_in, size_t *cfg_out, size_t *status,
-    size_t trigger);
+    size_t mode, size_t cfg_in, size_t *cfg_out, size_t trigger);
 
 /**
  * Wrapper to DRBG reseed/instantiate cryptolib implementation.
@@ -73,7 +74,7 @@ status_t cryptolib_sca_drbg_reseed_impl(
     uint8_t entropy[DRBG_CMD_MAX_ENTROPY_BYTES], size_t entropy_len,
     uint8_t nonce[DRBG_CMD_MAX_NONCE_BYTES], size_t nonce_len,
     size_t reseed_interval, size_t mode, size_t cfg_in, size_t *cfg_out,
-    size_t *status, size_t trigger);
+    size_t trigger);
 
 /**
  * Wrapper to AES-GCM cryptolib implementation.
@@ -101,7 +102,7 @@ status_t cryptolib_sca_gcm_impl(
     uint8_t iv[AES_CMD_MAX_BLOCK_BYTES],
     uint8_t data_out[AES_CMD_MAX_MSG_BYTES], size_t *data_out_len,
     uint8_t tag[AES_CMD_MAX_MSG_BYTES], size_t *tag_len, size_t cfg_in,
-    size_t *cfg_out, size_t *status, size_t trigger);
+    size_t *cfg_out, size_t trigger);
 
 /**
  * Wrapper to HMAC cryptolib implementation.
@@ -126,6 +127,6 @@ status_t cryptolib_sca_hmac_impl(uint8_t data_in[HMAC_CMD_MAX_MSG_BYTES],
                                  uint8_t data_out[HMAC_CMD_MAX_TAG_BYTES],
                                  size_t *data_out_len, size_t padding,
                                  size_t mode, size_t cfg_in, size_t *cfg_out,
-                                 size_t *status, size_t trigger);
+                                 size_t trigger);
 
 #endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_CRYPTOLIB_SCA_SYM_IMPL_H_
