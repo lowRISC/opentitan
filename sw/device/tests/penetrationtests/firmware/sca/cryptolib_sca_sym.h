@@ -37,6 +37,19 @@ status_t handle_cryptolib_sca_sym_aes_fvsr_plaintext(ujson_t *uj);
 status_t handle_cryptolib_sca_sym_aes_fvsr_key(ujson_t *uj);
 
 /**
+ * cryptolib aes sca daisy chain test
+ *
+ * This SCA penetration test triggers num_iterations cryptolib AES operations
+ * using daisy chaining meaning that the output is copied to the input.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_aes_daisy_chain(ujson_t *uj);
+
+/**
  * cryptolib cmac sca fvsr plaintext test
  *
  * This SCA penetration test triggers num_iterations cryptolib CMAC operations
@@ -63,6 +76,19 @@ status_t handle_cryptolib_sca_sym_cmac_fvsr_plaintext(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_sca_sym_cmac_fvsr_key(ujson_t *uj);
+
+/**
+ * cryptolib cmac sca daisy chain test
+ *
+ * This SCA penetration test triggers num_iterations cryptolib CMAC operations
+ * using daisy chaining meaning that the output is copied to the input.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_cmac_daisy_chain(ujson_t *uj);
 
 /**
  * cryptolib gcm sca fvsr plaintext test
@@ -93,6 +119,19 @@ status_t handle_cryptolib_sca_sym_gcm_fvsr_plaintext(ujson_t *uj);
 status_t handle_cryptolib_sca_sym_gcm_fvsr_key(ujson_t *uj);
 
 /**
+ * cryptolib gcm sca daisy chain test
+ *
+ * This SCA penetration test triggers num_iterations cryptolib GCM operations
+ * using daisy chaining meaning that the output is copied to the input.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_gcm_daisy_chain(ujson_t *uj);
+
+/**
  * cryptolib tdes sca fvsr plaintext test
  *
  * This SCA penetration test triggers num_iterations cryptolib TDES operations
@@ -121,6 +160,19 @@ status_t handle_cryptolib_sca_sym_tdes_fvsr_plaintext(ujson_t *uj);
 status_t handle_cryptolib_sca_sym_tdes_fvsr_key(ujson_t *uj);
 
 /**
+ * cryptolib tdes sca daisy chain test
+ *
+ * This SCA penetration test triggers num_iterations cryptolib TDES operations
+ * using daisy chaining meaning that the output is copied to the input.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_tdes_daisy_chain(ujson_t *uj);
+
+/**
  * cryptolib hmac sca fvsr plaintext test
  *
  * This SCA penetration test triggers num_iterations cryptolib HMAC operations
@@ -147,6 +199,19 @@ status_t handle_cryptolib_sca_sym_hmac_fvsr_plaintext(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_cryptolib_sca_sym_hmac_fvsr_key(ujson_t *uj);
+
+/**
+ * cryptolib hmac sca daisy chain test
+ *
+ * This SCA penetration test triggers num_iterations cryptolib HMAC operations
+ * using daisy chaining meaning that the output is copied to the input.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_sca_sym_hmac_daisy_chain(ujson_t *uj);
 
 /**
  * cryptolib drbg sca fvsr test
