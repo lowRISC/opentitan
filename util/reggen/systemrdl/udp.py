@@ -29,6 +29,11 @@ class Hwre(UDPBoolean):
     valid_components = {Reg}
 
 
+class Shadowed(UDPBoolean):
+    name = "shadowed"
+    valid_components = {Reg}
+
+
 OPENTITAN_UDPS = Path(__file__).parent / "udp.rdl"
 
 
@@ -38,4 +43,5 @@ def register_udps(compiler: RDLCompiler) -> None:
     """
     compiler.register_udp(Mubi)
     compiler.register_udp(Hwre)
+    compiler.register_udp(Shadowed)
     compiler.compile_file(OPENTITAN_UDPS)
