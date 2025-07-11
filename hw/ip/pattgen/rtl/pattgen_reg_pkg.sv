@@ -16,6 +16,11 @@ package pattgen_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 12;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } pattgen_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

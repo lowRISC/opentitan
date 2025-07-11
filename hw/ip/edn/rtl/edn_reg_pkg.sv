@@ -19,6 +19,12 @@ package edn_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 18;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovAlertIdx = 0,
+    AlertFatalAlertIdx = 1
+  } edn_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

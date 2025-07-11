@@ -297,6 +297,15 @@ package otp_ctrl_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegsCore = 95;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalMacroErrorIdx = 0,
+    AlertFatalCheckErrorIdx = 1,
+    AlertFatalBusIntegErrorIdx = 2,
+    AlertFatalPrimOtpAlertIdx = 3,
+    AlertRecovPrimOtpAlertIdx = 4
+  } otp_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

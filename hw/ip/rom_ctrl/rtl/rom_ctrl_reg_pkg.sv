@@ -17,6 +17,11 @@ package rom_ctrl_reg_pkg;
   parameter int NumRegsRegs = 18;
   parameter int NumRegsRom = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalIdx = 0
+  } rom_ctrl_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

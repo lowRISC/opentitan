@@ -20,6 +20,11 @@ package rv_dm_reg_pkg;
   parameter int NumRegsMem = 281;
   parameter int NumRegsDbg = 0;
 
+  // Alert indices
+  typedef enum int {
+    AlertFatalFaultIdx = 0
+  } rv_dm_alert_idx_t;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

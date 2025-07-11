@@ -19,6 +19,12 @@ package sensor_ctrl_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 29;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovAlertIdx = 0,
+    AlertFatalAlertIdx = 1
+  } sensor_ctrl_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

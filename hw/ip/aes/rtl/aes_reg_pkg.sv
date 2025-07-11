@@ -18,6 +18,12 @@ package aes_reg_pkg;
   // Number of registers for every interface
   parameter int NumRegs = 34;
 
+  // Alert indices
+  typedef enum int {
+    AlertRecovCtrlUpdateErrIdx = 0,
+    AlertFatalFaultIdx = 1
+  } aes_alert_idx_t;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
