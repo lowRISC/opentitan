@@ -44,12 +44,25 @@ class Testplan:
             return (
                 bool(re.match(name, node["name"]))
                 and bool(re.match(stage, node["stage"]))
-                and bool(re.match(si_stage, node["stage"]))
+                and bool(re.match(si_stage, node["si_stage"]))
                 and any([re.match(lc_state, state) for state in node["lc_states"]])
             )
 
         filtered = filter(check, self.testpoints)
         return Testplan(list(filtered))
+
+    def filter_fields(self, fields: list[str]|None = None) -> "Testplan":
+        """
+        Apply filters to remove fields of testpoints or columns if exported to csv.
+        """
+        if fields is None:
+            return self
+
+        testpoints = []
+        for tp in self.testpoints:
+            filtered = filter(lambda item: item[0] in fields, tp.items())
+            testpoints.append(dict(filtered))
+        return Testplan(testpoints)
 
     @staticmethod
     def from_dict(testplan: dict) -> "Testplan":
