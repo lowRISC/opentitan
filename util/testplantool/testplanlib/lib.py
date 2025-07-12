@@ -6,6 +6,7 @@
 from pathlib import Path
 import hjson
 import csv
+import re
 from dataclasses import dataclass
 
 
@@ -32,6 +33,25 @@ class Testplan:
             writer.writerows(self.testpoints)
         print(f"Generated {outpath}.")
 
+    def filter_testpoints(
+        self, name: str = ".*", stage: str = ".*", si_stage: str = ".*", lc_state: str = ".*"
+    ) -> "Testplan":
+        """
+        Apply filters to remove testpoints or rows if exported to csv.
+        """
+
+        def check(node: dict) -> bool:
+            return (
+                bool(re.match(name, node["name"]))
+                and bool(re.match(stage, node["stage"]))
+                and bool(re.match(si_stage, node["si_stage"]))
+                and any([re.match(lc_state, state) for state in node["lc_states"]])
+            )
+
+        filtered = filter(check, self.testpoints)
+        return Testplan(list(filtered))
+
+    @staticmethod
     def from_dict(testplan: dict) -> "Testplan":
         OPTIONAL_FIELDS = [
             "bazel",
