@@ -539,9 +539,13 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj)
   };
 
   // Configure slot 0 for the increment_100x10.
-  TRY(dif_rv_core_ibex_configure_addr_translation(
+  dif_result_t status = dif_rv_core_ibex_configure_addr_translation(
       &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
-      kDifRvCoreIbexAddrTranslationIBus, increment_100x10_mapping));
+      kDifRvCoreIbexAddrTranslationIBus, increment_100x10_mapping);
+  if (status == kDifLocked) {
+    LOG_INFO("address translation locked");
+    return PERMISSION_DENIED();
+  }
   TRY(dif_rv_core_ibex_configure_addr_translation(
       &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
       kDifRvCoreIbexAddrTranslationDBus, increment_100x10_mapping));
@@ -627,9 +631,13 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj)
   };
 
   // Write address translation configuration.
-  TRY(dif_rv_core_ibex_configure_addr_translation(
+  dif_result_t status = dif_rv_core_ibex_configure_addr_translation(
       &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
-      kDifRvCoreIbexAddrTranslationIBus, mapping1));
+      kDifRvCoreIbexAddrTranslationIBus, mapping1);
+  if (status == kDifLocked) {
+    LOG_INFO("address translation locked");
+    return PERMISSION_DENIED();
+  }
 
   // FI code target.
   // Either slot 0 config, which is already written, or slot 1 config, which
