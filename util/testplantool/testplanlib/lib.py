@@ -6,27 +6,13 @@
 from pathlib import Path
 import hjson
 import csv
+import re
+from dataclasses import dataclass
 
 
+@dataclass
 class Testplan:
     testpoints: list[dict]
-    OPTIONAL_FIELDS = [
-        "bazel",
-        "lc_states",
-        "features",
-        "boot_stages",
-        "tags",
-        "otp_mutate",
-        "host_support",
-    ]
-
-    def __init__(self, testplan: dict):
-        self.testpoints = testplan["testpoints"]
-        for test in self.testpoints:
-            test["ip"] = testplan.get("name", "unknown")
-            for f in self.OPTIONAL_FIELDS:
-                if f not in test:
-                    test[f] = "None"
 
     def join(self, other: "Testplan") -> None:
         self.testpoints.extend(other.testpoints)
@@ -47,14 +33,53 @@ class Testplan:
             writer.writerows(self.testpoints)
         print(f"Generated {outpath}.")
 
+    def filter_testpoints(
+        self, name: str = ".*", stage: str = ".*", si_stage: str = ".*", lc_state: str = ".*"
+    ) -> "Testplan":
+        """
+        Apply filters to remove testpoints or rows if exported to csv.
+        """
+
+        def check(node: dict) -> bool:
+            return (
+                bool(re.match(name, node["name"]))
+                and bool(re.match(stage, node["stage"]))
+                and bool(re.match(si_stage, node["stage"]))
+                and any([re.match(lc_state, state) for state in node["lc_states"]])
+            )
+
+        filtered = filter(check, self.testpoints)
+        return Testplan(list(filtered))
+
+    @staticmethod
+    def from_dict(testplan: dict) -> "Testplan":
+        OPTIONAL_FIELDS = [
+            "bazel",
+            "lc_states",
+            "features",
+            "boot_stages",
+            "tags",
+            "otp_mutate",
+            "host_support",
+            "si_stage",
+        ]
+        testpoints = testplan["testpoints"]
+        for test in testpoints:
+            test["ip"] = testplan.get("name", "unknown")
+            for f in OPTIONAL_FIELDS:
+                if f not in test:
+                    test[f] = "None"
+
+        return Testplan(testpoints)
+
     @staticmethod
     def from_top(top_path: Path) -> "Testplan":
         repo_path = find_repo_dir(top_path)
         top_testplan = hjson.load(top_path.open("r"))
-        this = Testplan(top_testplan)
+        this = Testplan.from_dict(top_testplan)
         for file in top_testplan["import_testplans"]:
             testplan = hjson.load(open(repo_path / file, "r"))
-            this.join(Testplan(testplan))
+            this.join(Testplan.from_dict(testplan))
         return this
 
 
