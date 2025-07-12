@@ -92,3 +92,6 @@ extend-exclude = [ "*vendor*" ]
 preview = true
 explicit-preview-rules = true
 extend-select = ["E", "E303", "W391"]
+
+[tool.uv.workspace]
+members = ["util/testplantool", "util/testplantool/testplanlib"]
