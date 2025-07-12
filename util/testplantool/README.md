@@ -13,3 +13,20 @@ bazel run util/testplantool -- export-csv \
 $(pwd)/hw/top_earlgrey/data/chip_testplan.hjson /tmp/earlgrey.csv
 ```
 
+## Query testpoints
+With DEV lifecycle:
+```sh
+bazel run util/testplantool -- query \
+$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --lc-state="DEV"
+```
+With PROD lifecycle and `aes` in the name:
+```sh
+bazel run util/testplantool -- query \
+$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --name=".*aes.*" --lc-state="DEV"
+```
+Available testpoint filters:
+    --name: Regex to match testpoint name.
+    --stage: Regex to match dv stage.
+    --si-stage: Regex to match SiVal stage.
+    --lc-state: Regex to match life-cycle stage.
+
