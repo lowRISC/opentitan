@@ -51,7 +51,7 @@ class Testplan:
         filtered = filter(check, self.testpoints)
         return Testplan(list(filtered))
 
-    def filter_fields(self, fields: list[str]|None = None) -> "Testplan":
+    def filter_fields(self, fields: list[str] | None = None) -> "Testplan":
         """
         Apply filters to remove fields of testpoints or columns if exported to csv.
         """
