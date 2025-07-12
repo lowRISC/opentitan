@@ -14,6 +14,21 @@ from dataclasses import dataclass
 class Testplan:
     testpoints: list[dict]
 
+    def get_bazel(self) -> list[str]:
+        """
+        Return a unique list of bazel targets
+        """
+        res = [item for tp in self.testpoints for item in tp["bazel"]]
+        return list(sorted(set(res)))
+
+    def get_si_stage(self) -> list[str]:
+        """
+        Return a unique list of Sival stage
+        """
+        res = [tp["si_stage"] for tp in self.testpoints]
+        res = filter(lambda item: item.lower() not in ["na", "none"], res)
+        return list(sorted(set(res)))
+
     def join(self, other: "Testplan") -> None:
         self.testpoints.extend(other.testpoints)
 
