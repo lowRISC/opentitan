@@ -17,7 +17,10 @@ filegroup(
 py_library(
     name = "testplanlib",
     srcs = ["testplanlib/lib.py"],
-    deps = [requirement("hjson")],
+    deps = [
+        requirement("hjson"),
+        requirement("mako"),
+    ],
 )
 
 py_binary(
