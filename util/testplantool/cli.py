@@ -78,5 +78,7 @@ def query(input_file: str, name: str, stage: str, si_stage: str, lc_state: str, 
     FIELDS is an optional comma separated list of fields that should be in the output.
     """
     tp = Testplan.from_top(Path(input_file))
-    tp = tp.filter_testpoints(name=name, stage=stage, si_stage=si_stage, lc_state=lc_state)
+    tp = tp.filter_testpoints(
+        name=name, stage=stage, si_stage=si_stage, lc_state=lc_state
+    ).filter_fields(fields)
     tp.debug()

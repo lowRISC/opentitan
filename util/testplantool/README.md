@@ -24,9 +24,19 @@ With PROD lifecycle and `aes` in the name:
 bazel run util/testplantool -- query \
 $(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --name=".*aes.*" --lc-state="DEV"
 ```
+
+With PROD lifecycle and `aes` in the name, only add the fields `name` and `bazel` to the output:
+```sh
+bazel run util/testplantool -- query \
+$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson --name=".*aes.*" \
+--lc-state="DEV" --fields="name,bazel"
+```
 Available testpoint filters:
     --name: Regex to match testpoint name.
     --stage: Regex to match dv stage.
     --si-stage: Regex to match SiVal stage.
     --lc-state: Regex to match life-cycle stage.
+
+fields filters:
+    --fields: Comma separated list of fields that should be in the output.
 
