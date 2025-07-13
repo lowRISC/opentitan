@@ -55,6 +55,8 @@ def _bitstreams_repo_impl(rctx):
         "BAZEL_BITSTREAMS_CACHE",
         rctx.attr.cache,
     )
+    rctx.watch(rctx.attr.python_interpreter)
+    rctx.watch(rctx.attr._cache_manager)
     result = rctx.execute(
         [
             rctx.path(rctx.attr.python_interpreter),
