@@ -6,9 +6,11 @@
 
 set -e
 
-GIT_REPOS=$(ci/bazelisk.sh query "kind('(new_)?git_repository', //external:*)")
-if [[ ${GIT_REPOS} ]]; then
+REPO_TOP="$(git rev-parse --show-toplevel)"
+cd "$REPO_TOP"
+
+if grep -r --include '*.bzl' git_repository; then
   echo "Bazel's 'git_repository' rule is insecure and incompatible with OpenTitan's airgapping strategy."
-  echo "Please replace $GIT_REPOS with our 'http_archive_or_local' rule and set a sha256 so it can be canonically reproducible."
+  echo "Please replace $GIT_REPOS with 'http_archive' rule and set a sha256 so it can be canonically reproducible."
   exit 1
 fi
