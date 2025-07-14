@@ -7,16 +7,7 @@ load("//rules:linker.bzl", "ld_library")
 package(default_visibility = ["//visibility:public"])
 
 ld_library(
-    name = "libtock_layout",
-    includes = [
-        "@libtock//build_scripts:layout",
-    ],
-)
-
-ld_library(
     name = "single_app_layout",
+    includes = ["@libtock//build_scripts:layout"],
     script = "single_app_layout.ld",
-    deps = [
-        ":libtock_layout",
-    ],
 )
