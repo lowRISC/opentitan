@@ -24,6 +24,17 @@
 
 #include "hw/top/flash_ctrl_regs.h"
 
+#if RESCUE_USES_UART == 1
+#define rescue_msg(fmt, ...)        \
+  do {                              \
+    dbg_printf(fmt, ##__VA_ARGS__); \
+  } while (0)
+#else
+#define rescue_msg(fmt, ...) \
+  do {                       \
+  } while (0)
+#endif
+
 typedef enum rescue_request {
   kRescueRequestNone = 0,
   kRescueRequestEnter = 0x739,
@@ -110,7 +121,7 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
         &kFlashCtrlInfoPageOwnerSlot1, 0,
         sizeof(state->data) / sizeof(uint32_t), state->data));
   } else {
-    dbg_printf("error: cannot accept owner_block in current state\r\n");
+    rescue_msg("error: cannot accept owner_block in current state\r\n");
   }
   return kErrorOk;
 }
@@ -129,22 +140,22 @@ static void ownership_erase(void) {
                                      kFlashCtrlEraseTypePage));
     OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot1,
                                      kFlashCtrlEraseTypePage));
-    dbg_printf("ok: erased owner blocks\r\n");
+    rescue_msg("ok: erased owner blocks\r\n");
   } else {
-    dbg_printf("error: erase not allowed in state %x\r\n", lc_state);
+    rescue_msg("error: erase not allowed in state %x\r\n", lc_state);
   }
 }
 #endif
 
 rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
-  dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
+  rescue_msg("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   rom_error_t result = kErrorOk;
 
   // The following commands are always allowed and are not subject to
   // the "command allowed" check.
   switch (mode) {
     case kRescueModeReboot:
-      dbg_printf("ok: reboot\r\n");
+      rescue_msg("ok: reboot\r\n");
       state->mode = (rescue_mode_t)mode;
       goto exitproc;
     case kRescueModeNoOp:
@@ -164,13 +175,13 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
   if (allow == kHardenedBoolTrue) {
     switch (mode) {
       case kRescueModeBootLog:
-        dbg_printf("ok: receive boot_log\r\n");
+        rescue_msg("ok: receive boot_log\r\n");
         break;
       case kRescueModeBootSvcRsp:
-        dbg_printf("ok: receive boot_svc response\r\n");
+        rescue_msg("ok: receive boot_svc response\r\n");
         break;
       case kRescueModeBootSvcReq:
-        dbg_printf("ok: send boot_svc request\r\n");
+        rescue_msg("ok: send boot_svc request\r\n");
         break;
       case kRescueModeOwnerBlock:
         if (state->bootdata->ownership_state == kOwnershipStateUnlockedAny ||
@@ -179,31 +190,31 @@ rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state) {
                 kOwnershipStateUnlockedEndorsed ||
             (state->bootdata->ownership_state == kOwnershipStateLockedOwner &&
              owner_block_newversion_mode() == kHardenedBoolTrue)) {
-          dbg_printf("ok: send owner_block\r\n");
+          rescue_msg("ok: send owner_block\r\n");
         } else {
-          dbg_printf("error: cannot accept owner_block in current state\r\n");
+          rescue_msg("error: cannot accept owner_block in current state\r\n");
           return kErrorRescueBadMode;
         }
         break;
       case kRescueModeFirmware:
       case kRescueModeFirmwareSlotB:
-        dbg_printf("ok: send firmware\r\n");
+        rescue_msg("ok: send firmware\r\n");
         break;
       case kRescueModeOwnerPage0:
       case kRescueModeOwnerPage1:
-        dbg_printf("ok: receive owner page\r\n");
+        rescue_msg("ok: receive owner page\r\n");
         break;
       case kRescueModeOpenTitanID:
-        dbg_printf("ok: receive device ID\r\n");
+        rescue_msg("ok: receive device ID\r\n");
         break;
       default:
         // User input error.  Do not change modes.
-        dbg_printf("error: unrecognized mode\r\n");
+        rescue_msg("error: unrecognized mode\r\n");
         return kErrorRescueBadMode;
     }
     state->mode = (rescue_mode_t)mode;
   } else {
-    dbg_printf("error: mode not allowed\r\n");
+    rescue_msg("error: mode not allowed\r\n");
     result = kErrorRescueBadMode;
   }
 exitproc:
