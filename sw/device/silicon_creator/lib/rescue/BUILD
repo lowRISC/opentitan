@@ -18,41 +18,44 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+RESCUE_DEPS = [
+    "//hw/top:flash_ctrl_c_regs",
+    "//sw/device/lib/base:macros",
+    "//sw/device/lib/base:memory",
+    "//sw/device/silicon_creator/lib:manifest",
+    "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    "//sw/device/silicon_creator/lib/drivers:lifecycle",
+    "//sw/device/silicon_creator/lib/drivers:pinmux",
+    "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    "//sw/device/silicon_creator/lib/ownership:owner_block",
+]
+
 cc_library(
     name = "rescue",
-    srcs = ["rescue.c"],
     hdrs = ["rescue.h"],
     deps = [
-        ":xmodem",
-        "//hw/top:flash_ctrl_c_regs",
-        "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/ownership:owner_block",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
     ],
 )
 
 cc_library(
     name = "rescue_xmodem",
-    srcs = ["rescue_xmodem.c"],
+    srcs = [
+        "rescue.c",
+        "rescue_xmodem.c",
+    ],
+    local_defines = ["RESCUE_USES_UART=1"],
     deps = [
         ":rescue",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:error",
+        ":xmodem",
         "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
+    ] + RESCUE_DEPS,
 )
 
 cc_library(
@@ -101,46 +104,43 @@ cc_library(
 
 cc_library(
     name = "rescue_usbdfu",
-    srcs = ["rescue_usb.c"],
+    srcs = [
+        "rescue.c",
+        "rescue_usb.c",
+    ],
+    local_defines = ["RESCUE_USES_UART=0"],
     deps = [
         ":dfu",
         ":rescue",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:usb",
-    ],
+    ] + RESCUE_DEPS,
 )
 
 cc_library(
     name = "rescue_spidfu",
     srcs = [
+        "rescue.c",
         "rescue_spi.c",
         "sfdp.c",
         "sfdp.h",
     ],
+    local_defines = ["RESCUE_USES_UART=0"],
     deps = [
         ":dfu",
         ":rescue",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:spi_device",
         "//sw/device/silicon_creator/lib/drivers:usb",
-    ],
+    ] + RESCUE_DEPS,
 )
 
 cc_library(
     name = "rescue_null",
-    srcs = ["rescue_null.c"],
+    srcs = [
+        "rescue.c",
+        "rescue_null.c",
+    ],
+    local_defines = ["RESCUE_USES_UART=0"],
     deps = [
         ":rescue",
-    ],
+    ] + RESCUE_DEPS,
 )
