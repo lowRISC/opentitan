@@ -345,6 +345,19 @@ fn usbdev_suspend(
     }
 }
 
+fn usbdev_suspend_and_drain(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    uart: &dyn Uart,
+) -> Result<(), anyhow::Error> {
+    let res = usbdev_suspend(opts, transport, uart);
+    // In case of error, drain the UART to get more message out to debug.
+    if res.is_err() {
+        let _ = UartConsole::wait_for(uart, r"(PASS|FAIL)!", Duration::from_secs(1));
+    }
+    res
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -354,6 +367,6 @@ fn main() -> Result<()> {
     let uart = transport.uart("console")?;
     UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    execute_test!(usbdev_suspend, &opts, &transport, &*uart);
+    execute_test!(usbdev_suspend_and_drain, &opts, &transport, &*uart);
     Ok(())
 }
