@@ -7,3 +7,9 @@ A tool to manipulate and extract information from the testplans.
 python util/testplantool/testplantool.py export-csv \
 hw/top_earlgrey/data/chip_testplan.hjson /tmp/earlgrey.csv
 ```
+or with bazel:
+```sh
+bazel run util/testplantool -- export-csv \
+$(pwd)/hw/top_earlgrey/data/chip_testplan.hjson /tmp/earlgrey.csv
+```
+
