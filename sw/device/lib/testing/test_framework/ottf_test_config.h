@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_TEST_CONFIG_H_
 
+#include "dt/dt_api.h"
+
 /**
  * Communication interfaces that can be used as the OTTF console.
  */
@@ -47,7 +49,7 @@ typedef struct ottf_console_tx_indicator {
    * that the SPI console buffer is not empty. A value of UINT32_MAX indicates
    * this feature is unused.
    */
-  uint32_t spi_console_tx_ready_mio;
+  dt_pad_t spi_console_tx_ready_mio;
 } ottf_console_tx_indicator_t;
 
 /**

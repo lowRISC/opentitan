@@ -261,14 +261,13 @@ void ottf_console_configure_spi_device(uintptr_t base_addr) {
 
   // Setup TX GPIO if requested.
   if (kOttfTestConfig.console_tx_indicator.enable) {
-    CHECK_DIF_OK(dif_gpio_init(
-        mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
-    CHECK_DIF_OK(dif_pinmux_init(
-        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-    CHECK_DIF_OK(dif_pinmux_output_select(
+    CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpioFirst, &gpio));
+    CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxFirst, &pinmux));
+    CHECK_DIF_OK(dif_pinmux_mio_select_output(
         &pinmux, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_mio,
-        kTopEarlgreyPinmuxOutselGpioGpio0 +
-            kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio));
+        dt_gpio_periph_io(kDtGpioFirst, kDtGpioPeriphIoGpio0 +
+                                            kOttfTestConfig.console_tx_indicator
+                                                .spi_console_tx_ready_gpio)));
     CHECK_DIF_OK(dif_gpio_write(
         &gpio, kOttfTestConfig.console_tx_indicator.spi_console_tx_ready_gpio,
         false));
