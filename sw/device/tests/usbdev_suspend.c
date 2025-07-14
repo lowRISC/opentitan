@@ -132,7 +132,7 @@
  * Timeout constants in microseconds;
  */
 enum {
-  TimeoutResumeMissed = 40U * 1000U,
+  TimeoutResumeMissed = 400U * 1000U,
   TimeoutResetMissed = 60U * 1000U,
   TimeoutWakeupResume = 30000u,
   TimeoutFinishMissed = 2000u,
