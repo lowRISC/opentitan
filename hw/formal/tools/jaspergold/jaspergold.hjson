@@ -10,7 +10,10 @@
   // If this line is not seen in the log, then fail the test.
   build_pass_patterns: ["^INFO: Proof threads stopped\\.$"]
 
+  jg_tcl_dir: "{formal_root}/tools/{tool}"
+
   exports: [
-    {COMMON_MSG_TCL_PATH: "{formal_root}/tools/{tool}/jaspergold_common_message_process.tcl"}
+    {JG_TCL_DIR: "{jg_tcl_dir}"},
+    {COMMON_MSG_TCL_PATH: "{jg_tcl_dir}/jaspergold_common_message_process.tcl"}
   ]
 }
