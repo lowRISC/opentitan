@@ -17,7 +17,6 @@
   {
     "test_case_id": 2,
     "command": "Read",
-    "input": "{\"start_trigger\": true,\"valid_trigger\": true,\"read_trigger\": true,\"all_trigger\": true}",
     "expected_output": ["{\"digest\":[0,0,0,0,0,0,0,0],\"err_status\":0,\"alerts\":[0,0,0],\"ast_alerts\":[0,0]}"]
   }
 ]
