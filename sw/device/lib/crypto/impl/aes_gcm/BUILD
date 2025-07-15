@@ -15,6 +15,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 

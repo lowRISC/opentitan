@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +30,10 @@ typedef struct aes_gcm_context {
    * Underlying AES-CTR key.
    */
   aes_key_t key;
+  /**
+   * Security level of the underlying AES-CTR key.
+   */
+  otcrypto_key_security_level_t security_level;
   /**
    * Initial counter block (J0 in the spec).
    */
