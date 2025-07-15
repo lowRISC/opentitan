@@ -41,6 +41,10 @@ on:
         default: true
         type: boolean
         description: Include additional test filters for "manual", "broken", and "skip_in_ci" tests.
+      cache_test_results:
+        default: true
+        type: boolean
+        description: Skip tests that previously passed and were cached by Bazel
 
 jobs:
   fpga:
@@ -83,9 +87,11 @@ jobs:
             "$tag_filters" \
             ${{ inputs.targets }}
 
+          cache_test_results="--cache_test_results=${{ inputs.cache_test_results }}"
+
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt || {
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt "$cache_test_results" || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
