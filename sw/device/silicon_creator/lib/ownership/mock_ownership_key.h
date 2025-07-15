@@ -29,6 +29,7 @@ class MockOwnershipKey : public global_mock::GlobalMock<MockOwnershipKey> {
 }  // namespace internal
 
 using MockOwnershipKey = testing::StrictMock<internal::MockOwnershipKey>;
+using NiceMockOwnershipKey = testing::NiceMock<internal::MockOwnershipKey>;
 
 }  // namespace rom_test
 

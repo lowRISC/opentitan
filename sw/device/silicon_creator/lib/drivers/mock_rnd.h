@@ -24,6 +24,7 @@ class MockRnd : public global_mock::GlobalMock<MockRnd> {
 }  // namespace internal
 
 using MockRnd = testing::StrictMock<internal::MockRnd>;
+using NiceMockRnd = testing::NiceMock<internal::MockRnd>;
 
 }  // namespace rom_test
 

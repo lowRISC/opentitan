@@ -26,6 +26,8 @@ class MockRomExtBootPolicyPtrs
 
 using MockRomExtBootPolicyPtrs =
     testing::StrictMock<internal::MockRomExtBootPolicyPtrs>;
+using NiceMockRomExtBootPolicyPtrs =
+    testing::NiceMock<internal::MockRomExtBootPolicyPtrs>;
 
 }  // namespace rom_test
 
