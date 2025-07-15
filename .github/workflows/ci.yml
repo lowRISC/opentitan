@@ -383,15 +383,6 @@ jobs:
           path: build-bin.tar
           overwrite: true
 
-  chip_earlgrey_cw310:
-    name: Earl Grey for CW310
-    needs: quick_lint
-    uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
-    with:
-      top_name: earlgrey
-      design_suffix: cw310
-
   chip_earlgrey_cw310_hyperdebug:
     name: Earl Grey for CW310 Hyperdebug
     needs: quick_lint
@@ -415,7 +406,6 @@ jobs:
     runs-on: ubuntu-22.04
     if: ${{ github.event_name != 'pull_request' }}
     needs:
-      - chip_earlgrey_cw310
       - chip_earlgrey_cw310_hyperdebug
       - chip_earlgrey_cw340
     steps:
