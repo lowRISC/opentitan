@@ -959,6 +959,7 @@ def _signature_test_impl(ctx):
       substitutions = {
         "@FILES@": " ".join(files),
         "@OPENTITANTOOL@": ctx.executable._opentitantool.short_path,
+        "@VERIFY_ARGS@": "--spx --domain " + ctx.attr.spx_domain,
       },
       is_executable=True,
   )
@@ -974,6 +975,11 @@ signature_test = rule(
   implementation = _signature_test_impl,
   attrs = {
       "srcs": attr.label_list(allow_files=True, doc="help string"),
+      "spx_domain": attr.string(
+            default = "",
+            values = ["", "Pure", "PrehashedSha256", "PrehashedSha256Reversed"],
+            doc = "The SPHINCS+ domain to use for signing.",
+      ),
       "_script": attr.label(
             default = "//rules/scripts:sival_signature_test.bash",
             doc = "The shell script to execute for the test.",
