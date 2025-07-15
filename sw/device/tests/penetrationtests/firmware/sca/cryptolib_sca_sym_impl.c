@@ -233,7 +233,7 @@ status_t cryptolib_sca_gcm_impl(
       .key_mode = kOtcryptoKeyModeAesGcm,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelHigh,
   };
 
   // Construct blinded key from the key and mask.
