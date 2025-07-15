@@ -384,6 +384,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
 
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
+  internal_ctx.security_level = key->config.security_level;
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
   // Save the context and clear the key if needed.
@@ -409,6 +410,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
 
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx;
+  internal_ctx.security_level = key->config.security_level;
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
   // Save the context and clear the key if needed.
