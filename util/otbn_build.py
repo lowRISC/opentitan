@@ -83,7 +83,7 @@ def run_tool(tool, out_file: Path, args) -> None:
                                           dir=out_dir,
                                           delete=False)
     try:
-        if type(tool) == str:
+        if isinstance(tool, str):
             run_cmd([tool, '-o', tmpfile.name] + args,
                     cmd_to_str([tool, '-o', out_file] + args))
         else:
