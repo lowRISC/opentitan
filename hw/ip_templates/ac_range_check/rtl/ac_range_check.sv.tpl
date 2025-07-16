@@ -73,22 +73,20 @@ module ${module_instance_name}
   logic [NumAlerts-1:0] alert_test, alert;
   logic deny_cnt_error;
 
-  assign alert[0]  = shadowed_update_err;
-  assign alert[1]  = reg_intg_error | shadowed_storage_err | deny_cnt_error;
+  assign alert[AlertRecovCtrlUpdateErrIdx]  = shadowed_update_err;
+  assign alert[AlertFatalFaultIdx]          = reg_intg_error | shadowed_storage_err |
+                                              deny_cnt_error;
 
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[AlertFatalFaultIdx] = reg2hw.alert_test.fatal_fault.q &
+                                          reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
       .SkewCycles(AlertSkewCycles),
-      .IsFatal(IsFatal[i])
+      .IsFatal(i == AlertFatalFaultIdx)
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),
