@@ -94,6 +94,7 @@ opentitan_test(
     ),
     deps = [
         ":keymgr",
+        ":rv_core_ibex",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/impl:status",
@@ -247,6 +248,7 @@ cc_library(
     hdrs = ["otbn.h"],
     deps = [
         ":entropy",
+        ":rv_core_ibex",
         "//hw/top:otbn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",

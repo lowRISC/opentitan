@@ -68,23 +68,29 @@ static status_t aes_write_key(aes_key_t key) {
   // Handle key shares in two separate loops to avoid dealing with
   // corresponding parts too close together, which could risk power
   // side-channel leakage in the ALU.
-  // TODO: randomize iteration order.
-  size_t i = 0;
-  for (; i < key.key_len; ++i) {
+  // Start from a random index less than `key.key_len`.
+  size_t i = ((uint64_t)ibex_rnd32_read() * key.key_len) >> 32;
+  enum { kStep = 1 };
+  size_t iter_cnt = 0;
+  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
+    i = (i + kStep) % key.key_len;
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
-  for (i = 0; i < key.key_len; ++i) {
+  HARDENED_CHECK_EQ(iter_cnt, key.key_len);
+  i = ((uint64_t)ibex_rnd32_read() * key.key_len) >> 32;
+  iter_cnt = 0;
+  for (; launder32(iter_cnt) < key.key_len; ++iter_cnt) {
     abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
+    i = (i + kStep) % key.key_len;
   }
-  HARDENED_CHECK_EQ(i, key.key_len);
+  HARDENED_CHECK_EQ(iter_cnt, key.key_len);
 
   // Write random words to remaining key registers.
-  for (; i < kAesKeyWordLenMax; i++) {
-    abs_mmio_write32(share0 + i * sizeof(uint32_t), ibex_rnd32_read());
-    abs_mmio_write32(share1 + i * sizeof(uint32_t), ibex_rnd32_read());
+  for (; iter_cnt < kAesKeyWordLenMax; iter_cnt++) {
+    abs_mmio_write32(share0 + iter_cnt * sizeof(uint32_t), ibex_rnd32_read());
+    abs_mmio_write32(share1 + iter_cnt * sizeof(uint32_t), ibex_rnd32_read());
   }
-  HARDENED_CHECK_EQ(i, kAesKeyWordLenMax);
+  HARDENED_CHECK_EQ(iter_cnt, kAesKeyWordLenMax);
 
   return spin_until(AES_STATUS_IDLE_BIT);
 }
