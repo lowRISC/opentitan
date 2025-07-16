@@ -180,7 +180,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
@@ -189,7 +189,7 @@ opentitan_test(
     run_in_ci = EARLGREY_TEST_ENVS.keys() + DARJEELING_TEST_ENVS.keys() + [
         "//hw/top_earlgrey:fpga_cw310_sival",
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw310_rom_ext",
     ],
     deps = [
         "//hw/ip/aes:model",
@@ -4399,7 +4399,7 @@ opentitan_test(
     name = "ottf_console_with_gpio_tx_indicator_test",
     srcs = ["ottf_console_with_gpio_tx_indicator_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
@@ -5725,6 +5725,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
+        timeout = "long",
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -5732,6 +5733,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
     silicon = silicon_params(
+        timeout = "long",
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
