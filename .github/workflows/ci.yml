@@ -462,7 +462,7 @@ jobs:
       timeout: 90
 
   execute_rom_ext_fpga_tests_cw310:
-    name: Hyper310 ROM_EXT Tests
+    name: CW310 ROM_EXT Tests
     needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
@@ -471,7 +471,7 @@ jobs:
       bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
       interface: hyper310
-      tag_filters: hyper310_rom_ext
+      tag_filters: cw310_rom_ext
 
   execute_sival_fpga_tests_cw310:
     name: CW310 SiVal Tests
@@ -580,7 +580,7 @@ jobs:
       bitstream: chip_earlgrey_cw340
       board: cw340
       interface: cw340
-      tag_filters: "manuf,-hyper310"
+      tag_filters: "manuf,-cw310"
 
   verify_fpga_jobs:
     name: Verify FPGA jobs
