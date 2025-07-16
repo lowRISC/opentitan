@@ -188,28 +188,28 @@ module aes
     .RndCnstMaskingLfsrSeed   ( RndCnstMaskingLfsrSeed   ),
     .RndCnstMaskingLfsrPerm   ( RndCnstMaskingLfsrPerm   )
   ) u_aes_core (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
-    .rst_shadowed_ni        ( rst_shadowed_ni      ),
-    .entropy_clearing_req_o ( entropy_clearing_req ),
-    .entropy_clearing_ack_i ( entropy_clearing_ack ),
-    .entropy_clearing_i     ( edn_data             ),
-    .entropy_masking_req_o  ( entropy_masking_req  ),
-    .entropy_masking_ack_i  ( entropy_masking_ack  ),
-    .entropy_masking_i      ( edn_data             ),
+    .clk_i                  ( clk_i                             ),
+    .rst_ni                 ( rst_ni                            ),
+    .rst_shadowed_ni        ( rst_shadowed_ni                   ),
+    .entropy_clearing_req_o ( entropy_clearing_req              ),
+    .entropy_clearing_ack_i ( entropy_clearing_ack              ),
+    .entropy_clearing_i     ( edn_data                          ),
+    .entropy_masking_req_o  ( entropy_masking_req               ),
+    .entropy_masking_ack_i  ( entropy_masking_ack               ),
+    .entropy_masking_i      ( edn_data                          ),
 
-    .keymgr_key_i           ( keymgr_key_i         ),
+    .keymgr_key_i           ( keymgr_key_i                      ),
 
-    .lc_escalate_en_i       ( lc_escalate_en       ),
+    .lc_escalate_en_i       ( lc_escalate_en                    ),
 
-    .shadowed_storage_err_i ( shadowed_storage_err ),
-    .shadowed_update_err_i  ( shadowed_update_err  ),
-    .intg_err_alert_i       ( intg_err_alert       ),
-    .alert_recov_o          ( alert[0]             ),
-    .alert_fatal_o          ( alert[1]             ),
+    .shadowed_storage_err_i ( shadowed_storage_err              ),
+    .shadowed_update_err_i  ( shadowed_update_err               ),
+    .intg_err_alert_i       ( intg_err_alert                    ),
+    .alert_recov_o          ( alert[AlertRecovCtrlUpdateErrIdx] ),
+    .alert_fatal_o          ( alert[AlertFatalFaultIdx]         ),
 
-    .reg2hw                 ( reg2hw               ),
-    .hw2reg                 ( hw2reg               )
+    .reg2hw                 ( reg2hw                            ),
+    .hw2reg                 ( hw2reg                            )
   );
 
   assign idle_o = prim_mubi_pkg::mubi4_bool_to_mubi(reg2hw.status.idle.q);
@@ -219,18 +219,16 @@ module aes
   ////////////
 
   logic [NumAlerts-1:0] alert_test;
-  assign alert_test = {
-    reg2hw.alert_test.fatal_fault.q &
-    reg2hw.alert_test.fatal_fault.qe,
-    reg2hw.alert_test.recov_ctrl_update_err.q &
-    reg2hw.alert_test.recov_ctrl_update_err.qe
-  };
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
+  assign alert_test[AlertFatalFaultIdx]         = reg2hw.alert_test.fatal_fault.q &
+                                                  reg2hw.alert_test.fatal_fault.qe;
 
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
       .SkewCycles(AlertSkewCycles),
-      .IsFatal(i)
+      .IsFatal(i == AlertFatalFaultIdx)
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
