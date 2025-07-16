@@ -5723,19 +5723,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
-        },
     ),
     fpga = fpga_params(
-        test_cmd = """
-            --bootstrap="{firmware}"
-            "{firmware:elf}"
-        """,
-        test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
-    ),
-    hyper310 = fpga_params(
-        tags = ["manual"],  # TODO: QE bit handling
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
