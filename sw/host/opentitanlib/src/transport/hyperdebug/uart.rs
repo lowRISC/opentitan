@@ -79,10 +79,19 @@ impl Uart for HyperdebugUart {
 
     fn set_baudrate(&self, baudrate: u32) -> Result<()> {
         let usb_handle = self.inner.usb_device.borrow();
+        let compressed_baudrate: u16 = ((baudrate + 50) / 100).try_into()?;
+        let decompressed_baudrate = compressed_baudrate as u32 * 100;
+        if decompressed_baudrate != baudrate {
+            log::warn!(
+                "Warning: accuracy loss when setting baud rate. UART will use {} Bd instead of {}",
+                decompressed_baudrate,
+                baudrate
+            );
+        }
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::SetBaud as u8,
-            ((baudrate + 50) / 100).try_into()?,
+            compressed_baudrate,
             self.usb_interface as u16,
             &[],
         )?;
