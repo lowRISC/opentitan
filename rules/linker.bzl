@@ -5,7 +5,7 @@
 """Rules for declaring linker scripts and linker script fragments."""
 
 def _ld_library_impl(ctx):
-    files = [] + ctx.files.includes
+    files = []
     user_link_flags = []
 
     # Disable non-volatile scratch region and counters if building for english
@@ -18,6 +18,13 @@ def _ld_library_impl(ctx):
     if ctx.attr.non_page_aligned_segments:
         user_link_flags += [
             "-Wl,-nmagic",
+        ]
+
+    if ctx.files.includes:
+        files += ctx.files.includes
+        user_link_flags += [
+            "-Wl,-L,{}".format(include.dirname)
+            for include in ctx.files.includes
         ]
 
     if ctx.file.script:

@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
+load("//rules:actions.bzl", "OT_ACTION_OBJDUMP")
 
 def obj_transform(ctx, **kwargs):
     """Transform an object file via objcopy.
@@ -21,6 +23,17 @@ def obj_transform(ctx, **kwargs):
       The transformed File.
     """
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objcopy = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OBJ_COPY_ACTION_NAME,
+    )
+
     output = kwargs.get("output")
     if not output:
         name = get_override(ctx, "attr.name", kwargs)
@@ -28,7 +41,7 @@ def obj_transform(ctx, **kwargs):
         output = "{}.{}".format(name, suffix)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
     out_format = get_override(ctx, "attr.format", kwargs)
 
     ctx.actions.run(
@@ -40,7 +53,7 @@ def obj_transform(ctx, **kwargs):
             src.path,
             output.path,
         ],
-        executable = cc_toolchain.objcopy_executable,
+        executable = objcopy,
     )
     return output
 
@@ -57,6 +70,17 @@ def obj_disassemble(ctx, **kwargs):
       The disassembled File.
     """
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objdump = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OT_ACTION_OBJDUMP,
+    )
+
     output = kwargs.get("output")
     if not output:
         name = get_override(ctx, "attr.name", kwargs)
@@ -69,7 +93,7 @@ def obj_disassemble(ctx, **kwargs):
         outputs = [output],
         inputs = [src] + cc_toolchain.all_files.to_list(),
         arguments = [
-            cc_toolchain.objdump_executable,
+            objdump,
             src.path,
             output.path,
         ],
@@ -100,7 +124,7 @@ def convert_to_vmem(ctx, **kwargs):
         output = "{}.{}.vmem".format(name, word_size)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
 
     ctx.actions.run(
         outputs = [output],
@@ -160,7 +184,7 @@ def scramble_flash(ctx, **kwargs):
         output = "{}.{}".format(name, suffix)
 
     output = ctx.actions.declare_file(output)
-    src = get_override(ctx, "attr.src", kwargs)
+    src = get_override(ctx, "file.src", kwargs)
     otp = get_override(ctx, "file.otp", kwargs)
 
     inputs = [src]

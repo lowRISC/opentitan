@@ -2,21 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
-)
-load(
-    "//rules:const.bzl",
-    "CONST",
-    "hex_digits",
-)
-load(
-    "//rules:opentitan.bzl",
-    "ECDSA_ONLY_KEY_STRUCTS",
-    "bin_to_vmem",
-    "scramble_flash_vmem",
-)
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//rules:const.bzl", "CONST", "hex_digits")
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
@@ -24,14 +13,8 @@ load(
     "otp_json",
     "otp_partition",
 )
-load(
-    "//rules:rom_e2e.bzl",
-    "maybe_skip_in_ci",
-)
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
+load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
@@ -248,13 +231,13 @@ opentitan_test(
     ]
 ]
 
-# The below three rule sets (bin_to_vmem, scramble_flash_vmem, and filegroup)
+# The below three rule sets (vmem_file, scramble_flash_vmem, and filegroup)
 # are needed to run `sigverify_always` tests in DV.
 [
-    bin_to_vmem(
+    vmem_file(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
         testonly = True,
-        bin = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_signed_bin".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
     for slot in SLOTS
@@ -265,7 +248,7 @@ opentitan_test(
     scramble_flash_vmem(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_scr_vmem64_signed".format(slot, key),
         testonly = True,
-        vmem = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
+        src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
     )
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS

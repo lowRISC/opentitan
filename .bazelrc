@@ -2,8 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Opt-out of bzlmod for now and continue to use `WORKSPACE`.
-common --noenable_bzlmod
+# Enable bzlmod with `MODULE.bazel` and disable the `WORKSPACE` system.
+common --enable_bzlmod
+common --enable_workspace=no
 
 # https://docs.opentitan.org/doc/rm/c_cpp_coding_style/#cxx-version specifies
 build --action_env=BAZEL_CXXOPTS="-std=gnu++17"
@@ -13,11 +14,6 @@ build --conlyopt='-std=gnu11'
 # Never strip debugging information so that we can produce annotated
 # disassemblies when compilation mode is fastbuild.
 build --strip='never'
-
-# Override default enablement of flags from @crt//common to control C compiler
-# warnings.
-build --features=-pedantic_warnings
-build --host_features=-pedantic_warnings
 
 # Use --config=disable_hardening to disable hardening to measure the
 # impact of the hardened sequences on code size.
@@ -148,3 +144,5 @@ build --flag_alias=ckms_cert_endorsement=//sw/device/silicon_creator/manuf/skus/
 
 # cquery output option.
 cquery --output=files
+
+common --legacy_external_runfiles
