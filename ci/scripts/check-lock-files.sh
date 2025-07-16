@@ -14,15 +14,14 @@ fail() {
   file="$1"
   command="$2"
 
-  echo "::error::${file} is not up to date"             >&2
-  echo "Regenerate this lock file using \`${command}\`" >&2
+  echo "::error file=${file},title=Lock file outdated::Regenerate this lock file using \`${command}\`"
 
   exit 1
 }
 
 # Regenerate `MODULE.bazel.lock` file.
 ./bazelisk.sh mod deps
-if ! git diff --exit-code MODULE.bazel.lock; then
+if ! git diff --exit-code --quiet MODULE.bazel.lock; then
   fail MODULE.bazel.lock "./bazelisk.sh mod deps"
 fi
 
@@ -36,13 +35,13 @@ cargo_manifests=(
 )
 for toml in "${cargo_manifests[@]}"; do
   "${cargo[@]}" update -w --manifest-path "$toml"
-  if ! git diff --exit-code "${toml/toml/lock}"; then
+  if ! git diff --exit-code --quiet "${toml/toml/lock}"; then
     fail "${toml/toml/lock}" "${cargo[*]} update -w --manifest-path ${toml}"
   fi
 done
 
 # Regenerate python lock file.
 ./util/sh/scripts/gen-python-requirements.sh
-if ! git diff --exit-code python-requirements.txt; then
+if ! git diff --exit-code --quiet python-requirements.txt; then
   fail python-requirements.txt ./util/sh/scripts/gen-python-requirements.txt
 fi
