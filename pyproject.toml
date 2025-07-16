@@ -10,7 +10,7 @@ requires-python = ">=3.10"
 
 dependencies = [
   # Dependency management
-  "uv ~= 0.6",
+  "uv ~= 0.7",
 
   # Keep sorted
   "beautifulsoup4 ~= 4.12",
