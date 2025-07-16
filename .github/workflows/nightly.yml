@@ -48,28 +48,28 @@ jobs:
 
   execute_fpga_cw310_test_rom_tests:
     name: CW310 Test ROM Tests
-    needs: chip_earlgrey_cw310
+    needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       job_name: execute_fpga_cw310_test_rom_tests
-      bitstream: chip_earlgrey_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
-      interface: cw310
+      interface: hyper310
       tag_filters: cw310_test_rom,-broken,-manual
       add_default_filters: false
       cache_test_results: false
 
   execute_fpga_cw310_rom_tests:
     name: CW310 ROM Tests
-    needs: chip_earlgrey_cw310
+    needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       job_name: execute_fpga_cw310_rom_tests
-      bitstream: chip_earlgrey_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
-      interface: cw310
+      interface: hyper310
       tag_filters: cw310_rom_with_fake_keys,-broken,-manual
       add_default_filters: false
       cache_test_results: false
@@ -77,14 +77,14 @@ jobs:
 
   execute_fpga_cw310_rom_ext_tests:
     name: CW310 ROM_EXT Tests
-    needs: chip_earlgrey_cw310
+    needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       job_name: execute_fpga_cw310_rom_ext_tests
-      bitstream: chip_earlgrey_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
-      interface: cw310
+      interface: hyper310
       tag_filters: cw310_rom_ext,-broken,-manual
       add_default_filters: false
       cache_test_results: false
